@@ -1795,7 +1795,7 @@ class MapService extends G3WObject {
     }));
   }
 
-  getGeometryAndExtentFromFeatures(features=[]) {
+  getGeometryAndExtentFromFeatures(features = []) {
     let extent;
     let geometryType;
     let geometry;
@@ -1828,14 +1828,18 @@ class MapService extends G3WObject {
         }
       }
     }
-    try {
-      geometry = new ol.geom[geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`](geometryCoordinates);
-      if (undefined === extent) {
-        extent = geometry.getExtent();
+    //check if features have geometry
+    if (geometryCoordinates.length > 0 && geometryType) {
+      try {
+        geometry = new ol.geom[geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`](geometryCoordinates);
+        if (undefined === extent) {
+            extent = geometry.getExtent();
+        }
+      } catch(e) {
+        console.warn(e);
       }
-    } catch(e) {
-      console.warn(e);
     }
+
     return {
       extent,
       geometry

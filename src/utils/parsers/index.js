@@ -264,49 +264,37 @@ export const ResponseParser = {
           // handled responses
           const parsed = []; //Array contains item object ({layer, features})
           const originalFeatureMember = [].concat(json.FeatureCollection.featureMember);
+          //Loop on each layer
           layers.forEach((layer, i/*, originalFeatureMember*/) => {
             const name = id ? layer.getId() : `layer${i}`; // layer name
 
-            const featureMemberArrayAndPrefix = {
-              features: [],
-              __prefix: null
-            };
-
-            json.FeatureCollection.featureMember = originalFeatureMember.filter(f => {
+            json.FeatureCollection.featureMember = originalFeatureMember
+            .filter(f => f[name])
+            .map(f => {
               const fm = f[name];
+              const prefix = f.__prefix;
               if (fm) {
-                //need to get fid number removing <layer_name_or_id.fid>
-                fm._fid = fm._fid && fm._fid.split('.')[1];
-                fm[G3W_FID] = {
-                  __prefix: f.__prefix,
-                  __text:   fm._fid
-                };
-
                 if (Array.isArray(fm)) {
-                  featureMemberArrayAndPrefix.features = fm;
-                  featureMemberArrayAndPrefix.__prefix = f.__prefix;
-                  return false;
+                  const grouped = groupBy(fm, f => Object.keys(f));
+                  // check if features have the same fields. If not, group the features with the same fields
+                  //check if features have different fields (multilayers)
+                  // If its is a multilayers. Each feature has different fields
+                  return Object.keys(grouped).length > 1
+                    ? Object.keys(grouped)
+                       .map((key, index) => grouped[key].map((feature, sub_index) => ({ [`layer${index}_${sub_index}`]: feature, __prefix: prefix }) )).flat()
+                    : //for Each element have to add and object contain layerName and information, and __prefix
+                    fm.map(f => ({ [name]:   f,  __prefix: prefix }) );
+                } else {
+                  //need to get fid number removing <layer_name_or_id.fid>
+                  fm._fid = fm._fid && fm._fid.split('.')[1];
+                  fm[G3W_FID] = {
+                    __prefix: prefix,
+                    __text:   fm._fid
+                  };
+                  return f;
                 }
-                return true;
               }
-            });
-
-            const grouped = groupBy(featureMemberArrayAndPrefix.features, f => Object.keys(f));
-            const is_multi = Object.keys(grouped).length > 1;
-
-            if (featureMemberArrayAndPrefix.features.length > 0) {
-              //get prefix
-              const prefix = featureMemberArrayAndPrefix.__prefix;
-              // check if features have the same fields. If not, group the features with the same fields
-              //check if features have different fields (multilayers)
-              // If its is a multilayers. Each feature has different fields
-              is_multi
-                ? Object.keys(grouped)
-                    .forEach((key, index) => grouped[key].forEach((feature, sub_index) => { json.FeatureCollection.featureMember = { [`layer${index}_${sub_index}`]: feature, __prefix: prefix } }) )
-                : //for Each element have to add and object contain layerName and information, and __prefix
-                  featureMemberArrayAndPrefix.features.forEach(f => json.FeatureCollection.featureMember.push({ [name]:   f,  __prefix: prefix }) );
-            }
-
+            }).flat();
             // parse layer feature collection
             const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
             const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
