@@ -340,13 +340,14 @@ export default {
    * @param params.formatter
    * @param params.parent
    */
-  async 'expression:expression'(params= {}) {
+  async 'expression:expression'(params = {}) {
     try {
-      const response = XHR.post({
+      const response = await XHR.post({
         url:         `${ProjectsRegistry.getCurrentProject().getUrl('vector_data')}${params.layer_id}/`,
         contentType: 'application/json',
         data:        JSON.stringify(params),
       });
+
       return response.result ? (response.vector.data.features || []) : null;
     } catch(e) {
       console.warn(e);
