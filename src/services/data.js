@@ -15,15 +15,8 @@ import { $promisify, promisify } from 'utils/promisify';
 const { t }  = require('core/i18n/i18n.service');
 const Filter = require('core/layers/filter/filter');
 
-/**
- *
- * @param queryPromises
- * @param resolve
- * @param reject
- * @return {Promise<void>}
- */
-const handleQueryPromises = async (queryPromises = []) => {
-  const responses = (await Promise.allSettled(queryPromises));
+const handleQueryPromises = async (promises = []) => {
+  const responses = await Promise.allSettled(promises);
   // at least one response
   if (responses.some(r => 'fulfilled' === r.status)) {
     return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);

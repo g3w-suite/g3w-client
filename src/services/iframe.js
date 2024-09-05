@@ -212,7 +212,7 @@ class IframePluginService {
  */
 class BaseIframeService extends G3WObject {
 
-  constructor(options = {}) {
+  constructor() {
 
     super();
 
@@ -456,7 +456,7 @@ class AppService extends BaseIframeService {
    * @returns { Promise<unknown> }
    */
   init() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.mapService.once('ready', () => {
         this._map                           = this.mapService.getMap();
         this._mapCrs                        = this.mapService.getCrs();
@@ -604,24 +604,22 @@ class AppService extends BaseIframeService {
    * @returns { Promise } qgs_layer_id
    */
   async zoomtofeature(params = {}) {
-    return new Promise(async (resolve, reject) => {
-      let {
-        qgs_layer_id,
-        feature,
-        highlight = false,
-      } = params;
+    let {
+      qgs_layer_id,
+      feature,
+      highlight = false,
+    } = params;
 
-      qgs_layer_id = this.getQgsLayerId({ qgs_layer_id });
+    qgs_layer_id = this.getQgsLayerId({ qgs_layer_id });
 
-      const response = await this.findFeaturesWithGeometry({
-        qgs_layer_id,
-        feature,
-        zoom: true,
-        highlight,
-      });
-
-      resolve(response.qgs_layer_id);
+    const response = await this.findFeaturesWithGeometry({
+      qgs_layer_id,
+      feature,
+      zoom: true,
+      highlight,
     });
+
+    return response.qgs_layer_id;
   }
 
 }
@@ -953,7 +951,7 @@ class EditingService extends BaseIframeService {
   }
 
   stop() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.dependencyApi.hidePanel();
       GUI.hideSidebar();
       this.once('clear', resolve);
