@@ -43,7 +43,7 @@ function getReducedSizes() {
  * @param error
  * @returns {string}
  */
-function errorToMessage(error){
+function errorToMessage(error) {
   const type = toRawType(error);
 
   if ('Error' === type) {
@@ -272,138 +272,107 @@ export default new (class GUI extends G3WObject {
   /**
    * Function called from DataRouterservice for gui output
    * 
-   * @param dataPromise
-   * @param options
+   * @param promise
+   * @param { Object } output
+   * @param { boolean | Function | Object } output.show set output condition (whether to show result or not)
+   * @param { boolean } output.add
    */
-  async outputDataPlace(dataPromise, options = {}) {
+  async outputDataPlace(promise, output = {}) {
 
     /** @FIXME add description */
     if ('iframe' === this.currentoutputplace) {
-      return IFrameRouterService.outputDataPlace(promise, outputs);
+      return IFrameRouterService.outputDataPlace(promise, output);
     }
 
     this.setLoadingContent(true);
 
-    // show parameter it used to set condition to show result or not
-    // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
-    const defaultOutputConfig = { condition: true, add: false, loading: true };
+    const condition = ['function', 'boolean'].includes(typeof output.show);
 
-    options.show = undefined !== options.show ? options.show : defaultOutputConfig;
+    Object.assign(output, {
+      condition: condition ? output.show : true,
+      add:       false,
+      ...(condition ? {} : output.show)
+    });
 
-    // convert show in an object
-    const outputConfig = (toRawType(options.show) !== 'Object') ?
-      {
-        condition: options.show, // can be Function or Boolean otherwise is set true
-        add: false,
-        loading: true
-      } : {
-        ...defaultOutputConfig,
-        ...options.show
-      };
-
-    //check if waiting output data
-    // in case we stop and substitute with new request data
-    if (this.waitingoutputdataplace ) {
-      await this.waitingoutputdataplace.stop();
+    // abort any previous request
+    if (this.pending_output) {
+      await this.pending_output();
     }
 
-    let queryResultsService = outputConfig.add ? this.getService('queryresults'): outputConfig.loading && this.showQueryResults(options.title || '');
+    if (!output.add) {
+      this.showQueryResults(output.title || '');
+    }
 
-    this.waitingoutputdataplace = (() => {
-      let stop = false;
-      (async () => {
-        try {
-          const data = await dataPromise;
+    let data = {};
+    let stop = false;
 
-          //if set before call method and wait
-          if(options.before) {
-            await options.before(data)
-          }
-
-          // in case of usermessage show user message
-          if (data.usermessage) {
-            this.showUserMessage({
-              type:      data.usermessage.type,
-              message:   data.usermessage.message,
-              autoclose: data.usermessage.autoclose
-            });
-          }
-
-          if (!stop) {
-            // check condition
-            const showResult = ('Function' === toRawType(outputConfig.condition)) ? outputConfig.condition(data) : ('Boolean' === toRawType(outputConfig.condition)) ? outputConfig.condition : true;
-            if (showResult) {
-              (queryResultsService ? queryResultsService: this.showQueryResults(options.title || '')).setQueryResponse(data, {
-                add: outputConfig.add
-              });
-            } else {
-              //@since 3.11.0.
-              // Need to async nature of this.closeContent (E.x of querybypolygon double call)
-              this.waitingoutputdataplace = {
-                stop: async () => await promisify(this.closeContent())
-              }
-            }
-            // call after is set with data
-            if (options.after) {
-              options.after(data)
-            }
-          }
-
-        } catch(e) {
-          console.warn(e);
-          this.showUserMessage({
-            type:        'alert',
-            message:     errorToMessage(e),
-            textMessage: true
-          });
-          this.closeContent();
-        }
-
-        if (!stop) {
-          this.waitingoutputdataplace = null;
-        }
-      })();
-
-      return {
-        stop: async () => stop = true
-      }
-    })();
+    this.pending_output = async () => stop = true;
 
     try {
-      await dataPromise;
+
+      if (!stop) {
+        data = await promise;
+      }
+
+      //if set before call method and wait
+      if (!stop && output.before) {
+        await output.before(data)
+      }
+
+      // in case of usermessage show user message
+      if (!stop && data.usermessage) {
+        this.showUserMessage({
+          type:      data.usermessage.type,
+          message:   data.usermessage.message,
+          autoclose: data.usermessage.autoclose
+        });
+      }
+
+      const show = !stop && 'function' === typeof output.condition ? output.condition(data) : false !== output.condition;
+
+      // check condition
+      if (!stop && show) {
+        (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: output.add });
+      }
+
+      if (!stop && !show) {
+        this.pending_output = this.closeContent.bind(this);
+      }
+
+      // call after is set with data
+      if (!stop && output.after) {
+        output.after(data)
+      }
+
     } catch(e) {
       console.warn(e);
-    }
-
-    this.setLoadingContent(false);
-  }
-
-  showContentFactory(type) {
-    switch (type) {
-      case 'query': return this.showQueryResults.bind(this);
-      case 'form': return this.showForm.bind(this);
+      this.showUserMessage({
+        type:        'alert',
+        message:     errorToMessage(e),
+        textMessage: true
+      });
+      this.closeContent();
+    } finally {
+      this.pending_output = null;
+      this.setLoadingContent(false);
     }
   }
 
   showForm(options = {}) {
-    const { perc, split = 'h', push, showgoback, crumb } = options;
     const FormComponent = require('gui/form/vue/form');
-    // new isnstace every time
+    // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
-    //get service
-    const formService = formComponent.getService();
-    // parameters : [content, title, push, perc, split, closable, crumb]
     this.setContent({
-      perc,
+      perc:       options.perc,
       content:    formComponent,
-      split,
-      crumb,
-      push:       !!push, //only one (if other deletes previous component)
-      showgoback: !!showgoback,
+      split:      undefined !== options.split ? options.split : 'h',
+      crumb:      options.crumb,
+      push:       !!options.push, //only one (if other deletes previous component)
+      showgoback: !!options.showgoback,
       closable:   false
     });
     // return service
-    return formService;
+    return formComponent.getService();
   }
 
   /**
@@ -412,18 +381,19 @@ export default new (class GUI extends G3WObject {
    */
   closeForm({ pop = false } = {}) {
     this.emit('closeform', false);
-    if (pop) {
+
+    const backonclose = !pop && ApplicationState.viewport.content.backonclose && ApplicationState.viewport.content.contentsdata.length > 1;
+
+    // remove just last component
+    if (pop || backonclose) {
       this.popContent();
-    } else {
-      // check if backonclose proprerty is true or false
-      // to remove all content stacks or just last component
-      if (ApplicationState.viewport.content.backonclose && ApplicationState.viewport.content.contentsdata.length > 1) {
-        this.popContent();
-      } else {
-        this.closeContent();
-      }
     }
-    // force set modal to false
+
+    // remove all content stacks
+    if (!pop && !backonclose){
+      this.closeContent();
+    }
+
     this.setModal(false);
   }
 
@@ -452,10 +422,13 @@ export default new (class GUI extends G3WObject {
   // show results info/search
   showQueryResults(title, results) {
     const queryresults = this.getComponent('queryresults').getService();
+
     queryresults.reset();
+
     if (results) {
       queryresults.setQueryResponse(results);
     }
+
     // show contextual content
     this.setContent({
       content:    this.getComponent('queryresults'),
@@ -465,6 +438,7 @@ export default new (class GUI extends G3WObject {
       post_title: title,
       perc:       isMobile.any ? 100 : undefined,
     });
+
     return queryresults;
   }
 
@@ -710,25 +684,31 @@ export default new (class GUI extends G3WObject {
     return content_perc;
   }
 
-  closeContent() {
+  async closeContent() {
     this.emit('closecontent', false);
-    const state = ApplicationState.viewport;
-    return $promisify(async () => {
-      // content is open
-      if (state.content.contentsdata.length > 0) {
-        this.getComponent('contents').removeContent();
-        // close secondary view
-        const secondaryView = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
-        if (secondaryView.clearContents) {
-          await promisify(secondaryView.clearContents());
-          state.secondaryPerc = 0;
-        }
-        state.secondaryVisible = false;
-        this._layout('close-content');
-        await Vue.nextTick();
-      }
-      return this.getComponent('map');
-    });
+
+    const state         = ApplicationState.viewport;
+    const open          = state.content.contentsdata.length > 0;
+    const secondaryView = open && this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
+
+    // content is open
+    if (open) {
+      this.getComponent('contents').removeContent();
+    }
+
+    // close secondary view
+    if (open && secondaryView.clearContents) {
+      await promisify(secondaryView.clearContents());
+      state.secondaryPerc = 0;
+    }
+
+    if (open) {
+      state.secondaryVisible = false;
+      this._layout('close-content');
+      await Vue.nextTick();
+    }
+
+    return this.getComponent('map');
   }
 
   // remove last content from stack
