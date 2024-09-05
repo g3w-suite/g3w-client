@@ -634,56 +634,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * get current filter
-   */
-  getCurrentFilter() {
-    return this.state.filter.current;
-  }
-
-  /**
-   * @TODO Add description
-   * 
-   * @returns {boolean}
-   */
-  getFilterActive() {
-    return this.state.filter.active;
-  }
-
-  /**
-   * @returns { Array } saved filters
-   */
-  getFilters() {
-    return this.state.filters;
-  }
-
-  /**
-   * Add new filter
-   * 
-   * @param filter Object filter
-   */
-  addFilter(filter = {}) {
-    this.state.filters.push(filter);
-  }
-
-  /**
-   * Remove saved filter from filters Array
-   * 
-   * @param fid unique filter id
-   */
-  removefilter(fid) {
-    this.state.filters = this.state.filters.filter(f => fid === f.fid);
-  }
-
-  /**
-   * Set Current filter
-   * 
-   * @param {{ fid, name }} filter 
-   */
-  setCurrentFilter(filter) {
-    this.state.filter.current = filter;
-  }
-
-  /**
    * Apply layer filter by fid
    * 
    * @param filter
@@ -711,7 +661,7 @@ class Layer extends G3WObject {
     const { filtertoken } = await this.providers['filtertoken'].applyFilterToken(filter.fid);
     if (filtertoken) {
       this.setFilter(false);
-      this.setCurrentFilter(filter);
+      this.state.filter.current = filter;
       this.setFilterToken(filtertoken);
     }
   }
@@ -730,7 +680,7 @@ class Layer extends G3WObject {
 
     prompt({
       label: t('layer_selection_filter.tools.savefilter'),
-      value: layer.getCurrentFilter() ? layer.getCurrentFilter().name : '' ,
+      value: layer.state.filter.current ? layer.state.filter.current.name : '' ,
       callback: async(name) => {
         const data = await layer.providers['filtertoken'].saveFilterToken(name);
 
@@ -750,7 +700,7 @@ class Layer extends G3WObject {
           layer.state.filters.push(filter);
         }
 
-        layer.setCurrentFilter(filter);      // set current filter
+        layer.state.filter.current = filter; // set current filter
         layer.setFilter(false);              // set to false
         layer.getSelection().active = false; // reset selection to false
         layer.selectionFids.clear();         // clear current fids
@@ -818,7 +768,7 @@ class Layer extends G3WObject {
         this.state.filters = this.state.filters.filter(f => fid !== f.fid);
       }
 
-      this.setCurrentFilter(null);      // set current filter set to null
+      this.state.filter.current = null  // set current filter set to null
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
       this.setFilterToken(filtertoken); // pass `filtertoken` to application

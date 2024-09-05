@@ -560,7 +560,7 @@ export default {
           })
         );
 
-        this.state.show_tools = this.layer.getFilterActive() || this.layer.getSelectionFids().size > 0;
+        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
         this.state.selectAll  = this.layer.state.filter.active || this.state.features.every(f => f.selected);
         return {
           // DataTable pagination

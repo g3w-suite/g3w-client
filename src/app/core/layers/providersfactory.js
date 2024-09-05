@@ -15,8 +15,6 @@ import { promisify, $promisify }   from 'utils/promisify';
 
 const { t }                        = require('core/i18n/i18n.service');
 const Feature                      = require('core/layers/features/feature');
-const Filter                       = require('core/layers/filter/filter');
-
 
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 const DPI = getDPI();
@@ -127,13 +125,6 @@ module.exports = {
         await(promisify(this.getFeatures()));
         return this._features;
       });
-    }
-
-    /**
-     * @TODO check if deprecated (broken and unused code ?)
-     */
-    digestFeaturesForTable() {
-      return { headers : [], features: [], };
     }
 
   },
@@ -253,20 +244,24 @@ module.exports = {
 
         const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
 
-        let { filter = null } = opts;
-        filter = filter && Array.isArray(filter) ? filter : [filter];
-
         // skip when ..
-        if (!filter) {
+        if (!opts.filter) {
           return Promise.reject();
         }
 
+        let filter = [].concat(opts.filter)
+          // BACKOMP v3.x
+          .map(f => ({
+            type:  f._type || f.type,
+            value: (f._filter || f.value)
+          }));
+
         // check if geometry filter. If not i have to remove projection layer
-        if (filter && 'geometry' !== filter[0].getType()) {
+        if ('geometry' !== filter[0].type) {
           this._projections.layer = null;
         }
 
-        filter = filter.map(f => f.get()).filter(v => v);
+        filter = filter.filter(f => f.value);
 
         const response = await XHR.get({
           url: opts.queryUrl || this._queryUrl,
@@ -282,7 +277,7 @@ module.exports = {
             CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
             I:             opts.I,
             J:             opts.J,
-            FILTER:        filter.length ? filter.join(';') : undefined,
+            FILTER:        filter.length ? filter.map(f => f.value).join(';') : undefined,
             WITH_GEOMETRY: !is_table,
           },
         });
@@ -560,10 +555,17 @@ module.exports = {
   
     // query method
     query(opts = {}, params = {}) {
-      const filter = opts.filter || new Filter({});
+      const filter = opts.filter || {};
       const layers = opts.layers || [this._layer];
       const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
       const method = layers[0].getOwsMethod();
+
+      // BACKCOMP v3.x
+      Object.assign(filter, {
+        config: filter.config || {},
+        type:   filter._type || filter.type,
+        value:  filter._filter || filter.value,
+      })
 
       const data = {
         data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
@@ -578,14 +580,14 @@ module.exports = {
         TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
         OUTPUTFORMAT: layers[0].getInfoFormat(),
         SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
-        FILTER:       'all' !== filter.getType() ? `(${(
+        FILTER:       'all' !== filter.type ? `(${(
           new ol.format.WFS().writeGetFeature({
             featureTypes: [layers[0]],
             filter:       ({
-              'bbox':       ol.format.filter.bbox('the_geom', filter.get()),
-              'geometry':   ol.format.filter[(filter.getConfig() || {}).spatialMethod || 'intersects']('the_geom', filter.get()),
+              'bbox':       ol.format.filter.bbox('the_geom', filter.value),
+              'geometry':   ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
               'expression': null,
-            })[filter.getType()],
+            })[filter.type],
           })
         ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
       });
@@ -599,11 +601,11 @@ module.exports = {
           try {
             let response;
 
-            if ('GET' === method && !['all', 'geometry'].includes(filter.getType())) {
+            if ('GET' === method && !['all', 'geometry'].includes(filter.type)) {
               response = await XHR.get({ url: url + '?' + $.param(params) });
             }
   
-            if ('POST' === method || ['all', 'geometry'].includes(filter.getType())) {
+            if ('POST' === method || ['all', 'geometry'].includes(filter.type)) {
               response = await XHR.post({ url, data: params })
             }
 

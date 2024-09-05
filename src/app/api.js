@@ -131,8 +131,6 @@ const { ImageLayer }             = require('core/layers/imagelayer');
 const Feature                    = require('core/layers/features/feature');
 const FeaturesStore              = require('core/layers/features/featuresstore');
 const OlFeaturesStore            = require('core/layers/features/olfeaturesstore');
-const Filter                     = require('core/layers/filter/filter');
-const Expression                 = require('core/layers/filter/expression');
 const Plugin                     = require('core/plugin/plugin');
 const PluginService              = require('core/plugin/pluginservice');
 
@@ -275,10 +273,6 @@ const g3wsdk = {
         FeaturesStore,
         OlFeaturesStore
       },
-      filter: {
-        Filter,
-        Expression
-      }
     },
     interaction: {
       PickCoordinatesInteraction,

@@ -1361,6 +1361,8 @@ class QueryResultsService extends G3WObject {
       filterConfig = {}
     } = query; // extract information about a query type
 
+    console.trace(query);
+
     let features = [];
 
     const has_coords = coordinates && Array.isArray(coordinates);
@@ -1785,7 +1787,7 @@ class QueryResultsService extends G3WObject {
       const pLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
       action.state.toggled[index] = (
           //need to check if set active filter and no saved filter is set
-          (pLayer.getFilterActive() && null == pLayer.getCurrentFilter()) ||
+          (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
           //or if feature fid is in selected array
           pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
       );
@@ -2327,7 +2329,7 @@ class QueryResultsService extends G3WObject {
     
       fids.forEach((fid, idx) => {
         const feature     = features[idx];
-        const is_selected = layer.getFilterActive() || layer.hasSelectionFid(fid);
+        const is_selected = layer.state.filter.active || layer.hasSelectionFid(fid);
       
         // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
         if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
@@ -2354,7 +2356,7 @@ class QueryResultsService extends G3WObject {
       layer.excludeSelectionFids(exclude, false);
 
       (
-        layer.getFilterActive()
+        layer.state.filter.active
           ? layer.createFilterToken()
           : Promise.resolve()
       ).then(() => {
@@ -2364,7 +2366,7 @@ class QueryResultsService extends G3WObject {
         fids.forEach((fid, idx) => {
           const currentLayer = (
             !layer.hasSelectionFid(fid) &&
-            layer.getFilterActive() &&
+            layer.state.filter.active &&
             layer.getSelectionFids().size > 0 &&
             layers.find(l => l.id === layer.getId())
           );

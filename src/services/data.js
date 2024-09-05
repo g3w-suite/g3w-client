@@ -13,7 +13,6 @@ import { XHR }                                 from 'utils/XHR';
 import { $promisify, promisify } from 'utils/promisify';
 
 const { t }  = require('core/i18n/i18n.service');
-const Filter = require('core/layers/filter/filter');
 
 const handleQueryPromises = async (promises = []) => {
   const responses = await Promise.allSettled(promises);
@@ -246,29 +245,21 @@ export default {
     formatter: 1,
     ordering,
   }) {
-
     const { layer, ...params } = options;
-    const { filter }           = options;
-    let data                   = [];
     params.filter              = [].concat(params.filter); // check if filter is array
     
-    (await Promise.allSettled(
-      [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
-    ))
-      .filter(d => 'fulfilled' === d.status)
-      .forEach(({ value } = {}) => {
-        if (options.raw) {
-          data.push({ data: value });
-        } else if (Array.isArray(value.data) && value.data.length > 0) {
-          data.push(value.data[0]);
-        }
-      });
-
     return {
-      data,
+      data: (await Promise.allSettled(
+        [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
+      ))
+        .filter(d => 'fulfilled' === d.status)
+        .map(({ value } = {}) => {
+          if (options.raw)                                        { return { data: value }; }
+          if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
+        }),
       query: {
         type:   'search',
-        search: filter,
+        search: options.filter,
       },
       type: 'api',
     };
@@ -395,10 +386,13 @@ export default {
       url = url.toString();
     }
     try {
-      const data = JSON.stringify({ url, params, headers, method });
       return {
-        response: await XHR.post({ data, contentType: 'application/json', url: `${ApplicationService.getProxyUrl()}` }),
-        data
+        response: await XHR.post({
+          data:        JSON.stringify({ url, params, headers, method }),
+          contentType: 'application/json',
+          url:         `${ApplicationService.getProxyUrl()}`
+        }),
+        data: JSON.stringify({ url, params, headers, method }),
       };
     } catch(e) {
       console.warn(e);
@@ -502,7 +496,6 @@ export default {
     }
 
     const mapCrs = projection.getCode();
-    const filter = new Filter(filterConfig);
 
     return await handleQueryPromises(Object.values(
       multilayers
@@ -511,8 +504,12 @@ export default {
     ).map(layers => {
       const layer = [].concat(layers)[0];
       const crs   = layer.getProjection().getCode();
-      // Convert filter geometry from map to layer CRS
-      filter.setGeometry(mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs));
+      const filter = {
+        config: filterConfig,
+        type:   'geometry',
+        // Convert filter geometry from map to layer CRS
+        value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
+      };
       return promisify(layer.query(
         multilayers
           ? { filter, feature_count, layers }
