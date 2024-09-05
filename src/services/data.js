@@ -22,23 +22,14 @@ const Filter = require('core/layers/filter/filter');
  * @param reject
  * @return {Promise<void>}
  */
-const handleQueryPromises = async ({ queryPromises = [], resolve, reject } = { }) => {
-  const { responses, errors } = (await Promise.allSettled(queryPromises))
-    .reduce((acc, { status, value } ) => {
-      if ('fulfilled' === status) {
-        acc.responses.push(value);
-      } else {
-        acc[errors].push(value)
-      }
-      return acc;
-    }, { responses: [], errors: [] })
-  //check at least one response
-  if (responses.length > 0) {
-    resolve(responses);
-  } else {
-    // show all errors
-    reject(errors);
+const handleQueryPromises = async (queryPromises = []) => {
+  const responses = (await Promise.allSettled(queryPromises));
+  // at least one response
+  if (responses.some(r => 'fulfilled' === r.status)) {
+    return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
   }
+  // show all errors
+  return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
 }
 
 export default {
@@ -262,9 +253,6 @@ export default {
     formatter: 1,
     ordering,
   }) {
-    
-    /** @deprecated */
-    options.search_endpoint = 'api';
 
     const { layer, ...params } = options;
     const { filter }           = options;
@@ -447,6 +435,8 @@ export default {
   },
 
   /**
+   * used by the following plugins: "archiweb"
+   * 
    * @param layers 
    * @param { Object } opts
    * @param opts.coordinates
@@ -466,36 +456,28 @@ export default {
     multilayers           = false,
     reproject             = true,
   } = {}) {
-
     // skip when no features
     if (0 === layers.length) {
       return $promisify(Promise.resolve(layers));
     }
 
-    return $promisify(new Promise(async (resolve, reject) => {
+    const map            = GUI.getService('map').getMap();
+    const size           = map.getSize();
+    const mapProjection  = map.getView().getProjection();
+    const resolution     = map.getView().getResolution();
 
-      const map            = GUI.getService('map').getMap();
-      const size           = map.getSize();
-      const mapProjection  = map.getView().getProjection();
-      const resolution     = map.getView().getResolution();
-
-      await handleQueryPromises({
-        queryPromises: Object.values(
-          multilayers
-            ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
-            : layers
-        ).map(layers => {
-          const layer = multilayers ? layers[0] : layers;
-          return promisify(
-            multilayers
-              ? layer.getProvider('query').query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers })
-              : layer                     .query({ feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution })
-          )
-        }),
-        resolve,
-        reject,
-      })
-    }))
+    return $promisify(async () => await handleQueryPromises(Object.values(
+      multilayers
+        ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
+        : layers
+    ).map(layers => promisify(
+      [].concat(layers)[0].query(
+        multilayers
+          ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers }
+          : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
+        )
+      )
+    )));
 
   },
 
@@ -521,35 +503,28 @@ export default {
       feature_count = 10
     } = {}
   ) {
-    const mapCrs         = projection.getCode();
-    const filter         = new Filter(filterConfig);
-
     // skip when no features
     if (0 === layers.length) {
       return [];
     }
 
-    return await (new Promise(async (resolve, reject) => {
+    const mapCrs = projection.getCode();
+    const filter = new Filter(filterConfig);
 
-      await handleQueryPromises({
-        queryPromises: Object.values(
-          multilayers
-            ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
-            : layers
-        ).map( (layers) => {
-          const layer = multilayers ? layers[0] : layers;
-          const crs   = layer.getProjection().getCode();
-          // Convert filter geometry from map to layer CRS
-          filter.setGeometry(mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs));
-          return promisify(
-            multilayers
-              ? layer.getProvider('filter').query({ filter, feature_count, layers })
-              : layer                      .query({ filter, feature_count, filterConfig })
-          )
-        }),
-        resolve,
-        reject,
-      })
+    return await handleQueryPromises(Object.values(
+      multilayers
+        ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+        : layers
+    ).map(layers => {
+      const layer = [].concat(layers)[0];
+      const crs   = layer.getProjection().getCode();
+      // Convert filter geometry from map to layer CRS
+      filter.setGeometry(mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs));
+      return promisify(layer.query(
+        multilayers
+          ? { filter, feature_count, layers }
+          : { filter, feature_count, filterConfig }
+      ))
     }));
   },
 
