@@ -92,19 +92,19 @@ proto.setEmpty = function(){
 // the general method to check the value of the state is valid or not
 proto.validate = function() {
   //check if input is not required (empty === true) and the value is not empty
-  if (!(this.state.validate.empty && _.isEmpty(this.state.value))) {
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
-      this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
-    } else {
-      //check if the type is numeric
-      if (['integer', 'float', 'bigint'].includes(this.state.input.type) && (+this.state.value < 0)) {
-        this.state.value               = null;
-        this.state.validate.valid      = !this.state.validate.required;
-      } else {
-        this.state.validate.valid = this._validator.validate(this.state.value);
-      }
-    }
+  const GIVE_ME_A_NAME_1 = !(this.state.validate.empty && _.isEmpty(this.state.value));
+  const GIVE_ME_A_NAME_2 = GIVE_ME_A_NAME_1 && !(this.state.validate.empty && _.isEmpty(this.state.value));
+  const GIVE_ME_A_NAME_3 = GIVE_ME_A_NAME_1 && ['integer', 'float', 'bigint'].includes(this.state.input.type) && (+this.state.value < 0);
+
+  if (GIVE_ME_A_NAME_2) {
+    this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
+  } else if (GIVE_ME_A_NAME_3) { //check if the type is numeric
+    this.state.value          = null;
+    this.state.validate.valid = !this.state.validate.required;
+  } else if (GIVE_ME_A_NAME_1) {
+    this.state.validate.valid = this._validator.validate(this.state.value);
   }
+
   return this.state.validate.valid;
 };
 
