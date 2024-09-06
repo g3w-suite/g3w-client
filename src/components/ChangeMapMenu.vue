@@ -268,17 +268,13 @@ export default {
       this.steps = [];
     },
 
-    _changeMapProject({ url, epsg } = {}) {
-
-    },
-
     /**
      * @param {string} item.url
      * @param {string} item.map_url
      */
     async changeMapProject(item) {
       let url;
-      const base_url = ProjectsRegistry.getBaseUrl();
+      const base_url = window.initConfig.urls.baseurl;
       const epsg     = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
       await Projections.registerProjection(epsg);
       try {
@@ -355,7 +351,7 @@ export default {
 
     // setup items data (macrogrups and groups).
     this.items       = ProjectsRegistry.getListableProjects();
-    this.parent      = ProjectsRegistry.getCurrentProjectGroup();
+    this.parent      = window.initConfig;
     this.curr_group  = this.parent.id;
     this.macrogroups = config.macrogroups;
     this.groups      = config.groups;

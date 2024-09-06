@@ -7,14 +7,7 @@ import G3WObject                   from 'core/g3w-object';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import { XHR }                     from 'utils/XHR';
 
-
 const Project           = require('core/project/project');
-
-/* service
-    setup: init method
-    getLayersState: returnLayersState
-    getLayersTree: return array of layersTree from LayersState
-*/
 
 export default new (class ProjectsRegistry extends G3WObject {
   
@@ -23,16 +16,11 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     this.config              = null;
     this.initialized         = false;
-    this.projectType         = null;
-    this.currentProjectGroup = null;
+
     /** store overview (Panoramic map) project */
     this.overviewproject     = undefined;
 
     this.setters = {
-
-      createProject(projectConfig) {
-        //hook to get project config and modify it
-      },
 
       setCurrentProject(project) {
 
@@ -45,7 +33,6 @@ export default new (class ProjectsRegistry extends G3WObject {
 
         this.state.currentProject = project;
         this.state.qgis_version   = project.getQgisVersion();
-        this.projectType          = project.state.type;
 
         const projectLayersStore = project.getLayersStore();
 
@@ -71,55 +58,6 @@ export default new (class ProjectsRegistry extends G3WObject {
     this._projectConfigs = {};
   }
 
-  //Inizialize configuration for all projects belongs to group
-  async init(config = {}) {
-
-    // check if already initialized
-    if (this.initialized) {
-      return this.getCurrentProject();
-    }
-
-    this.config              = config;
-    this.currentProjectGroup = config;
-    this.overviewproject     = config.overviewproject;
-
-    //setup state
-    this.state.baseLayers = this.config.baselayers;
-    this.state.minScale   = this.config.minscale;
-    this.state.maxScale   = this.config.maxscale;
-    this.state.crs        = this.config.crs;
-
-    // clear projects
-    this._groupProjects   = [];
-
-    // setup projects
-    this.config.projects.forEach(project => {
-      this.state.qgis_version = project.qgis_version || this.state.qgis_version;
-      Object.assign(project, {
-        baselayers:         this.config.baselayers,
-        minscale:           this.config.minscale,
-        maxscale:           this.config.maxscale,
-        crs:                this.config.crs,
-        vectorurl:          this.config.vectorurl,
-        rasterurl:          this.config.rasterurl,
-        overviewprojectgid: this.overviewproject ? this.overviewproject.gid : null,
-      });
-      this._groupProjects.push(project);
-    });
-
-    const map_theme = (new URLSearchParams(location.search)).get('map_theme');
-
-    // get current configuration
-    const project = await this.getProject(config.initproject, { map_theme } );
-
-    this.setCurrentProject(project);
-
-    this.initialized = true;
-
-    return project;
-
-  }
-
   getConfig() {
     return this.config;
   }
@@ -128,12 +66,9 @@ export default new (class ProjectsRegistry extends G3WObject {
     return this.state;
   }
 
-  getProjects() {
-    return this._groupProjects;
-  }
-
+  /** used by the following plugins: "iframe", "archiweb" */
   getListableProjects() {
-    return this.getProjects().filter(p => {
+    return this._groupProjects.filter(p => {
       if (![null, undefined].includes(p.listable)) {
         return p.listable;
       }
@@ -148,13 +83,7 @@ export default new (class ProjectsRegistry extends G3WObject {
     return this.state.currentProject;
   }
 
-  /**
-   * @since 3.8.0
-   */
-  getCurrentProjectGroup() {
-    return this.currentProjectGroup;
-  }
-
+  /** used by the following plugins: "ifram", "archiweb" */
   getProjectConfigByGid(gid) {
     return this._groupProjects.find(p => gid === p.gid);
   }
@@ -183,7 +112,7 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     // fetch project configuration from remote server
     const config    = await XHR.get({ url:
-      `${this.config.urls.baseurl}${this.config.urls.config}/${this.config.id}/${pendingProject.type}/${pendingProject.id}?_t=${pendingProject.modified}`
+      `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${pendingProject.type}/${pendingProject.id}?_t=${pendingProject.modified}`
     });
     const map_theme = options.map_theme && Object.values(config.map_themes).flat().find(({ theme }) => theme === options.map_theme);
 
@@ -199,7 +128,7 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     project = Object.assign(pendingProject, config);
 
-    project.WMSUrl = `${this.config.urls.baseurl}${this.config.urls.ows}/${this.config.id}/${project.type}/${project.id}/`;
+    project.WMSUrl = `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${project.type}/${project.id}/`;
 
     /** @since 3.8.0 */
     project.relations = (project.relations || []).map(r => {
@@ -217,20 +146,13 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     this._projectConfigs[project.gid] = project;
 
-    // instance of Project
-    this.createProject(project);
-
     // add to project
     return new Project(project);
   }
 
-  /**
-   * @param alias.gid
-   * @param alias.url
-   * @param alias.host
-   */
+  /** used by the following plugins: "archiweb" */
   setProjectAliasUrl(alias) {
-    const project = this.config.projects.find(p => alias.gid === p.gid);
+    const project = window.initConfig.projects.find(p => alias.gid === p.gid);
     if (project) { project.url = `${alias.host || ''}${alias.url}` }
   }
 
@@ -240,22 +162,13 @@ export default new (class ProjectsRegistry extends G3WObject {
    * @returns {string}
    */
   getProjectUrl(gid) {
-    const baseurl       = this.config && this.config.urls && this.config.urls.baseurl;
-    const projectConfig = this.getProjectConfigByGid(gid);
-    const url           = projectConfig.url;
+    const project = this._groupProjects.find(p => gid === p.gid);
     try {
-      return `${(new URL(baseurl))}${url}`;
+      return `${(new URL(window.initConfig.urls.baseurl))}${project.url}`;
     } catch(e) {
       console.warn(e);
-      return `${location.origin}${baseurl}${url}`;
+      return `${location.origin}${window.initConfig.urls.baseurl}${project.url}`;
     }
   }
-
-  /**
-   * @since 3.8.0
-   */
-  getBaseUrl() {
-    return this.config.urls.baseurl;
-  };
 
 });

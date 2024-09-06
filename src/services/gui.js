@@ -2,7 +2,6 @@ import G3WObject                 from 'core/g3w-object';
 import Component                 from 'core/g3w-component';
 
 import ApplicationState          from 'store/application-state';
-import ComponentsRegistry        from 'store/components';
 import ProjectsRegistry          from 'store/projects';
 
 import IFrameRouterService       from 'services/iframe';
@@ -11,6 +10,9 @@ import { getUniqueDomId }        from 'utils/getUniqueDomId';
 import { setViewSizes }          from 'utils/setViewSizes';
 import { toRawType }             from 'utils/toRawType';
 import { promisify, $promisify } from 'utils/promisify';
+
+/** store legacy frontend components */
+const COMPONENTS = {};
 
 /**
  * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
@@ -155,15 +157,18 @@ export default new (class GUI extends G3WObject {
   }
 
   setComponent(component) {
-    ComponentsRegistry.registerComponent(component);
+    const id = component.getId();
+    if (undefined === COMPONENTS[id]) {
+      COMPONENTS[id] = component;
+    }
   }
 
   getComponent(id) {
-    return ComponentsRegistry.getComponent(id);
+    return COMPONENTS[id];
   }
 
   getComponents() {
-    return ComponentsRegistry.getComponents();
+    return COMPONENTS;
   }
 
   ready() {
@@ -255,10 +260,6 @@ export default new (class GUI extends G3WObject {
   isMobile() {
     return isMobile.any;
   };
-
-  getTemplateInfo() {
-    return Vue.prototype.g3wtemplate.getInfo();
-  }
   
   getFontClass(type) {
     return Vue.prototype.g3wtemplate.getFontClass(type);

@@ -119,6 +119,9 @@ import { mergeOptions }                            from 'utils/mergeOptions';
 import { ResponseParser }                          from 'utils/parsers';
 import { $promisify }                              from 'utils/promisify';
 
+import Panel                                       from 'core/g3w-panel';
+
+
 const G3WObject                  = require('core/g3wobject');
 const utils                      = require('utils');
 const i18n                       = require('core/i18n/i18n.service');
@@ -139,7 +142,6 @@ const PluginService              = require('core/plugin/pluginservice');
 /**
  * GUI modules
  */
-const Panel                      = require('gui/panel');
 const {
   ControlFactory,
   MapLayersStoresRegistry,

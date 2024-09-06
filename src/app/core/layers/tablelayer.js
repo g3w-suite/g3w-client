@@ -215,11 +215,6 @@ module.exports = class TableLayer extends Layer {
       this.vectorUrl = vectorurl;
     }
 
-    if (project_type) {
-      //@TODO Check if it used otherwise delete it
-      this.projectType = project_type;
-    }
-
     try {
       return await this.clone().layerForEditing; // cloned editable layer
     } catch(e) {

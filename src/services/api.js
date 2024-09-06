@@ -14,14 +14,8 @@ let howManyAreLoading = 0;
 export default new (class ApiService extends G3WObject {
   constructor(opts = {}) {
     super(opts);
-    this._baseUrl = null;
 
   }
-  async init(config = {}) {
-    // get url from base api of application config
-    this._baseUrl      = config.urls.api;
-    this._apiEndpoints = config.urls.apiEndpoints;
-  };
 
   _incrementLoaders() {
     if (0 === howManyAreLoading) { this.emit('apiquerystart') }
@@ -34,9 +28,9 @@ export default new (class ApiService extends G3WObject {
   };
 
   get(api, options) {
-    const apiEndPoint = this._apiEndpoints[api];
+    const apiEndPoint = window.initConfig.urls.apiEndpoints[api];
     if (apiEndPoint) {
-      const url = `${this._baseUrl}/${apiEndPoint}${options.request ? `/${options.request}` : '' }`;
+      const url = `${window.initConfig.urls.api}/${apiEndPoint}${options.request ? `/${options.request}` : '' }`;
       this.emit(`${api}querystart`);
       this._incrementLoaders();
       return $promisify(XHR.get({ url , params: (options.params || {}) }))

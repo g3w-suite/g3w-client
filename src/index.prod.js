@@ -22,7 +22,6 @@ import translations                from "locales";
 import ApplicationState            from 'store/application-state';
 import ProjectsRegistry            from 'store/projects';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ComponentsRegistry          from 'store/components';
 import PluginsRegistry             from 'store/plugins';
 import G3WObject                   from 'core/g3w-object';
 import { BarStack }                from 'core/g3w-barstack';
@@ -96,7 +95,7 @@ GUI.addComponent = function(component, placeholder, options={}) {
     }
   }
   if (register) {
-    ComponentsRegistry.registerComponent(component);
+    GUI.setComponent(component);
   }
   return true;
 };
@@ -166,15 +165,6 @@ Vue.use({
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
       font: FONT_AWESOME_ICONS,
-      /**
-       * @TODO check if deprecated
-       */
-      get() {},
-      getInfo() {
-        return {
-          font: this.font
-        }
-      },
       addFontClass({ name, className } = {}) {
         const added = undefined === this.font[name];
         if (added) {
@@ -182,10 +172,6 @@ Vue.use({
         }
         return added;
       },
-      /**
-       * @TODO check if deprecated
-       */
-      getInfoString() {},
       getFontClass(type) {
         return undefined === this.font[type] ? '' : this.font[type];
       }
@@ -367,15 +353,45 @@ $.ajaxSetup({
     }
   );
 
-  ApplicationState.gui.layout.app = initConfig.layout;
+  ApplicationState.gui.layout.app      = initConfig.layout;
+  ProjectsRegistry.config              = initConfig;
+  ProjectsRegistry.overviewproject     = initConfig.overviewproject;
+
+  //setup state
+  Object.assign(ProjectsRegistry.state, {
+    baseLayers: initConfig.baselayers,
+    minScale:   initConfig.minscale,
+    maxScale:   initConfig.maxscale,
+    crs:        initConfig.crs,
+  });
+
+  // clear projects
+  ProjectsRegistry._groupProjects   = [];
+
+  // setup projects
+  initConfig.projects.forEach(project => {
+    ProjectsRegistry.state.qgis_version = project.qgis_version || ProjectsRegistry.state.qgis_version;
+    Object.assign(project, {
+      baselayers:         initConfig.baselayers,
+      minscale:           initConfig.minscale,
+      maxscale:           initConfig.maxscale,
+      crs:                initConfig.crs,
+      vectorurl:          initConfig.vectorurl,
+      rasterurl:          initConfig.rasterurl,
+      overviewprojectgid: ProjectsRegistry.overviewproject ? ProjectsRegistry.overviewproject.gid : null,
+    });
+    ProjectsRegistry._groupProjects.push(project);
+  });
+
+  const map_theme = (new URLSearchParams(location.search)).get('map_theme');
 
   const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
 
-  Promise.allSettled([
-    ProjectsRegistry.init(initConfig),
-    ApiService.init(initConfig)
-  ]).then(() => {
+  // get current project configuration
+  ProjectsRegistry.getProject(initConfig.initproject, { map_theme } ).then((project) => {
     clearTimeout(timeout);
+    ProjectsRegistry.setCurrentProject(project);
+
 
     window.addEventListener('online', () => {
       ApplicationState.online = true;
@@ -388,9 +404,6 @@ $.ajaxSetup({
     });
 
     ApplicationService.emit('ready');
-
-    ApplicationService.initialized = true;
-    const project                  = ProjectsRegistry.getCurrentProject();
 
     ApplicationState.map.epsg = project.state.crs.epsg;
 
