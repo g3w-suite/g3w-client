@@ -226,8 +226,12 @@ const ACTIONS = {};
 const CONFIG = {};
 
 // dataTable Translations and custom extentions
-function _setDataTableLanguage(dataTable=null) {
-  const languageOptions = {
+function _setDataTableLanguage() {
+  //set form control class to filter
+  $.extend($.fn.dataTableExt.oStdClasses, {
+    "sFilterInput": "form-control search"
+  });
+  $.extend(true, $.fn.dataTable.defaults, {
     "language": {
       "sSearch": '',
       "searchPlaceholder": t("dosearch"),
@@ -240,12 +244,7 @@ function _setDataTableLanguage(dataTable=null) {
       "zeroRecords": t("dataTable.nodatafilterd"),
       "infoFiltered": ''
     }
-  };
-  //set form control class to filter
-  $.extend( $.fn.dataTableExt.oStdClasses, {
-    "sFilterInput": "form-control search"
   });
-  !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
 }
 
 /**
@@ -972,31 +971,25 @@ $.ajaxSetup({
 
         await this.$nextTick();
 
-        /**
-         * Run the following tasks after boostrap:
-         *
-         * 1 - check for `this.complete`
-         * 3 - initialize PluginsRegistry (once and after ProjectsRegistry and ApiService are initialized)
-         * 4 - trigger 'complete' event
-         */
-        if (!ApplicationService.complete) {
-          try {
-            await PluginsRegistry.init({
-              project:            ProjectsRegistry.getCurrentProject(),
-              pluginsBaseUrl:     window.initConfig.urls.staticurl,
-              pluginsConfigs:     window.initConfig.plugins,
-              otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
-            });
-          } catch (e) {
-            console.warn(e);
-          }
-          ApplicationService.complete = true;
-          ApplicationService.emit('complete');
-        }
-
         ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
 
         GUI.ready();
+
+        try {
+          await PluginsRegistry.init({
+            project:            ProjectsRegistry.getCurrentProject(),
+            pluginsBaseUrl:     window.initConfig.urls.staticurl,
+            pluginsConfigs:     window.initConfig.plugins,
+            otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
+          });
+        } catch (e) {
+          console.warn(e);
+        }
+
+        // trigger 'complete' event
+        ApplicationService.complete = true;
+        ApplicationService.emit('complete');
+
       },
     });
   })
