@@ -428,11 +428,11 @@
             <div style = "font-weight: bold; font-size:0.4em">offline</div>
           </div>
           <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
-            <bar-loader loading = "true"/>
+            <bar-loader :loading = "true"/>
             <i style = "padding:3px" :class = "g3wtemplate.getFontClass('download')"></i>
           </div>
           <div id = "plugins_notification" v-plugins style = "color: #994b10">
-            <bar-loader loading = "true"/>
+            <bar-loader :loading = "true"/>
             <i :class = "g3wtemplate.getFontClass('plugin')"></i>
           </div>
         </div>

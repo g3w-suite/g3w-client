@@ -48,7 +48,7 @@
           style = "position:relative; width: 100%"
           slot  = "loading"
         >
-          <bar-loader loading = "true"/>
+          <bar-loader :loading = "true"/>
         </div>
       </slot>
 
