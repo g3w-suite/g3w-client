@@ -201,7 +201,7 @@ export default new (class GUI extends G3WObject {
     });
 
     // resize on main siedemar open close sidebar
-    $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function (event) {
+    $('.main-sidebar').on('transitionend', function (event) {
       //be sure that is the main sidebar that is transitioned non his child
       if (event.target === this) {
         $(this).trigger('trans-end');
