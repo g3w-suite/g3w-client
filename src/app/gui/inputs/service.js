@@ -91,28 +91,23 @@ proto.setEmpty = function(){
 
 // the general method to check the value of the state is valid or not
 proto.validate = function() {
-  if (this.state.validate.empty) {
-    this.state.validate.empty  = true;
-    this.state.value           = null;
-    this.state.validate.unique = true;
-    // check if you require or check validation
-    this.state.validate.valid  = this.state.validate.required ? false : this._validator.validate(this.state.value);
-  } else {
-    if (['integer', 'float'].includes(this.state.input.type)) {
-      if (+this.state.value < 0) {
-        this.state.value               = null;
-        this.state.validate.empty      = true;
-        this.state.validate.valid      = !this.state.validate.required;
-      } else this.state.validate.valid = this._validator.validate(this.state.value);
-    }
+  //check if input is not required (empty === true) and the value is not empty
+  if (!(this.state.validate.empty && _.isEmpty(this.state.value))) {
     if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
       this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
     } else {
-      this.state.validate.valid = this._validator.validate(this.state.value);
+      //check if the type is numeric
+      if (['integer', 'float', 'bigint'].includes(this.state.input.type) && (+this.state.value < 0)) {
+        this.state.value               = null;
+        this.state.validate.valid      = !this.state.validate.required;
+      } else {
+        this.state.validate.valid = this._validator.validate(this.state.value);
+      }
     }
   }
   return this.state.validate.valid;
 };
+
 
 proto.setErrorMessage = function() {
   //in vase of
