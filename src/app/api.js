@@ -436,5 +436,7 @@ g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.Applicat
 g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
 /** used by the following plugins: "editing", "openrouteservice" */
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
+/** used by the following plugins: "archiweb" */
+g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
 
 module.exports = g3wsdk;
