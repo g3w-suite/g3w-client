@@ -272,20 +272,26 @@ export default new (class GUI extends G3WObject {
   /**
    * Function called from DataRouterservice for gui output
    * 
-   * @param promise
+   * @param promise // is request data promise
    * @param { Object } output
    * @param { boolean | Function | Object } output.show set output condition (whether to show result or not)
    * @param { boolean } output.add
+   * @param { String } output.title
    */
   async outputDataPlace(promise, output = {}) {
 
-    /** @FIXME add description */
+    //set current unique request id of request
+    const rid = getUniqueDomId();
+
+    /** In the case of a current output result is iframe, send to IFrameRouterService.outputDataPlace*/
     if ('iframe' === this.currentoutputplace) {
       return IFrameRouterService.outputDataPlace(promise, output);
     }
 
+    //set loading state
     this.setLoadingContent(true);
 
+    //check show attribute if is a valid type
     const condition = ['function', 'boolean'].includes(typeof output.show);
 
     Object.assign(output, {
@@ -299,14 +305,21 @@ export default new (class GUI extends G3WObject {
       await this.pending_output();
     }
 
+    // if request doesn't need to add to a current query result
     if (!output.add) {
       this.showQueryResults(output.title || '');
     }
 
+    // Store data promise
     let data = {};
+    // stop
     let stop = false;
 
+    //set current pending out
     this.pending_output = async () => stop = true;
+
+    //set current request id
+    this.crid = rid;
 
     try {
 
@@ -330,7 +343,7 @@ export default new (class GUI extends G3WObject {
 
       const show = !stop && 'function' === typeof output.condition ? output.condition(data) : false !== output.condition;
 
-      // check condition
+      // check if data can be shown on query result content
       if (!stop && show) {
         (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: output.add });
       }
@@ -351,11 +364,12 @@ export default new (class GUI extends G3WObject {
         message:     errorToMessage(e),
         textMessage: true
       });
-      this.closeContent();
-    } finally {
-      this.pending_output = null;
-      this.setLoadingContent(false);
+      await this.closeContent();
     }
+
+    this.pending_output = null;
+    //set loading to false when done current request id
+    this.setLoadingContent(rid !== this.crid);
   }
 
   showForm(options = {}) {
