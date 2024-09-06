@@ -133,7 +133,7 @@ export default BaseClass => class extends BaseClass {
   getLegendGraphic({ all = true } = {}) {
     return XHR.get({
       url: this.getLegendUrl(
-        (ApplicationService.getConfig().layout || ({ legend: {} })).legend,
+        (window.initConfig.layout || ({ legend: {} })).legend,
         {
           categories: true,
           format:     'application/json', // is the format to request categories (icon and label of each category)

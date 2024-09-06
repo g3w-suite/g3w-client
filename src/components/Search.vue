@@ -109,13 +109,27 @@ export default {
     async remove(search, index) {
       try {
         await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
-        const items     = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+        const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+        const items = item ? JSON.parse(item) : undefined;
         const projectId = ProjectsRegistry.getCurrentProject().getId();
         const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
-        if (searches.length)           items[projectId] = searches;
-        else                           delete items[projectId];
-        if (Object.keys(items).length) ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: items });
-        else                           ApplicationService.removeLocalItem('QUERYBUILDERSEARCHES');
+
+        if (searches.length) {
+          items[projectId] = searches;
+        } else {
+          delete items[projectId];
+        }
+
+        try {
+          if (Object.keys(items).length) {
+            window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(items));
+          } else {
+            window.localStorage.removeItem('QUERYBUILDERSEARCHES');
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+
         this.$options.service.removeItem({ type: 'querybuilder', index });
       } catch(e) {
         console.warn(e);

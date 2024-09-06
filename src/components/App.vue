@@ -747,11 +747,11 @@ export default {
     },
 
     appconfig() {
-      return ApplicationService.getConfig();
+      return window.initConfig;
     },
 
     isIframe() {
-      return !!this.appconfig.group.layout.iframe;
+      return window.top !== window.self;
     },
 
     urls() {
@@ -759,7 +759,7 @@ export default {
     },
 
     powered_by() {
-      return this.appconfig.group.powered_by;
+      return this.appconfig.powered_by;
     },
 
     logo_url() {
@@ -789,7 +789,7 @@ export default {
 
     main_title() {
       const main_title = this.appconfig.main_map_title;
-      const group_name = this.appconfig.group.title || this.appconfig.group.slug;
+      const group_name = this.appconfig.title || this.appconfig.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
 
@@ -940,7 +940,8 @@ export default {
 
       for (let i = 0; i < messages.items.length; i++) {
         const message = messages.items[i];
-        const data    = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.MESSAGES.id) || LOCAL_ITEM_IDS.MESSAGES.value;
+        const item = window.localStorage.getItem(LOCAL_ITEM_IDS.MESSAGES.id);
+        const data = (item ? JSON.parse(item) : undefined) || LOCAL_ITEM_IDS.MESSAGES.value;
 
         if (undefined === data[projectId]) { data[projectId] = [] }
 
@@ -982,9 +983,13 @@ export default {
                 className: 'btn-secondary',
                 callback: () => {
                   // update locale storage if "Do Not Show Again" checkbox is checked 
-                  if (doNotShowAgainVueComponent.checked) {
-                    data[projectId].push(message.id);
-                    ApplicationService.setLocalItem({ id: LOCAL_ITEM_IDS.MESSAGES.id, data })
+                  try {
+                    if (doNotShowAgainVueComponent.checked) {
+                      data[projectId].push(message.id);
+                      window.localStorage.setItem(LOCAL_ITEM_IDS.MESSAGES.id, JSON.stringify(data));
+                    }
+                  } catch(e) {
+                    console.warn(e);
                   }
                   resolve();
                 }
@@ -1113,9 +1118,17 @@ export default {
 
   watch: {
 
-    'language'(l, cl) {
+    'language'(language, cl) {
       if (cl) {
-        ApplicationService.changeLanguage(l);
+        i18next.changeLanguage(language);
+        /**
+         * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
+         */
+        ApplicationState.lng      = language;
+        ApplicationState.language = language;
+        const pathArray           = window.location.pathname.split('/');
+        pathArray[1]              = language;
+        history.replaceState(null, null, pathArray.join('/'));
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     },
@@ -1128,7 +1141,7 @@ export default {
   },
 
   created() {
-    this.language       = this.appconfig._i18n.language;
+    this.language       = this.appconfig.user.i18n;
     this.custom_modals  = [];
     this.custom_headers = { 0: [], 1: [], 2: [], 3: [], 4: [] };
 

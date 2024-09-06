@@ -90,22 +90,22 @@
 
 <script>
 
-import ApplicationService            from 'services/application';
+import ApplicationState              from 'store/application-state';
 import ProjectsRegistry              from "store/projects";
 import Projections                   from 'store/projections';
 import { API_BASE_URLS, LOGO_GIS3W } from 'app/constant';
 import { XHR }                       from 'utils/XHR';
-
+import GUI                           from 'services/gui';
 
 /** Cached HTTP GET request */
 async function get_macro(id) {
-  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
+  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
   return get_macro[id];
 }
 
 /** Cached HTTP GET request */
 async function get_group(id) {
-  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
   return get_group[id];
 }
 
@@ -268,6 +268,10 @@ export default {
       this.steps = [];
     },
 
+    _changeMapProject({ url, epsg } = {}) {
+
+    },
+
     /**
      * @param {string} item.url
      * @param {string} item.map_url
@@ -283,7 +287,9 @@ export default {
       } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
-      return ApplicationService.changeMapProject({ url, epsg });
+      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      history.replaceState(null, null, url);
+      location.replace(url);
     },
 
     async trigger(item) {
@@ -309,9 +315,9 @@ export default {
         // Set a fallback image on network error.
         case 'net_error':
           if (item.thumbnail || item.logo_img) {
-            item.thumbnail = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+            item.thumbnail = `${window.initConfig.urls.clienturl}${LOGO_GIS3W}`;
           } else if (item.header_logo_img) {
-            item.header_logo_img = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+            item.header_logo_img = `${window.initConfig.urls.clienturl}${LOGO_GIS3W}`;
           }
           break;
       }
@@ -324,7 +330,7 @@ export default {
       let imageSrc;
       const host       = this.$options.host || '';
       const mediaurl   = ProjectsRegistry.config.mediaurl;
-      const clienturl  = ApplicationService.getConfig().urls.clienturl;
+      const clienturl  = window.initConfig.urls.clienturl;
       const has_media  = src && (src.includes(mediaurl));
       const not_static = src && (!src.includes('static') && !src.includes('media'));
 
@@ -345,7 +351,7 @@ export default {
 
   async created() {
 
-    const config = ApplicationService.getConfig();
+    const config = window.initConfig;
 
     // setup items data (macrogrups and groups).
     this.items       = ProjectsRegistry.getListableProjects();

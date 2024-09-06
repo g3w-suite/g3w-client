@@ -10,9 +10,15 @@ import './deprecated';
 import './globals';
 
 // constants
-import { FONT_AWESOME_ICONS }  from 'app/constant';
+import {
+  API_BASE_URLS,
+  FONT_AWESOME_ICONS,
+  LOCAL_ITEM_IDS,
+  TIMEOUT,
+}                                  from 'app/constant';
 
 // core
+import translations                from "locales";
 import ApplicationState            from 'store/application-state';
 import ProjectsRegistry            from 'store/projects';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -25,6 +31,7 @@ import Component                   from 'core/g3w-component';
 
 // services
 import ApplicationService          from 'services/application';
+import ApiService                  from 'services/api';
 import GUI                         from 'services/gui';
 
 // components
@@ -63,8 +70,10 @@ import vClickOutside               from 'directives/v-click-outside';
 // utils
 import { noop }                    from 'utils/noop';
 import { $promisify, promisify }   from 'utils/promisify';
+import { XHR }                     from 'utils/XHR';
 
-const { t, tPlugin }               = require('core/i18n/i18n.service');
+
+const { init: i18ninit, t, tPlugin } = require('core/i18n/i18n.service');
 
 /**
  * @TODO make it simpler / move it into better place
@@ -88,7 +97,7 @@ GUI.addComponent = function(component, placeholder, options={}) {
   }
   if (register) {
     ComponentsRegistry.registerComponent(component);
-    ApplicationService.registerService(component.id, component.getService());
+    // ApplicationService.registerService(component.id, component.getService());
   }
   return true;
 };
@@ -241,17 +250,169 @@ function _setDataTableLanguage(dataTable=null) {
 }
 
 /**
+ * Bootstrap application
+ *
+ * 1 - load translations (i18n languages)
+ * 2 - initialize ProjectsRegistry
+ * 3 - initialize ApiService
+ * 4 - attach DOM events ('online' and 'offline')
+ * 5 - trigger 'ready' event
+ * 6 - set current project `gid` (group id)
+ * 7 - set current project EPSG (coordinate system)
+ * 8 - check if application is loaded within an <IFRAME>
+ */
+
+const initConfig = window.initConfig;
+
+// set application user
+ApplicationState.user = initConfig.user
+
+ApplicationService.emit('initconfig', initConfig);
+
+const vendorkeys = initConfig.vendorkeys || {};
+initConfig.baselayers.forEach(l => {
+  if (l.apikey) {
+    vendorkeys[l.servertype ? l.servertype.toLowerCase() : null] = l.apikey
+  }
+});
+Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendorkeys[k])
+
+/**
+ * create application configuration
+ */
+ApplicationService.config = Object.assign(initConfig, {
+  logo_img:            initConfig.header_logo_img,
+  logo_link:           initConfig.header_logo_link,
+  terms_of_use_text:   initConfig.header_terms_of_use_text,
+  urls: Object.assign(initConfig.urls || {}, {
+    ows:             'ows',
+    api:             'api',
+    initconfig:      'api/initconfig',
+    config:          'api/config',
+    baseurl:         initConfig.baseurl,
+    frontendurl:     initConfig.frontendurl,
+    staticurl:       initConfig.staticurl,
+    clienturl:       initConfig.staticurl + initConfig.client,
+    mediaurl:        initConfig.mediaurl,
+    vectorurl:       initConfig.vectorurl,
+    proxyurl:        initConfig.proxyurl,
+    rasterurl:       initConfig.rasterurl,
+    interfaceowsurl: initConfig.interfaceowsur,
+  }),
+  overviewproject: (initConfig.overviewproject && initConfig.overviewproject.gid) ? initConfig.overviewproject : null,
+  layout:  initConfig.layout || {},
+  plugins: initConfig.plugins || {},
+  tools:   initConfig.tools || { tools:  [] },
+  views:   initConfig.views || {},
+  user:    initConfig.user || null,
+});
+
+initConfig.layout.iframe   = window.top !== window.self;
+
+/** * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead */
+ApplicationState.lng      = initConfig.user.i18n || 'en';
+ApplicationState.language = initConfig.user.i18n || 'en';
+
+// setup i18n
+i18ninit({
+  appLanguages: (initConfig.i18n || []).map(l => l[0]),
+  resources:   translations,
+  language: initConfig.user.i18n
+});
+
+// set Accept-Language request header based on config language
+$.ajaxSetup({
+  beforeSend: (xhr) => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
+});
+
+/**
  * Application starting point
  *
  * create the ApplicationTemplate instance passing template interface configuration
  * and the applicationService instance that is useful to work with project API
  */
-ApplicationService.init()
-  .then(() => {
+(new Promise(async (resolve, reject) => {
+
+  /** @since 3.8.0 */
+  try {
+    initConfig.macrogroups = await XHR.get({ url: `/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.macrogroups}` })
+  } catch(e) {
+    console.warn(e);
+  }
+  
+  /** @since 3.8.0 */
+  try {
+    initConfig.groups = await XHR.get({ url: `/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.nomacrogoups}` })
+  } catch(e) {
+    console.warn(e);
+  }
+
+  // Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
+  const default_config = initConfig.layout.rightpanel || {
+    width:          50, // ie. width == 50%
+    height:         50, // ie. height == 50%
+    width_default:  50,
+    height_default: 50,
+    width_100:      false,
+    height_100:     false,
+  };
+
+  initConfig.layout.rightpanel = Object.assign(
+    default_config,
+    {
+      width:          initConfig.layout.rightpanel.width  || default_config.width,
+      height:         initConfig.layout.rightpanel.height || default_config.width,
+      width_default:  initConfig.layout.rightpanel.width  || default_config.width,
+      height_default: initConfig.layout.rightpanel.height || default_config.width,
+      width_100:      false,
+      height_100:     false,
+    }
+  );
+
+  ApplicationState.gui.layout.app = initConfig.layout;
+
+  const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
+
+  Promise.allSettled([
+    ProjectsRegistry.init(initConfig),
+    ApiService.init(initConfig)
+  ]).then(() => {
+    clearTimeout(timeout);
+
+    window.addEventListener('online', () => ApplicationService.online());
+    window.addEventListener('offline', () => ApplicationService.offline());
+
+    ApplicationService.emit('ready');
+
+    ApplicationService.initialized = true;
+    const project                  = ProjectsRegistry.getCurrentProject();
+
+    ApplicationState.map.epsg = project.state.crs.epsg;
+
+    if (ApplicationState.iframe) {
+      require('services/iframe').default.init({ project });
+    }
+    // init local items
+    Object.keys(LOCAL_ITEM_IDS).forEach(id => {
+      try {
+        const item = window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
+        if (undefined === item) {
+          window.localStorage.setItem(id, JSON.stringify(LOCAL_ITEM_IDS[id].value));
+        }
+      } catch(e) {
+        console.warn(e);
+      }
+    });
+    resolve(true);
+  }).catch(e => {
+    console.warn(e);
+    reject(e);
+  });
+})).then(() => {
     // create Vue App
     _setDataTableLanguage();
 
-    if (isMobile.any || (ApplicationService.getConfig().layout || {}).iframe) {
+    if (isMobile.any || (window.initConfig.layout || {}).iframe) {
       $('body').addClass('sidebar-collapse');
     }
 
@@ -262,8 +423,8 @@ ApplicationService.init()
         Vue.component('app', App);
 
         //register all services for the application
-        Object.keys(SERVICES)             .forEach(element   => ApplicationService.registerService(element, SERVICES[element]));   
-        Object.values(GUI.getComponents()).forEach(component => ApplicationService.registerService(component.id, component.getService()));
+        // Object.keys(SERVICES)             .forEach(element   => ApplicationService.registerService(element, SERVICES[element]));   
+        // Object.values(GUI.getComponents()).forEach(component => ApplicationService.registerService(component.id, component.getService()));
 
         // update CONFIG
         const SearchComponent = require('gui/search/vue/search');
@@ -361,7 +522,7 @@ ApplicationService.init()
             new (function() {
               const comp = new Component({
                 id:          'print',
-                visible:     ApplicationService.getConfig().user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+                visible:     window.initConfig.user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
                 icon:        GUI.getFontClass('print'),
                 iconColor:   '#FF9B21',
                 title: 'print',
@@ -567,7 +728,7 @@ ApplicationService.init()
                 id:          'catalog',
                 icon:        GUI.getFontClass('map'),
                 iconColor:   '#019A4C',
-                config:      { legend: { config: (ApplicationService.getConfig().layout || {}).legend } },
+                config:      { legend: { config: (window.initConfig.layout || {}).legend } },
               };
 
               const state = {
@@ -578,7 +739,7 @@ ApplicationService.init()
                 },
                 layerstrees:  CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
                 layersgroups: [],
-                legend:       Object.assign(opts.config.legend || {}, { place: ApplicationService.getCurrentProject().getLegendPosition() || 'tab' }),
+                legend:       Object.assign(opts.config.legend || {}, { place: ProjectsRegistry.getCurrentProject().getLegendPosition() || 'tab' }),
               };
             
               const service = opts.service || new G3WObject({
@@ -817,15 +978,18 @@ ApplicationService.init()
          * 4 - trigger 'complete' event
          */
         if (!ApplicationService.complete) {
-          PluginsRegistry.init({
-            project:            ProjectsRegistry.getCurrentProject(),
-            pluginsBaseUrl:     ApplicationService.getConfig().urls.staticurl,
-            pluginsConfigs:     ApplicationService.getConfig().plugins,
-            otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
-          }).catch(console.warn).finally(() => {
-            ApplicationService.complete = true;
-            ApplicationService.emit('complete');
-          });
+          try {
+            await PluginsRegistry.init({
+              project:            ProjectsRegistry.getCurrentProject(),
+              pluginsBaseUrl:     window.initConfig.urls.staticurl,
+              pluginsConfigs:     window.initConfig.plugins,
+              otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
+            });
+          } catch (e) {
+            console.warn(e);
+          }
+          ApplicationService.complete = true;
+          ApplicationService.emit('complete');
         }
 
         ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
@@ -835,6 +999,7 @@ ApplicationService.init()
     });
   })
   .catch(error => {
+    console.warn(error);
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) { error = error.responseJSON.error.data }
       else if (error.statusText) { error = error.statusText }

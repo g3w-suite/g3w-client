@@ -175,7 +175,6 @@ import Component                    from 'core/g3w-component';
 import ApplicationState             from 'store/application-state';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import ProjectsRegistry             from 'store/projects';
-import ApplicationService           from 'services/application';
 import GUI                          from 'services/gui';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
@@ -184,7 +183,6 @@ import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
 import { print }                    from 'utils/print';
 import { promisify }                from 'utils/promisify';
-
 
 import resizeMixin                  from 'mixins/resize';
 
@@ -427,7 +425,7 @@ export default {
 
         // ATLAS PRINT
         if (has_atlas) {
-          download_id = ApplicationService.setDownload(true);
+          ApplicationState.download = true;
           await downloadFile({
             url: (await printAtlas({
               template: this.state.template,
@@ -495,9 +493,7 @@ export default {
 
       this.state.loading = false;
 
-      if (download_id) {
-        ApplicationService.setDownload(false, download_id);
-      }
+      ApplicationState.download = false;
 
       // in case of no layers
       if (has_atlas || !this.state.layers) {

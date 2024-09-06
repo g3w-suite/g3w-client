@@ -258,7 +258,9 @@ export default {
     async save() {
       const id      = this.projectId || ProjectsRegistry.getCurrentProject().getId();
       const edit_id = this.edit && this.$options.options.id;
-      let searches  = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+      const item   = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      let searches = item ? JSON.parse(item) : undefined;
+
       let query;
 
       try {
@@ -294,7 +296,13 @@ export default {
 
       // reset items
       const ITEMS = ApplicationState.querybuilder.searches;
-      ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: searches });
+      
+      try {
+        window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(searches));
+      } catch(e) {
+        console.warn(e);
+      }
+
       setTimeout(() => { searches[id].forEach(q => ITEMS[id].push(q)); }, 0);
       ITEMS[id].splice(0);
       GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });

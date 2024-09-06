@@ -5,7 +5,6 @@ import {
 }                         from 'app/constant';
 import ApplicationState   from 'store/application-state';
 import Projections        from 'store/projections';
-import ApplicationService from 'services/application';
 import G3WObject          from 'core/g3wobject';
 import { crsToCrsObject } from 'utils/crsToCrsObject';
 import { XHR }            from 'utils/XHR';
@@ -98,7 +97,7 @@ module.exports = class Project extends G3WObject {
 
     traverse(this.state.layerstree);
 
-    const baseLayerId = ApplicationService.getBaseLayerId();
+    const baseLayerId = ApplicationState.baseLayerId;
 
     // Remove bing base layer when no vendor API Key is provided
     this.state.baselayers = this.state.baselayers.filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true));

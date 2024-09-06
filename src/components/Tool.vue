@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import ApplicationService from 'services/application';
+import ApplicationState   from 'store/application-state';
 import GUI                from 'services/gui';
 
 export default {
@@ -70,7 +70,7 @@ export default {
   },
   computed: {
     disabled() {
-      return (!this.tool.offline && !ApplicationService.getState().online) || (this.tool.loading || this.tool.disabled);
+      return (!this.tool.offline && !ApplicationState.online) || (this.tool.loading || this.tool.disabled);
     },
   }
 };

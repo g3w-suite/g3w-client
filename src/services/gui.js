@@ -246,7 +246,8 @@ export default new (class GUI extends G3WObject {
     } catch(e) {
       this.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
     }
-    ApplicationService.setDownload(false, ApplicationService.setDownload(true));
+    ApplicationState.download = true;
+    ApplicationState.download = false;
 
     this.setLoadingContent(false);
   }
@@ -266,7 +267,7 @@ export default new (class GUI extends G3WObject {
 
   /* Metodos to define */
   getResourcesUrl() {
-    return ApplicationService.getConfig().resourcesurl;
+    return window.initConfig.staticurl + window.initConfig.client;
   }
 
   /**
@@ -659,14 +660,14 @@ export default new (class GUI extends G3WObject {
    * used by the following plugins: "stress"
    */
   hideClientMenu() {
-    ApplicationService.getConfig().user = null;
+    window.initConfig.user = null;
   }
 
   /**
    * used by the following plugins: "stress"
    */
   hideChangeMaps() {
-    ApplicationService.getConfig().projects = [];
+    window.initConfig.projects = [];
   }
 
   setLoadingContent(loading = false) {

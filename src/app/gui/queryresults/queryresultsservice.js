@@ -286,7 +286,7 @@ class QueryResultsService extends G3WObject {
      * @FIXME add description
      */
     GUI.onbefore('setContent', (options) => {
-      this.mapService = this.mapService || ApplicationService.getService('map');
+      this.mapService = this.mapService || GUI.getService('map');
       if (100 === options.perc && GUI.isMobile()) {
         this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
         this._asyncFnc.highLightLayerFeatures.async    = true;

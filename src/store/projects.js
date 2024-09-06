@@ -80,7 +80,7 @@ export default new (class ProjectsRegistry extends G3WObject {
     }
 
     this.config              = config;
-    this.currentProjectGroup = config.group;
+    this.currentProjectGroup = config;
     this.overviewproject     = config.overviewproject;
 
     //setup state
@@ -182,7 +182,9 @@ export default new (class ProjectsRegistry extends G3WObject {
     }
 
     // fetch project configuration from remote server
-    const config    = await XHR.get({ url: this.config.getProjectConfigUrl(pendingProject) });
+    const config    = await XHR.get({ url:
+      `${this.config.urls.baseurl}${this.config.urls.config}/${this.config.id}/${pendingProject.type}/${pendingProject.id}?_t=${pendingProject.modified}`
+    });
     const map_theme = options.map_theme && Object.values(config.map_themes).flat().find(({ theme }) => theme === options.map_theme);
 
     /** In the case of url param set map_theme, need to get map theme configuration from server */
@@ -197,7 +199,7 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     project = Object.assign(pendingProject, config);
 
-    project.WMSUrl = this.config.getWmsUrl(project);
+    project.WMSUrl = `${this.config.urls.baseurl}${this.config.urls.ows}/${this.config.id}/${project.type}/${project.id}/`;
 
     /** @since 3.8.0 */
     project.relations = (project.relations || []).map(r => {

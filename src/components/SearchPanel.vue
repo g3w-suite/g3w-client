@@ -166,6 +166,7 @@
   }                                            from 'app/constant';
   import ApplicationState                      from 'store/application-state';
   import ApplicationService                    from 'services/application';
+  import ProjectsRegistry                      from 'store/projects';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
@@ -190,11 +191,11 @@
     computed: {
 
       layers_url() {
-        return ApplicationService.getCurrentProject().getState().layers_url;
+        return ProjectsRegistry.getCurrentProject().getState().layers_url;
       },
 
       is_staff() {
-        return ApplicationService.getConfig().user.is_staff;
+        return window.initConfig.user.is_staff;
       },
 
     },

@@ -103,7 +103,8 @@
   const { uniqueId } = require('utils');
   const { t }        = require('core/i18n/i18n.service');
 
-  const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
+  const item = window.localStorage.getItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
+  const SPATIAL_BOOKMARKS_LOCALITEMS = item ? JSON.parse(item) : undefined;
 
   export default {
 
@@ -164,7 +165,7 @@
 
       /** @since 3.10.0 */
       is_staff() {
-        return ApplicationService.getConfig().user.is_staff;
+        return window.initConfig.user.is_staff;
       },
 
       /** @since 3.10.0  */
@@ -196,10 +197,11 @@
 
       saveUserBookMarks() {
         SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
-        ApplicationService.setLocalItem({
-          id: LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id,
-          data: SPATIAL_BOOKMARKS_LOCALITEMS
-        });
+        try {
+          window.localStorage.setItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id, JSON.stringify(SPATIAL_BOOKMARKS_LOCALITEMS));
+        } catch(e) {
+          console.warn(e);
+        }
       },
 
       showAddForm() {

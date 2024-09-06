@@ -459,7 +459,7 @@ export default {
             __('STYLES=',     params.STYLES.join(',')),
             __('LEGEND_ON=',  params.LEGEND_ON.join(',')),
             __('LEGEND_OFF=', params.LEGEND_OFF.join(',')),
-            __('filtertoken=', ApplicationService.getFilterToken()),
+            __('filtertoken=', ApplicationState.tokens.filtertoken),
           ]
           .filter(p => p) // discard nullish parameters (without a value)
           .join('&');
@@ -536,7 +536,7 @@ export default {
     setBaseLayer(id) {
       this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
-      ApplicationService.setBaseLayerId(id);
+      ApplicationState.baseLayerId = id;
     },
 
     getSrcBaseLayerImage(baseLayer) {

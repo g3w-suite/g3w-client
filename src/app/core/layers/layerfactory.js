@@ -7,6 +7,17 @@ const { VectorMapLayer } = require('core/layers/vectorlayer');
 const { ImageLayer }     = require('core/layers/imagelayer');
 const { WMSLayer }       = require('core/layers/imagelayer');
 
+Object
+  .entries({
+    Layer,
+    TableLayer,
+    VectorLayer,
+    VectorMapLayer,
+    ImageLayer,
+    WMSLayer
+  })
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
+
 const WITH_GEOMETRY = [
   Layer.SourceTypes.VIRTUAL,
   Layer.SourceTypes.POSTGIS,

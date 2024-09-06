@@ -17,7 +17,7 @@
       <div
         v-if               = "layer.isGeoLayer()"
         class              = "skin-color action-button skin-tooltip-right"
-        v-disabled         = "state.geolayer.active && ApplicationService.getCurrentLayout().rightpanel.height_100"
+        v-disabled         = "state.geolayer.active && current_layout.rightpanel.height_100"
         :class             = "[ g3wtemplate.getFontClass('map'), state.geolayer.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
         data-placement     = "right"
@@ -150,6 +150,7 @@
 <script>
 import { SELECTION }               from 'app/constant';
 import Component                   from 'core/g3w-component';
+import ApplicationState            from 'store/application-state';
 import Field                       from 'components/FieldG3W.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationService          from 'services/application';
@@ -236,6 +237,10 @@ export default {
     ApplicationService() {
       return ApplicationService;
     },
+
+    current_layout() {
+      return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+    }
 
   },
 
@@ -641,7 +646,7 @@ export default {
     GUI.closeSideBar(); // close other sidebar components
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
-    ApplicationService.getCurrentLayout().rightpanel.height = 55;
+    this.current_layout.rightpanel.height = 55;
 
     GUI.showContent({
       content: new Component({

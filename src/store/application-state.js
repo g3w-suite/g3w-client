@@ -17,17 +17,17 @@ const STATE = Vue.observable({
   /**
    * true = application is loaded inside an iframe
    */
-  iframe: false,
+  iframe: window.top !== window.self,
 
   /**
    * true = application is connected
    */
-  online: false,
+  online: navigator.onLine,
 
   /**
    * true = application is loaded on a mobile device
    */
-  ismobile: false,
+  ismobile: isMobile.any,
   
   /**
    * true = there is a pending download 
@@ -55,7 +55,7 @@ const STATE = Vue.observable({
   lng: 'en',
 
   /**
-   * Store Array of loading plugin name adds by ApplicationService.loadingPlugin
+   * Store Array of loading plugins (by name)
    * Every time a plugin is loaded, plugin name is removed from Array
    * It used in v-plugins directive
    */
@@ -222,12 +222,5 @@ const STATE = Vue.observable({
   },
 
 });
-
-/**
- * Store methods to query STATE of application
- * 
- * @type {object}
- */
-export const STATE_METHODS = {};
 
 export default STATE;

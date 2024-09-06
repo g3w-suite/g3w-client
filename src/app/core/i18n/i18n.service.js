@@ -3,7 +3,7 @@ import ApplicationService from 'services/application';
 // main object content for i18n
 const plugins18nConfig = {};
 
-function init(config = { appLanguages: [] }) {
+async function init(config = { appLanguages: [] }) {
   config.appLanguages.forEach(l => plugins18nConfig[l] = { plugins: {} });
   i18next
   .use(i18nextXHRBackend)
@@ -13,24 +13,20 @@ function init(config = { appLanguages: [] }) {
       fallbackLng: 'en',
       resources:    config.resources
   });
-  return new Promise((resolve, reject) => {
-    jqueryI18next.init(i18next, $, {
-      tName:                        't', // --> appends $.t = i18next.t
-      i18nName:                     'i18n', // --> appends $.i18n = i18next
-      handleName:                   'localize', // --> appends $(selector).localize(opts);
-      selectorAttr:                 'data-i18n', // selector for translating elements
-      targetAttr:                   'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
-      optionsAttr:                  'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
-      useOptionsAttr:               false, // see optionsAttr
-      parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
-    });
-    addI18n(plugins18nConfig);
-    resolve();
-  })
-
+  jqueryI18next.init(i18next, $, {
+    tName:                        't', // --> appends $.t = i18next.t
+    i18nName:                     'i18n', // --> appends $.i18n = i18next
+    handleName:                   'localize', // --> appends $(selector).localize(opts);
+    selectorAttr:                 'data-i18n', // selector for translating elements
+    targetAttr:                   'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
+    optionsAttr:                  'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
+    useOptionsAttr:               false, // see optionsAttr
+    parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
+  });
+  addI18n(plugins18nConfig);
 }
 const getAppLanguage = function() {
-  return ApplicationService.getConfig().user.i18n || "en";
+  return window.initConfig.user.i18n || "en";
 };
 
 

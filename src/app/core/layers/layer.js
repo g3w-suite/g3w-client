@@ -781,14 +781,14 @@ class Layer extends G3WObject {
   /**
    * Set applicaton filter token
    * 
-   * @param filtertoken
+   * @param {string} filtertoken a string passed by server and used as parameter in XHR request
    *
    * @fires filtertokenchange when filtertoken is changed
    * 
    * @since 3.9.0
    */
   setFilterToken(filtertoken = null) {
-    ApplicationService.setFilterToken(filtertoken);
+    ApplicationState.tokens.filtertoken = filtertoken;
     this.emit('filtertokenchange', { layerId: this.getId() });
   }
 
@@ -835,7 +835,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getFilterToken() {
-    return ApplicationService.getFilterToken();
+    return ApplicationState.tokens.filtertoken;
   }
 
   /**

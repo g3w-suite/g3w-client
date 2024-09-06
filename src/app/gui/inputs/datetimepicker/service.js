@@ -11,8 +11,7 @@ module.exports = class DateTimePickerService extends Service {
   }
 
   getLocale() {
-    const config = ApplicationService.getConfig();
-    return config.user.i18n ? config.user.i18n : 'en';
+    return window.initConfig.user.i18n ? window.initConfig.user.i18n : 'en';
   };
 
   convertQGISDateTimeFormatToMoment(datetimeformat) {

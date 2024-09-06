@@ -1,5 +1,6 @@
 import localforage                          from 'localforage';
 import G3WObject                            from 'core/g3w-object';
+import ApplicationState                     from 'store/application-state';
 import PluginsRegistry                      from 'store/plugins';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
 import { createStyleFunctionToVectorLayer } from 'utils/createStyleFunctionToVectorLayer';
@@ -266,7 +267,7 @@ class MapService extends G3WObject {
       listener: null,
     };
 
-    this.config = options.config || ApplicationService.getConfig();
+    this.config = options.config || window.initConfig;
 
     this._howManyAreLoading = 0;
 
@@ -307,7 +308,7 @@ class MapService extends G3WObject {
 
       setupControls() {
 
-        const { header_terms_of_use_text, header_terms_of_use_link } = this.config.group;
+        const { header_terms_of_use_text, header_terms_of_use_link } = this.config;
 
         // set layers attribution
         const attribution = header_terms_of_use_text
@@ -330,7 +331,7 @@ class MapService extends G3WObject {
 
         // BACKCOMP (g3w-admin < v3.7.0)
         const mapcontrols = Array.isArray(this.config.mapcontrols)
-          ? this.config.mapcontrols.reduce((a, v) => { a[v] = {}; return a; }, {}) // convert `initConfig.group.mapcontrols` from an array of strings to a key-value config Object (eg. ["geocoding"] --> "geocoding" = {})
+          ? this.config.mapcontrols.reduce((a, v) => { a[v] = {}; return a; }, {}) // convert `initConfig.mapcontrols` from an array of strings to a key-value config Object (eg. ["geocoding"] --> "geocoding" = {})
           : this.config.mapcontrols;
 
         Object
@@ -824,7 +825,7 @@ class MapService extends G3WObject {
       this.setUpMapOlEvents();
       this.setupCustomMapParamsToLegendUrl();
     };
-    if (reload || ApplicationService.isIframe()) {
+    if (reload || ApplicationState.iframe) {
       changeProjectCallBack();
     }
     if (!reload) {
@@ -1302,7 +1303,7 @@ class MapService extends G3WObject {
     }
 
     if (false === control.offline && control.getEnable()) {
-      control.setEnable(ApplicationService.isOnline());
+      control.setEnable(ApplicationState.online);
     }
 
     this.state.mapcontrolready = true;

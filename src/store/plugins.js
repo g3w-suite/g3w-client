@@ -4,6 +4,7 @@
  */
 
 import G3WObject          from 'core/g3w-object';
+import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
 
 /**
@@ -29,12 +30,12 @@ export default new (class PluginsRegistry extends G3WObject {
     this._plugins = {};
 
     /**
-     * Name array of initConfig.group.plugins names
+     * Name array of initConfig.plugins names
      */
     this._configurationPlugins = [];
 
     /**
-     * Store initConfig.group.plugins object configuration
+     * Store initConfig.plugins object configuration
      */
     this.pluginsConfigs = {};
 
@@ -72,9 +73,9 @@ export default new (class PluginsRegistry extends G3WObject {
     this.pluginsConfigs = enabledPlugins;
 
     Object.keys(this.pluginsConfigs).forEach(p => this._configurationPlugins.push(p)); // filter
-    Object.keys(this.pluginsConfigs).forEach(p => ApplicationService.loadingPlugin(p));
+    Object.keys(this.pluginsConfigs).forEach(p => ApplicationState.plugins.push(p));
 
-    // set another plugin on in initConfig.group.plugins (law for example)
+    // set another plugin on in initConfig.plugins (law for example)
     const law = OTHERPLUGINS[0];
     this.otherPluginsConfig = options.otherPluginsConfig || {};
     if (this.otherPluginsConfig && this.otherPluginsConfig[law] && this.otherPluginsConfig[law].length) {
@@ -106,8 +107,8 @@ export default new (class PluginsRegistry extends G3WObject {
           await _loadScript(`${this.pluginsBaseUrl}${name}/js/plugin.js?${Date.now()}`, false);
         } catch(e) {
           console.warn('[G3W-PLUGIN]', e);
-          //remove plugin in case of error of dependencies
-          ApplicationService.loadedPlugin(name, false); // remove loading plugin
+          // remove loading plugin in case of error of dependencies
+          ApplicationState.plugins = ApplicationState.plugins.filter(p => name !== p);
           return Promise.reject();
         }
       }));

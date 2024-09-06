@@ -1,6 +1,7 @@
 import G3WObject          from 'core/g3w-object';
 import ApplicationState   from 'store/application-state';
 import ApplicationService from 'services/application';
+import ProjectsRegistry   from 'store/projects';
 
 module.exports = class PluginService extends G3WObject {
 
@@ -13,7 +14,7 @@ module.exports = class PluginService extends G3WObject {
     };
     this._pluginEvents = {};
     this._appEvents    = [];
-    this.currentLayout = ApplicationService.getCurrentLayoutName();
+    this.currentLayout = ApplicationState.gui.layout.__current;
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
       () => ApplicationState.gui.layout.__current,
@@ -31,11 +32,11 @@ module.exports = class PluginService extends G3WObject {
   }
 
   setCurrentLayout() {
-    ApplicationService.setCurrentLayout(this.getPlugin().getName());
+    ApplicationState.gui.layout.__current = this.getPlugin().getName();
   }
 
   resetCurrentLayout() {
-    ApplicationService.setCurrentLayout(this.currentLayout);
+    ApplicationState.gui.layout.__current = this.currentLayout;
   }
 
   // set owner plugin of the service
@@ -49,11 +50,11 @@ module.exports = class PluginService extends G3WObject {
   }
 
   isIframe() {
-    return ApplicationService.isIframe();
+    return ApplicationState.iframe;
   }
 
   getCurrentProject() {
-    return ApplicationService.getCurrentProject();
+    return ProjectsRegistry.getCurrentProject();
   }
 
   getGid() {

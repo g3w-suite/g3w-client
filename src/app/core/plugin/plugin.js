@@ -1,5 +1,6 @@
 import G3WObject          from 'core/g3w-object';
 import Component          from 'core/g3w-component';
+import ApplicationState   from 'store/application-state';
 import PluginsRegistry    from 'store/plugins';
 import ProjectsRegistry   from 'store/projects';
 import ApplicationService from 'services/application';
@@ -7,6 +8,9 @@ import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
 
 const { addI18nPlugin } = require('core/i18n/i18n.service');
+
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
 
 const TIMEOUT = 10000;
 
@@ -43,8 +47,11 @@ module.exports = class Plugin extends G3WObject {
 
     // Automatically remove the loading plugin indicator after timeout
     this._timeout = setTimeout(() => {
-      ApplicationService.loadedPlugin(this.name, this._ready); // remove loading plugin
-      this.removeLayout();
+      ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
+      // remove layout
+      if (this.name) {
+        delete ApplicationState.gui.layout[this.name]
+      }
     }, TIMEOUT)
 
   }
@@ -150,8 +157,32 @@ module.exports = class Plugin extends G3WObject {
    * 
    * @see g3wsdk.core.ApplicationState.gui.layout
    */
-  setLayout(config = ApplicationService.cloneLayout('app')) {
-    ApplicationService.setLayout(this.name, config);
+  setLayout(config) {
+    config = undefined !== config ? config : _cloneDeep(ApplicationState.gui.layout.app);
+
+    const default_config = config.rightpanel || {
+      width:          50, // ie. width == 50%
+      height:         50, // ie. height == 50%
+      width_default:  50,
+      height_default: 50,
+      width_100:      false,
+      height_100:     false,
+    };
+
+    config.rightpanel = Object.assign(
+      default_config,
+      {
+        width:          config.rightpanel.width  || default_config.width,
+        height:         config.rightpanel.height || default_config.width,
+        width_default:  config.rightpanel.width  || default_config.width,
+        height_default: config.rightpanel.height || default_config.width,
+        width_100:      false,
+        height_100:     false,
+      }
+    );
+
+    ApplicationState.gui.layout[this.name] = config;
+
   }
 
   /**
@@ -160,16 +191,7 @@ module.exports = class Plugin extends G3WObject {
    * @see g3wsdk.core.ApplicationState.gui.layout.__current
    */
   setCurrentLayout() {
-    ApplicationService.setCurrentLayout(this.name);
-  }
-
-  /**
-   * @FIXME add description
-   * 
-   * @see g3wsdk.core.ApplicationState.gui.layout
-   */
-  removeLayout() {
-    ApplicationService.removeLayout(this.name)
+    ApplicationState.gui.layout.__current = this.name;
   }
 
   /**
@@ -183,7 +205,7 @@ module.exports = class Plugin extends G3WObject {
     this.emit('set-ready', isReady, this.name);
     setTimeout(() => {
       clearTimeout(this._timeout);
-      ApplicationService.loadedPlugin(this.name, this._ready); // remove loading plugin
+      ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
     }, 0 /* 0 = allow any previously "setTimeout" to execute */)
   }
 
@@ -213,7 +235,7 @@ module.exports = class Plugin extends G3WObject {
     if (iscompatible) {
       PluginsRegistry.registerPlugin(this);
     } else {
-      ApplicationService.loadedPlugin(this.name, false); // remove loading plugin
+      ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
       clearTimeout(this._timeout);
     }
     return iscompatible;

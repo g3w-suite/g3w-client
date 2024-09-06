@@ -601,9 +601,9 @@
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
 
   import { CatalogEventBus as VM }     from 'app/eventbus';
+  import ApplicationState              from 'store/application-state';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
   import ProjectsRegistry              from 'store/projects';
-  import ApplicationService            from 'services/application';
   import GUI                           from 'services/gui';
   import { downloadFile }              from 'utils/downloadFile';
 
@@ -685,11 +685,11 @@
     computed: {
 
       edit_url() {
-        return ApplicationService.getCurrentProject().getState().edit_url;
+        return ProjectsRegistry.getCurrentProject().getState().edit_url;
       },
 
       layers_url() {
-        return ApplicationService.getCurrentProject().getState().layers_url;
+        return ProjectsRegistry.getCurrentProject().getState().layers_url;
       },
 
     },
@@ -851,7 +851,7 @@
       },
 
       downloadGeoTIFF(layerId, map_extent=false) {
-        const caller_download_id = ApplicationService.setDownload(true);
+        ApplicationState.download = true;
         this.layerMenu.loading.geotiff = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         layer.getGeoTIFF({
@@ -862,72 +862,72 @@
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.geotiff = false;
-            ApplicationService.setDownload(false, caller_download_id);
+            ApplicationState.download = false;
             this._hideMenu();
           })
       },
 
       downloadShp(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
+        ApplicationState.download = true;
         this.layerMenu.loading.shp = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         layer.getShp()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.shp = false;
-            ApplicationService.setDownload(false, caller_download_id);
+            ApplicationState.download = false;
             this._hideMenu();
           })
       },
 
       downloadCsv(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
+        ApplicationState.download = true;
         this.layerMenu.loading.csv = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         layer.getCsv()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.csv = false;
-            ApplicationService.setDownload(false, caller_download_id);
+            ApplicationState.download = false;
             this._hideMenu();
           })
       },
 
       downloadXls(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
+        ApplicationState.download = true;
         this.layerMenu.loading.xls = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         layer.getXls()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.xls = false;
-            ApplicationService.setDownload(false, caller_download_id);
+            ApplicationState.download = false;
             this._hideMenu();
           })
       },
 
       downloadGpx(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
+        ApplicationState.download = true;
         this.layerMenu.loading.gpx = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         layer.getGpx()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.gpx = false;
-            ApplicationService.setDownload(false, caller_download_id);
+            ApplicationState.download = false;
             this._hideMenu();
           })
       },
 
       downloadGpkg(layerId) {
-        const caller_download_id = ApplicationService.setDownload(true);
+        ApplicationState.download = true;
         this.layerMenu.loading.gpkg = true;
         const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
         layer.getGpkg()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
             this.layerMenu.loading.gpkg = false;
-            ApplicationService.setDownload(false, caller_download_id);
+            ApplicationState.download = false;
             this._hideMenu();
           })
       },

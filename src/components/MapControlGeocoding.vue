@@ -219,7 +219,7 @@ import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
  * VENDOR_KEYS['my_custom_provider'] = 'super.secret.key'
  * ```
  */
-const PROVIDERS = window.initConfig.group.mapcontrols.geocoding ? window.initConfig.group.mapcontrols.geocoding.providers : {};
+const PROVIDERS = window.initConfig.mapcontrols.geocoding ? window.initConfig.mapcontrols.geocoding.providers : {};
 Object
   .keys(PROVIDERS)
   .forEach(function(p) {

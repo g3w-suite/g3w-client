@@ -28,7 +28,9 @@ import {
   LIST_OF_RELATIONS_TITLE,
 }                                               from 'app/constant';
 import { RelationEventBus as VM }               from 'app/eventbus';
+import ApplicationState                         from 'store/application-state';
 import GUI                                      from "services/gui";
+import ProjectsRegistry                         from 'store/projects';
 import RelationsComponent                       from 'components/Relations.vue';
 import RelationComponent                        from 'components/Relation.vue';
 
@@ -45,7 +47,7 @@ let _options;
 
 function _buildRelationTable(relations = [], id) {
   relations = relations || [];
-  const layer = ApplicationService.getCurrentProject().getLayerById(id);
+  const layer = ProjectsRegistry.getCurrentProject().getLayerById(id);
   const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
   const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
   return {
@@ -103,7 +105,7 @@ export default {
   },
   methods: {
     async saveRelations(type) {
-      const id = ApplicationService.setDownload(true);
+      ApplicationState.download = true;
       try      {
         await XHR.fileDownload({
           url: createRelationsUrl(Object.assign(_options, { type })),
@@ -118,7 +120,7 @@ export default {
           closable: true,
         });
       }
-      ApplicationService.setDownload(false, id);
+      ApplicationState.download = false;
     },
     reloadLayout() {
       VM.$emit('reload');

@@ -3,7 +3,6 @@ import G3WObject              from 'core/g3w-object';
 import ApplicationState       from 'store/application-state';
 import Projections            from 'store/projections';
 import ProjectsRegistry       from 'store/projects';
-import ApplicationService     from 'services/application';
 import { get_legend_params }  from 'utils/get_legend_params';
 import GeoLayerMixin          from 'core/layers/mixins/geo';
 
@@ -767,7 +766,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       return this._mapLayer;
     }
 
-    options.iframe_internal   = ApplicationService.isIframe() && !this.isExternalWMS();
+    options.iframe_internal   = ApplicationState.iframe && !this.isExternalWMS();
     const method              = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
     const extent              = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
     const source              = this.config.source;

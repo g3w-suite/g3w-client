@@ -521,7 +521,8 @@
        * @returns {*}
        */
       getLocalWMSData() {
-        return (ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {})[PID];
+        const item = window.localStorage.getItem(LOCALSTORAGE_EXTERNALWMS_ITEM);
+        return ((item ? JSON.parse(item) : undefined) || {})[PID];
       },
 
       /**
@@ -530,9 +531,14 @@
        * @param data
        */
       updateLocalWMSData(data) {
-        const alldata = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {};
+        const item = window.localStorage.getItem(LOCALSTORAGE_EXTERNALWMS_ITEM);
+        const alldata = (item ? JSON.parse(item) : undefined) || {};
         alldata[PID] = data;
-        ApplicationService.setLocalItem({ id: LOCALSTORAGE_EXTERNALWMS_ITEM, data: alldata });
+        try {
+          window.localStorage.setItem(LOCALSTORAGE_EXTERNALWMS_ITEM, JSON.stringify(alldata));
+        } catch(e) {
+          console.warn(e);
+        }
       },
 
     },

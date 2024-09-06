@@ -6,6 +6,7 @@ import G3W_CONSTANT                                from 'app/constant';
 import ApplicationState                            from 'store/application-state';
 import ApplicationService                          from 'services/application';
 
+
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
@@ -116,6 +117,7 @@ import { getResolutionFromScale }                  from 'utils/getResolutionFrom
 import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
 import { mergeOptions }                            from 'utils/mergeOptions';
 import { ResponseParser }                          from 'utils/parsers';
+import { $promisify }                              from 'utils/promisify';
 
 const G3WObject                  = require('core/g3wobject');
 const utils                      = require('utils');
@@ -417,5 +419,22 @@ g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
 g3wsdk.ol.interactions.measure.LengthInteraction = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "LineString"; super(opts); } },
+
+/** used by the following plugins: "billboards" */
+g3wsdk.core.ApplicationService.setLocalItem         = ({ id, data } = {}) => { try { window.localStorage.setItem(id, JSON.stringify(data)); } catch(e) { console.warn(e); return e; } };
+/** used by the following plugins: "billboards" */
+g3wsdk.core.ApplicationService.removeLocalItem      = id => window.localStorage.removeItem(id);
+/** used by the following plugins: "billboards" */
+g3wsdk.core.ApplicationService.getLocalItem         = id => window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
+/** used by the following plugins: "bforest" */
+g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.user;
+/** used by the following plugins: "archiweb", "iframe" */
+g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = GUI.getService('map').addMapExtentUrlParameterToUrl(ProjectsRegistry.getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
+/** used by the following plugins: "openrouteservice" */
+g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ProjectsRegistry.getCurrentProject().getGid() });
+/** used by the following plugins: "editing" */
+g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
+/** used by the following plugins: "editing", "openrouteservice" */
+g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 
 module.exports = g3wsdk;

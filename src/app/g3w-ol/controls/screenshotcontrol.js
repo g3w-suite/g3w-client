@@ -1,9 +1,8 @@
-import ApplicationService       from 'services/application';
+import ApplicationState         from 'store/application-state';
 import GUI                      from 'services/gui';
 import { sameOrigin }           from 'utils/sameOrigin';
 import { getGeoTIFFfromServer } from 'utils/getGeoTIFFfromServer';
 import { InteractionControl }   from 'g3w-ol/controls/interactioncontrol';
-
 
 /**
  * @FIXME prevent tainted canvas error
@@ -82,7 +81,7 @@ export class ScreenshotControl extends InteractionControl {
           async download(e) {
             const map         = GUI.getService('map');
             // Start download
-            const download_id = ApplicationService.setDownload(true);
+            ApplicationState.download = true;
             e.target.disabled = true;
             try {
               const blobImage = await map.createMapImage();
@@ -113,7 +112,7 @@ export class ScreenshotControl extends InteractionControl {
               console.warn(e);
             }
             // End download
-            ApplicationService.setDownload(false, download_id);
+            ApplicationState.download = false;
             e.target.disabled = false;
             return true;
           }

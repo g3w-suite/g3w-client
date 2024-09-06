@@ -391,7 +391,7 @@ export default {
         response: await XHR.post({
           data:        JSON.stringify({ url, params, headers, method }),
           contentType: 'application/json',
-          url:         `${ApplicationService.getProxyUrl()}`
+          url:         `${ApplicationService.config.proxyurl}`
         }),
         data: JSON.stringify({ url, params, headers, method }),
       };
@@ -413,7 +413,7 @@ export default {
   async 'ows:wmsCapabilities'({url} ={}) {
     try {
       return await XHR.post({
-        url:         `${ApplicationService.getInterfaceOwsUrl()}`,
+        url:         `${ApplicationService.config.interfaceowsurl}`,
         contentType: 'application/json',
         data:        JSON.stringify({ url, service: "wms" })
       });
