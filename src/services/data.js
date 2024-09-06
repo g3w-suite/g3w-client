@@ -2,15 +2,14 @@
  * @file
  * @since v3.6
  */
-import { G3W_FID, QUERY_POINT_TOLERANCE }      from 'app/constant';
-import ProjectsRegistry                        from 'store/projects';
-import ApplicationService                      from 'services/application';
-import GUI                                     from 'services/gui';
+import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';
+import ProjectsRegistry                   from 'store/projects';
+import GUI                                from 'services/gui';
 
-import { groupBy }                             from 'utils/groupBy';
-import { getMapLayersByFilter }                from 'utils/getMapLayersByFilter';
-import { XHR }                                 from 'utils/XHR';
-import { $promisify, promisify } from 'utils/promisify';
+import { groupBy }                        from 'utils/groupBy';
+import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
+import { XHR }                            from 'utils/XHR';
+import { $promisify, promisify }          from 'utils/promisify';
 
 const { t }  = require('core/i18n/i18n.service');
 
@@ -391,7 +390,7 @@ export default {
         response: await XHR.post({
           data:        JSON.stringify({ url, params, headers, method }),
           contentType: 'application/json',
-          url:         `${ApplicationService.config.proxyurl}`
+          url:         `${window.initConfig.proxyurl}`
         }),
         data: JSON.stringify({ url, params, headers, method }),
       };
@@ -413,7 +412,7 @@ export default {
   async 'ows:wmsCapabilities'({url} ={}) {
     try {
       return await XHR.post({
-        url:         `${ApplicationService.config.interfaceowsurl}`,
+        url:         `${window.initConfig.interfaceowsurl}`,
         contentType: 'application/json',
         data:        JSON.stringify({ url, service: "wms" })
       });

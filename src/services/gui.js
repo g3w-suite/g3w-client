@@ -5,7 +5,6 @@ import ApplicationState          from 'store/application-state';
 import ComponentsRegistry        from 'store/components';
 import ProjectsRegistry          from 'store/projects';
 
-import ApplicationService        from 'services/application';
 import IFrameRouterService       from 'services/iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
@@ -645,7 +644,11 @@ export default new (class GUI extends G3WObject {
             description: p.description,
             thumbnail:   p.thumbnail,
             gid:         p.gid,
-            cbk:         opts.cbk || ((o = {}) => ApplicationService.changeProject({ host: opts.host, gid: o.gid })),
+            cbk:         opts.cbk || ((o = {}) => $promisify(async () => {
+              const url = GUI.getService('map').addMapExtentUrlParameterToUrl(ProjectsRegistry.getProjectUrl(o.gid));
+              try { history.replaceState(null, null, url); }
+              catch (e) { console.warn(e); } location.replace(url);}
+            )),
           }))
         },
       }),

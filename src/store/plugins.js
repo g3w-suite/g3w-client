@@ -5,7 +5,6 @@
 
 import G3WObject          from 'core/g3w-object';
 import ApplicationState   from 'store/application-state';
-import ApplicationService from 'services/application';
 
 /**
  * 'law' project configuration on project is handle as plugin

@@ -1,6 +1,5 @@
 import G3WObject          from 'core/g3w-object';
 import ApplicationState   from 'store/application-state';
-import ApplicationService from 'services/application';
 import ProjectsRegistry   from 'store/projects';
 
 module.exports = class PluginService extends G3WObject {

@@ -6,7 +6,6 @@ import {
 import ApplicationState          from 'store/application-state';
 import DataRouterService         from 'services/data';
 import ProjectsRegistry          from 'store/projects';
-import ApplicationService        from 'services/application';
 import GUI                       from 'services/gui';
 import G3WObject                 from 'core/g3w-object';
 import { parseAttributes }       from 'utils/parseAttributes';

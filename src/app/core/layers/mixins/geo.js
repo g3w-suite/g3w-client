@@ -6,7 +6,6 @@
  */
 
 import GUI                                from 'services/gui';
-import ApplicationService                 from 'services/application';
 import Projections                        from 'store/projections';
 import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
 import { getScaleFromResolution }         from 'utils/getScaleFromResolution';

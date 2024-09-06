@@ -168,7 +168,6 @@
   import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'app/constant';
   import Panel                             from 'core/g3w-panel';
   import ProjectsRegistry                  from 'store/projects';
-  import ApplicationService                from 'services/application';
   import DataRouterService                 from 'services/data';
   import GUI                               from 'services/gui';
   import { getUniqueDomId }                from 'utils/getUniqueDomId';
