@@ -3,7 +3,6 @@ import Component          from 'core/g3w-component';
 import ApplicationState   from 'store/application-state';
 import PluginsRegistry    from 'store/plugins';
 import ProjectsRegistry   from 'store/projects';
-import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
 

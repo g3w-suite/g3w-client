@@ -118,7 +118,6 @@ import { FILTER_OPERATORS }        from 'app/constant';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
-import ApplicationService          from 'services/application';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';

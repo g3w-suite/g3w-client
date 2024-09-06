@@ -1,5 +1,3 @@
-import ApplicationService from 'services/application';
-
 // main object content for i18n
 const plugins18nConfig = {};
 

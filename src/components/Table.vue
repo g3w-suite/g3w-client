@@ -153,7 +153,6 @@ import Component                   from 'core/g3w-component';
 import ApplicationState            from 'store/application-state';
 import Field                       from 'components/FieldG3W.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
@@ -232,10 +231,6 @@ export default {
     /** @since 3.10.0 */
     has_features() {
       return !!this.state.features.length;
-    },
-
-    ApplicationService() {
-      return ApplicationService;
     },
 
     current_layout() {

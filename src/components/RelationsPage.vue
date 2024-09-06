@@ -41,8 +41,6 @@ import { XHR }                                  from 'utils/XHR';
 import { createSingleFieldParameter }           from 'utils/createSingleFieldParameter';
 import { createRelationsUrl }                   from 'utils/createRelationsUrl';
 
-import ApplicationService                       from 'services/application';
-
 let _options;
 
 function _buildRelationTable(relations = [], id) {

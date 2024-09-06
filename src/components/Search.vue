@@ -66,7 +66,6 @@
 import Panel                       from 'core/g3w-panel';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
-import ApplicationService          from 'services/application';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { createFilterFromString }  from 'utils/createFilterFromString';

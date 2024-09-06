@@ -1,4 +1,3 @@
-import ApplicationService                    from 'services/application';
 import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 
 const Service                               = require('gui/inputs/service');

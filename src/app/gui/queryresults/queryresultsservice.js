@@ -12,7 +12,6 @@ import ApplicationState                         from 'store/application-state';
 
 import ProjectsRegistry                         from 'store/projects';
 import DataRouterService                        from 'services/data';
-import ApplicationService                       from 'services/application';
 
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';

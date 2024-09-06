@@ -97,7 +97,6 @@ GUI.addComponent = function(component, placeholder, options={}) {
   }
   if (register) {
     ComponentsRegistry.registerComponent(component);
-    // ApplicationService.registerService(component.id, component.getService());
   }
   return true;
 };
@@ -280,7 +279,7 @@ Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendo
 /**
  * create application configuration
  */
-ApplicationService.config = Object.assign(initConfig, {
+Object.assign(initConfig, {
   logo_img:            initConfig.header_logo_img,
   logo_link:           initConfig.header_logo_link,
   terms_of_use_text:   initConfig.header_terms_of_use_text,
@@ -379,8 +378,15 @@ $.ajaxSetup({
   ]).then(() => {
     clearTimeout(timeout);
 
-    window.addEventListener('online', () => ApplicationService.online());
-    window.addEventListener('offline', () => ApplicationService.offline());
+    window.addEventListener('online', () => {
+      ApplicationState.online = true;
+      ApplicationService.online();
+    });
+
+    window.addEventListener('offline', () => {
+      ApplicationState.online = false;
+      ApplicationService.offline();
+    });
 
     ApplicationService.emit('ready');
 
@@ -421,10 +427,6 @@ $.ajaxSetup({
       created() {
 
         Vue.component('app', App);
-
-        //register all services for the application
-        // Object.keys(SERVICES)             .forEach(element   => ApplicationService.registerService(element, SERVICES[element]));   
-        // Object.values(GUI.getComponents()).forEach(component => ApplicationService.registerService(component.id, component.getService()));
 
         // update CONFIG
         const SearchComponent = require('gui/search/vue/search');

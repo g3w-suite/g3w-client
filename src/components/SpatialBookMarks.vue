@@ -94,7 +94,6 @@
   import { LOCAL_ITEM_IDS }   from 'app/constant';
   import ApplicationState     from 'store/application-state'
   import GUI                  from 'services/gui';
-  import ApplicationService   from 'services/application';
   import ProjectsRegistry     from 'store/projects';
   import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
   import SpatialBookMarkItem  from "components/SpatialBookMarkItem.vue";

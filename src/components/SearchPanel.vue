@@ -165,7 +165,6 @@
     SEARCH_ALLVALUE,
   }                                            from 'app/constant';
   import ApplicationState                      from 'store/application-state';
-  import ApplicationService                    from 'services/application';
   import ProjectsRegistry                      from 'store/projects';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';

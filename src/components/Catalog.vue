@@ -264,7 +264,6 @@ import { CatalogEventBus as VM }   from 'app/eventbus';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
-import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 
 import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
