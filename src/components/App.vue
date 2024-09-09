@@ -692,6 +692,8 @@ import {
 }                         from 'app/constant';
 import ApplicationState   from 'store/application-state';
 import ProjectsRegistry   from 'store/projects';
+import Panel              from 'core/g3w-panel';
+import Component          from 'core/g3w-component';
 import GUI                from 'services/gui';
 import { resizeMixin }    from "mixins";
 
@@ -700,6 +702,7 @@ import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import getUniqueDomId     from 'utils/getUniqueDomId';
 import { XHR }            from 'utils/XHR';
+import { promisify }      from 'utils/promisify';
 
 const { t }        = require('core/i18n/i18n.service');
 
@@ -870,7 +873,7 @@ export default {
     },
 
     panels() {
-      return ApplicationState.sidebar.stack.getContentData();
+      return ApplicationState.sidebar.contentsdata;
     },
 
     showmainpanel() {
@@ -1057,9 +1060,20 @@ export default {
       GUI.closePanel();
     },
 
-    closeAllPanels() {
+    async closeAllPanels() {
       ApplicationState.sidebar.title = null;
-      ApplicationState.sidebar.stack.clear();
+      const data = ApplicationState.sidebar.contentsdata;
+      if (data.length) {
+        await Promise.allSettled(data.map(async d => {
+          if (d.content instanceof Component || d.content instanceof Panel) {
+            await promisify(d.content.unmount());
+          } else {
+            $(ApplicationState.sidebar.parent).empty();
+          }
+
+        }));
+        data.splice(0, data.length);
+      }
     },
 
     /**

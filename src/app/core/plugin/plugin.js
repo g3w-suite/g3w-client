@@ -340,8 +340,15 @@ module.exports = class Plugin extends G3WObject {
   /**
    * @FIXME add description
    */
-  setToolState({ id, state = { type:null, message: null } } = {}) {
-    this.hookservices[this._hook].setToolState({ id, state });
+  setToolState({ id, state = { type: null, message: null } } = {}) {
+    this.hookservices[this._hook].state.toolsGroups.find(g => {
+      const tool = g.tools.find(t => t.name === id);
+      if (tool) {
+        tool.state.type    = state.type;
+        tool.state.message = state.message;
+        return true;
+      }
+    });
   }
 
   /**

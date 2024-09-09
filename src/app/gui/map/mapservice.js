@@ -2029,6 +2029,7 @@ class MapService extends G3WObject {
 
   // called when layout (window) resizes
   layout({ width, height }) {
+    console.trace();
     const el = document.getElementById(this.target);
 
     if (el) {

@@ -24,7 +24,6 @@ import ProjectsRegistry            from 'store/projects';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import PluginsRegistry             from 'store/plugins';
 import G3WObject                   from 'core/g3w-object';
-import { BarStack }                from 'core/g3w-barstack';
 import Panel                       from 'core/g3w-panel';
 import Component                   from 'core/g3w-component';
 
@@ -74,11 +73,6 @@ import { XHR }                     from 'utils/XHR';
 
 const { init: i18ninit, t, tPlugin } = require('core/i18n/i18n.service');
 
-/**
- * @TODO make it simpler / move it into better place
- */
-ApplicationState.sidebar.stack             = new BarStack();
-ApplicationState.viewport.immediate_layout = true;
 
 GUI.addComponent = function(component, placeholder, options={}) {
   let register = true;
@@ -441,8 +435,6 @@ $.ajaxSetup({
         Vue.component('app', App);
 
         // update CONFIG
-        const SearchComponent = require('gui/search/vue/search');
-
         Object.assign(CONFIG, {
           sidebar: [
             /**
@@ -450,32 +442,19 @@ $.ajaxSetup({
              */
             new (function() {
 
-              const opts = {
+              // build project group metadata
+              const project = ProjectsRegistry.getCurrentProject().getState();
+
+              const comp = new Component({
                 id:          'metadata',
                 collapsible: false,
                 icon:        GUI.getFontClass('file'),
-                iconColor:   '#fff'
-              };
-
-              const state = {
-                name: '',
-                groups: {}
-              };
-            
-              const comp = new Component({
-                ...opts,
+                iconColor:   '#fff',
                 title: 'sdk.metadata.title',
-                service: Object.assign(opts.service || new G3WObject(), {
-                  state,
-                  content: null,
-                  show: false,
-                  reload(emit = true) {
-                    if (emit) {
-                      comp.getService().emit('reload');
-                    }
-                    const project = ProjectsRegistry.getCurrentProject().getState();
-                    state.name    = project.title;
-                    state.groups  = Object.entries(GROUPS).reduce((g, [name, fields]) => {
+                service: Object.assign(new G3WObject, {
+                  state: {
+                    name: project.title,
+                    groups: Object.entries(GROUPS).reduce((g, [name, fields]) => {
                       g[name] = fields.reduce((f, field) => {
                         const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
                         if (value) {
@@ -484,22 +463,20 @@ $.ajaxSetup({
                         return f;
                       }, {});
                       return g;
-                    }, {});
-                  }
+                    }, {}),
+                  },
+                  content: null,
+                  show: false,
                 }),
-                vueComponentObject: require('components/Metadata.vue'),
+                vueComponentObject: { template: '<div></div>' },
               });
-            
-              // build project group metadata
-              comp.getService().reload(false);
-              comp.getService().on('reload', () => comp.setOpen(false));
-            
+
               // show metadata
               comp._setOpen = b => {
                 const service = comp.getService();
                 service.show = b;
                 if (b) {
-                  service.content        = new Component({ service, internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({ state }) });
+                  service.content        = new Component({ service, internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({ state: service.state }) });
                   service.content.layout = noop;
                   GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
                   service.show = true;
@@ -508,7 +485,7 @@ $.ajaxSetup({
                 }
               };
 
-              GUI.on('closecontent', () => comp.state.open = false);
+              GUI.on('closecontent', () => comp.getService().state.open = false);
 
               return comp;
             }),
@@ -545,26 +522,16 @@ $.ajaxSetup({
               });
     
               //@since 3.11.0 use internal methods called by component setters if declared
-              comp._setOpen = (bool) => comp.getService().showPrintArea(bool);
-              comp._reload = () => { comp.getService().reload(); comp.state.visible = service.state.visible; }
-    
+              comp._setOpen = bool => comp.getInternalComponent().showPrintArea(bool);
+              comp._reload  = () => { comp.getInternalComponent().reload(); comp.state.visible = comp.getService().state.visible; }
+
               // BACKCOMP v3.x
-              const service             = comp.getService();
-              const internalComponent   = comp.getInternalComponent();
-    
-              service.state             = internalComponent.state;
-              service.changeScale       = internalComponent.changeScale;
-              service.getOverviewExtent = internalComponent.getOverviewExtent;
-              service.changeRotation    = internalComponent.changeRotation;
-              service.changeTemplate    = internalComponent.changeTemplate;
-              service.print             = internalComponent.print;
-              service.showPrintArea     = internalComponent.showPrintArea;
-              service.reload            = internalComponent.reload;
+              comp.getService().state = comp.getInternalComponent().state;
     
               return comp;
             }),
 
-            new SearchComponent({
+            new (require('gui/search/vue/search'))({
               id:         'search',
               icon:        GUI.getFontClass('search'),
               iconColor:   '#8dc3e3',
@@ -598,7 +565,6 @@ $.ajaxSetup({
              */
             new (function() {
 
-              const project = ProjectsRegistry.getCurrentProject();
               const state   = {
                 id:          'tools',
                 icon:        GUI.getFontClass('tools'),
@@ -632,22 +598,11 @@ $.ajaxSetup({
               service.getState         = () => state;
               service.reload           = () => { service.removeTools(); };
               service.setLoading       = (bool = false) => { state.loading = bool; }
-              service.updateToolsGroup = (order, config) => { Vue.set(state.toolsGroups, order, config); }
-              service.setToolState     = ({ id, state: newState = { type: null, message: null } } = {}) => {
-                state.toolsGroups.find(g => {
-                  const tool = g.tools.find(t => t.name === id);
-                  if (tool) {
-                    tool.state.type    = newState.type;
-                    tool.state.message = newState.message;
-                    return true;
-                  }
-                })
-              };
             
               // static class field
               service.ACTIONS = ACTIONS;
             
-              const tools = project.getState().tools || {};
+              const tools = ProjectsRegistry.getCurrentProject().getState().tools || {};
             
               for (let t in tools) {
                 service.addToolGroup(0, t.toUpperCase());
@@ -784,16 +739,6 @@ $.ajaxSetup({
                       }
                     });
                   },
-                  /**
-                   * @param {{ layer: unknown, type: unknown, selected: unknown }}
-                   *
-                   * @fires CatalogService~setSelectedExternalLayer
-                   *
-                   * @since 3.8.0
-                   */
-                  setSelectedExternalLayer({ layer, type, selected }) {
-                    state.external[type].forEach(l => { l.selected = (undefined === l.selected ? l.selected : (l === layer ? selected : false)); })
-                  },
                 }
               });
             
@@ -827,11 +772,10 @@ $.ajaxSetup({
            * ORIGINAL SOURCE: src/components/g3w-queryresults.js@v3.10.2 
            */
           queryresults: new (function() {
-            const QueryResultsService = require('gui/queryresults/queryresultsservice');
             const comp = new Component({
               id:                 'queryresults',
               title:              'Query Results',
-              service:            new QueryResultsService(),
+              service:            new (require('gui/queryresults/queryresultsservice')),
               vueComponentObject: require('components/QueryResults.vue'),
             });
 
@@ -852,103 +796,25 @@ $.ajaxSetup({
           /**
            * ORIGINAL SOURCE: src/components/g3w-map.js@v3.10.2 
            */
-          map: new (function() {
-            const { MapService } = require('gui/map/mapservice');
-            const comp = new Component({
-              id:      'map',
-              title:   'Map Component',
-              service: new MapService({ id: 'map' }),
-              vueComponentObject: require('components/Map.vue'),
-            })
-
-            comp.layout = (w, h) => { comp.getService().layout({ width: w, height: h }); };
-
-            return comp;
+          map: new Component({
+            id:                 'map',
+            title:              'Map Component',
+            service:            new (require('gui/map/mapservice')).MapService({ id: 'map' }),
+            vueComponentObject: require('components/Map.vue'),
           }),
 
           /**
            * ORIGINAL SOURCE: src/components/g3w-contentsviewer.js@v3.10.2 
            */
-          content: new (function() {
-
-            const stack = new BarStack(); // handles the logic of mounting component on DOM
-            const comp  = new Component({
-              id:                 'contents',
-              title:              'contents',
-              vueComponentObject: {
-                name: 'viewport-contents-viewer',
-                template: `<div id="contents" class="contents"></div>`,
-                data: () => ({ state: null }),
-              },
-            });
-          
-            stack.on('clear', () => comp.contentsdata = stack.state.contentsdata);
-          
-            Object.assign(comp, {
-          
-              stack,
-          
-              contentsdata: stack.state.contentsdata,
-          
-              // `push` = whether to clean the stack every time, sure to have just one component.
-              setContent(opts = {}) {
-                return $promisify(async () => {
-                  await promisify((opts.push ? Promise.resolve() : stack.clear()));
-                  await promisify(stack.push(opts.content, Object.assign(opts, { parent: comp.internalComponent.$el, append: true })));
-                    comp.contentsdata = stack.state.contentsdata; // get stack content
-                    Array
-                      .from(comp.internalComponent.$el.children)  // hide other elements but not the last one
-                      .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-                  comp.setOpen(true);
-                  return opts;
-                });
-              },
-
-              // remove content from stack
-              removeContent() {
-                comp.setOpen(false);
-                return stack.clear();
-              },
-          
-              // used by viewport.js, update the content of contentsdata only after stack is updated
-              popContent() {
-                return stack.pop().then(() => {
-                  comp.contentsdata = stack.state.contentsdata;
-                  Array
-                    .from(comp.internalComponent.$el.children)       // hide other elements but not the last one
-                    .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-                });
-              },
-          
-              // Set layout of the content each time
-              layout(parentWidth) {
-                const el = comp.internalComponent.$el;
-                Vue.nextTick(() => {                                                     // run only after that vue state is updated
-                  const height = el.parentElement.clientHeight                           // parent element is "g3w-view-content"
-                    - ((el.parentElement.querySelector('.close-panel-block') || {}).offsetHeight || 0)
-                    - ((el.parentElement.querySelector('.content_breadcrumb') || {}).offsetHeight || 0)
-                    - 10;                                                                // margin 10 from bottom
-                  el.style.height = height + 'px';
-                  if (el.firstChild) {
-                    el.firstChild.style.height = height + 'px';
-                  }
-                  stack.state.contentsdata.forEach(d => {                                // re-layout each component stored into the stack
-                    if ('function' == typeof d.content.layout) {  
-                      d.content.layout(parentWidth + 0.5, height);
-                    }
-                  })
-                })
-              },
-          
-              getComponentById:       stack.getComponentById.bind(stack),
-              getContentData:         stack.getContentData.bind(stack),
-              getCurrentContentData:  stack.getCurrentContentData.bind(stack),
-              getPreviousContentData: stack.getPreviousContentData.bind(stack),
-              clearContents:          stack.clear.bind(stack),
-          
-            }); 
-          
-            return comp;
+          content: Object.assign(new Component({
+            id:                 'contents',
+            title:              'contents',
+            vueComponentObject: { template: `<div id="contents" class="contents"></div>` },
+          }), {
+            /** DOM element where insert the component/panel  */
+            parent: null,
+            contentsdata:           ApplicationState.contentsdata,
+            getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
           }),
 
         });

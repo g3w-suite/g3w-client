@@ -143,8 +143,14 @@ const STATE = Vue.observable({
    */
   sidebar: {
     title: '',
-    components: [],
+    components:   [],
+    /** DOM element where insert the component/panel  */
+    parent:     null,
+    /** barstack state. It stores the panel array */
+    contentsdata: [], // Array<{ content, options }> 
   },
+
+  contentsdata: [],
 
   /**
    * @since 3.11.0
@@ -211,8 +217,6 @@ const STATE = Vue.observable({
       map:     null,
       content: null
     },
-    // minimun height and width of secondary view
-    immediate_Layout: undefined
   },
 
   sizes: {

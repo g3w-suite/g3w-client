@@ -1,5 +1,6 @@
 import G3WObject                 from 'core/g3w-object';
 import Component                 from 'core/g3w-component';
+import Panel                     from 'core/g3w-panel';
 
 import ApplicationState          from 'store/application-state';
 import ProjectsRegistry          from 'store/projects';
@@ -37,6 +38,18 @@ function getReducedSizes() {
     reducedWidth,
     reducedHeight
   }
+}
+
+/** clear all stacks */
+async function _clearContents() {
+  await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
+    if (d.content instanceof Component || d.content instanceof Panel) {
+      await promisify(d.content.unmount());
+    } else {
+      $(GUI.getComponent('contents').parent).empty();
+    }
+  }));
+  ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
 }
 
 /**
@@ -77,7 +90,7 @@ export default new (class GUI extends G3WObject {
 
     this.setters = {
 
-      setContent(options = {}) {
+      async setContent(options = {}) {
         this.emit('opencontent', true);
 
         // close user message before set content
@@ -114,16 +127,57 @@ export default new (class GUI extends G3WObject {
           showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
         });
 
-        // immediate layout false (to understand better)
-        ApplicationState.viewport.immediate_layout = false;
-
         // call show view (in this case content (other is map)
         this._showView('content', opts);
 
-        this.getComponent('contents').setContent(opts).then(() => {
-          ApplicationState.viewport.immediate_layout = true;
-          this._layoutComponents(event);
-        });
+        const contents = this.getComponent('contents');
+        
+        // whether to clean the stack every time, sure to have just one component.
+        if (!opts.push) {
+          await _clearContents();
+        }
+
+        const content = opts.content;
+        const _options = Object.assign(opts, { parent: contents.internalComponent.$el, append: true });
+        contents.parent = _options.parent;
+
+        // check the type of content:
+
+        // String or JQuery
+        if (content instanceof jQuery || 'string' === typeof content) {
+          let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
+          $(contents.parent).append(el);
+          ApplicationState.contentsdata.push({ content: el, options: _options });
+          console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', ApplicationState.contentsdata.at(-1));
+        }
+
+        // Vue element
+        else if (content.mount && 'function' === typeof content.mount) {
+          // Check a duplicate element by component id (if already exist)
+          let id = ApplicationState.contentsdata.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
+          if (-1 !== id) {
+            await promisify(ApplicationState.contentsdata[id].content.unmount());
+            ApplicationState.contentsdata.splice(id, 1);
+          }
+          // Mount vue component
+          await promisify(content.mount(contents.parent, _options.append || false));
+          $(contents.parent).localize();
+          ApplicationState.contentsdata.push({ content, options: _options });
+        }
+
+        // DOM element
+        else {
+          contents.parent.appendChild(content);
+          ApplicationState.contentsdata.push({ content, options: _options });
+        }
+
+        Array
+          .from(contents.internalComponent.$el.children)  // hide other elements but not the last one
+          .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
+
+        contents.setOpen(true);
+
+        this._layoutComponents(event);
       }
     };
 
@@ -464,26 +518,70 @@ export default new (class GUI extends G3WObject {
     ApplicationState.navbaritems.push(item);
   }
 
-  async showPanel(panel, opts = {}) {
-    const { stack } = ApplicationState.sidebar;
-    ApplicationState.sidebar.title = panel.title;
-    const data      = stack.getCurrentContentData();
-    if (data) {
-      $(data.content.internalPanel.$el).hide();
+  async showPanel(content, opts = {}) {
+    ApplicationState.sidebar.title  = content.title;
+    ApplicationState.sidebar.parent = '#g3w-sidebarpanel-placeholder'
+
+    const current = ApplicationState.sidebar.contentsdata.at(-1);
+
+    if (current) {
+      $(current.content.internalPanel.$el).hide();
     } 
-    return await stack.push(panel, { parent: '#g3w-sidebarpanel-placeholder', ...opts });
+
+    const options = { parent: '#g3w-sidebarpanel-placeholder', ...opts };
+    const parent = ApplicationState.sidebar.parent;
+    const data   = ApplicationState.sidebar.contentsdata;
+
+    // check the type of content:
+
+    // String or JQuery
+    if (content instanceof jQuery || 'string' === typeof content) {
+      let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
+      $(parent).append(el);
+      data.push({ content: el, options });
+      console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', data.at(-1));
+    }
+
+    // Vue element
+    else if (content.mount && 'function' === typeof content.mount) {
+      // Check a duplicate element by component id (if already exist)
+      let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
+      if (-1 !== id) {
+        await promisify(data[id].content.unmount());
+        data.splice(id, 1);
+      }
+      // Mount vue component
+      await promisify(content.mount(parent, options.append || false));
+      $(parent).localize();
+      data.push({ content, options });
+    }
+
+    // DOM element
+    else {
+      parent.appendChild(content);
+      data.push({ content, options });
+    }
+
   }
 
-  closePanel() {
-    const { stack } = ApplicationState.sidebar;
-    stack.pop().then(content => {
-      content = null;
-      const data = stack.getCurrentContentData();
-      if (data) {
-        $(data.content.internalPanel.$el).show();
-        ApplicationState.sidebar.title = data.content.title;
-      }
-    });
+  async closePanel() {
+    const data = ApplicationState.sidebar.contentsdata;
+    if (data.length <= 0) {
+      return;
+    }
+    const panel = data.slice(-1)[0].content;
+    if (panel instanceof Component || panel instanceof Panel) {
+      await promisify(panel.unmount());
+    } else {
+      $(ApplicationState.sidebar.parent).empty();
+    }
+    let content = data.pop();
+    content = null;
+    const current = ApplicationState.sidebar.contentsdata.at(-1);
+    if (current) {
+      $(current.content.internalPanel.$el).show();
+      ApplicationState.sidebar.title = current.content.title;
+    }
   }
 
   //showusermessage
@@ -708,16 +806,17 @@ export default new (class GUI extends G3WObject {
 
     const state         = ApplicationState.viewport;
     const open          = state.content.contentsdata.length > 0;
-    const secondaryView = open && this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
 
-    // content is open
+    // content is open → remove content
     if (open) {
-      this.getComponent('contents').removeContent();
+      const contents = this.getComponent('contents');
+      contents.setOpen(false);
+      _clearContents();
     }
 
     // close secondary view
-    if (open && secondaryView.clearContents) {
-      await promisify(secondaryView.clearContents());
+    if (open && 'map' === state.primaryView) {
+      await _clearContents();
       state.secondaryPerc = 0;
     }
 
@@ -731,18 +830,16 @@ export default new (class GUI extends G3WObject {
   }
 
   // remove last content from stack
-  popContent() {
-    const state = ApplicationState.viewport;
-
+  async popContent() {
     // skip when ..
-    if (!state.content.contentsdata.length) {
-      return $promisify(Promise.reject());
+    if (!ApplicationState.viewport.content.contentsdata.length) {
+      return Promise.reject();
     }
 
-    const data = this.getComponent('contents').getPreviousContentData();
+    const data = this.getComponent('contents').contentsdata.at(-2);
     const opts = data.options;
 
-    Object.assign(state.content, {
+    Object.assign(ApplicationState.viewport.content, {
       title:        opts.title,
       split:        undefined !== opts.split       ? opts.split       : null,
       closable:     undefined !== opts.closable    ? opts.closable    : true,
@@ -753,18 +850,32 @@ export default new (class GUI extends G3WObject {
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
     });
 
-    state.immediate_layout = false;
-
     this._showView('content', data.options);
 
-    // content exists on compontent Stack
-    return $promisify(async () => {
-      await promisify(this.getComponent('contents').popContent());
-      state.secondaryPerc    = data.options.perc;
-      state.immediate_layout = true;
-      this._layout('pop-content');
-      return this.getComponent('contents').getCurrentContentData;
-    });
+    if (ApplicationState.contentsdata.length <= 0) {
+      return;
+    }
+
+    // component exists on stack → remove the last from stack
+    const content = ApplicationState.contentsdata.slice(-1)[0].content;
+
+    if (content instanceof Component || content instanceof Panel) {
+      await promisify(content.unmount());
+    } else {
+      $(this.getComponent('contents').parent).empty();
+    }
+
+    ApplicationState.contentsdata.pop();
+
+    Array
+      .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
+      .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
+
+    ApplicationState.viewport.secondaryPerc    = data.options.perc;
+
+    this._layout('pop-content');
+
+    return this.getComponent('contents').contentsdata.at(-1);
   }
 
   isSidebarVisible() {
@@ -819,10 +930,8 @@ export default new (class GUI extends G3WObject {
     }
 
     // close secondary view
-    const secondaryView = this.getComponent([state.primaryView === 'map' ? 'contents' : 'map']);
-
-    if (secondaryView.clearContents) {
-      await promisify(secondaryView.clearContents());
+    if ('map' === state.primaryView) {
+      await _clearContents();
       state.secondaryPerc = 0;
     }
 
@@ -846,8 +955,30 @@ export default new (class GUI extends G3WObject {
 
       // for each component
       setViewSizes();
-      this.getComponent('map')     .layout(ApplicationState.viewport.map    .sizes.width - reducedWidth, ApplicationState.viewport.map    .sizes.height - reducedHeight);
-      this.getComponent('contents').layout(ApplicationState.viewport.content.sizes.width - reducedWidth, ApplicationState.viewport.content.sizes.height - reducedHeight);
+      this.getService('map').layout({
+        width:  ApplicationState.viewport.map.sizes.width - reducedWidth,
+        height: ApplicationState.viewport.map.sizes.height - reducedHeight
+      });
+
+      const parentWidth = ApplicationState.viewport.content.sizes.width - reducedWidth;
+
+      // Set layout of the content each time
+      Vue.nextTick(() => {                                                     // run only after that vue state is updated
+        const el = this.getComponent('contents').internalComponent.$el;
+        const height = el.parentElement.clientHeight                           // parent element is "g3w-view-content"
+          - ((el.parentElement.querySelector('.close-panel-block') || {}).offsetHeight || 0)
+          - ((el.parentElement.querySelector('.content_breadcrumb') || {}).offsetHeight || 0)
+          - 10;                                                                // margin 10 from bottom
+        el.style.height = height + 'px';
+        if (el.firstChild) {
+          el.firstChild.style.height = height + 'px';
+        }
+        ApplicationState.contentsdata.forEach(d => {                                // re-layout each component stored into the stack
+          if ('function' == typeof d.content.layout) {  
+            d.content.layout(parentWidth + 0.5, height);
+          }
+        })
+      });
 
       if (event) {
         setTimeout(() => { this.emit(event); })
@@ -861,9 +992,7 @@ export default new (class GUI extends G3WObject {
   _layout(event = null) {
     const reducesdSizes = getReducedSizes();
     setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
-    if (ApplicationState.viewport.immediate_layout) {
-      this._layoutComponents(event);
-    }
+    this._layoutComponents(event);
   }
 
 });
