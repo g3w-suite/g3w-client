@@ -631,13 +631,13 @@ proto.getFieldsWithValues = function(obj, options = {}) {
     field.forceNull                = false;
     field.validate.valid           = true;
     field.validate._valid          = true;                            // useful to get previous value in certain case
-    field.value_from_default_value = false;                           // need to be check if default value is set by server configuration field
-    field.get_default_value        = get_default_value;               // specify if need to get value from form field.input.options.default value in case of missing value of field.value
+    field.value_from_default_value = false;                           // need to be checked if the default value is set by server configuration field
+    field.get_default_value        = get_default_value;               // specify if you need to get value from form field.input.options.default value in case of missing value of field.value
     field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value iserted or change need to be di
     field.validate.unique          = field.validate.unique   || false;
     field.validate.required        = field.validate.required || false;
     field.validate.mutually_valid  = true;
-    field.validate.empty           = !field.validate.required;
+    field.validate.empty           = false; // Mean no value (field.value) set start value to false. It will be set once the input field is show
     field.validate.message         = null;
   });
 
