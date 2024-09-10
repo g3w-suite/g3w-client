@@ -130,7 +130,10 @@
          */
         showaddform: false,
 
-        /** bookmark is an array of Object with follow structure:
+        /**
+         * spatial bookmarks saved on current QGIS project
+         * 
+         * bookmark is an array of Object with follow structure:
          * {
          *   name: <String> Unique identifier of spatial bootmark,
          *   removable: <Boolean> true if set in QGIS project, false if add by user on G3W-SUITE application,
@@ -139,7 +142,7 @@
          */
 
         project: {
-          bookmarks: project.getSpatialBookmarks() || []
+          bookmarks: project.state.bookmarks || []
         },
 
         user: {

@@ -31,8 +31,8 @@ class Layer extends G3WObject {
     //get current project object
     const project   = options.project || ProjectsRegistry.getCurrentProject();
     const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
-    const vectorUrl = config.baselayer ? '' : project.getVectorUrl();
-    const rasterUrl = config.baselayer ? '' : project.getRasterUrl();
+    const vectorUrl = config.baselayer ? '' : project.state.vectorurl;
+    const rasterUrl = config.baselayer ? '' : project.state.rasterurl;
 
     // assign some attributes
 
@@ -2019,7 +2019,7 @@ class Layer extends G3WObject {
    */
   getFormat() {
     return this.config.format
-      || ProjectsRegistry.getCurrentProject().getWmsGetmapFormat()
+      || ProjectsRegistry.getCurrentProject().state.wms_getmap_format
       || 'image/png'
   }
 

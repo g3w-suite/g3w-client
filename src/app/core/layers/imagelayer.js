@@ -549,7 +549,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * Get wms url of the layer
    */
   getFullWmsUrl() {
-    const { wms_url } = ProjectsRegistry.getCurrentProject().getState().metadata;
+    const { wms_url } = ProjectsRegistry.getCurrentProject().state.metadata;
 
     /** @FIXME add description */
     if (wms_url && !this.isExternalWMS()) {
@@ -563,7 +563,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * Get WMS url (used by Catalog Layer Menu) 
    */
   getCatalogWmsUrl() {
-    const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata();
+    const { wms_url } = ProjectsRegistry.getCurrentProject().state.metadata;
 
     /** @FIXME add description */
     if (wms_url && !this.isExternalWMS()) {
@@ -590,7 +590,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   getWfsUrl() {
-    const { wms_url } = ProjectsRegistry.getCurrentProject().getMetadata();
+    const { wms_url } = ProjectsRegistry.getCurrentProject().state.metadata;
 
     /** @FIXME add description */
     if (wms_url) {
@@ -698,7 +698,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
      */
     else {
       const ctx_legend = (
-        opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().getContextBaseLegend())
+        opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().state.context_base_legend)
           ? get_legend_params(this)
           : undefined // disabled when `FORMAT=application/json` (otherwise it creates some strange behaviour on WMS `getMap` when switching between layer styles)
       );

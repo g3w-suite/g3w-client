@@ -110,9 +110,9 @@ const CONTROLS = {
           await DataRouterService.getData('query:coordinates', {
             inputs: {
               coordinates,
-              feature_count:         project.getQueryFeatureCount(),
+              feature_count:         project.state.feature_count || 5,
               query_point_tolerance: project.getQueryPointTolerance(),
-              multilayers:           project.isQueryMultiLayers(this.name),
+              multilayers:           [].concat(project.state.querymultilayers).includes(this.name),
             }
           });
         } catch(e) {
@@ -486,7 +486,7 @@ class MapService extends G3WObject {
                               ).map(([id, layers]) => {
                                 const { WMSLayer } = require('core/layers/imagelayer');
                                 const mapLayer = new WMSLayer({
-                                  url:   project.getWmsUrl(),
+                                  url:   project.state.WMSUrl,
                                   id:    `overview_layer_${id}`,
                                   tiled: layers[0].state.tiled,
                                 });
@@ -882,7 +882,7 @@ class MapService extends G3WObject {
   }
 
   setUpMapOlEvents() {
-    const dynamicLegend = this.project.getContextBaseLegend();
+    const dynamicLegend = this.project.state.context_base_legend;
     // set change resolution
     this._keyEvents.ol.forEach(k => ol.Observable.unByKey(k));
     this._keyEvents.ol.push(

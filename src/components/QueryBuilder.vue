@@ -325,8 +325,8 @@ export default {
       .map(layer => {
         // exclude join fields
         let exclude = [];
-        project
-          .getRelationsByLayerId({ layerId: layer.id, type: 'ONE' })
+        project.state.relations
+          .filter(r => layer.id === r.referencedLayer && 'ONE' === r.type) // get relations by layerId
           .forEach( r => {
             const l = project.getLayerById(r.referencingLayer);
             r.customPrefix = r.customPrefix === undefined ? `${l.getName()}_` : r.customPrefix;

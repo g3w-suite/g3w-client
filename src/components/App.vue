@@ -765,7 +765,7 @@ export default {
     },
 
     logo_url() {
-      return this.currentProject.getThumbnail() || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
+      return this.currentProject.state.thumbnail || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
 
     project_title() {
@@ -931,7 +931,7 @@ export default {
      * @since 3.8.0
      */
     async initDialogMessages() {
-      const messages = this.currentProject.getMessages();
+      const messages = this.currentProject.state.messages;
       
       // no messages to show
       if (!messages) {

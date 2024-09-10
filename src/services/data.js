@@ -102,7 +102,7 @@ export default {
    */
   async 'query:bbox'({
     bbox,
-    feature_count      = ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+    feature_count      = ProjectsRegistry.getCurrentProject().state.feature_count || 5,
     filterConfig       = {},
     multilayers        = false,
     condition          = { filtrable: { ows: 'WFS' } },
@@ -156,7 +156,7 @@ export default {
    */
   async 'query:polygon'({
     feature,
-    feature_count   = ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+    feature_count   = ProjectsRegistry.getCurrentProject().state.feature_count || 5,
     filterConfig    = {},
     multilayers     = false,
     condition       = { filtrable: { ows: 'WFS' } },

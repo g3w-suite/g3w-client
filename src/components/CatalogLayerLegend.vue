@@ -382,7 +382,7 @@
        *
        * @type {{}}
        */
-      this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+      this.dynamic = ProjectsRegistry.getCurrentProject().state.context_base_legend;
 
       this.mapReady = false;
 

@@ -32,7 +32,7 @@ export default new (class ProjectsRegistry extends G3WObject {
         }
 
         this.state.currentProject = project;
-        this.state.qgis_version   = project.getQgisVersion();
+        this.state.qgis_version   = project.state.qgis_version;
 
         const projectLayersStore = project.getLayersStore();
 

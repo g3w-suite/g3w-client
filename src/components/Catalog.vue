@@ -265,6 +265,7 @@ import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
 import GUI                         from 'services/gui';
+import { XHR }                     from 'utils/XHR';
 
 import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
 import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
@@ -356,7 +357,7 @@ export default {
               change && (
                 (tree.legendurls && 0 === tree.legendurls.length) ||
                 layers.some(l => l.legend.change) ||
-                ProjectsRegistry.getCurrentProject().getContextBaseLegend()
+                ProjectsRegistry.getCurrentProject().state.context_base_legend
               )
             ) {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
@@ -401,7 +402,7 @@ export default {
         const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
 
         const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
-          all:        !ProjectsRegistry.getCurrentProject().getContextBaseLegend(), // true = dynamic legend
+          all:        !ProjectsRegistry.getCurrentProject().state.context_base_legend, // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
         }) : undefined;
@@ -490,6 +491,101 @@ export default {
     },
 
     /**
+     * get map Theme_configuration
+     */
+    async getMapThemeFromThemeName(theme) {
+      const project = ProjectsRegistry.getCurrentProject();
+      // get map theme configuration from map_themes project config
+      const config = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
+      if (config && undefined === config.layerstree) {
+        try {
+          const response = await XHR.get({ url: `${project.urls.map_themes}${theme}/` });
+          if (response.result) {
+            config.layerstree = response.data;
+          }
+        } catch(e) {
+          console.warn('Error while retreiving map theme configuration', e);
+        }
+      }
+      return config;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/project/project.js@v3.10.2
+     * 
+     * Set properties (checked and visible) from view to layerstree
+     * 
+     * @param map_theme map theme name
+     * @param layerstree // current layerstree of TOC
+     * 
+     * @since 3.11.0
+     */
+    async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
+      const project = ProjectsRegistry.getCurrentProject();
+      layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
+      /** map theme config */
+      const theme = await this.getMapThemeFromThemeName(map_theme);
+      // create a chages need to apply map_theme changes to map and TOC
+      const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
+      const promises = [];
+      /**
+       * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
+       * @param mapThemeLayersTree // new mapLayerTree
+       * @param layerstree // current layerstree
+       */
+      const groups = [];
+      const traverse = (mapThemeLayersTree, layerstree, checked) => {
+        mapThemeLayersTree
+          .forEach((node, index) => {
+            if (node.nodes) { // case of a group
+              groups.push({
+                node,
+                group: layerstree[index]
+              });
+              traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+            } else {
+              // case of layer
+              node.style = theme.styles[node.id]; // set style from map_theme
+              if (layerstree[index].checked !== node.visible) {
+                changes.layers[node.id] = {
+                  visibility: true,
+                  style:      false
+                };
+              }
+              layerstree[index].checked = node.visible;
+              // if it has a style settled
+              if (node.style) {
+                const promise = new Promise(resolve => {
+                  const setCurrentStyleAndResolvePromise = node => {
+                    if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                      visibility: false,
+                      style:      false
+                    };
+                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
+                    resolve();
+                  };
+                  if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
+                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
+                });
+                promises.push(promise);
+              }
+            }
+        });
+      };
+      traverse(theme.layerstree, layerstree);
+
+      await Promise.allSettled(promises);
+
+      // all groups checked after layer checked so is set checked but not visible
+      groups.forEach(({ group, node: { checked, expanded }}) => {
+        group.checked  = checked;
+        group.expanded = expanded;
+      });
+
+      return changes // eventually, information about changes (for example style etc..)
+    },
+
+    /**
      * Change view
      *
      * @fires CatalogEventBus~layer-change-style
@@ -510,7 +606,7 @@ export default {
 
       // get all layers with styles
       const layers  = Object.keys(changes).filter(id => changes[id].style);
-      const styles  = (await this.project.getMapThemeFromThemeName(map_theme)).styles;
+      const styles  = (await this.getMapThemeFromThemeName(map_theme)).styles;
 
       // clear categories
       layers.forEach(id => {
@@ -644,7 +740,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     // in case of dynamic legend
-    if (ProjectsRegistry.getCurrentProject().getContextBaseLegend()) {
+    if (ProjectsRegistry.getCurrentProject().state.context_base_legend) {
       GUI.getService('map').on('change-map-legend-params', () => { this.getLegendSrc(); });
     } else {
       this.getLegendSrc();

@@ -685,7 +685,7 @@ $.ajaxSetup({
                 },
                 layerstrees:  CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
                 layersgroups: [],
-                legend:       Object.assign(opts.config.legend || {}, { place: ProjectsRegistry.getCurrentProject().getLegendPosition() || 'tab' }),
+                legend:       Object.assign(opts.config.legend || {}, { place: ProjectsRegistry.getCurrentProject().state.legend_position || 'tab' }),
               };
             
               const service = opts.service || new G3WObject({

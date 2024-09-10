@@ -186,6 +186,7 @@ import ProjectsRegistry   from 'store/projects';
 import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
 import ApplicationState   from 'store/application-state';
+import { XHR }            from 'utils/XHR';
 
 const { t } = require('core/i18n/i18n.service');
 
@@ -296,9 +297,18 @@ export default {
      * @since 3.10.0
      */
     async saveTheme() {
+      const theme = this.custom_theme.value;
+      // skip when no name provided 
+      if (!theme) {
+        return;
+      }
       try {
         const params = this._getMapThemeParams();
-        const saved = await ProjectsRegistry.getCurrentProject().saveMapTheme(this.custom_theme.value, params);
+        const saved = await XHR.post({
+          url:         `${ProjectsRegistry.getCurrentProject().urls.map_themes}${encodeURIComponent(theme)}/`,
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+        });
         if (saved.result) {
           this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
           // show a success add custom matp theme message to user
@@ -318,9 +328,17 @@ export default {
     },
 
     async updateTheme(theme) {
+      // skip when no name provided
+      if (!theme) {
+        return;
+      }
       try {
         const params = this._getMapThemeParams();
-        await ProjectsRegistry.getCurrentProject().saveMapTheme(theme, params);
+        await XHR.post({
+          url:         `${ProjectsRegistry.getCurrentProject().urls.map_themes}${encodeURIComponent(theme)}/`,
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+        });
         // update custom map theme styles
         const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
         c_theme.styles     = params.styles;
@@ -343,11 +361,11 @@ export default {
     deleteTheme(theme) {
       GUI.dialog.confirm(t('sdk.catalog.question_delete_map_theme'), async bool => {
         // skip when ..
-        if (!bool) {
+        if (!bool || !theme) {
           return;
         }
         try {
-          const deleted = await ProjectsRegistry.getCurrentProject().deleteMapTheme(theme);
+          const deleted = await XHR.delete({url:`${ProjectsRegistry.getCurrentProject().urls.map_themes}${encodeURIComponent(theme)}/`});
           if (deleted.result) {
             this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
             // show a success message to user

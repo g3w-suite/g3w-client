@@ -434,7 +434,7 @@ export class QueryBy extends InteractionControl {
               try {
                 const { data = [] } = await DataRouterService.getData('query:coordinates', {
                   inputs: {
-                    feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+                    feature_count: ProjectsRegistry.getCurrentProject().state.feature_count || 5,
                     coordinates:   QUERY.coordinates
                   },
                   outputs: {
@@ -596,12 +596,13 @@ export class QueryBy extends InteractionControl {
 
       const selected       = GUI.getService('map').getSelectedLayer();
       const externalLayers = GUI.getService('map').getLegacyExternalLayers();
+      const project        = ProjectsRegistry.getCurrentProject();
 
       if ('querybbox' === type) {
         await DataRouterService.getData('query:bbox', {
           inputs: {
             bbox:          QUERY.bbox,
-            feature_count: ProjectsRegistry.getCurrentProject().getQueryFeatureCount(),
+            feature_count: project.state.feature_count || 5,
             addExternal:   (!selected || externalLayers.some(l => l === selected)),
             // Catalog layers (TOC) properties that need to be satisfied
             layersFilterObject: {
@@ -610,7 +611,7 @@ export class QueryBy extends InteractionControl {
               VISIBLE: true          // need to be visible
             },
             condition:     { filtrable: { ows: 'WFS' } },
-            multilayers:   ProjectsRegistry.getCurrentProject().isQueryMultiLayers(control.name),
+            multilayers:   [].concat(project.state.querymultilayers).includes(control.name),
             filterConfig:  { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           }
         });
@@ -638,7 +639,7 @@ export class QueryBy extends InteractionControl {
               }
             },
             type:            (type || '').replace('queryby', '') || undefined,
-            multilayers:     ProjectsRegistry.getCurrentProject().isQueryMultiLayers('querybypolygon'), //hardcoded using querymultilayers server config
+            multilayers:     [].concat(project.state.querymultilayers).includes('querybypolygon'), //hardcoded using querymultilayers server config
             filterConfig:    { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           },
           outputs: {

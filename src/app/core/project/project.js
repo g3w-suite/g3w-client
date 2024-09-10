@@ -7,7 +7,6 @@ import ApplicationState   from 'store/application-state';
 import Projections        from 'store/projections';
 import G3WObject          from 'core/g3wobject';
 import { crsToCrsObject } from 'utils/crsToCrsObject';
-import { XHR }            from 'utils/XHR';
 
 const LayerFactory        = require('core/layers/layerfactory');
 const LayersStore         = require('core/layers/layersstore');
@@ -54,7 +53,6 @@ module.exports = class Project extends G3WObject {
 
     const type   = this.getType();
     const id     = this.getId();
-    const vector = this.getVectorUrl();
 
     /**
      * View information about project APIs 
@@ -62,8 +60,8 @@ module.exports = class Project extends G3WObject {
     this.urls = {
       map_themes:      `/${type}/api/prjtheme/${id}/`,
       expression_eval: `/api/expression_eval/${id}/`,
-      vector_data:     `${vector}data/${type}/${id}/`,
-      featurecount:    `${vector}featurecount/${type}/${id}/`,
+      vector_data:     `${this.state.vectorurl}data/${type}/${id}/`,
+      featurecount:    `${this.state.vectorurl}featurecount/${type}/${id}/`,
     };
 
     /**
@@ -80,7 +78,7 @@ module.exports = class Project extends G3WObject {
             .forEach(l => {
               if (node.id === l.id) {
                 node.name = l.name;
-                l.wmsUrl  = this.getWmsUrl();
+                l.wmsUrl  = this.state.WMSUrl;
                 l.project = this;
                 node[i]   = Object.assign(l, node);
                 return false
@@ -97,14 +95,11 @@ module.exports = class Project extends G3WObject {
 
     traverse(this.state.layerstree);
 
-    const baseLayerId = ApplicationState.baseLayerId;
-
     // Remove bing base layer when no vendor API Key is provided
     this.state.baselayers = this.state.baselayers.filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true));
 
     this.state.baselayers.forEach(l => {
-      const visible = (null === baseLayerId) ? this.state.initbaselayer : baseLayerId;
-      l.visible     = visible && (l.id === visible) || !!l.fixed;
+      l.visible     = l.id && (l.id === (null === ApplicationState.baseLayerId ? this.state.initbaselayer : ApplicationState.baseLayerId)) || !!l.fixed;
       l.baselayer   = true;
     });
 
@@ -137,7 +132,7 @@ module.exports = class Project extends G3WObject {
         Object.assign(l, {
           crs:               crsToCrsObject(l.crs),
           projection:        l.crs ? Projections.get(l.crs) : this._projection,
-          ows_method:        this.getOwsMethod(),
+          ows_method:        this.state.ows_method,
           wms_use_layer_ids: this.state.wms_use_layer_ids,
         }), { project: this }
       );
@@ -169,60 +164,8 @@ module.exports = class Project extends G3WObject {
 
   }
 
-  /**
-   * @returns `wms_getmap_format` attribute from server (project settings) 
-   *
-   * @since 3.9.0
-   */
-  getWmsGetmapFormat() {
-    return this.state.wms_getmap_format;
-  }
-
-  /**
-   * @deprecated since 3.10.0. Will be removed in v.4.x.
-   */
-  getSearchEndPoint() {
-    return 'api';
-  }
-
-  getAliasUrl() {
-    return this.state.aliasUrl;
-  }
-
-  getActiveCatalogTab() {
-    return this.state.catalog_tab;
-  }
-
-  setActiveCatalogTab(tab = 'layers') {
-    this.state.catalog_tab = tab;
-  }
-
-  isWmsUseLayerIds() {
-    return this.state.wms_use_layer_ids;
-  }
-
-  getContextBaseLegend() {
-    return this.state.context_base_legend;
-  }
-
   getQueryPointTolerance() {
     return this.state.query_point_tolerance;
-  }
-
-  // check if multi
-  getQueryFeatureCount() {
-    return this.state.feature_count || 5;
-  }
-
-  /**
-   * Return a boolean value is a map control is set multilayer on g3w-admin
-   *
-   * @param mapcontrol
-   * 
-   * @returns { boolean }
-   */
-  isQueryMultiLayers(mapcontrol) {
-    return Array.isArray(this.state.querymultilayers) && this.state.querymultilayers.includes(mapcontrol);
   }
 
   /**
@@ -241,24 +184,6 @@ module.exports = class Project extends G3WObject {
     return this.state.relations.find(r => id === r.id);
   }
 
-  /**
-   * @param { Object } opts
-   * @param opts.layerId
-   * @param opts.type
-   * 
-   * @returns {*}
-   */
-  getRelationsByLayerId({ layerId, type } = {}) {
-    return this.state.relations.filter(r => layerId === r.referencedLayer && (type ? type === r.type : true))
-  }
-
-  /**
-   * @returns {"POST"|"GET"}
-   */
-  getOwsMethod() {
-    return this.state.ows_method;
-  }
-
   getLayerById(id) {
     return this._layersStore.getLayerById(id);
   }
@@ -266,10 +191,6 @@ module.exports = class Project extends G3WObject {
   getLayers() {
     return [...this.state.layers, ...this.state.baselayers];
   };
-
-  getBaseLayers() {
-    return this.state.baselayers;
-  }
 
   /**
    * @param filter property layer config to filter
@@ -280,43 +201,12 @@ module.exports = class Project extends G3WObject {
     return key ? this.state.layers.filter(l => undefined !== l[key] ) : this.state.layers;
   }
 
-  /**
-   * @param { string } legend_position Legend Position
-   */
-  setLegendPosition(legend_position = 'tab') {
-    this.state.legend_position = legend_position;
-  }
-
-  getLegendPosition() {
-    return this.state.legend_position;
-  }
-
-  getThumbnail() {
-    return this.state.thumbnail;
-  }
-
-  getMetadata() {
-    return this.state.metadata || {};
-  }
-
   getState() {
     return this.state;
   }
 
   getPrint() {
     return this.state.print || [];
-  }
-
-  getSearches() {
-    return this.state.search || [];
-  }
-
-  getVectorUrl() {
-    return this.state.vectorurl;
-  }
-
-  getRasterUrl() {
-    return this.state.rasterurl;
   }
 
   getId() {
@@ -335,20 +225,8 @@ module.exports = class Project extends G3WObject {
     return this.state.name;
   }
 
-  getOverviewProjectGid() {
-    return this.state.overviewprojectgid || null;
-  }
-
   getCrs() {
     return this._projection.getCode();
-  }
-
-  /**
-   * @param {'major' | 'minor' | 'patch' } qgis.type 
-   */
-  getQgisVersion({ type } = {}) {
-    const index = ['major', 'minor', 'patch'].indexOf(type);
-    return -1 === index ? this.state.qgis_version : +this.state.qgis_version.split('.')[index];
   }
 
   /**
@@ -361,172 +239,12 @@ module.exports = class Project extends G3WObject {
   /**
    * @returns {*}
    */
-  getWmsUrl() {
-    return this.state.WMSUrl;
-  }
-
-  /**
-   * @returns {string}
-   */
-  getInfoFormat() {
-    return 'application/vnd.ogc.gml';
-  }
-
-  /**
-   * @returns {*}
-   */
   getLayersStore() {
     return this._layersStore;
   }
 
-  /// Map Themes
-
-  /**
-   * Set properties (checked and visible) from view to layerstree
-   * 
-   * @param map_theme map theme name
-   * @param layerstree // current layerstree of TOC
-   */
-  async setLayersTreePropertiesFromMapTheme({
-    map_theme,
-    layerstree = this.state.layerstree
-  }) {
-    /** map theme config */
-    const theme = await this.getMapThemeFromThemeName(map_theme);
-    // create a chages need to apply map_theme changes to map and TOC
-    const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
-    const promises = [];
-    /**
-     * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
-     * @param mapThemeLayersTree // new mapLayerTree
-     * @param layerstree // current layerstree
-     */
-    const groups = [];
-    const traverse = (mapThemeLayersTree, layerstree, checked) => {
-      mapThemeLayersTree
-        .forEach((node, index) => {
-          if (node.nodes) { // case of a group
-            groups.push({
-              node,
-              group: layerstree[index]
-            });
-            traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
-          } else {
-            // case of layer
-            node.style = theme.styles[node.id]; // set style from map_theme
-            if (layerstree[index].checked !== node.visible) {
-              changes.layers[node.id] = {
-                visibility: true,
-                style:      false
-              };
-            }
-            layerstree[index].checked = node.visible;
-            // if it has a style settled
-            if (node.style) {
-              const promise = new Promise((resolve, reject) =>{
-                const setCurrentStyleAndResolvePromise = node => {
-                  if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                    visibility: false,
-                    style:      false
-                  };
-                  changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
-                  resolve();
-                };
-                if (this.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
-                else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
-              });
-              promises.push(promise);
-            }
-          }
-      });
-    };
-    traverse(theme.layerstree, layerstree);
-
-    await Promise.allSettled(promises);
-
-    // all groups checked after layer checked so is set checked but not visible
-    groups.forEach(({ group, node: { checked, expanded }}) => {
-      group.checked  = checked;
-      group.expanded = expanded;
-    });
-
-    return changes // eventually, information about changes (for example style etc..)
-  };
-
-  /**
-   * get map Theme_configuration
-   */
-  async getMapThemeFromThemeName(theme) {
-    // get map theme configuration from map_themes project config
-    const config = Object.values(this.state.map_themes).flat().find(c => theme === c.theme );
-    if (config && undefined === config.layerstree) {
-      config.layerstree = await this.getMapThemeConfiguration(theme);
-    }
-    return config;
-  }
-
-  /**
-   * Save custom user map theme
-   * 
-   * @since 3.10
-   */
-  saveMapTheme(theme, params = {}) {
-    //In case of no name provide skip
-    if (!theme) {  return Promise.reject() }
-    return XHR.post({
-      url:         `${this.urls.map_themes}${encodeURIComponent(theme)}/`,
-      contentType: 'application/json',
-      data:        JSON.stringify(params),
-    });
-  }
-
-  /**
-   * @param theme
-   * 
-   * @since 3.10.0
-   */
-  async deleteMapTheme(theme) {
-    //In case of no name provide skip
-    if (!theme) { return Promise.reject() }
-    return XHR.delete({url:`${this.urls.map_themes}${encodeURIComponent(theme)}/`});
-  }
-
-  /**
-   * Get map_style from server
-   * 
-   * @param map_theme
-   * 
-   * @returns {Promise<*>}
-   */
-  async getMapThemeConfiguration(map_theme) {
-    try {
-      const response = await XHR.get({ url: `${this.urls.map_themes}${map_theme}/` });
-      if (response.result) { return response.data }
-    } catch(e) {
-      console.warn('Error while retreiving map theme configuration', e);
-    }
-  }
-
   getUrl(type) {
     return this.urls[type];
-  }
-
-  /**
-   * @returns {Array} spatial bookmarks saved on current QGIS project
-   * 
-   * @since v3.8
-   */
-  getSpatialBookmarks() {
-    return this.state.bookmarks || [];
-  }
-
-  /**
-   * @returns {{ items: Array, info: Object }} project messages at start time 
-   * 
-   * @since 3.8.0
-   */
-  getMessages() {
-    return this.state.messages;
   }
 
 };

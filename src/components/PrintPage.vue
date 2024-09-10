@@ -122,7 +122,7 @@ export default {
   },
 
   beforeDestroy() {
-    if (this.state.url && 'POST' === ProjectsRegistry.getCurrentProject().getOwsMethod()) {
+    if (this.state.url && 'POST' === ProjectsRegistry.getCurrentProject().state.ows_method) {
       window.URL.revokeObjectURL(this.state.url);
     }
   },

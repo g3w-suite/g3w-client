@@ -468,7 +468,7 @@ export default {
                 extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
               })),
             },
-            ProjectsRegistry.getCurrentProject().getOwsMethod()
+            ProjectsRegistry.getCurrentProject().state.ows_method
           )
           this.state.url       = output.url;
           this.state.layers    = output.layers;
