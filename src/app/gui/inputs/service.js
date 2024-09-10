@@ -114,6 +114,7 @@ proto.validate = function() {
       this.state.validate.valid = this._validator.validate(this.state.value);
     }
   }
+
   return this.state.validate.valid;
 };
 
