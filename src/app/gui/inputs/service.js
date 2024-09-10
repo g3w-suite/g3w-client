@@ -108,6 +108,7 @@ proto.validate = function() {
         this.state.validate.valid = this._validator.validate(this.state.value);
       }
     }
+    //check exclude_values state.validate.unique (unique input)
     if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
       this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
     } else {
