@@ -476,7 +476,12 @@ $.ajaxSetup({
                 const service = comp.getService();
                 service.show = b;
                 if (b) {
-                  service.content        = new Component({ service, internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({ state: service.state }) });
+                  service.content        = new Component({
+                    service,
+                    internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({
+                      state: service.state
+                    })
+                  });
                   service.content.layout = noop;
                   GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
                   service.show = true;
@@ -510,25 +515,17 @@ $.ajaxSetup({
             /**
              * ORIGINAL SOURCE: src/components/g3w-print.js@v3.10.2 
              */
-            new (function() {
-              const comp = new Component({
-                id:          'print',
-                visible:     window.initConfig.user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-                icon:        GUI.getFontClass('print'),
-                iconColor:   '#FF9B21',
-                title: 'print',
-                service: {},
-                internalComponent: new (Vue.extend(require('components/Print.vue'))),
-              });
-    
+            Object.assign(new Component({
+              id:                'print',
+              visible:           window.initConfig.user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+              icon:              GUI.getFontClass('print'),
+              iconColor:         '#FF9B21',
+              title:             'print',
+              service:           {},
+              internalComponent: new (Vue.extend(require('components/Print.vue'))),
+            }), {
               //@since 3.11.0 use internal methods called by component setters if declared
-              comp._setOpen = bool => comp.getInternalComponent().showPrintArea(bool);
-              comp._reload  = () => { comp.getInternalComponent().reload(); comp.state.visible = comp.getService().state.visible; }
-
-              // BACKCOMP v3.x
-              comp.getService().state = comp.getInternalComponent().state;
-    
-              return comp;
+              _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
             }),
 
             new (require('gui/search/vue/search'))({
@@ -653,39 +650,19 @@ $.ajaxSetup({
             /**
              * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
              */
-            new (function() {
-              const comp = new Component({
-                id:          'wms',
-                icon:        GUI.getFontClass('layers'),
-                title: 'sidebar.wms.add_wms_layer',
-                service: {},
-                internalComponent: new (Vue.extend(require('components/WMS.vue')))(),
-              });
-            
-              const service             = comp.getService();
-              const internalComponent   = comp.getInternalComponent();
-            
-              comp._setOpen = (b = false) => {
-                internalComponent.state.open = b;
+            Object.assign(new Component({
+              id:                'wms',
+              icon:              GUI.getFontClass('layers'),
+              title:             'sidebar.wms.add_wms_layer',
+              service:           {},
+              internalComponent: new (Vue.extend(require('components/WMS.vue')))(),
+            }), {
+              _setOpen(b = false) {
+                this.getInternalComponent().state.open = b;
                 if (b) {
                   GUI.closeContent();
                 }
-              };
-            
-              // BACKCOMP v3.x
-              service.state              = internalComponent.state;
-              service.addNewUrl          = internalComponent.addNewUrl;
-              service.deleteWmsUrl       = internalComponent.deleteWmsUrl;
-              service.showWmsLayersPanel = internalComponent._showWmsLayersPanel;
-              service.addWMSlayer        = internalComponent.addWMSlayer;
-              service.getWMSLayers       = internalComponent.getWMSLayers;
-              service.deleteWms          = internalComponent.deleteWms;
-              service.clear              = internalComponent.clear;
-              service.changeLayerData    = internalComponent.changeLayerData;
-              service.getLocalWMSData    = internalComponent.getLocalWMSData;
-              service.updateLocalWMSData = internalComponent.updateLocalWMSData;
-            
-              return comp;
+              }
             }),
 
             /**
