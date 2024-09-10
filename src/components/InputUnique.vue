@@ -40,10 +40,19 @@ export default {
   },
   watch: {
     async 'state.input.options.values'(values) {
-      this.state.value = this.state.value ? this.state.value: null;
-      this.state.value !== null && values.indexOf(this.state.value) === -1 && this.service.addValueToValues(this.state.value);
+      this.state.value = this.state.value
+        //need to check if values are Number or string  and convert it to compare
+        //@TODO need to find a better way to comprare input value (from input html element) value is set as string
+        ? ['integer', 'float', 'bigint'].includes(this.state.type) ? Number(this.state.value) : this.state.value
+        : null;
+      //check if the value is already added to value array
+      if (null !== this.state.value && !values.includes(this.state.value)) {
+        this.service.addValueToValues(this.state.value);
+      }
       await this.$nextTick();
-      this.state.value && this.select2.val(this.state.value).trigger('change');
+      if (this.state.value) {
+        this.select2.val(this.state.value).trigger('change');
+      }
     }
   },
   async mounted() {
