@@ -959,30 +959,6 @@ export default {
   #catalog #layers .sidebar-menu > li > a {
     border: 0;
   }
-  #catalog #toc_layer_help_text {
-    position: relative;
-    border-radius: 2px;
-    padding: 5px;
-    margin: 0.8em;
-    white-space: pre-line;
-    background-color: rgba(255,255,255,0.1);
-  }
-  #catalog .info_helptext_button {
-    text-align: center;
-    font-size: 0.7em;
-    margin-top: -5px;
-    margin-left: -5px;
-    background-color: #222d32;
-    font-weight: bold;
-    color: #ffffff;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 15px;
-    height: 15px;
-    border: 1px solid #fff;
-    border-radius: 50%;
-  }
   #catalog > a {
     display: none !important;
   }
