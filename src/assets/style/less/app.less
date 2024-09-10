@@ -656,7 +656,6 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .g3w-view.content .action-button:hover                                           { background-color: #fff; }
 .g3w-view.content .action-button.toggled                                         { background-color: #eee; }
 .g3w-view.content .action-button.toggled-white                                   { background-color: #fff; }
-.g3w-view.content .action-button.nohover:hover                                   { background-color: transparent; }
 .g3w-view.content .action-button-icon.trash                                      { color:red !important; }
 .g3w-view.content .action-button-icon                                            { padding-top: 2px; font-weight: bold; text-decoration: none; }
 .g3w-view.content                                                                { line-height: normal; float: right; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: relative; } 
@@ -862,7 +861,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .queryresults-container table tbody                                                        { border: 1px solid #f3f3f3; }
 .queryresults-container table tbody .featurebox-header > td.g3w-feature-actions            { overflow: hidden; padding: 0; vertical-align: middle; }
 .queryresults-container .link                                                              { cursor: pointer; }
-.queryresults-container .link.dashboardlink                                                { font-weight: bold; text-decoration: underline; }
 .queryresults-container .link.morelink                                                     { font-weight: bold; text-decoration: none; }
 .queryresults-container .queryresults-single                                               { margin-top: 6px; }
 .queryresults-container .queryresults-single span.key                                      { display: inline-block; font-size: 1.1em; font-weight: bold; width: 80px; margin-bottom: 0; }
@@ -912,7 +910,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .queryresults-container .box.box-primary                                                                     { border-top-color: var(--skin-color); }
 
 .queryresults-container .field_link                                                                          { background-color: var(--skin-color) !important; border-color: var(--skin-color) !important; }
-.queryresults-container .queryresults-single span.key                                                        { color: var(--skin-d20); }
 .queryresults-container .featurebox-header .action-cell > span:hover                                         { color: var(--skin-d10); }
 
 .queryresults-container .featurebox-header:hover td                                                          { background-color: var(--skin-l30); }
@@ -943,28 +940,12 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .form-control:-ms-input-placeholder,
 .form-control::-webkit-input-placeholder                 { color: #bbb; opacity: 1; }
 .form-control:not(select)                                { appearance: none; }
-.form-group.has-success label                            { color: var(--skin-success); }
-.form-group.has-success .form-control                    { border-color: var(--skin-success); box-shadow: none; }
-.form-group.has-warning label                            { color: var(--skin-warning); }
-.form-group.has-warning .form-control                    { border-color: var(--skin-warning); box-shadow: none; }
-.form-group.has-error label                              { color: var(--skin-danger); }
-.form-group.has-error .form-control                      { border-color: var(--skin-danger); box-shadow: none; }
 .input-group .input-group-addon                          { border-radius: 0; border-color: #d2d6de; background-color: #fff; }
-.btn-group-vertical .btn.btn-flat:first-of-type,
-.btn-group-vertical .btn.btn-flat:last-of-type           { border-radius: 0; }
 .icheck > label                                          { padding-left: 0; }
-.form-control-feedback.fa                                { line-height: 34px; }
-.input-lg                    + .form-control-feedback.fa,
-.input-group-lg              + .form-control-feedback.fa,
-.form-group-lg .form-control + .form-control-feedback.fa { line-height: 46px; }
-.input-sm                    + .form-control-feedback.fa,
-.input-group-sm              + .form-control-feedback.fa,
-.form-group-sm .form-control + .form-control-feedback.fa { line-height: 30px; }
 
 .g3wform_body .g3w_input_help                                    { font-weight: normal; text-align: justify; padding: 5px; border-radius: 3px; margin-top: 5px; }
 .g3wform_body .g3w_input_help img                                { max-height: 50px; }
 .g3wform_body .dataTable.no-footer                               { border-bottom: none; }
-.g3wform_body h5.relation_title                                  { font-size: 1.2em; font-weight: bold; }
 .g3wform_body                                                    { margin-bottom: 10px; }
 .g3wform_body .attr-label                                        { width: 30%; max-width: 40%; font-weight: bold; }
 .g3wform_body .relation-editbtn                                  { padding: 3px 3px 3px 3px; margin: 0 5px 0 5px; border-radius: 5px; font-size: 15px !important; }
@@ -978,7 +959,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_body .form-group                                        { margin-bottom: 5px; }
 .g3wform_body .bootstrap-filestyle > input.form-control          { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g3wform_body .form_editing_relation_input                       { position: relative; font-size: 1.2em; font-weight: bold; width: 100%; padding: 10px; }
-.g3wform_body .form_editing_relation_input .info_helptext_button { text-align: center; font-size: 0.8em; margin-top: -5px; margin-left: 0; font-weight: bold; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%; }
 .g3wform_body .preview                                           { width: 100%; margin-top: 10px; display:flex; align-items: center; }
 .g3wform_body .preview .filename                                 { overflow: hidden; margin: 15px; font-weight: bold; }
 .g3wform_body .preview .clearmedia                               { cursor: pointer; margin-left: auto; }
@@ -1008,21 +988,16 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3w-form button                                                 { margin: 0 5px 0 5px; font-weight: bold; }
 .g3w-form .tab-node.group .sub-group                             { margin-top: 3px; }
 .g3w-form .field-child input.form-control                        { padding-right: 0 !important; }
-.g3w-form .g3w-relationname                                      { font-size: 1.2em; border-top: 1px solid #b5bbc8; font-weight: bold; margin-top: 20px; padding: 10px; }
 .g3w-form .btn-add                                               { font-size: 1.8em; right: 18px; margin-top: 8px; cursor: pointer; }
 .g3w-form .link                                                  { cursor: pointer; }
-.g3w-form .link.dashboardlink                                    { font-weight: bold; text-decoration: underline; }
 .g3w-form .link.morelink                                         { font-weight: bold; text-decoration: none; }
 .g3w-form .link.trash                                            { color: red; margin-right: 5px; }
 .g3w-form tr.attributes-preview                                  { cursor: pointer; }
 .g3w-form tr.attributes-preview:hover td                         { background-color: #e6e6e6; }
-.g3w-form .showhide-transition                                   { transition: all .3s ease; }
-.g3w-form .showhide-leave                                        { opacity: 0; }
 .g3w-form .form-control.picklayerinput                           { cursor: pointer; }
 .g3w-form .photo-preview                                         { margin-bottom: 5px; max-width: 300px; margin-top: 5px; }
 
-.g3wform_body :is(.input-group-addon, h5.relation_title, .g3w-icon, .relation-editbtn),
-:is(.g3w-form, .g3wform_footer) .g3w-relationname,
+.g3wform_body :is(.input-group-addon, .g3w-icon, .relation-editbtn),
 :is(.g3w-form, .g3wform_footer) .btn-add,
 :is(.g3w-form, .g3wform_footer) .link,
 .bootstrap-datetimepicker-widget a > span:is(.glyphicon-remove, .glyphicon-time, .glyphicon-calendar, .glyphicon-chevron-up, .glyphicon-chevron-down) {
