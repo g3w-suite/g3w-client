@@ -1,4 +1,4 @@
-import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
+import { FILTER_EXPRESSION_OPERATORS } from 'g3w-constants';
 
 const operators  = Object.entries(FILTER_EXPRESSION_OPERATORS);
 

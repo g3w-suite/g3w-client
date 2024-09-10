@@ -34,7 +34,7 @@
 import ProjectsRegistry from 'store/projects';
 import GUI              from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 

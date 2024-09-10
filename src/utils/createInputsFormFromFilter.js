@@ -1,4 +1,4 @@
-import { SEARCH_ALLVALUE }       from 'app/constant';
+import { SEARCH_ALLVALUE }       from 'g3w-constants';
 import { toRawType }             from 'utils/toRawType';
 import { getDataForSearchInput } from 'utils/getDataForSearchInput';
 

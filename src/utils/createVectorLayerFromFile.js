@@ -1,4 +1,4 @@
-import { GEOMETRY_FIELDS } from 'app/constant';
+import { GEOMETRY_FIELDS } from 'g3w-constants';
 import { getUniqueDomId }  from "./getUniqueDomId";
 
 function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {

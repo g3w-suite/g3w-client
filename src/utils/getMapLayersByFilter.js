@@ -11,7 +11,7 @@ export function getMapLayersByFilter(filter = {}, options = {}) {
     // QUERYABLE: true,
     ...filter
   };
-  const { MapLayersStoresRegistry } = require('gui/map/mapservice');
+  const { MapLayersStoresRegistry } = require('services/map').default;
   return MapLayersStoresRegistry
     .getQuerableLayersStores()
     .flatMap(s => s.getLayers(filter, options));

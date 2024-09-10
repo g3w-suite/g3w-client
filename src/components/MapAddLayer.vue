@@ -200,7 +200,7 @@
 <script>
 import { Chrome as ChromeComponent }        from 'vue-color';
 
-import { EPSG }                             from 'app/constant';
+import { EPSG }                             from 'g3w-constants';
 import Projections                          from 'store/projections';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
 

@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES }        from 'app/constant';
+import { GEOMETRY_TYPES }        from 'g3w-constants';
 import { isPointGeometryType }   from "./isPointGeometryType";
 import { isLineGeometryType }    from "./isLineGeometryType";
 import { isPolygonGeometryType } from "./isPolygonGeometryType";

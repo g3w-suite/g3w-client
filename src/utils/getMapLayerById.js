@@ -1,4 +1,4 @@
 export function getMapLayerById(layerId) {
-  const { MapLayersStoresRegistry } = require('gui/map/mapservice');
+  const { MapLayersStoresRegistry } = require('services/map').default;
   return MapLayersStoresRegistry.getLayerById(layerId);
 }

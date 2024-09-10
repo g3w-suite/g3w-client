@@ -165,8 +165,8 @@
 </template>
 
 <script>
-  import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'app/constant';
-  import Panel                             from 'core/g3w-panel';
+  import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'g3w-constants';
+  import Panel                             from 'g3w-panel';
   import ProjectsRegistry                  from 'store/projects';
   import DataRouterService                 from 'services/data';
   import GUI                               from 'services/gui';
@@ -306,7 +306,7 @@
         visible=true
       } = {}) {
         const map          = GUI.getService('map');
-        const { WMSLayer } = require('core/layers/imagelayer');
+        const { WMSLayer } = require('map/layers/imagelayer');
         const projection   = ol.proj.get(epsg);
 
         const promise = new Promise((res, rej) => {

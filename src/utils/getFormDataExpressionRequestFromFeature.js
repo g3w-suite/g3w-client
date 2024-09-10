@@ -1,4 +1,4 @@
-import { G3W_FID }                              from 'app/constant';
+import { G3W_FID }                              from 'g3w-constants';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { convertFeatureToGEOJSON }              from 'utils/convertFeatureToGEOJSON';
 

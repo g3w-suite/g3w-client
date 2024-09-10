@@ -689,11 +689,11 @@ import CookieLaw                 from 'vue-cookie-law';
 import {
   LOCAL_ITEM_IDS,
   VIEWPORT
-}                         from 'app/constant';
+}                         from 'g3w-constants';
 import ApplicationState   from 'store/application-state';
 import ProjectsRegistry   from 'store/projects';
-import Panel              from 'core/g3w-panel';
-import Component          from 'core/g3w-component';
+import Panel              from 'g3w-panel';
+import Component          from 'g3w-component';
 import GUI                from 'services/gui';
 import { resizeMixin }    from "mixins";
 
@@ -704,7 +704,7 @@ import getUniqueDomId     from 'utils/getUniqueDomId';
 import { XHR }            from 'utils/XHR';
 import { promisify }      from 'utils/promisify';
 
-const { t }        = require('core/i18n/i18n.service');
+const { t }        = require('g3w-i18n');
 
 export default {
 
@@ -1015,9 +1015,12 @@ export default {
         $('#main-navbar.navbar-collapse').removeClass('in');
       }
       GUI.closeSideBar();
-      const ChangeMapMenuComponent = require('gui/changemapmenu/changemapmenu');
+
       GUI.setContent({
-        content: new ChangeMapMenuComponent(),
+        content: new Component({
+          id:                 'changemapmenu',
+          vueComponentObject: require('components/ChangeMapMenu.vue'),
+        }),
         title: '',
         perc: 100
       });

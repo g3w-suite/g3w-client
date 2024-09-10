@@ -26,8 +26,8 @@
 import {
   G3W_FID,
   LIST_OF_RELATIONS_TITLE,
-}                                               from 'app/constant';
-import { RelationEventBus as VM }               from 'app/eventbus';
+}                                               from 'g3w-constants';
+import { RelationEventBus as VM }               from 'g3w-eventbus';
 import ApplicationState                         from 'store/application-state';
 import GUI                                      from "services/gui";
 import ProjectsRegistry                         from 'store/projects';

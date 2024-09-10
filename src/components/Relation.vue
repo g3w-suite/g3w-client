@@ -183,16 +183,15 @@
 
 <script>
 
-  import { G3W_FID }                  from 'app/constant';
+  import { G3W_FID }                  from 'g3w-constants';
+  import Component                    from 'g3w-component';
   import Field                        from 'components/FieldG3W.vue';
   import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
   import CatalogLayersStoresRegistry  from 'store/catalog-layers';
   import GUI                          from 'services/gui';
   import { fieldsMixin, resizeMixin } from 'mixins';
-  import { RelationEventBus as VM }   from 'app/eventbus';
+  import { RelationEventBus as VM }   from 'g3w-eventbus';
   import { throttle }                 from 'utils';
-
-  const Component                     = require('gui/component/component');
 
   let SIDEBARWIDTH;
 

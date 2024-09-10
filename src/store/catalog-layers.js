@@ -3,6 +3,6 @@
  * @since v3.6
  */
 
-const LayersStoresRegistry = require('core/layers/layersstoresregistry');
+const LayersStoresRegistry = require('map/layers/layersstoresregistry');
 
 export default new LayersStoresRegistry();

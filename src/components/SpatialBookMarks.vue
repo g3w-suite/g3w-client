@@ -91,7 +91,7 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS }   from 'app/constant';
+  import { LOCAL_ITEM_IDS }   from 'g3w-constants';
   import ApplicationState     from 'store/application-state'
   import GUI                  from 'services/gui';
   import ProjectsRegistry     from 'store/projects';
@@ -100,7 +100,7 @@
   import InputText            from "components/InputText.vue";
 
   const { uniqueId } = require('utils');
-  const { t }        = require('core/i18n/i18n.service');
+  const { t }        = require('g3w-i18n');
 
   const item = window.localStorage.getItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
   const SPATIAL_BOOKMARKS_LOCALITEMS = item ? JSON.parse(item) : undefined;

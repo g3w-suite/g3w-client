@@ -93,7 +93,7 @@
 import ApplicationState              from 'store/application-state';
 import ProjectsRegistry              from "store/projects";
 import Projections                   from 'store/projections';
-import { API_BASE_URLS, LOGO_GIS3W } from 'app/constant';
+import { API_BASE_URLS, LOGO_GIS3W } from 'g3w-constants';
 import { XHR }                       from 'utils/XHR';
 import GUI                           from 'services/gui';
 

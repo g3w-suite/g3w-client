@@ -86,7 +86,7 @@
   import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 
   const PickLayerInputService           = require('gui/inputs/picklayer/service');
-  const Layer                           = require('core/layers/layer');
+  const Layer                           = require('map/layers/layer');
   const InputMixin                      = require('gui/inputs/input');
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string

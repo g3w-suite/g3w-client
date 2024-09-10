@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import Panel                       from 'core/g3w-panel';
+import Panel                       from 'g3w-panel';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
 import DataRouterService           from 'services/data';
@@ -73,7 +73,7 @@ import { createFilterFromString }  from 'utils/createFilterFromString';
 import G3WTool                     from 'components/Tool.vue';
 import * as vueComp                from 'components/QueryBuilder.vue';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 export default {
 

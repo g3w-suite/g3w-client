@@ -37,7 +37,7 @@
 
   const InputMixins                 = require('gui/inputs/input');
   const { getUniqueDomId }          = require('utils');
-  const { t }                       = require('core/i18n/i18n.service');
+  const { t }                       = require('g3w-i18n');
   const { media_field: MediaField } = require('gui/fields/fields');
 
   export default {

@@ -163,7 +163,7 @@
   import {
     FILTER_EXPRESSION_OPERATORS,
     SEARCH_ALLVALUE,
-  }                                            from 'app/constant';
+  }                                            from 'g3w-constants';
   import ApplicationState                      from 'store/application-state';
   import ProjectsRegistry                      from 'store/projects';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
@@ -171,7 +171,7 @@
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import resizeMixin                           from 'mixins/resize';
 
-  const { t } = require('core/i18n/i18n.service');
+  const { t } = require('g3w-i18n');
 
   // store all select2 inputs
   const SELECTS = [];

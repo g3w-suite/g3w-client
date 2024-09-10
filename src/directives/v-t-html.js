@@ -6,7 +6,7 @@
 import ApplicationState   from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 const attr = 'g3w-v-t-html-id';
 

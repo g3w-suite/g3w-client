@@ -2,7 +2,7 @@
  * @file
  * @since v3.7
  */
-const { getAppLanguage } = require('core/i18n/i18n.service');
+const { getAppLanguage } = require('g3w-i18n');
 
 export default {
   methods: {

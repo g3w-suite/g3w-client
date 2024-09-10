@@ -1,4 +1,4 @@
-import { VIEWPORT }     from 'app/constant';
+import { VIEWPORT }     from 'g3w-constants';
 import ApplicationState from 'store/application-state';
 
 export function setViewSizes() {

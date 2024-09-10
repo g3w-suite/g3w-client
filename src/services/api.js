@@ -2,11 +2,11 @@
  * @file
  * @since v3.6
  */
-import { $promisify } from "utils/promisify";
-import { XHR }        from 'utils/XHR';
 
-const { reject }                = require('utils');
-const G3WObject                 = require('core/g3wobject');
+import G3WObject      from 'g3w-object';
+import { $promisify } from 'utils/promisify';
+import { XHR }        from 'utils/XHR';
+import { reject }     from 'utils/reject';
 
 let howManyAreLoading = 0;
 

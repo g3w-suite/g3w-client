@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-import G3WObject          from 'core/g3w-object';
+import G3WObject          from 'g3w-object';
 import ApplicationState   from 'store/application-state';
 
 /**

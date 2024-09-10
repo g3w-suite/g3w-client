@@ -260,7 +260,7 @@
 
 <script>
 
-import { CatalogEventBus as VM }   from 'app/eventbus';
+import { CatalogEventBus as VM }   from 'g3w-eventbus';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';

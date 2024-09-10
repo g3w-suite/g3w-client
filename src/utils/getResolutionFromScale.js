@@ -1,4 +1,4 @@
-import { INCHES_PER_UNIT, DOTS_PER_INCH } from 'constant';
+import { INCHES_PER_UNIT, DOTS_PER_INCH } from 'g3w-constants';
 
 export function getResolutionFromScale(scale, units = 'm') {
    // just to prevent that scale is passed as 1:10000 or 0.0001

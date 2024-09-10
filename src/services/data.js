@@ -2,7 +2,7 @@
  * @file
  * @since v3.6
  */
-import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';
+import { G3W_FID, QUERY_POINT_TOLERANCE } from 'g3w-constants';
 import ProjectsRegistry                   from 'store/projects';
 import GUI                                from 'services/gui';
 
@@ -11,7 +11,7 @@ import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
 import { $promisify, promisify }          from 'utils/promisify';
 
-const { t }  = require('core/i18n/i18n.service');
+const { t }  = require('g3w-i18n');
 
 const handleQueryPromises = async (promises = []) => {
   const responses = await Promise.allSettled(promises);

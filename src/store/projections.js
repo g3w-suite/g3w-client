@@ -3,7 +3,7 @@
  *
  * @since 3.11.0
  */
-import { API_BASE_URLS } from 'app/constant';
+import { API_BASE_URLS } from 'g3w-constants';
 import { normalizeEpsg } from 'utils/normalizeEpsg';
 import { XHR }           from 'utils/XHR';
 

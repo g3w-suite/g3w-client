@@ -1,22 +1,5 @@
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-
+import { toRawType } from 'utils/toRawType';
 const Fields        = require('./fields');
-const { toRawType } = require('utils');
-
-const URLPattern   = /^(https?:\/\/[^\s]+)/g;
-const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-
-const FieldType = {
-  SIMPLE:    'simple',
-  GEO:       'geo',
-  LINK:      'link',
-  PHOTO:     'photo',
-  PHOTOLINK: 'photolink',
-  IMAGE:     'image',
-  POINTLINK: 'pointlink',
-  ROUTE:     'route',
-  VUE:       'vue'
-};
 
 module.exports  = {
   /**
@@ -31,43 +14,43 @@ module.exports  = {
       const fieldValue = field.value;
       const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
       if (!value) {
-        type = FieldType.SIMPLE;
+        type = 'simple';
       } else if (value && 'object' === typeof value) {
         if (value.coordinates) {
-          type = FieldType.GEO;
+          type = 'geo';
         } else if (value.vue) {
-          type = FieldType.VUE;
+          type = 'vue';
         }
       } else if (value && Array.isArray(value)) {
         if (value.length && value[0].photo) {
-          type = FieldType.PHOTO;
+          type = 'photo';
         } else {
-          type = FieldType.SIMPLE
+          type = 'simple'
         }
-      } else if (value.toString().toLowerCase().match(PhotoPattern)) {
-        type = FieldType.PHOTO;
-      } else if (value.toString().match(URLPattern)) {
-        type = FieldType.LINK;
+      } else if (value.toString().toLowerCase().match(/[^\s]+.(png|jpg|jpeg|gif)$/g)) {
+        type = 'photo';
+      } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+        type = 'link';
       } else {
-        type = FieldType.SIMPLE;
+        type = 'simple';
       }
     }
     return `${type}_field`;
   },
   isSimple(field) {
-    return `${FieldType.SIMPLE}_field` === this.getType(field);
+    return 'simple_field' === this.getType(field);
   },
   isLink(field) {
-    return `${FieldType.LINK}_field` === this.getType(field);
+    return 'link_field' === this.getType(field);
   },
   isImage(field) {
-    return `${FieldType.IMAGE}_field` === this.getType(field);
+    return 'image_field' === this.getType(field);
   },
   isPhoto(field) {
-    return `${FieldType.PHOTO}_field` === this.getType(field);
+    return 'photo_field' === this.getType(field);
   },
   isVue(field) {
-    return `${FieldType.VUE}_field` === this.getType(field);
+    return 'vue_field' === this.getType(field);
   },
   /**
    * Method to add a new field type to Fields
@@ -84,20 +67,4 @@ module.exports  = {
   remove(type) {
     delete Fields[type];
   },
-  /**
-   * change type of field (example to set vue type)
-   * @param layerId
-   * @param field
-   */
-  changeConfigFieldType({ layerId, field = {} }) {
-    CatalogLayersStoresRegistry.getLayerById(layerId).changeConfigFieldType(field);
-  },
-  /**
-   * Reset origin type
-   * @param layerId
-   * @param field
-   */
-  resetConfigFieldType({ layerId, field = {} }) {
-    CatalogLayersStoresRegistry.getLayerById(layerId).resetConfigField(field);
-  }
 };

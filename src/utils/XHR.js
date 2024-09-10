@@ -1,4 +1,4 @@
-import { TIMEOUT }   from 'app/constant';
+import { TIMEOUT }   from 'g3w-constants';
 import { promisify } from 'utils/promisify';
 
 export const XHR = {

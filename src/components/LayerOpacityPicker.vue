@@ -44,7 +44,7 @@
 
 <script>
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import { CatalogEventBus as VM }   from 'app/eventbus';
+  import { CatalogEventBus as VM }   from 'g3w-eventbus';
 
   export default {
 

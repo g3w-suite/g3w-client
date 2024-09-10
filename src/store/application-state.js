@@ -225,6 +225,11 @@ const STATE = Vue.observable({
     }
   },
 
+  /** @since 3.11.0 */
+  i18n: {
+    plugins: {} // plugins configs
+  },
+
 });
 
 export default STATE;

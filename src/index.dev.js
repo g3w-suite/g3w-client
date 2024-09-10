@@ -8,7 +8,7 @@ import localforage from 'localforage';
 import './deprecated';
 
 // expose global variables
-import './globals';
+import './g3w-globals';
 
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();

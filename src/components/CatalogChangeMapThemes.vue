@@ -188,7 +188,7 @@ import GUI                from "services/gui";
 import ApplicationState   from 'store/application-state';
 import { XHR }            from 'utils/XHR';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 /**
  * Attributes to send to server of layerstrees object

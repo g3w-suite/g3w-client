@@ -148,8 +148,8 @@
 </template>
 
 <script>
-import { SELECTION }               from 'app/constant';
-import Component                   from 'core/g3w-component';
+import { SELECTION }               from 'g3w-constants';
+import Component                   from 'g3w-component';
 import ApplicationState            from 'store/application-state';
 import Field                       from 'components/FieldG3W.vue';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
@@ -161,7 +161,7 @@ import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
 
-const { t }                        = require('core/i18n/i18n.service');
+const { t }                        = require('g3w-i18n');
 
 
 //Supported page lengths

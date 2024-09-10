@@ -16,7 +16,7 @@ export function createWMSLayer({
   layers = [],
 } = {}) {
   const id       = name || getUniqueDomId();
-  const { WMSLayer } = require('core/layers/imagelayer');
+  const { WMSLayer } = require('map/layers/imagelayer');
   const wmslayer = new WMSLayer({ id, layers, projection, url });
   const olLayer  =  wmslayer.getOLLayer();
   olLayer.set('id', id); // set unique id

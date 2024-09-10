@@ -227,7 +227,7 @@
 </template>
 
 <script>
-import { CatalogEventBus as VM }   from 'app/eventbus';
+import { CatalogEventBus as VM }   from 'g3w-eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationState            from "store/application-state";
 import GUI                         from 'services/gui';

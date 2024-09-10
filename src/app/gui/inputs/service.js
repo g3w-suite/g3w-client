@@ -1,6 +1,6 @@
 const Validators    = require('utils/validators');
 const { toRawType } = require('utils');
-const { t }         = require('core/i18n/i18n.service');
+const { t }         = require('g3w-i18n');
 
 module.exports = class Service {
   constructor(opts = {}) {

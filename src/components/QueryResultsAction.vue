@@ -21,7 +21,7 @@
 </template>
 
 <script>
-  const { t } = require('core/i18n/i18n.service');
+  const { t } = require('g3w-i18n');
 
   export default {
     name: "action",

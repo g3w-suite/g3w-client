@@ -600,14 +600,14 @@
 
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
 
-  import { CatalogEventBus as VM }     from 'app/eventbus';
+  import { CatalogEventBus as VM }     from 'g3w-eventbus';
   import ApplicationState              from 'store/application-state';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
   import ProjectsRegistry              from 'store/projects';
   import GUI                           from 'services/gui';
   import { downloadFile }              from 'utils/downloadFile';
 
-  const { t }                        = require('core/i18n/i18n.service');
+  const { t }                        = require('g3w-i18n');
   const shpwrite                     = require('shp-write');
 
   const OFFSETMENU  = { top: 50, left: 15 };

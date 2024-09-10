@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-import G3WObject                      from 'core/g3w-object';
+import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
 import ProjectsRegistry               from 'store/projects';
 import PluginsRegistry                from 'store/plugins';

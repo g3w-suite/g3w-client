@@ -1,6 +1,6 @@
-import G3WObject                 from 'core/g3w-object';
-import Component                 from 'core/g3w-component';
-import Panel                     from 'core/g3w-panel';
+import G3WObject                 from 'g3w-object';
+import Component                 from 'g3w-component';
+import Panel                     from 'g3w-panel';
 
 import ApplicationState          from 'store/application-state';
 import ProjectsRegistry          from 'store/projects';
@@ -428,7 +428,7 @@ export default new (class GUI extends G3WObject {
   }
 
   showForm(options = {}) {
-    const FormComponent = require('gui/form/vue/form');
+    const { FormComponent } = require('components/g3w-form');
     // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     this.setContent({

@@ -1,8 +1,7 @@
-import GUI                                     from 'services/gui';
-import DataRouterService                       from 'services/data';
-
-const PickFeatureInteraction     = require('g3w-ol/interactions/pickfeatureinteraction');
-const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+import GUI                        from 'services/gui';
+import DataRouterService          from 'services/data';
+import PickFeatureInteraction     from 'map/interactions/pickfeatureinteraction';
+import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
 
 module.exports = class PickLayerService {
   constructor(opts = {}) {

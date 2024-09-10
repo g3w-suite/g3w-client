@@ -3,10 +3,10 @@
  * @since 3.10.0
  */
 
-import { SEARCH_ALLVALUE }            from 'app/constant';
-import G3WObject                      from 'core/g3w-object';
-import Component                      from 'core/g3w-component';
-import Panel                          from 'core/g3w-panel';
+import { SEARCH_ALLVALUE }            from 'g3w-constants';
+import G3WObject                      from 'g3w-object';
+import Component                      from 'g3w-component';
+import Panel                          from 'g3w-panel';
 import CatalogLayersStoresRegistry    from 'store/catalog-layers';
 import ApplicationState               from 'store/application-state';
 import ProjectsRegistry               from 'store/projects';

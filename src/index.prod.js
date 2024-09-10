@@ -7,7 +7,7 @@
 import './deprecated';
 
 // expose global variables
-import './globals';
+import './g3w-globals';
 
 // constants
 import {
@@ -15,7 +15,7 @@ import {
   FONT_AWESOME_ICONS,
   LOCAL_ITEM_IDS,
   TIMEOUT,
-}                                  from 'app/constant';
+}                                  from 'g3w-constants';
 
 // core
 import translations                from "locales";
@@ -23,9 +23,9 @@ import ApplicationState            from 'store/application-state';
 import ProjectsRegistry            from 'store/projects';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import PluginsRegistry             from 'store/plugins';
-import G3WObject                   from 'core/g3w-object';
-import Panel                       from 'core/g3w-panel';
-import Component                   from 'core/g3w-component';
+import G3WObject                   from 'g3w-object';
+import Panel                       from 'g3w-panel';
+import Component                   from 'g3w-component';
 
 // services
 import ApplicationService          from 'services/application';
@@ -67,11 +67,10 @@ import vClickOutside               from 'directives/v-click-outside';
 
 // utils
 import { noop }                    from 'utils/noop';
-import { $promisify, promisify }   from 'utils/promisify';
 import { XHR }                     from 'utils/XHR';
 
 
-const { init: i18ninit, t, tPlugin } = require('core/i18n/i18n.service');
+const { addI18n, t, tPlugin } = require('g3w-i18n');
 
 
 GUI.addComponent = function(component, placeholder, options={}) {
@@ -291,12 +290,31 @@ initConfig.layout.iframe   = window.top !== window.self;
 ApplicationState.lng      = initConfig.user.i18n || 'en';
 ApplicationState.language = initConfig.user.i18n || 'en';
 
+
 // setup i18n
-i18ninit({
-  appLanguages: (initConfig.i18n || []).map(l => l[0]),
-  resources:   translations,
-  language: initConfig.user.i18n
+(initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
+
+i18next
+  .use(i18nextXHRBackend)
+  .init({
+      lng:         initConfig.user.i18n,
+      ns:          'app',
+      fallbackLng: 'en',
+      resources:    translations
+  });
+
+jqueryI18next.init(i18next, $, {
+  tName:                        't', // --> appends $.t = i18next.t
+  i18nName:                     'i18n', // --> appends $.i18n = i18next
+  handleName:                   'localize', // --> appends $(selector).localize(opts);
+  selectorAttr:                 'data-i18n', // selector for translating elements
+  targetAttr:                   'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
+  optionsAttr:                  'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
+  useOptionsAttr:               false, // see optionsAttr
+  parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
 });
+
+addI18n(ApplicationState.i18n.plugins);
 
 // set Accept-Language request header based on config language
 $.ajaxSetup({
@@ -385,7 +403,6 @@ $.ajaxSetup({
   ProjectsRegistry.getProject(initConfig.initproject, { map_theme } ).then((project) => {
     clearTimeout(timeout);
     ProjectsRegistry.setCurrentProject(project);
-
 
     window.addEventListener('online', () => {
       ApplicationState.online = true;
@@ -528,7 +545,7 @@ $.ajaxSetup({
               _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
             }),
 
-            new (require('gui/search/vue/search'))({
+            new (require('components/g3w-search').SearchComponent)({
               id:         'search',
               icon:        GUI.getFontClass('search'),
               iconColor:   '#8dc3e3',
@@ -752,7 +769,7 @@ $.ajaxSetup({
             const comp = new Component({
               id:                 'queryresults',
               title:              'Query Results',
-              service:            new (require('gui/queryresults/queryresultsservice')),
+              service:            require('services/queryresults').default,
               vueComponentObject: require('components/QueryResults.vue'),
             });
 
@@ -776,7 +793,7 @@ $.ajaxSetup({
           map: new Component({
             id:                 'map',
             title:              'Map Component',
-            service:            new (require('gui/map/mapservice')).MapService({ id: 'map' }),
+            service:            new (require('services/map').default).MapService({ id: 'map' }),
             vueComponentObject: require('components/Map.vue'),
           }),
 

@@ -1,4 +1,4 @@
-import { SEARCH_ALLVALUE }            from 'app/constant';
+import { SEARCH_ALLVALUE }            from 'g3w-constants';
 
 /**
  * @returns { Array } of unique values from field

@@ -7,7 +7,7 @@
  * @since 3.9.0
  */
 
-import { G3W_FID }                         from 'app/constant';
+import { G3W_FID }                         from 'g3w-constants';
 import GUI                                 from 'services/gui';
 import { toRawType }                       from 'utils/toRawType';
 import { groupBy }                         from 'utils/groupBy';
@@ -16,8 +16,8 @@ import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGe
 import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature'
 import { reverseGeometry }                 from 'utils/reverseGeometry';
 
-const Feature                              = require('core/layers/features/feature');
-const { t }                                = require('core/i18n/i18n.service');
+const Feature                              = require('map/layers/features/feature');
+const { t }                                = require('g3w-i18n');
 
 Object
   .entries({

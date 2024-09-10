@@ -1,4 +1,4 @@
-import { G3W_FID } from 'app/constant';
+import { G3W_FID } from 'g3w-constants';
 
 /**
  * @param response

@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES } from 'app/constant';
+import { GEOMETRY_TYPES } from 'g3w-constants';
 
 /**
  * core/geometry/geometry::isMultiGeometry@v3.4

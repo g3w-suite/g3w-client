@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import { FILTER_OPERATORS }        from 'app/constant';
+import { FILTER_OPERATORS }        from 'g3w-constants';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
@@ -124,7 +124,7 @@ import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 export default {
 

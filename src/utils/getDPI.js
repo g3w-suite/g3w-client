@@ -1,4 +1,4 @@
-import { DOTS_PER_INCH } from 'constant';
+import { DOTS_PER_INCH } from 'g3w-constants';
 
 /**
  * @returns { number }

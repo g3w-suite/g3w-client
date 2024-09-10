@@ -1,4 +1,4 @@
-import { SEARCH_ALLVALUE }        from 'app/constant';
+import { SEARCH_ALLVALUE }        from 'g3w-constants';
 import ProjectsRegistry           from 'store/projects';
 import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';

@@ -170,8 +170,8 @@ import {
   PRINT_RESOLUTIONS,
   PRINT_FORMATS,
   TIMEOUT,
-}                                   from 'app/constant';
-import Component                    from 'core/g3w-component';
+}                                   from 'g3w-constants';
+import Component                    from 'g3w-component';
 import ApplicationState             from 'store/application-state';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import ProjectsRegistry             from 'store/projects';
@@ -188,7 +188,7 @@ import resizeMixin                  from 'mixins/resize';
 
 import * as vueComp                 from 'components/PrintPage.vue';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 export default {
 
