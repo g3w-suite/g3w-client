@@ -300,7 +300,6 @@ ${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __$
 
 // BACKOMP v3.x
 g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
-g3wsdk.core.layer.geometry                 = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
 g3wsdk.ol.interactions.measure.LengthInteraction = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "LineString"; super(opts); } },
