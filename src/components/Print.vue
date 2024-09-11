@@ -167,8 +167,6 @@
 
 import {
   PRINT_SCALES,
-  PRINT_RESOLUTIONS,
-  PRINT_FORMATS,
   TIMEOUT,
 }                                   from 'g3w-constants';
 import Component                    from 'g3w-component';
@@ -240,6 +238,15 @@ export default {
 
       const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
       const visible = print.length > 0;
+
+      const PRINT_FORMATS = [
+        { value: 'png', label: 'PNG' },
+        { value: 'jpg', label: 'JPG' },
+        { value: 'svg', label: 'SVG' },
+        { value: 'pdf', label: 'PDF' },
+        { value: 'geopdf', label: 'GEOPDF' },
+      ];
+
       this.state = Object.assign(this.state || {}, {
         visible,
         print,
@@ -255,8 +262,8 @@ export default {
         inner:        [0, 0, 0, 0],
         scales:       [], // initial set empty
         scale:        visible ? null            : undefined,
-        dpis:         PRINT_RESOLUTIONS,
-        dpi:          PRINT_RESOLUTIONS[0],
+        dpis:         [150, 300],
+        dpi:          150,
         formats:      PRINT_FORMATS,
         format:       PRINT_FORMATS[0].value,
       });

@@ -1,6 +1,20 @@
 import { needUseSphereMethods } from 'utils/needUseSphereMethods';
-import { transformMeterLength } from 'utils/transformMeterLength';
 import { isMultiGeometry }      from "utils/isMultiGeometry";
+
+/**
+ * Transform length meter in a specific unit (ex.nautical mile)
+ * 
+ * @param length
+ * @param tounit
+ * 
+ * @returns { number }
+ */
+function transformMeterLength(length, tounit) {
+  if ('nautical' === tounit) {
+    return length * 0.0005399568;
+  }
+  return length;
+}
 
 /**
  * @param { Object } opts

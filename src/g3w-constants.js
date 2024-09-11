@@ -8,7 +8,7 @@
 /**
  * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
  */
-// import { version } from '../../package.json';
+// import { version } from '../package.json';
 import version      from './version';
 
 /**
@@ -188,167 +188,33 @@ export const GEOMETRY_TYPES = {
 };
 
 /**
- * @type {string}
- */
-export const LIST_OF_RELATIONS_TITLE = 'info.list_of_relations';
-
-/**
- * @type {string}
- */
-export const LIST_OF_RELATIONS_ID = '__G3W_LIST_OF_RELATIONS_ID__';
-
-/**
- * @type {string}
- */
-export const LOCALSTORAGE_EXTERNALWMS_ITEM = 'externalwms';
-
-/**
- * @typedef MapSettings
- * @property {{ maxScale: number }} ZOOM
- * @property {{ duration: number }} ANIMATION
- */
-
-/**
- * @type {MapSettings}
- */
-export const MAP_SETTINGS = {
-  ZOOM:            { maxScale: 1000, },
-  ANIMATION:       { duration: 2000, },
-};
-
-/**
- * @type {Array<{ value: any, label: string }>}
- * @since v3.5
- */
-export const PRINT_FORMATS = [
-  {
-    value: 'png',
-    label: 'PNG'
-  },
-  /** @since 3.10.0 */
-  {
-    value: 'jpg',
-    label: 'JPG'
-  },
-  /** @since 3.10.0 */
-  {
-    value: 'svg',
-    label: 'SVG'
-  },
-  {
-    value: 'pdf',
-    label: 'PDF'
-  },
-  /** @since 3.10.0 */
-  {
-    value: 'geopdf',
-    label: 'GEOPDF'
-  },
-];
-
-/**
- * @type {number[]}
- * @since v3.5
- */
-export const PRINT_RESOLUTIONS = [150, 300];
-
-/**
  * @type {Array<{ value: number, label: string }>}
  * @since v3.5
  */
 export const PRINT_SCALES = [
-  {
-    value: 100,
-    label: '1:100'
-  },
-  {
-    value: 200,
-    label: '1:200'
-  },
-  {
-    value: 500,
-    label: '1:500'
-  },
-  {
-    value: 1000,
-    label: '1:1.000'
-  },
-  {
-    value: 2000,
-    label: '1:2.000'
-  },
-  {
-    value: 2500,
-    label: '1:2.500'
-  },
-  {
-    value: 5000,
-    label: '1:5.000'
-  },
-  {
-    value: 10000,
-    label: '1:10.000'
-  },
-  {
-    value: 20000,
-    label: '1:20.000'
-  },
-  {
-    value: 25000,
-    label: '1:25.000'
-  },
-  {
-    value: 50000,
-    label: '1:50.000'
-  },
-  {
-    value: 100000,
-    label: '1:100.000'
-  },
-  {
-    value: 250000,
-    label: '1:250.000'
-  },
-  {
-    value: 500000,
-    label: '1:500.000'
-  },
-  {
-    value: 1000000,
-    label: '1:1.000.000'
-  },
-  {
-    value: 2500000,
-    label: '1:2.500.000'
-  },
-  {
-    value: 5000000,
-    label: '1:5.000.000'
-  },
-  {
-    value: 10000000,
-    label: '1:10.000.000'
-  },
-  {
-    value: 20000000,
-    label: '1:20.000.000'
-  },
-  {
-    value: 50000000,
-    label: '1:50.000.000'
-  },
-  {
-    value: 100000000,
-    label: '1:100.000.000'
-  },
-  {
-    value: 250000000,
-    label: '1:250.000.000'
-  },
-  {
-    value: 500000000,
-    label: '1:500.000.000'
-  }
+  { value: 100,       label: '1:100' },
+  { value: 200,       label: '1:200' },
+  { value: 500,       label: '1:500' },
+  { value: 1000,      label: '1:1.000' },
+  { value: 2000,      label: '1:2.000' },
+  { value: 2500,      label: '1:2.500' },
+  { value: 5000,      label: '1:5.000' },
+  { value: 10000,     label: '1:10.000' },
+  { value: 20000,     label: '1:20.000' },
+  { value: 25000,     label: '1:25.000' },
+  { value: 50000,     label: '1:50.000' },
+  { value: 100000,    label: '1:100.000' },
+  { value: 250000,    label: '1:250.000' },
+  { value: 500000,    label: '1:500.000' },
+  { value: 1000000,   label: '1:1.000.000' },
+  { value: 2500000,   label: '1:2.500.000' },
+  { value: 5000000,   label: '1:5.000.000' },
+  { value: 10000000,  label: '1:10.000.000' },
+  { value: 20000000,  label: '1:20.000.000'  },
+  { value: 50000000,  label: '1:50.000.000' },
+  { value: 100000000, label: '1:100.000.000' },
+  { value: 250000000, label: '1:250.000.000' },
+  { value: 500000000, label: '1:500.000.000' }
 ];
 
 /**
@@ -368,27 +234,11 @@ export const QUERY_POINT_TOLERANCE = {
 export const SEARCH_ALLVALUE = '__G3W_ALL__';
 
 /**
- * @type {string[]}
- * @since v3.5
- */
-export const SEARCH_RETURN_TYPES = ['data', 'search'];
-
-/**
  * TIMEOUT (1 minute = 60000)
  * 
  * @type {number}
  */
 export const TIMEOUT = 60000;
-
-/**
- * @type {string}
- */
-export const TOC_LAYERS_INIT_STATUS = 'not_collapsed';
- 
-/**
- * @type {string}
- */
-export const TOC_THEMES_INIT_STATUS = 'collapsed';
 
 /**
  * @type {{resize: Object<string, { min: number }>}}
@@ -399,13 +249,6 @@ export const VIEWPORT = {
     map:     { min: 200 },
     content: { min: 200 },
   }
-};
-
-/**
- * @type {Object<string, { tool: number }>}
- */
-export const ZINDEXES = {
-  usermessage: { tool: 2 }
 };
 
 /**
@@ -609,11 +452,6 @@ export const LOCAL_ITEM_IDS = {
 };
 
 /**
- * @since 3.8.0
- */
-export const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
-
-/**
  * List of Open Layers spatial methods used to find features
  * 
  * @since 3.9.0
@@ -660,22 +498,11 @@ export default {
   GEOMETRY_FIELDS,
   GEOMETRY_TYPES,
   INCHES_PER_UNIT,
-  LIST_OF_RELATIONS_TITLE,
-  LIST_OF_RELATIONS_ID,
   LOCAL_ITEM_IDS,
-  LOCALSTORAGE_EXTERNALWMS_ITEM,
-  LOGO_GIS3W,
-  MAP_SETTINGS,
-  PRINT_FORMATS,
-  PRINT_RESOLUTIONS,
   PRINT_SCALES,
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
-  SEARCH_RETURN_TYPES,
   SPATIAL_METHODS,
   TIMEOUT,
-  TOC_LAYERS_INIT_STATUS,
-  TOC_THEMES_INIT_STATUS,
   VIEWPORT,
-  ZINDEXES,
 };

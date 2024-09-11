@@ -72,7 +72,7 @@
 
 <script>
   import GUI                         from 'services/gui';
-  import { CatalogEventBus as VM }   from 'g3w-eventbus';
+  import { VM }                      from 'g3w-eventbus';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ProjectsRegistry            from 'store/projects';
   import ClickMixin                  from 'mixins/click';

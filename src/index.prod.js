@@ -29,7 +29,6 @@ import Component                   from 'g3w-component';
 
 // services
 import ApplicationService          from 'services/application';
-import ApiService                  from 'services/api';
 import GUI                         from 'services/gui';
 
 // components
@@ -68,30 +67,10 @@ import vClickOutside               from 'directives/v-click-outside';
 // utils
 import { noop }                    from 'utils/noop';
 import { XHR }                     from 'utils/XHR';
+import { $promisify }              from 'utils/promisify';
 
 
 const { addI18n, t, tPlugin } = require('g3w-i18n');
-
-
-GUI.addComponent = function(component, placeholder, options={}) {
-  let register = true;
-  if (placeholder && Object.keys(SERVICES).indexOf(placeholder) > -1) {
-    // add component to the sidebar and set position inside the sidebar
-    if ('sidebar' === placeholder) {
-      if (!isMobile.any || false !== component.mobile) {
-        ApplicationState.sidebar.components.push(component);
-        (new (Vue.extend(require('components/SidebarItem.vue')))({ component, opts: options })).$mount();
-      }
-      register = true;
-    } else if (SERVICES[placeholder]) {
-      register = SERVICES[placeholder].addComponents([component], options);
-    }
-  }
-  if (register) {
-    GUI.setComponent(component);
-  }
-  return true;
-};
 
 /**
  * Install global components
@@ -186,13 +165,6 @@ Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unus
 // loading spinner at beginning
 $('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
 
-// service know by the applications (standard)
-const SERVICES = {
-  navbar:   null,
-  sidebar:  null,
-  viewport: null,
-};
-
 const GROUPS = {
   general: ['title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url'],
   spatial: ['crs', 'extent'],
@@ -224,6 +196,16 @@ function _setDataTableLanguage() {
       "infoFiltered": ''
     }
   });
+}
+
+/**
+ * Retrieve from local storage
+ */
+function _getSavedSearches() {
+  const ITEMS = ApplicationState.querybuilder.searches;
+  const id = ProjectsRegistry.getCurrentProject().getId();
+  ITEMS[id] = ITEMS[id] || [];
+  return ITEMS[id];
 }
 
 /**
@@ -276,7 +258,6 @@ Object.assign(initConfig, {
     rasterurl:       initConfig.rasterurl,
     interfaceowsurl: initConfig.interfaceowsur,
   }),
-  overviewproject: (initConfig.overviewproject && initConfig.overviewproject.gid) ? initConfig.overviewproject : null,
   layout:  initConfig.layout || {},
   plugins: initConfig.plugins || {},
   tools:   initConfig.tools || { tools:  [] },
@@ -318,7 +299,7 @@ addI18n(ApplicationState.i18n.plugins);
 
 // set Accept-Language request header based on config language
 $.ajaxSetup({
-  beforeSend: (xhr) => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
+  beforeSend: xhr => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
 });
 
 /**
@@ -367,7 +348,6 @@ $.ajaxSetup({
 
   ApplicationState.gui.layout.app      = initConfig.layout;
   ProjectsRegistry.config              = initConfig;
-  ProjectsRegistry.overviewproject     = initConfig.overviewproject;
 
   //setup state
   Object.assign(ProjectsRegistry.state, {
@@ -390,7 +370,6 @@ $.ajaxSetup({
       crs:                initConfig.crs,
       vectorurl:          initConfig.vectorurl,
       rasterurl:          initConfig.rasterurl,
-      overviewprojectgid: ProjectsRegistry.overviewproject ? ProjectsRegistry.overviewproject.gid : null,
     });
     ProjectsRegistry._groupProjects.push(project);
   });
@@ -545,10 +524,30 @@ $.ajaxSetup({
               _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
             }),
 
-            new (require('components/g3w-search').SearchComponent)({
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-search.js@v3.10.2 
+             */
+            new Component({
               id:         'search',
+              visible:     true,
               icon:        GUI.getFontClass('search'),
               iconColor:   '#8dc3e3',
+              title:       ProjectsRegistry.getCurrentProject().state.search_title || 'search',
+              service: Object.assign(new G3WObject(), {
+                state: {
+                  searches: (ProjectsRegistry.getCurrentProject().state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
+                  tools: [],
+                  querybuildersearches: _getSavedSearches()
+                },
+                title:                    ProjectsRegistry.getCurrentProject().state.search_title || "search",
+                addTool(t)                { this.state.tools.push(t); },
+                addTools(tt)              { for (const t of tt) this.addTool(t); },
+                showPanel(o)              { return new SearchPanel(o, true) },
+                getTitle()                { return this.title },
+                removeTools()             { this.state.tools.splice(0) },
+                stop(d)                   { return $promisify(Promise.resolve(d)) },
+                removeTool()              {},
+              }),
               actions:     [
                 {
                   id:      "querybuilder",
@@ -557,12 +556,11 @@ $.ajaxSetup({
                   fnc:     () => {
                     GUI.closeContent();
                     GUI.closeSideBar();
-                    const opts = { type: 'sidebar', title: t('sdk.querybuilder.title'), show: true, };
-                    opts.internalPanel = new (Vue.extend(require('components/QueryBuilder.vue')))(opts);
-                    // Build the sidebar panel.
-                    // It is show, mounted on the sidebar, because show opts is set to true
-                    // no need to class show method of panel
-                    return new Panel(opts);
+                    return new Panel({
+                      title: t('sdk.querybuilder.title'),
+                      show: true,
+                      vueComponentObject: require('components/QueryBuilder.vue')
+                    });
                   },
                   style: {
                     color:        '#8DC3E3',
@@ -572,6 +570,7 @@ $.ajaxSetup({
                     marginRight:  '5px'
                   }
               }],
+              vueComponentObject: require('components/Search.vue'),
             }),
 
             /**

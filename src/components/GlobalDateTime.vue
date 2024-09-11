@@ -32,9 +32,8 @@
 </template>
 
 <script>
-  import ApplicationState from 'store/application-state';
-
-  const { getUniqueDomId } = require('utils');
+  import ApplicationState   from 'store/application-state';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
   export default {
     name: "datetime",

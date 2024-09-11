@@ -14,64 +14,27 @@ import ApplicationService                          from 'services/application';
 import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
 import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
-import { sanitizeFidFeature }                      from 'utils/sanitizeFidFeature';
 import { getOLGeometry }                           from 'utils/getOLGeometry';
 import { isMultiGeometry }                         from 'utils/isMultiGeometry';
-import { getAllPointGeometryTypes }                from 'utils/getAllPointGeometryTypes';
 import { isPointGeometryType }                     from 'utils/isPointGeometryType';
-import { getAllLineGeometryTypes }                 from 'utils/getAllLineGeometryTypes';
 import { isLineGeometryType }                      from 'utils/isLineGeometryType';
-import { getAllPolygonGeometryTypes }              from 'utils/getAllPolygonGeometryTypes';
 import { isPolygonGeometryType }                   from 'utils/isPolygonGeometryType';
-import { coordinatesToGeometry }                   from 'utils/coordinatesToGeometry';
-import { getDefaultLayerStyle }                    from 'utils/getDefaultLayerStyle';
-import { createLayerStyle }                        from 'utils/createLayerStyle';
-import { createFeatureFromCoordinates }            from 'utils/createFeatureFromCoordinates';
-import { createFeatureFromBBOX }                   from 'utils/createFeatureFromBBOX';
-import { createFeatureFromGeometry }               from 'utils/createFeatureFromGeometry';
-import { createFeatureFromFeatureObject }          from 'utils/createFeatureFromFeatureObject';
-import { createOlLayer }                           from 'utils/createOlLayer';
-import { createWMSLayer }                          from 'utils/createWMSLayer';
-import { createVectorLayerFromFeatures }           from 'utils/createVectorLayerFromFeatures';
-import { createVectorLayerFromGeometry }           from 'utils/createVectorLayerFromGeometry';
 import { createVectorLayerFromFile }               from 'utils/createVectorLayerFromFile';
-import { createStyleFunctionToVectorLayer }        from 'utils/createStyleFunctionToVectorLayer';
 import { createSelectedStyle }                     from 'utils/createSelectedStyle';
 import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
-import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
-import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
-import { transformBBOX }                           from 'utils/transformBBOX';
-import { parseQueryLayersPromiseResponses }        from 'utils/parseQueryLayersPromiseResponses';
-import { getMapLayerById }                         from 'utils/getMapLayerById';
 import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { getFeaturesFromResponseVectorApi }        from 'utils/getFeaturesFromResponseVectorApi';
-import { splitGeometryLine }                       from 'utils/splitGeometryLine';
 import { splitFeatures }                           from 'utils/splitFeatures';
 import { splitFeature }                            from 'utils/splitFeature';
-import { getPointFeaturesfromGeometryVertex }      from 'utils/getPointFeaturesfromGeometryVertex';
-import { getVertexLength }                         from 'utils/getVertexLength';
 import { isSameBaseGeometryType }                  from 'utils/isSameBaseGeometryType';
-import { isSingleGeometry }                        from 'utils/isSingleGeometry';
 import { singleGeometriesToMultiGeometry }         from 'utils/singleGeometriesToMultiGeometry';
 import { multiGeometryToSingleGeometries }         from 'utils/multiGeometryToSingleGeometries';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { dissolve }                                from 'utils/dissolve';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
-import { findSelfIntersects }                      from 'utils/findSelfIntersects';
-import { normalizeEpsg }                           from 'utils/normalizeEpsg';
-import { crsToCrsObject }                          from 'utils/crsToCrsObject';
-import { convertDMToDEG }                          from 'utils/convertDMToDEG';
-import { convertDEGToDM }                          from 'utils/convertDEGToDM';
-import { convertDMSToDEG }                         from 'utils/convertDMSToDEG';
-import { convertDEGToDMS }                         from 'utils/convertDEGToDMS';
-import { getGeoTIFFfromServer }                    from 'utils/getGeoTIFFfromServer';
-import { parseAttributes }                         from 'utils/parseAttributes';
 import { distance }                                from 'utils/distance';
-import { squaredDistance }                         from 'utils/squaredDistance';
-import { closestOnSegment }                        from 'utils/closestOnSegment';
-import { get_legend_params }                       from 'utils/get_legend_params';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
 import { getFilterExpression }                     from "utils/getFilterExpression";
 
@@ -80,9 +43,6 @@ import { getFilterExpression }                     from "utils/getFilterExpressi
  */
 import G3WInput                                    from 'components/InputG3W.vue';
 import G3wFormInputs                               from 'components/InputG3WFormInputs.vue';
-import FormBody                                    from 'components/FormBody.vue';
-import FormFooter                                  from 'components/FormFooter.vue';
-import C3XYLine                                    from 'components/C3XYLine.vue';
 
 /**
  * CORE modules
@@ -99,21 +59,8 @@ import { MeasureInteraction }                      from 'map/controls/measurecon
 //MIXINS
 import Mixins                                      from 'mixins';
 
-import { reverseGeometry }                         from 'utils/reverseGeometry';
-import { getExtentForViewAndSize }                 from 'utils/getExtentForViewAndSize';
-import { createPolygonLayerFromBBox }              from 'utils/createPolygonLayerFromBBox';
-import { getLengthMessageText }                    from 'utils/getLengthMessageText';
-import { needUseSphereMethods }                    from 'utils/needUseSphereMethods';
-import { transformMeterLength }                    from 'utils/transformMeterLength';
 import { createMeasureTooltip }                    from 'utils/createMeasureTooltip';
-import { formatMeasure }                           from 'utils/formatMeasure';
-import { getCurrentMapUnit }                       from 'utils/getCurrentMapUnit';
-import { getAreaMessageText }                      from 'utils/getAreaMessageText';
-import { transformMeterArea }                      from 'utils/transformMeterArea';
 import { removeMeasureTooltip }                    from 'utils/removeMeasureTooltip';
-import { setMeasureTooltipStatic }                 from 'utils/setMeasureTooltipStatic';
-import { getMetersFromDegrees }                    from 'utils/getMetersFromDegrees';
-import { getDPI }                                  from 'utils/getDPI';
 import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
 import { mergeOptions }                            from 'utils/mergeOptions';
@@ -126,37 +73,47 @@ import Component                                   from 'g3w-component';
 import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
 
+import { getUniqueDomId }                          from 'utils/getUniqueDomId';
+import { mixin }                                   from 'utils/mixin';
+import { merge }                                   from 'utils/merge';
+import { hasOwn }                                  from 'utils/hasOwn';
+import { inherit }                                 from 'utils/inherit';
+import { base }                                    from 'utils/base';
+import { noop }                                    from 'utils/noop';
+import { resolve }                                 from 'utils/resolve';
+import { reject }                                  from 'utils/reject';
+import { Base64 }                                  from 'utils/Base64';
+import { toRawType }                               from 'utils/toRawType';
+import { throttle }                                from 'utils/throttle';
+import { debounce }                                from 'utils/debounce';
+import { XHR }                                     from 'utils/XHR';
+import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
+import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 
-
-const utils                      = require('utils');
-const i18n                       = require('g3w-i18n');
-const LayersStoreRegistry        = require('map/layers/layersstoresregistry');
-const LayersStore                = require('map/layers/layersstore');
-const Layer                      = require('map/layers/layer');
-const LayerFactory               = require('map/layers/layerfactory');
-const TableLayer                 = require('map/layers/tablelayer');
-const { VectorLayer }            = require('map/layers/vectorlayer');
-const { ImageLayer }             = require('map/layers/imagelayer');
-const Feature                    = require('map/layers/features/feature');
-const FeaturesStore              = require('map/layers/features/featuresstore');
-const OlFeaturesStore            = require('map/layers/features/olfeaturesstore');
-const { Plugin }                 = require('./g3w-plugin');
-const { PluginService }          = require('./g3w-plugin');
+const i18n                        = require('g3w-i18n');
+const LayersStoreRegistry         = require('map/layers/layersstoresregistry');
+const LayersStore                 = require('map/layers/layersstore');
+const Layer                       = require('map/layers/layer');
+const LayerFactory                = require('map/layers/layerfactory');
+const TableLayer                  = require('map/layers/tablelayer');
+const { VectorLayer }             = require('map/layers/vectorlayer');
+const { ImageLayer }              = require('map/layers/imagelayer');
+const Feature                     = require('map/layers/features/feature');
+const FeaturesStore               = require('map/layers/features/featuresstore');
+const OlFeaturesStore             = require('map/layers/features/olfeaturesstore');
+const { Plugin }                  = require('./g3w-plugin');
+const { PluginService }           = require('./g3w-plugin');
 
 /**
  * GUI modules
  */
-const {
-  ControlFactory,
-  MapLayersStoresRegistry,
-}                                = require('services/map').default;
-const FieldsService              = require('gui/fields/fieldsservice');
-const { SearchComponent }        = require('components/g3w-search');
-const { SearchPanel }            = require('components/g3w-search');
-const { FormComponent }          = require('components/g3w-form');
-const { FormService }            = require('components/g3w-form');
-const InputsComponents           = require('gui/inputs/inputs');
-const Fields                     = require('gui/fields/fields');
+const { MapLayersStoresRegistry } = require('services/map').default;
+const FieldsService               = require('gui/fields/fieldsservice');
+const { SearchPanel }             = require('components/g3w-search');
+const { FormComponent }           = require('components/g3w-form');
+const { FormService }             = require('components/g3w-form');
+const InputsComponents            = require('gui/inputs/inputs');
+const Fields                      = require('gui/fields/fields');
 
 const g3wsdk = {
 
@@ -166,71 +123,53 @@ const g3wsdk = {
   // CORE API METHODS AND OBJECTS
   core: {
     G3WObject,
-    utils,
+    utils: {
+      getUniqueDomId,
+      uniqueId: getUniqueDomId,
+      mixin,
+      merge,
+      hasOwn,
+      inherit,
+      base,
+      noop,
+      truefnc() { return true },
+      resolve,
+      reject,
+      Base64,
+      toRawType,
+      throttle,
+      debounce,
+        XHR,
+      createFilterFormInputs,
+      colorHEXToRGB,
+    },
     geoutils: {
       geometryFields: G3W_CONSTANT.GEOMETRY_FIELDS,
-      coordinatesToGeometry,
-      getDefaultLayerStyle,
-      createLayerStyle,
-      createFeatureFromCoordinates,
-      createFeatureFromBBOX,
-      createFeatureFromGeometry,
-      createFeatureFromFeatureObject,
-      createOlLayer,
-      createWMSLayer,
-      createVectorLayerFromGeometry,
-      createVectorLayerFromFeatures,
       createVectorLayerFromFile,
-      createStyleFunctionToVectorLayer,
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
-      getFormDataExpressionRequestFromFeature,
-      convertFeatureToGEOJSON,
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
-      transformBBOX,
-      parseQueryLayersPromiseResponses,
-      getMapLayerById,
       getMapLayersByFilter,
       areCoordinatesEqual,
       getFeaturesFromResponseVectorApi,
-      splitGeometryLine,
       splitFeatures,
       splitFeature,
-      getPointFeaturesfromGeometryVertex,
-      getVertexLength,
       isSameBaseGeometryType,
-      isSingleGeometry,
       singleGeometriesToMultiGeometry,
       multiGeometryToSingleGeometries,
       convertSingleMultiGeometry,
       dissolve,
       within,
       intersects,
-      findSelfIntersects,
-      normalizeEpsg,
-      crsToCrsObject,
-      ConvertDMToDEG: convertDMToDEG,
-      ConvertDEGToDM: convertDEGToDM,
-      ConvertDMSToDEG: convertDMSToDEG,
-      ConvertDEGToDMS: convertDEGToDMS,
-      getGeoTIFFfromServer,
-      sanitizeFidFeature,
-      parseAttributes,
       distance,
-      squaredDistance,
-      closestOnSegment,
-      get_LEGEND_ON_LEGEND_OFF_Params: get_legend_params,
       Geometry: {
         GeometryTypes: G3W_CONSTANT.GEOMETRY_TYPES,
         removeZValueToOLFeatureGeometry,
         addZValueToOLFeatureGeometry,
         getOLGeometry,
         isMultiGeometry,
-        getAllPointGeometryTypes,
         isPointGeometryType,
-        getAllLineGeometryTypes,
         isLineGeometryType,
-        getAllPolygonGeometryTypes,
         isPolygonGeometryType,
         is3DGeometry,
       },
@@ -294,7 +233,6 @@ const g3wsdk = {
   gui: {
     GUI,
     Panel,
-    ControlFactory,
     ComponentsFactory: {
       build: ({ vueComponentObject, service, propsData }, options={}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
     },
@@ -302,31 +240,12 @@ const g3wsdk = {
     vue: {
       Component,
       Panel,
-      SearchComponent,
       SearchPanel,
-      // main Form Component
       FormComponent,
-      // Form Components
-      FormComponents: {
-        Body: FormBody,
-        Footer: FormFooter
-      },
       Inputs: {
         G3wFormInputs,
         G3WInput,
         InputsComponents
-      },
-      Charts: {
-        ChartsFactory: {
-          /** @param  type: <library(es:c3)>:<chartType:(es.lineXY)> */
-          build({ type, hooks = {} } = {}) {
-            const [library='c3', chartType='lineXY'] = type.split(':');
-            return Object.assign(hooks, this.CHARTS[library][chartType]);
-          }
-        },
-        c3: {
-          lineXY: C3XYLine
-        }
       },
       Fields,
       Mixins,
@@ -345,23 +264,10 @@ const g3wsdk = {
     controls: {},
     utils: {
       merge: mergeOptions,
-      getExtentForViewAndSize,
-      createPolygonLayerFromBBox,
-      reverseGeometry,
       getScaleFromResolution,
       getResolutionFromScale,
-      getDPI,
-      getMetersFromDegrees,
-      needUseSphereMethods,
-      getLengthMessageText,
-      getAreaMessageText,
-      formatMeasure,
       createMeasureTooltip,
-      getCurrentMapUnit,
-      transformMeterLength,
-      transformMeterArea,
       removeMeasureTooltip,
-      setMeasureTooltipStatic,
     },
   },
 
@@ -395,23 +301,6 @@ ${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __$
 // BACKOMP v3.x
 g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.core.layer.geometry                 = { geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
-g3wsdk.gui.vue.Charts.ChartsFactory.CHARTS = { c3: { lineXY: C3XYLine } };
-g3wsdk.gui.ComponentsFactory.buildSidebar  = ({ vueComponentObject }, options={}) => {
-  const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
-  const component = g3wsdk.gui.ComponentsFactory.build({ vueComponentObject }, {
-    id:          options.id,
-    title:       options.title,
-    open:        çç(options.open, false),
-    collapsible: çç(options.collapsible, true),
-    iconColor:   çç(options.iconConfig, {}).color,
-    icon:        çç(options.iconConfig, {}).icon && GUI.getFontClass(options.iconConfig.icon),
-    mobile:      çç(options.mobile, true),
-    events:      çç(options.events, {})
-  });
-  GUI.addComponent(component, 'sidebar', çç(options.sidebarOptions, { position: 1 }));
-  return component;
-};
-
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
 g3wsdk.ol.interactions.measure.LengthInteraction = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "LineString"; super(opts); } },

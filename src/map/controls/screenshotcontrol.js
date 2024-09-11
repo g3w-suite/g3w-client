@@ -6,7 +6,6 @@
 import ApplicationState         from 'store/application-state';
 import GUI                      from 'services/gui';
 import { sameOrigin }           from 'utils/sameOrigin';
-import { getGeoTIFFfromServer } from 'utils/getGeoTIFFfromServer';
 import InteractionControl       from 'map/controls/interactioncontrol';
 
 /**
@@ -63,69 +62,58 @@ export class ScreenshotControl extends InteractionControl {
   addType(type) {
     this.types.push(type);
 
-    if (/*this.types.length > 1 &&*/ !this.toggledTool) {
-      this.createControlTool();
-    }
-  }
+    this.toggledTool = this.toggledTool || {
+      __title: 'sdk.mapcontrols.screenshot.title',
+      __iconClass: 'camera',
+      data: () => ({ types: this.types, type: this.types[0] }),
+      template: /* html */ `
+        <div style="width: 100%; padding: 5px;">
+          <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
+            <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
+          </select>
+          <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+        </div>`,
+      methods: {
+        async download(e) {
+          const map         = GUI.getService('map');
+          // Start download
+          ApplicationState.download = true;
+          e.target.disabled = true;
+          try {
+            const blobImage = await map.createMapImage();
 
-  createControlTool() {
-    return super.createControlTool({
-      type: 'custom',
-      component: {
-        __title: 'sdk.mapcontrols.screenshot.title',
-        __iconClass: 'camera',
-        data: () => ({ types: this.types, type: this.types[0] }),
-        template: /* html */ `
-          <div style="width: 100%; padding: 5px;">
-            <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
-              <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
-            </select>
-            <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
-          </div>`,
-        methods: {
-          async download(e) {
-            const map         = GUI.getService('map');
-            // Start download
-            ApplicationState.download = true;
-            e.target.disabled = true;
-            try {
-              const blobImage = await map.createMapImage();
-              // PNG
-              if ('screenshot' === this.type) {
-                window.saveAs(blobImage, `map_${Date.now()}.png`);
-              } else {
-                // GeoTIFF
-                window.saveAs(
-                  await getGeoTIFFfromServer({
-                    url:    `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
-                    method: "POST",
-                    params: {
-                      image:               blobImage,
-                      csrfmiddlewaretoken: map.getCookie('csrftoken'),
-                      bbox:                map.getMapBBOX().toString()
-                    },
-                  }),
-                  `map_${Date.now()}.tif`
-                );
-              }
-            } catch (e) {
-              GUI.showUserMessage({
-                type:    'SecurityError' === err.name ? 'warning' : 'alert',
-                message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
-                autoclose: false
-              });
-              console.warn(e);
+            if ('screenshot' === this.type) {                   // PNG
+              window.saveAs(blobImage, `map_${Date.now()}.png`);
+            } else {                                            // GeoTIFF
+              const body = new FormData();
+              body.append('image',               blobImage);
+              body.append('csrfmiddlewaretoken', map.getCookie('csrftoken'));
+              body.append('bbox',                map.getMapBBOX().toString());
+              window.saveAs(
+                await (await fetch(
+                  `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
+                  { method: 'POST', body }
+                )).blob(),
+                `map_${Date.now()}.tif`
+              );
             }
-            // End download
-            ApplicationState.download = false;
-            e.target.disabled = false;
-            return true;
+          } catch (e) {
+            GUI.showUserMessage({
+              type:    'SecurityError' === err.name ? 'warning' : 'alert',
+              message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
+              autoclose: false
+            });
+            console.warn(e);
           }
-        },
-        created()       { GUI.toggleUserMessage(false); },
-        beforeDestroy() { GUI.toggleUserMessage(true); }
-      }
-    });
+          // End download
+          ApplicationState.download = false;
+          e.target.disabled = false;
+          return true;
+        }
+      },
+      created()       { GUI.toggleUserMessage(false); },
+      beforeDestroy() { GUI.toggleUserMessage(true); }
+    };
   }
 
   /**
@@ -191,41 +179,22 @@ export class ScreenshotControl extends InteractionControl {
 function isCrossOrigin(layer) {
   let source_url;
 
-  // skip levels that can't cause CORS issues
-  if (isHiddenLayer(layer) || isVectorLayer(layer)) {
+  // vector or hidden layers can't cause CORS issues
+  if ((layer.getVisible && !layer.getVisible()) || layer instanceof ol.layer.Vector) {
     return false;
   }
   
-  // check raster layers (OpenLayers)
-  if (isImageLayer(layer)) { 
+  // image layer (OpenLayers)
+  if (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image) { 
     source_url = layer.getSource().getUrl();
     return source_url && !sameOrigin(source_url, location);
   }
 
-  // check if layer has external property to true (eg. "core/layers/imagelayer.js" instance)
-  if (isExternalImageLayer(layer)) { 
+  // external image layer (eg: "core/layers/imagelayer.js")
+  if ((layer.getConfig().source || {}).external) { 
     source_url = layer.getConfig().source.url;
     return source_url && !sameOrigin(source_url, location);
   }
 
   return false;
-}
-
-function isHiddenLayer(layer) {
-  return layer.getVisible && !layer.getVisible();
-}
-
-function isVectorLayer(layer) {
-  return layer instanceof ol.layer.Vector;
-}
-
-function isImageLayer(layer) {
-  return (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image);
-}
-
-/**
- * @see https://github.com/g3w-suite/g3w-client/issues/475
- */
-function isExternalImageLayer(layer) {
-  return layer.getConfig().source && layer.getConfig().source.external;
 }

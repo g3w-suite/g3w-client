@@ -5,79 +5,18 @@
 
 import { SEARCH_ALLVALUE }            from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
-import Component                      from 'g3w-component';
 import Panel                          from 'g3w-panel';
 import CatalogLayersStoresRegistry    from 'store/catalog-layers';
-import ApplicationState               from 'store/application-state';
 import ProjectsRegistry               from 'store/projects';
 import GUI                            from 'services/gui';
-import { $promisify }                 from 'utils/promisify';
+import DataRouterService              from 'services/data';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
-import { createInputsFormFromFilter } from 'utils/createInputsFormFromFilter';
-import { doSearch }                   from 'utils/doSearch';
+import { toRawType }                  from 'utils/toRawType';
+import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
 
-import * as vueComp                   from 'components/Search.vue';
 import * as vueSearchComp             from 'components/SearchPanel.vue';
-
-/**
- * Retrieve from local storage
- */
-function _getSavedSearches() {
-  const ITEMS = ApplicationState.querybuilder.searches;
-  const id = ProjectsRegistry.getCurrentProject().getId();
-  ITEMS[id] = ITEMS[id] || [];
-  return ITEMS[id];
-}
-
-/**
- * ORIGINAL SOURCE:
- * - src/app/gui/search/vue/search.js@v3.9.3
- * - src/app/gui/search/service.js@3.9.3
- */
-export function SearchComponent(opts = {}) {
-
-  const project = ProjectsRegistry.getCurrentProject();
-
-  const state = {
-    searches: (project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
-    tools: [],
-    querybuildersearches: _getSavedSearches()
-  };
-
-  const service = opts.service || new G3WObject();
-
-  const comp = new Component({
-    ...opts,
-    id: 'search',
-    visible: true,
-    title: project.state.search_title || 'search',
-    service: Object.assign(service, {
-      state,
-      title:                 project.state.search_title || "search",
-      addQueryBuilderSearch: s  => { state.querybuildersearches.push(s); },
-      addTool:               t  => { state.tools.push(t); },
-      addTools:              tt => { for (const t of tt) service.addTool(t); },
-      showPanel:             o  => new SearchPanel(o, true),
-      removeItem:            ({ type, index } = {}) => { 'querybuilder' === type && state.querybuildersearches.splice(index, 1); },
-      getTitle:              () => service.title,
-      cleanSearchPanels:     () => { state.panels = {}; },
-      removeTools:           () => { state.tools.splice(0) },
-      stop:                  d  => $promisify(Promise.resolve(d)),
-      removeTool:            () => {},
-      reload:                () => {
-        state.searches             = ProjectsRegistry.getCurrentProject().state.search;
-        state.querybuildersearches = _getSavedSearches();
-      },
-    }),
-    vueComponentObject: vueComp,
-  });
-
-  comp._reload = () => { comp._service.reload() };
-
-  return comp;
-}
 
 /**
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchpanel.js@v3.9.3
@@ -168,4 +107,131 @@ export function SearchPanel(opts = {}, show = false) {
   });
 
   return panel;
+}
+
+/**
+ * Create the right search structure for a search form
+ */
+async function createInputsFormFromFilter(state) {
+
+  for (let i = 0; i <= state.forminputs.length - 1; i++) {
+
+    const input            = state.forminputs[i];
+    const has_autocomplete = 'autocompletefield' === input.type;
+
+    // set key-values for select
+    input.values = [
+      ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
+      ...(input.dependance_strict || has_autocomplete
+          ? input.values
+          : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
+        )
+    ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
+
+    // there is a dependence
+    if (input.dependance) {
+      state.loading[input.dependance] = false;
+      input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
+    }
+
+    // save a copy of original values
+    input._values = [...input.values];
+
+    input.loading = false;
+  }
+
+}
+
+/**
+ * Perform search
+ * 
+ * @param { Object } opts
+ * @param opts.filter
+ * @param opts.queryUrl
+ * @param opts.feature_count
+ * @param opts.show            - false = internal request (No output data)
+ * 
+ * @returns { Promise<void|unknown> }
+ */
+async function doSearch({
+  filter,
+  queryUrl,
+  show,
+  feature_count = 10000,
+  state
+} = {}) {
+
+  queryUrl = undefined !== queryUrl ? queryUrl : state.queryurl;
+  show     = undefined !== show     ? show     : 'search' === state.type;
+
+  state.searching = true;
+
+  let data, parsed;
+
+  try {
+    data = await DataRouterService.getData('search:features', {
+      inputs: {
+        layer:     state.search_layers,
+        filter:    filter || createFilterFormInputs({
+          layer:   state.search_layers,
+          inputs:  state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+        }),
+        queryUrl,
+        formatter: 1,
+        feature_count,
+        raw:       false // in order to get a raw response
+      },
+      outputs: show && { title: state.title }
+    });
+
+    // auto zoom to query
+    if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && data.data && 1 === data.data.length) {
+      GUI.getService('map').zoomToFeatures(data.data[0].features);
+    }
+
+    const search_1n = !show           && ('search_1n' === state.type);
+    const features  = search_1n       && (data.data[0] || {}).features || []
+    const relation  = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+    const layer     = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
+
+    // no features on result → show an empty message
+    if (search_1n && !features.length) {
+      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      parsed = [];
+    }
+
+    // parse search_1n
+    if (relation) {
+      const { referencedField, referencingField } = relation.fieldRef;
+      parsed = await DataRouterService.getData('search:features', {
+        inputs: {
+          layer,
+          filter: createFilterFormInputs({
+            layer,
+            inputs: features.map(f => ({
+              attribute: (1 === referencedField.length ? referencedField[0] : referencedField),
+              logicop:   'OR',
+              operator:  'eq',
+              value:     [...new Set((1 === referencingField.length // get unique values
+                ? features.map(f => f.get(referencingField[0]))     // → single field relation
+                : referencingField.map(rf => f.get(rf))             // → multi field relation
+              ))],
+            })),
+          }),
+          formatter: 1,
+          feature_count
+        },
+        outputs: {
+          title: state.title
+        }
+      });
+    }
+
+  } catch(e) {
+    console.warn(e);
+  }
+
+  state.searching = false;
+
+  return parsed ? parsed : data;
 }

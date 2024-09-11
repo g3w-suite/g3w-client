@@ -44,7 +44,7 @@
 
 <script>
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import { CatalogEventBus as VM }   from 'g3w-eventbus';
+  import { VM }                      from 'g3w-eventbus';
 
   export default {
 
@@ -76,7 +76,7 @@
       /**
        * @param {{ id:? string, value: number }}
        * 
-       * @fires CatalogEventBus~layer-change-opacity
+       * @fires VM~layer-change-opacity
        */
       setLayerOpacity( { id = this.layer.id, value: opacity }) {
         // skip if nothing has changed

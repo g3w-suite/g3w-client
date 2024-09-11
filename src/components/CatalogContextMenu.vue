@@ -600,7 +600,7 @@
 
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
 
-  import { CatalogEventBus as VM }     from 'g3w-eventbus';
+  import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application-state';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
   import ProjectsRegistry              from 'store/projects';
@@ -1272,11 +1272,11 @@
     },
 
     /**
-     * @listens CatalogEventBus~show-project-context-menu
-     * @listens CatalogEventBus~hide-project-context-menu
+     * @listens VM~show-project-context-menu
+     * @listens VM~hide-project-context-menu
      * 
-     * @listens CatalogEventBus~show-layer-context-menu
-     * @listens CatalogEventBus~hide-layer-context-menu
+     * @listens VM~show-layer-context-menu
+     * @listens VM~hide-layer-context-menu
      */
     created() {
       VM.$on('show-project-context-menu', this.onShowProjectContextMenu);

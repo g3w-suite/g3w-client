@@ -165,7 +165,6 @@
 </template>
 
 <script>
-  import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'g3w-constants';
   import Panel                             from 'g3w-panel';
   import ProjectsRegistry                  from 'store/projects';
   import DataRouterService                 from 'services/data';
@@ -520,7 +519,7 @@
        * @returns {*}
        */
       getLocalWMSData() {
-        const item = window.localStorage.getItem(LOCALSTORAGE_EXTERNALWMS_ITEM);
+        const item = window.localStorage.getItem('externalwms');
         return ((item ? JSON.parse(item) : undefined) || {})[PID];
       },
 
@@ -530,11 +529,11 @@
        * @param data
        */
       updateLocalWMSData(data) {
-        const item = window.localStorage.getItem(LOCALSTORAGE_EXTERNALWMS_ITEM);
+        const item = window.localStorage.getItem('externalwms');
         const alldata = (item ? JSON.parse(item) : undefined) || {};
         alldata[PID] = data;
         try {
-          window.localStorage.setItem(LOCALSTORAGE_EXTERNALWMS_ITEM, JSON.stringify(alldata));
+          window.localStorage.setItem('externalwms', JSON.stringify(alldata));
         } catch(e) {
           console.warn(e);
         }

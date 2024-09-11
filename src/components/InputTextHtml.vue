@@ -11,7 +11,6 @@
 </template>
 
 <script>
-  const { getUniqueDomId } = require('utils');
   const Input              = require('gui/inputs/input');
 
   export default {

@@ -3,9 +3,9 @@
  * @since v3.7
  */
 
-import GUI from 'services/gui';
-
-const { throttle, debounce } = require('utils');
+import GUI          from 'services/gui';
+import { throttle } from 'utils/throttle';
+import { debounce } from 'utils/debounce';
 
 const DELAY_TYPE = {
   throttle,

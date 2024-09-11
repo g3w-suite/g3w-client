@@ -1,6 +1,18 @@
 import { needUseSphereMethods } from 'utils/needUseSphereMethods';
 import { getLengthMessageText } from 'utils/getLengthMessageText';
-import { transformMeterArea }   from 'utils/transformMeterArea';
+
+/**
+ * @param area 
+ * @param tounit
+ * 
+ * @returns { number } 
+ */
+function transformMeterArea(area, tounit) {
+  if ('nautical' === tounit) {
+    return area * 0.000000291553349598122862913947445759414840765222583489217190918463024037990567;
+  }
+  return area;
+}
 
 export function getAreaMessageText({
   unit,

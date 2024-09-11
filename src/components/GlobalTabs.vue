@@ -81,11 +81,8 @@
   import GUI                                         from 'services/gui';
   import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
   import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
-
-  const {
-    getUniqueDomId,
-    noop
-  }                        = require ('utils');
+  import { getUniqueDomId }                          from 'utils/getUniqueDomId';
+  import { noop }                                    from 'utils/noop';
 
   export default {
     name: "tabs",

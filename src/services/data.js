@@ -370,7 +370,7 @@ export default {
    */
   'expression:expression_eval'(params = {}) {
     return XHR.post({
-      url:         ProjectsRegistry.getCurrentProject().getUrl('expression_eval'),
+      url:         `/api/expression_eval/${ProjectsRegistry.getCurrentProject().getId()}/`,
       contentType: 'application/json',
       data:        JSON.stringify(params),
     });

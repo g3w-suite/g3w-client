@@ -19,9 +19,8 @@
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
-const { toRawType } = require('utils');
+import Field         from 'components/Field.vue';
+import { toRawType } from 'utils/toRawType';
 
 export default {
 

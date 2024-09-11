@@ -478,7 +478,8 @@
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
   import HeaderFeatureActionsBody    from "components/QueryResultsHeaderFeatureActionsBody.vue";
-  import { toRawType, throttle }     from 'utils';
+  import { toRawType }               from 'utils/toRawType';
+  import { throttle }                from 'utils/throttle';
   import GUI                         from 'services/gui';
 
   const MAX_SUBSET_LENGTH           = 3;

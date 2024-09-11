@@ -227,7 +227,7 @@
 </template>
 
 <script>
-import { CatalogEventBus as VM }   from 'g3w-eventbus';
+import { VM }                      from 'g3w-eventbus';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ApplicationState            from "store/application-state";
 import GUI                         from 'services/gui';
@@ -478,14 +478,14 @@ export default {
     },
 
     /**
-     * @fires CatalogEventBus~activefiltertokenlayer
+     * @fires VM~activefiltertokenlayer
      */
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
     /**
-     * @fires CatalogEventBus~unselectionlayer
+     * @fires VM~unselectionlayer
      */
     clearSelection() {
       VM.$emit('unselectionlayer', this.storeid, this.layerstree);
@@ -502,7 +502,7 @@ export default {
     /**
      * Select legend item
      *
-     * @fires CatalogEventBus~treenodeselected
+     * @fires VM~treenodeselected
      */
     select() {
       // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
@@ -573,10 +573,10 @@ export default {
     /**
      * @param evt
      * 
-     * @fires CatalogEventBus~hide-layer-context-menu
-     * @fires CatalogEventBus~hide-project-context-menu
-     * @fires CatalogEventBus~show-layer-context-menu
-     * @fires CatalogEventBus~show-project-context-menu
+     * @fires VM~hide-layer-context-menu
+     * @fires VM~hide-project-context-menu
+     * @fires VM~show-layer-context-menu
+     * @fires VM~show-project-context-menu
      * 
      * @since 3.10.0
      */

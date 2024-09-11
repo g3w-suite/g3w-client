@@ -2,8 +2,7 @@
  * @file
  * @since v3.6
  */
-
-const { XHR } = require('utils');
+import { XHR } from 'utils/XHR';
 
 /**
  * SERVER

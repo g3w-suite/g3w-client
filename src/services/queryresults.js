@@ -4,11 +4,7 @@
  */
 
 import GUI                                      from 'services/gui';
-import {
-  G3W_FID,
-  LIST_OF_RELATIONS_TITLE,
-  LIST_OF_RELATIONS_ID,
-}                                               from 'g3w-constants';
+import { G3W_FID }                              from 'g3w-constants';
 import G3WObject                                from 'g3w-object';
 import Component                                from 'g3w-component';
 import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
@@ -23,9 +19,6 @@ import DownloadFormats                          from 'components/QueryResultsAct
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
-import { createFeatureFromGeometry }            from 'utils/createFeatureFromGeometry';
-import { createFeatureFromBBOX }                from 'utils/createFeatureFromBBOX';
-import { createFeatureFromCoordinates }         from 'utils/createFeatureFromCoordinates';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { printAtlas }                           from 'utils/printAtlas';
@@ -2009,7 +2002,11 @@ export default new (class QueryResultsService extends G3WObject {
    * @param coordinates
    */
   showCoordinates(coordinates) {
-    this.addQueryResultsLayerToMap({ feature: createFeatureFromCoordinates(coordinates) });
+    let feature;
+    if (Array.isArray(coordinates) && 2 === coordinates.length) {
+      feature = new ol.Feature(new ol.geom.Point(coordinates));
+    }
+    this.addQueryResultsLayerToMap({ feature });
   }
 
   /**
@@ -2018,7 +2015,11 @@ export default new (class QueryResultsService extends G3WObject {
    * @param bbox
    */
   showBBOX(bbox) {
-    this.addQueryResultsLayerToMap({ feature: createFeatureFromBBOX(bbox) });
+    let feature;
+    if (Array.isArray(bbox) && 4 === bbox.length) {
+      feature = new ol.Feature(ol.geom.Polygon.fromExtent(bbox))
+    }
+    this.addQueryResultsLayerToMap({ feature });
   }
 
   /**
@@ -2027,9 +2028,12 @@ export default new (class QueryResultsService extends G3WObject {
    * @param geometry
    */
   showGeometry(geometry) {
-    if (geometry) {
-      this.addQueryResultsLayerToMap({ feature: createFeatureFromGeometry({ geometry }) });
+    if (!geometry) {
+      return;
     }
+    const feature = new ol.Feature(geometry);
+    feature.setId(undefined);
+    this.addQueryResultsLayerToMap({ feature });
   }
 
   /**
@@ -2148,10 +2152,10 @@ export default new (class QueryResultsService extends G3WObject {
         layer
       }),
       backonclose: true,
-      title: LIST_OF_RELATIONS_TITLE,
-      id: LIST_OF_RELATIONS_ID,
+      title: 'info.list_of_relations',
+      id: '__G3W_LIST_OF_RELATIONS_ID__',
       crumb: {
-        title: LIST_OF_RELATIONS_TITLE,
+        title: 'info.list_of_relations',
         trigger: null
       },
       closable: false

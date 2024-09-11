@@ -12,25 +12,3 @@
  * ORIGINAL SOURCE: src/app/g3w-ol/constants.js@3.8.6
  */
 export const VM = new Vue();
-
-/**
- * ORIGINAL SOURCE: src\app\gui\catalog\vue\catalogeventhub.js@3.8.6
- */
-export const CatalogEventBus = new Vue();
-
-/**
- * ORIGINAL SOURCE: src/app/gui/relations/vue/relationeventbus.js@3.8.6
- */
-export const RelationEventBus = new Vue();
-
-/**
- * ORIGINAL SOURCE: src/app/gui/sidebar/eventbus.js@3.8.6
- */
-export const SidebarEventBus = new Vue();
-
-export default {
-  VM,
-  CatalogEventBus,
-  RelationEventBus,
-  SidebarEventBus,
-};

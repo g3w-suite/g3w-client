@@ -260,7 +260,7 @@
 
 <script>
 
-import { CatalogEventBus as VM }   from 'g3w-eventbus';
+import { VM }                      from 'g3w-eventbus';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry            from 'store/projects';
@@ -588,17 +588,15 @@ export default {
     /**
      * Change view
      *
-     * @fires CatalogEventBus~layer-change-style
+     * @fires VM~layer-change-style
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
-      //check if is custom map theme
-      // const custom = undefined !== this.project.state.map_themes.custom.find(({ theme }) => map_theme === theme);
 
       // change map theme
       this.state.layerstrees[0].checked = true;
 
-      const changes = (await ProjectsRegistry.getCurrentProject().setLayersTreePropertiesFromMapTheme({
+      const changes = (await this.setLayersTreePropertiesFromMapTheme({
         map_theme,
         rootNode:   this.state.layerstrees[0],
         layerstree: this.state.layerstrees[0].tree[0].nodes
@@ -720,10 +718,10 @@ export default {
   },
 
   /**
-   * @listens CatalogEventBus~unselectionlayer
-   * @listens CatalogEventBus~activefiltertokenlayer
-   * @listens CatalogEventBus~treenodevisible
-   * @listens CatalogEventBus~treenodeselected
+   * @listens VM~unselectionlayer
+   * @listens VM~activefiltertokenlayer
+   * @listens VM~treenodevisible
+   * @listens VM~treenodeselected
    */
   created() {
     VM.$on('unselectionlayer',                       this.onUnSelectionLayer);

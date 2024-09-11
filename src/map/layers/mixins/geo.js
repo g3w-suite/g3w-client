@@ -12,9 +12,36 @@
 
 import GUI                                from 'services/gui';
 import Projections                        from 'store/projections';
-import { createFeatureFromFeatureObject } from 'utils/createFeatureFromFeatureObject';
 import { getScaleFromResolution }         from 'utils/getScaleFromResolution';
 import { XHR }                            from 'utils/XHR';
+
+/**
+ * @param { Object } opts
+ * @param opts.id
+ * @param opts.feature
+ * 
+ * @returns { ol.Feature | undefined }
+ * 
+ * @example in case of feature object
+ * ```
+ * {
+ *   id: X,
+ *   attributes: {key:value}
+ *   geometry: geometry
+ * }
+ * ```
+ */
+function createFeatureFromFeatureObject({ id, feature = {} }) {
+  //extract geometry and attributes from feature Object
+  const { attributes } = feature;
+  //create a new ol feature
+  if (feature.geometry) {
+    feature = new ol.Feature(feature.geometry);
+    feature.setId(id);
+  }
+  Object.keys(attributes).forEach(a => feature.set(a, attributes[a]));
+  return feature;
+}
 
 /**
  * ORIGINAL SOURCE: src/utils/sanitizeUrl.js@v3.10.2

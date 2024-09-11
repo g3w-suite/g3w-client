@@ -8,7 +8,9 @@ import G3WObject                            from 'g3w-object';
 import ApplicationState                     from 'store/application-state';
 import PluginsRegistry                      from 'store/plugins';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
-import { createStyleFunctionToVectorLayer } from 'utils/createStyleFunctionToVectorLayer';
+import { isPointGeometryType }              from 'utils/isPointGeometryType';
+import { isLineGeometryType }               from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }            from 'utils/isPolygonGeometryType';
 import { createSelectedStyle }              from 'utils/createSelectedStyle';
 import { getMapLayersByFilter }             from 'utils/getMapLayersByFilter';
 import { getScaleFromResolution }           from 'utils/getScaleFromResolution';
@@ -24,7 +26,6 @@ import { StreetViewControl }                from 'map/controls/streetviewcontrol
 import { ScaleControl }                     from 'map/controls/scalecontrol';
 import { ScreenshotControl }                from 'map/controls/screenshotcontrol';
 import { MeasureControl }                   from 'map/controls/measurecontrol';
-import { MAP_SETTINGS }                     from 'g3w-constants';
 import DataRouterService                    from 'services/data';
 import ProjectsRegistry                     from 'store/projects';
 import ApplicationService                   from 'services/application';
@@ -32,6 +33,11 @@ import GUI                                  from 'services/gui';
 import MapControlZoomHistory                from 'components/MapControlZoomHistory.vue';
 import MapControlGeocoding                  from 'components/MapControlGeocoding.vue';
 import { groupBy }                          from 'utils/groupBy';
+
+const MAP_SETTINGS = {
+  ZOOM:            { maxScale: 1000, },
+  ANIMATION:       { duration: 2000, },
+};
 
 const { VectorLayer }            = require('map/layers/vectorlayer');
 
@@ -161,6 +167,64 @@ CONTROLS['querybbox']          = CONTROLS['queryby'];
 CONTROLS['querybycircle']      = CONTROLS['queryby'];
 CONTROLS['querybydrawpolygon'] = CONTROLS['queryby'];
 CONTROLS['querybypolygon']     = CONTROLS['queryby'];
+
+
+/**
+ * @returns style function 
+ */
+function createStyleFunctionToVectorLayer(opts = {}) {
+  return Object.assign(
+    (feat, res) => {
+      opts.color = opts.color.rgba ? 'rgba(' + [opts.color.rgba.r, opts.color.rgba.g, opts.color.rgba.b, opts.color.rgba.a].join() + ')' : opts.color;
+      const style = getDefaultLayerStyle(feat.getGeometry().getType(), { color: opts.color });
+      if (opts.field) {
+        style.setText(new ol.style.Text({
+          text: `${feat.get(opts.field)}`,
+          font: 'bold',
+          scale: 2,
+          offsetY: 15,
+          fill: new ol.style.Fill({ color: opts.color }),
+          stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
+        }));
+      }
+      return style;
+    }, { _g3w_options: opts }
+  );
+}
+
+function getDefaultLayerStyle(geometryType, options = {}) {
+
+  const { color } = options;
+
+  //Point geometry type
+  if (isPointGeometryType(geometryType)) {
+    return new ol.style.Style({
+      image: new ol.style.Circle({
+        fill: new ol.style.Fill({ color }),
+        stroke: new ol.style.Stroke({ color, width: 1 }),
+        radius: 5,
+      })
+    });
+  }
+
+  //Line geometry type
+  if (isLineGeometryType(geometryType)) {
+    return new ol.style.Style({
+      stroke: new ol.style.Stroke({ color, width: 3 }),
+    });
+  }
+
+  //Polygon geometry type
+  if (isPolygonGeometryType(geometryType)) {
+    return new ol.style.Style({
+      fill:   new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
+      stroke: new ol.style.Stroke({ color, width: 3 }),
+    })
+  }
+
+  console.warn('invalid geometry type: ', geometryType);
+
+}
 
 class MapService extends G3WObject {
 
@@ -452,9 +516,9 @@ class MapService extends G3WObject {
                 break;
 
               case 'overview':
-                if (!isMobile.any && this.config.overviewproject && this.config.overviewproject.gid) {
+                if (!isMobile.any && window.initConfig.overviewproject) {
                   ProjectsRegistry
-                    .getProject(this.config.overviewproject.gid)
+                    .getProject(window.initConfig.overviewproject)
                     .then(project => {
                       //create a view for overview map
                       const map = this.getMap();

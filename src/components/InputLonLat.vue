@@ -66,7 +66,8 @@
 </template>
 
 <script>
-  const { getUniqueDomId } = require('utils');
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
+
   const Input              = require('gui/inputs/input');
 
   export default {

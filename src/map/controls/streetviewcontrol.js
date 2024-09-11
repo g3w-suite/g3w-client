@@ -5,8 +5,6 @@
 
 import ApplicationState           from 'store/application-state';
 import GUI                        from 'services/gui';
-import * as vueComp               from 'components/StreetView.vue';
-import Component                  from 'g3w-component';
 import { XHR }                    from 'utils/XHR';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
@@ -34,8 +32,6 @@ export class StreetViewControl extends InteractionControl {
      * Check Google Key
      */
     this.key = ApplicationState.keys.vendorkeys.google;
-
-    this.keyError;
 
     if (this.key) {
       XHR.get({
@@ -164,7 +160,10 @@ export class StreetViewControl extends InteractionControl {
     if (this.key) {
       GUI.setContent({
         title:   'StreetView',
-        content: new Component({ internalComponent: new (Vue.extend(vueComp))({ keyError: this.keyError }) }),
+        content: `<div id="streetview">` + (this.keyError ? `<div
+          style = "display: flex;justify-content: center;align-items: center;font-weight: bold;height: 100%;padding: 10px;background-color: #FFF;"
+          class = "skin-color"
+        >${ this.keyError }</div>` : '') +`</div>`,
       });
       if (!this.keyError) {
         this.setPosition({ lng, lat });

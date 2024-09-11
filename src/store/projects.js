@@ -3,20 +3,44 @@
  * @since v3.6
  */
 
-import {
-  QUERY_POINT_TOLERANCE,
-  TOC_LAYERS_INIT_STATUS,
-  TOC_THEMES_INIT_STATUS,
-}                                  from 'g3w-constants';
+import { QUERY_POINT_TOLERANCE }   from 'g3w-constants';
 import G3WObject                   from 'g3w-object';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import { XHR }                     from 'utils/XHR';
 import ApplicationState            from 'store/application-state';
 import Projections                 from 'store/projections';
-import { crsToCrsObject }          from 'utils/crsToCrsObject';
+import { normalizeEpsg }           from 'utils/normalizeEpsg';
+import { toRawType }               from 'utils/toRawType';
 
 const LayerFactory        = require('map/layers/layerfactory');
 const LayersStore         = require('map/layers/layersstore');
+
+
+/**
+ * @param { number | string | null | undefined } crs
+ * 
+ * @returns { { epsg: string, proj4: string, axisinverted: boolean, geographic: boolean } | null | undefined } crs object
+ */
+function crsToCrsObject(crs) {
+
+  /** @FIXME add description */
+  if ([undefined, null].includes(crs)) {
+    return crs;
+  }
+
+  /** @FIXME add description */
+  if ('Object' === toRawType(crs) && crs.epsg) {
+    crs.epsg = normalizeEpsg(crs.epsg);
+    return crs;
+  }
+
+  return {
+    epsg:         normalizeEpsg(crs),
+    proj4:        "",
+    axisinverted: false,
+    geographic:   false
+  };
+}
 
 export default new (class ProjectsRegistry extends G3WObject {
   
@@ -25,9 +49,6 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     this.config              = null;
     this.initialized         = false;
-
-    /** store overview (Panoramic map) project */
-    this.overviewproject     = undefined;
 
     this.setters = {
 
@@ -81,7 +102,7 @@ export default new (class ProjectsRegistry extends G3WObject {
       if (![null, undefined].includes(p.listable)) {
         return p.listable;
       }
-      if ((p.overviewprojectgid && p.gid === p.overviewprojectgid) || p.id === this.getCurrentProject().getId()) {
+      if ((window.initConfig.overviewproject && p.gid === window.initConfig.overviewproject) || p.id === this.getCurrentProject().getId()) {
         return false;
       }
       return p;
@@ -107,10 +128,12 @@ export default new (class ProjectsRegistry extends G3WObject {
    * @param { string } options.map_theme
    */
   async getProject(projectGid, options = {}) {
+
     const pendingProject = this._groupProjects.find(p => projectGid === p.gid);
 
     // skip if a project doesn't exist
     if (!pendingProject) {
+      console.log("Project doesn't exist", projectGid)
       return Promise.reject("Project doesn't exist");
     }
 
@@ -169,10 +192,26 @@ export default new (class ProjectsRegistry extends G3WObject {
         /** actived catalog tab */
         catalog_tab:            config.toc_tab_default        || config._catalog_tab || 'layers',
         ows_method:             config.ows_method             || 'GET',
-        toc_layers_init_status: config.toc_layers_init_status || TOC_LAYERS_INIT_STATUS,
-        toc_themes_init_status: config.toc_themes_init_status || TOC_THEMES_INIT_STATUS,
+        toc_layers_init_status: config.toc_layers_init_status || 'not_collapsed',
+        toc_themes_init_status: config.toc_themes_init_status || 'collapsed',
         query_point_tolerance:  config.query_point_tolerance  || QUERY_POINT_TOLERANCE,
+        crs:                    crsToCrsObject(config.crs),
+        baselayers:             config.baselayers
+          // Remove bing base layer when no vendor API Key is provided
+          .filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true))
+          .map(l => Object.assign(l, {
+            visible:   l.id && (l.id === (null !== ApplicationState.baseLayerId ? ApplicationState.baseLayerId : config.initbaselayer)) || !!l.fixed,
+            baselayer: true,
+          })),
       }),
+      /** project APIs */
+      urls: {
+        map_themes:      `/${config.type}/api/prjtheme/${config.id}/`,
+        vector_data:     `${config.vectorurl}data/${config.type}/${config.id}/`,
+        featurecount:    `${config.vectorurl}featurecount/${config.type}/${config.id}/`,
+      },
+      _projection:  Projections.get(crsToCrsObject(config.crs)),
+      _layersStore: new LayersStore(),
       getQueryPointTolerance: () =>_project.state.query_point_tolerance,
       getRelations:           () =>_project.state.relations,
       getRelationById:        id => _project.state.relations.find(r => id === r.id),
@@ -195,20 +234,6 @@ export default new (class ProjectsRegistry extends G3WObject {
       getLayersStore:         () => _project._layersStore,
       getUrl:                 type => _project.urls[type],
     });
-
-    const type   = _project.state.type;
-    const id     = _project.state.id;
-
-
-    /**
-     * View information about project APIs 
-     */
-    _project.urls = {
-      map_themes:      `/${type}/api/prjtheme/${id}/`,
-      expression_eval: `/api/expression_eval/${id}/`,
-      vector_data:     `${_project.state.vectorurl}data/${type}/${id}/`,
-      featurecount:    `${_project.state.vectorurl}featurecount/${type}/${id}/`,
-    };
 
     /**
      * Process layerstree and baselayers of the project
@@ -241,35 +266,14 @@ export default new (class ProjectsRegistry extends G3WObject {
 
     traverse(_project.state.layerstree);
 
-    // Remove bing base layer when no vendor API Key is provided
-    _project.state.baselayers = _project.state.baselayers.filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true));
-
-    _project.state.baselayers.forEach(l => {
-      l.visible     = l.id && (l.id === (null === ApplicationState.baseLayerId ? _project.state.initbaselayer : ApplicationState.baseLayerId)) || !!l.fixed;
-      l.baselayer   = true;
-    });
-
-    /**
-     * Set the project projection to object crs
-     */
-    _project.state.crs    = crsToCrsObject(_project.state.crs);
-
-    _project._projection  = Projections.get(_project.state.crs);
-
-    /**
-     * Build layersstore and create layersstree 
-     */
-
-    // create a layersStore object
-    _project._layersStore = new LayersStore();
-
+    // Build layersstore 
     _project._layersStore.setOptions({
       id:         _project.state.gid,
       projection: _project._projection,
       extent:     _project.state.extent,
       initextent: _project.state.initextent,
       wmsUrl:     _project.state.WMSUrl,
-      catalog:    (_project.state.overviewprojectgid ? _project.state.overviewprojectgid.gid : null) !== _project.state.gid,
+      catalog:    window.initConfig.overviewproject !== _project.state.gid,
     });
 
     // instance each layer ad area added to layersstore
@@ -303,7 +307,9 @@ export default new (class ProjectsRegistry extends G3WObject {
   /** used by the following plugins: "archiweb" */
   setProjectAliasUrl(alias) {
     const project = window.initConfig.projects.find(p => alias.gid === p.gid);
-    if (project) { project.url = `${alias.host || ''}${alias.url}` }
+    if (project) {
+      project.url = `${alias.host || ''}${alias.url}`
+    }
   }
 
   /**

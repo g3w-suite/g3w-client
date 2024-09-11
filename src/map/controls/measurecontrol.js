@@ -6,7 +6,6 @@
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
-import { setMeasureTooltipStatic } from 'utils/setMeasureTooltipStatic';
 import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
 
 const { t }                        = require('g3w-i18n');
@@ -137,7 +136,8 @@ export class MeasureInteraction extends ol.interaction.Draw {
   }
 
   _drawEnd() {
-    setMeasureTooltipStatic(this.measureTooltip.tooltip);
+    this.measureTooltip.tooltip.getElement().className = 'mtooltip mtooltip-static';
+    this.measureTooltip.tooltip.setOffset([0, -7]);
     this._clearMessagesAndListeners();
     this._map.addLayer(this._layer);
   }
@@ -199,15 +199,8 @@ export class MeasureControl extends InteractionControl {
       this._interaction = this.interactions[type];
     }
 
-    if (this.types.length > 1 && !this.toggledTool) {
-      this.createControlTool();
-    }
-  }
-
-  createControlTool() {
-    return super.createControlTool({
-      type: 'custom',
-      component: {
+    if (this.types.length > 1) {
+      this.toggledTool = this.toggledTool || {
         __title:      'sdk.mapcontrols.measures.title',
         __iconClass:  'measure', //@since v3.11.0
         data: () => ({ types: this.types, type: this.types[0] }),
@@ -232,8 +225,8 @@ export class MeasureControl extends InteractionControl {
         },
         created()       { GUI.toggleUserMessage(false); },
         beforeDestroy() { GUI.toggleUserMessage(true); }
-      }
-    });
+      };
+    }
   }
 
 }

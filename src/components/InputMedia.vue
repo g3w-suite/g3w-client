@@ -33,10 +33,10 @@
 </template>
 
 <script>
-  import GUI from 'services/gui';
+  import GUI                from 'services/gui';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
   const InputMixins                 = require('gui/inputs/input');
-  const { getUniqueDomId }          = require('utils');
   const { t }                       = require('g3w-i18n');
   const { media_field: MediaField } = require('gui/fields/fields');
 

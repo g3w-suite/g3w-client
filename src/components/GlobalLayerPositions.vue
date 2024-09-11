@@ -33,8 +33,7 @@
 </template>
 
 <script>
-
-  const { getUniqueDomId } = require('utils');
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
   export default {
     name: "layerspositions",

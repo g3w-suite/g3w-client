@@ -4,7 +4,7 @@
  * @since 3.9.0
  */
 
-const { truefnc } = require('utils');
+function truefnc() { return true }
 
 //List of type inputs from server
 

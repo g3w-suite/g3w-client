@@ -1,8 +1,7 @@
 /**
  * @TODO refactor stateful directives (eg. "v-t") in order to delete this file: "src/directives/utils.js"
  */
-
-const { uniqueId } = require('utils');
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 /**
  * Internal state
@@ -11,7 +10,7 @@ const vm         = new Vue();
 const directives = {};
 
 export const watch = ({ el, attr, watcher, immediate = true } = {}) => {
-  const unique_attr_id = uniqueId();
+  const unique_attr_id = getUniqueDomId();
   el.setAttribute(attr, unique_attr_id);
   const dir = directives[unique_attr_id] = {};
   if (watcher) {

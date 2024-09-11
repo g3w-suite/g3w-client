@@ -281,7 +281,7 @@ export default {
 
         // add local item
         else {
-          GUI.getService('search').addQueryBuilderSearch(query);
+          GUI.getService('search').state.querybuildersearches.push(query); // add query builder search
           if (undefined === searches) {
             searches     = { [id]: [query] };
           } else {
@@ -310,6 +310,8 @@ export default {
   },
 
   created() {
+
+    console.log(this);
 
     this.filterElement = {
       current:  null,

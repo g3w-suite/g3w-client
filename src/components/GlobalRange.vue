@@ -48,7 +48,7 @@
 </template>
 
 <script>
-  const { debounce } = require('utils');
+  import { debounce } from 'utils/debounce';
 
   export default {
     name: "range",

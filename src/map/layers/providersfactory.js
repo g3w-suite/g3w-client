@@ -4,6 +4,7 @@
  */
 
 import {
+  DOTS_PER_INCH,
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
 }                                  from 'g3w-constants';
@@ -11,8 +12,6 @@ import G3WObject                   from 'g3w-object';
 import ApplicationState            from 'store/application-state';
 import { QgsFilterToken }          from 'utils/QgsFilterToken';
 import { ResponseParser }          from 'utils/parsers';
-import { getDPI }                  from 'utils/getDPI';
-import { getExtentForViewAndSize } from 'utils/getExtentForViewAndSize';
 import { get_legend_params }       from 'utils/get_legend_params';
 import { createRelationsUrl }      from 'utils/createRelationsUrl';
 import { XHR }                     from 'utils/XHR';
@@ -22,9 +21,45 @@ const { t }                        = require('g3w-i18n');
 const Feature                      = require('map/layers/features/feature');
 
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
-const DPI = getDPI();
+const DPI = DOTS_PER_INCH;
 
 const is_defined = d => undefined !== d;
+
+/**
+ * @param center
+ * @param resolution
+ * @param rotation
+ * @param size
+ * 
+ * @returns { number[] }
+ */
+function getExtentForViewAndSize(center, resolution, rotation, size) {
+  const dx          = resolution * size[0] / 2;
+  const dy          = resolution * size[1] / 2;
+  const cosRotation = Math.cos(rotation);
+  const sinRotation = Math.sin(rotation);
+  const xCos        = dx * cosRotation;
+  const xSin        = dx * sinRotation;
+  const yCos        = dy * cosRotation;
+  const ySin        = dy * sinRotation;
+  const x           = center[0];
+  const y           = center[1];
+  const x0          = x - xCos + ySin;
+  const x1          = x - xCos - ySin;
+  const x2          = x + xCos - ySin;
+  const x3          = x + xCos + ySin;
+  const y0          = y - xSin - yCos;
+  const y1          = y - xSin + yCos;
+  const y2          = y + xSin + yCos;
+  const y3          = y + xSin - yCos;
+
+  return [
+    Math.min(x0, x1, x2, x3),
+    Math.min(y0, y1, y2, y3),
+    Math.max(x0, x1, x2, x3),
+    Math.max(y0, y1, y2, y3)
+  ];
+}
 
 /**
  * Appends query parameters to a URI

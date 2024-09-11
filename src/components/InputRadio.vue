@@ -25,8 +25,9 @@
 </template>
 
 <script>
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
+  
   const Input              = require('gui/inputs/input');
-  const { getUniqueDomId } = require('utils');
 
   export default {
 

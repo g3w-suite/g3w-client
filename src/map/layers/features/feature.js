@@ -3,9 +3,8 @@
  * @since 3.11.0
  */
 
-import CONSTANT from 'g3w-constants';
-
-const { uniqueId } = require('utils');
+import CONSTANT           from 'g3w-constants';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 module.exports = class Feature extends ol.Feature {
   constructor(opts = {}) {
@@ -16,7 +15,7 @@ module.exports = class Feature extends ol.Feature {
       visible: true
     };
     //store unique id for the feature
-    this._uid       = uniqueId();
+    this._uid       = getUniqueDomId();
     //prefix of new feature id
     this._newPrefix = '_new_';
     //{ Boolean }: true if feature has geometry
@@ -81,7 +80,7 @@ module.exports = class Feature extends ol.Feature {
   cloneNew(pk) {
     const clone = this.clone();
     //set new unique id
-    clone._setUid(uniqueId());
+    clone._setUid(getUniqueDomId());
     clone.setTemporaryId();
     //in the case of send pk field object set temporary new value
     //to avoid duplicate pk when save clone feature on server
@@ -113,7 +112,7 @@ module.exports = class Feature extends ol.Feature {
   };
 
   setTemporaryId() {
-    this.setId(`${this._newPrefix}${uniqueId()}`);
+    this.setId(`${this._newPrefix}${getUniqueDomId()}`);
     this.setNew();
   };
 

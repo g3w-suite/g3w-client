@@ -90,12 +90,14 @@
 
 <script>
 
-import ApplicationState              from 'store/application-state';
-import ProjectsRegistry              from "store/projects";
-import Projections                   from 'store/projections';
-import { API_BASE_URLS, LOGO_GIS3W } from 'g3w-constants';
-import { XHR }                       from 'utils/XHR';
-import GUI                           from 'services/gui';
+import ApplicationState  from 'store/application-state';
+import ProjectsRegistry  from "store/projects";
+import Projections       from 'store/projections';
+import { API_BASE_URLS } from 'g3w-constants';
+import { XHR }           from 'utils/XHR';
+import GUI               from 'services/gui';
+
+const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
 
 /** Cached HTTP GET request */
 async function get_macro(id) {

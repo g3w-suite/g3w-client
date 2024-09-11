@@ -91,6 +91,4 @@ export default class Panel extends G3WObject {
     return $promisify(Promise.resolve());
   }
 
-  onResize(parentWidth,parentHeight) {}
-
 }

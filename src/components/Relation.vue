@@ -190,8 +190,8 @@
   import CatalogLayersStoresRegistry  from 'store/catalog-layers';
   import GUI                          from 'services/gui';
   import { fieldsMixin, resizeMixin } from 'mixins';
-  import { RelationEventBus as VM }   from 'g3w-eventbus';
-  import { throttle }                 from 'utils';
+  import { VM }                       from 'g3w-eventbus';
+  import { throttle }                 from 'utils/throttle';
 
   let SIDEBARWIDTH;
 
@@ -311,7 +311,7 @@
           }
         }
 
-        VM.$on('reload', () => { this.reloadLayout(); });
+        VM.$on('reload-relations', () => { this.reloadLayout(); });
 
         this.showChart = throttle(async () => {
           this.chart = !this.chart;

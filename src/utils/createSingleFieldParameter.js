@@ -10,12 +10,6 @@
  * 
  * @since 3.8.7
  */
-export function createSingleFieldParameter({
-  layer,
-  field,
-  value,
-  operator        = 'eq',
-  logicop         = 'OR',
-}) {
+export function createSingleFieldParameter({ field, value, operator='eq', logicop='OR' }) {
   return [].concat(value).map(v => `${field}|${operator.toLowerCase()}|${encodeURIComponent(v)}`).join(`|${logicop},`);
 }

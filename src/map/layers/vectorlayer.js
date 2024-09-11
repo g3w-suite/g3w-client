@@ -3,16 +3,91 @@
  * @since 3.11.0
  */
 
-import G3WObject                 from 'g3w-object';
-import GUI                       from 'services/gui';
-import { createOlLayer }         from 'utils/createOlLayer';
-import { createLayerStyle }      from 'utils/createLayerStyle';
-import GeoLayerMixin             from 'map/layers/mixins/geo'
-import { $promisify, promisify } from 'utils/promisify';
+import G3WObject                      from 'g3w-object';
+import GUI                            from 'services/gui';
+import { getAllPointGeometryTypes }   from "utils/getAllPointGeometryTypes";
+import { getAllLineGeometryTypes }    from "utils/getAllLineGeometryTypes";
+import { getAllPolygonGeometryTypes } from "utils/getAllPolygonGeometryTypes";
+import GeoLayerMixin                  from 'map/layers/mixins/geo'
+import { $promisify, promisify }      from 'utils/promisify';
 
 
 const Layer          = require('map/layers/layer');
 const TableLayer     = require('map/layers/tablelayer');
+
+/**
+ * @returns { ol.style.Style | undefined } style
+ */
+function createLayerStyle(styleObj) {
+  // skip when no style object is passed
+  if (!styleObj) {
+    return;
+  }
+
+  return new ol.style.Style(
+    Object
+    .entries(styleObj)
+    .reduce((styles, [type, config]) => {
+      if ('point' === type && config.icon) {
+        styles.image = new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width });
+      }
+      if ('line' === type) {
+        styles.stroke = new ol.style.Stroke({ color: config.color, width: config.width });
+      }
+      if ('polygon' === type) {
+        styles.fill = new ol.style.Fill({ color: config.color });
+      }
+      return styles;
+    }, {})
+  );
+}
+
+
+/**
+ * @param { Object } layer options
+ * @param layer.id
+ * @param layer.features
+ * @param layer.geometryType
+ * @param layer.color
+ * @param layer.style
+ * @param layer.source
+ * 
+ * @returns { ol.layer.Vector } ol layer 
+ */
+function createOlLayer(layer = {}) {
+  const color    = layer.color;
+  let style      = layer.style;
+
+  // create ol layer to add to map
+  const olSource = layer.source || new ol.source.Vector({ features: layer.features || new ol.Collection() });
+  const olLayer  = new ol.layer.Vector({ id: layer.id, source: olSource });
+
+  if (!style && getAllPointGeometryTypes().includes(layer.geometryType)) {
+    style = new ol.style.Style({
+      image: new ol.style.Circle({
+        fill:   new ol.style.Fill({ color }),
+        radius: 5,
+      }),
+    });
+  }
+
+  if (!style && getAllLineGeometryTypes().includes(layer.geometryType)) {
+    style = new ol.style.Style({
+      stroke: new ol.style.Stroke({ color, width: 3 })
+    });
+  }
+
+  if (!style && getAllPolygonGeometryTypes().includes(layer.geometryType)) {
+    style =  new ol.style.Style({
+      stroke: new ol.style.Stroke({ color: '#000000', width: 1 }),
+      fill:   new ol.style.Fill({ color }),
+    });
+    olLayer.setOpacity(0.6);
+  }
+
+  olLayer.setStyle(style);
+  return olLayer;
+}
 
 /**
  * @TODO merge "VectorMapLayer" class into "VectorLayer"

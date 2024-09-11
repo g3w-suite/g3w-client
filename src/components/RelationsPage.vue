@@ -23,11 +23,8 @@
 </template>
 
 <script>
-import {
-  G3W_FID,
-  LIST_OF_RELATIONS_TITLE,
-}                                               from 'g3w-constants';
-import { RelationEventBus as VM }               from 'g3w-eventbus';
+import { G3W_FID }                              from 'g3w-constants';
+import { VM }                                   from 'g3w-eventbus';
 import ApplicationState                         from 'store/application-state';
 import GUI                                      from "services/gui";
 import ProjectsRegistry                         from 'store/projects';
@@ -121,7 +118,7 @@ export default {
       ApplicationState.download = false;
     },
     reloadLayout() {
-      VM.$emit('reload');
+      VM.$emit('reload-relations');
     },
     showChart(container, relationData) {
       GUI.getService('queryresults').showChart([this.relation.referencingLayer], container, relationData)
@@ -220,7 +217,7 @@ export default {
     setRelationsList() {
       this.previousview = 'relation';
       this.currentview  = 'relations';
-      GUI.setCurrentContentOptions({ crumb: { title: LIST_OF_RELATIONS_TITLE } });
+      GUI.setCurrentContentOptions({ crumb: { title: 'info.list_of_relations' } });
       this.loading = false;
     },
   },

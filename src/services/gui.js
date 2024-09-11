@@ -1,3 +1,4 @@
+import { VIEWPORT }     from 'g3w-constants';
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
@@ -8,12 +9,55 @@ import ProjectsRegistry          from 'store/projects';
 import IFrameRouterService       from 'services/iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
-import { setViewSizes }          from 'utils/setViewSizes';
 import { toRawType }             from 'utils/toRawType';
 import { promisify, $promisify } from 'utils/promisify';
 
 /** store legacy frontend components */
 const COMPONENTS = {};
+
+/* service know by the applications (standard) */
+const SERVICES = {
+  navbar:   null,
+  sidebar:  null,
+  viewport: null,
+};
+
+function setViewSizes() {
+  const state = ApplicationState.viewport;
+
+  const primaryView   = state.primaryView;
+  const secondaryView = 'map' === state.primaryView ? 'content' : 'map';
+  const main_sidebar  = $(".main-sidebar");
+  const offset         = main_sidebar.length && main_sidebar.offset().left;
+  const width = main_sidebar.length && main_sidebar[0].getBoundingClientRect().width;
+  const sideBarSpace   = width + offset;
+  const viewportWidth = $('#app')[0].getBoundingClientRect().width - sideBarSpace;
+  const viewportHeight = $(document).innerHeight() - $('.navbar-header').innerHeight();
+  // assign all width and height of the view to primary view (map)
+  let primaryWidth;
+  let primaryHeight;
+  let secondaryWidth;
+  let secondaryHeight;
+  // percentage of secondary view (content)
+  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`];
+  const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === state.split ? 'width': 'height'];
+  const scale = (state.secondaryPerc !== 100 && !is_fullview ? content_perc : 100) / 100;
+  if ('h' === state.split ) {
+    secondaryWidth  = state.secondaryVisible ? Math.max((viewportWidth * scale), VIEWPORT.resize.content.min) : 0;
+    secondaryHeight = viewportHeight;
+    primaryWidth    = viewportWidth - secondaryWidth;
+    primaryHeight   = viewportHeight;
+  } else {
+    secondaryWidth  = viewportWidth;
+    secondaryHeight = state.secondaryVisible ? Math.max((viewportHeight * scale), VIEWPORT.resize.content.min) : 0;
+    primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
+    primaryHeight   = viewportHeight - secondaryHeight;
+  }
+  state[primaryView].sizes.width    = primaryWidth;
+  state[primaryView].sizes.height   = primaryHeight;
+  state[secondaryView].sizes.width  = secondaryWidth;
+  state[secondaryView].sizes.height = secondaryHeight;
+}
 
 /**
  * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
@@ -201,6 +245,26 @@ export default new (class GUI extends G3WObject {
     /** @since 3.11.0 */
     this.currentoutputplace = 'gui';
 
+  }
+
+  addComponent(component, placeholder, options={}) {
+    let register = true;
+    if (placeholder && Object.keys(SERVICES).indexOf(placeholder) > -1) {
+      // add component to the sidebar and set position inside the sidebar
+      if ('sidebar' === placeholder) {
+        if (!isMobile.any || false !== component.mobile) {
+          ApplicationState.sidebar.components.push(component);
+          (new (Vue.extend(require('components/SidebarItem.vue')))({ component, opts: options })).$mount();
+        }
+        register = true;
+      } else if (SERVICES[placeholder]) {
+        register = SERVICES[placeholder].addComponents([component], options);
+      }
+    }
+    if (register) {
+      this.setComponent(component);
+    }
+    return true;
   }
 
   /**

@@ -186,7 +186,8 @@ import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChoos
 import PluginsRegistry                  from 'store/plugins';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import Projections                      from 'store/projections';
-import { toRawType, uniqueId }          from 'utils';
+import { toRawType }                    from 'utils/toRawType';
+import { getUniqueDomId }               from 'utils/getUniqueDomId';
 import { flattenObject }                from 'utils/flattenObject';
 import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
 import { isPointGeometryType }          from 'utils/isPointGeometryType';
@@ -579,7 +580,7 @@ export default {
           this.$data.results.push(flattenObject({
             ...item,
             provider:   p.value.provider,
-            __uid:      uniqueId(),
+            __uid:      getUniqueDomId(),
             __icon:     this.providers[p.value.provider].icon || p.value.icon,
             __selected: false,
           }));

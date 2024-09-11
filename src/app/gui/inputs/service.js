@@ -1,5 +1,6 @@
+import { toRawType } from 'utils/toRawType';
+
 const Validators    = require('utils/validators');
-const { toRawType } = require('utils');
 const { t }         = require('g3w-i18n');
 
 module.exports = class Service {
