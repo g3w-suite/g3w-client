@@ -533,7 +533,7 @@ $.ajaxSetup({
               icon:        GUI.getFontClass('search'),
               iconColor:   '#8dc3e3',
               title:       ProjectsRegistry.getCurrentProject().state.search_title || 'search',
-              service: Object.assign(new G3WObject(), {
+              service: Object.assign(new G3WObject, {
                 state: {
                   searches: (ProjectsRegistry.getCurrentProject().state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
                   tools: [],

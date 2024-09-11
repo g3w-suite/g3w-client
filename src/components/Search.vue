@@ -129,7 +129,7 @@ export default {
           console.warn(e);
         }
 
-        this.$options.service.removeItem({ type: 'querybuilder', index });
+        this.state.querybuildersearches.splice(index, 1); // remove item
       } catch(e) {
         console.warn(e);
       }

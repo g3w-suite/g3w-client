@@ -311,8 +311,6 @@ export default {
 
   created() {
 
-    console.log(this);
-
     this.filterElement = {
       current:  null,
       previous: null,
