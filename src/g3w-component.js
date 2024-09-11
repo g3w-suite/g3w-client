@@ -3,11 +3,10 @@
  * @since 3.11.0
  */
 
-import G3WObject                    from 'g3w-object';
-import { merge }                    from 'utils/merge';
-import { noop }                     from 'utils/noop';
-import { $promisify }               from 'utils/promisify';
-import GUI                          from 'services/gui';
+import G3WObject      from 'g3w-object';
+import { noop }       from 'utils/noop';
+import { $promisify } from 'utils/promisify';
+import GUI            from 'services/gui';
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
@@ -18,6 +17,14 @@ const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 function capitalize_first_letter(string) {
   return `${string[0].toUpperCase()}${string.slice(1)}`;
+}
+
+function merge(destination, source) {
+  for (let key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      destination[key] = source[key];
+    }
+  }
 }
 
 /**

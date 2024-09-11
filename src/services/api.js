@@ -6,7 +6,6 @@
 import G3WObject      from 'g3w-object';
 import { $promisify } from 'utils/promisify';
 import { XHR }        from 'utils/XHR';
-import { reject }     from 'utils/reject';
 
 let howManyAreLoading = 0;
 
@@ -45,7 +44,7 @@ export default new (class ApiService extends G3WObject {
         })
         .always(() => this._decrementLoaders());
     } else {
-      return reject();
+      return $promisify(Promise.reject());
     }
   };
 });

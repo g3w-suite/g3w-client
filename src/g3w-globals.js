@@ -63,7 +63,6 @@ import { createMeasureTooltip }                    from 'utils/createMeasureTool
 import { removeMeasureTooltip }                    from 'utils/removeMeasureTooltip';
 import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
-import { mergeOptions }                            from 'utils/mergeOptions';
 import { ResponseParser }                          from 'utils/parsers';
 import { $promisify }                              from 'utils/promisify';
 
@@ -74,15 +73,9 @@ import PickFeatureInteraction                      from 'map/interactions/pickfe
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
-import { mixin }                                   from 'utils/mixin';
-import { merge }                                   from 'utils/merge';
-import { hasOwn }                                  from 'utils/hasOwn';
 import { inherit }                                 from 'utils/inherit';
 import { base }                                    from 'utils/base';
 import { noop }                                    from 'utils/noop';
-import { resolve }                                 from 'utils/resolve';
-import { reject }                                  from 'utils/reject';
-import { Base64 }                                  from 'utils/Base64';
 import { toRawType }                               from 'utils/toRawType';
 import { throttle }                                from 'utils/throttle';
 import { debounce }                                from 'utils/debounce';
@@ -124,24 +117,17 @@ const g3wsdk = {
   core: {
     G3WObject,
     utils: {
+      base,
+      inherit,
+      XHR,
       getUniqueDomId,
       uniqueId: getUniqueDomId,
-      mixin,
-      merge,
-      hasOwn,
-      inherit,
-      base,
-      noop,
-      truefnc() { return true },
-      resolve,
-      reject,
-      Base64,
-      toRawType,
       throttle,
       debounce,
-        XHR,
-      createFilterFormInputs,
+      toRawType,
       colorHEXToRGB,
+      createFilterFormInputs,
+      noop,
     },
     geoutils: {
       geometryFields: G3W_CONSTANT.GEOMETRY_FIELDS,
@@ -263,7 +249,7 @@ const g3wsdk = {
     },
     controls: {},
     utils: {
-      merge: mergeOptions,
+      merge: (a, b) => ({ ...a, ...b }),
       getScaleFromResolution,
       getResolutionFromScale,
       createMeasureTooltip,

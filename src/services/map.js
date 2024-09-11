@@ -2573,11 +2573,4 @@ export default {
   MapService,
 
   MapLayersStoresRegistry: MAP.layers,
-
-  /** ORIGINAL SOURCE: src/app/gui/map/control/factory.js@v3.8.0 */
-  ControlsFactory: {
-    create(options = {}) {
-      return CONTROLS[options.type] ? new CONTROLS[options.type](options) : undefined;
-    }
-  },
 };
