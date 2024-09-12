@@ -108,9 +108,10 @@ proto.validate = function() {
         this.state.validate.valid = this._validator.validate(this.state.value);
       }
     }
-    //check exclude_values state.validate.unique (unique input)
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
-      this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
+    //check exclude_values state.validate.unique (QGIS field property [x] Enforce unique constraint)
+    if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+      //need to convert this.state.value to string because editing store exclude_values items as string
+      this.state.validate.valid = !this.state.validate.exclude_values.has(`${this.state.value}`);
     } else {
       this.state.validate.valid = this._validator.validate(this.state.value);
     }
@@ -133,7 +134,7 @@ proto.setErrorMessage = function() {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${this.state.validate.max_field})`;
   } else if (this.state.validate.min_field) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${this.state.validate.min_field})`;
-  } else if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+  } else if (('unique' === this.state.input.type || this.state.validate.unique) && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   } else if (this.state.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + this.state.type)} )`;
