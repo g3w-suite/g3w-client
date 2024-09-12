@@ -615,12 +615,6 @@ proto.getFieldsWithValues = function(obj, options = {}) {
     field._value = attributes[field.name];     // store original value
     field.update = false;                      // at beginning set update false. Used to form
 
-    if (field.input) {
-      const options = this.getEditingFields().find(f => f.name === field.name).input.options;
-      field.input.options.loading = options.loading || { state: null };
-      field.input.options.values  = options.values;
-    }
-
     field.visible = exclude.indexOf(field.name) === -1; // exclude contain field to set visible false
 
     // for editing purpose
@@ -639,6 +633,14 @@ proto.getFieldsWithValues = function(obj, options = {}) {
     field.validate.mutually_valid  = true;
     field.validate.empty           = false; // Mean no value (field.value) set start value to false. It will be set once the input field is show
     field.validate.message         = null;
+
+    if (field.input) {
+      const options = this.getEditingFields().find(f => f.name === field.name).input.options;
+      field.input.options.loading = options.loading || { state: null };
+      //need to be force to set an array in case of field.validate.unique, mean need to check that value is unique
+      field.input.options.values  = options.values || (field.validate.unique ? [] : undefined);
+    }
+
   });
 
   return fields;
