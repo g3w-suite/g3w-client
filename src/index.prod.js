@@ -542,7 +542,7 @@ $.ajaxSetup({
                 title:                    ProjectsRegistry.getCurrentProject().state.search_title || "search",
                 addTool(t)                { this.state.tools.push(t); },
                 addTools(tt)              { for (const t of tt) this.addTool(t); },
-                showPanel(o)              { return new SearchPanel(o, true) },
+                showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
                 getTitle()                { return this.title },
                 removeTools()             { this.state.tools.splice(0) },
                 stop(d)                   { return $promisify(Promise.resolve(d)) },

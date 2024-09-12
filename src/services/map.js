@@ -19,7 +19,7 @@ import { getUniqueDomId }                   from 'utils/getUniqueDomId';
 import { throttle }                         from 'utils/throttle';
 import { createFilterFromString }           from 'utils/createFilterFromString';
 import InteractionControl                   from 'map/controls/interactioncontrol';
-import { PickCoordinatesInteraction }       from 'map/controls/interactioncontrol';
+import PickCoordinatesInteraction           from 'map/interactions/pickcoordinatesinteraction';
 import { QueryBy }                          from 'map/controls/queryby';
 import { GeolocationControl }               from 'map/controls/geolocationcontrol';
 import { StreetViewControl }                from 'map/controls/streetviewcontrol';

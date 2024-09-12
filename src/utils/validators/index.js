@@ -3,9 +3,6 @@
  * 
  * @since 3.9.0
  */
-
-function truefnc() { return true }
-
 //List of type inputs from server
 
 // FIELD_TYPE_INTEGER      = 'integer'
@@ -85,27 +82,27 @@ const InputValidators = {
      */
     varchar(options = {}) {
       this.options  = options;
-      this.validate = truefnc;
+      this.validate = () => true;
     },
 
     text(options = {}) {
       this.options  = options;
-      this.validate = truefnc;
+      this.validate = () => true;
     },
 
     string(options = {}) {
       this.options  = options;
-      this.validate = truefnc;
+      this.validate = () => true;
     },
 
     radio(options = {}) {
       this.options  = options;
-      this.validate = truefnc;
+      this.validate = () => true;
     },
 
     default(options = {}) {
       this.options  = options;
-      this.validate = truefnc;
+      this.validate = () => true;
     },
 
     range(options = {}) {

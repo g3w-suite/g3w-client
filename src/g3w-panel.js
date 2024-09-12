@@ -7,10 +7,6 @@ import GUI            from 'services/gui';
 import G3WObject      from 'g3w-object';
 import { $promisify } from 'utils/promisify';
 
-export function resolve(value) {
-  return $promisify(Promise.resolve(value));
-}
-
 /**
  * ORIGINAL SOURCE: src/app/gui/panel.js@v3.9.3 
  */

@@ -7,7 +7,7 @@ import { TIMEOUT }                      from 'g3w-constants';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import { waitFor }                      from 'utils/waitFor';
 import { $promisify, promisify }        from 'utils/promisify';
-
+import { XHR }                          from 'utils/XHR';
 
 const Layer                             = require('map/layers/layer');
 const FeaturesStore                     = require('map/layers/features/featuresstore');
@@ -189,10 +189,6 @@ module.exports = class TableLayer extends Layer {
     return _cloneDeep(this);
   }
 
-  cloneFeatures() {
-    return this._featuresstore.clone();
-  }
-
   getColor() {
     return this._color;
   }
@@ -206,14 +202,10 @@ module.exports = class TableLayer extends Layer {
    * Get editing layer
    *
    * @param vectorurl
-   * @param project_type
    *
    * @returns { Promise }
    */
-  async getLayerForEditing({
-    vectorurl,
-    project_type
-  } = {}) {
+  async getLayerForEditing({ vectorurl } = {}) {
 
     if (vectorurl) {
       //@TODO Check if it used otherwise delete it
@@ -355,7 +347,10 @@ module.exports = class TableLayer extends Layer {
   }
 
   getWidgetData(opts = {}) {
-    return $promisify(() => promisify(this.getProvider('data').getWidgetData(opts)));
+    return $promisify(async () => await XHR.get({
+      url:    this.getProvider('data')._layer.getUrl('widget')[opts.type],
+      params: { fields: opts.fields }
+    }));
   }
 
   /**

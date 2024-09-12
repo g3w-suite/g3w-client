@@ -33,6 +33,6 @@ export function $promisify(promise) {
   }
   return $.Deferred(async d => {
     try { d.resolve(await (promise instanceof Promise ? promise : promise())); }
-    catch (e) { console.warn(e); d.reject(e); }
+    catch (e) { console.trace(e); d.reject(e); }
   }).promise();
 }

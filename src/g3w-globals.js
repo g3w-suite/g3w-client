@@ -87,7 +87,6 @@ const i18n                        = require('g3w-i18n');
 const LayersStoreRegistry         = require('map/layers/layersstoresregistry');
 const LayersStore                 = require('map/layers/layersstore');
 const Layer                       = require('map/layers/layer');
-const LayerFactory                = require('map/layers/layerfactory');
 const TableLayer                  = require('map/layers/tablelayer');
 const { VectorLayer }             = require('map/layers/vectorlayer');
 const { ImageLayer }              = require('map/layers/imagelayer');
@@ -188,7 +187,6 @@ const g3wsdk = {
       LayersStoreRegistry,
       LayersStore,
       Layer,
-      LayerFactory,
       TableLayer,
       VectorLayer,
       ImageLayer,

@@ -32,40 +32,6 @@ export const DEFAULT_EDITING_CAPABILITIES = [
 ];
 
 /**
- * @type {Object<string, { format: string, url: string }>}
- */
-export const DOWNLOAD_FORMATS = {
-  download: {
-    format: 'shapefile',
-    url:    'shp'
-  },
-  download_gpkg: {
-    format: 'gpkg',
-    url:    'gpkg'
-  },
-  download_gpx: {
-    format: 'gpx',
-    url:    'gpx'
-  },
-  download_csv: {
-    format: 'csv',
-    url:    'csv'
-  },
-  download_xls: {
-    format: 'xls',
-    url:    'xls'
-  },
-  download_raster: {
-    format: 'geotiff',
-    url:    'geotiff'
-  },
-  download_pdf: {
-    format: 'pdf',
-    url:    'pdf'
-  },
-};
-
-/**
  * @type {string[]}
  */
 export const EPSG = [
@@ -490,7 +456,6 @@ export default {
   API_BASE_URLS,
   DEFAULT_EDITING_CAPABILITIES,
   DOTS_PER_INCH,
-  DOWNLOAD_FORMATS,
   FILTER_OPERATORS,
   FILTER_EXPRESSION_OPERATORS,
   FONT_AWESOME_ICONS,

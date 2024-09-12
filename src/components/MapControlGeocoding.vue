@@ -186,7 +186,6 @@ import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChoos
 import PluginsRegistry                  from 'store/plugins';
 import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import Projections                      from 'store/projections';
-import { toRawType }                    from 'utils/toRawType';
 import { getUniqueDomId }               from 'utils/getUniqueDomId';
 import { flattenObject }                from 'utils/flattenObject';
 import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
@@ -474,7 +473,7 @@ export default {
     query(q) {
 
       return new Promise(async (resolve, reject) => {
-        const isNumber     = value => 'Number' === toRawType(value) && !Number.isNaN(value);
+        const isNumber     = value => 'number' === typeof value && !Number.isNaN(value);
         let coordinates    = null;
         let transform      = false;
         const [x, y, epsg] = (q || '').split(',');

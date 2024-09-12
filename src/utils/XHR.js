@@ -1,52 +1,51 @@
 import { TIMEOUT }   from 'g3w-constants';
-import { promisify } from 'utils/promisify';
 
 export const XHR = {
 
   async get({ url, params = {} } = {}) {
-    if (!url) { return Promise.reject('No url'); }
-    return promisify($.get(url, params));
+    if (!url) {
+      return Promise.reject('No url');
+    }
+
+    params = new URLSearchParams(JSON.parse(JSON.stringify(params || {}))).toString();
+
+    const response = await (await fetch(url + (params ? '?' : '') + params, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })).text();
+
+    // Try to parse response as JSON
+    try {
+      return JSON.parse(response);
+    } catch(e) {
+      return response;
+    }
   },
 
-  post({ url, data, formdata = false, contentType } = {}, getResponseStatusHeaders = false) {
-    return new Promise((resolve, reject) => {
-      if (formdata) {
-        const formdata = new FormData();
-        for (const param in data) {
-          formdata.append(param, data[param])
-        }
-        $.ajax({
-          type: 'POST',
-          url,
-          data:        formdata,
-          processData: false,
-          contentType: false
-        })
-          .then((response, status, request) => { getResponseStatusHeaders ? resolve({ data: response, status, request }) : resolve(response) })
-          .fail(e => { console.warn(e); reject(e); })
-      } else if (contentType) {
-        $.ajax({
-          url,
-          data,
-          type:        'POST',
-          processData: false,
-          contentType: contentType || false
-        }).then((response, status, request) => getResponseStatusHeaders ? resolve({ data: response, status, request }) : resolve(response))
-          .fail(e => { console.warn(e); reject(e); })
-      } else {
-        $.post(url, data)
-          .then((response, status, request) => getResponseStatusHeaders ? resolve({ data: response, status, request }) : resolve(response))
-          .fail(e => { console.warn(e); reject(e) })
-      }
-    })
-  },
+  async post({ url, data, formdata = false, contentType } = {}) {
+    if (formdata) {
+      formdata = new FormData();
+      Object.entries(data).forEach(([key, value]) => formdata.append(key, value));
+    } else if (!contentType) {
+      formdata = new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString();
+    } else {
+      formdata = 'string' === typeof data  ? data : JSON.stringify(data || {});
+    }
 
-  htmlescape(string) {
-    string = string.replace("&", "&amp;");
-    string = string.replace("<", "&lt;");
-    string = string.replace(">", "&gt;");
-    string = string.replace('"', "&quot;");
-    return string;
+    const response = await (await fetch(url, {
+      method:  'POST',
+      body:    formdata,
+      headers: {
+        'Content-Type': contentType || 'application/x-www-form-urlencoded'
+      },
+    })).text();
+
+    // Try to parse response as JSON
+    try {
+      return JSON.parse(response);
+    } catch(e) {
+      return response;
+    }
   },
 
   fileDownload({ url, data, httpMethod = "POST" } = {}) {
@@ -63,6 +62,7 @@ export const XHR = {
         .always(() => clearTimeout(timeoutId));
     })
   },
+
   /**
    * Delete request
    *
@@ -74,8 +74,10 @@ export const XHR = {
    * @since 3.10.0
    */
   async delete({ url, data = {} }) {
-    try {
-      return (await fetch(url, {method: 'DELETE', body: JSON.stringify(data), })).json();
-    } catch(e) { console.warn(e); return Promise.reject(e); }
-  }
+    return (await fetch(url, {
+      method: 'DELETE',
+      body: JSON.stringify(data)
+    })).json();
+  },
+
 };

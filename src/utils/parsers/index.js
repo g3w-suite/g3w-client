@@ -9,7 +9,6 @@
 
 import { G3W_FID }                         from 'g3w-constants';
 import GUI                                 from 'services/gui';
-import { toRawType }                       from 'utils/toRawType';
 import { groupBy }                         from 'utils/groupBy';
 import { is3DGeometry }                    from 'utils/is3DGeometry';
 import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGeometry';
@@ -23,7 +22,6 @@ Object
   .entries({
     G3W_FID,
     GUI,
-    toRawType,
     Feature,
     t,
     is3DGeometry,
@@ -115,7 +113,7 @@ export const ResponseParser = {
               geometryName:      'geometry',
               dataProjection:    options.crs,
               featureProjection: options.mapCrs || options.crs,
-            })).readFeatures('String' === toRawType(data) ? JSON.parse(data) : data);
+            })).readFeatures('string' === typeof data ? JSON.parse(data) : data);
           } catch (e) {
             console.warn(e);
             return [];

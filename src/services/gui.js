@@ -236,10 +236,10 @@ export default new (class GUI extends G3WObject {
     this.dialog = bootbox;
 
     this.notify = {
-      warning(message, autoclose = false) { this.showUserMessage({ type: 'warning', message, autoclose }) },
-      error  (message, autoclose = false) { this.showUserMessage({ type: 'alert',   message, autoclose }) },
-      info   (message, autoclose = false) { this.showUserMessage({ type: 'info',    message, autoclose }) },
-      success(message)                    { this.showUserMessage({ type: 'success', message, autoclose: true }) }
+      warning:(message, autoclose = false) => { this.showUserMessage({ type: 'warning', message, autoclose }) },
+      error:  (message, autoclose = false) => { this.showUserMessage({ type: 'alert',   message, autoclose }) },
+      info:   (message, autoclose = false) => { this.showUserMessage({ type: 'info',    message, autoclose }) },
+      success:(message)                    => { this.showUserMessage({ type: 'success', message, autoclose: true }) }
     };
 
     /** @since 3.11.0 */

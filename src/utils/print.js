@@ -13,7 +13,7 @@ const FETCH = {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: $.param(params),
+      body:  new URLSearchParams(params || {}).toString(),
     });
     if (!response.ok) {
       //@TODO Need to translate
@@ -34,7 +34,7 @@ const FETCH = {
    */
   async GET({url, params = {}, mime_type}) {
     return {
-      url: `${url}?${$.param(params)}`,
+      url: `${url}?${new URLSearchParams(params || {}).toString()}`,
       layers: true,
       mime_type
     };

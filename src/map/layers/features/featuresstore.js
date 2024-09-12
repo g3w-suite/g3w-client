@@ -3,8 +3,9 @@
  * @since 3.11.0
  */
 
-import G3WObject                 from 'g3w-object';
-import { $promisify, promisify } from 'utils/promisify';
+import G3WObject      from 'g3w-object';
+import { $promisify } from 'utils/promisify';
+import { XHR }        from 'utils/XHR';
 
 /** @deprecated */
 const _cloneDeep        = require('lodash.clonedeep');
@@ -91,7 +92,7 @@ module.exports = class FeaturesStore extends G3WObject {
    *  Unlock features. Other users can edit these features
    */
   unlock() {
-    return $promisify(async () => await promisify(this._provider.unlock()));
+    return $promisify(async () => await XHR.post({ url: this._provider._layer.getUrl('unlock') }));
   }
 
   /*
@@ -208,7 +209,11 @@ module.exports = class FeaturesStore extends G3WObject {
     return $promisify(async () => {
       if (commitItems && this._provider) {
         commitItems.lockids = this._lockIds;
-        return await promisify(this._provider.commit(commitItems));
+        return await XHR.post({
+          url:         this._provider._layer.getUrl('commit'),
+          data:        JSON.stringify(commitItems),
+          contentType: 'application/json',
+        });
       }
       return Promise.reject();
     });

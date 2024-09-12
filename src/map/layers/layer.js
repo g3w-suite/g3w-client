@@ -5,8 +5,10 @@
 
 import {
   GEOMETRY_FIELDS,
-  DOWNLOAD_FORMATS,
   SELECTION,
+  DOTS_PER_INCH,
+  QUERY_POINT_TOLERANCE,
+  TIMEOUT,
 }                                from 'g3w-constants';
 import ApplicationState          from 'store/application-state';
 import DataRouterService         from 'services/data';
@@ -20,9 +22,465 @@ import { XHR }                   from 'utils/XHR';
 import { prompt }                from 'utils/prompt';
 import Table                     from 'components/Table.vue';
 
+import { QgsFilterToken }        from 'utils/QgsFilterToken';
+import { ResponseParser }        from 'utils/parsers';
+import { get_legend_params }     from 'utils/get_legend_params';
+import { createRelationsUrl }    from 'utils/createRelationsUrl';
+
 const { t }                      = require('g3w-i18n');
-const Providers                  = require('map/layers/providersfactory');
-const deprecate                  = require('util-deprecate');
+const Feature                    = require('map/layers/features/feature');
+
+const is_defined = d => undefined !== d;
+
+/** Appends query parameters to a URI */
+function appendParams(uri, params) {
+  const keyParams = [];
+  // Skip any null or undefined parameter values
+  Object.keys(params).forEach(function (k) {
+    if (![undefined, null].includes(params[k])) {
+      keyParams.push(k + '=' + encodeURIComponent(params[k]));
+    }
+  });
+  const qs = keyParams.join('&');
+  // remove any trailing ? or &
+  uri = uri.replace(/[?&]$/, '');
+  // append ? or & depending on whether uri has existing parameters
+  uri = uri.indexOf('?') === -1 ? uri + '?' : uri + '&';
+  return uri + qs;
+}
+
+// BACKCOMP v3.x
+function createProvider(name, layer) {
+  const provider = new Providers[name];
+  return Object.assign(provider, {
+    _name:       name,
+    _layer:      layer,
+    getLayer:    () => provider._layer,
+    setLayer:    l  => provider._layer = l,
+    getFeatures: provider.getFeatures || (() => console.log('overwriteby single provider')),
+    query:       provider.query       || (() => console.log('overwriteby single provider')),
+    getName:     () => provider._name,
+  });
+}
+
+/**
+ * ORIGINAL SOURCE: src/app/core/layers/providersfactory.js@v3.10.2
+ * ORIGINAL SOURCE: src/app/core/layers/providers/geojsonprovider.js@3.8.6
+ * ORIGINAL SOURCE: src/app/core/layers/providers/qgisprovider.js@3.8.6
+ * ORIGINAL SOURCE: src/app/core/layers/providers/wmsprovider.js@3.8.6
+ * ORIGINAL SOURCE: src/app/core/layers/providers/wmsprovider.js@3.8.6
+ */
+const Providers = {
+
+  geojson: class {
+
+    query() {
+      return $promisify(Promise.resolve([]));
+    }
+
+    getFeatures(opts = {}) {
+      return $promisify(async() => (new ol.format.GeoJSON()).readFeatures(
+          opts.data || (await XHR.get({ url: opts.url || this._layer.get('source').url })).results, {
+          featureProjection: opts.mapProjection,
+          dataProjection:    opts.projection || 'EPSG:4326',
+        })
+      );
+    }
+
+  },
+
+  qgis: class {
+
+    /**
+     * Query by filter
+     * 
+     * @param { boolean } opts.raw           whether to get raw response
+     * @param { number }  opts.feature_count maximum feature for request
+     * @param { string }  opts.queryUrl      url for request data
+     * @param { Array }   opts.layers        Array or request layers
+     * @param opts.I                         wms request parameter 
+     * @param opts.J                         wms request parameter 
+     */
+    query(opts = {}) {
+      this._projections      = this._projections || { map: null, layer: null };
+      return $promisify(async () => {
+        const is_table = 'table' === this._layer.getType();
+
+        // in case not alphanumeric layer set projection
+        if (!is_table) {
+          this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+        }
+
+        const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+
+        // skip when ..
+        if (!opts.filter) {
+          return Promise.reject();
+        }
+
+        let filter = [].concat(opts.filter)
+          // BACKOMP v3.x
+          .map(f => ({
+            type:  f._type || f.type,
+            value: (f._filter || f.value)
+          }));
+
+        // check if geometry filter. If not i have to remove projection layer
+        if ('geometry' !== filter[0].type) {
+          this._projections.layer = null;
+        }
+
+        filter = filter.filter(f => f.value);
+
+        const response = await XHR.get({
+          url: opts.queryUrl || this._layer.getUrl('query'),
+          params: {
+            SERVICE:       'WMS',
+            VERSION:       '1.3.0',
+            REQUEST:       'GetFeatureInfo',
+            filtertoken:   ApplicationState.tokens.filtertoken,
+            LAYERS:        layers,
+            QUERY_LAYERS:  layers,
+            INFO_FORMAT:   this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
+            FEATURE_COUNT: opts.feature_count || 10,
+            CRS:           (is_table ? ApplicationState.map.epsg : this._projections.map.getCode()),
+            I:             opts.I,
+            J:             opts.J,
+            FILTER:        filter.length ? filter.map(f => f.value).join(';') : undefined,
+            WITH_GEOMETRY: !is_table,
+          },
+        });
+
+        const _layers = undefined === opts.layers ? [this._layer] : opts.layers;
+
+        return opts.raw ? response : ResponseParser.get(_layers[0].getInfoFormat())({
+          response,
+          projections: this._projections,
+          layers:      _layers,
+          wms:         true,
+        });
+
+      });
+    }
+
+    /**
+     * get layer config
+     */
+    getConfig() {
+      return $promisify(XHR.get({ url: this._layer.getUrl('config') }));
+    }
+
+    /**
+     * Load editing features (Read / Write)
+     */
+    getFeatures(options = {}, params = {}) {
+      // filter null values
+      Object
+        .entries(params)
+        .forEach(([key, value]) => {
+          if ([null, undefined].includes(value)) {
+            delete params[key];
+          }
+      });
+
+      return $promisify(async () => {
+
+        params = new URLSearchParams(params || {}).toString();
+        params = (params ? '?' : '') + params;
+
+        // read mode
+        if (!options.editing) {
+          const { vector } = await XHR.get({
+            url: this._layer.getUrl('data') + params,
+          });
+          return {
+            data: vector.data,
+            count: vector.count
+          };
+        }
+
+        // editing mode
+        try {
+
+          let response;
+
+          if (!options.filter) {
+            response = await XHR.post({
+              url:         this._layer.getUrl('editing') + params,
+              contentType: 'application/json',
+            });
+          } else if (is_defined(options.filter.bbox)) { // bbox filter
+            response = await XHR.post({
+              url:  this._layer.getUrl('editing') + params,
+              data: JSON.stringify({
+                in_bbox:     options.filter.bbox.join(','),
+                filtertoken: ApplicationState.tokens.filtertoken
+              }),
+              contentType: 'application/json',
+            })
+          } else if (is_defined(options.filter.fid)) { // fid filter
+            response = await XHR.get({ url: createRelationsUrl(options.filter.fid) });
+          } else if (options.filter.field) {
+            response = await XHR.post({
+              url:         this._layer.getUrl('editing') + params,
+              data:        JSON.stringify(options.filter),
+              contentType: 'application/json',
+            })
+          } else if (is_defined(options.filter.fids)) {
+            response = await XHR.get({
+              url:    this._layer.getUrl('editing') + params,
+              params: options.filter
+            })
+          } else if (is_defined(options.filter.nofeatures)) {
+            response = await XHR.post({
+              url:  this._layer.getUrl('editing') + params,
+              data: JSON.stringify({
+                field: `${options.filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
+              }),
+              contentType: 'application/json'
+            })
+          }
+
+          // invalid response
+          if (!response.result) {
+            return;
+          }
+
+          const lockIds  = response.featurelocks.map(lk => lk.featureid);
+
+          // resolves with features locked and requested
+          return {
+            count:        response.vector.count, // real number of features that request will return
+            featurelocks: response.featurelocks,
+            features:     ResponseParser.get(`g3w-${this._layer.getType()}/json`)(
+              response.vector.data,
+              'NoGeometry' === response.vector.geometrytype
+                ? {}
+                : { crs: this._layer.getCrs() }
+            )
+              .filter(f => lockIds.includes(`${f.getId()}`))
+              .map(feature => new Feature({ feature })),
+          };
+        } catch (e) {
+          console.warn(e);
+        }
+        return Promise.reject({ message: t("info.server_error")});
+      });
+    }
+
+  },
+
+  wms: class {
+
+    query(opts = {}) {
+      const projection = this._layer.getMapProjection() || this._layer.getProjection();
+
+      const {
+        layers        = [this._layer],
+        size          = [101, 101],
+        coordinates   = [],
+        resolution,
+      } = opts;
+
+      // get extent for view size
+      const dx     = resolution * size[0] / 2;
+      const dy     = resolution * size[1] / 2;
+      const x0     = coordinates[0] - dx;
+      const x1     = coordinates[0] - dx;
+      const x2     = coordinates[0] + dx;
+      const x3     = coordinates[0] + dx;
+      const y0     = coordinates[1] - dy;
+      const y1     = coordinates[1] + dy;
+      const y2     = coordinates[1] + dy;
+      const y3     = coordinates[1] - dy;
+      const extent = [
+        Math.min(x0, x1, x2, x3),
+        Math.min(y0, y1, y2, y3),
+        Math.max(x0, x1, x2, x3),
+        Math.max(y0, y1, y2, y3)
+      ];
+
+      const tolerance  = undefined === opts.query_point_tolerance ? QUERY_POINT_TOLERANCE : opts.query_point_tolerance;
+      const url        = layers[0].getQueryUrl();
+
+      // base request
+      const params = {
+        SERVICE:              'WMS',
+        VERSION:              '1.3.0',
+        REQUEST:              'GetFeatureInfo',
+        CRS:                  projection.getCode(),
+        LAYERS:               (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+        QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+        filtertoken:          ApplicationState.tokens.filtertoken,
+        INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
+        FEATURE_COUNT:        undefined === opts.feature_count ? 10 : opts.feature_count,
+        WITH_GEOMETRY:        true,
+        DPI:                  DOTS_PER_INCH,
+        FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
+        FI_POINT_TOLERANCE:   'map' === tolerance.unit ? undefined : tolerance.value,
+        FI_LINE_TOLERANCE:    'map' === tolerance.unit ? undefined : tolerance.value,
+        FI_POLYGON_TOLERANCE: 'map' === tolerance.unit ? undefined : tolerance.value,
+        G3W_TOLERANCE:        'map' === tolerance.unit ? undefined : tolerance.value * resolution,
+        I:                    'map' === tolerance.unit ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
+        J:                    'map' === tolerance.unit ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
+        WIDTH:                size[0],
+        HEIGHT:               size[1],
+        STYLES:               '',
+        BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
+        // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
+        LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
+        LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
+      }
+
+      const data = {
+        data:  (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+        query: { coordinates, resolution },
+      };
+
+      const method =  layers[0].getOwsMethod();
+      const proxy  = layers[0].useProxy();
+      const source = (url || '').split('SOURCE');
+
+      let timer;
+
+      // promise with timeout
+      return $promisify(Promise.race([
+        new Promise(res => { timer = setTimeout(() => { res(data); }, TIMEOUT) }),
+        (async () => {
+          try {
+            let response;
+
+            if (proxy) {
+              response = await layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
+            } else if ('GET' === method) {
+              response = await XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
+            } else if ('POST' === method) {
+              response = await XHR.post({ url, data: params });
+            } else {
+              console.warn('unsupported method: ', method);
+            }
+            return {
+              data: ResponseParser.get(layers[0].getInfoFormat())({
+                response,
+                projections: { map: projection, layer: null },
+                layers,
+                wms:         true,
+              }),
+              query: { coordinates, resolution }
+            };
+          } catch(e) {
+            console.warn(e);
+            return Promise.reject(e);
+          } finally {
+            if (!proxy) {
+              clearTimeout(timer)
+            }
+          }
+        })(),
+      ]));
+
+    }
+  },
+
+  wfs: class {
+  
+    // query method
+    query(opts = {}, params = {}) {
+      const filter = opts.filter || {};
+      const layers = opts.layers || [this._layer];
+      const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
+      const method = layers[0].getOwsMethod();
+
+      // BACKCOMP v3.x
+      Object.assign(filter, {
+        config: filter.config || {},
+        type:   filter._type || filter.type,
+        value:  filter._filter || filter.value,
+      })
+
+      const data = {
+        data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+        query: {},
+      };
+
+      params = Object.assign(params, {
+        SERVICE:      'WFS',
+        VERSION:      '1.1.0',
+        REQUEST:      'GetFeature',
+        MAXFEATURES:  undefined === opts.feature_count ? 10 : opts.feature_count,
+        TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
+        OUTPUTFORMAT: layers[0].getInfoFormat(),
+        SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
+        FILTER:       'all' !== filter.type ? `(${(
+          new ol.format.WFS().writeGetFeature({
+            featureTypes: [layers[0]],
+            filter:       ({
+              'bbox':       ol.format.filter.bbox('the_geom', filter.value),
+              'geometry':   ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
+              'expression': null,
+            })[filter.type],
+          })
+        ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
+      });
+
+      let timer;
+
+      // promise with timeout
+      return $promisify(Promise.race([
+        new Promise(res => { timer = setTimeout(() => { res(data); }, TIMEOUT) }),
+        (async () => {
+          try {
+            let response;
+
+            if ('GET' === method && !['all', 'geometry'].includes(filter.type)) {
+              response = await XHR.get({ url: url + '?' + new URLSearchParams(params || {}).toString() });
+            }
+  
+            if ('POST' === method || ['all', 'geometry'].includes(filter.type)) {
+              response = await XHR.post({ url, data: params })
+            }
+
+            const data = ResponseParser.get(layers[0].getInfoFormat())({
+              response,
+              projections: {
+                map:   this._layer.getMapProjection(),
+                layer: (opts.reproject ? this._layer.getProjection() : null)
+              },
+              layers,
+              wms: false,
+            });
+
+            // sanitize in case of nil:true
+            data
+              .flatMap(l => l.features || [])
+              .forEach(f => Object.entries(f.getProperties())
+                .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
+              );
+            return { data };
+          } catch (e) {
+            console.warn(e);
+            return Promise.reject(e);
+          } finally {
+            clearTimeout(timer)
+          }
+        })(),
+      ]));
+
+    }
+
+  },
+
+};
+
+const DOWNLOAD_FORMATS = {
+  download:        { format: 'shapefile', url: 'shp' },
+  download_gpkg:   { format: 'gpkg',      url: 'gpkg' },
+  download_gpx:    { format: 'gpx',       url: 'gpx' },
+  download_csv:    { format: 'csv',       url: 'csv' },
+  download_xls:    { format: 'xls',       url: 'xls' },
+  download_raster: { format: 'geotiff',   url: 'geotiff' },
+  download_pdf:    { format: 'pdf',       url: 'pdf' },
+};
 
 /**
  * Base class for all layers
@@ -317,10 +775,10 @@ class Layer extends G3WObject {
           'QGIS delimitedtext',
           'QGIS wfs',
         ].includes(layerType)) {
-          return new Providers.qgis({ layer: this });
+          return createProvider('qgis', this);
         }
         if ('G3WSUITE geojson' === layerType) {
-          return new Providers.geojson({ layer: this });
+          return createProvider('geojson', this);
         }
       })(),
 
@@ -336,7 +794,7 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
-      ].includes(layerType) && new Providers.wfs({ layer: this }),
+      ].includes(layerType) && createProvider('wfs', this),
 
       filtertoken: [
         'QGIS virtual',
@@ -346,7 +804,7 @@ class Layer extends G3WObject {
         'QGIS spatialite',
         'QGIS ogr',
         'QGIS delimitedtext',
-      ].includes(layerType) && new Providers.qgis({ layer: this }),
+      ].includes(layerType) && createProvider('qgis', this),
 
       query: (() => {
         if ([
@@ -370,10 +828,10 @@ class Layer extends G3WObject {
           'QGIS mdal',
           'OGC wms',
         ].includes(layerType)) {
-          return new Providers.wms({ layer: this });
+          return createProvider('wms', this);
         }
         if ('G3WSUITE geojson' === layerType) {
-          return new Providers.geojson({ layer: this });
+          return createProvider('geojson', this);
         }
       })(),
 
@@ -386,7 +844,7 @@ class Layer extends G3WObject {
         'QGIS ogr',
         'QGIS delimitedtext',
         'QGIS wfs',
-      ].includes(layerType) && new Providers.qgis({ layer: this }),
+      ].includes(layerType) && createProvider('qgis', this),
 
     };
 
@@ -662,7 +1120,10 @@ class Layer extends G3WObject {
    * @private
    */
   async _applyFilterToken(filter) {
-    const { filtertoken } = await this.providers['filtertoken'].applyFilterToken(filter.fid);
+    const { filtertoken } = await QgsFilterToken.apply(
+      this.providers['filtertoken']._layer.getUrl('filtertoken'),
+      filter.fid
+    );
     if (filtertoken) {
       this.setFilter(false);
       this.state.filter.current = filter;
@@ -686,7 +1147,11 @@ class Layer extends G3WObject {
       label: t('layer_selection_filter.tools.savefilter'),
       value: layer.state.filter.current ? layer.state.filter.current.name : '' ,
       callback: async(name) => {
-        const data = await layer.providers['filtertoken'].saveFilterToken(name);
+
+        const data = await QgsFilterToken.save(
+          layer.providers['filtertoken']._layer.getUrl('filtertoken'),
+          name
+        );
 
         // skip when no data return from provider
         if (!data) {
@@ -765,7 +1230,10 @@ class Layer extends G3WObject {
       }
 
       // delete filtertoken related to layer provider
-      const filtertoken = await this.providers['filtertoken'].deleteFilterToken(fid);
+      const filtertoken = await QgsFilterToken.delete(
+        this.providers['filtertoken']._layer.getUrl('filtertoken'),
+        fid
+      );
 
       // remove it from filters list when deleting a saved filter (since v3.9.0)
       if (undefined !== fid) {
@@ -812,7 +1280,7 @@ class Layer extends G3WObject {
 
       // select all features
       if (selection.has(SELECTION.ALL)) {
-        await provider.deleteFilterToken();
+        await await QgsFilterToken.delete(this.providers['filtertoken']._layer.getUrl('filtertoken'));
         this.setFilterToken(null);
 
         return;
@@ -820,13 +1288,12 @@ class Layer extends G3WObject {
 
       const fids = Array.from(selection);
 
-      // exclude some features from selection
-      if (selection.has(SELECTION.EXCLUDE)) {
-        this.setFilterToken( await provider.getFilterToken({ fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') }) );
-        return;
-      }
-      // include some features in selection
-      this.setFilterToken( await provider.getFilterToken({ fidsin: fids.join(',') }) );
+      this.setFilterToken( await QgsFilterToken.getToken(
+        provider._layer.getUrl('filtertoken'),
+        selection.has(SELECTION.EXCLUDE)
+          ? { fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') } // exclude features from selection
+          : { fidsin: fids.join(',') }                                         // include features in selection
+      ));
 
     } catch(e) {
       console.warn(e);
@@ -1357,8 +1824,8 @@ class Layer extends G3WObject {
    * @param { 0 | 1 }     opts.formatter
    * @param { Array }     opts.field     - Array of object with type of suggest (see above)
    * @param opts.unique
-   * @param opts.fformatter
-   * @param opts.ffield
+   * @param opts.fformatter  since 3.9.0
+   * @param opts.ffield      since 3.9.1
    * @param opts.queryUrl
    * @param opts.ordering
 
@@ -1374,19 +1841,48 @@ class Layer extends G3WObject {
     queryUrl,
     ordering,
   } = {}) {
-    return await this
-      .getProvider('data')
-      .getFilterData({
-        queryUrl,
-        field,
-        raw,
-        ordering,
-        suggest,
-        formatter,
-        unique,
-        fformatter,
-        ffield,
-      });
+    const provider        = this.getProvider('data');
+    provider._projections = provider._projections || { map: null, layer: null };
+    const params   =  {
+      field,
+      suggest,
+      ordering,
+      formatter,
+      unique,
+      fformatter,
+      ffield,
+      filtertoken: ApplicationState.tokens.filtertoken
+    };
+    try {
+      const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
+      const response = field                                                                    // check `field` parameter
+        ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
+        : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
+
+      // vector layer
+      if ('table' !== provider._layer.getType()) {
+        provider._projections.map = provider._layer.getMapProjection() || provider._projections.layer;
+      }
+
+      if (raw)                           { return response }
+      if (unique && response.result)     { return response.data }
+      if (fformatter && response.result) { return response }
+
+      if (response.result) {
+        return {
+          data: ResponseParser.get('application/json')({
+            layers:      [provider._layer],
+            response:    response.vector.data,
+            projections: provider._projections,
+          })
+        };
+      }
+
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
+    }
+    return Promise.reject();
   }
 
   /**
@@ -2036,25 +2532,6 @@ class Layer extends G3WObject {
   }
 
 }
-
-/**
- * [LAYER SELECTION]
- *
- * Base on boolean value create a filter token from server
- * based on selection or delete current filtertoken
- *
- * @param bool
- *
- * @returns {Promise<void>}
- *
- * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::createFilterToken() and deleteFilterToken(fid) instead
- */
-Layer.prototype.activeFilterToken = deprecate(async function(bool) { await this[bool ? 'createFilterToken' : 'deleteFilterToken'](); }, '[G3W-CLIENT] Layer::activeFilterToken(bool) is deprecated');
-
-/**
- * @deprecated since 3.9.0. Will be removed in 4.x. Use Layer::getLayerEditingFormStructure() instead
- */
-Layer.prototype.getEditorFormStructure = deprecate(Layer.prototype.getLayerEditingFormStructure, '[G3W-CLIENT] Layer::getEditorFormStructure() is deprecated');
 
 /******************************************************************************************
  * LAYER PROPERTIES
