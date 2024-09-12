@@ -16,18 +16,6 @@ const Feature                           = require('map/layers/features/feature')
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
 
-function _createAttributesFromFields(fields = []) {
-  return fields.reduce((acc, f) => {
-    if ('child' === f.type) {
-      acc[f.name] = _createAttributesFromFields(f.fields);
-    } else if ('null' === f.value) {
-      f.value = null;
-    }
-    acc[f.name] = f.value;
-    return acc;
-  }, {});
-}
-
 /**
  * Base Layer that support editing
  */
@@ -397,8 +385,20 @@ module.exports = class TableLayer extends Layer {
     this._featuresstore.addLockIds(lockIds);
   }
 
+  /**
+   * create attributes from fields
+   */
   setFieldsWithValues(feature, fields) {
-    const attributes = _createAttributesFromFields(fields);
+    const createAttrs = (fields = []) => fields.reduce((acc, f) => { 
+      if ('child' === f.type) {
+        acc[f.name] = createAttrs(f.fields);
+      } else if ('null' === f.value) {
+        f.value = null;
+      }
+      acc[f.name] = f.value;
+      return acc;
+    }, {});
+    const attributes = createAttrs(fields);
     feature.setProperties(attributes);
     return attributes;
   }
