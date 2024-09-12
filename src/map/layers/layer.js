@@ -31,23 +31,7 @@ const { t }                      = require('g3w-i18n');
 const Feature                    = require('map/layers/features/feature');
 
 const is_defined = d => undefined !== d;
-
-/** Appends query parameters to a URI */
-function appendParams(uri, params) {
-  const keyParams = [];
-  // Skip any null or undefined parameter values
-  Object.keys(params).forEach(function (k) {
-    if (![undefined, null].includes(params[k])) {
-      keyParams.push(k + '=' + encodeURIComponent(params[k]));
-    }
-  });
-  const qs = keyParams.join('&');
-  // remove any trailing ? or &
-  uri = uri.replace(/[?&]$/, '');
-  // append ? or & depending on whether uri has existing parameters
-  uri = uri.indexOf('?') === -1 ? uri + '?' : uri + '&';
-  return uri + qs;
-}
+const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 // BACKCOMP v3.x
 function createProvider(name, layer) {
@@ -273,8 +257,6 @@ const Providers = {
   wms: class {
 
     query(opts = {}) {
-      const projection = this._layer.getMapProjection() || this._layer.getProjection();
-
       const {
         layers        = [this._layer],
         size          = [101, 101],
@@ -283,25 +265,17 @@ const Providers = {
       } = opts;
 
       // get extent for view size
-      const dx     = resolution * size[0] / 2;
-      const dy     = resolution * size[1] / 2;
-      const x0     = coordinates[0] - dx;
-      const x1     = coordinates[0] - dx;
-      const x2     = coordinates[0] + dx;
-      const x3     = coordinates[0] + dx;
-      const y0     = coordinates[1] - dy;
-      const y1     = coordinates[1] + dy;
-      const y2     = coordinates[1] + dy;
-      const y3     = coordinates[1] - dy;
-      const extent = [
-        Math.min(x0, x1, x2, x3),
-        Math.min(y0, y1, y2, y3),
-        Math.max(x0, x1, x2, x3),
-        Math.max(y0, y1, y2, y3)
-      ];
+      const dx   = resolution * size[0] / 2;
+      const dy   = resolution * size[1] / 2;
+      const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
-      const tolerance  = undefined === opts.query_point_tolerance ? QUERY_POINT_TOLERANCE : opts.query_point_tolerance;
-      const url        = layers[0].getQueryUrl();
+      const projection = this._layer.getMapProjection() || this._layer.getProjection();
+      const tolerance  = çç(opts.query_point_tolerance, QUERY_POINT_TOLERANCE);
+
+      const url    = layers[0].getQueryUrl();
+      const method = layers[0].getOwsMethod();
+      const proxy  = layers[0].useProxy();
+      const source = (url || '').split('SOURCE');
 
       // base request
       const params = {
@@ -313,7 +287,7 @@ const Providers = {
         QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
         filtertoken:          ApplicationState.tokens.filtertoken,
         INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
-        FEATURE_COUNT:        undefined === opts.feature_count ? 10 : opts.feature_count,
+        FEATURE_COUNT:        çç(opts.feature_count, 10),
         WITH_GEOMETRY:        true,
         DPI:                  DOTS_PER_INCH,
         FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
@@ -321,31 +295,26 @@ const Providers = {
         FI_LINE_TOLERANCE:    'map' === tolerance.unit ? undefined : tolerance.value,
         FI_POLYGON_TOLERANCE: 'map' === tolerance.unit ? undefined : tolerance.value,
         G3W_TOLERANCE:        'map' === tolerance.unit ? undefined : tolerance.value * resolution,
-        I:                    'map' === tolerance.unit ? undefined : Math.floor((coordinates[0] - extent[0]) / resolution), // x
-        J:                    'map' === tolerance.unit ? undefined : Math.floor((extent[3] - coordinates[1]) / resolution), // y
+        I:                    'map' === tolerance.unit ? undefined : Math.floor((coordinates[0] - bbox[0]) / resolution), // x
+        J:                    'map' === tolerance.unit ? undefined : Math.floor((bbox[3] - coordinates[1]) / resolution), // y
         WIDTH:                size[0],
         HEIGHT:               size[1],
         STYLES:               '',
-        BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [extent[1], extent[0], extent[3], extent[2]] : extent).join(','),
+        BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
         // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
         LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
         LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
-      }
-
-      const data = {
-        data:  (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-        query: { coordinates, resolution },
+        SOURCE:               (!proxy && 'GET' === method && source.length > 1) ? source[1] : undefined,
       };
-
-      const method =  layers[0].getOwsMethod();
-      const proxy  = layers[0].useProxy();
-      const source = (url || '').split('SOURCE');
 
       let timer;
 
       // promise with timeout
       return $promisify(Promise.race([
-        new Promise(res => { timer = setTimeout(() => { res(data); }, TIMEOUT) }),
+        new Promise(res => { timer = setTimeout(() => { res({
+          data:  (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+          query: { coordinates, resolution },
+        }); }, TIMEOUT) }),
         (async () => {
           try {
             let response;
@@ -353,7 +322,13 @@ const Providers = {
             if (proxy) {
               response = await layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
             } else if ('GET' === method) {
-              response = await XHR.get({ url: (appendParams((source.length ? source[0] : url), params) + (source.length > 1 ? '&SOURCE' + source[1] : '')) });
+              let uri = (source.length ? source[0] : url).replace(/[?&]$/, ''); // remove any trailing ? or &
+              response = await XHR.get({
+                url: uri + (uri.indexOf('?') === -1 ? '?' : '&') + Object.keys(params)
+                .filter(k => ![undefined, null].includes(params[k])) // skip null and undefined params
+                .map(k =>k + '=' + encodeURIComponent(params[k]))
+                .join('&')
+              });
             } else if ('POST' === method) {
               response = await XHR.post({ url, data: params });
             } else {
@@ -362,9 +337,9 @@ const Providers = {
             return {
               data: ResponseParser.get(layers[0].getInfoFormat())({
                 response,
-                projections: { map: projection, layer: null },
                 layers,
                 wms:         true,
+                projections: { map: projection, layer: null },
               }),
               query: { coordinates, resolution }
             };
@@ -398,16 +373,11 @@ const Providers = {
         value:  filter._filter || filter.value,
       })
 
-      const data = {
-        data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-        query: {},
-      };
-
       params = Object.assign(params, {
         SERVICE:      'WFS',
         VERSION:      '1.1.0',
         REQUEST:      'GetFeature',
-        MAXFEATURES:  undefined === opts.feature_count ? 10 : opts.feature_count,
+        MAXFEATURES:  çç(opts.feature_count, 10),
         TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
         OUTPUTFORMAT: layers[0].getInfoFormat(),
         SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
@@ -427,7 +397,10 @@ const Providers = {
 
       // promise with timeout
       return $promisify(Promise.race([
-        new Promise(res => { timer = setTimeout(() => { res(data); }, TIMEOUT) }),
+        new Promise(res => { timer = setTimeout(() => { res({
+          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
+          query: {},
+        }); }, TIMEOUT) }),
         (async () => {
           try {
             let response;
@@ -1932,17 +1905,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * Get field by name
-   * 
-   * @param fieldName
-   *
-   * @returns {*}
-   */
-  getFieldByName(fieldName) {
-    return this.getFields().find(f => fieldName === f.name)
-  }
-
-  /**
    * @returns { Array } editing fields
    */
   getEditingFields() {
@@ -2451,15 +2413,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @TODO Description
-   *
-   * @param name
-   */
-  resetConfigField({ name }) {
-    this.changeConfigFieldType({ name, reset: true });
-  }
-
-  /**
    * Function called in case of change project to remove all stored information 
    */
   clear() {}
@@ -2562,9 +2515,6 @@ Layer.ServerTypes = {
   WMS:             "WMS",
   WMTS:            "WMTS",
   G3WSUITE:        "G3WSUITE"
-  /** 
-   * ADD ALSO TO PROVIDER FACTORY (@TODO or already done?) 
-   */
 };
 
 /**
@@ -2590,9 +2540,6 @@ Layer.SourceTypes = {
   GEOJSON:         "geojson",
   /** @since 3.9.0 */
   POSTGRESRASTER:  "postgresraster",
-  /**
-   * ADD TO PROVIDER FACTORY (@TODO or already done?)
-   */
 };
 
 /**
@@ -2602,15 +2549,6 @@ Layer.CAPABILITIES = {
   QUERYABLE:  1,
   FILTERABLE: 2,
   EDITABLE:   4,
-};
-
-/**
- * Editing types 
- */
-Layer.EDITOPS = {
-  INSERT: 1,
-  UPDATE: 2,
-  DELETE: 4,
 };
 
 /**

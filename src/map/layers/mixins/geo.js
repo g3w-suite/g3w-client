@@ -10,60 +10,10 @@
  * @since 3.9.0
  */
 
-import GUI                                from 'services/gui';
-import Projections                        from 'store/projections';
-import { getScaleFromResolution }         from 'utils/getScaleFromResolution';
-import { XHR }                            from 'utils/XHR';
-
-/**
- * @param { Object } opts
- * @param opts.id
- * @param opts.feature
- * 
- * @returns { ol.Feature | undefined }
- * 
- * @example in case of feature object
- * ```
- * {
- *   id: X,
- *   attributes: {key:value}
- *   geometry: geometry
- * }
- * ```
- */
-function createFeatureFromFeatureObject({ id, feature = {} }) {
-  //extract geometry and attributes from feature Object
-  const { attributes } = feature;
-  //create a new ol feature
-  if (feature.geometry) {
-    feature = new ol.Feature(feature.geometry);
-    feature.setId(id);
-  }
-  Object.keys(attributes).forEach(a => feature.set(a, attributes[a]));
-  return feature;
-}
-
-/**
- * ORIGINAL SOURCE: src/utils/sanitizeUrl.js@v3.10.2
- */
-function sanitizeUrl({
-  url,
-  reserverParameters = [],
-} = {}) {
-  const checkUrl = new URL(url);
-  reserverParameters.forEach(p => {
-    const params = [p.toUpperCase(), p.toLowerCase()];
-    for (let i = 0; i < 2; i++) {
-      const param = params[i];
-      const value = checkUrl.searchParams.get(param);
-      if (value) {
-        url = url.replace(`${param}=${value}`, '');
-        break;
-      }
-    }
-  });
-  return url;
-}
+import GUI                        from 'services/gui';
+import Projections                from 'store/projections';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
+import { XHR }                    from 'utils/XHR';
 
 /**
  * ES6 mixin
@@ -86,7 +36,6 @@ export default BaseClass => class extends BaseClass {
       projection:   config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs)) : undefined,
       attributions: config.attributions ? config.attributions : undefined,
     });
-  
   
     this.legendCategories = {};
   
@@ -151,9 +100,18 @@ export default BaseClass => class extends BaseClass {
   
     // sanitize source url
     if (config.source && config.source.url) {
-      this.config.source.url = sanitizeUrl({
-        url:                this.config.source.url,
-        reserverParameters: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ], // reserved WMS params
+      const checkUrl = new URL(this.config.source.url);
+      // reserved WMS params
+      ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
+        const params = [p.toUpperCase(), p.toLowerCase()];
+        for (let i = 0; i < 2; i++) {
+          const param = params[i];
+          const value = checkUrl.searchParams.get(param);
+          if (value) {
+            this.config.source.url = this.config.source.url.replace(`${param}=${value}`, '');
+            break;
+          }
+        }
       });
     }
   }
@@ -277,8 +235,14 @@ export default BaseClass => class extends BaseClass {
   * @returns {*}
   */
   addOlSelectionFeature({ id, feature } = {}) {
+    //create a new ol feature
+    if (feature.geometry) {
+      feature = new ol.Feature(feature.geometry);
+      feature.setId(id);
+    }
+    Object.keys(feature.attributes).forEach(a => feature.set(a, feature.attributes[a]));
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-      feature:  createFeatureFromFeatureObject({ id, feature }),
+      feature,
       added:    false,
       selected: false, /** @since 3.9.9 */
     };
