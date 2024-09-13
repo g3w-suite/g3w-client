@@ -37,8 +37,6 @@ export default {
     return { id : `unique_${getUniqueDomId()}`}
   },
   async mounted() {
-    //store change of field value
-    this.is_change = false;
     await this.$nextTick();
     this.select2 = $(`#${this.id}`).select2({
       dropdownParent: $('#g3w-view-content'),
@@ -55,19 +53,10 @@ export default {
         //@TODO need to find a better way to comprare input value (from input html element) value is set as string
         ['integer', 'float', 'bigint'].includes(this.state.type) ? Number(value) : value;
       //check if start value is changed
-      this.is_change = this.state._value !== this.state.value;
       this.changeSelect(this.state.value);
       await this.$nextTick();
-      if (this.state.input.options.editable && this.state.validate.valid) {
-        this.state.input.options.values = this.state.input.options.values.filter(v => v !== this.state._value);
-      }
     })
   },
-  beforeDestroy() {
-    //if changed, need to add value to values
-    if (this.is_change) {
-      this.service.addValueToValues(this.state.value);
-    }
-  }
+
 };
 </script>
