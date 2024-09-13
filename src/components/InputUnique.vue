@@ -56,8 +56,11 @@ export default {
         ['integer', 'float', 'bigint'].includes(this.state.type) ? Number(value) : value;
       //check if start value is changed
       this.is_change = this.state._value !== this.state.value;
-
       this.changeSelect(this.state.value);
+      await this.$nextTick();
+      if (this.state.input.options.editable && this.state.validate.valid) {
+        this.state.input.options.values = this.state.input.options.values.filter(v => v !== this.state._value);
+      }
     })
   },
   beforeDestroy() {
