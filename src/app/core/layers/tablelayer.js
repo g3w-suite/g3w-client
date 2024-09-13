@@ -637,8 +637,8 @@ proto.getFieldsWithValues = function(obj, options = {}) {
     if (field.input) {
       const options = this.getEditingFields().find(f => f.name === field.name).input.options;
       field.input.options.loading = options.loading || { state: null };
-      //need to be force to set an array in case of field.validate.unique, mean need to check that value is unique
-      field.input.options.values  = options.values || (field.validate.unique ? [] : undefined);
+      //check if value is defined otherwise set empty array (e.g required for field.validate unique)
+      field.input.options.values  = options.values || [];
     }
 
   });
