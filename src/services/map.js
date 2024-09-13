@@ -168,64 +168,6 @@ CONTROLS['querybycircle']      = CONTROLS['queryby'];
 CONTROLS['querybydrawpolygon'] = CONTROLS['queryby'];
 CONTROLS['querybypolygon']     = CONTROLS['queryby'];
 
-
-/**
- * @returns style function 
- */
-function createStyleFunctionToVectorLayer(opts = {}) {
-  return Object.assign(
-    (feat, res) => {
-      opts.color = opts.color.rgba ? 'rgba(' + [opts.color.rgba.r, opts.color.rgba.g, opts.color.rgba.b, opts.color.rgba.a].join() + ')' : opts.color;
-      const style = getDefaultLayerStyle(feat.getGeometry().getType(), { color: opts.color });
-      if (opts.field) {
-        style.setText(new ol.style.Text({
-          text: `${feat.get(opts.field)}`,
-          font: 'bold',
-          scale: 2,
-          offsetY: 15,
-          fill: new ol.style.Fill({ color: opts.color }),
-          stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
-        }));
-      }
-      return style;
-    }, { _g3w_options: opts }
-  );
-}
-
-function getDefaultLayerStyle(geometryType, options = {}) {
-
-  const { color } = options;
-
-  //Point geometry type
-  if (isPointGeometryType(geometryType)) {
-    return new ol.style.Style({
-      image: new ol.style.Circle({
-        fill: new ol.style.Fill({ color }),
-        stroke: new ol.style.Stroke({ color, width: 1 }),
-        radius: 5,
-      })
-    });
-  }
-
-  //Line geometry type
-  if (isLineGeometryType(geometryType)) {
-    return new ol.style.Style({
-      stroke: new ol.style.Stroke({ color, width: 3 }),
-    });
-  }
-
-  //Polygon geometry type
-  if (isPolygonGeometryType(geometryType)) {
-    return new ol.style.Style({
-      fill:   new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
-      stroke: new ol.style.Stroke({ color, width: 3 }),
-    })
-  }
-
-  console.warn('invalid geometry type: ', geometryType);
-
-}
-
 class MapService extends G3WObject {
 
   constructor(options = {}) {
@@ -790,9 +732,8 @@ class MapService extends G3WObject {
 
         $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
 
-        this.viewer.map.getInteractions().forEach(     int => this._watchInteraction(int));
-        this.viewer.map.getInteractions().on('add',    int => this._watchInteraction(int.element));
-        this.viewer.map.getInteractions().on('remove', int => { /* this._onRemoveInteraction(int);); */ });
+        this.viewer.map.getInteractions().forEach(int => this._watchInteraction(int));
+        this.viewer.map.getInteractions().on('add', int => this._watchInteraction(int.element));
 
         this._marker = new ol.Overlay({
           position:    null,
@@ -2353,10 +2294,45 @@ class MapService extends G3WObject {
       };
 
       if (options.color && options.field) {
-        vectorLayer.setStyle(createStyleFunctionToVectorLayer({
-          color: options.color,
-          field: options.field
-        }));
+        vectorLayer.setStyle(Object.assign(
+          feat => {
+            options.color = options.color.rgba ? 'rgba(' + [options.color.rgba.r, options.color.rgba.g, options.color.rgba.b, options.color.rgba.a].join() + ')' : options.color;
+            const geometryType = feat.getGeometry().getType();
+            const { color } = options;
+            let style;
+            if (isPointGeometryType(geometryType)) {          // Point
+              style = new ol.style.Style({
+                image: new ol.style.Circle({
+                  fill: new ol.style.Fill({ color }),
+                  stroke: new ol.style.Stroke({ color, width: 1 }),
+                  radius: 5,
+                })
+              });
+            } else if (isLineGeometryType(geometryType)) {    // Line
+              style = new ol.style.Style({
+                stroke: new ol.style.Stroke({ color, width: 3 }),
+              });
+            } else if (isPolygonGeometryType(geometryType)) { // Polygon
+              style = new ol.style.Style({
+                fill:   new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
+                stroke: new ol.style.Stroke({ color, width: 3 }),
+              })
+            } else {
+              console.warn('invalid geometry type: ', geometryType);
+            }
+            if (options.field) {
+              style.setText(new ol.style.Text({
+                text: `${feat.get(options.field)}`,
+                font: 'bold',
+                scale: 2,
+                offsetY: 15,
+                fill: new ol.style.Fill({ color: options.color }),
+                stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
+              }));
+            }
+            return style;
+          }, { _g3w_options: options }
+        ));
       }
 
       let color;

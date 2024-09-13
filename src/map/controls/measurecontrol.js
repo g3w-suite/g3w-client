@@ -131,7 +131,10 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._map.addOverlay(this._helpTooltip);
 
     // create measure tooltip
-    if (this.measureTooltip) { removeMeasureTooltip({ ...this.measureTooltip, map: this._map }) }
+    if (this.measureTooltip) {
+      removeMeasureTooltip({ ...this.measureTooltip, map: this._map })
+    }
+
     this.measureTooltip = createMeasureTooltip({ map: this._map, feature: this._feature });
   }
 

@@ -543,6 +543,7 @@
 
     // Load WMS urls from local storage
     async mounted() {
+
       /**@deprecated Will be removed on v4.x **/
       g3wsdk.core.project.ProjectsRegistry
         .onafter('setCurrentProject', async project => {
