@@ -12,7 +12,6 @@ import {
 }                                from 'g3w-constants';
 import ApplicationState          from 'store/application-state';
 import DataRouterService         from 'services/data';
-import ProjectsRegistry          from 'store/projects';
 import GUI                       from 'services/gui';
 import G3WObject                 from 'g3w-object';
 import { parseAttributes }       from 'utils/parseAttributes';
@@ -465,7 +464,7 @@ class Layer extends G3WObject {
     super();
 
     //get current project object
-    const project   = options.project || ProjectsRegistry.getCurrentProject();
+    const project   = options.project || ApplicationState.project;
     const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
     const vectorUrl = config.baselayer ? '' : project.state.vectorurl;
     const rasterUrl = config.baselayer ? '' : project.state.rasterurl;
@@ -2473,7 +2472,7 @@ class Layer extends G3WObject {
    */
   getFormat() {
     return this.config.format
-      || ProjectsRegistry.getCurrentProject().state.wms_getmap_format
+      || ApplicationState.project.state.wms_getmap_format
       || 'image/png'
   }
 

@@ -90,12 +90,12 @@
 
 <script>
 
-import ApplicationState  from 'store/application-state';
-import ProjectsRegistry  from "store/projects";
-import Projections       from 'store/projections';
-import { API_BASE_URLS } from 'g3w-constants';
-import { XHR }           from 'utils/XHR';
-import GUI               from 'services/gui';
+import ApplicationState        from 'store/application-state';
+import Projections             from 'store/projections';
+import { API_BASE_URLS }       from 'g3w-constants';
+import { XHR }                 from 'utils/XHR';
+import { getListableProjects } from 'utils/getListableProjects';
+import GUI                     from 'services/gui';
 
 const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
 
@@ -251,7 +251,7 @@ export default {
         this.parent  = item;
         this.items   = (
           this.parent.id === this.curr_group
-            ? ProjectsRegistry.getListableProjects()
+            ? getListableProjects()
             : await get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }))
         );
         this.current = 'projects';
@@ -327,7 +327,7 @@ export default {
     _setSrc(src) {
       let imageSrc;
       const host       = this.$options.host || '';
-      const mediaurl   = ProjectsRegistry.config.mediaurl;
+      const mediaurl   = window.initConfig.mediaurl;
       const clienturl  = window.initConfig.urls.clienturl;
       const has_media  = src && (src.includes(mediaurl));
       const not_static = src && (!src.includes('static') && !src.includes('media'));
@@ -352,7 +352,7 @@ export default {
     const config = window.initConfig;
 
     // setup items data (macrogrups and groups).
-    this.items       = ProjectsRegistry.getListableProjects();
+    this.items       = getListableProjects();
     this.parent      = window.initConfig;
     this.curr_group  = this.parent.id;
     this.macrogroups = config.macrogroups;

@@ -1,5 +1,4 @@
-import ProjectsRegistry             from 'store/projects';
-import ApplicationState             from 'store/application-state';
+import ApplicationState from 'store/application-state';
 
 const FETCH = {
   /**
@@ -83,7 +82,7 @@ const FETCH = {
  * @param { 'GET' | 'POST' } method
  */
 export function print(opts = {}, method = 'GET') {
- const store  = ProjectsRegistry.getCurrentProject().getLayersStore();
+ const store  = ApplicationState.project.getLayersStore();
  const layers = store.getLayers({ PRINTABLE: { scale: opts.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
 
  // No layers are printable (i.e., no visible layers)

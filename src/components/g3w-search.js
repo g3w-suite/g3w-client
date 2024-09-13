@@ -7,7 +7,7 @@ import { SEARCH_ALLVALUE }            from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
 import Panel                          from 'g3w-panel';
 import CatalogLayersStoresRegistry    from 'store/catalog-layers';
-import ProjectsRegistry               from 'store/projects';
+import ApplicationState               from 'store/application-state'
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
@@ -185,14 +185,14 @@ async function doSearch({
     });
 
     // auto zoom to query
-    if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && data.data && 1 === data.data.length) {
+    if (show && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
     const search_1n = !show           && ('search_1n' === state.type);
     const features  = search_1n       && (data.data[0] || {}).features || []
-    const relation  = features.length && ProjectsRegistry.getCurrentProject().getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
-    const layer     = relation        && ProjectsRegistry.getCurrentProject().getLayerById(relation.referencedLayer);      // father layer id
+    const relation  = features.length && ApplicationState.project.getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
+    const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
 
     // no features on result → show an empty message
     if (search_1n && !features.length) {

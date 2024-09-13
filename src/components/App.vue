@@ -691,7 +691,6 @@ import {
   VIEWPORT
 }                         from 'g3w-constants';
 import ApplicationState   from 'store/application-state';
-import ProjectsRegistry   from 'store/projects';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
 import GUI                from 'services/gui';
@@ -744,10 +743,6 @@ export default {
       return window.innerWidth >= 768;
     },
 
-    currentProject() {
-      return ProjectsRegistry.getCurrentProject();
-    },
-
     appconfig() {
       return window.initConfig;
     },
@@ -765,11 +760,11 @@ export default {
     },
 
     logo_url() {
-      return this.currentProject.state.thumbnail || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
+      return ApplicationState.project.state.thumbnail || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
 
     project_title() {
-      return this.currentProject.getState().name;
+      return ApplicationState.project.getState().name;
     },
 
     user() {
@@ -931,14 +926,14 @@ export default {
      * @since 3.8.0
      */
     async initDialogMessages() {
-      const messages = this.currentProject.state.messages;
+      const messages = ApplicationState.project.state.messages;
       
       // no messages to show
       if (!messages) {
         return;
       }
 
-      const projectId = this.currentProject.getId();
+      const projectId = ApplicationState.project.getId();
 
       for (let i = 0; i < messages.items.length; i++) {
         const message = messages.items[i];

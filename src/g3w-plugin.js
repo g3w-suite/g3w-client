@@ -7,7 +7,6 @@ import G3WObject          from 'g3w-object';
 import Component          from 'g3w-component';
 import ApplicationState   from 'store/application-state';
 import PluginsRegistry    from 'store/plugins';
-import ProjectsRegistry   from 'store/projects';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
 
@@ -231,7 +230,7 @@ export class Plugin extends G3WObject {
    * @returns whether plugin is compatible with current projectId
    */
   isCurrentProjectCompatible(gid) {
-    return gid === ProjectsRegistry.getCurrentProject().getGid();
+    return gid === ApplicationState.project.getGid();
   }
 
   /**
@@ -427,7 +426,7 @@ export class Plugin extends G3WObject {
    * @TODO it could be depecrated after v3.4 ?
    */
   getProject() {
-    return ProjectsRegistry.getCurrentProject();
+    return ApplicationState.project;
   }
 
   /**
@@ -507,7 +506,7 @@ export class PluginService extends G3WObject {
   }
 
   getCurrentProject() {
-    return ProjectsRegistry.getCurrentProject();
+    return ApplicationState.project;
   }
 
   getGid() {

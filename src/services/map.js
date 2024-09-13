@@ -27,19 +27,19 @@ import { ScaleControl }                     from 'map/controls/scalecontrol';
 import { ScreenshotControl }                from 'map/controls/screenshotcontrol';
 import { MeasureControl }                   from 'map/controls/measurecontrol';
 import DataRouterService                    from 'services/data';
-import ProjectsRegistry                     from 'store/projects';
 import ApplicationService                   from 'services/application';
 import GUI                                  from 'services/gui';
 import MapControlZoomHistory                from 'components/MapControlZoomHistory.vue';
 import MapControlGeocoding                  from 'components/MapControlGeocoding.vue';
 import { groupBy }                          from 'utils/groupBy';
+import { getProject }                       from 'utils/getProject';
+
+const VectorLayer                           = require('map/layers/vectorlayer');
 
 const MAP_SETTINGS = {
   ZOOM:            { maxScale: 1000, },
   ANIMATION:       { duration: 2000, },
 };
-
-const { VectorLayer }            = require('map/layers/vectorlayer');
 
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
@@ -117,7 +117,7 @@ const CONTROLS = {
       this.runQuery = this.runQuery || (async ({ coordinates }) => {
         GUI.closeSideBar();
         try {
-          const project = ProjectsRegistry.getCurrentProject();
+          const project = ApplicationState.project;
           await DataRouterService.getData('query:coordinates', {
             inputs: {
               coordinates,
@@ -266,7 +266,7 @@ class MapService extends G3WObject {
 
     this.maps_container = options.maps_container || 'g3w-maps';
 
-    this.project = options.project || ProjectsRegistry.getCurrentProject();
+    this.project = options.project || ApplicationState.project;
 
     this._controls = [];
 
@@ -360,9 +360,9 @@ class MapService extends G3WObject {
     // on after setting a current project
     if (!options.project) {
       this._keyEvents.g3wobject.push({
-        who:     ProjectsRegistry,
+        who:     g3wsdk.core.project.ProjectsRegistry,
         setter: 'setCurrentProject',
-        key:     ProjectsRegistry.onafter('setCurrentProject', this.onSetCurrentProject)
+        key:     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', this.onSetCurrentProject)
       });
     }
 
@@ -517,8 +517,7 @@ class MapService extends G3WObject {
 
               case 'overview':
                 if (!isMobile.any && window.initConfig.overviewproject) {
-                  ProjectsRegistry
-                    .getProject(window.initConfig.overviewproject)
+                  getProject(window.initConfig.overviewproject)
                     .then(project => {
                       //create a view for overview map
                       const map = this.getMap();

@@ -20,7 +20,6 @@ import {
 // core
 import translations                from "locales";
 import ApplicationState            from 'store/application-state';
-import ProjectsRegistry            from 'store/projects';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import PluginsRegistry             from 'store/plugins';
 import G3WObject                   from 'g3w-object';
@@ -68,6 +67,7 @@ import vClickOutside               from 'directives/v-click-outside';
 import { noop }                    from 'utils/noop';
 import { XHR }                     from 'utils/XHR';
 import { $promisify }              from 'utils/promisify';
+import { getProject }              from 'utils/getProject';
 
 
 const { addI18n, t, tPlugin } = require('g3w-i18n');
@@ -203,7 +203,7 @@ function _setDataTableLanguage() {
  */
 function _getSavedSearches() {
   const ITEMS = ApplicationState.querybuilder.searches;
-  const id = ProjectsRegistry.getCurrentProject().getId();
+  const id = ApplicationState.project.getId();
   ITEMS[id] = ITEMS[id] || [];
   return ITEMS[id];
 }
@@ -347,75 +347,73 @@ $.ajaxSetup({
   );
 
   ApplicationState.gui.layout.app      = initConfig.layout;
-  ProjectsRegistry.config              = initConfig;
-
-  //setup state
-  Object.assign(ProjectsRegistry.state, {
-    baseLayers: initConfig.baselayers,
-    minScale:   initConfig.minscale,
-    maxScale:   initConfig.maxscale,
-    crs:        initConfig.crs,
-  });
-
-  // clear projects
-  ProjectsRegistry._groupProjects   = [];
 
   // setup projects
-  initConfig.projects.forEach(project => {
-    ProjectsRegistry.state.qgis_version = project.qgis_version || ProjectsRegistry.state.qgis_version;
-    Object.assign(project, {
-      baselayers:         initConfig.baselayers,
-      minscale:           initConfig.minscale,
-      maxscale:           initConfig.maxscale,
-      crs:                initConfig.crs,
-      vectorurl:          initConfig.vectorurl,
-      rasterurl:          initConfig.rasterurl,
-    });
-    ProjectsRegistry._groupProjects.push(project);
-  });
-
-  const map_theme = (new URLSearchParams(location.search)).get('map_theme');
+  initConfig.projects.forEach(project => Object.assign(project, {
+    baselayers:         initConfig.baselayers,
+    minscale:           initConfig.minscale,
+    maxscale:           initConfig.maxscale,
+    crs:                initConfig.crs,
+    vectorurl:          initConfig.vectorurl,
+    rasterurl:          initConfig.rasterurl,
+  }));
 
   const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
 
   // get current project configuration
-  ProjectsRegistry.getProject(initConfig.initproject, { map_theme } ).then((project) => {
-    clearTimeout(timeout);
-    ProjectsRegistry.setCurrentProject(project);
+  getProject(initConfig.initproject, { map_theme: (new URLSearchParams(location.search)).get('map_theme') } )
+    .then((project) => {
+      clearTimeout(timeout);
 
-    window.addEventListener('online', () => {
-      ApplicationState.online = true;
-      ApplicationService.online();
-    });
+      const { MapLayersStoresRegistry } = require('services/map').default;
 
-    window.addEventListener('offline', () => {
-      ApplicationState.online = false;
-      ApplicationService.offline();
-    });
+      CatalogLayersStoresRegistry.removeLayersStores();
+      MapLayersStoresRegistry.removeLayersStores();
 
-    ApplicationService.emit('ready');
+      ApplicationState.project = project;
 
-    ApplicationState.map.epsg = project.state.crs.epsg;
+      const projectLayersStore = project.getLayersStore();
 
-    if (ApplicationState.iframe) {
-      require('services/iframe').default.init({ project });
-    }
-    // init local items
-    Object.keys(LOCAL_ITEM_IDS).forEach(id => {
-      try {
-        const item = window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
-        if (undefined === item) {
-          window.localStorage.setItem(id, JSON.stringify(LOCAL_ITEM_IDS[id].value));
-        }
-      } catch(e) {
-        console.warn(e);
+      // set in first position (map and catalog)
+      CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+      MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+
+      // BACKOMP v3.x
+      g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
+
+      window.addEventListener('online', () => {
+        ApplicationState.online = true;
+        ApplicationService.online();
+      });
+
+      window.addEventListener('offline', () => {
+        ApplicationState.online = false;
+        ApplicationService.offline();
+      });
+
+      ApplicationService.emit('ready');
+
+      ApplicationState.map.epsg = project.state.crs.epsg;
+
+      if (ApplicationState.iframe) {
+        require('services/iframe').default.init({ project });
       }
+      // init local items
+      Object.keys(LOCAL_ITEM_IDS).forEach(id => {
+        try {
+          const item = window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
+          if (undefined === item) {
+            window.localStorage.setItem(id, JSON.stringify(LOCAL_ITEM_IDS[id].value));
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+      });
+      resolve(true);
+    }).catch(e => {
+      console.warn(e);
+      reject(e);
     });
-    resolve(true);
-  }).catch(e => {
-    console.warn(e);
-    reject(e);
-  });
 })).then(() => {
     // create Vue App
     _setDataTableLanguage();
@@ -439,7 +437,7 @@ $.ajaxSetup({
             new (function() {
 
               // build project group metadata
-              const project = ProjectsRegistry.getCurrentProject().getState();
+              const project = ApplicationState.project.getState();
 
               const comp = new Component({
                 id:          'metadata',
@@ -513,7 +511,7 @@ $.ajaxSetup({
              */
             Object.assign(new Component({
               id:                'print',
-              visible:           window.initConfig.user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+              visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
               icon:              GUI.getFontClass('print'),
               iconColor:         '#FF9B21',
               title:             'print',
@@ -532,14 +530,14 @@ $.ajaxSetup({
               visible:     true,
               icon:        GUI.getFontClass('search'),
               iconColor:   '#8dc3e3',
-              title:       ProjectsRegistry.getCurrentProject().state.search_title || 'search',
+              title:       ApplicationState.project.state.search_title || 'search',
               service: Object.assign(new G3WObject, {
                 state: {
-                  searches: (ProjectsRegistry.getCurrentProject().state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
+                  searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
                   tools: [],
                   querybuildersearches: _getSavedSearches()
                 },
-                title:                    ProjectsRegistry.getCurrentProject().state.search_title || "search",
+                title:                    ApplicationState.project.state.search_title || "search",
                 addTool(t)                { this.state.tools.push(t); },
                 addTools(tt)              { for (const t of tt) this.addTool(t); },
                 showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
@@ -615,7 +613,7 @@ $.ajaxSetup({
               // static class field
               service.ACTIONS = ACTIONS;
             
-              const tools = ProjectsRegistry.getCurrentProject().getState().tools || {};
+              const tools = ApplicationState.project.getState().tools || {};
             
               for (let t in tools) {
                 service.addToolGroup(0, t.toUpperCase());
@@ -701,7 +699,7 @@ $.ajaxSetup({
                 },
                 layerstrees:  CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
                 layersgroups: [],
-                legend:       Object.assign(opts.config.legend || {}, { place: ProjectsRegistry.getCurrentProject().state.legend_position || 'tab' }),
+                legend:       Object.assign(opts.config.legend || {}, { place: ApplicationState.project.state.legend_position || 'tab' }),
               };
             
               const service = opts.service || new G3WObject({
@@ -849,10 +847,10 @@ $.ajaxSetup({
 
         try {
           await PluginsRegistry.init({
-            project:            ProjectsRegistry.getCurrentProject(),
+            project:            ApplicationState.project,
             pluginsBaseUrl:     window.initConfig.urls.staticurl,
             pluginsConfigs:     window.initConfig.plugins,
-            otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
+            otherPluginsConfig: ApplicationState.project.getState()
           });
         } catch (e) {
           console.warn(e);

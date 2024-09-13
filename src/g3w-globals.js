@@ -37,6 +37,11 @@ import { intersects }                              from 'utils/intersects';
 import { distance }                                from 'utils/distance';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
 import { getFilterExpression }                     from "utils/getFilterExpression";
+import { getProjectUrl }                           from 'utils/getProjectUrl';
+import { setProjectAliasUrl }                      from 'utils/setProjectAliasUrl';
+import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
+import { getListableProjects }                     from 'utils/getListableProjects';
+import { getProject }                              from 'utils/getProject';
 
 /**
  * Single File Components
@@ -50,7 +55,6 @@ import G3wFormInputs                               from 'components/InputG3WForm
 import CatalogLayersStoresRegistry                 from 'store/catalog-layers';
 import DataRouterService                           from 'services/data';
 import PluginsRegistry                             from 'store/plugins';
-import ProjectsRegistry                            from 'store/projects';
 import TaskService                                 from 'services/tasks';
 import ApiService                                  from 'services/api';
 import GUI                                         from 'services/gui';
@@ -88,8 +92,7 @@ const LayersStoreRegistry         = require('map/layers/layersstoresregistry');
 const LayersStore                 = require('map/layers/layersstore');
 const Layer                       = require('map/layers/layer');
 const TableLayer                  = require('map/layers/tablelayer');
-const { VectorLayer }             = require('map/layers/vectorlayer');
-const { ImageLayer }              = require('map/layers/imagelayer');
+const VectorLayer                 = require('map/layers/vectorlayer');
 const Feature                     = require('map/layers/features/feature');
 const FeaturesStore               = require('map/layers/features/featuresstore');
 const OlFeaturesStore             = require('map/layers/features/olfeaturesstore');
@@ -175,7 +178,15 @@ const g3wsdk = {
       }
     },
     project: {
-      ProjectsRegistry,
+      ProjectsRegistry: Object.assign(new G3WObject, {
+        setters: { setCurrentProject(project) {} },
+        getProjectUrl,
+        setProjectAliasUrl,
+        getProjectConfigByGid,
+        getListableProjects,
+        getProject,
+        getCurrentProject:     () => ApplicationState.project,
+      })
     },
     map: {
       MapLayersStoreRegistry: MapLayersStoresRegistry
@@ -189,7 +200,6 @@ const g3wsdk = {
       Layer,
       TableLayer,
       VectorLayer,
-      ImageLayer,
       features: {
         Feature,
         FeaturesStore,
@@ -297,9 +307,9 @@ g3wsdk.core.ApplicationService.getLocalItem         = id => window.localStorage.
 /** used by the following plugins: "bforest" */
 g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.user;
 /** used by the following plugins: "archiweb", "iframe" */
-g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = GUI.getService('map').addMapExtentUrlParameterToUrl(ProjectsRegistry.getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
+g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
 /** used by the following plugins: "openrouteservice" */
-g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ProjectsRegistry.getCurrentProject().getGid() });
+g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ApplicationState.project.getGid() });
 /** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
 /** used by the following plugins: "editing", "openrouteservice" */

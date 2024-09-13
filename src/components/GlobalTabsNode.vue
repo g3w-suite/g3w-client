@@ -67,7 +67,7 @@
 
 <script>
   import G3wInput         from 'components/InputG3W.vue';
-  import ProjectsRegistry from 'store/projects';
+  import ApplicationState from 'store/application-state'
 
   const Fields = require('gui/fields/fields');
 
@@ -158,7 +158,7 @@
        * @returns {*|{loading: boolean}}
        */
       loadingRelation(relation) {
-        const layer = ProjectsRegistry.getCurrentProject().getLayerById(this.layerid);
+        const layer = ApplicationState.project.getLayerById(this.layerid);
         // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
         return layer.getRelationById(relation.name) || ({ state: {loading: false} }).state;
       },
@@ -178,7 +178,7 @@
        * @returns {*}
        */
       getRelationName(relationId) {
-        const relation = ProjectsRegistry.getCurrentProject().getRelationById(relationId);
+        const relation = ApplicationState.project.getRelationById(relationId);
         return relation && relation.name;
       },
       /**
@@ -187,30 +187,12 @@
        * @returns {boolean}
        */
       isRelationChildLayerNotEditable(relation) {
-        const {nmRelationId, name} = relation;
-        ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
-        const currentProject  = ProjectsRegistry.getCurrentProject();
-        const projectRelation = currentProject.getRelationById(name);
+        // HANDLE N:M RELATION AS 1:N RELATION
+        const projectRelation = ApplicationState.project.getRelationById(relation.name);
         const relationLayerId = projectRelation.referencingLayer;
-        const relationLayer   = currentProject.getLayerById(relationLayerId);
+        const relationLayer   = ApplicationState.project.getLayerById(relationLayerId);
         // check if is editable. In case of nmRelation layer need to be table to be editable
         return !relationLayer.isEditable();
-        // if (nmRelationId) return true;
-        // else {
-        //   const currentProject = ProjectsRegistry.getCurrentProject();
-        //   const projectRelation = currentProject.getRelationById(name);
-        //   const relationLayerId = projectRelation.referencingLayer;
-        //   const relationLayer = currentProject.getLayerById(relationLayerId);
-        //   // check if is editable. In case of nmRelation layer need to be table to be editable
-        //   return !relationLayer.isEditable();
-        // }
-        // const relationId = nmRelationId || name;
-        // const currentProject = ProjectsRegistry.getCurrentProject();
-        // const projectRelation = currentProject.getRelationById(relationId);
-        // const relationLayerId = nmRelationId ? projectRelation.referencedLayer : projectRelation.referencingLayer;
-        // const relationLayer = currentProject.getLayerById(relationLayerId);
-        // // check if is editable. In case of nmRelation layer need to be table to be editable
-        // return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() : false);
       },
       /**
        *

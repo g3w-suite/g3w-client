@@ -65,7 +65,7 @@
 <script>
 import Panel                       from 'g3w-panel';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
+import ApplicationState            from 'store/application-state'
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { createFilterFromString }  from 'utils/createFilterFromString';
@@ -110,7 +110,7 @@ export default {
         await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
         const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
         const items = item ? JSON.parse(item) : undefined;
-        const projectId = ProjectsRegistry.getCurrentProject().getId();
+        const projectId = ApplicationState.project.getId();
         const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
 
         if (searches.length) {

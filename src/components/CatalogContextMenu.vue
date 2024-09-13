@@ -603,7 +603,6 @@
   import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application-state';
   import CatalogLayersStoresRegistry   from 'store/catalog-layers';
-  import ProjectsRegistry              from 'store/projects';
   import GUI                           from 'services/gui';
   import { downloadFile }              from 'utils/downloadFile';
 
@@ -624,7 +623,7 @@
     data() {
       return {
         menu: {
-          title:  ProjectsRegistry.getCurrentProject().getName(),
+          title:  ApplicationState.project.getName(),
           show:   false,
           top:    0,
           left:   0,
@@ -685,11 +684,11 @@
     computed: {
 
       edit_url() {
-        return ProjectsRegistry.getCurrentProject().getState().edit_url;
+        return ApplicationState.project.getState().edit_url;
       },
 
       layers_url() {
-        return ProjectsRegistry.getCurrentProject().getState().layers_url;
+        return ApplicationState.project.getState().layers_url;
       },
 
     },

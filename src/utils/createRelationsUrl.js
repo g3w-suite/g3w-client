@@ -1,4 +1,4 @@
-import ProjectsRegistry       from 'store/projects';
+import ApplicationState       from 'store/application-state'
 import { sanitizeFidFeature } from 'utils/sanitizeFidFeature';
 
 /**
@@ -11,7 +11,7 @@ export function createRelationsUrl({
   type = 'data', // <editing, data, xls>
   formatter = 1
 }) {
-  return `${ProjectsRegistry.getCurrentProject().getLayerById(
+  return `${ApplicationState.project.getLayerById(
     undefined === relation.father
       ? (layer.id === relation.referencedLayer ? relation.referencingLayer: relation.referencedLayer)
       : (layer.id === relation.father ? relation.child: relation.father)

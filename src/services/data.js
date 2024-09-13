@@ -3,7 +3,7 @@
  * @since v3.6
  */
 import { G3W_FID, QUERY_POINT_TOLERANCE } from 'g3w-constants';
-import ProjectsRegistry                   from 'store/projects';
+import ApplicationState                   from 'store/application-state'
 import GUI                                from 'services/gui';
 
 import { groupBy }                        from 'utils/groupBy';
@@ -102,7 +102,7 @@ export default {
    */
   async 'query:bbox'({
     bbox,
-    feature_count      = ProjectsRegistry.getCurrentProject().state.feature_count || 5,
+    feature_count      = ApplicationState.project.state.feature_count || 5,
     filterConfig       = {},
     multilayers        = false,
     condition          = { filtrable: { ows: 'WFS' } },
@@ -156,7 +156,7 @@ export default {
    */
   async 'query:polygon'({
     feature,
-    feature_count   = ProjectsRegistry.getCurrentProject().state.feature_count || 5,
+    feature_count   = ApplicationState.project.state.feature_count || 5,
     filterConfig    = {},
     multilayers     = false,
     condition       = { filtrable: { ows: 'WFS' } },
@@ -212,7 +212,7 @@ export default {
             multilayers,
             feature_count,
             filterConfig,
-            projection: ProjectsRegistry.getCurrentProject().getProjection()
+            projection: ApplicationState.project.getProjection()
           }
         ) || []).flatMap(({ data = [] }) => data),
       };
@@ -342,7 +342,7 @@ export default {
   async 'expression:expression'(params = {}) {
     try {
       const response = await XHR.post({
-        url:         `${ProjectsRegistry.getCurrentProject().getUrl('vector_data')}${params.layer_id}/`,
+        url:         `${ApplicationState.project.getUrl('vector_data')}${params.layer_id}/`,
         contentType: 'application/json',
         data:        JSON.stringify(params),
       });
@@ -370,7 +370,7 @@ export default {
    */
   'expression:expression_eval'(params = {}) {
     return XHR.post({
-      url:         `/api/expression_eval/${ProjectsRegistry.getCurrentProject().getId()}/`,
+      url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
       contentType: 'application/json',
       data:        JSON.stringify(params),
     });

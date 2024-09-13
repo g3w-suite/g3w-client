@@ -263,7 +263,6 @@
 import { VM }                      from 'g3w-eventbus';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
 import GUI                         from 'services/gui';
 import { XHR }                     from 'utils/XHR';
 
@@ -305,7 +304,7 @@ export default {
   computed: {
 
     project() {
-      return ProjectsRegistry.state.currentProject
+      return ApplicationState.project;
     },
 
     title() {
@@ -357,7 +356,7 @@ export default {
               change && (
                 (tree.legendurls && 0 === tree.legendurls.length) ||
                 layers.some(l => l.legend.change) ||
-                ProjectsRegistry.getCurrentProject().state.context_base_legend
+                ApplicationState.project.state.context_base_legend
               )
             ) {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
@@ -402,7 +401,7 @@ export default {
         const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
 
         const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
-          all:        !ProjectsRegistry.getCurrentProject().state.context_base_legend, // true = dynamic legend
+          all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
         }) : undefined;
@@ -494,7 +493,7 @@ export default {
      * get map Theme_configuration
      */
     async getMapThemeFromThemeName(theme) {
-      const project = ProjectsRegistry.getCurrentProject();
+      const project = ApplicationState.project;
       // get map theme configuration from map_themes project config
       const config = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
       if (config && undefined === config.layerstree) {
@@ -521,7 +520,7 @@ export default {
      * @since 3.11.0
      */
     async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
-      const project = ProjectsRegistry.getCurrentProject();
+      const project = ApplicationState.project;
       layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
       /** map theme config */
       const theme = await this.getMapThemeFromThemeName(map_theme);
@@ -738,7 +737,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     // in case of dynamic legend
-    if (ProjectsRegistry.getCurrentProject().state.context_base_legend) {
+    if (ApplicationState.project.state.context_base_legend) {
       GUI.getService('map').on('change-map-legend-params', () => { this.getLegendSrc(); });
     } else {
       this.getLegendSrc();

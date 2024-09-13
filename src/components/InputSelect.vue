@@ -78,7 +78,7 @@
 <script>
   import CatalogLayersStoresRegistry    from 'store/catalog-layers';
   import GUI                            from 'services/gui';
-  import ProjectsRegistry               from 'store/projects';
+  import ApplicationState               from 'store/application-state'
   import {
     selectMixin,
     select2Mixin
@@ -233,7 +233,7 @@
           referencedLayer,
           referencingLayer,
           fieldRef : { referencingField, referencedField }
-        }                               = ProjectsRegistry.getCurrentProject().getRelationById(relation_id);
+        }                               = ApplicationState.project.getRelationById(relation_id);
         //current layer in editing
         const layer                     = CatalogLayersStoresRegistry.getLayerById(referencingLayer)
         //relation layer

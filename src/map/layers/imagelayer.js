@@ -7,12 +7,11 @@ import { DOTS_PER_INCH }      from 'g3w-constants';
 import G3WObject              from 'g3w-object';
 import ApplicationState       from 'store/application-state';
 import Projections            from 'store/projections';
-import ProjectsRegistry       from 'store/projects';
 import { get_legend_params }  from 'utils/get_legend_params';
 import GeoLayerMixin          from 'map/layers/mixins/geo';
 
 const Layer                   = require('map/layers/layer');
-const { VectorLayer }         = require('map/layers/vectorlayer');
+const VectorLayer             = require('map/layers/vectorlayer');
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -379,6 +378,8 @@ class ImageLayer extends GeoLayerMixin(Layer) {
 
     super(config, options);
 
+    this._BASE_LAYER = options._BASE_LAYER;
+
     this.setters = {
       change(){},
     };
@@ -389,6 +390,173 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     this.customParams     = {};
 
     this.setup(config, options);
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('OSM' === this._BASE_LAYER) {
+      this._makeOlLayer = () => new ol.layer.Tile({
+        source:  new ol.source.OSM({ url: this.config.url }),
+        id:      this.config.name  || 'osm',
+        title:   this.config.title || 'OSM',
+        basemap: true
+      });
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('Bing' === this._BASE_LAYER) {
+      this._makeOlLayer = () => {
+        const name = ({
+          streets:          'Road',
+          aerial:           'Aerial',
+          aerialwithlabels: 'AerialWithLabels'
+        })[this.config.source && this.config.source.subtype] || 'Aerial';
+        return new ol.layer.Tile({
+          name,
+          visible: false,
+          preload: Infinity,
+          source: new ol.source.BingMaps({ imagerySet: name, key: ApplicationState.keys.vendorkeys.bing }),
+          basemap: true,
+        });
+      };
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('TMS' === this._BASE_LAYER) {
+      this._makeOlLayer = () => {
+        const url        = undefined !== this.config.url ? this.config.url : null;
+        const projection = url && this.getProjectionFromCrs(this.config.crs);
+        if (!url) {
+          return;
+        }
+        return new ol.layer.Tile({
+          visible:    false,
+          projection,
+          source:     new ol.source.XYZ({
+            url,
+            maxZoom:     this.config.maxZoom,
+            minZoom:     this.config.minZoom,
+            projection,
+            crossOrigin: 'anonymous',
+            // tileLoadFunction:  undefined,
+            /** @since 3.10.0 - Map Proxy cache_provider **/
+            tileGrid:    'degrees' === projection.getUnits() ? new ol.tilegrid.TileGrid({
+              // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
+              // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
+              // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
+              // we need to calculate to Math.min instead, so we have to remove the first resolution
+              resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: this.config.maxZoom }).getResolutions().slice(1),
+              extent:      projection.getExtent(),
+            }) : undefined,
+          })
+        });
+      };
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('TMS' === this._BASE_LAYER) {
+      this._makeOlLayer = () => {
+        return new ol.layer.Tile({
+          // extent: opts.extent,
+          visible: false,
+          source: new ol.source.TileArcGISRest({
+            url:          undefined === this.config.url ? null : this.config.url,
+            projection:   this.getProjectionFromCrs(this.config.crs),
+            attributions: this.config.attributions,
+            // crossOrigin:  opts.crossOrigin,
+          }),
+        });
+      };
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('WMTS' === this._BASE_LAYER) {
+      this._makeOlLayer = () => {
+        // use this config to get params
+        const {
+          url,
+          layer,
+          attributions,
+          matrixSet,
+          format = 'image/png',
+          style  = 'default',
+          requestEncoding,
+          grid, /** @since 3.10.0*/
+          grid_extent, /** @since 3.10.0 */
+        } = this.config;
+  
+        /** @since 3.10.0 */
+        let projection = this.config.projection || this.getProjectionFromCrs(this.config.crs);
+  
+        if (matrixSet) {
+          const size = ol.extent.getWidth(projection.getExtent()) / 256;
+          return new ol.layer.Tile({
+            opacity: .7,
+            source: new ol.source.WMTS({
+              url,
+              projection,
+              layer,
+              matrixSet,
+              requestEncoding,
+              format,
+              attributions,
+              tileGrid: new ol.tilegrid.WMTS({
+                origin:      ol.extent.getTopLeft(projection.getExtent()),
+                resolutions: Array.from({ length: 14 }, (_, z) => size / Math.pow(2, z)),
+                matrixIds:   Array.from({ length: 14 }, (_, z) => z),
+              }),
+              style
+            })
+          });
+        }
+  
+        /** @since 3.10.0 WMTS based on mapproxy*/
+        if (grid && grid_extent) {
+          const resolutions = ol.tilegrid.createXYZ({ extent: grid_extent }).getResolutions();
+          return new ol.layer.Tile({
+            source: new ol.source.WMTS({
+              url,
+              layer,
+              projection,
+              matrixSet: grid,
+              format:    format || 'png',
+              tileGrid:  new ol.tilegrid.WMTS({
+                           origin: ol.extent.getTopLeft(grid_extent),
+                           resolutions,
+                           matrixIds: resolutions.map((_, z) => z),
+                         }),
+              style,
+              transparent: false,
+            })
+          });
+        }
+
+      };
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('WMS' === this._BASE_LAYER) {
+      this._makeOlLayer = () => RasterLayer._makeOlLayer({
+        layerObj: {
+          url:          this.config.url,
+          projection:   this.getProjectionFromCrs(this.config.crs),
+          attributions: this.config.attributions,
+          layers:       this.config.layers,
+          tiled:        undefined === this.config.singleTile ? false : this.config.singleTile,
+          opacity:      undefined === this.config.opacity ? 1 : this.config.opacity,
+        },
+      });
+    }
 
     /**
      * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
@@ -435,7 +603,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       const layerForEditing  = await new VectorLayer(this.config, {
         vectorurl,
         project_type,
-        project: project || ProjectsRegistry.getCurrentProject(),
+        project: project || ApplicationState.project,
       }).layerForEditing;
       this.setEditingLayer(layerForEditing);
       return layerForEditing;
@@ -554,7 +722,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * Get wms url of the layer
    */
   getFullWmsUrl() {
-    const { wms_url } = ProjectsRegistry.getCurrentProject().state.metadata;
+    const { wms_url } = ApplicationState.project.state.metadata;
 
     /** @FIXME add description */
     if (wms_url && !this.isExternalWMS()) {
@@ -568,7 +736,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * Get WMS url (used by Catalog Layer Menu) 
    */
   getCatalogWmsUrl() {
-    const { wms_url } = ProjectsRegistry.getCurrentProject().state.metadata;
+    const { wms_url } = ApplicationState.project.state.metadata;
 
     /** @FIXME add description */
     if (wms_url && !this.isExternalWMS()) {
@@ -595,7 +763,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   getWfsUrl() {
-    const { wms_url } = ProjectsRegistry.getCurrentProject().state.metadata;
+    const { wms_url } = ApplicationState.project.state.metadata;
 
     /** @FIXME add description */
     if (wms_url) {
@@ -703,7 +871,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
      */
     else {
       const ctx_legend = (
-        opts.categories && (['image/png', undefined].includes(opts.format) || ProjectsRegistry.getCurrentProject().state.context_base_legend)
+        opts.categories && (['image/png', undefined].includes(opts.format) || ApplicationState.project.state.context_base_legend)
           ? get_legend_params(this)
           : undefined // disabled when `FORMAT=application/json` (otherwise it creates some strange behaviour on WMS `getMap` when switching between layer styles)
       );

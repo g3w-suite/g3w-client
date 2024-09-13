@@ -117,7 +117,6 @@
 import { FILTER_OPERATORS }        from 'g3w-constants';
 import ApplicationState            from 'store/application-state';
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
@@ -255,7 +254,7 @@ export default {
      * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
      */
     async save() {
-      const id      = this.projectId || ProjectsRegistry.getCurrentProject().getId();
+      const id      = this.projectId || ApplicationState.project.getId();
       const edit_id = this.edit && this.$options.options.id;
       const item   = window.localStorage.getItem('QUERYBUILDERSEARCHES');
       let searches = item ? JSON.parse(item) : undefined;
@@ -317,7 +316,7 @@ export default {
       operator: null
     };
 
-    const project = ProjectsRegistry.getCurrentProject();
+    const project = ApplicationState.project;
 
     this.layers = project
       .getLayers()

@@ -74,7 +74,7 @@
   import GUI                         from 'services/gui';
   import { VM }                      from 'g3w-eventbus';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import ProjectsRegistry            from 'store/projects';
+  import ApplicationState            from 'store/application-state';
   import ClickMixin                  from 'mixins/click';
 
 
@@ -382,7 +382,7 @@
        *
        * @type {{}}
        */
-      this.dynamic = ProjectsRegistry.getCurrentProject().state.context_base_legend;
+      this.dynamic = ApplicationState.project.state.context_base_legend;
 
       this.mapReady = false;
 

@@ -1,5 +1,4 @@
-import ProjectsRegistry             from 'store/projects';
-import ApplicationState             from 'store/application-state';
+import ApplicationState from 'store/application-state';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
@@ -40,7 +39,7 @@ import ApplicationState             from 'store/application-state';
  * @param { 'GET' | 'POST' } method
  */
 export function printAtlas(opts = {}, method = 'GET') {
-  const store = ProjectsRegistry.getCurrentProject().getLayersStore();
+  const store = ApplicationState.project.getLayersStore();
   const multi = opts.values.length > 1;
   return FETCH[method]({
     url:       store.getWmsUrl(),

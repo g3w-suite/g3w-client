@@ -5,7 +5,7 @@
 
 import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
-import ProjectsRegistry               from 'store/projects';
+import ApplicationState               from 'store/application-state'
 import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
@@ -229,7 +229,7 @@ class BaseIframeService extends G3WObject {
     /**
      * Current project
      */
-    this.project    = ProjectsRegistry.getCurrentProject();
+    this.project    = ApplicationState.project;
 
     /**
      * @type { Array | undefined }

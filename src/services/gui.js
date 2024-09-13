@@ -1,16 +1,17 @@
-import { VIEWPORT }     from 'g3w-constants';
+import { VIEWPORT }              from 'g3w-constants';
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
 
 import ApplicationState          from 'store/application-state';
-import ProjectsRegistry          from 'store/projects';
 
 import IFrameRouterService       from 'services/iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
 import { toRawType }             from 'utils/toRawType';
 import { promisify, $promisify } from 'utils/promisify';
+import { getListableProjects }   from 'utils/getListableProjects';
+import { getProjectUrl }         from 'utils/getProjectUrl';
 
 /** store legacy frontend components */
 const COMPONENTS = {};
@@ -802,13 +803,13 @@ export default new (class GUI extends G3WObject {
       internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue')))({
         host: opts.host,
         state: {
-          menuitems: (opts.projects || ProjectsRegistry.getListableProjects()).map(p => ({
+          menuitems: (opts.projects || getListableProjects()).map(p => ({
             title:       p.title,
             description: p.description,
             thumbnail:   p.thumbnail,
             gid:         p.gid,
             cbk:         opts.cbk || ((o = {}) => $promisify(async () => {
-              const url = GUI.getService('map').addMapExtentUrlParameterToUrl(ProjectsRegistry.getProjectUrl(o.gid));
+              const url = GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
               try { history.replaceState(null, null, url); }
               catch (e) { console.warn(e); } location.replace(url);}
             )),

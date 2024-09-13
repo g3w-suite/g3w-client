@@ -27,7 +27,6 @@ import { G3W_FID }                              from 'g3w-constants';
 import { VM }                                   from 'g3w-eventbus';
 import ApplicationState                         from 'store/application-state';
 import GUI                                      from "services/gui";
-import ProjectsRegistry                         from 'store/projects';
 import RelationsComponent                       from 'components/Relations.vue';
 import RelationComponent                        from 'components/Relation.vue';
 
@@ -42,7 +41,7 @@ let _options;
 
 function _buildRelationTable(relations = [], id) {
   relations = relations || [];
-  const layer = ProjectsRegistry.getCurrentProject().getLayerById(id);
+  const layer = ApplicationState.project.getLayerById(id);
   const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
   const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
   return {

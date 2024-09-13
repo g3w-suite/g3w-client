@@ -165,18 +165,18 @@
 </template>
 
 <script>
-  import Panel                             from 'g3w-panel';
-  import ProjectsRegistry                  from 'store/projects';
-  import DataRouterService                 from 'services/data';
-  import GUI                               from 'services/gui';
-  import { getUniqueDomId }                from 'utils/getUniqueDomId';
+  import Panel              from 'g3w-panel';
+  import ApplicationState   from 'store/application-state'
+  import DataRouterService  from 'services/data';
+  import GUI                from 'services/gui';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-  import * as vuePanelComp                 from 'components/WMSLayersPanel.vue';
+  import * as vuePanelComp  from 'components/WMSLayersPanel.vue';
 
   /**
    * Current project id used to store data or get data to a current project
    */
-  let PID = ProjectsRegistry.getCurrentProject().getId();
+  let PID = ApplicationState.project.getId();
 
   let panel;
 
@@ -544,7 +544,7 @@
     // Load WMS urls from local storage
     async mounted() {
       /**@deprecated Will be removed on v4.x **/
-      ProjectsRegistry
+      g3wsdk.core.project.ProjectsRegistry
         .onafter('setCurrentProject', async project => {
           this.projectId          = PID = project.getId();
           this.state.adminwmsurls = project.wmsurls || [];

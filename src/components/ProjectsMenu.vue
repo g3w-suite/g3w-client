@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
 import GUI              from 'services/gui';
 
 const { t } = require('g3w-i18n');
@@ -88,7 +87,7 @@ export default {
     logoSrc(src) {
       let imageSrc;
       const host = this.$options.host || '';
-      const has_media = src && (src.includes(ProjectsRegistry.config.mediaurl));
+      const has_media = src && (src.includes(window.initConfig.mediaurl));
       const not_static = src && (!src.includes('static') && !src.includes('media'))
 
       if (!src) {
@@ -96,7 +95,7 @@ export default {
       } else if (has_media) {
         imageSrc = src;
       } else if (not_static) {
-        imageSrc = `${ProjectsRegistry.config.mediaurl}${src}`;
+        imageSrc = `${window.initConfig.mediaurl}${src}`;
       } else {
         imageSrc = fakeImage
       }

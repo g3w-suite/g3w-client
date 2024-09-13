@@ -132,7 +132,6 @@
   import { LOCAL_ITEM_IDS }   from 'g3w-constants';
   import ApplicationState     from 'store/application-state'
   import GUI                  from 'services/gui';
-  import ProjectsRegistry     from 'store/projects';
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
@@ -152,7 +151,7 @@
     },
 
     data() {
-      const project = ProjectsRegistry.getCurrentProject();
+      const project = ApplicationState.project;
 
       if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
         SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = [];
@@ -233,7 +232,7 @@
       },
 
       saveUserBookMarks() {
-        SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
+        SPATIAL_BOOKMARKS_LOCALITEMS[ApplicationState.project.getId()] = this.user.bookmarks;
         try {
           window.localStorage.setItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id, JSON.stringify(SPATIAL_BOOKMARKS_LOCALITEMS));
         } catch(e) {

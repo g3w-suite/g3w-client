@@ -172,7 +172,6 @@ import {
 import Component                    from 'g3w-component';
 import ApplicationState             from 'store/application-state';
 import CatalogLayersStoresRegistry  from 'store/catalog-layers';
-import ProjectsRegistry             from 'store/projects';
 import GUI                          from 'services/gui';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
@@ -236,7 +235,7 @@ export default {
       this._page        = this._page || null;
       this._resolutions = this._resolutions || {};
 
-      const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
+      const print   = ApplicationState.project.getPrint() || [];
       const visible = print.length > 0;
 
       const PRINT_FORMATS = [
@@ -475,7 +474,7 @@ export default {
                 extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
               })),
             },
-            ProjectsRegistry.getCurrentProject().state.ows_method
+            ApplicationState.project.state.ows_method
           )
           this.state.url       = output.url;
           this.state.layers    = output.layers;
@@ -613,7 +612,7 @@ export default {
 
 
     reload() {
-      this.state.print    = ProjectsRegistry.getCurrentProject().state.print || [];
+      this.state.print    = ApplicationState.project.state.print || [];
       const visible       = this.state.print.length > 0;
       const init          = this._initialized;
       this.state.template = visible ? this.state.print[0].name : this.state.template;

@@ -62,8 +62,8 @@
 </template>
 
 <script>
-import ProjectsRegistry   from 'store/projects';
-import GUI                from 'services/gui';
+import ApplicationState from 'store/application-state'
+import GUI              from 'services/gui';
 
 export default {
 
@@ -122,7 +122,7 @@ export default {
   },
 
   beforeDestroy() {
-    if (this.state.url && 'POST' === ProjectsRegistry.getCurrentProject().state.ows_method) {
+    if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
       window.URL.revokeObjectURL(this.state.url);
     }
   },

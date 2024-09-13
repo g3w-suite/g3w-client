@@ -12,7 +12,6 @@ import PickCoordinatesInteraction               from 'map/interactions/pickcoord
 import CatalogLayersStoresRegistry              from 'store/catalog-layers';
 import ApplicationState                         from 'store/application-state';
 
-import ProjectsRegistry                         from 'store/projects';
 import DataRouterService                        from 'services/data';
 
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
@@ -29,7 +28,7 @@ import { copyUrl }                              from 'utils/copyUrl';
 
 const { t }                      = require('g3w-i18n');
 const Layer                      = require('map/layers/layer');
-const { VectorLayer }            = require('map/layers/vectorlayer');
+const VectorLayer                = require('map/layers/vectorlayer');
 
 /**
  * ORIGINAL SOURCE: src/components/g3w-relationspage.js@v3.10.2
@@ -428,7 +427,7 @@ export default new (class QueryResultsService extends G3WObject {
      * @deprecated since 3.8
      * It used to register change project from Change map button
      */
-    ProjectsRegistry.onafter('setCurrentProject', project => {
+    g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', project => {
         this._project = project;
         this._setRelations(project);
         this._setAtlasActions(project);
@@ -439,7 +438,7 @@ export default new (class QueryResultsService extends G3WObject {
     /**
      * Current project <Project>
      */
-    this._project = ProjectsRegistry.getCurrentProject();
+    this._project = ApplicationState.project;
 
     /**
      * Keep the right order for query result based on TOC order layers

@@ -8,7 +8,7 @@ import { VM }                         from 'g3w-eventbus';
 import CatalogLayersStoresRegistry    from 'store/catalog-layers';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
-import ProjectsRegistry               from 'store/projects';
+import ApplicationState               from 'store/application-state'
 import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
@@ -434,7 +434,7 @@ export class QueryBy extends InteractionControl {
               try {
                 const { data = [] } = await DataRouterService.getData('query:coordinates', {
                   inputs: {
-                    feature_count: ProjectsRegistry.getCurrentProject().state.feature_count || 5,
+                    feature_count: ApplicationState.project.state.feature_count || 5,
                     coordinates:   QUERY.coordinates
                   },
                   outputs: {
@@ -596,7 +596,7 @@ export class QueryBy extends InteractionControl {
 
       const selected       = GUI.getService('map').getSelectedLayer();
       const externalLayers = GUI.getService('map').getLegacyExternalLayers();
-      const project        = ProjectsRegistry.getCurrentProject();
+      const project        = ApplicationState.project;
 
       if ('querybbox' === type) {
         await DataRouterService.getData('query:bbox', {
