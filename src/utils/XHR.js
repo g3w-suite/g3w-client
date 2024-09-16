@@ -15,6 +15,7 @@ export const XHR = {
     try {
       return JSON.parse(response);
     } catch(e) {
+      console.warn(e);
       return response;
     }
   },
@@ -41,6 +42,7 @@ export const XHR = {
     try {
       return JSON.parse(response);
     } catch(e) {
+      console.warn(e);
       return response;
     }
   },
