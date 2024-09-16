@@ -16,8 +16,6 @@ export const XHR = {
     try {
       return JSON.parse(response);
     } catch(e) {
-      console.log(url)
-      PLUTO = await (await fetch(url + (params ? '?' : '') + params))
       console.warn(e);
       return response;
     }
@@ -60,18 +58,14 @@ export const XHR = {
 
         url = 'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url;
 
-        const response = await fetch(url, {
-          method: httpMethod,
+        downloadFile({
+          url:      url,
           headers: {
             'Content-Type':                  'application/json',
             'Access-Control-Expose-Headers': 'Content-Disposition', //need to get filename from server
           },
-          body: 'POST' === httpMethod ? JSON.stringify(data): undefined
-        })
-
-        downloadFile({
-          filename: (response.headers.get('Content-Disposition') || '').split('filename=').at(1),
-          url:      URL.createObjectURL(await response.blob()),
+          method: httpMethod,
+          data:   data && JSON.stringify(data),
         })
         return resolve();
       } catch(e) {
