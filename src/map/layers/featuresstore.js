@@ -10,7 +10,7 @@ import { XHR }        from 'utils/XHR';
 /** @deprecated */
 const _cloneDeep        = require('lodash.clonedeep');
 
-module.exports = class FeaturesStore extends G3WObject {
+export class FeaturesStore extends G3WObject {
   constructor(opts = {}) {
     super();
     this._features  = opts.features || [];

@@ -34,7 +34,7 @@ import MapControlGeocoding                  from 'components/MapControlGeocoding
 import { groupBy }                          from 'utils/groupBy';
 import { getProject }                       from 'utils/getProject';
 
-const VectorLayer                           = require('map/layers/vectorlayer');
+import { VectorLayer }                      from 'map/layers/vectorlayer';
 
 const MAP_SETTINGS = {
   ZOOM:            { maxScale: 1000, },
@@ -494,8 +494,8 @@ class MapService extends G3WObject {
                                     return group;
                                   }, {}) || []
                               ).map(([id, layers]) => {
-                                const { WMSLayer } = require('map/layers/imagelayer');
-                                const mapLayer = new WMSLayer({
+                                const { RasterLayer } = require('map/layers/imagelayer');
+                                const mapLayer = new RasterLayer({
                                   url:   project.state.WMSUrl,
                                   id:    `overview_layer_${id}`,
                                   tiled: layers[0].state.tiled,

@@ -75,6 +75,12 @@ import Panel                                       from 'g3w-panel';
 import Component                                   from 'g3w-component';
 import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
+import { LayersStore }                             from 'map/layers/layersstore';
+import { Layer }                                   from 'map/layers/layer';
+import { TableLayer }                              from 'map/layers/tablelayer';
+import { VectorLayer }                             from 'map/layers/vectorlayer';
+import { Feature }                                 from 'map/layers/feature';
+import { FeaturesStore }                           from 'map/layers/featuresstore';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
 import { inherit }                                 from 'utils/inherit';
@@ -88,16 +94,9 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 
 const i18n                        = require('g3w-i18n');
-const LayersStoreRegistry         = require('map/layers/layersstoresregistry');
-const LayersStore                 = require('map/layers/layersstore');
-const Layer                       = require('map/layers/layer');
-const TableLayer                  = require('map/layers/tablelayer');
-const VectorLayer                 = require('map/layers/vectorlayer');
-const Feature                     = require('map/layers/features/feature');
-const FeaturesStore               = require('map/layers/features/featuresstore');
-const OlFeaturesStore             = require('map/layers/features/olfeaturesstore');
 const { Plugin }                  = require('./g3w-plugin');
 const { PluginService }           = require('./g3w-plugin');
+
 
 /**
  * GUI modules
@@ -194,7 +193,6 @@ const g3wsdk = {
       CatalogLayersStoresRegistry
     },
     layer: {
-      LayersStoreRegistry,
       LayersStore,
       Layer,
       TableLayer,
@@ -202,7 +200,6 @@ const g3wsdk = {
       features: {
         Feature,
         FeaturesStore,
-        OlFeaturesStore
       },
     },
     interaction: {

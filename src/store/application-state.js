@@ -3,6 +3,8 @@
  * @since v3.6
  */
 
+import G3WObject from "g3w-object";
+
 /**
  * State of application reactive
  * @type {object}
@@ -231,7 +233,7 @@ const STATE = Vue.observable({
   },
 
   /** @since 3.11.0 */
-  project: {}
+  project: new G3WObject
 
 });
 

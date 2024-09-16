@@ -304,12 +304,12 @@
         opacity,
         visible=true
       } = {}) {
-        const map          = GUI.getService('map');
-        const { WMSLayer } = require('map/layers/imagelayer');
-        const projection   = ol.proj.get(epsg);
+        const map             = GUI.getService('map');
+        const { RasterLayer } = require('map/layers/imagelayer');
+        const projection      = ol.proj.get(epsg);
 
         const promise = new Promise((res, rej) => {
-          const wmslayer = new WMSLayer({ id: name || getUniqueDomId(), layers, projection, url });
+          const wmslayer = new RasterLayer({ id: name || getUniqueDomId(), layers, projection, url });
           const olLayer  = wmslayer.getOLLayer();
           olLayer.getSource().once('imageloadend', res);
           olLayer.getSource().once('imageloaderror', rej);

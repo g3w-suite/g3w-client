@@ -165,12 +165,6 @@ Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unus
 // loading spinner at beginning
 $('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
 
-const GROUPS = {
-  general: ['title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url'],
-  spatial: ['crs', 'extent'],
-  layers: ['layers'],
-};
-
 /** @TODO check if deprecated */
 const ACTIONS = {};
 
@@ -325,22 +319,13 @@ $.ajaxSetup({
   }
 
   // Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
-  const default_config = initConfig.layout.rightpanel || {
-    width:          50, // ie. width == 50%
-    height:         50, // ie. height == 50%
-    width_default:  50,
-    height_default: 50,
-    width_100:      false,
-    height_100:     false,
-  };
-
   initConfig.layout.rightpanel = Object.assign(
-    default_config,
+    (initConfig.layout.rightpanel || {}),
     {
-      width:          initConfig.layout.rightpanel.width  || default_config.width,
-      height:         initConfig.layout.rightpanel.height || default_config.width,
-      width_default:  initConfig.layout.rightpanel.width  || default_config.width,
-      height_default: initConfig.layout.rightpanel.height || default_config.width,
+      width:          initConfig.layout.rightpanel.width  || 50, // ie. width == 50%
+      height:         initConfig.layout.rightpanel.height || 50, // ie. height == 50%
+      width_default:  initConfig.layout.rightpanel.width  || 50,
+      height_default: initConfig.layout.rightpanel.height || 50,
       width_100:      false,
       height_100:     false,
     }
@@ -367,16 +352,11 @@ $.ajaxSetup({
 
       const { MapLayersStoresRegistry } = require('services/map').default;
 
-      CatalogLayersStoresRegistry.removeLayersStores();
-      MapLayersStoresRegistry.removeLayersStores();
-
-      ApplicationState.project = project;
-
-      const projectLayersStore = project.getLayersStore();
+      Object.assign(ApplicationState.project, project);
 
       // set in first position (map and catalog)
-      CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-      MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+      CatalogLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
+      MapLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
 
       // BACKOMP v3.x
       g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
@@ -398,6 +378,7 @@ $.ajaxSetup({
       if (ApplicationState.iframe) {
         require('services/iframe').default.init({ project });
       }
+
       // init local items
       Object.keys(LOCAL_ITEM_IDS).forEach(id => {
         try {
@@ -448,7 +429,26 @@ $.ajaxSetup({
                 service: Object.assign(new G3WObject, {
                   state: {
                     name: project.title,
-                    groups: Object.entries(GROUPS).reduce((g, [name, fields]) => {
+                    groups: Object.entries({
+                      general: [
+                        'title',
+                        'name',
+                        'description',
+                        'abstract',
+                        'keywords',
+                        'fees',
+                        'accessconstraints',
+                        'contactinformation',
+                        'wms_url',
+                      ],
+                      spatial: [
+                        'crs',
+                        'extent',
+                      ],
+                      layers: [
+                        'layers',
+                      ],
+                    }).reduce((g, [name, fields]) => {
                       g[name] = fields.reduce((f, field) => {
                         const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
                         if (value) {

@@ -26,9 +26,11 @@ import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { copyUrl }                              from 'utils/copyUrl';
 
-const { t }                      = require('g3w-i18n');
-const Layer                      = require('map/layers/layer');
-const VectorLayer                = require('map/layers/vectorlayer');
+import { Layer }                                from 'map/layers/layer';
+import { VectorLayer }                          from 'map/layers/vectorlayer';
+
+const { t } = require('g3w-i18n');
+
 
 /**
  * ORIGINAL SOURCE: src/components/g3w-relationspage.js@v3.10.2

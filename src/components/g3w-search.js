@@ -73,7 +73,36 @@ export function SearchPanel(opts = {}, show = false) {
     })),
   };
 
-  state.mounted = createInputsFormFromFilter(state);
+  // create search form structure 
+  state.mounted = (async function(state) {
+
+    for (let i = 0; i <= state.forminputs.length - 1; i++) {
+  
+      const input            = state.forminputs[i];
+      const has_autocomplete = 'autocompletefield' === input.type;
+  
+      // set key-values for select
+      input.values = [
+        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
+        ...(input.dependance_strict || has_autocomplete
+            ? input.values
+            : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
+          )
+      ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
+  
+      // there is a dependence
+      if (input.dependance) {
+        state.loading[input.dependance] = false;
+        input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
+      }
+  
+      // save a copy of original values
+      input._values = [...input.values];
+  
+      input.loading = false;
+    }
+  
+  })(state);
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,
@@ -107,39 +136,6 @@ export function SearchPanel(opts = {}, show = false) {
   });
 
   return panel;
-}
-
-/**
- * Create the right search structure for a search form
- */
-async function createInputsFormFromFilter(state) {
-
-  for (let i = 0; i <= state.forminputs.length - 1; i++) {
-
-    const input            = state.forminputs[i];
-    const has_autocomplete = 'autocompletefield' === input.type;
-
-    // set key-values for select
-    input.values = [
-      ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-      ...(input.dependance_strict || has_autocomplete
-          ? input.values
-          : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
-        )
-    ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-
-    // there is a dependence
-    if (input.dependance) {
-      state.loading[input.dependance] = false;
-      input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
-    }
-
-    // save a copy of original values
-    input._values = [...input.values];
-
-    input.loading = false;
-  }
-
 }
 
 /**

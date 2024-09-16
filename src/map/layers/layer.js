@@ -26,8 +26,10 @@ import { ResponseParser }        from 'utils/parsers';
 import { get_legend_params }     from 'utils/get_legend_params';
 import { createRelationsUrl }    from 'utils/createRelationsUrl';
 
+import { Feature }               from 'map/layers/feature';
+
 const { t }                      = require('g3w-i18n');
-const Feature                    = require('map/layers/features/feature');
+
 
 const is_defined = d => undefined !== d;
 const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
@@ -2555,4 +2557,4 @@ Layer.CAPABILITIES = {
  */
 Layer.SELECTION_STATE = SELECTION;
 
-module.exports = Layer;
+export { Layer };

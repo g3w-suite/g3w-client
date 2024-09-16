@@ -9,9 +9,9 @@ import { waitFor }                      from 'utils/waitFor';
 import { $promisify, promisify }        from 'utils/promisify';
 import { XHR }                          from 'utils/XHR';
 
-const Layer                             = require('map/layers/layer');
-const FeaturesStore                     = require('map/layers/features/featuresstore');
-const Feature                           = require('map/layers/features/feature');
+import { Layer }                        from 'map/layers/layer';
+import { FeaturesStore }                from 'map/layers/featuresstore';
+import { Feature }                      from 'map/layers/feature';
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
@@ -19,7 +19,7 @@ const _cloneDeep = require('lodash.clonedeep');
 /**
  * Base Layer that support editing
  */
-module.exports = class TableLayer extends Layer {
+export class TableLayer extends Layer {
   
   constructor(config = {}, opts = {}) {
 

@@ -6,7 +6,7 @@
 import CONSTANT           from 'g3w-constants';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-module.exports = class Feature extends ol.Feature {
+export class Feature extends ol.Feature {
 
   constructor(opts = {}) {
     super();
@@ -190,6 +190,3 @@ module.exports = class Feature extends ol.Feature {
 
 
 }
-
-
-

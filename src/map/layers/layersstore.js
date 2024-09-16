@@ -6,7 +6,7 @@
 import G3WObject          from 'g3w-object';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-module.exports = class LayersStore extends G3WObject {
+export class LayersStore extends G3WObject {
   constructor(config = {}) {
     super();
     this.config = {

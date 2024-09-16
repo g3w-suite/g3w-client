@@ -14,8 +14,8 @@ import { is3DGeometry }                    from 'utils/is3DGeometry';
 import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGeometry';
 import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature'
 import { reverseGeometry }                 from 'utils/reverseGeometry';
+import { Feature }                         from 'map/layers/feature';
 
-const Feature                              = require('map/layers/features/feature');
 const { t }                                = require('g3w-i18n');
 
 Object

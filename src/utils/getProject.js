@@ -5,10 +5,10 @@ import Projections                 from 'store/projections';
 import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';
 
-const TableLayer          = require('map/layers/tablelayer');
-const VectorLayer         = require('map/layers/vectorlayer');
-const { ImageLayer }      = require('map/layers/imagelayer');
-const LayersStore         = require('map/layers/layersstore');
+import { TableLayer }              from 'map/layers/tablelayer';
+import { VectorLayer }             from 'map/layers/vectorlayer';
+import { ImageLayer }              from 'map/layers/imagelayer';
+import { LayersStore }             from 'map/layers/layersstore';
 
 Object
   .entries({

@@ -8,14 +8,14 @@ import GUI                            from 'services/gui';
 import { getAllPointGeometryTypes }   from "utils/getAllPointGeometryTypes";
 import { getAllLineGeometryTypes }    from "utils/getAllLineGeometryTypes";
 import { getAllPolygonGeometryTypes } from "utils/getAllPolygonGeometryTypes";
-import GeoLayerMixin                  from 'map/layers/mixins/geo'
+import GeoLayerMixin                  from 'map/layers/geo-mixin'
 import { $promisify, promisify }      from 'utils/promisify';
 
 
-const Layer          = require('map/layers/layer');
-const TableLayer     = require('map/layers/tablelayer');
+import { Layer }          from 'map/layers/layer';
+import { TableLayer }     from 'map/layers/tablelayer';
 
-module.exports = class VectorLayer extends GeoLayerMixin(TableLayer) {
+export class VectorLayer extends GeoLayerMixin(TableLayer) {
 
   constructor(config = {}, opts = {}) {
     super(config, opts);

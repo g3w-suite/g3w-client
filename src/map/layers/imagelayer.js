@@ -7,12 +7,10 @@ import { DOTS_PER_INCH }      from 'g3w-constants';
 import G3WObject              from 'g3w-object';
 import ApplicationState       from 'store/application-state';
 import Projections            from 'store/projections';
+import GeoLayerMixin          from 'map/layers/geo-mixin';
+import { Layer }              from 'map/layers/layer';
+import { VectorLayer }        from 'map/layers/vectorlayer';
 import { get_legend_params }  from 'utils/get_legend_params';
-import GeoLayerMixin          from 'map/layers/mixins/geo';
-
-const Layer                   = require('map/layers/layer');
-const VectorLayer             = require('map/layers/vectorlayer');
-
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
  * 
@@ -1081,7 +1079,7 @@ ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.OGC,
 ];
 
-module.exports = {
+export {
   ImageLayer,
-  WMSLayer: RasterLayer
+  RasterLayer
 };
