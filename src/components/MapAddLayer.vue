@@ -30,7 +30,7 @@
         <div class = "modal-body">
 
           <!-- LAYER PROJECTION -->
-          <div class = "form-group">
+          <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer.type)">
             <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
             <select class = "form-control" id = "projection-layer" v-model = "layer.crs">
               <option v-for = "option in options" :value = "option">{{option}}</option>
@@ -323,6 +323,8 @@ export default {
 
         // ZIP / KMZ file
         if ( ['zip', 'kmz'].includes(this.layer.type)) {
+          //force crs
+          this.layer.crs = 'EPSG:4326';
           const data = evt.target.files[0];
           input_file.val(null);
           return resolve(data);
