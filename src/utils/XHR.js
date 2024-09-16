@@ -56,16 +56,14 @@ export const XHR = {
           reject('Timeout');
         }, TIMEOUT);
 
-        url = 'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url;
-
         downloadFile({
-          url:      url,
+          url:     'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url,
           headers: {
             'Content-Type':                  'application/json',
             'Access-Control-Expose-Headers': 'Content-Disposition', //need to get filename from server
           },
-          method: httpMethod,
-          data:   data && JSON.stringify(data),
+          method:  httpMethod,
+          data:    data && JSON.stringify(data),
         })
         return resolve();
       } catch(e) {
