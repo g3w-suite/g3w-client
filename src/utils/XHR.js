@@ -9,10 +9,7 @@ export const XHR = {
 
     params = new URLSearchParams(JSON.parse(JSON.stringify(params || {}))).toString();
 
-    const response = await (await fetch(url + (params ? '?' : '') + params, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    })).text();
+    const response = await (await fetch(url + (params ? '?' : '') + params)).text();
 
     // Try to parse response as JSON
     try {

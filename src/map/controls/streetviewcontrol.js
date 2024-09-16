@@ -35,7 +35,12 @@ export class StreetViewControl extends InteractionControl {
 
     if (this.key) {
       XHR.get({
-        url: `${GoogleStreetViewApiUrl}streetview?location=0,0&size=456x456&key=${this.key}`
+        url: `${GoogleStreetViewApiUrl}streetview`,
+        params: {
+          location: 0,
+          size:     '456x456',
+          key:      this.key
+        }
       }).catch((e) => { console.warn(e); this.keyError = e.responseText });
     }
 
