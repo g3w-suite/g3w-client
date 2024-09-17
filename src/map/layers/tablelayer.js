@@ -413,7 +413,7 @@ export class TableLayer extends Layer {
     const {
       exclude = [],
       get_default_value = true
-    }  = options;
+    }  = opts;
 
     let fields = _cloneDeep(this.getEditingFields());
     let feature;
