@@ -60,22 +60,22 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
     const style = this._g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
 
     let olStyle = style ? new ol.style.Style(
-        Object
-          .entries(style || {})
-          .reduce((styles, [type, config]) => {
-            if ('point' === type && config.icon) {
-              styles.image = new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width });
-            }
-            if ('line' === type) {
-              styles.stroke = new ol.style.Stroke({ color: config.color, width: config.width });
-            }
-            if ('polygon' === type) {
-              styles.fill = new ol.style.Fill({ color: config.color });
-            }
-            return styles;
-          }, {})
-          )
-      : null;
+      Object
+        .entries(style || {})
+        .reduce((styles, [type, config]) => {
+          if ('point' === type && config.icon) {
+            styles.image = new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width });
+          }
+          if ('line' === type) {
+            styles.stroke = new ol.style.Stroke({ color: config.color, width: config.width });
+          }
+          if ('polygon' === type) {
+            styles.fill = new ol.style.Fill({ color: config.color });
+          }
+          return styles;
+        }, {})
+        )
+    : null;
   
     // create ol layer to add to map
     this._mapLayer._olLayer = new ol.layer.Vector({
