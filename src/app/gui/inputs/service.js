@@ -90,7 +90,7 @@ module.exports = class Service {
    * set input empty '', null, undefined or []
    */
   setEmpty() {
-    this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length > 0) || !(_.isEmpty(_.trim(this.state.value))));
+    this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length > 0) || !(_.isEmpty(`${this.state.value}`.trim())));
   };
 
 // the general method to check the value of the state is valid or not

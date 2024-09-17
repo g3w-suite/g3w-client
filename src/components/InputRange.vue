@@ -41,8 +41,8 @@
     },
     methods: {
       checkValue() {
-        // check if value of input is empty
-        const isEmpty = _.isEmpty(_.trim(this.state.value));
+        // check if the value of input is empty
+        const isEmpty = _.isEmpty(`${this.state.value}`.trim());
 
         // in case not required check if value is empty and set default value
         if (isEmpty && !this.state.validate.required) {

@@ -83,7 +83,7 @@ export default {
     onDatePickerChange() {
       const newDate = $(`#${this.idinputdatetimepiker}`).val();
       this.state.value =
-        _.isEmpty(_.trim(newDate))
+        _.isEmpty(newDate.trim())
           ? null
           : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
       this.change();
