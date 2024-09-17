@@ -79,7 +79,7 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
   
     // create ol layer to add to map
     this._mapLayer._olLayer = new ol.layer.Vector({
-      id: this._mapLayer.id,
+      id: this.getId(),
       source: new ol.source.Vector({ features: (this._editor && this._editor.getEditingSource().getFeaturesCollection() || []) || new ol.Collection() })
     });
   
