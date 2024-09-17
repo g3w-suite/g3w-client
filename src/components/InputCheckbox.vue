@@ -57,11 +57,10 @@ export default {
       this.setLabel();
     }
   },
-  created() {
-    this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
-  },
   mounted() {
-    if (!this.state.forceNull) this.setLabel();
+    if (this.state.forceNull) {
+      this.setLabel();
+    }
   }
 };
 </script>
