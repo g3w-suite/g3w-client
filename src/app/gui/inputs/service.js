@@ -74,7 +74,7 @@ module.exports = class Service {
   };
 
   setState(state = {}) {
-    this.state = _.isObject(state) ? state : {};
+    this.state = 'Object' === toRawType(state) ? state : {};
   };
 
 // return validator
