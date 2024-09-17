@@ -344,9 +344,6 @@ const Providers = {
               }),
               query: { coordinates, resolution }
             };
-          } catch(e) {
-            console.warn(e);
-            return Promise.reject(e);
           } finally {
             if (!proxy) {
               clearTimeout(timer)
@@ -431,9 +428,6 @@ const Providers = {
                 .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
               );
             return { data };
-          } catch (e) {
-            console.warn(e);
-            return Promise.reject(e);
           } finally {
             clearTimeout(timer)
           }
