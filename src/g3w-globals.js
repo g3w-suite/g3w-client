@@ -24,7 +24,6 @@ import { createSelectedStyle }                     from 'utils/createSelectedSty
 import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
 import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
-import { getFeaturesFromResponseVectorApi }        from 'utils/getFeaturesFromResponseVectorApi';
 import { splitFeatures }                           from 'utils/splitFeatures';
 import { splitFeature }                            from 'utils/splitFeature';
 import { isSameBaseGeometryType }                  from 'utils/isSameBaseGeometryType';
@@ -137,7 +136,6 @@ const g3wsdk = {
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
       getMapLayersByFilter,
       areCoordinatesEqual,
-      getFeaturesFromResponseVectorApi,
       splitFeatures,
       splitFeature,
       isSameBaseGeometryType,
