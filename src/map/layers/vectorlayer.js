@@ -106,8 +106,6 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
       this._mapLayer._olLayer.setOpacity(0.6);
     }
 
-    console.log(this._mapLayer.geometryType, style, olStyle);
-
     this._mapLayer._olLayer.setStyle(olStyle);
 
     Object.assign(this._mapLayer, {
