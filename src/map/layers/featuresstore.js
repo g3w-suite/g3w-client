@@ -11,12 +11,14 @@ import { XHR }        from 'utils/XHR';
 const _cloneDeep        = require('lodash.clonedeep');
 
 export class FeaturesStore extends G3WObject {
+
   constructor(opts = {}) {
     super();
     this._features  = opts.features || [];
     this._provider  = opts.provider || null;
     this._loadedIds = []; // store features id load by current user
     this._lockIds   = []; // store locked features
+
     //setters
     this.setters    = {
       /**
@@ -59,7 +61,16 @@ export class FeaturesStore extends G3WObject {
        * @return { Promise }
        */
       getFeatures(opts = {}) {
-        return this._getFeatures(opts);
+        return $promisify(async () => {
+          if (this._provider) {
+            //call provider getFeatures to get features from server
+            //get the feature base on response from server features, featurelockis etc ...
+            const features = this._filterFeaturesResponse(await this._provider.getFeatures(opts));
+            this.addFeatures(features);
+            return features;
+          }
+          return this._features; // Get features stored. No call to server is done
+        });
       },
       /**
        * Commit changes (add, update, delete) to server
@@ -68,14 +79,26 @@ export class FeaturesStore extends G3WObject {
        * @return {*}
        */
       commit(commitItems, featurestore) {
-        return this._commit(commitItems, featurestore);
+        return $promisify(async () => {
+          if (commitItems && this._provider) {
+            commitItems.lockids = this._lockIds;
+            return await XHR.post({
+              url:         this._provider._layer.getUrl('commit'),
+              data:        JSON.stringify(commitItems),
+              contentType: 'application/json',
+            });
+          }
+          return Promise.reject();
+        });
       },
       /**
        * setter to know when some features are locked
        */
       featuresLockedByOtherUser(features = []) {},
-    }
+    };
+
   }
+
   clone() {
     return _cloneDeep(this);
   }
@@ -93,22 +116,6 @@ export class FeaturesStore extends G3WObject {
    */
   unlock() {
     return $promisify(async () => await XHR.post({ url: this._provider._layer.getUrl('unlock') }));
-  }
-
-  /*
-   * Gets all features from server or attribute _features
-   */
-  _getFeatures(opts = {}) {
-    return $promisify(async () => {
-      if (this._provider) {
-        //call provider getFeatures to get features from server
-        //get the feature base on response from server features, featurelockis etc ...
-        const features = this._filterFeaturesResponse(await this._provider.getFeatures(opts));
-        this.addFeatures(features);
-        return features;
-      }
-      return this._readFeatures();
-    });
   }
 
   /**
@@ -194,29 +201,6 @@ export class FeaturesStore extends G3WObject {
   addLockIds(lockIds) {
     this._lockIds = _.union(this._lockIds, lockIds);
     this._lockIds.forEach(({ featureid }) => this._loadedIds.push(featureid));
-  }
-
-  /**
-   * Get features stored. No call to server is done
-   * @returns {*|null|[]}
-   * @private
-   */
-  _readFeatures() {
-    return this._features;
-  }
-
-  _commit(commitItems) {
-    return $promisify(async () => {
-      if (commitItems && this._provider) {
-        commitItems.lockids = this._lockIds;
-        return await XHR.post({
-          url:         this._provider._layer.getUrl('commit'),
-          data:        JSON.stringify(commitItems),
-          contentType: 'application/json',
-        });
-      }
-      return Promise.reject();
-    });
   }
 
   /**
