@@ -104,28 +104,29 @@ export class TableLayer extends Layer {
      */
     this.layerId = config.id;
 
+    console.log(this);
+
     // @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
     // editable layer -- > update layer config info
     if (this.isEditable()) {
-      this.layerForEditing = new Promise((resolve, reject) => {
+      this.layerForEditing = (async () => {
         // get layer editing config (from server)
-        $promisify(async () => promisify(this.getProvider('data').getConfig(opts)))
-          .then(async ({
+        try {
+          const {
             vector,
             constraints = {},
             capabilities,
-          } = {}) => {
-            await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
-            /**
-             * add editing configurations
-             */
+          } = await promisify(this.getProvider('data').getConfig(opts));
+
+          await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
+            // add editing configurations
             this.config.editing =  {
               fields:       vector.fields,
               format:       vector.format,
               constraints,
               capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
-              form:         { perc: null },                                                              // set editing form `perc` to null at beginning
-              style:        vector.style,                                                               // get vector layer style
+              form:         { perc: null },                                                      // set editing form `perc` to null at beginning
+              style:        vector.style,                                                        // get vector layer style
               geometrytype: vector.geometrytype                                                  // whether is a vector layer
             }
 
@@ -134,15 +135,14 @@ export class TableLayer extends Layer {
             }
 
             this._editor = new window.g3wsdk.core.editing.Editor({ layer: this }); // create an instance of editor
-            resolve(this);
             this.setReady(true);                             // set ready
-          })
-          .fail(e => {
-            console.warn(e);
-            reject(this);
-            this.setReady(false);
-          })
-      });
+            return this;
+        } catch (e) {
+          console.warn(e);
+          this.setReady(false);
+          return Promise.reject(this);
+        }
+      })();
 
       this.state           = {
         ...this.state,
