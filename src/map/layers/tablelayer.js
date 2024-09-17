@@ -411,9 +411,9 @@ export class TableLayer extends Layer {
    */
   getFieldsWithValues(obj, opts = {}) {
     const {
-      exclude           = [],
+      exclude = [],
       get_default_value = true
-    }  = opts;
+    }  = options;
 
     let fields = _cloneDeep(this.getEditingFields());
     let feature;
@@ -436,38 +436,32 @@ export class TableLayer extends Layer {
       field._value = attributes[field.name];     // store original value
       field.update = false;                      // at beginning set update false. Used to form
 
-      if (field.input) {
-        const { options = {} }      = this.getEditingFields().find(f => f.name === field.name).input;
-        field.input.options.loading = options.loading || { state: null };
-        field.input.options.values  = options.values;
-      }
-
-      field.visible = !exclude.includes(field.name); // exclude contain field to set visible false
+      field.visible = exclude.indexOf(field.name) === -1; // exclude contain field to set visible false
 
       // for editing purpose
       if (undefined === field.validate) {
         field.validate = {};
       }
-    
+
       field.forceNull                = false;
       field.validate.valid           = true;
       field.validate._valid          = true;                            // useful to get previous value in certain case
       field.value_from_default_value = false;                           // need to be checked if the default value is set by server configuration field
       field.get_default_value        = get_default_value;               // specify if you need to get value from form field.input.options.default value in case of missing value of field.value
-      field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value inserted or change needs to be di
+      field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value iserted or change need to be di
       field.validate.unique          = field.validate.unique   || false;
       field.validate.required        = field.validate.required || false;
       field.validate.mutually_valid  = true;
-      field.validate.empty           = !field.validate.required; //property means that can be empty bacause not required
+      field.validate.empty           = false; // Mean no value (field.value) set start value to false. It will be set once the input field is show
       field.validate.message         = null;
-      //@since 3.11.0
-      field.relationField            = false; //specify if a relation field
-      this.getRelations()
-        .getArray()
-        .forEach(r => r[this.getId() === r.getFather() ? 'getFatherField' : 'getChildField']().forEach(name => {
-          //need to check in case of not yet set field relationField to true from a previous relation
-          if (false === field.relationField) { field.relationField = ( name === field.name && field.visible ) }
-        }))
+
+      if (field.input) {
+        const options = this.getEditingFields().find(f => f.name === field.name).input.options;
+        field.input.options.loading = options.loading || { state: null };
+        //check if value is defined otherwise set empty array (e.g required for field.validate unique)
+        field.input.options.values  = options.values || [];
+      }
+
     });
 
     return fields;
