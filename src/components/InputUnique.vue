@@ -22,10 +22,10 @@
 </template>
 
 <script>
-import { selectMixin } from 'mixins';
+import { selectMixin }    from 'mixins';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 const Input              = require('gui/inputs/input');
-const { getUniqueDomId } = require('utils');
 
 export default {
 
