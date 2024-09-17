@@ -83,28 +83,30 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
       source: new ol.source.Vector({ features: (this._editor && this._editor.getEditingSource().getFeaturesCollection() || []) || new ol.Collection() })
     });
   
-    if (!olStyle && getAllPointGeometryTypes().includes(this._mapLayer.geometryType)) {
+    if (!olStyle && getAllPointGeometryTypes().includes(this.getGeometryType())) {
       olStyle = new ol.style.Style({
         image: new ol.style.Circle({
-          fill:   new ol.style.Fill({ color: this._mapLayer.color }),
+          fill:   new ol.style.Fill({ color: this.getColor() }),
           radius: 5,
         }),
       });
     }
   
-    if (!olStyle && getAllLineGeometryTypes().includes(this._mapLayer.geometryType)) {
+    if (!olStyle && getAllLineGeometryTypes().includes(this.getGeometryType())) {
       olStyle = new ol.style.Style({
-        stroke: new ol.style.Stroke({ color: this._mapLayer.color, width: 3 })
+        stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 })
       });
     }
   
-    if (!olStyle && getAllPolygonGeometryTypes().includes(this._mapLayer.geometryType)) {
+    if (!olStyle && getAllPolygonGeometryTypes().includes(this.getGeometryType())) {
       olStyle =  new ol.style.Style({
         stroke: new ol.style.Stroke({ color: '#000000', width: 1 }),
-        fill:   new ol.style.Fill({ color: this._mapLayer.color }),
+        fill:   new ol.style.Fill({ color: this.getColor() }),
       });
       this._mapLayer._olLayer.setOpacity(0.6);
     }
+
+    console.log(this._mapLayer.geometryType, style, olStyle);
 
     this._mapLayer._olLayer.setStyle(olStyle);
 

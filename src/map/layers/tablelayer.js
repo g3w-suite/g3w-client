@@ -104,8 +104,6 @@ export class TableLayer extends Layer {
      */
     this.layerId = config.id;
 
-    console.log(this);
-
     // @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
     // editable layer -- > update layer config info
     if (this.isEditable()) {
