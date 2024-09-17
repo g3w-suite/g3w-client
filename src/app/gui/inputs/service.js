@@ -85,34 +85,41 @@ proto.setValidator = function(validator) {
   this._validator = validator;
 };
 
-proto.setEmpty = function(){
-  this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
+/**
+ * set input empty '', null, undefined or []
+ */
+proto.setEmpty = function() {
+  this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length > 0) || !(_.isEmpty(_.trim(this.state.value))));
 };
 
 // the general method to check the value of the state is valid or not
 proto.validate = function() {
   if (this.state.validate.empty) {
-    this.state.validate.empty  = true;
-    this.state.value           = null;
-    this.state.validate.unique = true;
+    this.state.value           = null; //force to null
     // check if you require or check validation
-    this.state.validate.valid  = this.state.validate.required ? false : this._validator.validate(this.state.value);
+    this.state.validate.valid  = !this.state.validate.required;
   } else {
-    if (['integer', 'float'].includes(this.state.input.type)) {
+    if (['integer', 'float', 'bigint'].includes(this.state.input.type)) {
       if (+this.state.value < 0) {
         this.state.value               = null;
         this.state.validate.empty      = true;
         this.state.validate.valid      = !this.state.validate.required;
-      } else this.state.validate.valid = this._validator.validate(this.state.value);
+      } else {
+        this.state.validate.valid = this._validator.validate(this.state.value);
+      }
     }
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
-      this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
+    //check exclude_values state.validate.unique (QGIS field property [x] Enforce unique constraint)
+    if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+      //need to convert this.state.value to string because editing store exclude_values items as string
+      this.state.validate.valid = !this.state.validate.exclude_values.has(`${this.state.value}`);
     } else {
       this.state.validate.valid = this._validator.validate(this.state.value);
     }
   }
+
   return this.state.validate.valid;
 };
+
 
 proto.setErrorMessage = function() {
   //in vase of
@@ -127,7 +134,7 @@ proto.setErrorMessage = function() {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${this.state.validate.max_field})`;
   } else if (this.state.validate.min_field) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${this.state.validate.min_field})`;
-  } else if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+  } else if (('unique' === this.state.input.type || this.state.validate.unique) && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   } else if (this.state.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + this.state.type)} )`;
