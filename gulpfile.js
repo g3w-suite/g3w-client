@@ -268,7 +268,6 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/fastclick/fastclick${ext}.js`,
       `${g3w.assetsFolder}/vendors/vue/vue${ext}.js`,
       `${g3w.assetsFolder}/vendors/jquery-file-upload/jquery.fileupload.js`,
-      `${g3w.assetsFolder}/vendors/jquery-fileDownload/jquery.fileDownload.js`,
       `${g3w.assetsFolder}/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js`,
       `${g3w.assetsFolder}/vendors/ismobile/ismobile.min.js`,
       `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next${ext}.js`,
