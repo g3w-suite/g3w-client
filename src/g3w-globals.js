@@ -28,7 +28,6 @@ import { splitFeature }                            from 'utils/splitFeature';
 import { singleGeometriesToMultiGeometry }         from 'utils/singleGeometriesToMultiGeometry';
 import { multiGeometryToSingleGeometries }         from 'utils/multiGeometryToSingleGeometries';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
-import { dissolve }                                from 'utils/dissolve';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
 import { distance }                                from 'utils/distance';
@@ -137,7 +136,6 @@ const g3wsdk = {
       singleGeometriesToMultiGeometry,
       multiGeometryToSingleGeometries,
       convertSingleMultiGeometry,
-      dissolve,
       within,
       intersects,
       distance,
@@ -301,10 +299,13 @@ ${Object.entries(PluginsRegistry.pluginsConfigs).map((p) => (`    - ${p[0]}: __$
 };
 
 // BACKOMP v3.x
-g3wsdk.core.geometry                       = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
+g3wsdk.core.geometry                             = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
 g3wsdk.ol.interactions.measure.LengthInteraction = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "LineString"; super(opts); } },
+
+/** used by the following plugins: "qprocessing" */
+g3wsdk.core.geoutils.isSameBaseGeometryType         = (a, b) => a.replace('Multi','') === b.replace('Multi','');
 
 /** used by the following plugins: "billboards" */
 g3wsdk.core.ApplicationService.setLocalItem         = ({ id, data } = {}) => { try { window.localStorage.setItem(id, JSON.stringify(data)); } catch(e) { console.warn(e); return e; } };
