@@ -13,9 +13,11 @@
 
       <!-- PRINT as PDF or GEOPDF-->
       <iframe
-        v-if  = "['pdf', 'geopdf'].includes(format)"
-        ref   = "out"
-        :src = "state.url"
+        v-if   = "['pdf', 'geopdf'].includes(format)"
+        ref    = "out"
+        :src   = "state.url"
+        @load  = "ready = true"
+        @error = "ready = true"
       ></iframe>
 
       <!-- PRINT as PNG, JPG, SVG -->
@@ -44,8 +46,10 @@
           class = "g3w-print-url"
         >
           <img
-            ref  = "out"
-            :src = "state.url"
+            ref    = "out"
+            :src   = "state.url"
+            @load  = "ready = true"
+            @error = "ready = true"
           >
         </div>
       </div>
@@ -74,8 +78,9 @@ export default {
     const state = this.$options.service.state || {};
     return {
       state,
-      // extract `state.format` so it doesnt' react to Print.vue changes
+      // extract `state.format` so it doesn't react to Print.vue changes
       format: state.format,
+      ready : false,
     }
   },
 
@@ -119,6 +124,17 @@ export default {
       });
     },
 
+  },
+  /**
+   * @since v3.11.0 To show to user loading bar
+   */
+  watch: {
+    ready: {
+      handler(bool) {
+        GUI.setLoadingContent(!bool);
+      },
+      immediate: true,
+    }
   },
 
   beforeDestroy() {
