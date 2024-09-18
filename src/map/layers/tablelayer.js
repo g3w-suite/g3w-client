@@ -446,7 +446,7 @@ export class TableLayer extends Layer {
       field.validate._valid          = true;                            // useful to get previous value in certain case
       field.value_from_default_value = false;                           // need to be checked if the default value is set by server configuration field
       field.get_default_value        = get_default_value;               // specify if you need to get value from form field.input.options.default value in case of missing value of field.value
-      field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value iserted or change need to be di
+      field.validate.exclude_values  = new Set();                       // for validate.unique purpose to check is new value inserted or change needs to be di
       field.validate.unique          = field.validate.unique   || false;
       field.validate.required        = field.validate.required || false;
       field.validate.mutually_valid  = true;
@@ -456,7 +456,7 @@ export class TableLayer extends Layer {
       if (field.input) {
         const options = this.getEditingFields().find(f => f.name === field.name).input.options;
         field.input.options.loading = options.loading || { state: null };
-        //check if value is defined otherwise set empty array (e.g required for field.validate unique)
+        //check if value is defined otherwise set empty array (e.g., required for field.validate unique)
         field.input.options.values  = options.values || [];
       }
 
