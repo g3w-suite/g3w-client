@@ -465,7 +465,9 @@
     },
 
     async mounted() {
-      await this.state.mounted;
+      //@since 3.11.0 Need to add $nextTick()
+      // because can happen that .g3w-search-form is not yet visible for select2 dropdownParent:$('.g3w-search-form:visible'),
+      await Promise.allSettled([this.$nextTick(), this.state.mounted]);
       for (const input of this.state.forminputs) {
         await this.initSelect2Field(input);
         await this.initDateTimeField(input);
