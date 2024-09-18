@@ -13,7 +13,7 @@ export function createRelationsUrl({
 }) {
   return `${ApplicationState.project.getLayerById(
     undefined === relation.father
-      ? (layer.id === relation.referencedLayer ? relation.referencingLayer: relation.referencedLayer)
-      : (layer.id === relation.father ? relation.child: relation.father)
+      ? (layer.id === relation.referencedLayer ? relation.referencingLayer : relation.referencedLayer)
+      : (layer.id === relation.father          ? relation.child            : relation.father)
   ).getUrl(type)}?relationonetomany=${relation.id}|${sanitizeFidFeature(fid)}&formatter=${formatter}`;
 }
