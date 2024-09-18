@@ -528,15 +528,14 @@ export default {
         .then(component => {
           setTimeout(() => {
             const map      = component.getService();
-            map.getMap().once('postrender', e => {
+            map.getMap().once('postrender', () => {
               if (!show) {
                 return this._clearPrint();
               }
               this._moveKey = map.viewer.map.on('moveend', this._setPrintArea.bind(this));
               this._initPrintConfig();
-              // show print area
-              if (undefined === this.state.atlas) {
-                this._setPrintArea();
+              // show print area if is not atlas template and have maps
+              if (undefined === this.state.atlas && this._setPrintArea()) {
                 map.startDrawGreyCover();
               }
             });
@@ -547,11 +546,13 @@ export default {
 
     /**
      * Calculate internal print extent
+     * @returns { Boolean }
      */
     _setPrintArea() {
       // No maps set. Only attributes label
       if (!this.has_maps) {
-        return this._clearPrint();
+        this._clearPrint();
+        return false;
       }
       const map        = GUI.getService('map').viewer.map;
       const size       = map.getSize();
@@ -567,6 +568,7 @@ export default {
         inner:    this.state.inner,
         rotation: this.state.rotation
       });
+      return true;
     },
 
     _clearPrint() {
@@ -680,7 +682,7 @@ export default {
   watch: {
 
     async has_autocomplete(b) {
-      if (!b) return;
+      if (!b) { return; }
       await this.$nextTick();
       this.initSelect2Field();
     },
