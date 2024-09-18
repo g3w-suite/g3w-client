@@ -10,14 +10,8 @@ import GUI            from 'services/gui';
 
 /** @deprecated */
 const _cloneDeep = require('lodash.clonedeep');
-
 const deprecate  = require('util-deprecate');
-
-const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
-
-function capitalize_first_letter(string) {
-  return `${string[0].toUpperCase()}${string.slice(1)}`;
-}
+const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 function merge(destination, source) {
   for (let key in source) {
@@ -213,6 +207,7 @@ export default class Component extends G3WObject {
   setService(service) {
     this._service = service;
   }
+
   addComponent(Component) {
     this._components.push(Component);
   }
@@ -233,7 +228,7 @@ export default class Component extends G3WObject {
   setInternalComponent(internalComponent, options={}) {
     this.internalComponent = undefined === internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
     (options.events || [])
-      .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${capitalize_first_letter(e.name)}`](data)));
+      .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
     if (this._service && this._service.state) {
       this.internalComponent.state = this._service.state;
     }
