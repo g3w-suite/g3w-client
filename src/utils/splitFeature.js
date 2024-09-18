@@ -1,7 +1,6 @@
 import { isMultiGeometry }       from 'utils/isMultiGeometry';
 import { isPolygonGeometryType } from 'utils/isPolygonGeometryType';
 import { isLineGeometryType }    from 'utils/isLineGeometryType';
-import { isSingleGeometry }      from 'utils/isSingleGeometry';
 
 /**
  * @param { Object } opts
@@ -114,7 +113,7 @@ export function splitFeature({
               geometry.setCoordinates([zCoordinates]);
             }
 
-            const is_single = isSingleGeometry(geometry);
+            const is_single = !isMultiGeometry(geometry.getType());
 
             if (is_multi) {
               splittedFeatureGeometries.push(new ol.geom.MultiPolygon(is_single ? [geometry.getCoordinates()] : geometry.getCoordinates()))
