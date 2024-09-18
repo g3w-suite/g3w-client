@@ -3,7 +3,10 @@
  * @since 3.11.0
  */
 
-import { SPATIAL_METHODS }            from 'g3w-constants';
+import {
+  GEOMETRY_TYPES,
+  SPATIAL_METHODS
+}                                     from 'g3w-constants';
 import { VM }                         from 'g3w-eventbus';
 import CatalogLayersStoresRegistry    from 'store/catalog-layers';
 import GUI                            from 'services/gui';
@@ -12,12 +15,22 @@ import ApplicationState               from 'store/application-state'
 import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
-import { getAllPolygonGeometryTypes } from 'utils/getAllPolygonGeometryTypes';
 import { getMetersFromDegrees }       from 'utils/getMetersFromDegrees';
 
 const { t }                           = require('g3w-i18n');
 
-const POLYGON_TYPES = getAllPolygonGeometryTypes();
+const POLYGON_TYPES = [
+  GEOMETRY_TYPES.POLYGON,
+  GEOMETRY_TYPES.POLYGONZ,
+  GEOMETRY_TYPES.POLYGONM,
+  GEOMETRY_TYPES.POLYGONZM,
+  GEOMETRY_TYPES.POLYGON25D,
+  GEOMETRY_TYPES.MULTIPOLYGON,
+  GEOMETRY_TYPES.MULTIPOLYGONZ,
+  GEOMETRY_TYPES.MULTIPOLYGONM,
+  GEOMETRY_TYPES.MULTIPOLYGONZM,
+  GEOMETRY_TYPES.MULTIPOLYGON25D,
+];
 
 /**
  * Child interaction controls

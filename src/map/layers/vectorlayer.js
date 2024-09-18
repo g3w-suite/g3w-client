@@ -5,9 +5,9 @@
 
 import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
-import { getAllPointGeometryTypes }   from "utils/getAllPointGeometryTypes";
-import { getAllLineGeometryTypes }    from "utils/getAllLineGeometryTypes";
-import { getAllPolygonGeometryTypes } from "utils/getAllPolygonGeometryTypes";
+import { isPointGeometryType }        from 'utils/isPointGeometryType';
+import { isLineGeometryType }         from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }      from 'utils/isPolygonGeometryType';
 import GeoLayerMixin                  from 'map/layers/geo-mixin'
 import { $promisify, promisify }      from 'utils/promisify';
 
@@ -83,7 +83,7 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
       source: new ol.source.Vector({ features: (this._editor && this._editor.getEditingSource().getFeaturesCollection() || []) || new ol.Collection() })
     });
   
-    if (!olStyle && getAllPointGeometryTypes().includes(this.getGeometryType())) {
+    if (!olStyle && isPointGeometryType(this.getGeometryType())) {
       olStyle = new ol.style.Style({
         image: new ol.style.Circle({
           fill:   new ol.style.Fill({ color: this.getColor() }),
@@ -92,13 +92,13 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
       });
     }
   
-    if (!olStyle && getAllLineGeometryTypes().includes(this.getGeometryType())) {
+    if (!olStyle && isLineGeometryType(this.getGeometryType())) {
       olStyle = new ol.style.Style({
         stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 })
       });
     }
   
-    if (!olStyle && getAllPolygonGeometryTypes().includes(this.getGeometryType())) {
+    if (!olStyle && isPolygonGeometryType(this.getGeometryType())) {
       olStyle =  new ol.style.Style({
         stroke: new ol.style.Stroke({ color: '#000000', width: 1 }),
         fill:   new ol.style.Fill({ color: this.getColor() }),
