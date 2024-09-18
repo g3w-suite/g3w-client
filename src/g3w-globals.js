@@ -25,7 +25,6 @@ import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPr
 import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { splitFeature }                            from 'utils/splitFeature';
-import { isSameBaseGeometryType }                  from 'utils/isSameBaseGeometryType';
 import { singleGeometriesToMultiGeometry }         from 'utils/singleGeometriesToMultiGeometry';
 import { multiGeometryToSingleGeometries }         from 'utils/multiGeometryToSingleGeometries';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
@@ -128,7 +127,6 @@ const g3wsdk = {
       noop,
     },
     geoutils: {
-      geometryFields: G3W_CONSTANT.GEOMETRY_FIELDS,
       createVectorLayerFromFile,
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
@@ -136,7 +134,6 @@ const g3wsdk = {
       getMapLayersByFilter,
       areCoordinatesEqual,
       splitFeature,
-      isSameBaseGeometryType,
       singleGeometriesToMultiGeometry,
       multiGeometryToSingleGeometries,
       convertSingleMultiGeometry,
