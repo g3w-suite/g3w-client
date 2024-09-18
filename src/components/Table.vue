@@ -150,9 +150,8 @@
 <script>
 import { SELECTION }               from 'g3w-constants';
 import Component                   from 'g3w-component';
-import ApplicationState            from 'store/application-state';
+import ApplicationState            from 'store/application';
 import Field                       from 'components/FieldG3W.vue';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
@@ -160,6 +159,7 @@ import { debounce }                from 'utils/debounce';
 import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 const { t }                        = require('g3w-i18n');
 
@@ -188,7 +188,7 @@ export default {
   },
 
   data() {
-    const layer = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
+    const layer = getCatalogLayerById(this.$options.layerId);
 
     return {
       layer,
@@ -207,7 +207,7 @@ export default {
       },
       // when the current layer is: alphanumerical + not child of relation + relation has geometry
       relations: (layer.isGeoLayer() ? [] : layer.getRelations().getArray())
-        .map(relation => [relation, CatalogLayersStoresRegistry.getLayerById(relation.getFather())])
+        .map(relation => [relation, getCatalogLayerById(relation.getFather())])
         .filter(([relation, father]) => layer.getId() !== relation.getFather() && father.isGeoLayer())
         .map(([relation, father]) => ({
           layer:         father,

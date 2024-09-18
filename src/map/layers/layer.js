@@ -10,7 +10,7 @@ import {
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
 }                                from 'g3w-constants';
-import ApplicationState          from 'store/application-state';
+import ApplicationState          from 'store/application';
 import DataRouterService         from 'services/data';
 import GUI                       from 'services/gui';
 import G3WObject                 from 'g3w-object';

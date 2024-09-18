@@ -1,4 +1,4 @@
-import ApplicationState                     from 'store/application-state';
+import ApplicationState                     from 'store/application';
 import BaseInputComponent                   from 'components/InputBase.vue'
 import { baseInputMixin as BaseInputMixin } from 'mixins';
 

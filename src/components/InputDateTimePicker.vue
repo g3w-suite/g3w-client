@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import { resizeMixin }    from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 

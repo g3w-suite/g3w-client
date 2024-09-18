@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import GUI                from 'services/gui';
 
 export default {

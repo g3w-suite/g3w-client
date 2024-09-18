@@ -1,4 +1,4 @@
-import ApplicationState            from 'store/application-state';
+import ApplicationState            from 'store/application';
 
 /** used by the following plugins: "iframe", "archiweb" */
 export function getListableProjects() {

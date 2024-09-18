@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import { watch, unwatch } from 'directives/utils';
 
 const { tPlugin } = require('g3w-i18n');

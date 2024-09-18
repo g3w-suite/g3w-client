@@ -166,7 +166,7 @@
 
 <script>
   import Panel              from 'g3w-panel';
-  import ApplicationState   from 'store/application-state'
+  import ApplicationState   from 'store/application'
   import DataRouterService  from 'services/data';
   import GUI                from 'services/gui';
   import { getUniqueDomId } from 'utils/getUniqueDomId';

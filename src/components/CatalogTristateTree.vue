@@ -228,19 +228,19 @@
 
 <script>
 import { VM }                      from 'g3w-eventbus';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationState            from "store/application-state";
+import ApplicationState            from "store/application";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
 import { downloadFile }            from 'utils/downloadFile';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 function _setAllLayersVisible(layers) {
   layers.nodes.forEach(n => {
     if (undefined === n.id) {
       _setAllLayersVisible({ nodes: n.nodes, visible: layers.visible && n.checked });
     } else if (n.parentGroup.checked && n.checked) {
-      CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(layers.visible);
+      getCatalogLayerById(n.id).setVisible(layers.visible);
     }
   });
 };
@@ -333,7 +333,7 @@ export default {
         (
           this.highlightlayers &&
           !this.isGroup &&
-          CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
+          getCatalogLayerById(this.layerstree.id).getTocHighlightable() &&
           this.layerstree.visible
         ) ||
         // external layer
@@ -379,7 +379,7 @@ export default {
      * @since 3.9.0
      */
     removeCurrentFilter() {
-      return CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).deleteFilterToken();
+      return getCatalogLayerById(this.layerstree.id).deleteFilterToken();
     },
 
     /**
@@ -397,7 +397,7 @@ export default {
           if (undefined === n.id) {
             _setAllLayersVisible({ nodes: n.nodes, visible: false });
           } else if (n.checked) {
-            CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
+            getCatalogLayerById(n.id).setVisible(false);
           }
         });
         return; // NB exit early!
@@ -449,7 +449,7 @@ export default {
       }
 
       // project layer (eg. qgis layer)
-      const qlayer  = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const qlayer  = getCatalogLayerById(layer.id);
       const checked = layer.checked;
 
       qlayer.setVisible(checked ? !layer.disabled : false)
@@ -474,7 +474,7 @@ export default {
      * @since 3.9.0
      */
     saveFilter(layerstree) {
-      CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
+      getCatalogLayerById(layerstree.id).saveFilter();
     },
 
     /**

@@ -3,7 +3,7 @@
  * @since 3.11.0
  */
 
-import ApplicationState         from 'store/application-state';
+import ApplicationState         from 'store/application';
 import GUI                      from 'services/gui';
 import { sameOrigin }           from 'utils/sameOrigin';
 import InteractionControl       from 'map/controls/interactioncontrol';

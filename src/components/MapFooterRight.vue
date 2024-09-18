@@ -61,7 +61,7 @@
 </template>
 
 <script>
-  import ApplicationState from 'store/application-state';
+  import ApplicationState from 'store/application';
   import { copyUrl }      from 'utils/copyUrl';
 
   export default {

@@ -6,8 +6,7 @@
 import { SEARCH_ALLVALUE }            from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
 import Panel                          from 'g3w-panel';
-import CatalogLayersStoresRegistry    from 'store/catalog-layers';
-import ApplicationState               from 'store/application-state'
+import ApplicationState               from 'store/application'
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
@@ -15,6 +14,7 @@ import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { toRawType }                  from 'utils/toRawType';
 import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
+import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
 import * as vueSearchComp             from 'components/SearchPanel.vue';
 
@@ -35,7 +35,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => CatalogLayersStoresRegistry.getLayerById(id)),
+    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),

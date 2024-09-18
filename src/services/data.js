@@ -3,7 +3,7 @@
  * @since v3.6
  */
 import { G3W_FID, QUERY_POINT_TOLERANCE } from 'g3w-constants';
-import ApplicationState                   from 'store/application-state'
+import ApplicationState                   from 'store/application'
 import GUI                                from 'services/gui';
 
 import { groupBy }                        from 'utils/groupBy';

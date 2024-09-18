@@ -170,14 +170,14 @@ import {
   TIMEOUT,
 }                                   from 'g3w-constants';
 import Component                    from 'g3w-component';
-import ApplicationState             from 'store/application-state';
-import CatalogLayersStoresRegistry  from 'store/catalog-layers';
+import ApplicationState             from 'store/application';
 import GUI                          from 'services/gui';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
 import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
 import { promisify }                from 'utils/promisify';
+import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 
 import resizeMixin                  from 'mixins/resize';
 
@@ -701,7 +701,7 @@ export default {
           transport: async (d, ok, ko) => {
             try {
               ok({
-                results: (await CatalogLayersStoresRegistry.getLayerById(this.state.atlas.qgs_layer_id).getFilterData({
+                results: (await getCatalogLayerById(this.state.atlas.qgs_layer_id).getFilterData({
                   suggest: `${this.state.atlas.field_name}|${d.data.q}`,
                   unique: this.state.atlas.field_name,
                 })).map(v => ({ id: v, text: v }))

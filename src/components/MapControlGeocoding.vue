@@ -181,16 +181,17 @@
 
 <script>
 import GUI                              from 'services/gui';
-import ApplicationState                 from 'store/application-state';
+import ApplicationState                 from 'store/application';
 import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
 import PluginsRegistry                  from 'store/plugins';
-import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import Projections                      from 'store/projections';
 import { getUniqueDomId }               from 'utils/getUniqueDomId';
 import { flattenObject }                from 'utils/flattenObject';
 import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
 import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
+import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
+import { getCatalogLayers }             from 'utils/getCatalogLayers';
 
 /**
  * Provider definitions.
@@ -731,7 +732,7 @@ export default {
       try {
 
         // get a geometry type of target layer
-        const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
+        const type = getCatalogLayerById(layerId).getGeometryType();
 
         // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
         const _feature = addZValueToOLFeatureGeometry({
@@ -792,8 +793,7 @@ export default {
       }
 
       // Get editing layers that has Point/MultiPoint Geometry type
-      const editablePointLayers =  CatalogLayersStoresRegistry
-        .getLayers({ EDITABLE: true, GEOLAYER: true })
+      const editablePointLayers =  getCatalogLayers({ EDITABLE: true, GEOLAYER: true })
         .filter(l => isPointGeometryType(l.getGeometryType()))
         .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 

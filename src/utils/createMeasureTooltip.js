@@ -1,4 +1,4 @@
-import ApplicationState          from 'store/application-state';
+import ApplicationState          from 'store/application';
 import { isLineGeometryType }    from "utils/isLineGeometryType";
 import { isPolygonGeometryType } from "utils/isPolygonGeometryType";
 import { isMultiGeometry }       from "utils/isMultiGeometry";

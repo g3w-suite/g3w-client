@@ -25,17 +25,17 @@
 <script>
 import { G3W_FID }                              from 'g3w-constants';
 import { VM }                                   from 'g3w-eventbus';
-import ApplicationState                         from 'store/application-state';
+import ApplicationState                         from 'store/application';
 import GUI                                      from "services/gui";
 import RelationsComponent                       from 'components/Relations.vue';
 import RelationComponent                        from 'components/Relation.vue';
 
-import CatalogLayersStoresRegistry              from 'store/catalog-layers';
 import DataRouterService                        from 'services/data';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { XHR }                                  from 'utils/XHR';
 import { createSingleFieldParameter }           from 'utils/createSingleFieldParameter';
 import { createRelationsUrl }                   from 'utils/createRelationsUrl';
+import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 let _options;
 
@@ -148,7 +148,7 @@ export default {
         const values   = features.map(f => f.attributes[referencingField]);
         const { data } = await DataRouterService.getData('search:features', {
           inputs: {
-            layer:     CatalogLayersStoresRegistry.getLayerById(referencedLayer),
+            layer:     getCatalogLayerById(referencedLayer),
             filter:    `${createSingleFieldParameter({ field: referencedField, value: values, logicop: 'OR' })}`,
             formatter: 1, // set formatter to
           },

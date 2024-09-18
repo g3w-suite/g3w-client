@@ -5,7 +5,7 @@
 
 import G3WObject          from 'g3w-object';
 import Component          from 'g3w-component';
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
@@ -24,7 +24,7 @@ export class Plugin extends G3WObject {
   
   constructor({
     name         = null,
-    config       = PluginsRegistry.getPluginConfig(name),
+    config       = ApplicationState.pluginsConfigs[name],
     service      = null,
     dependencies = [],
     i18n         = null,
@@ -89,7 +89,7 @@ export class Plugin extends G3WObject {
    * @param { String } name
    */
   getConfig(name) {
-    return this.config || PluginsRegistry.getPluginConfig(name || this.name);
+    return this.config || ApplicationState.pluginsConfigs[name || this.name];
   }
 
   /**
@@ -275,7 +275,8 @@ export class Plugin extends G3WObject {
    * Get plugin dependency
    */
   getDependencyPlugin(pluginName) {
-    if (PluginsRegistry.isTherePlugin(pluginName)) {
+    // is there a plugin
+    if (ApplicationState.pluginsConfigs[pluginName]) {
       return new Promise((resolve) => {
         const plugin = PluginsRegistry.getPlugin(pluginName);
         /**

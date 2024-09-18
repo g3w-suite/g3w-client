@@ -11,17 +11,14 @@ import './g3w-globals';
 
 // constants
 import {
-  API_BASE_URLS,
   FONT_AWESOME_ICONS,
   LOCAL_ITEM_IDS,
   TIMEOUT,
 }                                  from 'g3w-constants';
 
 // core
-import translations                from "locales";
-import ApplicationState            from 'store/application-state';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import PluginsRegistry             from 'store/plugins';
+import translations                from 'locales';
+import ApplicationState            from 'store/application';
 import G3WObject                   from 'g3w-object';
 import Panel                       from 'g3w-panel';
 import Component                   from 'g3w-component';
@@ -203,6 +200,19 @@ function _getSavedSearches() {
 }
 
 /**
+ * Load an external script
+ */
+function _loadScript(url) {
+  return new Promise(function(resolve, reject) {
+    const s   = document.createElement('script');
+    s.onload  = resolve;
+    s.onerror = e => { console.warn(e); reject(new Error('Failed to load script: ' + url)) };
+    s.src     = url;
+    document.head.appendChild(s);
+  });
+}
+
+/**
  * Bootstrap application
  *
  * 1 - load translations (i18n languages)
@@ -306,14 +316,14 @@ $.ajaxSetup({
 
   /** @since 3.8.0 */
   try {
-    initConfig.macrogroups = await XHR.get({ url: `/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.macrogroups}` })
+    initConfig.macrogroups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/macrogroup/` })
   } catch(e) {
     console.warn(e);
   }
   
   /** @since 3.8.0 */
   try {
-    initConfig.groups = await XHR.get({ url: `/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.nomacrogoups}` })
+    initConfig.groups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/group/nomacrogroup/` })
   } catch(e) {
     console.warn(e);
   }
@@ -355,8 +365,10 @@ $.ajaxSetup({
       Object.assign(ApplicationState.project, project);
 
       // set in first position (map and catalog)
-      CatalogLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
-      MapLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
+      const store = project.getLayersStore();
+      ApplicationState.catalog[store.getId()] = store;
+
+      MapLayersStoresRegistry.addLayersStore(store);
 
       // BACKOMP v3.x
       g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
@@ -697,7 +709,7 @@ $.ajaxSetup({
                   wms:    [],   // added by wms sidebar component
                   vector: [] // added to map controls for the moment
                 },
-                layerstrees:  CatalogLayersStoresRegistry.getLayersStores().map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
+                layerstrees:  Object.values(ApplicationState.catalog).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
                 layersgroups: [],
                 legend:       Object.assign(opts.config.legend || {}, { place: ApplicationState.project.state.legend_position || 'tab' }),
               };
@@ -741,12 +753,7 @@ $.ajaxSetup({
               service.addLayersGroup    = g => { state.layersgroups.push(g); };
               /** used by the following plugins: "processing" */
               service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
-            
-              // add layers stores to tree
-              CatalogLayersStoresRegistry.onafter('addLayersStore',      s => { state.layerstrees.push({ tree: s.getLayersTree(), storeid: s.getId() }); });
-              CatalogLayersStoresRegistry.onafter('removeLayersStore',   s => { const i = state.layerstrees.findIndex(t => t.storeid === s.getId()); if (-1 !== i) { state.layerstrees.splice(i, 1); } });
-              CatalogLayersStoresRegistry.onafter('removeLayersStores', () => { state.layerstrees.forEach((_, i) => { state.layerstrees.splice(i, 1); }); });
-            
+
               const comp = new Component({
                 ...opts,
                 title:              'catalog',
@@ -845,13 +852,57 @@ $.ajaxSetup({
 
         GUI.ready();
 
+        // init plugins
         try {
-          await PluginsRegistry.init({
-            project:            ApplicationState.project,
-            pluginsBaseUrl:     window.initConfig.urls.staticurl,
-            pluginsConfigs:     window.initConfig.plugins,
-            otherPluginsConfig: ApplicationState.project.getState()
-          });
+          const gidProject = ApplicationState.project.getGid(); // current project
+
+          // set plugin config filtered by gid
+          const enabledPlugins = {};
+          Object.entries(window.initConfig.plugins).filter(([,p]) => p.gid === gidProject).forEach(([name, config]) => enabledPlugins[name] = config);
+          Object.assign(ApplicationState.pluginsConfigs, enabledPlugins);
+
+          Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
+          Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.plugins.push(p));
+
+          // set plugins that aren't within server configuration  but in project (law for example)
+          const otherPluginsConfig = ApplicationState.project.getState() || {};
+          if (otherPluginsConfig && otherPluginsConfig.law && otherPluginsConfig.law.length) {
+            // law plugin
+            ApplicationState.pluginsConfigs.law     = otherPluginsConfig.law;
+            ApplicationState.pluginsConfigs.law.gid = otherPluginsConfig.gid;
+          } else {
+            delete ApplicationState.pluginsConfigs.law;
+          }
+
+          /** @TODO check if deprecated */
+          for (const p in ApplicationState.pluginsConfigs) {
+            Object
+              .entries(ApplicationState.pluginsConfigs[p].plugins || {})
+              .forEach(([name, config]) => ApplicationState.pluginsConfigs[name] = {
+                ...ApplicationState.pluginsConfigs[name],
+                ...config
+              });
+          }
+
+          // load plugins
+          await Promise
+            .allSettled(Object.entries(ApplicationState.pluginsConfigs)
+            .map(async ([name, config]) => {
+              if (!config) {
+                return;
+              }
+              config.baseUrl = window.initConfig.urls.staticurl;
+              try {
+                // wait plugin dependencies before loading plugin
+                await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
+                await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${Date.now()}`, false);
+              } catch(e) {
+                console.warn('[G3W-PLUGIN]', e);
+                // remove loading plugin in case of error of dependencies
+                ApplicationState.plugins = ApplicationState.plugins.filter(p => name !== p);
+                return Promise.reject();
+              }
+            }));
         } catch (e) {
           console.warn(e);
         }

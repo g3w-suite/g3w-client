@@ -1,4 +1,4 @@
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
 const Service = require('gui/inputs/service');
 
@@ -9,7 +9,7 @@ module.exports = class SelectService extends Service {
   }
 
   _getLayerById(layer_id) {
-    return CatalogLayersStoresRegistry.getLayerById(layer_id);
+    return getCatalogLayerById(layer_id);
   };
 
   addValue(value) {

@@ -472,7 +472,6 @@
 </template>
 
 <script>
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
@@ -480,6 +479,7 @@
   import HeaderFeatureActionsBody    from "components/QueryResultsHeaderFeatureActionsBody.vue";
   import { toRawType }               from 'utils/toRawType';
   import { throttle }                from 'utils/throttle';
+  import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
   import GUI                         from 'services/gui';
 
   const MAX_SUBSET_LENGTH           = 3;
@@ -792,7 +792,7 @@
        * @since 3.10.0
        */
       openAttributeTable(layer) {
-        CatalogLayersStoresRegistry.getLayerById(layer.id).openAttributeTable({ perc: 100 });
+        getCatalogLayerById(layer.id).openAttributeTable({ perc: 100 });
       },
 
       /**

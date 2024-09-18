@@ -73,9 +73,9 @@
 <script>
   import GUI                         from 'services/gui';
   import { VM }                      from 'g3w-eventbus';
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import ApplicationState            from 'store/application-state';
+  import ApplicationState            from 'store/application';
   import ClickMixin                  from 'mixins/click';
+  import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 
   export default {
@@ -182,7 +182,7 @@
       },
 
       getProjectLayer() {
-        return CatalogLayersStoresRegistry.getLayerById(this.layer.id);
+        return getCatalogLayerById(this.layer.id);
       },
 
       isDisabled(index) {

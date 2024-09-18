@@ -9,8 +9,7 @@ import G3WObject                                from 'g3w-object';
 import Component                                from 'g3w-component';
 import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
 
-import CatalogLayersStoresRegistry              from 'store/catalog-layers';
-import ApplicationState                         from 'store/application-state';
+import ApplicationState                         from 'store/application';
 
 import DataRouterService                        from 'services/data';
 
@@ -25,6 +24,7 @@ import { downloadFile }                         from 'utils/downloadFile';
 import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { copyUrl }                              from 'utils/copyUrl';
+import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
@@ -1754,12 +1754,7 @@ export default new (class QueryResultsService extends G3WObject {
       }
 
       await GUI.downloadWrapper(
-        ({layer, type, data}= {}) => {
-          return CatalogLayersStoresRegistry
-            .getLayerById(layer.id)
-            .getDownloadFilefromDownloadDataType(type, { data }) ||
-          Promise.resolve();
-        },
+        ({layer, type, data}= {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
         {
           layer,
           type,
@@ -1869,8 +1864,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @FIXME add description
    */
   downloadGpx({ id: layerId } = {}, feature) {
-    CatalogLayersStoresRegistry
-      .getLayerById(layerId)
+    getCatalogLayerById(layerId)
       .getGpx({ fid: feature ? feature.attributes[G3W_FID] : null })
       .catch((err) => { GUI.notify.error(t("info.server_error")); })
       .finally(()  => { this.layerMenu.loading.shp = false; this._hideMenu(); })
@@ -1880,8 +1874,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @FIXME add description
    */
   downloadXls({ id: layerId } = {}, feature) {
-    CatalogLayersStoresRegistry
-      .getLayerById(layerId)
+    getCatalogLayerById(layerId)
       .getXls({ fid: feature ? feature.attributes[G3W_FID] : null })
       .catch(err  => { GUI.notify.error(t("info.server_error")); })
       .finally(() => { this.layerMenu.loading.shp = false; this._hideMenu(); })
@@ -1902,7 +1895,7 @@ export default new (class QueryResultsService extends G3WObject {
           feature.selection = (selectionFeature) ? selectionFeature.selection : { selected: false };
         });
     } else {
-      const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const _layer = getCatalogLayerById(layer.id);
       const handler = () => {
         layer.features.forEach((feature, index) =>
           this.state.layersactions[layer.id].find(action => action.id === actionId).state.toggled[index] = false
@@ -1927,7 +1920,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @param layer
    */
   addRemoveFilter(layer) {
-    CatalogLayersStoresRegistry.getLayerById(layer.id).toggleFilterToken();
+    getCatalogLayerById(layer.id).toggleFilterToken();
   }
 
   /**
@@ -1936,7 +1929,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   saveFilter(layer) {
-    CatalogLayersStoresRegistry.getLayerById(layer.id).saveFilter();
+    getCatalogLayerById(layer.id).saveFilter();
   }
 
   /**
@@ -1957,7 +1950,7 @@ export default new (class QueryResultsService extends G3WObject {
       action.state.toggled[index] = feature.selection.selected;
     } else if (feature) {
       // project layer
-      const pLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const pLayer = getCatalogLayerById(layer.id);
       action.state.toggled[index] = (
           //need to check if set active filter and no saved filter is set
           (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
@@ -2476,12 +2469,11 @@ export default new (class QueryResultsService extends G3WObject {
     const getFeatureId       = service._getFeatureId.bind(service);
     const getExternalLayer   = service._getExternalLayer.bind(service);
     const getActionLayerById = service.getActionLayerById.bind(service);
-    const getLayerById       = CatalogLayersStoresRegistry.getLayerById.bind(CatalogLayersStoresRegistry);
 
     const GIVE_ME_A_NAME = undefined === feature && undefined === action && undefined === index;
     const _action        = GIVE_ME_A_NAME ? getActionLayerById({ layer, id: 'selection' })                  : action;
     const toggled        = GIVE_ME_A_NAME && Object.values(_action.state.toggled).reduce((prev, curr) => prev && curr, true);
-    const _layer         = GIVE_ME_A_NAME ? (layer.external ? layer : getLayerById(layer.id))               : ((getExternalLayer(layer.id) || false) ? layer : getLayerById(layer.id));
+    const _layer         = GIVE_ME_A_NAME ? (layer.external ? layer : getCatalogLayerById(layer.id))        : ((getExternalLayer(layer.id) || false) ? layer : getCatalogLayerById(layer.id));
     const features       = GIVE_ME_A_NAME ? (layer.features && layer.features.length ? layer.features : []) : [feature];
     const params         = GIVE_ME_A_NAME ? {
       fids: features.length > 0 ? getFeaturesIds(features, _layer.external) : null,
@@ -2651,7 +2643,7 @@ export default new (class QueryResultsService extends G3WObject {
      * PROJECT LAYER
      */
     if (!layer.external && storeid) {
-      CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layer.id).clearSelectionFids();
+      ApplicationState.catalog[storeid].getLayerById(layer.id).clearSelectionFids();
     }
 
     /**

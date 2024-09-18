@@ -218,34 +218,6 @@ export const VIEWPORT = {
 };
 
 /**
- * @type {Object<string, string | Object<string, string>>}
- * @since v3.8
- */
-export const API_BASE_URLS = {
-
-  /**
-   * Info about groups, macrogroups, projects, etc. of G3W-SUITE
-   * 
-   * @since 3.8.0
-   */
-  ABOUT: {
-    macrogroups:  '/about/api/macrogroup/', 
-    nomacrogoups: '/about/api/group/nomacrogroup/', 
-    projects:     '/about/api/group/__G3W_GROUP_ID__/projects/',
-    group:        '/about/api/group/',
-  },
-
-  /**
-   * Coordinate Reference Systems
-   * 
-   * @example /crs/<epsg_code>
-   * 
-   * @since v3.8
-   */
-  CRS: '/crs/',
-};
-
-/**
  * List of default Font Awesome classes for current project
  * 
  * @type {Object<string, string>}
@@ -453,7 +425,6 @@ export const SELECTION = {
 
 export default {
   APP_VERSION,
-  API_BASE_URLS,
   DEFAULT_EDITING_CAPABILITIES,
   DOTS_PER_INCH,
   FILTER_OPERATORS,

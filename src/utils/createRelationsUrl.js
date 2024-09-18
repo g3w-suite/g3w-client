@@ -1,4 +1,4 @@
-import ApplicationState       from 'store/application-state'
+import ApplicationState       from 'store/application'
 import { sanitizeFidFeature } from 'utils/sanitizeFidFeature';
 
 /**

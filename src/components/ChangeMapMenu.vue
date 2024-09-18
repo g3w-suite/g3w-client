@@ -90,9 +90,8 @@
 
 <script>
 
-import ApplicationState        from 'store/application-state';
+import ApplicationState        from 'store/application';
 import Projections             from 'store/projections';
-import { API_BASE_URLS }       from 'g3w-constants';
 import { XHR }                 from 'utils/XHR';
 import { getListableProjects } from 'utils/getListableProjects';
 import GUI                     from 'services/gui';
@@ -101,13 +100,13 @@ const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
 
 /** Cached HTTP GET request */
 async function get_macro(id) {
-  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
+  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}/about/api/group/${id}/`) });
   return get_macro[id];
 }
 
 /** Cached HTTP GET request */
 async function get_group(id) {
-  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}/about/api/group/${id}/projects/`) });
   return get_group[id];
 }
 

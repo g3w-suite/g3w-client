@@ -5,7 +5,7 @@
 
 import { DOTS_PER_INCH }      from 'g3w-constants';
 import G3WObject              from 'g3w-object';
-import ApplicationState       from 'store/application-state';
+import ApplicationState       from 'store/application';
 import Projections            from 'store/projections';
 import GeoLayerMixin          from 'map/layers/geo-mixin';
 import { Layer }              from 'map/layers/layer';

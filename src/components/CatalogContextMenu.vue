@@ -601,10 +601,10 @@
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
 
   import { VM }                        from 'g3w-eventbus';
-  import ApplicationState              from 'store/application-state';
-  import CatalogLayersStoresRegistry   from 'store/catalog-layers';
-  import GUI                           from 'services/gui';
+  import ApplicationState              from 'store/application';
+    import GUI                           from 'services/gui';
   import { downloadFile }              from 'utils/downloadFile';
+  import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
 
   const { t }                        = require('g3w-i18n');
   const shpwrite                     = require('shp-write');
@@ -767,51 +767,51 @@
       },
 
       canShowWmsUrl(layerId) {
-        const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const originalLayer = getCatalogLayerById(layerId);
         return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
       },
 
       canShowWfsUrl(layerId) {
-        const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const originalLayer = getCatalogLayerById(layerId);
         return originalLayer && !originalLayer.isType('table') && originalLayer.isWfsActive();
       },
 
       canDownloadXls(layerId) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         return layer ? layer.isXlsDownlodable() : false;
       },
 
       canDownloadGpx(layerId) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         return layer ? layer.isGpxDownlodable() : false;
       },
 
       canDownloadGpkg(layerId) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         return layer ? layer.isGpkgDownlodable() : false;
       },
 
       canDownloadCsv(layerId) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         return layer ? layer.isCsvDownlodable() : false;
       },
 
       canDownloadGeoTIFF(layerId) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         return layer ? layer.isGeoTIFFDownlodable() : false;
       },
 
       canDownloadShp(layerId) {
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         return layer ? layer.isShpDownlodable() : false;
       },
 
       getWmsUrl(layerId) {
-        return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWmsUrl();
+        return getCatalogLayerById(layerId).getCatalogWmsUrl();
       },
 
       getWfsUrl(layerId) {
-        return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWfsUrl();
+        return getCatalogLayerById(layerId).getCatalogWfsUrl();
       },
 
       /**
@@ -820,7 +820,7 @@
        * @return { String } wfs3 url
        */
       getWfs3Url(layerId) {
-        return CatalogLayersStoresRegistry.getLayerById(layerId).getCatalogWfs3Url();
+        return getCatalogLayerById(layerId).getCatalogWfs3Url();
       },
 
       /**
@@ -852,7 +852,7 @@
       downloadGeoTIFF(layerId, map_extent=false) {
         ApplicationState.download = true;
         this.layerMenu.loading.geotiff = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         layer.getGeoTIFF({
           data:  map_extent ? {
             map_extent: GUI.getService('map').getMapExtent().toString()
@@ -869,7 +869,7 @@
       downloadShp(layerId) {
         ApplicationState.download = true;
         this.layerMenu.loading.shp = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         layer.getShp()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
@@ -882,7 +882,7 @@
       downloadCsv(layerId) {
         ApplicationState.download = true;
         this.layerMenu.loading.csv = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         layer.getCsv()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
@@ -895,7 +895,7 @@
       downloadXls(layerId) {
         ApplicationState.download = true;
         this.layerMenu.loading.xls = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         layer.getXls()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
@@ -908,7 +908,7 @@
       downloadGpx(layerId) {
         ApplicationState.download = true;
         this.layerMenu.loading.gpx = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         layer.getGpx()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
@@ -921,7 +921,7 @@
       downloadGpkg(layerId) {
         ApplicationState.download = true;
         this.layerMenu.loading.gpkg = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        const layer = getCatalogLayerById(layerId);
         layer.getGpkg()
           .catch(err => GUI.notify.error(t("info.server_error")))
           .finally(() => {
@@ -993,7 +993,7 @@
           const layer = GUI.getService('catalog').state.external.vector.find(layer => layer.id === layerId);
           if (layer) geometryType = layer.geometryType;
         } else {
-          const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+          const originalLayer = getCatalogLayerById(layerId);
           geometryType = originalLayer.config.geometrytype;
         }
         geometryType = geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
@@ -1051,7 +1051,7 @@
       },
 
       showAttributeTable(layerId) {
-        CatalogLayersStoresRegistry.getLayerById(layerId).openAttributeTable();
+        getCatalogLayerById(layerId).openAttributeTable();
         this._hideMenu();
       },
 
@@ -1068,7 +1068,7 @@
         });
         if (changed) {
           const layerId = this.layerMenu.layer.id;
-          const layer   = CatalogLayersStoresRegistry.getLayerById(layerId);
+          const layer   = getCatalogLayerById(layerId);
           if (layer) {
             VM.$emit('layer-change-style', {
               layerId,
@@ -1092,7 +1092,7 @@
           null === this.layerMenu.layer.filter.current ||
           this.layerMenu.layer.filter.current.fid !== filter.fid
         );
-        const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        const layer = getCatalogLayerById(this.layerMenu.layer.id);
         if (changed) {
           await layer.applyFilter(filter);
         } else {
@@ -1112,7 +1112,7 @@
        * @since 3.9.0
        */
       async deleteFilter(fid) {
-        const layer  = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        const layer  = getCatalogLayerById(this.layerMenu.layer.id);
         const change = fid === this.layerMenu.layer.fid;
         // skip when ..
         if (!layer) { return }

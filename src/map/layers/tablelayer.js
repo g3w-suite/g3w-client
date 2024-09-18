@@ -4,10 +4,10 @@
  */
 
 import { TIMEOUT }                      from 'g3w-constants';
-import CatalogLayersStoresRegistry      from 'store/catalog-layers';
 import { waitFor }                      from 'utils/waitFor';
 import { $promisify, promisify }        from 'utils/promisify';
 import { XHR }                          from 'utils/XHR';
+import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
 
 import { Layer }                        from 'map/layers/layer';
 import { FeaturesStore }                from 'map/layers/featuresstore';
@@ -63,7 +63,7 @@ export class TableLayer extends Layer {
           // sync selection filter features
           if (response && response.result) {
             try {
-              const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
+              const layer = getCatalogLayerById(this.getId());
               //if layer has geometry
               if (layer.isGeoLayer()) {
                 commitItems.update.forEach(({ id, geometry } = {}) => {

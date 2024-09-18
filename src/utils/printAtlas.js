@@ -1,4 +1,4 @@
-import ApplicationState from 'store/application-state';
+import ApplicationState from 'store/application';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi

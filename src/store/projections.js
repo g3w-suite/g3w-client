@@ -3,9 +3,7 @@
  *
  * @since 3.11.0
  */
-import { API_BASE_URLS } from 'g3w-constants';
 import { normalizeEpsg } from 'utils/normalizeEpsg';
-import { XHR }           from 'utils/XHR';
 
 /**
  * ORIGINAL SOURCE: src/app/g3w-ol/projection/projection.js@v3.10.1
@@ -47,7 +45,7 @@ export default {
 
     // check if already registered
     if (!p) {
-      const { result, data } = await XHR.get({ url: `${API_BASE_URLS.CRS}${epsg.split(':')[1]}` });
+      const { result, data } = await fetch(`/crs/${epsg.split(':')[1]}`);
       if (result)  {
         data.epsg  = normalizeEpsg(data.epsg);
         p = this.get(data);

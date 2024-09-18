@@ -115,13 +115,13 @@
 
 <script>
 import { FILTER_OPERATORS }        from 'g3w-constants';
-import ApplicationState            from 'store/application-state';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationState            from 'store/application';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 const { t } = require('g3w-i18n');
 
@@ -196,7 +196,7 @@ export default {
           this.values = CACHE[layerId][field];
         } else {
           const response = await XHR.get({
-            url: CatalogLayersStoresRegistry.getLayerById(layerId).getUrl('data'),
+            url: getCatalogLayerById(layerId).getUrl('data'),
             params: { ordering: field, formatter: 1, fformatter: field }
           });
           if (response.result) {
@@ -230,7 +230,7 @@ export default {
     async run() {
       try {
         this.loading.test = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id);
+        const layer = getCatalogLayerById(this.currentlayer.id);
         const { data } = await DataRouterService.getData('search:features', {
           inputs: {
             layer,
@@ -265,7 +265,7 @@ export default {
         query = {
           layerId:   this.currentlayer.id,
           filter:    this.filter,
-          layerName: CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id).getName(),
+          layerName: getCatalogLayerById(this.currentlayer.id).getName(),
           name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.prompt(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
           id:        edit_id || getUniqueDomId(),
         };

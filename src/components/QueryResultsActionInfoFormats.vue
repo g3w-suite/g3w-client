@@ -22,10 +22,10 @@
 </template>
 
 <script>
-import CatalogLayersStoresRegistry              from 'store/catalog-layers';
 import GUI                                      from 'services/gui';
 import { ResponseParser }                       from 'utils/parsers';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 export default {
   name: 'Infoformats',
@@ -136,7 +136,7 @@ export default {
   },
 
   created() {
-    this.projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
+    this.projectLayer = getCatalogLayerById(this.layer.id);
   },
 
   beforeDestroy() {

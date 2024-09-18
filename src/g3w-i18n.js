@@ -1,4 +1,4 @@
-import ApplicationState from 'store/application-state';
+import ApplicationState from 'store/application';
 
 module.exports = {
   getAppLanguage: () => window.initConfig.user.i18n || "en",

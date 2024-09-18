@@ -8,13 +8,13 @@ import {
   SPATIAL_METHODS
 }                                     from 'g3w-constants';
 import { VM }                         from 'g3w-eventbus';
-import CatalogLayersStoresRegistry    from 'store/catalog-layers';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
-import ApplicationState               from 'store/application-state'
+import ApplicationState               from 'store/application'
 import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
+import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
 const { t }                           = require('g3w-i18n');
 
@@ -296,7 +296,7 @@ export class QueryBy extends InteractionControl {
               templateLayer(state) {
                 if (!state.id || '__NEW__' === state.id) { return state.text }
                 const externalLayers = GUI.getService('map').getLegacyExternalLayers();
-                const layer = CatalogLayersStoresRegistry.getLayerById(state.id) || externalLayers.find(l => l.get('id') === state.id);
+                const layer = getCatalogLayerById(state.id) || externalLayers.find(l => l.get('id') === state.id);
                 /** @FIXME layer is undefined when removing an external layer */
                 const icon = ('__ALL__' === state.id || !layer ? '' : /*html */ `<i class="${ GUI.getFontClass( layer.isVisible() ? 'eye' : 'eye-close') }"></i>&nbsp;&nbsp;`)
                 return $(/*html*/`<span>${ icon }${ state.text }</span>`);  

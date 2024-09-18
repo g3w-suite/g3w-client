@@ -261,10 +261,10 @@
 <script>
 
 import { VM }                      from 'g3w-eventbus';
-import ApplicationState            from 'store/application-state';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationState            from 'store/application';
 import GUI                         from 'services/gui';
 import { XHR }                     from 'utils/XHR';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
 import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
@@ -398,7 +398,7 @@ export default {
 
       layers.forEach(layer => {
         const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
-        const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+        const catalogLayer = getCatalogLayerById(layer.id);
 
         const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
           all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
@@ -608,7 +608,7 @@ export default {
       // clear categories
       layers.forEach(id => {
         if (!changes[id].visible) {
-          const layer = CatalogLayersStoresRegistry.getLayerById(id);
+          const layer = getCatalogLayerById(id);
           layer.clearCategories();
           layer.change();
         }
@@ -657,7 +657,8 @@ export default {
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
-      layerstree.filter.active = await CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).toggleFilterToken();
+      
+      layerstree.filter.active = await ApplicationState.catalog[storeid].getLayerById(layerstree.id).toggleFilterToken();
     },
 
     /**

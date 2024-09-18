@@ -64,11 +64,11 @@
 
 <script>
 import Panel                       from 'g3w-panel';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationState            from 'store/application-state'
+import ApplicationState            from 'store/application'
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { createFilterFromString }  from 'utils/createFilterFromString';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import G3WTool                     from 'components/Tool.vue';
 import * as vueComp                from 'components/QueryBuilder.vue';
@@ -154,7 +154,7 @@ export default {
     async run(search) {
       search.qbloading = true;
       try {
-        const layer = CatalogLayersStoresRegistry.getLayerById(search.layerId);
+        const layer = getCatalogLayerById(search.layerId);
         await DataRouterService.getData('search:features', {
           inputs: {
             layer,

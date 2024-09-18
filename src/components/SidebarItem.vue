@@ -52,7 +52,7 @@
 
 <script>
 
-  import ApplicationState from "store/application-state";
+  import ApplicationState from "store/application";
 
   export default {
     name: "SidebarItem",

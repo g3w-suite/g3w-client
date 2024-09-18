@@ -43,8 +43,8 @@
 </template>
 
 <script>
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import { VM }                      from 'g3w-eventbus';
+  import { VM }                  from 'g3w-eventbus';
+  import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
   export default {
 
@@ -84,7 +84,7 @@
           return;
         }
         this.layer.opacity = opacity;
-        const layer = CatalogLayersStoresRegistry.getLayerById(id);
+        const layer = getCatalogLayerById(id);
         if (layer) {
           VM.$emit('layer-change-opacity', { layerId: id });
           layer.change();

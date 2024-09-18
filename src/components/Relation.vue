@@ -187,11 +187,11 @@
   import Component                    from 'g3w-component';
   import Field                        from 'components/FieldG3W.vue';
   import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
-  import CatalogLayersStoresRegistry  from 'store/catalog-layers';
   import GUI                          from 'services/gui';
   import { fieldsMixin, resizeMixin } from 'mixins';
   import { VM }                       from 'g3w-eventbus';
   import { throttle }                 from 'utils/throttle';
+  import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 
   let SIDEBARWIDTH;
 
@@ -274,7 +274,7 @@
        * @returns { Promise<void> }
        */
       async createTable() {
-        const layer     = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
+        const layer     = getCatalogLayerById(this.table.layerId);
 
         this.isEditable = layer.isEditable() && !layer.isInEditing();
 

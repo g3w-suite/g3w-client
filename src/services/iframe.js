@@ -5,7 +5,7 @@
 
 import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
-import ApplicationState               from 'store/application-state'
+import ApplicationState               from 'store/application'
 import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
@@ -265,8 +265,8 @@ class BaseIframeService extends G3WObject {
     layers = {}
   } = {}) {
     this.layers = layers;
-    // skip when plugin is not in configuration
-    if (!PluginsRegistry.isPluginInConfiguration(this.pluginName)) {
+    // skip when plugin is not in configuration (ie. added to the application)
+    if (!ApplicationState.configurationPlugins.includes(this.pluginName)) {
       return;
     }
     const plugin = PluginsRegistry.getPlugin(this.pluginName);

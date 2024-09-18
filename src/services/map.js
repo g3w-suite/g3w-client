@@ -5,7 +5,7 @@
 
 import localforage                          from 'localforage';
 import G3WObject                            from 'g3w-object';
-import ApplicationState                     from 'store/application-state';
+import ApplicationState                     from 'store/application';
 import PluginsRegistry                      from 'store/plugins';
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
 import { isPointGeometryType }              from 'utils/isPointGeometryType';
@@ -33,6 +33,8 @@ import MapControlZoomHistory                from 'components/MapControlZoomHisto
 import MapControlGeocoding                  from 'components/MapControlGeocoding.vue';
 import { groupBy }                          from 'utils/groupBy';
 import { getProject }                       from 'utils/getProject';
+import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
+import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 
@@ -54,7 +56,6 @@ const MAP = {
   layers:             Object.assign(new G3WObject({ setters: {
     addLayersStore:          store  => { MAP.stores[store.getId()] = store; },
     removeLayersStore:       store  => { if (store) { delete MAP.layers.stores[store.getId()]; } },
-    removeLayersStores:      ()     => { MAP.stores = {}; },
   }}), {
     getLayerById:            id     => Object.values(MAP.stores).map(s => s.getLayerById(id)).find(l => l),
     getLayers:               filter => Object.values(MAP.stores).flatMap(s => s.getLayers(filter)),
@@ -2508,9 +2509,6 @@ class MapService extends G3WObject {
    * @since 3.11.0
    */
   selectLayer(layer) {
-
-    const catalog = require('store/catalog-layers').default;
-
     let id = 'string'=== typeof layer ? layer : layer && layer.getId();
 
     // toggle previous selection
@@ -2518,10 +2516,10 @@ class MapService extends G3WObject {
       id = null;
     }
 
-    layer = catalog.getLayerById(id) || this.getLegacyExternalLayers().find(l => id === l.getId());
+    layer = getCatalogLayerById(id) || this.getLegacyExternalLayers().find(l => id === l.getId());
 
     // select layer by id
-    catalog.getLayers().concat(this.getLegacyExternalLayers()).forEach(l => l.setSelected(l.getId() === id));
+    getCatalogLayers().concat(this.getLegacyExternalLayers()).forEach(l => l.setSelected(l.getId() === id));
 
     MAP.selectedLayer = layer && layer.isSelected() ? layer : null;
 

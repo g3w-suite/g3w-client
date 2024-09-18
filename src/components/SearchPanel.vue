@@ -164,7 +164,7 @@
     FILTER_EXPRESSION_OPERATORS,
     SEARCH_ALLVALUE,
   }                                            from 'g3w-constants';
-  import ApplicationState                      from 'store/application-state';
+  import ApplicationState                      from 'store/application';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';

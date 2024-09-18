@@ -1,6 +1,6 @@
 import { QUERY_POINT_TOLERANCE }   from 'g3w-constants';
 import G3WObject                   from 'g3w-object';
-import ApplicationState            from 'store/application-state';
+import ApplicationState            from 'store/application';
 import Projections                 from 'store/projections';
 import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';

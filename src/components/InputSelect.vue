@@ -76,14 +76,14 @@
 </template>
 
 <script>
-  import CatalogLayersStoresRegistry    from 'store/catalog-layers';
   import GUI                            from 'services/gui';
-  import ApplicationState               from 'store/application-state'
+  import ApplicationState               from 'store/application'
   import {
     selectMixin,
     select2Mixin
   }                                     from 'mixins';
   import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
+  import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
   const PickLayerInputService           = require('gui/inputs/picklayer/service');
   const { Layer }                       = require('map/layers/layer');
@@ -235,9 +235,9 @@
           fieldRef : { referencingField, referencedField }
         }                               = ApplicationState.project.getRelationById(relation_id);
         //current layer in editing
-        const layer                     = CatalogLayersStoresRegistry.getLayerById(referencingLayer)
+        const layer                     = getCatalogLayerById(referencingLayer)
         //relation layer
-        const relationLayer             = CatalogLayersStoresRegistry.getLayerById(referencedLayer);
+        const relationLayer             = getCatalogLayerById(referencedLayer);
         //fields of relation layer
         const relationLayerFields       = relationLayer.getFields();
         //check if it has a value
@@ -432,7 +432,7 @@
         try {
           const dependencyLayer = GUI.getService('map')
             .getProjectLayer(dependencyLayerId)
-            .getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
+            .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
           // in case layer is on project, check if is non an alphanumeric layer
           this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
           if (this.showPickLayer) {

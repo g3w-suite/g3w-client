@@ -690,7 +690,7 @@ import {
   LOCAL_ITEM_IDS,
   VIEWPORT
 }                         from 'g3w-constants';
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
 import GUI                from 'services/gui';

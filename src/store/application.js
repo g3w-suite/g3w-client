@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-import G3WObject from "g3w-object";
+import G3WObject from 'g3w-object';
 
 /**
  * State of application reactive
@@ -62,6 +62,12 @@ const STATE = Vue.observable({
    * It used in v-plugins directive
    */
   plugins: [],
+
+  /** @since 3.11.0 - plugin configs filtered by gid */
+  pluginsConfigs: {},
+
+  /** @since 3.11.0 - array of initConfig.plugins names */
+  configurationPlugins: [],
 
   /**
    * Store application current user
@@ -233,7 +239,10 @@ const STATE = Vue.observable({
   },
 
   /** @since 3.11.0 */
-  project: new G3WObject
+  project: new G3WObject,
+
+  /** @since 3.11.0 */
+  catalog: {},
 
 });
 

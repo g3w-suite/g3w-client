@@ -130,7 +130,7 @@
 
 <script>
   import { LOCAL_ITEM_IDS }   from 'g3w-constants';
-  import ApplicationState     from 'store/application-state'
+  import ApplicationState     from 'store/application'
   import GUI                  from 'services/gui';
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
