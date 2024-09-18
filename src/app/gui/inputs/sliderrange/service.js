@@ -1,18 +1,16 @@
 const Service           = require('gui/inputs/service');
-const Validators        = require('utils/validators');
 
 class SliderRangeService extends Service {
   constructor(opts = {}) {
     const { state } = opts;
     opts.state.info = `[MIN: ${state.input.options.min} - MAX: ${state.input.options.max}]`;
     super(opts);
-
-    const validator = Validators.get('range', {
-      min: 1 * state.input.options.min,
-      max: 1 * state.input.options.max
+    this.setValidator({
+      validate(value) {
+        value = 1 * value;
+        return value >= (1 * opts.state.input.options.min) && value <= (1 * opts.state.input.options.max);
+      }
     });
-
-    this.setValidator(validator);
   }
 
   validate() {
