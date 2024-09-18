@@ -5,13 +5,4 @@
 
 const LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
-export default new (class CatalogLayersStoresRegistry extends LayersStoresRegistry  {
-  constructor() {
-    super()
-  }
-
-  getLayers(filter) {
-    return Object.values(this.stores).flatMap(s => s.getLayers(filter, { TOC_ORDER: true }));
-  }
-
-});
+export default new LayersStoresRegistry();
