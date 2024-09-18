@@ -175,7 +175,6 @@ import CatalogLayersStoresRegistry  from 'store/catalog-layers';
 import GUI                          from 'services/gui';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
-import { getMetersFromDegrees }     from 'utils/getMetersFromDegrees';
 import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
 import { print }                    from 'utils/print';
@@ -558,7 +557,7 @@ export default {
       const size       = map.getSize();
       const resolution = map.getView().getResolution();
       const { h, w }   = this.state.maps.find(m => !m.overview);
-      const res        = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
+      const res        = resolution * ('m' === GUI.getService('map').getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
       const w2         = (((w / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const h2         = (((h / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)

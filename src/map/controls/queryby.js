@@ -15,7 +15,6 @@ import ApplicationState               from 'store/application-state'
 import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
-import { getMetersFromDegrees }       from 'utils/getMetersFromDegrees';
 
 const { t }                           = require('g3w-i18n');
 
@@ -40,7 +39,7 @@ const CONTROLS = {};
 /**
  * Spatial query options
  */
-const QUERY = {
+const QUERY = Vue.observable({
   /** @type {ol.coordinate} bbox coordinates */
   bbox:          null,
   /** @type { ol.Feature } drawed feature */
@@ -48,14 +47,8 @@ const QUERY = {
   layer:         null,
   feature:       null,
   coordinates:   null,
-};
-
-//Reactive data
-const REACTIVE = Vue.observable({
-  querybycircle: {
-    radius: 0
-  }
-})
+  radius:        0,
+});
 
 /**
  * Return current layer id selected or __ALL__ (no layer selected)
@@ -184,17 +177,17 @@ export class QueryBy extends InteractionControl {
               help()      { return `sdk.mapcontrols.${this.type}.help.message`; },
               all()       { return this.no_layers ? 'sdk.mapcontrols.queryby.none' : 'sdk.mapcontrols.queryby.all'; },
               radius:    {
-                get() { return REACTIVE.querybycircle.radius },
+                get() { return QUERY.radius },
                 set(v) {
                   if (Number.isNaN(v) || v < 0) {
-                    this.radius = REACTIVE.querybycircle.radius;
+                    this.radius = QUERY.radius;
                     return;
                   }
                   //need to convert degree in meter
-                  REACTIVE.querybycircle.radius =  Math.floor('m' === GUI.getService('map').getMapUnits() ? v : getMetersFromDegrees(v));
+                  QUERY.radius = Math.floor(v * ('m' === GUI.getService('map').getMapUnits() ? 1 : ol.proj.Units.METERS_PER_UNIT.degrees));
                   //already circle drawed but not clear (0) value
-                  if (QUERY.dfeature && REACTIVE.querybycircle.radius > 0) {
-                    QUERY.dfeature.getGeometry().setRadius(REACTIVE.querybycircle.radius);
+                  if (QUERY.dfeature && QUERY.radius > 0) {
+                    QUERY.dfeature.getGeometry().setRadius(QUERY.radius);
                     CONTROLS['queryby'].runSpatialQuery(this.type);
                   }
                 }
@@ -264,12 +257,9 @@ export class QueryBy extends InteractionControl {
               },
               async reset() {
                 this.layers.splice(0);
-                //reset radius
-                if ('querybycircle' !== this.type) {
-                  REACTIVE.querybycircle.radius = 0;
-                }
                 // reset autorun options
                 this.types.filter(t => t !== this.type).forEach(t => {
+                  if ('querybycircle' === t)      { QUERY.radius   = 0; }
                   if ('querybbox' === t)          { QUERY.bbox     = null; }
                   if ('querybypolygon' === t)     { QUERY.layer    = null; QUERY.feature = null; QUERY.coordinates = null; }
                   if (![
@@ -397,9 +387,9 @@ export class QueryBy extends InteractionControl {
         if ('querybycircle' === type) {
           this._interaction.on('drawstart', e => {
             const geometry = e.feature.getGeometry();
-            geometry.setRadius(REACTIVE.querybycircle.radius);
-            geometry.on('change', () => REACTIVE.querybycircle.radius = geometry.getRadius())
-            if (REACTIVE.querybycircle.radius > 0) {
+            geometry.setRadius(QUERY.radius);
+            geometry.on('change', () => QUERY.radius = geometry.getRadius())
+            if (QUERY.radius > 0) {
               this._interaction.finishDrawing();
             }
           })
@@ -411,7 +401,7 @@ export class QueryBy extends InteractionControl {
             if ('querybycircle' === type) {
               const radius = e.feature.getGeometry().getRadius();
               //in the case of map unit degrees, convert it to meter
-              REACTIVE.querybycircle.radius = 'm' === GUI.getService('map').getMapUnits() ? radius : getMetersFromDegrees(radius);
+              QUERY.radius = radius * ('m' === GUI.getService('map').getMapUnits() ? 1 : ol.proj.Units.METERS_PER_UNIT.degrees);
             }
             QUERY.dfeature = e.feature;
             this.dispatchEvent({ type: 'drawend', feature: QUERY.dfeature });
