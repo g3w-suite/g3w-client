@@ -177,7 +177,6 @@ import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
 import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
-import { print }                    from 'utils/print';
 import { promisify }                from 'utils/promisify';
 
 import resizeMixin                  from 'mixins/resize';
@@ -409,12 +408,40 @@ export default {
       return this.print_extent;
     },
 
+    /*
+    http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
+      ?MAP=/home/marco/geodaten/projekte/composertest.qgs
+      &SERVICE=WMS&VERSION=1.3.0
+      &REQUEST=GetPrint
+      &TEMPLATE=Composer 1
+      &map0:extent=693457.466131,227122.338236,700476.845177,230609.807051
+      &BBOX=693457.466131,227122.338236,700476.845177,230609.807051
+      &CRS=EPSG:21781
+      &WIDTH=1467
+      &HEIGHT=729
+      &LAYERS=layer0,layer1
+      &STYLES=,
+      &FORMAT=pdf
+      &DPI=300
+      &TRANSPARENT=true
+
+    In detail, the following parameters can be used to set properties for composer maps:
+
+    <mapname>:EXTENT=<xmin,ymin,xmax, ymax> //mandatory
+    <mapname>:ROTATION=<double> //optional, defaults to 0
+    <mapname>:SCALE=<double> //optional. Forces scale denominator as server and client may have different scale calculations
+    <mapname>:LAYERS=<comma separated list with layer names> //optional. Defaults to all layer in the WMS request
+    <mapname>:STYLES=<comma separated list with style names> //optional
+    <mapname>:GRID_INTERVAL_X=<double> //set the grid interval in x-direction for composer grids
+    <mapname>:GRID_INTERVAL_Y=<double> //set the grid interval in x-direction for composer grids
+    */
     /**
      * @returns { Promise<unknown> }
      */
     async print() {
       const has_atlas = !!this.state.atlas;
-      let err, download_id;
+      let err;
+      let response;
 
       this.state.loading = true;
 
@@ -457,26 +484,53 @@ export default {
             perc:    100
           });
 
-          const output = await print(
-            {
-              rotation:             this.state.rotation,
-              dpi:                  this.state.dpi,
-              template:             this.state.template,
-              scale:                this.state.scale,
-              format:               this.state.format,
-              labels:               this.state.labels,
-              is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
-              maps:                 this.state.maps.map(m => ({
-                name:         m.name,
-                preset_theme: m.preset_theme,
-                scale:        m.overview ? m.scale : this.state.scale,
-                extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
-              })),
-            },
-            ApplicationState.project.state.ows_method
-          )
-          this.state.url       = output.url;
-          this.state.layers    = output.layers;
+          const has_theme = this.state.maps.some(m => undefined !== m.preset_theme);
+          const store     = ApplicationState.project.getLayersStore();
+          const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
+          const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
+          const url       = store.getWmsUrl();
+          const mime_type = ({ pdf: 'application/pdf', jpg: 'image/jpeg', svg: 'image/svg' })[this.state.format] || this.state.format;
+          const params    = layers.length && new URLSearchParams({
+            SERVICE:       'WMS',
+            VERSION:       '1.3.0',
+            REQUEST:       'GetPrint',
+            TEMPLATE:       this.state.template,
+            DPI:            this.state.dpi,
+            STYLES:         layers.map(l => l.getStyle()).join(','),
+            ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
+            FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.state.format] || this.state.format,
+            ...('geopdf' === this.state.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
+            CRS:            store.getProjection().getCode(),
+            filtertoken:    ApplicationState.tokens.filtertoken,
+            ...this.state.maps.map(m => ({
+              name:         m.name,
+              preset_theme: m.preset_theme,
+              scale:        m.overview ? m.scale : this.state.scale,
+              extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
+            })).reduce((params, map) => Object.assign(params, {
+              [`${map.name}:SCALE`]:    map.scale,
+              [`${map.name}:EXTENT`]:   map.extent,
+              [`${map.name}:ROTATION`]: this.state.rotation,
+              //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
+              ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
+            }), {}),
+            ...(this.state.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
+          }).toString();
+
+          // force GET request for geopdf because qgiserver support only that method [QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)]
+          const method = layers.length && ('geopdf' === this.state.format ? 'GET' : ApplicationState.project.state.ows_method);
+
+          response = await ('GET' === method
+            ? Promise.resolve({ ok: true })
+            : fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+              body:  params,
+            })
+          );
+
+          this.state.url       = 'GET' === method ? `${url}?${params}` : URL.createObjectURL(await response.blob());
+          this.state.layers    = !!response.ok;
           //after component mount
           this._page.getInternalComponent().$on('hook:mounted', () => this.state.loading = false);
           // set print area after closing content
@@ -489,7 +543,11 @@ export default {
         }
 
       } catch(e) {
-        err = e;
+        if (response && !response.ok && 500 === response.status) {
+          err = 500 === response.status ? 'Internal Server Error' : 'Request Failed';
+        } else {
+          err = e;
+        }
         this.state.loading = false;
         // enable sidebar
         GUI.disableSideBar(false);
