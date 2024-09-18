@@ -21,7 +21,6 @@ import { XHR }                   from 'utils/XHR';
 import { prompt }                from 'utils/prompt';
 import Table                     from 'components/Table.vue';
 
-import { QgsFilterToken }        from 'utils/QgsFilterToken';
 import { ResponseParser }        from 'utils/parsers';
 import { get_legend_params }     from 'utils/get_legend_params';
 import { createRelationsUrl }    from 'utils/createRelationsUrl';
@@ -1088,14 +1087,20 @@ class Layer extends G3WObject {
    * @private
    */
   async _applyFilterToken(filter) {
-    const { filtertoken } = await QgsFilterToken.apply(
-      this.providers['filtertoken']._layer.getUrl('filtertoken'),
-      filter.fid
-    );
-    if (filtertoken) {
+    try {
+      /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
+      const response = await XHR.get({
+        url:    this.providers['filtertoken']._layer.getUrl('filtertoken'),
+        params: { mode: 'apply', fid: filter.fid }
+      });
+      if (!response || !response.result || !response.data) {
+        return;
+      }
       this.setFilter(false);
       this.state.filter.current = filter;
-      this.setFilterToken(filtertoken);
+      this.setFilterToken(response.data);
+    } catch(e) {
+      console.warn(e);
     }
   }
 
@@ -1116,23 +1121,24 @@ class Layer extends G3WObject {
       value: layer.state.filter.current ? layer.state.filter.current.name : '' ,
       callback: async(name) => {
 
-        const data = await QgsFilterToken.save(
-          layer.providers['filtertoken']._layer.getUrl('filtertoken'),
-          name
+        /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved> */
+        const response = await XHR.get({
+          url:    layer.providers['filtertoken']._layer.getUrl('filtertoken'),
+          params: { mode: 'save', name } }
         );
 
         // skip when no data return from provider
-        if (!data) {
+        if (!response || !response.result || !response.data) {
           return;
         }
-      
-        let filter = layer.state.filters.find(f => data.fid === f.fid);
+
+        let filter = layer.state.filters.find(f => response.data.fid === f.fid);
       
         // add saved filter to filters array
         if (undefined === filter) {
           filter = {
-            fid:  data.fid, //get fid
-            name: data.name //get name
+            fid:  response.data.fid, //get fid
+            name: response.data.name //get name
           }
           layer.state.filters.push(filter);
         }
@@ -1197,11 +1203,21 @@ class Layer extends G3WObject {
         return;
       }
 
-      // delete filtertoken related to layer provider
-      const filtertoken = await QgsFilterToken.delete(
-        this.providers['filtertoken']._layer.getUrl('filtertoken'),
-        fid
-      );
+      let filtertoken;
+      try {
+        // Delete saved filter from server --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete_saved&fid=<fid_filter_saved>|name=<name_filter_saved>`
+        // Delete current filter           --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete`
+        const response = await XHR.get({
+          url:    this.providers['filtertoken']._layer.getUrl('filtertoken'),
+          params: { fid, mode: undefined === fid ? 'delete': 'delete_saved' }
+        });
+        // filter token if another layer is filtered otherwise filtertoken is undefined
+        if (response && response.result && response.data) {
+          filtertoken = response.data.filtertoken;
+        }
+      } catch(e) {
+        console.warn(e)
+      }
 
       // remove it from filters list when deleting a saved filter (since v3.9.0)
       if (undefined !== fid) {
@@ -1248,7 +1264,15 @@ class Layer extends G3WObject {
 
       // select all features
       if (selection.has(SELECTION.ALL)) {
-        await await QgsFilterToken.delete(this.providers['filtertoken']._layer.getUrl('filtertoken'));
+        try {
+          // Delete current filter --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete`
+          await XHR.get({
+            url:    this.providers['filtertoken']._layer.getUrl('filtertoken'),
+            params: { fid: undefined, mode: 'delete' }
+          });
+        } catch(e) {
+          console.warn(e)
+        }
         this.setFilterToken(null);
 
         return;
@@ -1256,12 +1280,14 @@ class Layer extends G3WObject {
 
       const fids = Array.from(selection);
 
-      this.setFilterToken( await QgsFilterToken.getToken(
-        provider._layer.getUrl('filtertoken'),
-        selection.has(SELECTION.EXCLUDE)
+      const { data = {} } = await XHR.get({
+        url:    provider._layer.getUrl('filtertoken'),
+        params: selection.has(SELECTION.EXCLUDE)
           ? { fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') } // exclude features from selection
           : { fidsin: fids.join(',') }                                         // include features in selection
-      ));
+      });
+
+      this.setFilterToken(data.filtertoken);
 
     } catch(e) {
       console.warn(e);
