@@ -25,8 +25,6 @@ import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPr
 import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { splitFeature }                            from 'utils/splitFeature';
-import { singleGeometriesToMultiGeometry }         from 'utils/singleGeometriesToMultiGeometry';
-import { multiGeometryToSingleGeometries }         from 'utils/multiGeometryToSingleGeometries';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
@@ -133,8 +131,6 @@ const g3wsdk = {
       getMapLayersByFilter,
       areCoordinatesEqual,
       splitFeature,
-      singleGeometriesToMultiGeometry,
-      multiGeometryToSingleGeometries,
       convertSingleMultiGeometry,
       within,
       intersects,

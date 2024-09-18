@@ -1,7 +1,107 @@
 import { toRawType } from 'utils/toRawType';
 
-const Validators    = require('utils/validators');
 const { t }         = require('g3w-i18n');
+
+const Validators = {
+
+  validators: {
+
+    float(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        return !Number.isNaN(Number(1 * value));
+      }
+    },
+
+    /**
+     * @since v3.10.0
+     * @param options
+     */
+    bigint(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        value = 1 * value;
+        return !Number.isNaN(value) ? value <= Number.MAX_SAFE_INTEGER : false;
+      }
+    },
+
+    integer(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        const integer = 1 * value;
+        return !Number.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
+      }
+    },
+
+    checkbox(options = {}) {
+      this.options = options;
+      this.validate = function(value) {
+        return (this.options.values || []).includes(value);
+      }
+    },
+
+    datetimepicker(options = {}) {
+      this.options = options;
+      this.validate = function(value, options) {
+        return moment(value, options.fielddatetimeformat, true).isValid();
+      }
+    },
+
+    /**
+     * @since 3.10.0
+     * @param options
+     */
+    char(options) {
+      this.options = options;
+      this.validate = function(value) {
+        return value && 1 === `${value}`.length;
+      }
+    },
+
+    /**
+     * @since 3.10.0
+     * @param options
+     */
+    varchar(options = {}) {
+      this.options  = options;
+      this.validate = () => true;
+    },
+
+    text(options = {}) {
+      this.options  = options;
+      this.validate = () => true;
+    },
+
+    string(options = {}) {
+      this.options  = options;
+      this.validate = () => true;
+    },
+
+    radio(options = {}) {
+      this.options  = options;
+      this.validate = () => true;
+    },
+
+    default(options = {}) {
+      this.options  = options;
+      this.validate = () => true;
+    },
+
+    range(options = {}) {
+      const { min, max } = options;
+      this.validate = function(value) {
+        value = 1 * value;
+        return value >= min && value <= max;
+      }
+    },
+
+  },
+
+  get(type, options = {}) {
+    return new (this.validators[type] || this.validators.default)(options);
+  }
+
+};
 
 module.exports = class Service {
   
