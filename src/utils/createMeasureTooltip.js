@@ -1,9 +1,7 @@
-import ApplicationState                   from 'store/application-state';
-
-import { isLineGeometryType }             from "utils/isLineGeometryType";
-import { isPolygonGeometryType }          from "utils/isPolygonGeometryType";
-import { isMultiGeometry }                from "utils/isMultiGeometry";
-import { multiGeometryToSingleGeometries} from 'utils/multiGeometryToSingleGeometries';
+import ApplicationState          from 'store/application-state';
+import { isLineGeometryType }    from "utils/isLineGeometryType";
+import { isPolygonGeometryType } from "utils/isPolygonGeometryType";
+import { isMultiGeometry }       from "utils/isMultiGeometry";
 
 /**
  * create and add measure tooltip 
@@ -45,9 +43,7 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
 
 
         if (is_poly && is_multi) {
-          multiGeometryToSingleGeometries(geom).forEach(geometry => {
-            geometry.getLinearRing().getCoordinates().forEach(coordinates => segments.push(coordinates))
-          })
+          (geom.getPolygons() || []).forEach(p => p.getLinearRing().getCoordinates().forEach(coords => segments.push(coords)));
         }
 
         if (is_poly && !is_multi) {
