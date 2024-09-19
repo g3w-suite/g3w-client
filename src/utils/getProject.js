@@ -67,6 +67,8 @@ export async function getProject(gid, options = {}) {
   }
 
   // fetch project configuration from remote server
+
+  // { Array } config.layers - The order of layers follows layer rendering order set on QGIS project.Can be different to TOC layer order
   const config    = !PROJECTS[gid] && await XHR.get({ url:
     `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${pendingProject.type}/${pendingProject.id}?_t=${pendingProject.modified}`
   });
