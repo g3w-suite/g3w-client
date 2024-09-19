@@ -135,6 +135,14 @@ proto.getLayersDict = function(filter = {}, options = {}) {
   if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
   if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.state.geolayer && l.isPrintable({ scale: filter.PRINTABLE.scale }));
 
+  /**@since v3.10.3 order TOC */
+  if (options.TOC_ORDER && this.state.layerstree) {
+    return this._getAllSiblingsChildrenLayersId(this.state.layerstree[0])
+      .filter(id => layers.find(l => id === l.getId()))
+      .map(id => layers.find(l => id === l.getId()))
+  }
+
+
   return layers;
 };
 
