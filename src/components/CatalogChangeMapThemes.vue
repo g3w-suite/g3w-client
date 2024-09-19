@@ -12,8 +12,8 @@
 
       <a href = "#" class = "g3w-map-theme-anchor">
         <section @click.stop = "toggle">
-          <i :class = "g3wtemplate.getFontClass('caret-down')" style = "padding: 3px;"></i>
-          <i :class = "g3wtemplate.getFontClass('eye')"        style = "padding: 0 0 0 4px;"></i>
+          <i :class = "g3wtemplate.getFontClass(collapsed ? 'caret-down' : 'caret-up')" style = "padding: 3px;"></i>
+          <i :class = "g3wtemplate.getFontClass(collapsed ? 'eye-close' : 'eye')"       style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
             v-if  = "active_theme"
@@ -256,6 +256,7 @@ export default {
       //in case of no new form map_theme is show
       if (!this.show_form) {
         document.getElementById('g3w-catalog-views').classList.toggle('menu-open');
+        this.collapsed = !this.collapsed;
       }
     },
 
