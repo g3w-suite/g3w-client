@@ -179,7 +179,7 @@ const g3wsdk = {
     catalog: {
       CatalogLayersStoresRegistry: {
         getLayerById: getCatalogLayerById,
-        getLayers: getCatalogLayers,
+        getLayers:    getCatalogLayers,
       }
     },
     layer: {
