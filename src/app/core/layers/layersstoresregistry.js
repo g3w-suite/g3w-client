@@ -43,8 +43,8 @@ module.exports = (class LayersStoresRegistry extends G3WObject {
     return Object.values(this.stores).map(store => store.getLayerById(id)).find(layer => layer);
   }
 
-  getLayers(filter) {
-    return Object.values(this.stores).flatMap(store => store.getLayers(filter));
+  getLayers(filter, options = {}) {
+    return Object.values(this.stores).flatMap(store => store.getLayers(filter, options));
   }
 
   getQuerableLayersStores() {
