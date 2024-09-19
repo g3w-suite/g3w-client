@@ -320,9 +320,11 @@ export default {
     },
 
     hasLayers() {
-      let len = 0;
-      this.state.layerstrees.forEach(layerstree => len += layerstree.tree.length);
-      return this.state.external.vector.length > 0 || len > 0 || this.state.layersgroups.length > 0 ;
+      return (
+        this.state.external.vector.length > 0 //has external layers
+        || this.state.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
+        || this.state.layersgroups.length > 0
+      );
     },
 
   },
@@ -354,9 +356,9 @@ export default {
           try {
             if (
               change && (
-                (tree.legendurls && 0 === tree.legendurls.length) ||
-                layers.some(l => l.legend.change) ||
-                ApplicationState.project.state.context_base_legend
+                (tree.legendurls && 0 === tree.legendurls.length)
+                || layers.some(l => l.legend.change)
+                || ApplicationState.project.state.context_base_legend
               )
             ) {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
@@ -688,7 +690,7 @@ export default {
   watch: {
 
     /**
-     * Listen external wms change. If remove all layer need to set active the project or default tab
+     * Listen to external wms change. If remove all layers need to set active the project or default tab
      */
     'state.external.wms'(newlayers, oldlayers) {
       if (oldlayers && 0 === newlayers.length) {
@@ -697,12 +699,12 @@ export default {
     },
 
     project: {
-      async handler(project, oldproject) {
+      async handler(project) {
         const activeTab = project.state.catalog_tab || 'layers';
-        this.loading = 'baselayers' === activeTab;
+        this.loading    = 'baselayers' === activeTab;
         await this.$nextTick();
         setTimeout(() => {
-          this.loading = false;
+          this.loading   = false;
           this.activeTab = activeTab;
         }, ('baselayers' === activeTab) ? 500 : 0)
       },
