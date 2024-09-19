@@ -36,12 +36,12 @@
 
       <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
 
-      <span v-if = "tool.html" >
+      <span class="tool-label" v-if = "tool.html" >
         <i :class = "tool.html.icon"></i>
         {{ tool.html.text || tool.name}}
       </span>
 
-      <span v-else v-t = "tool.name"></span>
+      <span class="tool-label" v-else v-t = "tool.name"></span>
 
       <span
         v-if        = "tool.state.type"  
