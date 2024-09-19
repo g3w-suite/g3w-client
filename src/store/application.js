@@ -98,7 +98,12 @@ const STATE = Vue.observable({
       /**
        * true = sidebar is disabled (not responsive)
        */
-      disabled: false // 
+      disabled: false,
+      /**
+       * @since v3.11.0
+       * true open, false hide - icons only
+       */
+      open    : true
     },
 
     layout: {

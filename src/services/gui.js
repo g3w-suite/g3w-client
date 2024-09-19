@@ -956,11 +956,13 @@ export default new (class GUI extends G3WObject {
   showSidebar() {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapse');
+    ApplicationState.gui.sidebar.open = true;
   }
 
   hideSidebar() {
     document.body.classList.remove('sidebar-open');
     document.body.classList.add('sidebar-collapse');
+    ApplicationState.gui.sidebar.open = false;
   }
 
   getSize ({ element, what }) {

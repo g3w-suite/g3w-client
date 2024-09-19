@@ -17,7 +17,10 @@
       style = "display: flex; justify-content: space-between; align-items: center"
     >
       <div>
-        <i :class = "icon" :style = "{ color: iconColor }"></i>
+        <span v-if = "!sidebar.open" v-t-tooltip:right.create = "title">
+          <i :class = "icon" :style = "{ color: iconColor }"></i>
+        </span>
+        <i v-else :class = "icon" :style = "{ color: iconColor }"></i>
         <span class = "treeview-label" v-t = "title"></span>
       </div>
       <div>
@@ -69,6 +72,7 @@
         iconColor:   component.iconColor,
         collapsible: false !== component.collapsible,
         actions:     component.actions,
+        sidebar :    ApplicationState.gui.sidebar
       };
     },
     methods: {

@@ -33,10 +33,12 @@
     >
 
       <bar-loader :loading = "tool.loading"/>
+        <span v-if =" !sidebarOpen" v-t-tooltip:right.create = "tool.html ?  tool.html.text || tool.name : tool.name">
+          <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
+        </span>
+        <i v-else :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
 
-      <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
-
-      <span class="tool-label" v-if = "tool.html" >
+        <span class="tool-label" v-if = "tool.html" >
         <i :class = "tool.html.icon"></i>
         {{ tool.html.text || tool.name}}
       </span>
@@ -72,6 +74,9 @@ export default {
     disabled() {
       return (!this.tool.offline && !ApplicationState.online) || (this.tool.loading || this.tool.disabled);
     },
+    sidebarOpen() {
+      return ApplicationState.gui.sidebar.open;
+    }
   }
 };
 </script>
