@@ -231,16 +231,14 @@ export default BaseClass => class extends BaseClass {
   
   * @param id
   * @param feature
-  * 
+  *
   * @returns {*}
   */
-  addOlSelectionFeature({ id, feature } = {}) {
+  addOlSelectionFeature({ id, feature: feat } = {}) {
     //create a new ol feature
-    if (feature.geometry) {
-      feature = new ol.Feature(feature.geometry);
-      feature.setId(id);
-    }
-    Object.keys(feature.attributes).forEach(a => feature.set(a, feature.attributes[a]));
+    const feature = new ol.Feature(feat.geometry);
+    feature.setId(id);
+    Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
       feature,
       added:    false,
