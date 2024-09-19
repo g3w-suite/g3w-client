@@ -810,7 +810,8 @@ export default {
     padding: 4px;
   }
   #g3w-table-toolbar .action-button.toggled {
-    border: 1px solid #cccccc;
+    color: #FFFFFF !important;
+    background-color: var(--skin-color);
   }
   #layer_attribute_table {
     width: 100%;
