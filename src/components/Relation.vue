@@ -129,9 +129,9 @@
               <span
                 v-if                     = "table.formStructure"
                 @click.stop              = "showFormStructureRow({ layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
+                v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 :current-tooltip         = "`sdk.tooltips.relations.row_to_form`"
                 class                    = "action-button row-form skin-color"
-                v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 :class                   = "g3wtemplate.getFontClass('table')"
               ></span>
               <span

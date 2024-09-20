@@ -13,13 +13,15 @@
   >
     <bar-loader :loading = "component.state.loading"/>
     <a
-      href  = "#"
-      style = "display: flex; justify-content: space-between; align-items: center"
-      v-t-tooltip:right.create = "!sidebar.open ? title : ''"
-      :current-tooltip         = "!sidebar.open ? title : ''"
+      href             = "#"
+      style            = "display: flex; justify-content: space-between; align-items: center"
+      v-t-tooltip:right.create = "sidebar.open ? '' : title"
+      :current-tooltip         = "sidebar.open ? '' : title"
     >
       <div>
-        <span v-if = "!sidebar.open">
+        <span
+          v-if = "!sidebar.open"
+        >
           <i :class = "icon" :style = "{ color: iconColor }"></i>
         </span>
         <i v-else :class = "icon" :style = "{ color: iconColor }"></i>

@@ -120,8 +120,8 @@
         }"
         class            = "skin-tooltip-top g3w-long-text"
         data-placement   = "top"
-        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
       >
         <!-- SHOW CURRENT FILTER  -->
         <span

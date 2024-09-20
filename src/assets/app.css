@@ -514,7 +514,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .main-sidebar                                                               { padding-bottom: 0; }
 .sidebar-menu                                                               { list-style: none; margin: 0; padding: 0; }
 .sidebar-menu > li                                                          { margin: 0; padding: 0; }
-.sidebar-menu > li > a                                                      { padding: 12px 5px 12px 6px; display: block; }
+.sidebar-menu > li > a                                                      { padding: 12px 5px 12px 10px; display: block; }
 .sidebar-menu > li > a > :is(.fa, .glyphicon, .ion)                         { width: 20px; }
 .sidebar-menu > li :is(.label, .badge)                                      { margin-top: 3px; margin-right: 5px; }
 .sidebar-menu li.header                                                     { padding: 10px 25px 10px 15px; font-size: 12px; }
@@ -609,8 +609,7 @@ header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 
 .sidebar-mini.sidebar-collapse #catalog > a                                                   { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                         { padding-top: 50px; overflow: hidden; }
 .sidebar-mini.sidebar-collapse .ol-geocoder                                                   { left: 10px; }
-.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label,
-.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu .g3w-tools .tool span.tool-label { color:  transparent; }
+.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
 .sidebar-mini.sidebar-collapse .main-sidebar                                                  { overflow-y: hidden; }
 
 /**************************************************************************************
@@ -677,14 +676,14 @@ ul.g3w-tools > li > *                 { padding: 5px; }
 ul.g3w-tools > li .tool-header        { font-size: 1.1em; font-weight: bold; background-color: #4b646f; cursor: pointer; }
 ul.g3w-tools > li .tool-header span   { margin-left: 5px; vertical-align: middle; }
 ul.g3w-tools > li .tool-box i         { width: 20px; }
-ul.g3w-tools > li .tool               { cursor: pointer; padding: 0; border-radius: 2px; }
+ul.g3w-tools > li .tool               { cursor: pointer; padding: 5px; border-radius: 2px; }
 ul.g3w-tools .tool:hover              { background-color: #374850; }
 /* show only first tool (in case of single element) */
 #tools.single .g3w-tools              { display: block !important; }
 #tools.single > a,
 #tools.single .g3w-tools .tool-header { display: none !important; }
 #tools.single .tool i                 { color: #FFE721; }
-#tools.single .tool                   { padding: 12px 0; }
+#tools.single .tool                   { padding: 12px 5px; }
 #tools.single li,
 #tools.single .tool,
 #tools.single .g3w-tools              { background-color: transparent; }
