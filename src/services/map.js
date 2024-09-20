@@ -1288,7 +1288,7 @@ class MapService extends G3WObject {
     const buttonControl = $(control.element).find('button');
 
     buttonControl.tooltip({
-      placement: 'bottom',
+      placement: 'left',
       container: 'body',
       trigger:   GUI.isMobile() ? 'click': 'hover'
     });
