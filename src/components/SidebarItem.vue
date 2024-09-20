@@ -15,7 +15,8 @@
     <a
       href  = "#"
       style = "display: flex; justify-content: space-between; align-items: center"
-      v-t-tooltip:right.create = "title"
+      v-t-tooltip:right.create = "!sidebar.open ? title : ''"
+      :current-tooltip         = "!sidebar.open ? title : ''"
     >
       <div>
         <span v-if = "!sidebar.open">
