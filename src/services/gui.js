@@ -769,15 +769,15 @@ export default new (class GUI extends G3WObject {
 
   /**
    * change current content options
-   * @param options: {title, crumb}
+   * @param opts: { title, crumb, text }
    */
-  setCurrentContentOptions(options={}) {
+  setCurrentContentOptions(opts = {}) {
     const content = ApplicationState.viewport.content.contentsdata.at(-1) || null;
-    if (content && options.title) {
-      content.options.title = options.title;
+    if (content && opts.title) {
+      content.options.title = opts.title;
     }
-    if (content && options.crumb) {
-      content.options.crumb = options.crumb;
+    if (content && opts.crumb) {
+      content.options.crumb = opts.crumb;
     }
   }
 

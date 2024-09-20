@@ -430,12 +430,12 @@ export default new (class QueryResultsService extends G3WObject {
      * It used to register change project from Change map button
      */
     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', project => {
-        this._project = project;
-        this._setRelations(project);
-        this._setAtlasActions(project);
-        this.state.download_data = false;
-        this.plotLayerIds = [];
-      });
+      this._project = project;
+      this._setRelations(project);
+      this._setAtlasActions(project);
+      this.state.download_data = false;
+      this.plotLayerIds = [];
+    });
 
     /**
      * Current project <Project>
@@ -445,7 +445,7 @@ export default new (class QueryResultsService extends G3WObject {
     /**
      * Keep the right order for query result based on TOC order layers
      */
-    this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
+    this._projectLayerIds = this._project.getConfigLayers().map(l => l.id);
 
     /**
      * @FIXME add description
@@ -535,7 +535,7 @@ export default new (class QueryResultsService extends G3WObject {
     position
   }) {
     const component = this.state.layerscustomcomponents[layerId][type];
-    const by_id     = ({ id: componentId }) => componentId !== id;
+    const by_id     = ({ id: componentId }) => id !== componentId;
 
     if (position) {
       component[position] = component[position].filter(by_id);
@@ -548,7 +548,7 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Add a feature to current layer result
+   * Add a feature to a current layer result
    *
    * @param layer
    * @param feature
@@ -559,7 +559,7 @@ export default new (class QueryResultsService extends G3WObject {
 
   /**
    * Loop over response features based on layer response and
-   * check if features layer need to be added or removed to
+   * check if features layer needs to be added or removed to
    * current `state.layers` results.
    *
    * @param responseLayer layer structure coming from request
@@ -567,13 +567,13 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.8.0
    */
   updateLayerResultFeatures(responseLayer) {
-    const layer        = this._getLayer(responseLayer.id),                  // get layer from current `state.layers` showed on result
+    const layer        = this._getLayer(responseLayer.id),                  // get layer from current `state.layers` showed on a result
       responseFeatures = this._getLayerFeatures(responseLayer),             // extract features from responseLayer object
       external         = this._getExternalLayer(responseLayer.id),          // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
-      has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if current layer has features on response
+      has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if the current layer has features on response
 
     if (has_features) {
-      const features_ids   = this._getFeaturesIds(layer.features, external);    // get features id from current layer on result
+      const features_ids   = this._getFeaturesIds(layer.features, external);    // get features id from current layer on a result
       responseFeatures
         .forEach(feature => {
           const feature_id = this._getFeatureId(feature, external);
@@ -589,7 +589,7 @@ export default new (class QueryResultsService extends G3WObject {
         .forEach(feature => this._toggleLayerFeatureBox(layer, feature, this._getLayerFeatures(layer).length > 1));
     }
 
-    // in case no more features on layer remove interaction pickcoordinate to get result from map
+    // in case, no more features on layer remove interaction pickcoordinate to get a result from a map
     this.checkIfLayerHasNoFeatures(layer);
 
     // highlight new feature
@@ -762,9 +762,10 @@ export default new (class QueryResultsService extends G3WObject {
   /**
    * Set current layer action tool in feature
    *
+   * @param {Object } opts
    * @param opts.layer current layer
    * @param opts.index feature index
-   * @param opts.value component value or null
+   * @param opts.action action
    * @param opts.component vue component
    */
   setCurrentActionLayerFeatureTool({
@@ -791,7 +792,7 @@ export default new (class QueryResultsService extends G3WObject {
 
   /**
    * @TODO rename misleading method name: `addActionToolsLayer`
-   * 
+   * @param {Object } opts
    * @param opts.id     action layer id
    * @param opts.layer  layer
    * @param opts.config configuration object
@@ -835,6 +836,7 @@ export default new (class QueryResultsService extends G3WObject {
 
   /**
    * @FIXME add description
+   * @param {Object } opts
    * @param opts.layer current layer
    * @param opts.component vue component
    * @param opts.config configuration Object
@@ -912,7 +914,7 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Check if one layer result
+   * Check if a one layer result
    *
    * @returns {boolean}
    */
@@ -1161,17 +1163,22 @@ export default new (class QueryResultsService extends G3WObject {
 
   /**
    * Convert response from server
-   *
-   * @param featuresForLayer.layer
-   * @param featuresForLayer.features
-   * @param featuresForLayer.rawdata  rawdata response
-   * @param featuresForLayer.error
+   * @param { Object } opts
+   * @param opts.layer
+   * @param opts.features
+   * @param opts.rawdata  rawdata response
+   * @param opts.error
    *
    * @returns { layerObj | undefined }
    *
    * @since 3.9.0
    */
-  _responseToLayer({ layer, features, rawdata, error }) {
+  _responseToLayer({
+    layer,
+    features,
+    rawdata,
+    error
+  } = {}) {
 
     const has_features = Array.isArray(features) && features.length > 0;
 
@@ -1192,7 +1199,7 @@ export default new (class QueryResultsService extends G3WObject {
       try {
         sourceType = layer.getSourceType();
       } catch (error) {
-        console.warn('uknown source type for layer:', layer)
+        console.warn('uknown source type for layer:', error, layer);
       }
     }
 
@@ -1601,7 +1608,7 @@ export default new (class QueryResultsService extends G3WObject {
         template: atlas.name,
         download: true
       })
-      .then(({url}) => {
+      .then(({ url }) => {
         GUI.downloadWrapper(downloadFile, { url, filename: atlas.name, mime_type: 'application/pdf' })
       });
   }
@@ -1736,7 +1743,7 @@ export default new (class QueryResultsService extends G3WObject {
       fids: features.map(f => f.attributes[G3W_FID]).join(',')
     };
 
-    //In case of pdf type need to add html element
+    //In the case of pdf type need to add html element
     if ('pdf' === type) {
       data.html = html;
     }
@@ -2100,7 +2107,7 @@ export default new (class QueryResultsService extends G3WObject {
 
   /**
    * Handle show Relation on result
-   *
+   * @param { Object } opts
    * @param opts.relation
    * @param opts.layerId  current layer father id
    * @param opts.feature  current feature father id
@@ -2121,9 +2128,11 @@ export default new (class QueryResultsService extends G3WObject {
         feature,
       }),
       crumb: {
-        title: projectRelation.name
+        title: projectRelation.name,
+        text: true,
       },
       title: projectRelation.name,
+      text  : true,
       closable: false
     })
   };
@@ -2136,7 +2145,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @param action
    */
   showQueryRelations(layer, feature, action) {
-    GUI.setCurrentContentOptions({ crumb: { title: layer.title } });
+    GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
 
     GUI.pushContent({
       content: new RelationsPage({

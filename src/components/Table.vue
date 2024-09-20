@@ -653,6 +653,7 @@ export default {
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getTitle(),
+      text:  true, /**@since 3.11.0 */
     });
 
     if (this.isMobile()) {

@@ -457,7 +457,8 @@
             <span
               class  = "skin-color-dark"
               :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
-              v-t    = "crumb.title" >
+              v-t    = "crumb.text ? null : crumb.title" >
+                <span v-if = "crumb.text"> {{ crumb.title }} </span>
             </span>
             <span
               v-if  = "isNotLastCrumb(index)"
@@ -503,7 +504,9 @@
             :class = "{'mobile': isMobile()}"
           >
           <span id = "contenttitle">
-            <span v-t = "contentTitle.title"></span>
+            <span v-t = "contentTitle.text ? null : contentTitle.title">
+              <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
+            </span>
             <span v-t = "contentTitle.post_title"></span>
           </span>
           </div>
@@ -837,8 +840,8 @@ export default {
 
     contentTitle() {
       if (this.state.content.contentsdata.length) {
-        const { title, post_title } = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
-        return { title, post_title };
+        const { title, post_title, text = false } = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+        return { title, post_title, text };
       }
     },
 
