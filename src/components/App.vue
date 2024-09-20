@@ -431,7 +431,11 @@
             <bar-loader :loading = "true"/>
             <i style = "padding:3px" :class = "g3wtemplate.getFontClass('download')"></i>
           </div>
-          <div id = "plugins_notification" v-plugins style = "color: #994b10">
+          <div
+            id     = "plugins_notification"
+            :class = "{ 'g3w-hide': 0 === app.plugins.length }"
+            style  = "color: #994b10"
+          >
             <bar-loader :loading = "true"/>
             <i :class = "g3wtemplate.getFontClass('plugin')"></i>
           </div>
