@@ -931,19 +931,26 @@
           })
       },
 
-      changeLayerMapPosition({position, layer}) {
+      /**
+       *
+        * @param { String } position top, bottom
+       * @param { Object }  layer
+       */
+      changeLayerMapPosition({ position, layer } = {}) {
         const changed = layer.position !== position;
         if (!changed) {
           return;
         }
         layer.position = position;
-        position = undefined !== position ? position : 'top';
+        position = undefined === position ? 'top' : position;
         const map = GUI.getService('map');
+        //get map layer
+        const ml = map.getLayerById(layer.id);
         switch(position) {
-          case 'top':    layer.setZIndex(map.layersCount); break;
-          case 'bottom': layer.setZIndex(0); break
+          case 'top':    ml.setZIndex(map.layersCount); break;
+          case 'bottom': ml.setZIndex(0); break
         }
-        map.emit('change-layer-position-map', { id, position });
+        map.emit('change-layer-position-map', { id: layer.id, position });
         this._hideMenu();
       },
 
