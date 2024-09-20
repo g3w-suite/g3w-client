@@ -39,6 +39,10 @@ export default {
   },
   componentUpdated(el, oldVnode) {
     const value = el.getAttribute('current-tooltip');
+    //in case of null or empty value, need to hide tooltip
+    if ([null, ''].includes(value)) {
+      $(el).tooltip('hide');
+    }
     if (null != value && value !== oldVnode.oldValue) {
       trigger({ el, attr, data: { el } });
     }
