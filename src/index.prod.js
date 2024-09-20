@@ -47,7 +47,6 @@ import Divider                     from 'components/GlobalDivider.vue';
 // directives
 import vDisabled                   from 'directives/v-disabled';
 import vChecked                    from 'directives/v-checked';
-import vSelectedFirst              from 'directives/v-selected-first';
 import vSelect2                    from 'directives/v-select2';
 import vTToltip                    from 'directives/v-t-tooltip';
 import vTHtml                      from 'directives/v-t-html';
@@ -104,7 +103,6 @@ Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
  */
 Vue.directive("disabled", vDisabled);
 Vue.directive("checked", vChecked);
-Vue.directive("selected-first", vSelectedFirst);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
 Vue.directive('t-html', vTHtml);
