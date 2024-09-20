@@ -30,17 +30,14 @@
       @click = "!disabled ? tool.action(tool) : null"
       :class = "{ tool_disabled: disabled }"
       style  = "position:relative"
+      v-t-tooltip:right.create = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      :current-tooltip         = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
     >
-
       <bar-loader :loading = "tool.loading"/>
-        <span v-if =" !sidebarOpen" v-t-tooltip:right.create = "tool.html ?  tool.html.text || tool.name : tool.name">
-          <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
-        </span>
-        <i v-else :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
-
-        <span class="tool-label" v-if = "tool.html" >
-        <i :class = "tool.html.icon"></i>
-        {{ tool.html.text || tool.name}}
+      <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
+      <span class="tool-label" v-if = "tool.html" >
+      <i :class = "tool.html.icon"></i>
+      {{ tool.html.text || tool.name}}
       </span>
 
       <span class="tool-label" v-else v-t = "tool.name"></span>
