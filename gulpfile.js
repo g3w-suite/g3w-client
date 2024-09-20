@@ -451,14 +451,10 @@ gulp.task('geocoding-providers', function () {
 });
 
 /**
- * Compile client styles (src/assets/style/less/app.less --> app.min.css)
+ * Compile client styles (src/assets/app.css --> app.min.css)
  */
-gulp.task('less', ['fonts'], function() {
-  return gulp.src(`${g3w.assetsFolder}/style/less/app.less`)
-    .pipe(less({
-      paths: [`${g3w.assetsFolder}/style/less`], // add paths where to search in @import
-      plugins: [LessGlob]                        // plugin to manage globs import es: @import path/***
-    }))
+gulp.task('css', ['fonts'], function() {
+  return gulp.src(`${g3w.assetsFolder}/app.css`)
     //.pipe(gulpif(production, cleanCSS({ keepSpecialComments: 0 }), replace(/\w+fonts/g, 'fonts')))
     .pipe(replace(/\w+fonts/g, 'fonts'))         // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
     .pipe(cleanCSS({ keepSpecialComments: 0 }))
@@ -514,12 +510,12 @@ gulp.task('browser-sync', function() {
 
   /* Uncomment the following in next Gulp Release (v4.x) */
   //
-  // gulp.watch([g3w.assetsFolder + '/style/**/*.less'], gulp.series('less', 'browser:reload'));
+  // gulp.watch([g3w.assetsFolder + '/app.css'],         gulp.series('less', 'browser:reload'));
   // gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images', 'browser:reload'));
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
 
-  gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/app.css'],         () => runSequence('css','browser:reload'));
   gulp.watch([g3w.assetsFolder + '/cursors/**'],      () => runSequence('cursors','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
@@ -590,7 +586,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'less', 'datatable-images', 'html'], done)
+   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'css', 'datatable-images', 'html'], done)
    : done;
 });
 
