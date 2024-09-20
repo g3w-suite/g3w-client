@@ -217,12 +217,11 @@ function _loadScript(url) {
  *
  * 1 - load translations (i18n languages)
  * 2 - initialize ProjectsRegistry
- * 3 - initialize ApiService
- * 4 - attach DOM events ('online' and 'offline')
- * 5 - trigger 'ready' event
- * 6 - set current project `gid` (group id)
- * 7 - set current project EPSG (coordinate system)
- * 8 - check if application is loaded within an <IFRAME>
+ * 3 - attach DOM events ('online' and 'offline')
+ * 4 - trigger 'ready' event
+ * 5 - set current project `gid` (group id)
+ * 6 - set current project EPSG (coordinate system)
+ * 7 - check if application is loaded within an <IFRAME>
  */
 
 const initConfig = window.initConfig;

@@ -49,7 +49,6 @@ import G3wFormInputs                               from 'components/InputG3WForm
 import DataRouterService                           from 'services/data';
 import PluginsRegistry                             from 'store/plugins';
 import TaskService                                 from 'services/tasks';
-import ApiService                                  from 'services/api';
 import GUI                                         from 'services/gui';
 import { MeasureInteraction }                      from 'map/controls/measurecontrol';
 
@@ -149,7 +148,6 @@ const g3wsdk = {
     },
     ApplicationService,
     ApplicationState,
-    ApiService,
     i18n,
     task: {
       TaskService
