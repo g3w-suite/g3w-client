@@ -16,7 +16,7 @@ export default {
     if (binding.modifiers.create) {
       if (binding.arg) {
         _el.setAttribute('data-placement', binding.arg);
-        _el.classList.add('skin-color', `skin-tooltip-${binding.arg}`);
+        _el.classList.add(`skin-tooltip-${binding.arg}`);
       }
       _el.setAttribute('data-container',"body");
       $(_el)
