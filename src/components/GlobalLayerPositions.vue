@@ -23,7 +23,6 @@
           class    = "form-control magic-radio"
           type     = "radio"
           :id      = "ids[layerposition]"
-          v-model  = "position"
           :value   = "layerposition"
           :checked = "position === layerposition">
         <label :for = "ids[layerposition]" v-t = "`layer_position.${layerposition}`"></label>
@@ -49,16 +48,13 @@
       }
     },
     methods: {
-      change() {
-        this.$emit('layer-position-change', this.position)
+      change(e) {
+        this.$emit('layer-position-change', e.target.value )
       }
     },
     created() {
-      this.ids = {
-        layerpositions: getUniqueDomId(),
-      };
+      this.ids = { layerpositions: getUniqueDomId() };
       this.layerpositions.forEach(lp => this.ids[lp] = getUniqueDomId());
-      this.change();
     }
   }
 </script>
