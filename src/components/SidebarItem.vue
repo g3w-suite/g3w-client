@@ -15,10 +15,11 @@
     <a
       href  = "#"
       style = "display: flex; justify-content: space-between; align-items: center"
+      v-t-tooltip:right.create = "title"
     >
       <div>
-        <span v-if = "!sidebar.open" v-t-tooltip:right.create = "title">
-          <i :class = "icon" :style = "{ color: iconColor, width: sidebar.open ? null : '25px' }"></i>
+        <span v-if = "!sidebar.open">
+          <i :class = "icon" :style = "{ color: iconColor }"></i>
         </span>
         <i v-else :class = "icon" :style = "{ color: iconColor }"></i>
         <span class = "treeview-label" v-t = "title"></span>

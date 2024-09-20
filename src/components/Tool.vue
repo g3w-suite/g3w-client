@@ -34,7 +34,7 @@
 
       <bar-loader :loading = "tool.loading"/>
         <span v-if =" !sidebarOpen" v-t-tooltip:right.create = "tool.html ?  tool.html.text || tool.name : tool.name">
-          <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')" :style = "{ width: sidebarOpen ? null : '25px' }"></i>
+          <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
         </span>
         <i v-else :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
 
