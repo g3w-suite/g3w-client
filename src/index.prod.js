@@ -54,7 +54,6 @@ import vTPlaceholder               from 'directives/v-t-placeholder';
 import vTTitle                     from 'directives/v-t-title';
 import vT                          from "directives/v-t";
 import vTPlugin                    from 'directives/v-t-plugin';
-import vOnline                     from 'directives/v-online';
 import vDownload                   from 'directives/v-download';
 import vClickOutside               from 'directives/v-click-outside';
 
@@ -109,7 +108,6 @@ Vue.directive('t-placeholder', vTPlaceholder);
 Vue.directive('t-title', vTTitle);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
-Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
 Vue.directive("click-outside", vClickOutside);
 
