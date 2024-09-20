@@ -967,12 +967,22 @@
        * @param layer
        */
       zoomToLayer(layer) {
-        GUI
-          .getService('map')
-          .goToBBox(
-            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-            layer.epsg
-          );
+        try {
+          GUI
+            .getService('map')
+            .goToBBox(
+              [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+              layer.epsg
+            );
+
+        } catch(e) {
+          console.warn(e);
+          GUI.showUserMessage({
+            type:        'alert',
+            message:     `${e.message}`,
+            textMessage: true,
+          })
+        }
         this._hideMenu();
       },
 
