@@ -299,10 +299,10 @@
         url,
         layers,
         name,
-        epsg = GUI.getService('map').getEpsg(),
+        epsg     = GUI.getService('map').getEpsg(),
         position = 'top',
         opacity,
-        visible=true
+        visible  = true
       } = {}) {
         const map             = GUI.getService('map');
         const { RasterLayer } = require('map/layers/imagelayer');
@@ -372,7 +372,6 @@
 
           try {
             await this._addExternalWMSLayer(config);
-            console.log('done');
           } catch(e) {
             console.warn(e);
             GUI.getService('map').removeExternalLayer(name);
