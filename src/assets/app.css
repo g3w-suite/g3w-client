@@ -17,8 +17,7 @@
  * 15. Print
  **************************************************************************************/
 
-:root        {
-  --foo: 33;
+:root {
   /* --font-family: "Titillium Web", system-ui,-apple-system, "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
   --font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --sidebar-width: 350px;
@@ -678,14 +677,14 @@ ul.g3w-tools > li > *                 { padding: 5px; }
 ul.g3w-tools > li .tool-header        { font-size: 1.1em; font-weight: bold; background-color: #4b646f; cursor: pointer; }
 ul.g3w-tools > li .tool-header span   { margin-left: 5px; vertical-align: middle; }
 ul.g3w-tools > li .tool-box i         { width: 20px; }
-ul.g3w-tools > li .tool               { cursor: pointer; padding: 5px; border-radius: 2px; }
+ul.g3w-tools > li .tool               { cursor: pointer; padding: 0; border-radius: 2px; }
 ul.g3w-tools .tool:hover              { background-color: #374850; }
 /* show only first tool (in case of single element) */
 #tools.single .g3w-tools              { display: block !important; }
 #tools.single > a,
 #tools.single .g3w-tools .tool-header { display: none !important; }
 #tools.single .tool i                 { color: #FFE721; }
-#tools.single .tool                   { padding: 12px 5px; }
+#tools.single .tool                   { padding: 12px 0; }
 #tools.single li,
 #tools.single .tool,
 #tools.single .g3w-tools              { background-color: transparent; }
