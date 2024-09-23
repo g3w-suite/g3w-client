@@ -160,7 +160,7 @@
       loadingRelation(relation) {
         const layer = ApplicationState.project.getLayerById(this.layerid);
         // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
-        return layer.getRelationById(relation.name) || ({ state: {loading: false} }).state;
+        return (layer.getRelationById(relation.name) || { state: { loading: false } }).state;
       },
       /**
        *
