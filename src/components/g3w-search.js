@@ -157,8 +157,8 @@ async function doSearch({
   state
 } = {}) {
 
-  queryUrl = undefined !== queryUrl ? queryUrl : state.queryurl;
-  show     = undefined !== show     ? show     : 'search' === state.type;
+  queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
+  show     = undefined === show     ? 'search' === state.type : show;
 
   state.searching = true;
 
