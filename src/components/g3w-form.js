@@ -3,12 +3,12 @@
  * @since 3.10.0
  */
 
-import G3WObject    from 'g3w-object';
-import Component    from 'g3w-component';
-import GUI          from 'services/gui';
+import G3WObject                   from 'g3w-object';
+import Component                   from 'g3w-component';
+import GUI                         from 'services/gui';
 
-import * as vueComp from 'components/Form.vue';
-import BodyFormComp from 'components/FormBody.vue';
+import * as vueComp                from 'components/Form.vue';
+import BodyFormComp                from 'components/FormBody.vue';
 
 import { getDefaultExpression }    from 'utils/getDefaultExpression';
 import { getFilterExpression }     from "utils/getFilterExpression";
@@ -178,7 +178,7 @@ export class FormService extends G3WObject {
       isnew,
       valid:                true, // global form validation state. True at beginning
       update:               feature.isNew(), // set update in case or not is a new feature
-      // when input change will be update
+      // when input change will be updated
       tovalidate:           {},
       feature,
       componentstovalidate: {},
@@ -213,7 +213,7 @@ export class FormService extends G3WObject {
     this.setFormFields(fields);
 
     if (this.layer && options.formStructure) {
-      this.setFormStructure(this.layer.getLayerEditingFormStructure(fields));
+      this.setFormStructure(this.layer.getLayerEditingFormStructure());
     }
 
   }
@@ -358,7 +358,7 @@ export class FormService extends G3WObject {
         apply_on_update    = false,
       } = default_expression;
 
-      // Skip if not apply_on_update (listen dependencies change only for new Feature)
+      // Skip if not apply_on_update (listen dependency change only for new Feature)
       if (!apply_on_update && !this.state.isnew) { return }
 
       const dependency_fields = new Set();
