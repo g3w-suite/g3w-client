@@ -130,7 +130,7 @@
         let rowCount = 1;
         if (0 === this.nodesLength ) {
           rowCount = 0;
-        } else if (this.columnNumber  <= this.nodesLength) {
+        } else if (this.columnNumber <= this.nodesLength) {
           rowCount = Math.floor(this.nodesLength / this.columnNumber) + (this.nodesLength % this.columnNumber);
         }
         return rowCount;
@@ -178,8 +178,7 @@
        * @returns {*}
        */
       getRelationName(relationId) {
-        const relation = ApplicationState.project.getRelationById(relationId);
-        return relation && relation.name;
+        return (ApplicationState.project.getRelationById(relationId) || {}).name;
       },
       /**
        *
@@ -191,7 +190,7 @@
         const projectRelation = ApplicationState.project.getRelationById(relation.name);
         const relationLayerId = projectRelation.referencingLayer;
         const relationLayer   = ApplicationState.project.getLayerById(relationLayerId);
-        // check if is editable. In case of nmRelation layer need to be table to be editable
+        // check if is editable. In the case of nmRelation layer need to be table to be editable
         return !relationLayer.isEditable();
       },
       /**
