@@ -557,6 +557,33 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     }
 
     /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('ARCGISMAPSERVER' === this._BASE_LAYER) {
+      this._makeOlLayer = () => {
+        const {
+          url,
+          visible = true,
+          extent,
+          projection,
+          attributions,
+          crossOrigin
+        } = this.config;
+
+        return new ol.layer.Tile({
+          extent,
+          visible,
+          source :new ol.source.TileArcGISRest({
+            url,
+            projection,
+            attributions,
+            crossOrigin
+          })
+        })
+      };
+    }
+
+    /**
      * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
      * 
      * @since 3.11.0
