@@ -146,12 +146,13 @@ export default new (class QueryResultsService extends G3WObject {
        * @param layers
        * @param options
        */
-      setLayersData(layers, options = { add: false }) {
+      setLayersData(layers = [], options = { add: false }) {
         if (false === options.add) {
           // set the right order of result layers based on TOC
           this._currentLayerIds = layers.map(l => l.id);
           // sort layers as Catalog project layers.
-          layers.sort((a, b) => (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
+          //external layer always on bottom
+          layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
         }
         // get features from added pick layer in case of a new request query
         layers.forEach(l => { options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l); });
@@ -427,7 +428,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     /**
      * @deprecated since 3.8
-     * It used to register change project from Change map button
+     * It used to register a change project from Change map button
      */
     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', project => {
       this._project = project;
@@ -443,9 +444,19 @@ export default new (class QueryResultsService extends G3WObject {
     this._project = ApplicationState.project;
 
     /**
-     * Keep the right order for query result based on TOC order layers
+     * Keep the right order for a query result based on TOC order layers
      */
-    this._projectLayerIds = this._project.getConfigLayers().map(l => l.id);
+    this._projectLayerIds = (() => {
+      const layersId = [];
+      const traverse = tree => {
+        (tree.nodes || [tree]).forEach(n => {
+          if (n.id) { layersId.push(n.id) }
+          else { traverse(n) }
+        });
+      };
+      this._project.state.layerstree.forEach(traverse);
+      return layersId;
+    })()
 
     /**
      * @FIXME add description
