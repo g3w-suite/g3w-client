@@ -11,39 +11,34 @@
   >
 
     <!-- ADD NEW BOOKMARK (FORM) -->
-    <template v-if = "showaddform">
-      <li>
-        <div style = "display: flex; justify-content: end">
-          <span
-            v-t-tooltip:left.create  = "'close'"
-            @click.stop              = "showaddform = false"
-            :class                   = "g3wtemplate.getFontClass('close')"
-            class                    = "sidebar-button sidebar-button-icon"
-            style                    = "padding: 5px; margin: 3px;"
-          ></span>
-        </div>
+    <li v-if = "showaddform">
+      <div style = "display: flex; justify-content: end">
+        <span
+          v-t-tooltip:left.create  = "'close'"
+          @click.stop              = "showaddform = false"
+          :class                   = "g3wtemplate.getFontClass('close')"
+          class                    = "sidebar-button sidebar-button-icon"
+          style                    = "padding: 5px; margin: 3px;"
+        ></span>
+      </div>
 
-        <helpdiv message = "sdk.spatialbookmarks.helptext" />
+      <helpdiv message = "sdk.spatialbookmarks.helptext" />
 
-        <div
-          class = "container add-bookmark-input"
-          style = "padding: 5px; width: 100%"
-        >
-          <input-text
-            ref    = "add_bookmark_input"
-            :state = "addbookmarkinput"
-          />
-        </div>
-        <div style = "margin-top: 5px;">
-          <button
-            @click.stop = "addBookMark"
-            class       = "sidebar-button-run btn btn-block"
-            v-t         = "'add'"
-            v-disabled  = "!addbookmarkinput.validate.valid"
-          ></button>
-        </div>
-      </li>
-    </template>
+      <div
+        class = "container add-bookmark-input"
+        style = "padding: 5px; width: 100%"
+      >
+        <input-text ref="add_bookmark_input" :state="addbookmarkinput" />
+      </div>
+      <div style = "margin-top: 5px;">
+        <button
+          @click.stop = "addBookMark"
+          class       = "sidebar-button-run btn btn-block"
+          v-t         = "'add'"
+          v-disabled  = "!addbookmarkinput.validate.valid"
+        ></button>
+      </div>
+    </li>
 
     <!-- BOOKMARS LIST -->
     <template v-else>
@@ -61,52 +56,90 @@
       </div>
 
       <template v-for = "bookmark in project.bookmarks">
-        <spatial-book-mark-group v-if = "bookmark.nodes" :group = "bookmark" />
-        <spatial-book-mark-item v-else :bookmark = "bookmark" />
+        <li v-if = "bookmark.nodes">
+          <div
+            style       = "font-weight: bold; width: 100%;"
+            :style      = "{ borderBottom: bookmark.expanded ? '2px solid #2c3b41' : 'none' }"
+            @click.stop = "bookmark.expanded = !bookmark.expanded"
+          >
+            <span
+              :class = "g3wtemplate.getFontClass(bookmark.expanded ? 'caret-down' : 'caret-right')"
+              style  = "margin-right: 5px;">
+            </span>
+            <span>{{ bookmark.name }}</span>
+          </div>
+          <ul v-show = "bookmark.expanded" style = "margin-left: 10px;">
+            <li v-for="node in bookmark.nodes"
+              @click.stop = "gotoSpatialBookmark(node)"
+              class       = "spatial-bookmark"
+            >
+              <div>
+                <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+                <span class = "g3w-long-text">{{ node.name }}</span>
+              </div>
+            </li>
+          </ul>
+        </li>
+        <li v-else
+          @click.stop = "gotoSpatialBookmark(bookmark)"
+          class       = "spatial-bookmark"
+        >
+          <div>
+            <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+            <span class = "g3w-long-text">{{ bookmark.name }}</span>
+          </div>
+        </li>
+        <spatial-book-mark-item  v-else :bookmark="bookmark" />
       </template>
 
       <div
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span
-          style = "font-weight: bold; color: #ffffff"
-          v-t   = "'sdk.spatialbookmarks.sections.user.title'"
-        ></span>
+        <span v-t="'sdk.spatialbookmarks.sections.user.title'"></span>
         <span
           v-t-tooltip:left.create = "'add'"
           @click.stop             = "showAddForm"
           style                   = "padding: 5px; cursor: pointer;"
           class                   = "sidebar-button sidebar-button-icon"
           :class                  = "g3wtemplate.getFontClass('plus')"
-        >
-        </span>
+        ></span>
       </div>
 
-      <spatial-book-mark-item
-        v-for            = "bookmark in user.bookmarks"
-        @remove-bookmark = "removeBookMark"
-        :bookmark        = "bookmark"
-      />
+      <li
+        v-for       = "bookmark in user.bookmarks"
+        @click.stop = "gotoSpatialBookmark(bookmark)"
+        class       = "spatial-bookmark"
+      >
+        <div>
+          <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+          <span class = "g3w-long-text">{{bookmark.name}}</span>
+        </div>
+        <span
+          @click.stop = "removeBookMark(bookmark.id)"
+          class       = "sidebar-button sidebar-button-icon"
+          style       = "color: red; margin: 5px; cursor: pointer"
+        >
+          <i :class = "g3wtemplate.getFontClass('trash')"></i>
+        </span>
+      </li>
     </template>
 
   </ul>
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS }   from 'app/constant';
-  import ApplicationState     from 'store/application-state'
+  import { LOCAL_ITEM_IDS }   from 'g3w-constants';
+  import ApplicationState     from 'store/application'
   import GUI                  from 'services/gui';
-  import ApplicationService   from 'services/application';
-  import ProjectsRegistry     from 'store/projects';
-  import SpatialBookMarkGroup from "components/SpatialBookMarkGroup.vue";
-  import SpatialBookMarkItem  from "components/SpatialBookMarkItem.vue";
+  import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
+  import { getUniqueDomId }   from 'utils/getUniqueDomId';
 
-  const { uniqueId } = require('utils');
-  const { t }        = require('core/i18n/i18n.service');
+  const { t }        = require('g3w-i18n');
 
-  const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
+  const item = window.localStorage.getItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
+  const SPATIAL_BOOKMARKS_LOCALITEMS = item ? JSON.parse(item) : undefined;
 
   export default {
 
@@ -114,13 +147,11 @@
     name: 'spatial-bookmarks',
 
     components: {
-      SpatialBookMarkGroup,
-      SpatialBookMarkItem,
       InputText,
     },
 
     data() {
-      const project = ProjectsRegistry.getCurrentProject();
+      const project = ApplicationState.project;
 
       if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
         SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = [];
@@ -133,7 +164,10 @@
          */
         showaddform: false,
 
-        /** bookmark is an array of Object with follow structure:
+        /**
+         * spatial bookmarks saved on current QGIS project
+         * 
+         * bookmark is an array of Object with follow structure:
          * {
          *   name: <String> Unique identifier of spatial bootmark,
          *   removable: <Boolean> true if set in QGIS project, false if add by user on G3W-SUITE application,
@@ -142,7 +176,7 @@
          */
 
         project: {
-          bookmarks: project.getSpatialBookmarks() || []
+          bookmarks: project.state.bookmarks || []
         },
 
         user: {
@@ -167,7 +201,7 @@
 
       /** @since 3.10.0 */
       is_staff() {
-        return ApplicationService.getConfig().user.is_staff;
+        return window.initConfig.user.is_staff;
       },
 
       /** @since 3.10.0  */
@@ -181,7 +215,7 @@
 
       addBookMark() {
         this.user.bookmarks.push({
-          id:        uniqueId(),
+          id:        getUniqueDomId(),
           name:      this.addbookmarkinput.value,
           extent:    GUI.getService('map').getMapExtent(),
           removable: true,
@@ -198,17 +232,27 @@
       },
 
       saveUserBookMarks() {
-        SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
-        ApplicationService.setLocalItem({
-          id: LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id,
-          data: SPATIAL_BOOKMARKS_LOCALITEMS
-        });
+        SPATIAL_BOOKMARKS_LOCALITEMS[ApplicationState.project.getId()] = this.user.bookmarks;
+        try {
+          window.localStorage.setItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id, JSON.stringify(SPATIAL_BOOKMARKS_LOCALITEMS));
+        } catch(e) {
+          console.warn(e);
+        }
       },
 
       showAddForm() {
         this.addbookmarkinput.value = null;
         this.showaddform            = true;
-      }
+      },
+
+      async gotoSpatialBookmark({ extent, crs }) {
+        if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
+          const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
+          extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
+        }
+        // make use of `force: true` parameter to get resolution from computed `extent`
+        GUI.getService('map').zoomToExtent(extent, { force: true });
+      },
 
     },
 
@@ -236,7 +280,14 @@
     font-weight: bold;
     color: #ffffff;
     padding: 5px;
-    border-bottom: 1px solid #ffffff;
+    border-bottom: 1px solid #fff;
     margin-bottom: 2px;
+  }
+
+  .spatial-bookmark {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 5px !important;
   }
 </style>

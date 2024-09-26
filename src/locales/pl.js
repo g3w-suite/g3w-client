@@ -257,6 +257,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Pobieranie atrybutów",
@@ -272,20 +295,25 @@ export default {
           tooltip: "Zapytanie według wielokąta",
           no_geometry: "Brak geometrii w odpowiedzi",
           help: {
-            title: "Przewodnik - zapytanie według Polygonu",
             message: "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Zapytanie przez Polygon Draw"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: "Zapytanie warstwa Bbox",
           nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
           help: {
-            title: "Przewodnik - zapytanie BBOX Warstwa",
             message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -327,7 +355,8 @@ export default {
         no_relations_found: "Nie znaleziono żadnych relacji",
         back_to_relations: "Powrót do relacji",
         list_of_relations_feature: "Lista relacji funkcji",
-        error_missing_father_field: "Brakuje pola"
+        error_missing_father_field: "Brakuje pola",
+        field: "Relation key field",
       },
       form: {
         loading: "Ładowanie ...",

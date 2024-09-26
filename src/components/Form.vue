@@ -78,13 +78,13 @@ export default {
   },
   transitions: { 'addremovetransition': 'showhide' },
   methods: {
-    isRootComponent(component){
+    isRootComponent(component) {
       return this.$options.service.isRootComponent(component);
     },
-    backToRoot(){
+    backToRoot() {
       this.$options.service.setRootComponent();
     },
-    handleRelation(relationId){
+    handleRelation(relationId) {
       this.$options.service.handleRelation(relationId);
     },
      disableComponent({ id, disabled = false }) {
@@ -93,7 +93,7 @@ export default {
          disabled
        });
      },
-    resizeForm(perc){
+    resizeForm(perc) {
       this.$options.service.setCurrentFormPercentage(perc)
     },
     switchComponent(id) {

@@ -2,12 +2,11 @@
  * @file
  * @since v3.7
  */
-const { getAppLanguage } = require('core/i18n/i18n.service');
 
 export default {
   methods: {
     getLanguage() {
-      return getAppLanguage();
+      return window.initConfig.user.i18n || "en";
     },
     async changeSelect(value) {
       this.state.value = 'null' === value ? null : value;

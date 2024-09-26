@@ -5,11 +5,7 @@
 
 <template>
   <!-- item template -->
-  <div
-    id                        = "catalog"
-    @contextmenu.prevent.stop = ""
-    class                     = "tabbable-panel catalog"
-  >
+  <div class="tabbable-panel catalog">
 
     <div class = "tabbable-line">
 
@@ -203,7 +199,7 @@
                 :src        = "getSrcBaseLayerImage(base)"
                 @click.stop = "setBaseLayer(base.id)"
                 class       = "img-responsive img-thumbnail baselayer"
-                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5 }"
+                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5, height: baselayers.length > 4 ? '108px' : null  }"
               >
               <div class = "baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
             </li>
@@ -259,25 +255,18 @@
 
     </div>
 
-    <catalog-layer-context-menu :external="state.external" />
-
-    <catalog-project-context-menu />
-
   </div>
 </template>
 
 <script>
 
-import { CatalogEventBus as VM }   from 'app/eventbus';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
-import ControlsRegistry            from 'store/map-controls';
-import ApplicationService          from 'services/application';
+import { VM }                      from 'g3w-eventbus';
+import ApplicationState            from 'store/application';
 import GUI                         from 'services/gui';
+import { XHR }                     from 'utils/XHR';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
-import CatalogLayerContextMenu     from 'components/CatalogLayerContextMenu.vue';
-import CatalogProjectContextMenu   from 'components/CatalogProjectContextMenu.vue';
 import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
 
 /**
@@ -309,15 +298,13 @@ export default {
 
   components: {
     CatalogChangeMapThemes,
-    CatalogLayerContextMenu,
-    CatalogProjectContextMenu,
     CatalogTristateTree,
   },
 
   computed: {
 
     project() {
-      return ProjectsRegistry.state.currentProject
+      return ApplicationState.project;
     },
 
     title() {
@@ -333,9 +320,11 @@ export default {
     },
 
     hasLayers() {
-      let len = 0;
-      this.state.layerstrees.forEach(layerstree => len += layerstree.tree.length);
-      return this.state.external.vector.length > 0 || len > 0 || this.state.layersgroups.length > 0 ;
+      return (
+        this.state.external.vector.length > 0 //has external layers
+        || this.state.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
+        || this.state.layersgroups.length > 0
+      );
     },
 
   },
@@ -367,9 +356,9 @@ export default {
           try {
             if (
               change && (
-                (tree.legendurls && 0 === tree.legendurls.length) ||
-                layers.some(l => l.legend.change) ||
-                ProjectsRegistry.getCurrentProject().getContextBaseLegend()
+                (tree.legendurls && 0 === tree.legendurls.length)
+                || layers.some(l => l.legend.change)
+                || ApplicationState.project.state.context_base_legend
               )
             ) {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
@@ -411,10 +400,10 @@ export default {
 
       layers.forEach(layer => {
         const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
-        const catalogLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+        const catalogLayer = getCatalogLayerById(layer.id);
 
         const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
-          all:        !ProjectsRegistry.getCurrentProject().getContextBaseLegend(), // true = dynamic legend
+          all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
         }) : undefined;
@@ -471,7 +460,7 @@ export default {
             __('STYLES=',     params.STYLES.join(',')),
             __('LEGEND_ON=',  params.LEGEND_ON.join(',')),
             __('LEGEND_OFF=', params.LEGEND_OFF.join(',')),
-            __('filtertoken=', ApplicationService.getFilterToken()),
+            __('filtertoken=', ApplicationState.tokens.filtertoken),
           ]
           .filter(p => p) // discard nullish parameters (without a value)
           .join('&');
@@ -503,33 +492,125 @@ export default {
     },
 
     /**
+     * get map Theme_configuration
+     */
+    async getMapThemeFromThemeName(theme) {
+      const project = ApplicationState.project;
+      // get map theme configuration from map_themes project config
+      const config = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
+      if (config && undefined === config.layerstree) {
+        try {
+          const response = await XHR.get({ url: `${project.urls.map_themes}${theme}/` });
+          if (response.result) {
+            config.layerstree = response.data;
+          }
+        } catch(e) {
+          console.warn('Error while retreiving map theme configuration', e);
+        }
+      }
+      return config;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/project/project.js@v3.10.2
+     * 
+     * Set properties (checked and visible) from view to layerstree
+     * 
+     * @param map_theme map theme name
+     * @param layerstree // current layerstree of TOC
+     * 
+     * @since 3.11.0
+     */
+    async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
+      const project = ApplicationState.project;
+      layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
+      /** map theme config */
+      const theme = await this.getMapThemeFromThemeName(map_theme);
+      // create a chages need to apply map_theme changes to map and TOC
+      const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
+      const promises = [];
+      /**
+       * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
+       * @param mapThemeLayersTree // new mapLayerTree
+       * @param layerstree // current layerstree
+       */
+      const groups = [];
+      const traverse = (mapThemeLayersTree, layerstree, checked) => {
+        mapThemeLayersTree
+          .forEach((node, index) => {
+            if (node.nodes) { // case of a group
+              groups.push({
+                node,
+                group: layerstree[index]
+              });
+              traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+            } else {
+              // case of layer
+              node.style = theme.styles[node.id]; // set style from map_theme
+              if (layerstree[index].checked !== node.visible) {
+                changes.layers[node.id] = {
+                  visibility: true,
+                  style:      false
+                };
+              }
+              layerstree[index].checked = node.visible;
+              // if it has a style settled
+              if (node.style) {
+                const promise = new Promise(resolve => {
+                  const setCurrentStyleAndResolvePromise = node => {
+                    if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                      visibility: false,
+                      style:      false
+                    };
+                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
+                    resolve();
+                  };
+                  if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
+                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
+                });
+                promises.push(promise);
+              }
+            }
+        });
+      };
+      traverse(theme.layerstree, layerstree);
+
+      await Promise.allSettled(promises);
+
+      // all groups checked after layer checked so is set checked but not visible
+      groups.forEach(({ group, node: { checked, expanded }}) => {
+        group.checked  = checked;
+        group.expanded = expanded;
+      });
+
+      return changes // eventually, information about changes (for example style etc..)
+    },
+
+    /**
      * Change view
      *
-     * @fires CatalogEventBus~layer-change-style
+     * @fires VM~layer-change-style
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
-      //check if is custom map theme
-      // const custom = undefined !== this.project.state.map_themes.custom.find(({ theme }) => map_theme === theme);
 
       // change map theme
-      ApplicationService.changeProjectView(true);
       this.state.layerstrees[0].checked = true;
-      const changes = (await ProjectsRegistry.getCurrentProject().setLayersTreePropertiesFromMapTheme({
+
+      const changes = (await this.setLayersTreePropertiesFromMapTheme({
         map_theme,
         rootNode:   this.state.layerstrees[0],
         layerstree: this.state.layerstrees[0].tree[0].nodes
       })).layers;
-      ApplicationService.changeProjectView(false);
 
       // get all layers with styles
       const layers  = Object.keys(changes).filter(id => changes[id].style);
-      const styles  = (await this.project.getMapThemeFromThemeName(map_theme)).styles;
+      const styles  = (await this.getMapThemeFromThemeName(map_theme)).styles;
 
       // clear categories
       layers.forEach(id => {
         if (!changes[id].visible) {
-          const layer = CatalogLayersStoresRegistry.getLayerById(id);
+          const layer = getCatalogLayerById(id);
           layer.clearCategories();
           layer.change();
         }
@@ -549,7 +630,7 @@ export default {
     setBaseLayer(id) {
       this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
-      ApplicationService.setBaseLayerId(id);
+      ApplicationState.baseLayerId = id;
     },
 
     getSrcBaseLayerImage(baseLayer) {
@@ -578,7 +659,8 @@ export default {
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
-      layerstree.filter.active = await CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id).toggleFilterToken();
+      
+      layerstree.filter.active = await ApplicationState.catalog[storeid].getLayerById(layerstree.id).toggleFilterToken();
     },
 
     /**
@@ -599,51 +681,8 @@ export default {
      *
      * @since 3.10.0
      */
-    onTreeNodeSelected(storeid, node) {
-      let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      // emit signal of select layer from catalog
-      if (!layer.isSelected()) {
-        GUI.getService('catalog').setSelectedExternalLayer({ layer: null, type: 'vector', selected: false });
-      }
-      setTimeout(() => {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
-        // emit signal of select layer from catalog
-        GUI.getService('map').emit('cataloglayerselected', layer);
-      });
-    },
-
-    /**
-     * Handle temporary external layer add
-     *
-     * @since 3.10.0
-     */
-    onTreeNodeExternalSelected(layer) {
-      GUI
-        .getService('catalog')
-        .setSelectedExternalLayer({ layer, type: 'vector', selected: !layer.selected})
-        // Loop all layersstores and unselect them all (`selected = false`)
-        .then(() => {
-          if (layer.selected) {
-            CatalogLayersStoresRegistry.getLayersStores().forEach(layer => { layer.selectLayer(null, false); });
-          }
-        });
-    },
-
-    /**
-     * @TODO add description
-     *
-     * @listens ol.interaction~propertychange
-     *
-     * @since 3.10.0
-     */
-    onRegisterControl(id, control) {
-      if ('querybbox' === id) {
-        control.getInteraction().on('propertychange', e => {
-          if ('active' === e.key) {
-            this.state.highlightlayers = !e.oldValue;
-          }
-        })
-      }
+    onTreeNodeSelected(node) {
+      GUI.getService('map').selectLayer(node.id);
     },
 
   },
@@ -651,7 +690,7 @@ export default {
   watch: {
 
     /**
-     * Listen external wms change. If remove all layer need to set active the project or default tab
+     * Listen to external wms change. If remove all layers need to set active the project or default tab
      */
     'state.external.wms'(newlayers, oldlayers) {
       if (oldlayers && 0 === newlayers.length) {
@@ -660,12 +699,12 @@ export default {
     },
 
     project: {
-      async handler(project, oldproject) {
+      async handler(project) {
         const activeTab = project.state.catalog_tab || 'layers';
-        this.loading = 'baselayers' === activeTab;
+        this.loading    = 'baselayers' === activeTab;
         await this.$nextTick();
         setTimeout(() => {
-          this.loading = false;
+          this.loading   = false;
           this.activeTab = activeTab;
         }, ('baselayers' === activeTab) ? 500 : 0)
       },
@@ -681,21 +720,17 @@ export default {
   },
 
   /**
-   * @listens CatalogEventBus~unselectionlayer
-   * @listens CatalogEventBus~activefiltertokenlayer
-   * @listens CatalogEventBus~treenodevisible
-   * @listens CatalogEventBus~treenodeselected
-   * @listens CatalogEventBus~treenodeexternalselected
-   * @listens ControlsRegistry~registerControl
+   * @listens VM~unselectionlayer
+   * @listens VM~activefiltertokenlayer
+   * @listens VM~treenodevisible
+   * @listens VM~treenodeselected
    */
   created() {
-    VM.$on('unselectionlayer',                  this.onUnSelectionLayer);
-    VM.$on('activefiltertokenlayer',            this.onActiveFilterTokenLayer);
-    VM.$on('treenodevisible',                   this.onTreeNodeVisible);
-    VM.$on('treenodeselected',                  this.onTreeNodeSelected);
-    VM.$on('treenodeexternalselected',          this.onTreeNodeExternalSelected);
-    VM.$on('layer-change-style',                this.getLegendSrc);
-    ControlsRegistry.onafter('registerControl', this.onRegisterControl);
+    VM.$on('unselectionlayer',                       this.onUnSelectionLayer);
+    VM.$on('activefiltertokenlayer',                 this.onActiveFilterTokenLayer);
+    VM.$on('treenodevisible',                        this.onTreeNodeVisible);
+    VM.$on('treenodeselected',                       this.onTreeNodeSelected);
+    VM.$on('layer-change-style',                     this.getLegendSrc);
   },
 
   beforeMount() {
@@ -705,7 +740,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     // in case of dynamic legend
-    if (ProjectsRegistry.getCurrentProject().getContextBaseLegend()) {
+    if (ApplicationState.project.state.context_base_legend) {
       GUI.getService('map').on('change-map-legend-params', () => { this.getLegendSrc(); });
     } else {
       this.getLegendSrc();
@@ -828,7 +863,6 @@ export default {
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:is(:focus, :hover) {
     color: #fff;
-    background-color: #2c3b41;
   }
   .catalog > .title {
     padding: 10px;
@@ -989,62 +1023,7 @@ export default {
   .catalog .baselayers .radio {
     margin: 0;
   }
-  .catalog-context-menu {
-    background: #FAFAFA;
-    border: 1px solid #BDBDBD;
-    border-radius: 3px;
-    display: block;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    position: fixed;
-    min-width: 150px;
-    z-index: 999999;
-    color: #000;
-    outline: none;
-  }
-  .catalog-context-menu li {
-    border-bottom: 1px solid #E0E0E0;
-    margin: 0;
-    padding: 5px 15px;
-  }
-  .catalog-context-menu li span.menu-icon {
-    padding-right: 3px;
-    margin-right: 3px;
-  }
-  .catalog-context-menu li .wms-url-tooltip {
-    color: #000000;
-    opacity: 1;
-  }
-  .catalog-context-menu li .wms-url-tooltip:hover {
-    color: #FFF !important;
-    transform: scale(1.1);
-  }
-  .catalog-context-menu li.title {
-    background: transparent;
-    font-size: 1.1em;
-    font-weight: bold;
-    border-bottom-width: 3px !important;
-  }
-  .catalog-context-menu li.title:hover {
-    cursor: default !important;
-    background: transparent !important;
-    color: #000;
-  }
-  .catalog-context-menu li:last-child {
-    border-bottom: none;
-  }
-  .catalog-context-menu li:hover {
-    color: #FAFAFA;
-    cursor: pointer;
-  }
-  .catalog-context-menu li .layer-menu-metadata-info {
-    padding: 5px;
-    max-width: 200px;
-    white-space: normal;
-    overflow-y: auto;
-    max-height: 150px;
-  }
+
   #baselayers-content {
     display: grid;
     justify-content: center;
@@ -1075,41 +1054,6 @@ export default {
   }
   #catalog #layers .sidebar-menu > li > a {
     border: 0;
-  }
-  #catalog .catalog-context-menu .wms-url-tooltip .tooltip-inner {
-    min-width: 200px;
-  }
-  #catalog .catalog-context-menu .tooltip-inner {
-    word-break: break-all;
-    font-weight: bold;
-  }
-  #catalog .catalog-context-menu .item-text {
-    margin-left: 3px;
-  }
-  #catalog #toc_layer_help_text {
-    position: relative;
-    border-radius: 2px;
-    padding: 5px;
-    margin: 0.8em;
-    white-space: pre-line;
-    background-color: rgba(255,255,255,0.1);
-  }
-  #catalog .info_helptext_button {
-    text-align: center;
-    font-size: 0.7em;
-    margin-top: -5px;
-    margin-left: -5px;
-    background-color: #222d32;
-    font-weight: bold;
-    color: #ffffff;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 15px;
-    height: 15px;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.5);
-    border: 1px solid #fff;
-    border-radius: 50%;
   }
   #catalog > a {
     display: none !important;

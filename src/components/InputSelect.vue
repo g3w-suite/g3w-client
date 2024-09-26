@@ -76,18 +76,17 @@
 </template>
 
 <script>
-  import CatalogLayersStoresRegistry    from 'store/catalog-layers';
-  import MapLayersStoresRegistry        from 'store/map-layers';
   import GUI                            from 'services/gui';
-  import ProjectsRegistry               from 'store/projects';
+  import ApplicationState               from 'store/application'
   import {
     selectMixin,
     select2Mixin
   }                                     from 'mixins';
+  import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
+  import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
-  const { createSingleFieldParameter }  = require('utils');
   const PickLayerInputService           = require('gui/inputs/picklayer/service');
-  const Layer                           = require('core/layers/layer');
+  const { Layer }                       = require('map/layers/layer');
   const InputMixin                      = require('gui/inputs/input');
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
@@ -234,11 +233,11 @@
           referencedLayer,
           referencingLayer,
           fieldRef : { referencingField, referencedField }
-        }                               = ProjectsRegistry.getCurrentProject().getRelationById(relation_id);
+        }                               = ApplicationState.project.getRelationById(relation_id);
         //current layer in editing
-        const layer                     = CatalogLayersStoresRegistry.getLayerById(referencingLayer)
+        const layer                     = getCatalogLayerById(referencingLayer)
         //relation layer
-        const relationLayer             = CatalogLayersStoresRegistry.getLayerById(referencedLayer);
+        const relationLayer             = getCatalogLayerById(referencedLayer);
         //fields of relation layer
         const relationLayerFields       = relationLayer.getFields();
         //check if it has a value
@@ -431,9 +430,9 @@
         //get dependency layer id if set
         const dependencyLayerId = this.state.input.options.layer_id;
         try {
-          const dependencyLayer = MapLayersStoresRegistry
-            .getLayerById(dependencyLayerId)
-            .getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
+          const dependencyLayer = GUI.getService('map')
+            .getProjectLayer(dependencyLayerId)
+            .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
           // in case layer is on project, check if is non an alphanumeric layer
           this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
           if (this.showPickLayer) {

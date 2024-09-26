@@ -63,7 +63,6 @@
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
 
 export default {
   name: "g3w-images-gallery",
@@ -87,13 +86,13 @@ export default {
   },
   methods: {
     isActive(src) {
-      return src === active;
+      return src === this.active;
     },
     isRelativePath(url) {
-      if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
-        return ProjectsRegistry.getConfig().mediaurl + url
+      if (!url.startsWith('/') && !url.startsWith('http')) {
+        return `${window.initConfig.mediaurl}${url}`;
       }
-      return url
+      return url;
     },
   }
 };
@@ -102,8 +101,6 @@ export default {
 <style scoped>
   .modal-content {
     background: rgba(255, 255, 255, 0.6);
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
     border-radius: 3px;
   }
   .modal-dialog {

@@ -30,18 +30,17 @@
       @click = "!disabled ? tool.action(tool) : null"
       :class = "{ tool_disabled: disabled }"
       style  = "position:relative"
+      v-t-tooltip:right.create = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      :current-tooltip         = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
     >
-
       <bar-loader :loading = "tool.loading"/>
-
       <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
-
-      <span v-if = "tool.html" >
-        <i :class = "tool.html.icon"></i>
-        {{ tool.html.text || tool.name}}
+      <span class="tool-label" v-if = "tool.html" >
+      <i :class = "tool.html.icon"></i>
+      {{ tool.html.text || tool.name}}
       </span>
 
-      <span v-else v-t = "tool.name"></span>
+      <span class="tool-label" v-else v-t = "tool.name"></span>
 
       <span
         v-if        = "tool.state.type"  
@@ -57,7 +56,7 @@
 </template>
 
 <script>
-import ApplicationService from 'services/application';
+import ApplicationState   from 'store/application';
 import GUI                from 'services/gui';
 
 export default {
@@ -70,8 +69,11 @@ export default {
   },
   computed: {
     disabled() {
-      return (!this.tool.offline && !ApplicationService.getState().online) || (this.tool.loading || this.tool.disabled);
+      return (!this.tool.offline && !ApplicationState.online) || (this.tool.loading || this.tool.disabled);
     },
+    sidebarOpen() {
+      return ApplicationState.gui.sidebar.open;
+    }
   }
 };
 </script>

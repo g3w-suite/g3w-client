@@ -25,4 +25,4 @@ export function get_legend_params(layer) {
     LEGEND_ON,
     LEGEND_OFF,
   };
-};
+}

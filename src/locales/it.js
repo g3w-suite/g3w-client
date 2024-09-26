@@ -26,9 +26,9 @@ export default {
       not_supported_format: "Formato non supportato"
     },
     layer_position: {
-      top: 'SOPRA',
+      top: 'IN CIMA',
       bottom: 'IN FONDO',
-      message: "Posizione rispetto ai layers della TOC"
+      message: "Posizione"
     },
     sdk: {
       atlas: {
@@ -186,7 +186,7 @@ export default {
           zoomtogeometry: "Zoom sulla geometria",
         },
         zoom_to_features_extent: "Zoom sulle features",
-        copy_map_extent_url: 'Copia map view link',
+        copy_map_extent_url: 'Copia URL di condivisione',
         download_shapefile: "Scarica Shapefile",
         download_gpx: "Scarica GPX",
         download_gpkg: "Scarica GPKG",
@@ -264,6 +264,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Interroga un area',
+          layer: 'Livello selezionato:',
+          none: 'NESSUNO',
+          new: 'LIVELLO TEMPORANEO',
+          all: 'TUTTI',
+          methods: {
+            intersects: 'interseca',
+            within: 'all\'interno'
+          },
+          querybypolygon: {
+            tooltip: 'seleziona un poligono'
+          },
+          querybydrawpolygon: {
+            tooltip: 'disegna un poligono'
+          },
+          querybbox: {
+            tooltip: 'disegna un rettangolo'
+          },
+          querybycircle: {
+            tooltip: 'disegna un cerchio'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Download attributi",
@@ -279,19 +302,27 @@ export default {
           tooltip: 'Interroga per poligono',
           no_geometry: 'Non contiene la geometria nella risposta',
           help: {
-            title: 'Guida - Interrogazione con Poligono',
-            message: "<ul><li>Seleziona uno strato poligonale in legenda.</li><li>Assicurati che lo strato sia visibile in mappa.</li><li>Clicca su una geometria dello strato selezionato.</li></ul>"
+            message: "<ul><li>Seleziona un livello (visibile).</li><li>Clicca su una geometria nella mappa.</li></ul>"
           }
         },
         querybydrawpolygon: {
-          tooltip: "Disegna un poligono per interrogare"
+          tooltip: "Disegna un poligono per interrogare",
+          help: {
+            message: "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli (sottolineati in giallo nella legenda)</li></ul>"
+          },
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Interroga per BBOX',
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
           help: {
-            title:'Guida - Interrogazione BBox',
-            message: "<ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
+            message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli (sottolineati in giallo nella legenda)</li></ul>"
+          },
+        },
+        querybycircle: {
+          tooltip: "Disegna un cerchio per interrogare",
+          label: 'Raggio',
+          help: {
+            message: "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>"
           },
         },
         addlayer: {
@@ -300,12 +331,13 @@ export default {
               warning: "Il risultato in mappa è parziale a causa della presenza dei seguenti records non corretti:"
             }
           },
-          tooltip: 'Aggiungi Layer'
+          tooltip: 'Aggiungi livello'
         },
         geolocation: {
-          tooltip: 'Geolocalizzazione'
+          tooltip: 'Mostra la mia posizione'
         },
         measures: {
+          title: 'Misura',
           length: {
             tooltip: "Lunghezza",
             help: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
@@ -314,6 +346,12 @@ export default {
             tooltip: "Area",
             help: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
           }
+        },
+        screenshot: {
+          title: 'Cattura schermata',
+          screenshot: "PNG",
+          geoscreenshot: "GeoTIFF",
+          download: 'Genera'
         },
         scale: {
           no_valid_scale: "Scala non valida"
@@ -334,7 +372,8 @@ export default {
         no_relations_found: 'Nessuna relazione trovata',
         back_to_relations: 'Ritorna alle relazioni',
         list_of_relations_feature: 'Lista delle relazioni della feature',
-        error_missing_father_field: "Il campo relazionato non esiste"
+        error_missing_father_field: "Il campo relazionato non esiste",
+        field: "Campo chiave relazione",
       },
       form: {
         loading: 'Caricamento ...',
@@ -463,7 +502,7 @@ export default {
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
-    layer_is_added: "Layer con stesso nome già aggiunto",
+    layer_is_added: "Esiste già un livello con lo stesso nome",
     sidebar: {
       wms: {
         panel: {
@@ -502,14 +541,16 @@ export default {
         notresponseserver: "Il server non risponde"
       },
       add_layer_control: {
-        header: "Aggiungi Layer",
-        select_projection: "Seleziona il sistema di proiezione del layer",
-        select_field_to_show: "Seleziona il campo da visualizzare sulla mappa",
+        header: "Aggiungi livello",
+        select_projection: "Sistema di riferimento",
+        select_field_to_show: "Campo da visualizzare sulla mappa",
         select_csv_separator: "Seleziona il separatore",
         select_csv_x_field: "Seleziona il campo X",
         select_csv_y_field: "Seleziona il campo Y",
-        select_color: "Seleziona il colore del Layer",
-        drag_layer: "Trascina il layer in questa area"
+        select_color: "Colore",
+        drag_layer: "Aggiungi il file in questa area",
+        persistent_data: "Persistenza",
+        persistent_help: "salva il livello nella memoria del browser",
       },
       query: {
         input_relation: "Clicca per consultare le relazioni"

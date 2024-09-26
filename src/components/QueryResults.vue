@@ -12,10 +12,9 @@
     >
       <span
         v-if   = "info.icon"
-        class  = "action-button skin-tooltip-bottom"
         :class = "g3wtemplate.getFontClass(info.icon)">
       </span>
-      <span>{{info.message}}</span>
+      <span> {{ info.message }} </span>
     </div>
     <div class = "queryresults-container">
       <template v-if = "state.layers.length">
@@ -32,9 +31,11 @@
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class       = "box-header with-border"
-                :class      = "{'mobile': isMobile()}"
-                data-widget = "collapse"
+                class      = "box-header with-border"
+                :class     = "{'mobile': isMobile()}"
+                @mouseover = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout  = "highLightLayerFeatures(layer, { highlight: false })"
+                @click     = "collapseSidebar"
               >
                 <div
                   class  = "box-title query-layer-title"
@@ -53,7 +54,7 @@
                   {{ layer.title }}
                   <span
                     v-show = "!layer.rawdata"
-                    class  = "query-layer-feature-count">({{layer.features.length}})</span>
+                    class  = "query-layer-feature-count">({{ layer.features.length }})</span>
                 </div>
                 <div
                   class       = "box-features-action"
@@ -135,7 +136,7 @@
                       layer.features.length > 1 &&
                       (layer.external || (layer.source && layer.source.type !== 'wms'))
                     "
-                    @click.stop             = "selectionFeaturesLayer(layer)"
+                    @click.stop             = "addToSelection(layer)"
                     class                   = "action-button skin-tooltip-left"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
                     :class                  = "{'toggled': layer.selection.active}"
@@ -179,8 +180,8 @@
 
                 </div>
                 <button
-                  class       = "btn btn-box-tool"
-                  data-widget = "collapse"
+                  class          = "btn btn-box-tool"
+                  style          = "pointer-events: none;"
                 >
                   <i
                     class  = "btn-collapser skin-color"
@@ -471,13 +472,14 @@
 </template>
 
 <script>
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
   import HeaderFeatureActionsBody    from "components/QueryResultsHeaderFeatureActionsBody.vue";
-  import { toRawType, throttle }     from 'utils';
+  import { toRawType }               from 'utils/toRawType';
+  import { throttle }                from 'utils/throttle';
+  import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
   import GUI                         from 'services/gui';
 
   const MAX_SUBSET_LENGTH           = 3;
@@ -556,6 +558,11 @@
                   `${query.layerName} ${undefined !== query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
                   : ' '                                                                                         // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
               };
+              case 'circle':
+                return {
+                  icon: 'empty-circle',
+                  message: ' ',                                                                                     // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+                };
             default:
               console.warn(`Unsupported query type:  ${query.type}`);
               break;
@@ -637,14 +644,8 @@
       getColSpan(layer) {
         return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
       },
-      getDownloadActions(layer) {
-        return this.state.layersactions[layer.id].find(a => a.formats);
-      },
       addLayerFeaturesToResults(layer) {
         this.$options.service.addLayerFeaturesToResultsAction(layer);
-      },
-      showDownloadAction(evt) {
-        evt.target.children[0].style.display = evt.target.children[0].style.display === 'none' ? 'inline-block' : 'none';
       },
       printAtlas(layer) {
         this.$options.service.printAtlas(layer);
@@ -667,7 +668,7 @@
       saveFilter(layer) {
         this.$options.service.saveFilter(layer);
       },
-      addRemoveFilter(layer){
+      addRemoveFilter(layer) {
         this.$options.service.addRemoveFilter(layer);
       },
       getContainerFromFeatureLayer({ layer, index } = {}) {
@@ -682,17 +683,8 @@
       layerHasFeatures(layer) {
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
-      selectionFeaturesLayer(layer) {
-        this.$options.service.selectionFeaturesLayer(layer);
-      },
-      layerHasActions(layer) {
-        return this.state.layersactions[layer.id].length > 0;
-      },
-      featureHasActions(layer,feature) {
-        return this.geometryAvailable(feature);
-      },
-      geometryAvailable(feature) {
-        return !!feature.geometry;
+      addToSelection(layer) {
+        this.$options.service.addToSelection(layer);
       },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
@@ -700,10 +692,10 @@
           if (item.nodes) {
             item.nodes.forEach(node => traverseStructure(node));
           } else {
-            let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+            let field = layer.formStructure.fields.find(f => item.field_name === f.name);
             if (field) {
-              if (this.state.type === 'ows'){
-                // clone it to avoid to replace original
+              if (this.state.type === 'ows') {
+                // clone it to avoid replacing original
                 field = {...field};
                 field.name = field.name.replace(/ /g, '_');
               }
@@ -721,70 +713,17 @@
         const attributes = this.hasFormStructure(layer)
           ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer)
           : layer.attributes;
-        const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
+        const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.includes(attribute.type));
         // TODO: find a clever way to handle geocoding results..
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
         return _attributes.slice(0, end);
       },
-
-      relationsAttributesSubset(relationAttributes) {
-        const attributes = [];
-        _.forEach(relationAttributes, function (value, attribute) {
-          if (Array.isArray(value)) return;
-          attributes.push({label: attribute, value: value})
-        });
-        const end = Math.min(MAX_SUBSET_LENGTH, attributes.length);
-        return attributes.slice(0, end);
-      },
-      relationsAttributes(relationAttributes) {
-        const attributes = [];
-        _.forEach(relationAttributes, function (value, attribute) {
-          attributes.push({label: attribute, value: value})
-        });
-        return attributes;
-      },
       attributesSubsetLength(layer) {
         return this.attributesSubset(layer).length;
-      },
-      cellWidth(index,layer) {
-        const headerLength                  = MAX_SUBSET_LENGTH + this.state.layersactions[layer.id].length;
-        const subsetLength                  = this.attributesSubsetLength(layer);
-        const diff                          = headerLength - subsetLength;
-        const actionsCellWidth              = layer.hasgeometry ? headerActionsCellWidth : 0;
-        const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
-        const baseCellWidth                 = headerAttributeCellTotalWidth / MAX_SUBSET_LENGTH;
-        if ((index === subsetLength - 1) && diff > 0) {
-          return baseCellWidth * (diff+1);
-        } else {
-          return baseCellWidth;
-        }
-      },
-      featureBoxColspan(layer) {
-        let colspan = this.attributesSubsetLength(layer);
-        if (layer.expandable) {
-          colspan += 1;
-        }
-        if (layer.hasgeometry) {
-          colspan += 1;
-        }
-        return colspan;
-      },
-      relationsAttributesSubsetLength(elements) {
-        return this.relationsAttributesSubset(elements).length;
       },
       getLayerFormStructure(layer) {
         //need to clone structure objects in deep and set reactive with Vue.observable
         return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n)));
-      },
-      isAttributeOrTab(layer, item) {
-        const isField = undefined !== item.field_name;
-        return  {
-          type: isField && 'field' || 'tab',
-          item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item]
-        };
-      },
-      getLayerAttributeFromStructureItem(layer, field_name) {
-        return layer.attributes.find(a => field_name === a.name);
       },
       getLayerFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
@@ -838,9 +777,6 @@
         }
         await this.$options.service.trigger(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
       },
-      showFullPhoto(url) {
-        this.$options.service.showFullPhoto(url);
-      },
       openLink(link_url) {
         window.open(link_url, '_blank');
       },
@@ -856,7 +792,32 @@
        * @since 3.10.0
        */
       openAttributeTable(layer) {
-        CatalogLayersStoresRegistry.getLayerById(layer.id).openAttributeTable({ perc: 100 });
+        getCatalogLayerById(layer.id).openAttributeTable({ perc: 100 });
+      },
+
+      /**
+       * Highlight all features of layer
+       *
+       * @param layer
+       * @param opts
+       *
+       * @since 3.11.0
+       */
+      highLightLayerFeatures(layer, opts = { highlight: true }) {
+        if (layer.hasgeometry) {
+          this.$options.service.highLightLayerFeatures(layer, opts);
+        }
+      },
+
+      /**
+       * @since 3.11.0
+       */
+      collapseSidebar(e) {
+        const box       = e.target.closest(".box");
+        const collapsed = box.classList.contains('collapsed-box');
+        box.classList.toggle('collapsed-box');
+        box.querySelector(".btn-collapser").classList.toggle('fa-plus', !collapsed);
+        box.querySelector(".btn-collapser").classList.add('fa-minus', collapsed);
       },
 
     },
@@ -900,9 +861,7 @@
     created() {
       //PUT HERE THROTTLED FUNCTION
       this.zoomToLayerFeaturesExtent = throttle(layer => {
-        this.$options.service.zoomToLayerFeaturesExtent(layer, {
-          highlight: true
-        });
+        this.$options.service.zoomToLayerFeaturesExtent(layer);
       })
     },
     beforeDestroy() {

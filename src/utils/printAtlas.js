@@ -1,6 +1,4 @@
-import ProjectsRegistry             from 'store/projects';
-import ApplicationState             from 'store/application-state';
-import { convertObjectToUrlParams } from 'utils/convertObjectToUrlParams';
+import ApplicationState from 'store/application';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
@@ -41,10 +39,10 @@ import { convertObjectToUrlParams } from 'utils/convertObjectToUrlParams';
  * @param { 'GET' | 'POST' } method
  */
 export function printAtlas(opts = {}, method = 'GET') {
-  const store = ProjectsRegistry.getCurrentProject().getLayersStore();
+  const store = ApplicationState.project.getLayersStore();
   const multi = opts.values.length > 1;
   return FETCH[method]({
-    url: store.getWmsUrl(),
+    url:       store.getWmsUrl(),
     mime_type: 'application/pdf',
     params:    {
       SERVICE:     'WMS',
@@ -66,11 +64,11 @@ const FETCH = {
    * @param opts.mime_type
    * @return {Promise<{mime_type, layers: boolean, url: string}>}
    */
-  async POST({ url, params, mime_type }) {
+  async POST({ url, params = {}, mime_type }) {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: convertObjectToUrlParams(params),
+      body:  new URLSearchParams(params || {}).toString(),
     });
     if (!response.ok) {
       //@TODO Need to translate
@@ -89,9 +87,9 @@ const FETCH = {
    * @param opts.mime_type
    * @return {Promise<unknown>}
    */
-  async GET({url, params, mime_type}) {
+  async GET({url, params = {}, mime_type}) {
     return {
-      url: `${url}?${convertObjectToUrlParams(params)}`,
+      url: `${url}?${ new URLSearchParams(params || {}).toString()}`,
       layers: true,
       mime_type
     };

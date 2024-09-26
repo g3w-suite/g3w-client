@@ -11,9 +11,9 @@
     >
 
       <a href = "#" class = "g3w-map-theme-anchor">
-        <section>
-          <i :class = "g3wtemplate.getFontClass('caret-down')" style = "padding: 3px;"></i>
-          <i :class = "g3wtemplate.getFontClass('eye')"        style = "padding: 0 0 0 4px;"></i>
+        <section @click.stop = "toggle">
+          <i :class = "g3wtemplate.getFontClass(collapsed ? 'caret-down' : 'caret-up')" style = "padding: 3px;"></i>
+          <i :class = "g3wtemplate.getFontClass(collapsed ? 'eye-close' : 'eye')"       style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
             v-if  = "active_theme"
@@ -63,7 +63,6 @@
       <ul
         v-else
         id     = "g3w-catalog-views"
-        class  = "treeview-menu"
         :class = "{'menu-open': !collapsed}"
       >
         <!-- LIST PROJECT MAP THEME -->
@@ -183,12 +182,12 @@
 
 <script>
 
-import ProjectsRegistry   from 'store/projects';
 import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
+import { XHR }            from 'utils/XHR';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 /**
  * Attributes to send to server of layerstrees object
@@ -226,7 +225,7 @@ export default {
     const theme = Object.values(this.map_themes).flat().find(mt => mt.default);
     return {
       active_theme: (theme && theme.theme) || null,
-      collapsed:    'collapsed' === ProjectsRegistry.getCurrentProject().state.toc_themes_init_status,
+      collapsed:    'collapsed' === ApplicationState.project.state.toc_themes_init_status,
       // user themes
       custom_theme: {
         name:     'add-user-theme',
@@ -250,6 +249,16 @@ export default {
   },
 
   methods: {
+    /**
+     * @since 3.11.0
+     */
+    toggle() {
+      //in case of no new form map_theme is show
+      if (!this.show_form) {
+        document.getElementById('g3w-catalog-views').classList.toggle('menu-open');
+        this.collapsed = !this.collapsed;
+      }
+    },
 
     /**
      * Create params for save or update custom map theme
@@ -288,9 +297,18 @@ export default {
      * @since 3.10.0
      */
     async saveTheme() {
+      const theme = this.custom_theme.value;
+      // skip when no name provided 
+      if (!theme) {
+        return;
+      }
       try {
         const params = this._getMapThemeParams();
-        const saved = await ProjectsRegistry.getCurrentProject().saveMapTheme(this.custom_theme.value, params);
+        const saved = await XHR.post({
+          url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+        });
         if (saved.result) {
           this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
           // show a success add custom matp theme message to user
@@ -310,9 +328,17 @@ export default {
     },
 
     async updateTheme(theme) {
+      // skip when no name provided
+      if (!theme) {
+        return;
+      }
       try {
         const params = this._getMapThemeParams();
-        await ProjectsRegistry.getCurrentProject().saveMapTheme(theme, params);
+        await XHR.post({
+          url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+        });
         // update custom map theme styles
         const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
         c_theme.styles     = params.styles;
@@ -335,11 +361,11 @@ export default {
     deleteTheme(theme) {
       GUI.dialog.confirm(t('sdk.catalog.question_delete_map_theme'), async bool => {
         // skip when ..
-        if (!bool) {
+        if (!bool || !theme) {
           return;
         }
         try {
-          const deleted = await ProjectsRegistry.getCurrentProject().deleteMapTheme(theme);
+          const deleted = await XHR.delete({url:`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`});
           if (deleted.result) {
             this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
             // show a success message to user
@@ -418,6 +444,7 @@ export default {
   }
   #g3w-catalog-views {
     display: none;
+    padding: 0;
   }
   #g3w-catalog-views.menu-open {
     display: block;

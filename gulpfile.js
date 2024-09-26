@@ -198,7 +198,11 @@ const browserify_plugin = (pluginName, watch = true) => {
   .on('log', (info) => watch && !production && gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info));
 
   // remove source map file
-  del([`${src}/plugin.js.map`]);
+  try {
+    del([`${outputFolder}plugin.js.map`], {force: true});
+  } catch(e) {
+    console.warn(YELLOW__ +  `[WARN] file not found: ${outputFolder}plugin.js.map}`);
+  }
 
   const rebundle = () => {
     const version = get_version(pluginName);
@@ -222,7 +226,7 @@ const browserify_plugin = (pluginName, watch = true) => {
     .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`))
     .pipe(gulpif(production, sourcemaps.init()))
     .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-    .pipe(gulpif(production, sourcemaps.write(src)))
+    .pipe(gulpif(production, sourcemaps.write('.')))
     .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
     .pipe(gulp.dest(outputFolder)) // put plugin.js to static folder (PROD | DEV env)
     .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
@@ -264,7 +268,6 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/fastclick/fastclick${ext}.js`,
       `${g3w.assetsFolder}/vendors/vue/vue${ext}.js`,
       `${g3w.assetsFolder}/vendors/jquery-file-upload/jquery.fileupload.js`,
-      `${g3w.assetsFolder}/vendors/jquery-fileDownload/jquery.fileDownload.js`,
       `${g3w.assetsFolder}/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js`,
       `${g3w.assetsFolder}/vendors/ismobile/ismobile.min.js`,
       `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next${ext}.js`,
@@ -395,10 +398,22 @@ gulp.task('images', function () {
   return gulp.src([
     `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**/`,
     '!./src/**/node_modules/**/'
   ])
   .pipe(flatten())
   .pipe(gulp.dest(`${outputFolder}/static/client/images/`))
+});
+
+/**
+ * Deploy client cursors
+ */
+gulp.task('cursors', function () {
+  return gulp.src([
+    `${g3w.assetsFolder}/cursors/**/*`,
+  ])
+  .pipe(flatten())
+  .pipe(gulp.dest(`${outputFolder}/static/client/cursors/`))
 });
 
 /**
@@ -419,6 +434,7 @@ gulp.task('datatable-images', function () {
     `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
     `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
     `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**`,
     '!./src/**/node_modules/**/'
   ])
   .pipe(flatten())
@@ -435,14 +451,10 @@ gulp.task('geocoding-providers', function () {
 });
 
 /**
- * Compile client styles (src/assets/style/less/app.less --> app.min.css)
+ * Compile client styles (src/assets/app.css --> app.min.css)
  */
-gulp.task('less', ['fonts'], function() {
-  return gulp.src(`${g3w.assetsFolder}/style/less/app.less`)
-    .pipe(less({
-      paths: [`${g3w.assetsFolder}/style/less`], // add paths where to search in @import
-      plugins: [LessGlob]                        // plugin to manage globs import es: @import path/***
-    }))
+gulp.task('css', ['fonts'], function() {
+  return gulp.src(`${g3w.assetsFolder}/app.css`)
     //.pipe(gulpif(production, cleanCSS({ keepSpecialComments: 0 }), replace(/\w+fonts/g, 'fonts')))
     .pipe(replace(/\w+fonts/g, 'fonts'))         // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
     .pipe(cleanCSS({ keepSpecialComments: 0 }))
@@ -498,12 +510,13 @@ gulp.task('browser-sync', function() {
 
   /* Uncomment the following in next Gulp Release (v4.x) */
   //
-  // gulp.watch([g3w.assetsFolder + '/style/**/*.less'], gulp.series('less', 'browser:reload'));
+  // gulp.watch([g3w.assetsFolder + '/app.css'],         gulp.series('less', 'browser:reload'));
   // gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images', 'browser:reload'));
   // gulp.watch(['./src/index.html', './src/**/*.html'], gulp.series('browser:reload'));
   //
 
-  gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/app.css'],         () => runSequence('css','browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/cursors/**'],      () => runSequence('cursors','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
   gulp.watch(g3w.pluginsFolder + '/_version.js',      () => dev_plugins.forEach(p => browserify_plugin(p, false)));
@@ -573,7 +586,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html'], done)
+   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'css', 'datatable-images', 'html'], done)
    : done;
 });
 

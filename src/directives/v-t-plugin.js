@@ -3,10 +3,10 @@
  * @since v3.7
  */
 
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import { watch, unwatch } from 'directives/utils';
 
-const { tPlugin } = require('core/i18n/i18n.service');
+const { tPlugin } = require('g3w-i18n');
 
 const attr = 'g3w-v-t-plugin-id';
 
@@ -19,14 +19,14 @@ export default {
       watcher: [
         () => ApplicationState.language,
         () => {
-          const value = binding.value !== null ? tPlugin(binding.value) : '';
+          const value = null !== binding.value ? tPlugin(binding.value) : '';
           switch(binding.arg ? binding.arg : 'post') {
-            case 'pre': el.innerHTML = `${value} ${innerHTML}`; break;
+            case 'pre':  el.innerHTML = `${value} ${innerHTML}`; break;
             case 'post': el.innerHTML = `${innerHTML} ${value}`; break;
           }
         }
       ]
     });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 };

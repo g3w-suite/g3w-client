@@ -13,9 +13,11 @@
 
       <!-- PRINT as PDF or GEOPDF-->
       <iframe
-        v-if  = "['pdf', 'geopdf'].includes(format)"
-        ref   = "out"
-        :src = "state.url"
+        v-if   = "['pdf', 'geopdf'].includes(format)"
+        ref    = "out"
+        :src   = "state.url"
+        @load  = "ready = true"
+        @error = "ready = true"
       ></iframe>
 
       <!-- PRINT as PNG, JPG, SVG -->
@@ -44,8 +46,10 @@
           class = "g3w-print-url"
         >
           <img
-            ref  = "out"
-            :src = "state.url"
+            ref    = "out"
+            :src   = "state.url"
+            @load  = "ready = true"
+            @error = "ready = true"
           >
         </div>
       </div>
@@ -62,9 +66,8 @@
 </template>
 
 <script>
-import ProjectsRegistry   from 'store/projects';
-import GUI                from 'services/gui';
-import { imageToDataURL } from 'utils/imageToDataURL';
+import ApplicationState from 'store/application'
+import GUI              from 'services/gui';
 
 export default {
 
@@ -75,8 +78,9 @@ export default {
     const state = this.$options.service.state || {};
     return {
       state,
-      // extract `state.format` so it doesnt' react to Print.vue changes
+      // extract `state.format` so it doesn't react to Print.vue changes
       format: state.format,
+      ready : false,
     }
   },
 
@@ -87,7 +91,7 @@ export default {
         GUI.disableSideBar(true);
         this.state.downloading = true;
         if (['jpg', 'png', 'svg'].includes(this.format)) {
-          await imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
+          await this.imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
           setTimeout(() => {
             GUI.disableSideBar(false);
             this.state.downloading = false;
@@ -98,10 +102,43 @@ export default {
       }
     },
 
+    imageToDataURL({
+      src,
+      type     = 'image/jpeg',
+      callback = () => {},
+    }) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = function() {
+          const canvas  = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = this.naturalHeight;
+          canvas.width  = this.naturalWidth;
+          context.drawImage(this, 0, 0);
+          const dataURL = canvas.toDataURL(type);
+          callback(dataURL);
+          resolve(dataURL);
+        };
+        image.onerror = reject;
+        image.src = src;
+      });
+    },
+
+  },
+  /**
+   * @since v3.11.0 To show to user loading bar
+   */
+  watch: {
+    ready: {
+      handler(bool) {
+        GUI.setLoadingContent(!bool);
+      },
+      immediate: true,
+    }
   },
 
   beforeDestroy() {
-    if (this.state.url && 'POST' === ProjectsRegistry.getCurrentProject().getOwsMethod()) {
+    if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
       window.URL.revokeObjectURL(this.state.url);
     }
   },

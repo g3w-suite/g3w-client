@@ -114,18 +114,16 @@
 </template>
 
 <script>
-import { FILTER_OPERATORS }        from 'app/constant';
-import ApplicationState            from 'store/application-state';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
-import ApplicationService          from 'services/application';
+import { FILTER_OPERATORS }        from 'g3w-constants';
+import ApplicationState            from 'store/application';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 export default {
 
@@ -198,7 +196,7 @@ export default {
           this.values = CACHE[layerId][field];
         } else {
           const response = await XHR.get({
-            url: CatalogLayersStoresRegistry.getLayerById(layerId).getUrl('data'),
+            url: getCatalogLayerById(layerId).getUrl('data'),
             params: { ordering: field, formatter: 1, fformatter: field }
           });
           if (response.result) {
@@ -215,15 +213,15 @@ export default {
       this.manual         = false;
     },
 
-    reset(){
+    reset() {
       this.filter                 = '';
       this.message                = '';
       this.filterElement.previous = null;
       this.filterElement.current  = null;
       this.filterElement.operator = null;
       this.select.field           = null;
-      if(this.$refs.search_fields) this.$refs.search_fields.selectedIndex = -1;
-      if(this.$refs.search_values) this.$refs.search_values.selectedIndex = -1;
+      if (this.$refs.search_fields) { this.$refs.search_fields.selectedIndex = -1 }
+      if (this.$refs.search_values) { this.$refs.search_values.selectedIndex = -1 }
     },
 
     /**
@@ -232,7 +230,7 @@ export default {
     async run() {
       try {
         this.loading.test = true;
-        const layer = CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id);
+        const layer = getCatalogLayerById(this.currentlayer.id);
         const { data } = await DataRouterService.getData('search:features', {
           inputs: {
             layer,
@@ -256,16 +254,18 @@ export default {
      * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
      */
     async save() {
-      const id      = this.projectId || ProjectsRegistry.getCurrentProject().getId();
+      const id      = this.projectId || ApplicationState.project.getId();
       const edit_id = this.edit && this.$options.options.id;
-      let searches  = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
+      const item   = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      let searches = item ? JSON.parse(item) : undefined;
+
       let query;
 
       try {
         query = {
           layerId:   this.currentlayer.id,
           filter:    this.filter,
-          layerName: CatalogLayersStoresRegistry.getLayerById(this.currentlayer.id).getName(),
+          layerName: getCatalogLayerById(this.currentlayer.id).getName(),
           name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.prompt(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
           id:        edit_id || getUniqueDomId(),
         };
@@ -280,7 +280,7 @@ export default {
 
         // add local item
         else {
-          GUI.getService('search').addQueryBuilderSearch(query);
+          GUI.getService('search').state.querybuildersearches.push(query); // add query builder search
           if (undefined === searches) {
             searches     = { [id]: [query] };
           } else {
@@ -294,7 +294,13 @@ export default {
 
       // reset items
       const ITEMS = ApplicationState.querybuilder.searches;
-      ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: searches });
+      
+      try {
+        window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(searches));
+      } catch(e) {
+        console.warn(e);
+      }
+
       setTimeout(() => { searches[id].forEach(q => ITEMS[id].push(q)); }, 0);
       ITEMS[id].splice(0);
       GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });
@@ -310,7 +316,7 @@ export default {
       operator: null
     };
 
-    const project = ProjectsRegistry.getCurrentProject();
+    const project = ApplicationState.project;
 
     this.layers = project
       .getLayers()
@@ -318,8 +324,8 @@ export default {
       .map(layer => {
         // exclude join fields
         let exclude = [];
-        project
-          .getRelationsByLayerId({ layerId: layer.id, type: 'ONE' })
+        project.state.relations
+          .filter(r => layer.id === r.referencedLayer && 'ONE' === r.type) // get relations by layerId
           .forEach( r => {
             const l = project.getLayerById(r.referencingLayer);
             r.customPrefix = r.customPrefix === undefined ? `${l.getName()}_` : r.customPrefix;
@@ -328,7 +334,7 @@ export default {
         return {
           id:     layer.id,
           label:  layer.title,
-          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => -1 === exclude.indexOf(f))
+          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => !exclude.includes(f))
         }
       });
 
@@ -356,7 +362,7 @@ export default {
     });
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     this.select2.select2('destroy');
     this.select2 = null;
   },

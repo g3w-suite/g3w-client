@@ -22,9 +22,9 @@
       v-t = "'sidebar.wms.panel.label.layers'">
     </label>
     <select
-      id        = "g3w-wms-layers"
-      :multiple = "true"
-      clear     = "true"
+      id         = "g3w-wms-layers"
+      :multiple  = "true"
+      :clear     = "true"
       v-select2 = "'selectedlayers'"
     >
       <option
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-const Projections = require('g3w-ol/projection/projections');
+import Projections from 'store/projections';
 
 export default {
 
@@ -131,14 +131,14 @@ export default {
     getLayersByEpsg(epsg) {
       return (null === epsg)
         ? this.$options.config.layers
-        : this.layers.filter(({ name }) => -1 !== this.layerProjections[name].crss.indexOf(epsg));
+        : this.layers.filter(({ name }) => this.layerProjections[name].crss.includes(epsg));
     },
 
     /**
      * @since 3.8.1
      */
     getProjectionsByName(name) {
-      return this.projections.filter((projection) => -1 !== this.layerProjections[name].crss.indexOf(projection));
+      return this.projections.filter(p => this.layerProjections[name].crss.includes(p));
     },
 
   },
@@ -155,7 +155,7 @@ export default {
         this.epsg        = this.layerProjections[layers[0]].crss[0];
         this.projections = this.layerProjections[layers[0]].crss;
       } else {                          // TODO: add description
-        this.projections = this.getProjectionsByName(layers[layers.length -1]);;
+        this.projections = this.getProjectionsByName(layers[layers.length -1]);
       }
     },
 

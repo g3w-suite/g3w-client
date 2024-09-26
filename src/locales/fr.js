@@ -261,6 +261,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Téléchargement des attributs",
@@ -276,19 +299,24 @@ export default {
           tooltip: 'Requête par polygone',
           no_geometry: 'La réponse ne contient pas de géométrie',
           help: {
-            title: 'Aide - Requête par polygone',
             message: "<ul><li>Sélectionnez une couche de polygone dans la légende.</li><li>Vérifiez que la couche est visible dans la carte.</li><li>Cliquez sur une géométrie de la couche sélectionnée.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Requête par polygone de dessin"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Requête pour BBOX',
           nolayers_visible: "Aucune couche requêtable n'est visible. Assurez-vous qu'au moins une couche wfs est visible pour exécuter la requête",
           help: {
-            title:'Aide - Requête BBox',
             message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
+          },
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
           },
         },
         addlayer: {
@@ -331,7 +359,8 @@ export default {
         no_relations_found: 'Aucune relation trouvée',
         back_to_relations: 'Retour aux relations',
         list_of_relations_feature: 'Liste des relations entre les entités',
-        error_missing_father_field: "Le champ concerné n'existe pas"
+        error_missing_father_field: "Le champ concerné n'existe pas",
+        field: "Relation key field",
       },
       form: {
         loading: 'Chargement...',

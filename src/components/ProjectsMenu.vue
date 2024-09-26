@@ -31,10 +31,9 @@
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
 import GUI              from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
@@ -88,15 +87,15 @@ export default {
     logoSrc(src) {
       let imageSrc;
       const host = this.$options.host || '';
-      const has_media = src && (-1 !== src.indexOf(ProjectsRegistry.config.mediaurl));
-      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
+      const has_media = src && (src.includes(window.initConfig.mediaurl));
+      const not_static = src && (!src.includes('static') && !src.includes('media'))
 
       if (!src) {
         imageSrc = fakeImage
-      } else if(has_media) {
+      } else if (has_media) {
         imageSrc = src;
-      } else if(not_static) {
-        imageSrc = `${ProjectsRegistry.config.mediaurl}${src}`;
+      } else if (not_static) {
+        imageSrc = `${window.initConfig.mediaurl}${src}`;
       } else {
         imageSrc = fakeImage
       }

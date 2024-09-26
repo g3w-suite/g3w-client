@@ -33,10 +33,10 @@
 
     mixins: [Input],
     watch:{
-      'state.input.options.min'(){
+      'state.input.options.min'() {
         this.service.changeInfoMessage()
       },
-      'state.input.options.max'(){
+      'state.input.options.max'() {
         this.service.changeInfoMessage()
       }
     }

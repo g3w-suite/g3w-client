@@ -21,9 +21,9 @@
         id              = "gcd-input-query"
         autocomplete    = "off"
         class           = "gcd-txt-input"
-        v-t-placeholder = "placeholder"
         @keyup          = "onQuery"
         @input          = "onValue"
+        :placeholder    = "placeholder"
       />
 
       <!-- RESET SEARCH -->
@@ -124,7 +124,7 @@
         <!-- NO RESULTS -->
         <span
           v-else-if = "item.__no_results"
-          v-t       = "noresults"
+          v-t       = "'mapcontrols.geocoding.noresults'"
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
@@ -181,17 +181,19 @@
 
 <script>
 import GUI                              from 'services/gui';
-import ApplicationState                 from 'store/application-state';
+import ApplicationState                 from 'store/application';
 import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
-import { PluginsRegistry }              from "store";
-import CatalogLayersStoresRegistry      from 'store/catalog-layers';
-import { toRawType, uniqueId }          from 'utils';
+import PluginsRegistry                  from 'store/plugins';
+import Projections                      from 'store/projections';
+import { getUniqueDomId }               from 'utils/getUniqueDomId';
 import { flattenObject }                from 'utils/flattenObject';
 import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
 import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
+import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
+import { getCatalogLayers }             from 'utils/getCatalogLayers';
 
-const Projections                   = require('g3w-ol/projection/projections');
+const { t } = require('g3w-i18n');
 
 /**
  * Provider definitions.
@@ -220,7 +222,7 @@ const Projections                   = require('g3w-ol/projection/projections');
  * VENDOR_KEYS['my_custom_provider'] = 'super.secret.key'
  * ```
  */
-const PROVIDERS = window.initConfig.group.mapcontrols.geocoding ? window.initConfig.group.mapcontrols.geocoding.providers : {};
+const PROVIDERS = window.initConfig.mapcontrols.geocoding ? window.initConfig.mapcontrols.geocoding.providers : {};
 Object
   .keys(PROVIDERS)
   .forEach(function(p) {
@@ -289,50 +291,15 @@ export default {
   data() {
     return {
       /** @since 3.9.0 */
-      results              : [],
+      results:            [],
       /** @since 3.9.0 */
-      disabled             : false, // disabled boolean control
+      disabled:           false, // disabled boolean control
       /** @since 3.9.0 */
-      results_panel_open   : false, // @TODO make use of `GUI.isSomething()`
+      results_panel_open: false, // @TODO make use of `GUI.isSomething()`
     };
   },
 
   props: {
-
-    placeholder: {
-      type:     String,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    noresults: {
-      type:     String,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    limit: {
-      type:     Number,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    viewbox: {
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    mapCrs: {
-      required: true,
-    },
 
     /**
      * @since 3.9.0
@@ -382,11 +349,22 @@ export default {
      * @since 3.9.0
      */
     extent() {
+      const map = GUI.getService('map');
+      const project = map.getProject().state;
       return ol.proj.transformExtent(
         Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
-          ? GUI.getService('map').getMapExtent()
-          : this.viewbox, this.mapCrs, 'EPSG:4326'
-      )
+          ? map.getMapExtent()
+          : (project.initextent || project.extent),
+        project.crs.epsg,
+        'EPSG:4326'
+      );
+    },
+
+    /**
+     * @since 3.11.0
+     */
+    placeholder() {
+      return ApplicationState.language && t('mapcontrols.geocoding.placeholder');
     },
 
   },
@@ -474,7 +452,7 @@ export default {
     query(q) {
 
       return new Promise(async (resolve, reject) => {
-        const isNumber     = value => 'Number' === toRawType(value) && !Number.isNaN(value);
+        const isNumber     = value => 'number' === typeof value && !Number.isNaN(value);
         let coordinates    = null;
         let transform      = false;
         const [x, y, epsg] = (q || '').split(',');
@@ -538,7 +516,7 @@ export default {
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
-                limit:        this.limit,
+                limit:        5,
                 extent:       this.extent,
               }))
           );
@@ -580,7 +558,7 @@ export default {
           this.$data.results.push(flattenObject({
             ...item,
             provider:   p.value.provider,
-            __uid:      uniqueId(),
+            __uid:      getUniqueDomId(),
             __icon:     this.providers[p.value.provider].icon || p.value.icon,
             __selected: false,
           }));
@@ -732,7 +710,7 @@ export default {
       try {
 
         // get a geometry type of target layer
-        const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
+        const type = getCatalogLayerById(layerId).getGeometryType();
 
         // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
         const _feature = addZValueToOLFeatureGeometry({
@@ -756,6 +734,7 @@ export default {
   },
 
   created() {
+
     const queryresults = GUI.getService('queryresults');
     const mapService   = GUI.getService('map');
     const map          = mapService.getMap();
@@ -793,8 +772,7 @@ export default {
       }
 
       // Get editing layers that has Point/MultiPoint Geometry type
-      const editablePointLayers =  CatalogLayersStoresRegistry
-        .getLayers({ EDITABLE: true, GEOLAYER: true })
+      const editablePointLayers =  getCatalogLayers({ EDITABLE: true, GEOLAYER: true })
         .filter(l => isPointGeometryType(l.getGeometryType()))
         .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 
@@ -946,7 +924,6 @@ export default {
     background-color: #fff;
     overflow: hidden;
     border-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     width: 100%;
     border: 2px solid var(--skin-color)
   }
@@ -1039,7 +1016,6 @@ export default {
   }
 
   .ol-geocoder > ul {
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 3px !important;
     width: 100%;
     max-height: 200px;

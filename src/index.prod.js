@@ -7,70 +7,63 @@
 import './deprecated';
 
 // expose global variables
-import './globals';
-
-//import core
-import ApplicationState          from 'store/application-state';
-import ProjectsRegistry          from 'store/projects';
-
-//import services
-import ApplicationService        from 'services/application';
-import GUI                       from 'services/gui';
-import FloatbarService           from "services/floatbar";
-import NavbarItemsService        from 'services/navbaritems';
-import SidebarService            from 'services/sidebar';
-import ViewportService           from 'services/viewport';
-
-// import store
-import ComponentsRegistry        from 'store/components';
-
-//components
-import App                       from 'components/App.vue';
-import ImageComponent            from 'components/GlobalImage.vue';
-import GalleryImagesComponent    from 'components/GlobalGallery.vue';
-import GeospatialComponet        from 'components/GlobalGeo.vue';
-import Skeleton                  from 'components/GlobalSkeleton.vue';
-import BarLoader                 from 'components/GlobalBarLoader.vue';
-import Progressbar               from 'components/GlobalProgressBar.vue';
-import HelpDiv                   from 'components/GlobalHelpDiv.vue';
-import Resize                    from 'components/GlobalResize.vue'
-import LayerPositions            from 'components/GlobalLayerPositions.vue';
-import DateTime                  from 'components/GlobalDateTime.vue';
-import Range                     from 'components/GlobalRange.vue';
-import ResizeIcon                from 'components/GlobalResizeIcon.vue';
-import Tabs                      from 'components/GlobalTabs.vue';
-import Divider                   from 'components/GlobalDivider.vue';
-import FloatbarComponent         from "components/Floatbar.vue";
-import NavbaritemsLeftComponent  from 'components/NavbaritemsLeft.vue';
-import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
-import SidebarComponent          from 'components/Sidebar.vue';
-import ViewportComponent         from 'components/Viewport.vue';
-
-//directives
-import vDisabled                 from 'directives/v-disabled';
-import vChecked                  from 'directives/v-checked';
-import vSelectedFirst            from 'directives/v-selected-first';
-import vSelect2                  from 'directives/v-select2';
-import vTToltip                  from 'directives/v-t-tooltip';
-import vTHtml                    from 'directives/v-t-html';
-import vTPlaceholder             from 'directives/v-t-placeholder';
-import vTTitle                   from 'directives/v-t-title';
-import vT                        from "directives/v-t";
-import vTPlugin                  from 'directives/v-t-plugin';
-import vPlugins                  from 'directives/v-plugins';
-import vOnline                   from 'directives/v-online';
-import vDownload                 from 'directives/v-download';
-import vClickOutside             from 'directives/v-click-outside'
+import './g3w-globals';
 
 // constants
-import { FONT_AWESOME_ICONS }    from 'app/constant';
+import {
+  FONT_AWESOME_ICONS,
+  LOCAL_ITEM_IDS,
+  TIMEOUT,
+}                                  from 'g3w-constants';
 
-const { base, inherit, toRawType } = require('utils');
-const { t, tPlugin }               = require('core/i18n/i18n.service');
-const G3WObject                    = require('core/g3wobject');
-const ProjectsMenuComponent        = require('gui/projectsmenu/projectsmenu');
-const ChangeMapMenuComponent       = require('gui/changemapmenu/changemapmenu');
+// core
+import translations                from 'locales';
+import ApplicationState            from 'store/application';
+import G3WObject                   from 'g3w-object';
+import Panel                       from 'g3w-panel';
+import Component                   from 'g3w-component';
 
+// services
+import ApplicationService          from 'services/application';
+import GUI                         from 'services/gui';
+
+// components
+import App                         from 'components/App.vue';
+import ImageComponent              from 'components/GlobalImage.vue';
+import GalleryImagesComponent      from 'components/GlobalGallery.vue';
+import GeospatialComponet          from 'components/GlobalGeo.vue';
+import Skeleton                    from 'components/GlobalSkeleton.vue';
+import BarLoader                   from 'components/GlobalBarLoader.vue';
+import Progressbar                 from 'components/GlobalProgressBar.vue';
+import HelpDiv                     from 'components/GlobalHelpDiv.vue';
+import Resize                      from 'components/GlobalResize.vue'
+import LayerPositions              from 'components/GlobalLayerPositions.vue';
+import DateTime                    from 'components/GlobalDateTime.vue';
+import Range                       from 'components/GlobalRange.vue';
+import ResizeIcon                  from 'components/GlobalResizeIcon.vue';
+import Tabs                        from 'components/GlobalTabs.vue';
+import Divider                     from 'components/GlobalDivider.vue';
+
+// directives
+import vDisabled                   from 'directives/v-disabled';
+import vChecked                    from 'directives/v-checked';
+import vSelect2                    from 'directives/v-select2';
+import vTToltip                    from 'directives/v-t-tooltip';
+import vTHtml                      from 'directives/v-t-html';
+import vTTitle                     from 'directives/v-t-title';
+import vT                          from "directives/v-t";
+import vTPlugin                    from 'directives/v-t-plugin';
+import vDownload                   from 'directives/v-download';
+import vClickOutside               from 'directives/v-click-outside';
+
+// utils
+import { noop }                    from 'utils/noop';
+import { XHR }                     from 'utils/XHR';
+import { $promisify }              from 'utils/promisify';
+import { getProject }              from 'utils/getProject';
+
+
+const { addI18n, t, tPlugin } = require('g3w-i18n');
 
 /**
  * Install global components
@@ -107,19 +100,14 @@ Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
  */
 Vue.directive("disabled", vDisabled);
 Vue.directive("checked", vChecked);
-Vue.directive("selected-first", vSelectedFirst);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
 Vue.directive('t-html', vTHtml);
-Vue.directive('t-placeholder', vTPlaceholder);
 Vue.directive('t-title', vTTitle);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
-Vue.directive("plugins", vPlugins);
-Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
 Vue.directive("click-outside", vClickOutside);
-
 
 /**
  * Install global plugins
@@ -138,15 +126,6 @@ Vue.use({
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
       font: FONT_AWESOME_ICONS,
-      /**
-       * @TODO check if deprecated
-       */
-      get() {},
-      getInfo() {
-        return {
-          font: this.font
-        }
-      },
       addFontClass({ name, className } = {}) {
         const added = undefined === this.font[name];
         if (added) {
@@ -154,10 +133,6 @@ Vue.use({
         }
         return added;
       },
-      /**
-       * @TODO check if deprecated
-       */
-      getInfoString() {},
       getFontClass(type) {
         return undefined === this.font[type] ? '' : this.font[type];
       }
@@ -171,109 +146,409 @@ Vue.use({
       }
     })
 
-    /** @since 3.10.0 remove _setUpTemplateDependencies method**/
-    GUI.isMobile = function() {
-      return isMobile.any;
-    };
-    // method that returns Template Info
-    GUI.getTemplateInfo = function() {
-      return Vue.prototype.g3wtemplate.getInfo();
-    };
-    GUI.getTemplateInfo = function() {
-      return Vue.prototype.g3wtemplate.getInfo();
-    };
-    GUI.getFontClass = function(type) {
-      return Vue.prototype.g3wtemplate.getFontClass(type);
-    };
-
   }
 }, {});
 
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
-/**
- * @requires components/App.vue
- */
-const layout = $.LayoutManager;
-
 // loading spinner at beginning
-layout.loading(true);
+$('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
+
+/** @TODO check if deprecated */
+const ACTIONS = {};
+
+const CONFIG = {};
+
+// dataTable Translations and custom extentions
+function _setDataTableLanguage() {
+  //set form control class to filter
+  $.extend($.fn.dataTableExt.oStdClasses, {
+    "sFilterInput": "form-control search"
+  });
+  $.extend(true, $.fn.dataTable.defaults, {
+    "language": {
+      "sSearch": '',
+      "searchPlaceholder": t("dosearch"),
+      "sLengthMenu": t("dataTable.lengthMenu"),
+      "paginate": {
+        "previous": '«',
+        "next": '»',
+      },
+      "info": t("dataTable.info"),
+      "zeroRecords": t("dataTable.nodatafilterd"),
+      "infoFiltered": ''
+    }
+  });
+}
 
 /**
- * ORIGINAL SOURCE: src/gui/app/index.js@3.4
+ * Retrieve from local storage
  */
-const ApplicationTemplate = function({ ApplicationService }) {
-  const appLayoutConfig = ApplicationService.getConfig().layout || {};
-  // useful to build a difference layout/component based on mobile or not
-  this._isMobile = isMobile.any;
-  this._isIframe = appLayoutConfig.iframe;
-  //ussefult ot not close user message when set content is called
-  this.sizes = {
-    sidebar: {
-      width:0
-    }
-  };
-  /*
-    usefully to show only last waiting request output
-    at a moment will be an object
+function _getSavedSearches() {
+  const ITEMS = ApplicationState.querybuilder.searches;
+  const id = ApplicationState.project.getId();
+  ITEMS[id] = ITEMS[id] || [];
+  return ITEMS[id];
+}
+
+/**
+ * Load an external script
+ */
+function _loadScript(url) {
+  return new Promise(function(resolve, reject) {
+    const s   = document.createElement('script');
+    s.onload  = resolve;
+    s.onerror = e => { console.warn(e); reject(new Error('Failed to load script: ' + url)) };
+    s.src     = url;
+    document.head.appendChild(s);
+  });
+}
+
+/**
+ * Bootstrap application
+ *
+ * 1 - load translations (i18n languages)
+ * 2 - initialize ProjectsRegistry
+ * 3 - attach DOM events ('online' and 'offline')
+ * 4 - trigger 'ready' event
+ * 5 - set current project `gid` (group id)
+ * 6 - set current project EPSG (coordinate system)
+ * 7 - check if application is loaded within an <IFRAME>
+ */
+
+const initConfig = window.initConfig;
+
+// set application user
+ApplicationState.user = initConfig.user
+
+ApplicationService.emit('initconfig', initConfig);
+
+const vendorkeys = initConfig.vendorkeys || {};
+initConfig.baselayers.forEach(l => {
+  if (l.apikey) {
+    vendorkeys[l.servertype ? l.servertype.toLowerCase() : null] = l.apikey
+  }
+});
+Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendorkeys[k])
+
+/**
+ * create application configuration
+ */
+Object.assign(initConfig, {
+  logo_img:            initConfig.header_logo_img,
+  logo_link:           initConfig.header_logo_link,
+  terms_of_use_text:   initConfig.header_terms_of_use_text,
+  urls: Object.assign(initConfig.urls || {}, {
+    ows:             'ows',
+    api:             'api',
+    initconfig:      'api/initconfig',
+    config:          'api/config',
+    baseurl:         initConfig.baseurl,
+    frontendurl:     initConfig.frontendurl,
+    staticurl:       initConfig.staticurl,
+    clienturl:       initConfig.staticurl + initConfig.client,
+    mediaurl:        initConfig.mediaurl,
+    vectorurl:       initConfig.vectorurl,
+    proxyurl:        initConfig.proxyurl,
+    rasterurl:       initConfig.rasterurl,
+    interfaceowsurl: initConfig.interfaceowsur,
+  }),
+  layout:  initConfig.layout || {},
+  plugins: initConfig.plugins || {},
+  tools:   initConfig.tools || { tools:  [] },
+  views:   initConfig.views || {},
+  user:    initConfig.user || null,
+});
+
+initConfig.layout.iframe   = window.top !== window.self;
+
+/** * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead */
+ApplicationState.lng      = initConfig.user.i18n || 'en';
+ApplicationState.language = initConfig.user.i18n || 'en';
+
+
+// setup i18n
+(initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
+
+i18next
+  .use(i18nextXHRBackend)
+  .init({
+      lng:         initConfig.user.i18n,
+      ns:          'app',
+      fallbackLng: 'en',
+      resources:    translations
+  });
+
+jqueryI18next.init(i18next, $, {
+  tName:                        't', // --> appends $.t = i18next.t
+  i18nName:                     'i18n', // --> appends $.i18n = i18next
+  handleName:                   'localize', // --> appends $(selector).localize(opts);
+  selectorAttr:                 'data-i18n', // selector for translating elements
+  targetAttr:                   'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
+  optionsAttr:                  'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
+  useOptionsAttr:               false, // see optionsAttr
+  parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
+});
+
+addI18n(ApplicationState.i18n.plugins);
+
+// set Accept-Language request header based on config language
+$.ajaxSetup({
+  beforeSend: xhr => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
+});
+
+/**
+ * Application starting point
+ *
+ * create the ApplicationTemplate instance passing template interface configuration
+ * and the applicationService instance that is useful to work with project API
+ */
+(new Promise(async (resolve, reject) => {
+
+  /** @since 3.8.0 */
+  try {
+    initConfig.macrogroups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/macrogroup/` })
+  } catch(e) {
+    console.warn(e);
+  }
+  
+  /** @since 3.8.0 */
+  try {
+    initConfig.groups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/group/nomacrogroup/` })
+  } catch(e) {
+    console.warn(e);
+  }
+
+  // Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
+  initConfig.layout.rightpanel = Object.assign(
+    (initConfig.layout.rightpanel || {}),
     {
-      stop: method to sot to show a result
+      width:          initConfig.layout.rightpanel.width  || 50, // ie. width == 50%
+      height:         initConfig.layout.rightpanel.height || 50, // ie. height == 50%
+      width_default:  initConfig.layout.rightpanel.width  || 50,
+      height_default: initConfig.layout.rightpanel.height || 50,
+      width_100:      false,
+      height_100:     false,
     }
-   */
-  this.waitingoutputdataplace = null;
-  this.init = function() {
+  );
+
+  ApplicationState.gui.layout.app      = initConfig.layout;
+
+  // setup projects
+  initConfig.projects.forEach(project => Object.assign(project, {
+    baselayers:         initConfig.baselayers,
+    minscale:           initConfig.minscale,
+    maxscale:           initConfig.maxscale,
+    crs:                initConfig.crs,
+    vectorurl:          initConfig.vectorurl,
+    rasterurl:          initConfig.rasterurl,
+  }));
+
+  const timeout = setTimeout(() => { reject('Timeout') }, TIMEOUT);
+
+  // get current project configuration
+  getProject(initConfig.initproject, { map_theme: (new URLSearchParams(location.search)).get('map_theme') } )
+    .then((project) => {
+      clearTimeout(timeout);
+
+      const { MapLayersStoresRegistry } = require('services/map').default;
+
+      Object.assign(ApplicationState.project, project);
+
+      // set in first position (map and catalog)
+      const store = project.getLayersStore();
+      ApplicationState.catalog[store.getId()] = store;
+
+      MapLayersStoresRegistry.addLayersStore(store);
+
+      // BACKOMP v3.x
+      g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
+
+      window.addEventListener('online', () => {
+        ApplicationState.online = true;
+        ApplicationService.online();
+      });
+
+      window.addEventListener('offline', () => {
+        ApplicationState.online = false;
+        ApplicationService.offline();
+      });
+
+      ApplicationService.emit('ready');
+
+      ApplicationState.map.epsg = project.state.crs.epsg;
+
+      if (ApplicationState.iframe) {
+        require('services/iframe').default.init({ project });
+      }
+
+      // init local items
+      Object.keys(LOCAL_ITEM_IDS).forEach(id => {
+        try {
+          const item = window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
+          if (undefined === item) {
+            window.localStorage.setItem(id, JSON.stringify(LOCAL_ITEM_IDS[id].value));
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+      });
+      resolve(true);
+    }).catch(e => {
+      console.warn(e);
+      reject(e);
+    });
+})).then(() => {
     // create Vue App
-    this._createApp();
-  };
-  // create application config
-  this._createTemplateConfig = function() {
-    const appTitle                  = ApplicationService.getConfig().apptitle || 'G3W Suite';
-    const ContentsComponent         = require('gui/viewport/contentsviewer');
-    const CatalogComponent          = require('gui/catalog/vue/catalog');
-    const SearchComponent           = require('gui/search/vue/search');
-    const QueryBuilderUIFactory     = require('gui/querybuilder/querybuilderuifactory');
-    const PrintComponent            = require('gui/print/vue/print');
-    const MetadataComponent         = require('gui/metadata/vue/metadata');
-    const ToolsComponent            = require('gui/tools/vue/tools');
-    const WMSComponent              = require('gui/wms/vue/wms');
-    const MapComponent              = require('gui/map/vue/map');
-    const QueryResultsComponent     = require('gui/queryresults/vue/queryresults');
-    const SpatialBookMarksComponent = require('gui/spatialbookmarks/vue/spatialbookmarks');
-    return {
-      title: appTitle,
-      placeholders: {
-        navbar: {
-          components: []
-        },
-        sidebar: {
-          components: [
-            new MetadataComponent({
-              id:          'metadata',
-              open:        false,
-              collapsible: false,
-              icon:        GUI.getFontClass('file'),
-              mobile:      true,
+    _setDataTableLanguage();
+
+    if (isMobile.any || (window.initConfig.layout || {}).iframe) {
+      $('body').addClass('sidebar-collapse');
+    }
+
+    new Vue({
+      el: '#app',
+      created() {
+
+        Vue.component('app', App);
+
+        // update CONFIG
+        Object.assign(CONFIG, {
+          sidebar: [
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-metadata.js@v3.10.2
+             */
+            new (function() {
+
+              // build project group metadata
+              const project = ApplicationState.project.getState();
+
+              const comp = new Component({
+                id:          'metadata',
+                collapsible: false,
+                icon:        GUI.getFontClass('file'),
+                iconColor:   '#fff',
+                title: 'sdk.metadata.title',
+                service: Object.assign(new G3WObject, {
+                  state: {
+                    name: project.title,
+                    groups: Object.entries({
+                      general: [
+                        'title',
+                        'name',
+                        'description',
+                        'abstract',
+                        'keywords',
+                        'fees',
+                        'accessconstraints',
+                        'contactinformation',
+                        'wms_url',
+                      ],
+                      spatial: [
+                        'crs',
+                        'extent',
+                      ],
+                      layers: [
+                        'layers',
+                      ],
+                    }).reduce((g, [name, fields]) => {
+                      g[name] = fields.reduce((f, field) => {
+                        const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
+                        if (value) {
+                          f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
+                        }
+                        return f;
+                      }, {});
+                      return g;
+                    }, {}),
+                  },
+                  content: null,
+                  show: false,
+                }),
+                vueComponentObject: { template: '<div></div>' },
+              });
+
+              // show metadata
+              comp._setOpen = b => {
+                const service = comp.getService();
+                service.show = b;
+                if (b) {
+                  service.content        = new Component({
+                    service,
+                    internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({
+                      state: service.state
+                    })
+                  });
+                  service.content.layout = noop;
+                  GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
+                  service.show = true;
+                } else {
+                  GUI.closeContent()
+                }
+              };
+
+              GUI.on('closecontent', () => comp.getService().state.open = false);
+
+              return comp;
             }),
-            new SpatialBookMarksComponent({
-              id:          'spatialbookmarks',
-              open:        false,
-              collapsible: true,
-              icon:        GUI.getFontClass('bookmark'),
-              mobile:      true,
+
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-spatialbookmarks.js@v3.10.2
+             */
+            new (function() {
+              const comp = new Component({
+                id:                 'spatialbookmarks',
+                icon:               GUI.getFontClass('bookmark'),
+                iconColor:          '#00bcd4',
+                title:              'sdk.spatialbookmarks.title',
+                vueComponentObject: require('components/SpatialBookMarks.vue'),
+              });
+
+              GUI.on('closecontent', () => { comp.state.open = false; });
+
+              return comp;
             }),
-            new PrintComponent({
-              id:          'print',
-              open:        false,
-              visible:     ApplicationService.getConfig().user.is_staff || (ProjectsRegistry.getCurrentProject().getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-              collapsible: true, //  it used to manage click event if you can run setOpen component method
-              icon:        GUI.getFontClass('print'),
-              mobile:      false,
+
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-print.js@v3.10.2 
+             */
+            Object.assign(new Component({
+              id:                'print',
+              visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+              icon:              GUI.getFontClass('print'),
+              iconColor:         '#FF9B21',
+              title:             'print',
+              service:           {},
+              internalComponent: new (Vue.extend(require('components/Print.vue'))),
+            }), {
+              //@since 3.11.0 use internal methods called by component setters if declared
+              _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
             }),
-            new SearchComponent({
+
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-search.js@v3.10.2 
+             */
+            new Component({
               id:         'search',
-              open:        false,
-              collapsible: true,
+              visible:     true,
               icon:        GUI.getFontClass('search'),
+              iconColor:   '#8dc3e3',
+              title:       ApplicationState.project.state.search_title || 'search',
+              service: Object.assign(new G3WObject, {
+                state: {
+                  searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
+                  tools: [],
+                  querybuildersearches: _getSavedSearches()
+                },
+                title:                    ApplicationState.project.state.search_title || "search",
+                addTool(t)                { this.state.tools.push(t); },
+                addTools(tt)              { for (const t of tt) this.addTool(t); },
+                showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
+                getTitle()                { return this.title },
+                removeTools()             { this.state.tools.splice(0) },
+                stop(d)                   { return $promisify(Promise.resolve(d)) },
+                removeTool()              {},
+              }),
               actions:     [
                 {
                   id:      "querybuilder",
@@ -281,8 +556,12 @@ const ApplicationTemplate = function({ ApplicationService }) {
                   tooltip: t('sdk.querybuilder.title'),
                   fnc:     () => {
                     GUI.closeContent();
-                    ApplicationTemplate.Services.sidebar.closeOpenComponents();
-                    QueryBuilderUIFactory.show({ type: 'sidebar' });  // sidebar or modal
+                    GUI.closeSideBar();
+                    return new Panel({
+                      title: t('sdk.querybuilder.title'),
+                      show: true,
+                      vueComponentObject: require('components/QueryBuilder.vue')
+                    });
                   },
                   style: {
                     color:        '#8DC3E3',
@@ -292,830 +571,364 @@ const ApplicationTemplate = function({ ApplicationService }) {
                     marginRight:  '5px'
                   }
               }],
-              mobile: true,
+              vueComponentObject: require('components/Search.vue'),
             }),
-            // Component that store plugins
-            new ToolsComponent({
-              id:          'tools',
-              open:        false,
-              collapsible: true,
-              icon:        GUI.getFontClass('tools'),
-              mobile:      true,
-            }),
-            new WMSComponent({
-              id:          'wms',
-              open:        false,
-              collapsible: true,
-              icon:        GUI.getFontClass('layers'),
-              mobile:      true,
-            }),
-            new CatalogComponent({
-              id: 'catalog',
-              open: false,
-              collapsible: false,
-              isolate:     true,
-              icon:        GUI.getFontClass('map'),
-              mobile:      true,
-              config:      { legend: { config: appLayoutConfig.legend } },
-            }),
-          ]
-        },
-        floatbar: { components: [] }
-      },
-      othercomponents: [
-        new QueryResultsComponent({ id: 'queryresults' })
-      ],
-      viewport: {
-        // placeholder of the content (view content). Secondary view (hidden)
-        components: {
-          map:     new MapComponent({ id: 'map' }),
-          content: new ContentsComponent({ id: 'contents' })
-        }
-      }
-    }
-  };
 
-  //Vue app
-  this._createApp = function() {
-    this._setDataTableLanguage();
-    const self = this;
-    if (isMobile.any || this._isIframe) {
-      $('body').addClass('sidebar-collapse');
-    }
-    return new Vue({
-      el: '#app',
-      created() {
-        // set general methods for the application as GUI.showForm etc ..
-        self._setupInterface();
-        // setup layout
-        self._setupLayout();
-        //register all services for the application
-        self._setUpServices();
-        // create templateConfig
-        self.templateConfig = self._createTemplateConfig();
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-tools.js@v3.10.2 
+             */
+            new (function() {
+
+              const state   = {
+                id:          'tools',
+                icon:        GUI.getFontClass('tools'),
+                iconColor:   '#FFE721',
+                toolsGroups: [],
+                visible: false,
+                loading: false
+              };
+            
+              const service = new G3WObject({ setters: {
+                addTool(tool, { title, position }) {
+                  let group = state.toolsGroups.find(g => g.name === title);
+                  if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+                  return group.tools.push(Object.assign(tool, {
+                    state:  tool.state || ({ type: null, message: null }),
+                    action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
+                  }));
+                },
+                addToolGroup(position, name) {
+                  let group = state.toolsGroups.find(g => g.name === name);
+                  if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+                  return group;  
+                },
+                addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
+                removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
+                removeTools()                { state.toolsGroups.splice(0); },
+              }});
+            
+              service.state            = state;
+              service.config           = null;
+              service.getState         = () => state;
+              service.reload           = () => { service.removeTools(); };
+              service.setLoading       = (bool = false) => { state.loading = bool; }
+            
+              // static class field
+              service.ACTIONS = ACTIONS;
+            
+              const tools = ApplicationState.project.getState().tools || {};
+            
+              for (let t in tools) {
+                service.addToolGroup(0, t.toUpperCase());
+                service.addTools(
+                  tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
+                  { position: 0, title: t.toUpperCase() }
+                );
+              }
+            
+              const comp = new Component({
+                id:          'tools',
+                icon:        GUI.getFontClass('tools'),
+                iconColor:   '#FFE721',
+                title: "tools",
+                service,
+                internalComponent: new (Vue.extend({
+                  template: /* html */ `
+                    <ul class="g3w-tools treeview-menu">
+                      <bar-loader :loading="state.loading"/>
+                      <li v-for="g in state.toolsGroups" :key="g.name">
+                        <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
+                        <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
+                      </li>
+                    </ul>`,
+                  components: { G3wTool: require('components/Tool.vue') },
+                  data: () => ({ state: null }),
+                  watch: {
+                    async 'state.toolsGroups'(g) {
+                      comp.setVisible(g.length > 0);
+                      this.$emit('visible', g.length > 0);
+                      await GUI.isReady();
+                      document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
+                    }
+                  },
+                }))(),
+              });
+            
+              comp._setOpen = (b=false) => {
+                comp.internalComponent.state.open = b;
+                if (b) {
+                  GUI.closeContent();
+                }
+              };
+            
+              return comp;
+            }),
+
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
+             */
+            Object.assign(new Component({
+              id:                'wms',
+              icon:              GUI.getFontClass('layers'),
+              title:             'sidebar.wms.add_wms_layer',
+              service:           {},
+              internalComponent: new (Vue.extend(require('components/WMS.vue')))(),
+            }), {
+              _setOpen(b = false) {
+                this.getInternalComponent().state.open = b;
+                if (b) {
+                  GUI.closeContent();
+                }
+              }
+            }),
+
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-catalog.js@v3.10.2 
+             */
+            new (function() {
+
+              const opts = {
+                id:          'catalog',
+                icon:        GUI.getFontClass('map'),
+                iconColor:   '#019A4C',
+                config:      { legend: { config: (window.initConfig.layout || {}).legend } },
+              };
+
+              const state = {
+                highlightlayers: false,
+                external: {  // external layers
+                  wms:    [],   // added by wms sidebar component
+                  vector: [] // added to map controls for the moment
+                },
+                layerstrees:  Object.values(ApplicationState.catalog).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
+                layersgroups: [],
+                legend:       Object.assign(opts.config.legend || {}, { place: ApplicationState.project.state.legend_position || 'tab' }),
+              };
+            
+              const service = opts.service || new G3WObject({
+                setters: {
+                  /**
+                   * @param {{ layer: unknown, type: 'vector' }}
+                   *
+                   * @fires CatalogService~addExternalLayer
+                   *
+                   * @since 3.8.0
+                   */
+                  addExternalLayer({ layer, type='vector' } = {}) {
+                    layer.removable = true;
+                    state.external[type].push(layer);
+                  },
+                  /**
+                   * @param {{ name: string, type: 'vector' }}
+                   *
+                   * @fires CatalogService~removeExternalLayer
+                   *
+                   * @since 3.8.0
+                   */
+                  removeExternalLayer({ name, type='vector' } = {}) {
+                    state.external[type].filter((l, i) => {
+                      if (name === l.name) {
+                        state.external[type].splice(i, 1);
+                        return true;
+                      }
+                    });
+                  },
+                }
+              });
+            
+              service.state             = state;
+            
+              /** used by the following plugins: "stress" */
+              service.createLayersGroup = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
+              /** used by the following plugins: "stress" */
+              service.addLayersGroup    = g => { state.layersgroups.push(g); };
+              /** used by the following plugins: "processing" */
+              service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
+
+              const comp = new Component({
+                ...opts,
+                title:              'catalog',
+                resizable:          true,
+                vueComponentObject: require('components/Catalog.vue'),
+                service,
+              });
+            
+              return comp;
+            }),
+          ],
+
+          /**
+           * ORIGINAL SOURCE: src/components/g3w-queryresults.js@v3.10.2 
+           */
+          queryresults: new (function() {
+            const comp = new Component({
+              id:                 'queryresults',
+              title:              'Query Results',
+              service:            require('services/queryresults').default,
+              vueComponentObject: require('components/QueryResults.vue'),
+            });
+
+            comp.getElement = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
+            comp.unmount    = () => { comp.getService().closeComponent(); return Component.prototype.unmount.call(comp) };
+            comp.layout     = noop;
+
+            comp.getService().onafter('setLayersData', async () => {
+              if (!comp.internalComponent) {
+                comp.setInternalComponent();
+              }
+              await comp.internalComponent.$nextTick();
+            });
+
+            return comp;
+          }),
+
+          /**
+           * ORIGINAL SOURCE: src/components/g3w-map.js@v3.10.2 
+           */
+          map: new Component({
+            id:                 'map',
+            title:              'Map Component',
+            service:            new (require('services/map').default).MapService({ id: 'map' }),
+            vueComponentObject: require('components/Map.vue'),
+          }),
+
+          /**
+           * ORIGINAL SOURCE: src/components/g3w-contentsviewer.js@v3.10.2 
+           */
+          content: Object.assign(new Component({
+            id:                 'contents',
+            title:              'contents',
+            vueComponentObject: { template: `<div id="contents" class="contents"></div>` },
+          }), {
+            /** DOM element where insert the component/panel  */
+            parent: null,
+            contentsdata:           ApplicationState.contentsdata,
+            getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
+          }),
+
+        });
+
         // listen lng change and reset datatable language
-        this.$watch(() => ApplicationState.language, () => self._setDataTableLanguage());
+        this.$watch(() => ApplicationState.language, () => _setDataTableLanguage());
       },
+
       async mounted() {
         await this.$nextTick();
-        self._buildTemplate();
+
+        // add component to the sidebar and set position inside the sidebar
+        CONFIG.sidebar.forEach(comp => {
+          if (!isMobile.any || false !== comp.mobile) {
+            ApplicationState.sidebar.components.push(comp);
+            (new (Vue.extend(require('components/SidebarItem.vue')))({ component: comp })).$mount();
+          }
+        });
+
+        CONFIG.sidebar.forEach(comp => GUI.addComponent(comp));
+
+        // register other components
+        GUI.addComponent(CONFIG.queryresults);
+
         // setup Font, Css class methods
         $(document).localize();
-        self._setViewport(self.templateConfig.viewport);
-        const skinColor = $('.navbar').css('background-color');
-        GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
+
+        CONFIG.map.mount('#g3w-view-map', true);
+        CONFIG.content.mount('#g3w-view-content', true);
+
+        GUI.addComponent(CONFIG.map);
+        GUI.addComponent(CONFIG.content);
+
         await this.$nextTick();
-        self.emit('ready');
-        self.sizes.sidebar.width = $('#g3w-sidebar').width();
-        //getSkinColor
+
+        ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
+
         GUI.ready();
-      }
-    })
-  };
 
-  this._setupLayout = function(){
-    if (!isMobile.any) {
-      // setup map controls
-      $("<style type='text/css'> .ol-control-tl {" +
-        "top: 7px;" +
-        "left:43px;" +
-      "}</style>").appendTo("head");
-    }
-    // Inizialization of the components of the application
-    Vue.component('sidebar', SidebarComponent);
-    //Navbar custom items
-    Vue.component('navbarleftitems', NavbaritemsLeftComponent);
-    Vue.component('navbarrightitems', NavbaritemsRightComponent);
-    Vue.component('viewport', ViewportComponent);
-    Vue.component('floatbar', FloatbarComponent);
-    Vue.component('app', App);
-  };
+        // init plugins
+        try {
+          const gidProject = ApplicationState.project.getGid(); // current project
 
-  // dataTable Translations and custom extentions
-  this._setDataTableLanguage = function(dataTable=null) {
-    const languageOptions = {
-      "language": {
-        "sSearch": '',
-        "searchPlaceholder": t("dosearch"),
-        "sLengthMenu": t("dataTable.lengthMenu"),
-        "paginate": {
-          "previous": '«',
-          "next": '»',
-        },
-        "info": t("dataTable.info"),
-        "zeroRecords": t("dataTable.nodatafilterd"),
-        "infoFiltered": ''
-      }
-    };
-    //set form control class to filter
-    $.extend( $.fn.dataTableExt.oStdClasses, {
-      "sFilterInput": "form-control search"
-    });
-    !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
-  };
+          // set plugin config filtered by gid
+          const enabledPlugins = {};
+          Object.entries(window.initConfig.plugins).filter(([,p]) => p.gid === gidProject).forEach(([name, config]) => enabledPlugins[name] = config);
+          Object.assign(ApplicationState.pluginsConfigs, enabledPlugins);
 
-  // route setting at the beginning (is an example)
-  this._addRoutes = function() {
-    ApplicationService.getRouterService().addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
-      coordinate = _.map(coordinate.split(','), function(xy) {
-        return Number(xy)
-      });
-      zoom = zoom ? Number(zoom): null;
-      if (coordinate.length) {
-        GUI.getService('map').on('ready', function() {
-          this.zoomTo(coordinate, zoom);
-        })
-      }
-    })
-  };
+          Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
+          Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.plugins.push(p));
 
-  //register all services
-  this._setUpServices = function() {
-    Object
-      .keys(ApplicationTemplate.Services)
-      .forEach(element => ApplicationService.registerService(element, ApplicationTemplate.Services[element]));
-
-    Object
-      .values(GUI.getComponents())
-      .forEach(component => ApplicationService.registerService(component.id, component.getService()));
-
-    ApplicationTemplate.Services.viewport.on('resize', () => GUI.emit('resize'));
-  };
-  // build template function
-  this._buildTemplate = function() {
-    FloatbarService.init(layout);
-    Object
-      .entries(this.templateConfig.placeholders)
-      .forEach(([placeholder, options]) => this._addComponents(options.components, placeholder));
-    //register other components
-    this._addOtherComponents();
-  };
-
-  //add component not related to placeholder
-  this._addOtherComponents = function() {
-    if (this.templateConfig.othercomponents) { this._addComponents(this.templateConfig.othercomponents) }
-  };
-  // viewport setting
-  this._setViewport = function(viewportOptions) {
-    // viewport components
-    // es.: map e content
-    /*
-
-    components: {
-      map: new MapComponent({
-        id: 'map'
-      }),
-      content: new ContentsComponent({
-        id: 'content',
-      })
-     }
-
-     */
-    if (viewportOptions) {
-      ApplicationTemplate.Services.viewport.init(viewportOptions);
-      this._addComponents(viewportOptions.components);
-    }
-  };
-
-  // add component to template
-  this._addComponent = function(component, placeholder, options={}) {
-    this._addComponents([component], placeholder, options);
-    return true;
-  };
-
-  // registry component
-  this._addComponents = function(components, placeholder, options) {
-    let register = true;
-    if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
-      const placeholderService = ApplicationTemplate.Services[placeholder];
-      if (placeholderService) {
-        register = placeholderService.addComponents(components, options);
-      }
-    }
-    Object.entries(components).forEach(([key, component])=> {
-      if (register) {
-        ComponentsRegistry.registerComponent(component);
-        ApplicationService.registerService(component.id, component.getService())
-      }
-    })
-  };
-
-  this._removeComponent = function(componentId, placeholder, options) {
-    if (placeholder && ApplicationTemplate.Services[placeholder]) {
-      ApplicationTemplate.Services[placeholder].removeComponent(ComponentsRegistry.unregisterComponent(componentId), options);
-    }
-  };
-
-  this._showModalOverlay = function(bool=false, message) {
-    const mapService = GUI.getService('map');
-    if (bool) { mapService.startDrawGreyCover(message) }
-    else { mapService.stopDrawGreyCover() }
-  };
-
-  this._isSidebarVisible = function() {
-    return !$('body').hasClass('sidebar-collapse');
-  };
-
-  this._showSidebar = function() {
-    $('body').addClass('sidebar-open');
-    $('body').removeClass('sidebar-collapse')
-  };
-
-  this._hideSidebar = function() {
-    $('body').removeClass('sidebar-open');
-    $('body').addClass('sidebar-collapse')
-  };
-
-  /**
-   * Convert error to user message showed
-   * @param error
-   * @returns {string}
-   */
-  GUI.errorToMessage = function(error){
-    let message = 'server_error';
-    switch (toRawType(error)) {
-      case 'Error':
-        message = `CLIENT - ${error.message}`;
-        break;
-      case 'Object':
-        if (error.responseJSON) {
-          error = error.responseJSON;
-          if (error.result === false) {
-            const { code='', data='', message:msg='' } = error.error;
-            message = `${code.toUpperCase()} ${data} ${msg}`;
+          // set plugins that aren't within server configuration  but in project (law for example)
+          const otherPluginsConfig = ApplicationState.project.getState() || {};
+          if (otherPluginsConfig && otherPluginsConfig.law && otherPluginsConfig.law.length) {
+            // law plugin
+            ApplicationState.pluginsConfigs.law     = otherPluginsConfig.law;
+            ApplicationState.pluginsConfigs.law.gid = otherPluginsConfig.gid;
+          } else {
+            delete ApplicationState.pluginsConfigs.law;
           }
-        } else if (error.responseText) {
-          message = error.responseText;
-        }
-        break;
-      case 'Array':
-        message = error.map(error => GUI.errorToMessage(error)).join(' ');
-        break;
-      case 'String':
-      default:
-        message = error;
-    }
-    return message;
-  };
 
-  // setup Interaces
-  this._setupInterface = function() {
-    /* PUBLIC INTERFACE */
-
-    /* Common methods */
-    GUI.layout = layout;
-    GUI.getSize = ({ element, what }) => {
-      if (element && what)
-        return this.sizes[element][what];
-    };
-
-    GUI.addComponent    = this._addComponent.bind(this);
-    GUI.removeComponent = this._removeComponent.bind(this);
-
-    /* Metodos to define */
-    GUI.getResourcesUrl = () => ApplicationService.getConfig().resourcesurl;
-
-    //LIST
-    GUI.showList        = FloatbarService.showPanel.bind(FloatbarService);
-    GUI.closeList       = FloatbarService.closePanel.bind(FloatbarService);
-    GUI.hideList        = FloatbarService.hidePanel.bind(FloatbarService);
-
-    // TABLE
-    GUI.showTable       = function() {};
-    GUI.closeTable      = function() {};
-
-    /**
-     * Function called from DataRouterservice for gui output
-     * @param dataPromise
-     * @param options
-     */
-    GUI.outputDataPlace = async function(dataPromise, options = {}) {
-      // show parameter it used to set condition to show result or not
-      // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
-      const defaultOutputConfig = { condition:true, add:false, loading:true };
-      const { title='', show=defaultOutputConfig, before, after } = options;
-      // convert show in an object
-      const outputConfig = (toRawType(show) !== 'Object') ?
-        {
-          condition: show, // can be Function or Boolean otherwise is set true
-          add: false,
-          loading: true
-        } : {
-          ...defaultOutputConfig,
-          ...show
-        };
-      const {condition, add, loading} = outputConfig;
-      //check if waiting output data
-      // in case we stop and substiute with new request data
-      if (this.waitingoutputdataplace) { await this.waitingoutputdataplace.stop() }
-      let queryResultsService = add ? GUI.getService('queryresults'): loading && this.showContentFactory('query')(title);
-      this.waitingoutputdataplace = (() => {
-        let stop = false;
-        (async () =>{
-          try {
-            const data = await dataPromise;
-            //if set before call method and wait
-            before && await before(data);
-            // in case of usermessage show user message
-            if (data.usermessage) {
-              GUI.showUserMessage({
-                type:      data.usermessage.type,
-                message:   data.usermessage.message,
-                autoclose: data.usermessage.autoclose
+          /** @TODO check if deprecated */
+          for (const p in ApplicationState.pluginsConfigs) {
+            Object
+              .entries(ApplicationState.pluginsConfigs[p].plugins || {})
+              .forEach(([name, config]) => ApplicationState.pluginsConfigs[name] = {
+                ...ApplicationState.pluginsConfigs[name],
+                ...config
               });
-            }
-            if (!stop) {
-              // check condition
-              const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
-              if (showResult) {
-                (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
-                  add
-                });
-              }
-              else  { GUI.closeContent() }
-              // call after is set with data
-              if (after) { after(data) }
-            }
-          } catch(e) {
-            this.showUserMessage({
-              type:        'alert',
-              message:     this.errorToMessage(e),
-              textMessage: true
-            });
-            this.closeContent();
-          } finally {
-            if (!stop) { this.waitingoutputdataplace = null }
           }
-        })();
-        return {
-          stop: async () => stop = true
+
+          // load plugins
+          await Promise
+            .allSettled(Object.entries(ApplicationState.pluginsConfigs)
+            .map(async ([name, config]) => {
+              if (!config) {
+                return;
+              }
+              config.baseUrl = window.initConfig.urls.staticurl;
+              try {
+                // wait plugin dependencies before loading plugin
+                await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
+                await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${Date.now()}`, false);
+              } catch(e) {
+                console.warn('[G3W-PLUGIN]', e);
+                // remove loading plugin in case of error of dependencies
+                ApplicationState.plugins = ApplicationState.plugins.filter(p => name !== p);
+                return Promise.reject();
+              }
+            }));
+        } catch (e) {
+          console.warn(e);
         }
-      })();
-    };
 
-    GUI.showContentFactory = function(type) {
-      let showPanelContent;
-      switch (type) {
-        case 'query':
-          showPanelContent = GUI.showQueryResults;
-          break;
-        case 'form':
-          showPanelContent = GUI.showForm;
-          break;
-      }
-      return showPanelContent;
-    };
+        // trigger 'complete' event
+        ApplicationService.complete = true;
+        ApplicationService.emit('complete');
 
-    GUI.showForm = function(options = {}) {
-      const { perc, split = 'h', push, showgoback, crumb } = options;
-      const FormComponent = require('gui/form/vue/form');
-      // new isnstace every time
-      const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
-      //get service
-      const formService = formComponent.getService();
-      // parameters : [content, title, push, perc, split, closable, crumb]
-      GUI.setContent({
-        perc,
-        content:    formComponent,
-        split,
-        crumb,
-        push:       !!push, //only one (if other deletes previous component)
-        showgoback: !!showgoback,
-        closable:   false
-      });
-      // return service
-      return formService;
-    };
-
-    /**
-     *
-     * @param pop remove or not content or pop
-     */
-    GUI.closeForm = function({ pop = false } = {}) {
-      this.emit('closeform', false);
-      if (pop) { GUI.popContent()}
-      else { ViewportService.removeContent() }
-      // force set modal to false
-      GUI.setModal(false);
-    };
-
-    GUI.disableElement = function({element, disable}) {
-      $(element)[disable ? 'addClass' : 'removeClass']('g3w-disabled');
-    };
-
-    GUI.disableContent = function(disable) {
-      ViewportService.disableContent(disable);
-    };
-
-    GUI.disablePanel = function(disable=false) {
-      GUI.disableElement({
-        element: "#g3w-sidebarpanel-placeholder",
-        disable
-      })
-    };
-
-    // hide content
-    GUI.hideContent = function(bool, perc) {
-      return ViewportService.hideContent(bool, perc);
-    };
-
-    GUI.closeContent = function() {
-      this.emit('closecontent', false);
-      return ViewportService.closeContent();
-    };
-
-    GUI.closeOpenSideBarComponent = function() {
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
-    };
-
-    // show results info/search
-    GUI.showQueryResults = function(title, results) {
-      const queryResultsComponent = GUI.getComponent('queryresults');
-      const queryResultService    = queryResultsComponent.getService();
-      queryResultService.reset();
-      if (results) {
-        queryResultService.setQueryResponse(results);
-      }
-      GUI.showContextualContent({
-        content:    queryResultsComponent,
-        title:      "info.title",
-        crumb:      { title: "info.title", trigger: null },
-        push:       GUI.getPushContent(),
-        post_title: title
-      });
-
-      return queryResultService;
-    };
-
-    GUI.addNavbarItem = function(item) {
-      NavbarItemsService.addItem(item)
-    };
-
-    GUI.removeNavBarItem = function() {};
-
-    GUI.showPanel  = SidebarService.showPanel.bind(SidebarService);
-
-    GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
-
-    ///
-    GUI.disableApplication = function(bool = false) {
-      ApplicationService.disableApplication(bool);
-    };
-
-    //showusermessage
-    GUI.showUserMessage = function(options = {}) {
-      return ViewportService.showUserMessage(options);
-    };
-
-    GUI.closeUserMessage = function() {
-      ViewportService.closeUserMessage();
-    };
-
-    /* ------------------ */
-    GUI.notify = {
-      warning(message, autoclose=false){
-        GUI.showUserMessage({
-          type: 'warning',
-          message,
-          autoclose
-        })
       },
-      error(message, autoclose=false){
-        GUI.showUserMessage({
-          type: 'alert',
-          message,
-          autoclose
-        })
-      },
-      info(message, autoclose=false){
-        GUI.showUserMessage(({
-          type: 'info',
-          message,
-          autoclose
-        }))
-      },
-      success(message){
-        GUI.showUserMessage({
-          type: 'success',
-          message,
-          autoclose: true
-        })
-      }
-    };
-
-    // proxy bootbox library
-    GUI.dialog = bootbox;
-
-    //modal dialog//
-    GUI.showModalDialog = function(options = {}) {
-      return GUI.dialog.dialog(options);
-    };
-
-    /* spinner */
-    GUI.showSpinner = function(options = {}) {
-      const container   = options.container || 'body';
-      const id          = options.id || 'loadspinner';
-      const where       = options.where || 'prepend'; // append | prepend
-      const style       = options.style || '';
-      const transparent = options.transparent ? 'background-color: transparent' : '';
-      const center      = options.center ? 'margin: auto' : '';
-      if (!$(`#${id}`).length) {
-        $(container)[where].call($(container),`<div id="${id}" class="spinner-wrapper ${style}" style="${transparent}"><div class="spinner ${style}" style="${center}"></div></div>`);
-      }
-    };
-
-    //hide spinner
-    GUI.hideSpinner = function(id = 'loadspinner') {
-      $(`#${id}`).remove();
-    };
-
-    /* end spinner*/
-    /* end common methods */
-
-    /*  */
-
-    // FLOATBAR //
-    GUI.showFloatbar = function() {
-      FloatbarService.open();
-    };
-
-    GUI.hideFloatbar = function() {
-      FloatbarService.close();
-    };
-
-    // SIDEBAR //
-    GUI.showSidebar      = this._showSidebar.bind(this);
-    GUI.hideSidebar      = this._hideSidebar.bind(this);
-    GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
-
-    // RELOAD COMPONENTS
-    GUI.reloadComponents = function() {
-      ApplicationTemplate.Services.sidebar.reloadComponents();
-    };
-
-    // MODAL
-    GUI.setModal = this._showModalOverlay.bind(this);
-
-    /**
-     * Toggle set full screen modal
-     */
-    GUI.showFullModal = function({element = "#full-screen-modal", show = true} = {}) {
-      $(element).modal(show ? 'show' : 'hide')
-    };
-
-    GUI.disableSideBar = function(bool = true) {
-      ApplicationState.gui.sidebar.disabled = bool;
-    };
-
-    // VIEWPORT //
-    GUI.setPrimaryView = function(viewName) {
-      ViewportService.setPrimaryView(viewName);
-    };
-
-    // only map
-    GUI.showMap = function() {
-      ViewportService.showMap();
-    };
-
-    GUI.showContextualMap = function(perc = 30, split) {
-      ViewportService.showContextualMap({ perc, split });
-    };
-
-    GUI.setContextualMapComponent = function(mapComponent) {
-      ViewportService.setContextualMapComponent(mapComponent);
-    };
-
-    GUI.resetContextualMapComponent = function() {
-      ViewportService.resetContextualMapComponent();
-    };
-
-    //  (100%) content
-    GUI.showContent = (options = {}) => {
-      GUI.setLoadingContent(false);
-      options.perc = this._isMobile ? 100 : options.perc;
-      GUI.setContent(options);
-      return true;
-    };
-
-    GUI.showContextualContent = (options = {}) => {
-      options.perc = this._isMobile ? 100 : options.perc;
-      GUI.setContent(options);
-      return true;
-    };
-
-    // add component to stack (append)
-    // Differences between pushContent and setContent are:
-    //  - push every component is added, set is refreshed
-    //  - pushContent has a new parameter (backonclose) when is clicked x
-    //  - the contentComponent is close all stacks are closed
-    GUI.pushContent = (options = {}) => {
-      options.perc = this._isMobile ? 100 : options.perc;
-      options.push = true;
-      GUI.setContent(options);
-    };
-
-    // add content to stack
-    GUI.pushContextualContent = (options={}) => {
-      options.perc = this._isMobile ? 100 : options.perc;
-      GUI.pushContent(options);
-    };
-
-    // remove last content from stack
-    GUI.popContent = function() {
-      ViewportService.popContent();
-    };
-    //return number of a component of stack
-    GUI.getContentLength = function() {
-      return ViewportService.contentLength();
-    };
-
-    GUI.getCurrentContentTitle = function() {
-      return ViewportService.getCurrentContentTitle();
-    };
-
-    GUI.getCurrentContentId = function() {
-      return ViewportService.getCurrentContentId();
-    };
-
-    /**
-     * change current content title
-     * @param title
-     */
-    GUI.changeCurrentContentTitle = function(title) {
-      ViewportService.changeCurrentContentTitle(title);
-    };
-
-    /**
-     * change current content options
-     * @param options: {title, crumb}
-     */
-    GUI.changeCurrentContentOptions= function(options={}) {
-      ViewportService.changeCurrentContentOptions(options);
-    };
-
-    /**
-     * Method to get current content
-     */
-    GUI.getCurrentContent = function() {
-      return ViewportService.getCurrentContent();
-    };
-
-    GUI.toggleFullViewContent = function() {
-      ViewportService.toggleFullViewContent();
-    };
-
-    GUI.resetToDefaultContentPercentage = function() {
-      ViewportService.resetToDefaultContentPercentage();
-    };
-
-    GUI.getProjectMenuDOM = function({ projects = [], host, cbk } = {}) {
-      const projectVueMenuComponent = new ProjectsMenuComponent({
-        projects: projects && Array.isArray(projects) && projects,
-        cbk,
-        host
-      }).getInternalComponent();
-      return projectVueMenuComponent.$mount().$el;
-    };
-
-    GUI.setCloseUserMessageBeforeSetContent = function(bool = true) {
-      this._closeUserMessageBeforeSetContent = bool;
-    };
-
-    GUI._setContent = (options={}) => {
-      if (this._closeUserMessageBeforeSetContent) { GUI.closeUserMessage() }
-      options.content     = options.content || null;
-      options.title       = options.title || "";
-      options.push        = _.isBoolean(options.push) ? options.push : false;
-      options.perc        = this._isMobile ? 100 : options.perc;
-      options.split       = options.split || 'h';
-      options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
-      options.showtitle   = _.isBoolean(options.showtitle) ? options.showtitle : true;
-      ViewportService.showContent(options);
-    };
-
-    GUI.hideClientMenu = function() {
-      ApplicationService.getConfig().user = null;
-    };
-
-    GUI.hideChangeMaps = function() {
-      ApplicationService.getConfig().projects = [];
-    };
-
-    // return specific classes
-    GUI.getTemplateClasses = function() {
-      return BootstrapVersionClasses
-    };
-
-    GUI.getTemplateClass = function({ element, type } = {}) {
-      return BootstrapVersionClasses[element][type];
-    };
-
-    GUI.setLoadingContent = function(loading = false) {
-      ApplicationTemplate.Services.viewport.setLoadingContent(loading);
-      return loading && new Promise((resolve) => setTimeout(resolve, 200))
-    };
-
-    GUI.openProjectsMenu = function() {
-      if (GUI.getComponent('contents').getComponentById('projectsmenu')) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
-      GUI.setContent({
-        content: new ProjectsMenuComponent(),
-        title:   '',
-        perc:    100
-      });
-    };
-
-    /**
-     * @since 3.8.0
-     */
-    GUI.openChangeMapMenu = function() {
-      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      ApplicationTemplate.Services.sidebar.closeOpenComponents();
-      GUI.setContent({
-        content: new ChangeMapMenuComponent(),
-        title: '',
-        perc: 100
-      });
-    };
-
-  };
-
-  base(this);
-
-};
-
-inherit(ApplicationTemplate, G3WObject);
-
-// Placeholder knowed by application
-ApplicationTemplate.PLACEHOLDERS = [
-  'navbar',
-  'sidebar',
-  'viewport',
-  'floatbar'
-];
-
-// service know by the applications (standard)
-ApplicationTemplate.Services = {
-  navbar:   null,
-  sidebar:  SidebarService,
-  viewport: ViewportService,
-  floatbar: null
-};
-
-ApplicationTemplate.fail = function({ error }) {
-  layout.loading(false);
-  new Vue({
-    el: '#app',
-    ...Vue.compile(
-      `<div class="error-initial-page skin-background-color">
-        <template v-if="isMobile()">
-          <h3 class="oops">Oops!</h3>
-          <h5 class="cause">${ error || t('error_page.error') }</h5>
-          <h6 class="at-moment">${ t('error_page.at_moment') }</h6>
-          <h4 class="f5">${ t('error_page.f5') }</h4>
-        </template>
-        <template v-else>
-          <h1 class="oops">Oops!</h1>
-          <h1 class="cause">${ error || t('error_page.error') }</h1>
-          <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
-          <h2 class="f5">${ t('error_page.error') }</h2>
-        </template>
-      </div>`
-    )
-  });
-};
-
-/**
- * Application starting point
- *
- * create the ApplicationTemplate instance passing template interface configuration
- * and the applicationService instance that is useful to work with project API
- */
-ApplicationService.init()
-  .then(() => {
-    const app = new ApplicationTemplate({ ApplicationService });
-    app.on('ready', () => ApplicationService.postBootstrap());
-    app.init();
+    });
   })
-  .catch(({ error = null, language }) => {
+  .catch(error => {
+    console.warn(error);
     if (error) {
       if (error.responseJSON && error.responseJSON.error.data) { error = error.responseJSON.error.data }
       else if (error.statusText) { error = error.statusText }
     }
-    console.error(error);
-    ApplicationTemplate.fail({ error });
+    $('#startingspinner').remove();
+    new Vue({
+      el: '#app',
+      ...Vue.compile(
+        `<div class="error-initial-page skin-background-color">
+          <template v-if="isMobile()">
+            <h3 class="oops">Oops!</h3>
+            <h5 class="cause">${ error || t('error_page.error') }</h5>
+            <h6 class="at-moment">${ t('error_page.at_moment') }</h6>
+            <h4 class="f5">${ t('error_page.f5') }</h4>
+          </template>
+          <template v-else>
+            <h1 class="oops">Oops!</h1>
+            <h1 class="cause">${ error || t('error_page.error') }</h1>
+            <h3 class="at-moment">${ t('error_page.at_moment') }</h3>
+            <h2 class="f5">${ t('error_page.error') }</h2>
+          </template>
+        </div>`
+      )
+    });
   });

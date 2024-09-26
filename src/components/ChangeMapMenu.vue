@@ -90,22 +90,23 @@
 
 <script>
 
-import ApplicationService            from "services/application";
-import ProjectsRegistry              from "store/projects";
-import { API_BASE_URLS, LOGO_GIS3W } from "app/constant";
+import ApplicationState        from 'store/application';
+import Projections             from 'store/projections';
+import { XHR }                 from 'utils/XHR';
+import { getListableProjects } from 'utils/getListableProjects';
+import GUI                     from 'services/gui';
 
-const Projections = require('g3w-ol/projection/projections');
-const { XHR }     = require('utils');
+const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
 
 /** Cached HTTP GET request */
 async function get_macro(id) {
-  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.group}${id}/`) });
+  get_macro[id] = get_macro[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}/about/api/group/${id}/`) });
   return get_macro[id];
 }
 
 /** Cached HTTP GET request */
 async function get_group(id) {
-  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationService.getApplicationUser().i18n}${API_BASE_URLS.ABOUT.projects.replace('__G3W_GROUP_ID__', id)}`) });
+  get_group[id] = get_group[id] || await XHR.get({ url: encodeURI(`/${ApplicationState.user.i18n}/about/api/group/${id}/projects/`) });
   return get_group[id];
 }
 
@@ -249,7 +250,7 @@ export default {
         this.parent  = item;
         this.items   = (
           this.parent.id === this.curr_group
-            ? ProjectsRegistry.getListableProjects()
+            ? getListableProjects()
             : await get_group(item.id, item => this.setItemImageSrc({ item, type: 'project' }))
         );
         this.current = 'projects';
@@ -274,7 +275,7 @@ export default {
      */
     async changeMapProject(item) {
       let url;
-      const base_url = ProjectsRegistry.getBaseUrl();
+      const base_url = window.initConfig.urls.baseurl;
       const epsg     = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
       await Projections.registerProjection(epsg);
       try {
@@ -283,7 +284,9 @@ export default {
       } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
-      return ApplicationService.changeMapProject({ url, epsg });
+      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      history.replaceState(null, null, url);
+      location.replace(url);
     },
 
     async trigger(item) {
@@ -309,9 +312,9 @@ export default {
         // Set a fallback image on network error.
         case 'net_error':
           if (item.thumbnail || item.logo_img) {
-            item.thumbnail = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+            item.thumbnail = `${window.initConfig.urls.clienturl}${LOGO_GIS3W}`;
           } else if (item.header_logo_img) {
-            item.header_logo_img = `${ApplicationService.getConfig().urls.clienturl}${LOGO_GIS3W}`;
+            item.header_logo_img = `${window.initConfig.urls.clienturl}${LOGO_GIS3W}`;
           }
           break;
       }
@@ -323,10 +326,10 @@ export default {
     _setSrc(src) {
       let imageSrc;
       const host       = this.$options.host || '';
-      const mediaurl   = ProjectsRegistry.config.mediaurl;
-      const clienturl  = ApplicationService.getConfig().urls.clienturl;
-      const has_media  = src && (-1 !== src.indexOf(mediaurl));
-      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'));
+      const mediaurl   = window.initConfig.mediaurl;
+      const clienturl  = window.initConfig.urls.clienturl;
+      const has_media  = src && (src.includes(mediaurl));
+      const not_static = src && (!src.includes('static') && !src.includes('media'));
 
       if (!src) {
         imageSrc = `${clienturl}${LOGO_GIS3W}`;
@@ -345,11 +348,11 @@ export default {
 
   async created() {
 
-    const config = ApplicationService.getConfig();
+    const config = window.initConfig;
 
     // setup items data (macrogrups and groups).
-    this.items       = ProjectsRegistry.getListableProjects();
-    this.parent      = ProjectsRegistry.getCurrentProjectGroup();
+    this.items       = getListableProjects();
+    this.parent      = window.initConfig;
     this.curr_group  = this.parent.id;
     this.macrogroups = config.macrogroups;
     this.groups      = config.groups;

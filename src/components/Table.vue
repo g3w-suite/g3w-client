@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div id = "open_attribute_table" style = "margin-top: 5px">
+  <div id = "open_attribute_table">
 
     <!-- TABLE TOOLBAR -->
     <!-- ORIGINAL SOURCE: src/components/TableToolBar.vue@3.9.7 -->
@@ -17,7 +17,7 @@
       <div
         v-if               = "layer.isGeoLayer()"
         class              = "skin-color action-button skin-tooltip-right"
-        v-disabled         = "state.geolayer.active && ApplicationService.getCurrentLayout().rightpanel.height_100"
+        v-disabled         = "state.geolayer.active && current_layout.rightpanel.height_100"
         :class             = "[ g3wtemplate.getFontClass('map'), state.geolayer.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
         data-placement     = "right"
@@ -148,21 +148,20 @@
 </template>
 
 <script>
-import Component                   from 'core/g3w-component';
+import { SELECTION }               from 'g3w-constants';
+import Component                   from 'g3w-component';
+import ApplicationState            from 'store/application';
 import Field                       from 'components/FieldG3W.vue';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
 import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
-import { noop }                    from 'utils/noop';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
-import { SELECTION }               from 'core/layers/mixins/selection';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
-const { t }                        = require('core/i18n/i18n.service');
+const { t }                        = require('g3w-i18n');
 
 
 //Supported page lengths
@@ -173,7 +172,7 @@ function _createFeatureForSelection(f) {
     id: f.id,
     feature: {
       attributes: f.attributes || f.properties,
-      geometry: f.geometry ? coordinatesToGeometry(f.geometry.type, f.geometry.coordinates) : f.geometry,
+      geometry:   f.geometry ? coordinatesToGeometry(f.geometry.type, f.geometry.coordinates) : f.geometry,
     },
   }
 }
@@ -189,7 +188,7 @@ export default {
   },
 
   data() {
-    const layer = CatalogLayersStoresRegistry.getLayerById(this.$options.layerId);
+    const layer = getCatalogLayerById(this.$options.layerId);
 
     return {
       layer,
@@ -208,7 +207,7 @@ export default {
       },
       // when the current layer is: alphanumerical + not child of relation + relation has geometry
       relations: (layer.isGeoLayer() ? [] : layer.getRelations().getArray())
-        .map(relation => [relation, CatalogLayersStoresRegistry.getLayerById(relation.getFather())])
+        .map(relation => [relation, getCatalogLayerById(relation.getFather())])
         .filter(([relation, father]) => layer.getId() !== relation.getFather() && father.isGeoLayer())
         .map(([relation, father]) => ({
           layer:         father,
@@ -218,7 +217,7 @@ export default {
         })),
       filter:              [],
       has_map:             true,
-      async_highlight:     noop,
+      async_highlight:     () => {},
       getAll:              false,
       search:              {},
       firstCall:           true,
@@ -234,9 +233,9 @@ export default {
       return !!this.state.features.length;
     },
 
-    ApplicationService() {
-      return ApplicationService;
-    },
+    current_layout() {
+      return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+    }
 
   },
 
@@ -265,8 +264,8 @@ export default {
         await promisify(
           DataRouterService.getData('search:fids', {
             inputs: {
-              layer: this.layer,
-              fids: [feature.id],
+              layer:     this.layer,
+              fids:      [feature.id],
               formatter: 1
             }
           })
@@ -459,6 +458,8 @@ export default {
           - 100
         ) + 'px';
       }
+      // adjust columns when resize
+      $(this.$refs.attribute_table).DataTable().columns.adjust();
     },
 
     async getFeatures(params) {
@@ -471,7 +472,7 @@ export default {
         if (is_valid && !params) {
           const loaded_features = this.state.features.map(f => f.id);
           data.features
-            .filter(f => f.geometry && -1 === loaded_features.indexOf(f.id))
+            .filter(f => f.geometry && !loaded_features.includes(f.id))
             .forEach(f => this.layer.addOlSelectionFeature(_createFeatureForSelection(f)));
           this.getAll = true;
         }
@@ -559,7 +560,7 @@ export default {
           })
         );
 
-        this.state.show_tools = this.layer.getFilterActive() || this.layer.getSelectionFids().size > 0;
+        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
         this.state.selectAll  = this.layer.state.filter.active || this.state.features.every(f => f.selected);
         return {
           // DataTable pagination
@@ -581,7 +582,7 @@ export default {
     unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
       this.state.show_tools = false;
-      this.state.selectAll = false;
+      this.state.selectAll  = false;
     },
 
     /**
@@ -604,7 +605,7 @@ export default {
     //   table.columns.adjust(); // adjust column
     // },
 
-    onGUIContent(opts) {
+    onGUIContent(opts = {}) {
       this.has_map = (100 !== opts.perc);
     },
     /**
@@ -628,38 +629,31 @@ export default {
    */
   async created() {
 
-    // disable any previous active map control
-    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
-    if (this.last_map_control) {
-      this.last_map_control.control.toggle();
-    }
-
-    GUI.closeContent();
-
     // bind context on event listeners
     this.unSelectAll  = this.unSelectAll.bind(this);
     // this.changeFilter = this.changeFilter.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
-    GUI.onbefore('setContent',   this.onGUIContent);
+    GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.filterChangeHandler);
 
-    GUI.closeOpenSideBarComponent(); // close other sidebar components
+    GUI.closeSideBar(); // close other sidebar components
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
-    ApplicationService.getCurrentLayout().rightpanel.height = 55;
+    this.current_layout.rightpanel.height = 55;
 
     GUI.showContent({
       content: new Component({
-        id: 'openattributetable',
-        service: { state: this.state },
+        id:                'openattributetable',
+        service:           { state: this.state },
         internalComponent: this,
       }),
       // perc: undefined !== this.$options.perc ? this.$options.perc : 55,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getTitle(),
+      text:  true, /**@since 3.11.0 */
     });
 
     if (this.isMobile()) {
@@ -668,6 +662,11 @@ export default {
   },
 
   async mounted() {
+    // disable any previous active map control
+    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
+    if (this.last_map_control) {
+        this.last_map_control.control.toggle();
+    }
     this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
@@ -712,7 +711,7 @@ export default {
     this.changeColumn = debounce(async (e, i) => {
       const value = e.target.value.trim();
       table.one('draw', async() => {
-        filterColumns[i] = value;
+        filterColumns[i]      = value;
         this.disableSelectAll = 0 === this.state.features.length;
         this.filter           = Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [];
       })
@@ -734,11 +733,13 @@ export default {
     table.ajax.reload();
   },
 
-  beforeDestroy() {
+  async beforeDestroy() {
     // restore any previous active map control
-    if (this.last_map_control) {
-      this.last_map_control.control.toggle();
+    if (this.last_map_control && !this.last_map_control.control.isToggled()) {
+     this.last_map_control.control.toggle();
     }
+
+    this.last_map_control = null;
 
     this.layer.off('unselectionall',    this.unSelectAll);
     this.layer.off('filtertokenchange', this.filterChangeHandler);
@@ -753,8 +754,8 @@ export default {
     if (!this.has_map) {
       setTimeout(() => {
         this.async_highlight();
-        this.has_map = true;
-        this.async_highlight = noop;
+        this.has_map         = true;
+        this.async_highlight = () => {};
       });
     }
 
@@ -769,12 +770,16 @@ export default {
 </script>
 
 <style>
+
+#open_attribute_table {
+  margin-top: 5px;
+}
+
 #g3w-table-toolbar {
   margin: 0.755em 1ch 0 0;
   position: relative;
   bottom: 3px;
   display: inline-flex;
-  border-radius: 2px;
   border: 1px solid #d2d6de;
   background-color: #fff;
   float: left;
@@ -806,7 +811,8 @@ export default {
     padding: 4px;
   }
   #g3w-table-toolbar .action-button.toggled {
-    border: 1px solid #cccccc;
+    color: #FFFFFF !important;
+    background-color: var(--skin-color);
   }
   #layer_attribute_table {
     width: 100%;

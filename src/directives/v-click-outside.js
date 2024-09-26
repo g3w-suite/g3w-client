@@ -5,13 +5,13 @@
 
 export default  {
   bind(el, binding, vnode) {
-    this.event = (event) => {
+    this.event = e => {
       // skip if a clicked element is a child of element
-      if (el === event.target || el.contains(event.target)) {
+      if (el === e.target || el.contains(e.target)) {
         return;
       }
-      event.stopPropagation();
-      vnode.context[binding.expression](event);
+      e.stopPropagation();
+      vnode.context[binding.expression](e);
     };
     document.body.addEventListener('click', this.event, true)
   },

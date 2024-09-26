@@ -9,7 +9,7 @@
   >
     <a
       href   = "https://g3wsuite.it/"
-      style  = "margin-left: 5px; align-self: center; box-shadow: 0 1px 4px 0 rgba(0,0,0,.1), 0 4px 8px 0 rgba(0,0,0,.3);"
+      style  = "margin-left: 5px; align-self: center;"
       target = "_blank"
       :title = "version"
     >

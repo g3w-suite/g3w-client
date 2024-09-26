@@ -3,10 +3,10 @@
  * @since v3.7
  */
 
-import ApplicationState            from 'store/application-state';
+import ApplicationState            from 'store/application';
 import { watch, unwatch, trigger } from 'directives/utils';
 
-const { t, tPlugin } = require('core/i18n/i18n.service');
+const { t, tPlugin } = require('g3w-i18n');
 
 const attr = 'g3w-v-t-tooltip-id';
 
@@ -16,7 +16,7 @@ export default {
     if (binding.modifiers.create) {
       if (binding.arg) {
         _el.setAttribute('data-placement', binding.arg);
-        _el.classList.add('skin-color', `skin-tooltip-${binding.arg}`);
+        _el.classList.add(`skin-tooltip-${binding.arg}`);
       }
       _el.setAttribute('data-container',"body");
       $(_el)
@@ -31,17 +31,21 @@ export default {
         () => ApplicationState.language,
         ({el = _el}) => {
           let value = el.getAttribute('current-tooltip');
-          if (value === null) { value = binding.value; }
-          el.setAttribute('data-original-title', binding.modifiers.text ? value : (binding.arg === 'plugin' ? tPlugin : t)(value));
+          if (null === value) { value = binding.value; }
+          el.setAttribute('data-original-title', binding.modifiers.text ? value : ('plugin' === binding.arg ? tPlugin : t)(value));
         }
       ]
     });
   },
   componentUpdated(el, oldVnode) {
     const value = el.getAttribute('current-tooltip');
-    if (value != null && value !== oldVnode.oldValue) {
-      trigger({ el, attr, data: {el}});
+    //in case of null or empty value, need to hide tooltip
+    if ([null, ''].includes(value)) {
+      $(el).tooltip('hide');
+    }
+    if (null != value && value !== oldVnode.oldValue) {
+      trigger({ el, attr, data: { el } });
     }
   },
-  unbind: (el) => { $(el).tooltip('hide'); unwatch({ el, attr }); }
+  unbind: el => { $(el).tooltip('hide'); unwatch({ el, attr }); }
 };

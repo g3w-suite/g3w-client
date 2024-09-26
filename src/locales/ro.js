@@ -262,6 +262,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Descărcare atribute",
@@ -277,20 +300,25 @@ export default {
           tooltip: 'Interogare După Poligon',
           no_geometry: 'Nu avem geometrii în răspuns',
           help: {
-            title:'Ghid - Interogare După Poligon',
             message: "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Interogare prin poligon de desen"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Interogare BBox strat',
           nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
           help: {
-            title: 'Ghid - Interogare BBox strat',
             message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -332,7 +360,8 @@ export default {
         no_relations_found: 'Nu am găsit nicio relație',
         back_to_relations: 'Înapoi la relații',
         list_of_relations_feature: 'Lista de relații a entității',
-        error_missing_father_field: "Câmpul de legătură lipsește"
+        error_missing_father_field: "Câmpul de legătură lipsește",
+        field: "Relation key field",
       },
       form: {
         loading: 'Se încarcă ...',

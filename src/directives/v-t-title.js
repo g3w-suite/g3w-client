@@ -3,10 +3,10 @@
  * @since v3.7
  */
 
-import ApplicationState   from 'store/application-state';
+import ApplicationState   from 'store/application';
 import { watch, unwatch } from 'directives/utils';
 
-const { t, tPlugin } = require('core/i18n/i18n.service');
+const { t, tPlugin } = require('g3w-i18n');
 
 const attr = 'g3w-v-t-title-id';
 
@@ -18,11 +18,11 @@ export default {
       watcher: [
         () => ApplicationState.language,
         () => {
-          const title = (binding.arg === 'plugin' ? tPlugin : t)(binding.value);
+          const title = ('plugin' === binding.arg ? tPlugin : t)(binding.value);
           el.setAttribute('title', title);
           el.setAttribute('data-original-title', title)
         }
       ] });
   },
-  unbind: (el) => unwatch({ el, attr })
+  unbind: el => unwatch({ el, attr })
 }

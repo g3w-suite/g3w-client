@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES } from 'app/constant';
+import { GEOMETRY_TYPES } from 'g3w-constants';
 
 /**
  * core/geometry/geometry::getOLGeometry@v3.4
@@ -60,6 +60,5 @@ export function getOLGeometry(geometryType) {
     default:
       console.warn('invalid geometry type: ', geometryType);
       return geometryType;
-
   }
-};
+}

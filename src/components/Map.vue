@@ -10,7 +10,8 @@
       v-for = "hidemap in hidemaps"
       :key  = "hidemap.id"
       :id   = "hidemap.id"
-      class = "g3w-map hidemap"></div>
+      class = "g3w-map hidemap"
+    ></div>
 
     <div :id = "target" class = "g3w-map">
 
@@ -33,7 +34,7 @@
         {{map_info.info}}
       </div>
 
-      <!-- DIV that will contain marker on ma-->
+      <!-- DIV that will contain marker on map -->
       <div style = "display: none;"><div id = "marker"></div></div>
 
       <!-- Add layer compnent -->

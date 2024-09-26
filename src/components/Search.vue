@@ -63,18 +63,17 @@
 </template>
 
 <script>
-import Panel                       from 'core/g3w-panel';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ProjectsRegistry            from 'store/projects';
-import ApplicationService          from 'services/application';
+import Panel                       from 'g3w-panel';
+import ApplicationState            from 'store/application'
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { createFilterFromString }  from 'utils/createFilterFromString';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import G3WTool                     from 'components/Tool.vue';
 import * as vueComp                from 'components/QueryBuilder.vue';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 export default {
 
@@ -109,14 +108,28 @@ export default {
     async remove(search, index) {
       try {
         await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
-        const items     = ApplicationService.getLocalItem('QUERYBUILDERSEARCHES');
-        const projectId = ProjectsRegistry.getCurrentProject().getId();
+        const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+        const items = item ? JSON.parse(item) : undefined;
+        const projectId = ApplicationState.project.getId();
         const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
-        if (searches.length)           items[projectId] = searches;
-        else                           delete items[projectId];
-        if (Object.keys(items).length) ApplicationService.setLocalItem({ id: 'QUERYBUILDERSEARCHES', data: items });
-        else                           ApplicationService.removeLocalItem('QUERYBUILDERSEARCHES');
-        this.$options.service.removeItem({ type: 'querybuilder', index });
+
+        if (searches.length) {
+          items[projectId] = searches;
+        } else {
+          delete items[projectId];
+        }
+
+        try {
+          if (Object.keys(items).length) {
+            window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(items));
+          } else {
+            window.localStorage.removeItem('QUERYBUILDERSEARCHES');
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.state.querybuildersearches.splice(index, 1); // remove item
       } catch(e) {
         console.warn(e);
       }
@@ -141,7 +154,7 @@ export default {
     async run(search) {
       search.qbloading = true;
       try {
-        const layer = CatalogLayersStoresRegistry.getLayerById(search.layerId);
+        const layer = getCatalogLayerById(search.layerId);
         await DataRouterService.getData('search:features', {
           inputs: {
             layer,

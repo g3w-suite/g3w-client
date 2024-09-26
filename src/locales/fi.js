@@ -262,6 +262,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Attributes download",
@@ -277,20 +300,25 @@ export default {
           tooltip: 'Kysely monikulmiolla',
           no_geometry: 'No geometry on response',
           help: {
-            title: 'Ohje - Kysely monikulmiolla',
             message: "<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Kysely piirtopolygonin mukaan"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Tasoon kohdituva BBox-kysely',
           nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
           help: {
-            title: 'Ohje - Tasoon kohdistuva BBox-kysely',
             message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -332,7 +360,8 @@ export default {
         no_relations_found: 'Relaatiota ei löytynyt.',
         back_to_relations: 'Takaisin relaatioihin',
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
-        error_missing_father_field: "Kenttä puuttu"
+        error_missing_father_field: "Kenttä puuttu",
+        field: "Relation key field",
       },
       form: {
         loading: 'Ladataan...',

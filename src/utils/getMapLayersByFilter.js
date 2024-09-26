@@ -1,5 +1,3 @@
-import MapLayersStoresRegistry from 'store/map-layers';
-
 /**
  * @param filter defaults `GEOLAYER: true`
  * @param options
@@ -13,7 +11,9 @@ export function getMapLayersByFilter(filter = {}, options = {}) {
     // QUERYABLE: true,
     ...filter
   };
+  const { MapLayersStoresRegistry } = require('services/map').default;
+  
   return MapLayersStoresRegistry
     .getQuerableLayersStores()
-    .flatMap(store => store.getLayers(filter, options));
+    .flatMap(s => s.getLayers(filter, options));
 }

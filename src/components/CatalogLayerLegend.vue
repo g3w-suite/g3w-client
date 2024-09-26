@@ -72,10 +72,10 @@
 
 <script>
   import GUI                         from 'services/gui';
-  import { CatalogEventBus as VM }   from 'app/eventbus';
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import ProjectsRegistry            from 'store/projects';
+  import { VM }                      from 'g3w-eventbus';
+  import ApplicationState            from 'store/application';
   import ClickMixin                  from 'mixins/click';
+  import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 
   export default {
@@ -170,7 +170,7 @@
        * 
        * @since v3.8
        */
-      showCategoryMenu(){
+      showCategoryMenu() {
         this.$emit('showmenucategory');
       },
   
@@ -182,7 +182,7 @@
       },
 
       getProjectLayer() {
-        return CatalogLayersStoresRegistry.getLayerById(this.layer.id);
+        return getCatalogLayerById(this.layer.id);
       },
 
       isDisabled(index) {
@@ -382,7 +382,7 @@
        *
        * @type {{}}
        */
-      this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+      this.dynamic = ApplicationState.project.state.context_base_legend;
 
       this.mapReady = false;
 

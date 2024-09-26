@@ -1,5 +1,5 @@
 import GUI                from 'services/gui';
-import { getUniqueDomId } from './getUniqueDomId';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 /**
  * @TODO make it simpler (native HTML dialogs, Vue SFC components, ..)
@@ -63,4 +63,4 @@ export async function prompt({
       data     = null;
       prompt   = null;
     })
-};
+}

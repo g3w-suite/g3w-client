@@ -1,4 +1,4 @@
-import { SEARCH_ALLVALUE }            from 'app/constant';
+import { SEARCH_ALLVALUE }            from 'g3w-constants';
 
 /**
  * @returns { Array } of unique values from field
@@ -14,7 +14,9 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         ordering:   field,
         field: getDataForSearchInput.field({
           state,
-          field: (state.forminputs.find(i => i.attribute === field) || {}).dependance || field,
+          //in the case of suggested parameter set (case autocomplete field), need to use current field
+          field: suggest ? field : (state.forminputs.find(i => i.attribute === field) || {}).dependance || field,
+          fields: []
         }),
       })))
     )
@@ -41,7 +43,7 @@ getDataForSearchInput.field = ({ state, field, fields = [] } = {}) => {
 
   // filter by parent field
   if (undefined !== parent.value) {
-    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${encodeURI(parent.value)}|` + (fields.length ? parent.logicop : ''));
+    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${encodeURI(parent.value)}` + (fields.length ? `|${parent.logicop}` : ''));
   }
 
   // recursion step

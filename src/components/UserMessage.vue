@@ -8,7 +8,8 @@
     class  = "usermessage-content"
     :id    = "id"
     :style = "style"
-    :class = "{'mobile': addClassMobile()}"
+    :class = "{'mobile': addClassMobile(), ['usermessage-' + type]: true}"
+    ref    = "user_message"
   >
     <div
       v-if  = "showheader"
@@ -16,7 +17,7 @@
     >
       <i
         class  = "usermessage-header-icontype"
-        :class = "g3wtemplate.getFontClass(type)">
+        :class = "g3wtemplate.getFontClass(iconClass || type)">
       </i>
       <div class = "usermessage-header-title">
         <slot name = "header">
@@ -57,51 +58,40 @@
 </template>
 
 <script>
-  import { ZINDEXES } from 'app/constant';
-  import GUI          from 'services/gui';
+  import GUI from 'services/gui';
 
-  const COLORS = {
-    success: {
-      backgroundColor: "#62ac62",
-      color:           "#FFFFFF"
-    },
-    info: {
-      backgroundColor: "#44a0bb",
-      color:           "#FFFFFF"
-    },
-    warning: {
-      backgroundColor: "#f29e1d",
-      color:           "#FFFFFF"
-    },
-    alert: {
-      backgroundColor: "#c34943",
-      color:           "#FFFFFF"
-    },
-    tool: {
-      backgroundColor: "#FFFFFF",
-      color:           "#222d32"
-    },
-    loading: {
-      backgroundColor: "#FFFFFF",
-      color:           "#222d32",
-      fontWeight:      "bold"
-    },
-  };
   /**
-   * Add custom style to handle a different type of usermessage
-   * @type {{alert: {}, success: {}, warning: {}, loading: {}, tool: {"z-index": string}, info: {}}}
+   * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
-  const STYLES = {
-    success: {},
-    info:    {},
-    warning: {},
-    alert:   {},
-    tool:    {
-      "z-index": ZINDEXES.usermessage.tool,
-      left     : "40px"
-    },
-    loading: {},
-  };
+  function dragElement(el) {
+    let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
+    el.addEventListener('mousedown', function(e) {
+      // skip dragging on form elements
+      if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
+        return;
+      }
+      e.preventDefault();
+      x1 = e.clientX;
+      y1 = e.clientY;
+      document.addEventListener('mouseup', mouseUp);
+      document.addEventListener('mousemove', mouseMove);
+    });
+    function mouseUp() {
+      document.removeEventListener('mouseup', mouseUp);
+      document.removeEventListener('mousemove', mouseMove);
+    }
+    function mouseMove(e) {
+      e.preventDefault();
+      x2 = x1 - e.clientX;
+      y2 = y1 - e.clientY;
+      x1 = e.clientX;
+      y1 = e.clientY;
+      if (el.style.marginLeft) { x2 -= parseInt(el.style.marginLeft); el.style.marginLeft = null; }
+      if (el.style.marginTop)  { y2 -= parseInt(el.style.marginTop);  el.style.marginTop  = null; }
+      el.style.top  = (el.offsetTop - y2)    + "px";
+      el.style.left = (el.offsetLeft - x2) + "px";
+    }
+  }
 
   export default {
     name: "usermessage",
@@ -150,9 +140,54 @@
       closable: {
         type:    Boolean,
         default: true
+      },
+      //@since 3.11.0
+      iconClass: {
+        type: String,
+        default: null
       }
     },
-    computed:{
+    data() {
+      let [where, alignement] = this.position.split('-');
+      return {
+        style: {
+          ...(
+            'center' === where
+              ? { top: 0, bottom: 0, maxHeight: '20%' }
+              : { [where]: 50 }
+          ),
+          ...({
+            'center': { left: 0, right: 0, margin: 'auto' },
+            'right': { right:  0 },
+          }[alignement] || {}),
+          width: ({
+            'small':    '325px',
+            'medium':   '50%',
+            'fullpage': '100%'
+          })[alignement ? 'small' : this.size] || '100%',
+          /**
+           * Custom styles to handle different types of usermessage
+           */...({
+            success: { backgroundColor: "#62ac62", color: "#FFF" },
+            info:    { backgroundColor: "#44a0bb", color: "#FFF" },
+            warning: { backgroundColor: "#f29e1d", color: "#FFF" },
+            alert:   { backgroundColor: "#c34943", color: "#FFF" },
+            tool:    {
+              backgroundColor: "#FFF",
+              color:           "#222d32",
+              "z-index":       100,
+              marginLeft:      document.body.classList.contains('sidebar-collapse') ? '5px' : '40px',
+            },
+            loading: {
+              backgroundColor: "#FFF",
+              color:           "#222d32",
+              fontWeight:      "bold",
+            },
+          })[this.type],
+        }
+      }
+    },
+    computed: {
       showheader() {
         return 'loading'!== this.type ;
       }
@@ -167,60 +202,33 @@
       hideShow() {}
     },
     created() {
-      let [where, alignement] = this.position.split('-');
-      let width = '100%';
-      switch (this.size) {
-        case 'small':
-          width = '25%';
-          break;
-        case 'medium':
-          width = '50%';
-          break;
-        case 'fullpage':
-        default:
-          width = '100%';
-      }
-      if ('center' === where)
-        where = {
-          top:       0,
-          bottom:    0,
-          maxHeight: '20%'
-        };
-      else {
-        where = {
-          [where]: 50
-        }
-      }
-      const position = {
-        ...where,
-        width
-      };
-      if (alignement) {
-        position.width = '25%';
-        switch (alignement) {
-          case 'center':
-            position.left   = '0';
-            position.right  = '0';
-            position.margin = 'auto';
-            break;
-          case 'right':
-            position.right  = 0;
-            break;
-        }
-      }
-      this.style = {
-        ...COLORS[this.type],
-        ...position,
-        ...STYLES[this.type]
-      }
+      //@since 3.11.0. Get to eventually observe mutation
+      this.observe = null;
     },
     async mounted() {
+      if ('tool' === this.type) {
+        dragElement(this.$refs.user_message);
+        this.observer = new MutationObserver((mutations) => {
+          mutations.forEach(mutation => {
+            if ("class" === mutation.attributeName) {
+              this.style.marginLeft = mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px';
+            }
+          });
+        });
+        this.observer.observe(document.body, {attributes: true});
+      }
       if (this.autoclose) {
         await this.$nextTick();
         const timeout = setTimeout(() => {
           this.closeUserMessage();
           clearTimeout(timeout)
         }, this.duration)
+      }
+    },
+    beforeDestroy() {
+      if (this.observer) {
+        this.observer.disconnect();
+        this.observer = null;
       }
     }
   }
@@ -235,8 +243,12 @@
     padding: 3px;
     min-width: 250px;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
-    -moz-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 0 0 3px 3px;
+  }
+
+  .usermessage-tool {
+    cursor: move;
+    position: fixed;
   }
 
   .usermessage-content.mobile {

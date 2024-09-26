@@ -58,8 +58,6 @@
 </template>
 
 <script>
-  import ProjectsRegistry from 'store/projects';
-
   export default {
     name: "g3w-images-gallery",
     props: {
@@ -85,10 +83,10 @@
         return src === this.active;
       },
       isRelativePath(url) {
-        if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
-          return ProjectsRegistry.getConfig().mediaurl + url
+        if (!url.startsWith('/') && !url.startsWith('http')) {
+          return `${window.initConfig.mediaurl}${url}`;
         }
-        return url
+        return url;
       },
     }
   }

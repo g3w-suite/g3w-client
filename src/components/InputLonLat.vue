@@ -66,7 +66,8 @@
 </template>
 
 <script>
-  const { getUniqueDomId } = require('utils');
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
+
   const Input              = require('gui/inputs/input');
 
   export default {
@@ -75,7 +76,7 @@
     name: 'input-lonlat',
 
     mixins: [Input],
-    data(){
+    data() {
       return {
         lonId: getUniqueDomId(),
         latId: getUniqueDomId(),
@@ -85,36 +86,33 @@
       }
     },
     computed:{
-      getCoordinateActive(){
+      getCoordinateActive() {
         return this.service.state.getCoordinateActive;
       }
     },
     methods: {
-      toggleGetCoordinate(){
+      toggleGetCoordinate() {
         this.service.toggleGetCoordinate();
       },
       changeLonLat() {
         this.change();
         this.setValue();
       },
-      setValue(){
+      setValue() {
         this.state.value = [[1*this.state.values.lon, 1*this.state.values.lat]]
       }
     },
-    created(){
+    created() {
       this.state.values = this.state.values || {lon:0, lat:0};
       this.setValue();
       this.service.setCoordinateButtonReactiveObject(this.coordinatebutton);
     },
-    async mounted(){
+    async mounted() {
       await this.$nextTick();
-      this.$nextTick(() => {
-        $(this.$refs['g3w-input-lat-lon']).tooltip({
-          trigger: 'hover'
-        });
-      });
+      $(this.$refs['g3w-input-lat-lon']).tooltip({ trigger: 'hover' });
+
     },
-    destroyed(){
+    destroyed() {
       this.service.clear();
     }
   };

@@ -167,30 +167,23 @@
 
 import {
   PRINT_SCALES,
-  PRINT_RESOLUTIONS,
-  PRINT_FORMATS,
   TIMEOUT,
-}                                   from 'app/constant';
-import Component                    from 'core/g3w-component';
-import ApplicationState             from 'store/application-state';
-import CatalogLayersStoresRegistry  from 'store/catalog-layers';
-import ProjectsRegistry             from 'store/projects';
-import ApplicationService           from 'services/application';
+}                                   from 'g3w-constants';
+import Component                    from 'g3w-component';
+import ApplicationState             from 'store/application';
 import GUI                          from 'services/gui';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
-import { getMetersFromDegrees }     from 'utils/getMetersFromDegrees';
 import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
-import { print }                    from 'utils/print';
 import { promisify }                from 'utils/promisify';
-
+import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 
 import resizeMixin                  from 'mixins/resize';
 
 import * as vueComp                 from 'components/PrintPage.vue';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 export default {
 
@@ -240,8 +233,17 @@ export default {
       this._page        = this._page || null;
       this._resolutions = this._resolutions || {};
 
-      const print   = ProjectsRegistry.getCurrentProject().getPrint() || [];
+      const print   = ApplicationState.project.getPrint() || [];
       const visible = print.length > 0;
+
+      const PRINT_FORMATS = [
+        { value: 'png', label: 'PNG' },
+        { value: 'jpg', label: 'JPG' },
+        { value: 'svg', label: 'SVG' },
+        { value: 'pdf', label: 'PDF' },
+        { value: 'geopdf', label: 'GEOPDF' },
+      ];
+
       this.state = Object.assign(this.state || {}, {
         visible,
         print,
@@ -257,8 +259,8 @@ export default {
         inner:        [0, 0, 0, 0],
         scales:       [], // initial set empty
         scale:        visible ? null            : undefined,
-        dpis:         PRINT_RESOLUTIONS,
-        dpi:          PRINT_RESOLUTIONS[0],
+        dpis:         [150, 300],
+        dpi:          150,
         formats:      PRINT_FORMATS,
         format:       PRINT_FORMATS[0].value,
       });
@@ -318,7 +320,7 @@ export default {
 
       try {
         //check if create new tag value with ':' 1:2300
-        if (this.state.scale.indexOf(':') >= 0) {
+        if (this.state.scale.includes(':')) {
           //get value
           const scale = Number(this.state.scale.split(':')[1].trim());
           //set options last tag created by user
@@ -371,13 +373,20 @@ export default {
     },
 
     /**
+     * @since 3.11.0
+     */
+    isAxisOrientationInverted() {
+      return 'neu' === GUI.getService('map').getProjection().getAxisOrientation();
+    },
+
+    /**
      * @param extent
      *
      * @returns { string }
      */
     getOverviewExtent(extent={}) {
       const { xmin, xmax, ymin, ymax } = extent;
-      return (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      return (this.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
     },
 
     /**
@@ -389,7 +398,7 @@ export default {
       try {
         const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
         const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
-        this.print_extent  = (GUI.getService('map').isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+        this.print_extent  = (this.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
       }
       catch(e) {
          //in case of already open content print page
@@ -399,12 +408,40 @@ export default {
       return this.print_extent;
     },
 
+    /*
+    http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
+      ?MAP=/home/marco/geodaten/projekte/composertest.qgs
+      &SERVICE=WMS&VERSION=1.3.0
+      &REQUEST=GetPrint
+      &TEMPLATE=Composer 1
+      &map0:extent=693457.466131,227122.338236,700476.845177,230609.807051
+      &BBOX=693457.466131,227122.338236,700476.845177,230609.807051
+      &CRS=EPSG:21781
+      &WIDTH=1467
+      &HEIGHT=729
+      &LAYERS=layer0,layer1
+      &STYLES=,
+      &FORMAT=pdf
+      &DPI=300
+      &TRANSPARENT=true
+
+    In detail, the following parameters can be used to set properties for composer maps:
+
+    <mapname>:EXTENT=<xmin,ymin,xmax, ymax> //mandatory
+    <mapname>:ROTATION=<double> //optional, defaults to 0
+    <mapname>:SCALE=<double> //optional. Forces scale denominator as server and client may have different scale calculations
+    <mapname>:LAYERS=<comma separated list with layer names> //optional. Defaults to all layer in the WMS request
+    <mapname>:STYLES=<comma separated list with style names> //optional
+    <mapname>:GRID_INTERVAL_X=<double> //set the grid interval in x-direction for composer grids
+    <mapname>:GRID_INTERVAL_Y=<double> //set the grid interval in x-direction for composer grids
+    */
     /**
      * @returns { Promise<unknown> }
      */
     async print() {
       const has_atlas = !!this.state.atlas;
-      let err, download_id;
+      let err;
+      let response;
 
       this.state.loading = true;
 
@@ -420,7 +457,7 @@ export default {
 
         // ATLAS PRINT
         if (has_atlas) {
-          download_id = ApplicationService.setDownload(true);
+          ApplicationState.download = true;
           await downloadFile({
             url: (await printAtlas({
               template: this.state.template,
@@ -447,26 +484,53 @@ export default {
             perc:    100
           });
 
-          const output = await print(
-            {
-              rotation:             this.state.rotation,
-              dpi:                  this.state.dpi,
-              template:             this.state.template,
-              scale:                this.state.scale,
-              format:               this.state.format,
-              labels:               this.state.labels,
-              is_maps_preset_theme: this.state.maps.some(m => undefined !== m.preset_theme),
-              maps:                 this.state.maps.map(m => ({
-                name:         m.name,
-                preset_theme: m.preset_theme,
-                scale:        m.overview ? m.scale : this.state.scale,
-                extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
-              })),
-            },
-            ProjectsRegistry.getCurrentProject().getOwsMethod()
-          )
-          this.state.url       = output.url;
-          this.state.layers    = output.layers;
+          const has_theme = this.state.maps.some(m => undefined !== m.preset_theme);
+          const store     = ApplicationState.project.getLayersStore();
+          const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
+          const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
+          const url       = store.getWmsUrl();
+          const mime_type = ({ pdf: 'application/pdf', jpg: 'image/jpeg', svg: 'image/svg' })[this.state.format] || this.state.format;
+          const params    = layers.length && new URLSearchParams({
+            SERVICE:       'WMS',
+            VERSION:       '1.3.0',
+            REQUEST:       'GetPrint',
+            TEMPLATE:       this.state.template,
+            DPI:            this.state.dpi,
+            STYLES:         layers.map(l => l.getStyle()).join(','),
+            ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
+            FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.state.format] || this.state.format,
+            ...('geopdf' === this.state.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
+            CRS:            store.getProjection().getCode(),
+            filtertoken:    ApplicationState.tokens.filtertoken,
+            ...this.state.maps.map(m => ({
+              name:         m.name,
+              preset_theme: m.preset_theme,
+              scale:        m.overview ? m.scale : this.state.scale,
+              extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
+            })).reduce((params, map) => Object.assign(params, {
+              [`${map.name}:SCALE`]:    map.scale,
+              [`${map.name}:EXTENT`]:   map.extent,
+              [`${map.name}:ROTATION`]: this.state.rotation,
+              //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
+              ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
+            }), {}),
+            ...(this.state.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
+          }).toString();
+
+          // force GET request for geopdf because qgiserver support only that method [QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)]
+          const method = layers.length && ('geopdf' === this.state.format ? 'GET' : ApplicationState.project.state.ows_method);
+
+          response = await ('GET' === method
+            ? Promise.resolve({ ok: true })
+            : fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+              body:  params,
+            })
+          );
+
+          this.state.url       = 'GET' === method ? `${url}?${params}` : URL.createObjectURL(await response.blob());
+          this.state.layers    = !!response.ok;
           //after component mount
           this._page.getInternalComponent().$on('hook:mounted', () => this.state.loading = false);
           // set print area after closing content
@@ -479,7 +543,11 @@ export default {
         }
 
       } catch(e) {
-        err = e;
+        if (response && !response.ok && 500 === response.status) {
+          err = 500 === response.status ? 'Internal Server Error' : 'Request Failed';
+        } else {
+          err = e;
+        }
         this.state.loading = false;
         // enable sidebar
         GUI.disableSideBar(false);
@@ -488,9 +556,7 @@ export default {
 
       this.state.loading = false;
 
-      if (download_id) {
-        ApplicationService.setDownload(false, download_id);
-      }
+      ApplicationState.download = false;
 
       // in case of no layers
       if (has_atlas || !this.state.layers) {
@@ -513,20 +579,21 @@ export default {
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
       if (reset)                           { this.atlas_values = []; this.print_extent = null; }
+      // @since 3.11.0 In case of no print set, exit
+      if (0 === this.state.print.length)   { return; }
       GUI
         .closeContent()
         .then(component => {
           setTimeout(() => {
             const map      = component.getService();
-            map.getMap().once('postrender', e => {
+            map.getMap().once('postrender', () => {
               if (!show) {
                 return this._clearPrint();
               }
               this._moveKey = map.viewer.map.on('moveend', this._setPrintArea.bind(this));
               this._initPrintConfig();
-              // show print area
-              if (undefined === this.state.atlas) {
-                this._setPrintArea();
+              // show print area if is not atlas template and have maps
+              if (undefined === this.state.atlas && this._setPrintArea()) {
                 map.startDrawGreyCover();
               }
             });
@@ -537,26 +604,29 @@ export default {
 
     /**
      * Calculate internal print extent
+     * @returns { Boolean }
      */
     _setPrintArea() {
       // No maps set. Only attributes label
       if (!this.has_maps) {
-        return this._clearPrint();
+        this._clearPrint();
+        return false;
       }
       const map        = GUI.getService('map').viewer.map;
       const size       = map.getSize();
       const resolution = map.getView().getResolution();
       const { h, w }   = this.state.maps.find(m => !m.overview);
-      const res        = GUI.getService('map').getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution); // resolution in meters
+      const res        = resolution * ('m' === GUI.getService('map').getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
       const w2         = (((w / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const h2         = (((h / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
       this.state.inner = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
       GUI.getService('map').setInnerGreyCoverBBox({
-        type: 'pixel',
-        inner: this.state.inner,
+        type:     'pixel',
+        inner:    this.state.inner,
         rotation: this.state.rotation
       });
+      return true;
     },
 
     _clearPrint() {
@@ -601,7 +671,7 @@ export default {
 
 
     reload() {
-      this.state.print    = ProjectsRegistry.getCurrentProject().state.print || [];
+      this.state.print    = ApplicationState.project.state.print || [];
       const visible       = this.state.print.length > 0;
       const init          = this._initialized;
       this.state.template = visible ? this.state.print[0].name : this.state.template;
@@ -631,7 +701,7 @@ export default {
           transport: async (d, ok, ko) => {
             try {
               ok({
-                results: (await CatalogLayersStoresRegistry.getLayerById(this.state.atlas.qgs_layer_id).getFilterData({
+                results: (await getCatalogLayerById(this.state.atlas.qgs_layer_id).getFilterData({
                   suggest: `${this.state.atlas.field_name}|${d.data.q}`,
                   unique: this.state.atlas.field_name,
                 })).map(v => ({ id: v, text: v }))
@@ -650,8 +720,8 @@ export default {
          */
         matcher: (params, data) => {
           const search = params.term ? params.term.toLowerCase() : params.term;
-          if ('' === (search || '').toString().trim())                             return data;        // no search terms → get all of the data
-          if (data.text.toLowerCase().includes(search) && undefined !== data.text) return { ...data }; // the searched term
+          if ('' === (search || '').toString().trim())                             { return data; }        // no search terms → get all of the data
+          if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data }; } // the searched term
           return null;                                                                                 // hide the term
         },
         language: {
@@ -670,7 +740,7 @@ export default {
   watch: {
 
     async has_autocomplete(b) {
-      if (!b) return;
+      if (!b) { return; }
       await this.$nextTick();
       this.initSelect2Field();
     },
@@ -692,7 +762,7 @@ export default {
           .split(',')
           .filter(v => v)
           .forEach(value => {
-            if (-1 === value.indexOf('-') && validate(value) !== null) {
+            if (!value.includes('-') && null !== validate(value)) {
               values.add(value);
               return;
             }

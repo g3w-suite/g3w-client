@@ -81,11 +81,8 @@
   import GUI                                         from 'services/gui';
   import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
   import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
-
-  const {
-    getUniqueDomId,
-    noop
-  }                        = require ('utils');
+  import { getUniqueDomId }                          from 'utils/getUniqueDomId';
+  import { noop }                                    from 'utils/noop';
 
   export default {
     name: "tabs",
@@ -139,7 +136,7 @@
       required_fields() {
         return 'editing' ===  this.contenttype && this.fields.filter(f => f.validate.required).map(f => f.name);
       },
-      show(){
+      show() {
         return this.tabs.reduce((a, t) => a || (t.visible === undefined || !!t.visible), false);
       }
     },
@@ -168,13 +165,11 @@
       },
       // method to set required tab for editing
       setEditingRequireTab(obj) {
-        let required = false;
         if (undefined === obj.nodes) {
-          required = this.required_fields.indexOf(obj.field_name) !== -1;
+          return this.required_fields.includes(obj.field_name);
         } else {
-          required = !!obj.nodes.find(n => this.setEditingRequireTab(n));
+          return !!obj.nodes.find(n => this.setEditingRequireTab(n));
         }
-        return required;
       },
       getField(fieldName) {
         return this.fields.find(f => fieldName === f.name);
@@ -264,16 +259,12 @@
     font-weight: bold;
     flex: 1;
   }
-  .tab-content {
-    //margin-top: 10px;
-  }
   .nav-tabs > li > a.mobile {
     padding: 5px 10px;
   }
   .tab_a {
     padding:5px;
     margin-right: 0 !important;
-    //border: 1px solid #eeeeee;
     border-bottom: 0;
     margin-bottom: 3px;
     border-radius: 3px 3px 0 0;

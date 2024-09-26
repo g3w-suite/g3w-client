@@ -7,13 +7,23 @@
   <div
     v-if   = "loading"
     class  = "bar-loader"
-    :style = "{ backgroundColor: (color || '#FFFFFF'), border:0 }">
+    style  = "border: 0"
+    :style = "{ backgroundColor: color }">
   </div>
 </template>
 
 <script>
   export default {
     name:  "bar-loader",
-    props: ['loading', 'color'],
+    props: {
+      loading: {
+        type:    Boolean | String,
+        default: false,
+      },
+      color: {
+        type:     String,
+        default: '#FFFFFF'
+      }
+    }
   };
 </script>

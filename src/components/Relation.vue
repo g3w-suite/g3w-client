@@ -128,11 +128,10 @@
               ></span>
               <span
                 v-if                     = "table.formStructure"
-                @click.stop              = "showFormStructureRow($event, row)"
-                :current-tooltip         = "`sdk.tooltips.relations.${table.rowFormStructure === row ? 'form_to_row' : 'row_to_form'}`"
+                @click.stop              = "showFormStructureRow({ layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
+                v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 class                    = "action-button row-form skin-color"
-                v-t-tooltip:right.create = "`sdk.tooltips.relations.${table.rowFormStructure === row ? 'form_to_row' : 'row_to_form'}`"
-                :class                   = "g3wtemplate.getFontClass(table.rowFormStructure === row ? 'minus' : 'table')"
+                :class                   = "g3wtemplate.getFontClass('table')"
               ></span>
               <span
                 v-if                     = "isEditable"
@@ -142,25 +141,9 @@
                 :class                   = "g3wtemplate.getFontClass('pencil')"
               ></span>
             </td>
-
-            <td
-              v-if     = "table.formStructure && table.rowFormStructure === row"
-              :colspan = "table.columns.length"
-              class    = "row-wrap-tabs"
-            >
-              <tabs
-                :layerid = "table.layerId"
-                :feature = "table.features[index]"
-                :fields  = "fields"
-                :tabs    = "table.formStructure"
-              />
+            <td v-for = "value in row">
+              <field :state = "{value:value}"/>
             </td>
-            <template v-else>
-              <td v-for = "value in row">
-                <field :state = "{value:value}"/>
-              </td>
-            </template>
-
           </tr>
 
           </tbody>
@@ -198,359 +181,386 @@
 </template>
 
 <script>
-import { G3W_FID }                  from 'app/constant';
-import Field                        from 'components/FieldG3W.vue';
-import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
-import CatalogLayersStoresRegistry  from 'store/catalog-layers';
-import GUI                          from 'services/gui';
-import { fieldsMixin, resizeMixin } from 'mixins';
-import { RelationEventBus as VM }   from 'app/eventbus';
-import { throttle }                 from 'utils';
 
-let SIDEBARWIDTH;
+  import { G3W_FID }                  from 'g3w-constants';
+  import Component                    from 'g3w-component';
+  import Field                        from 'components/FieldG3W.vue';
+  import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
+  import GUI                          from 'services/gui';
+  import { fieldsMixin, resizeMixin } from 'mixins';
+  import { VM }                       from 'g3w-eventbus';
+  import { throttle }                 from 'utils/throttle';
+  import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 
-export default {
+  let SIDEBARWIDTH;
 
-  /** @since 3.8.6 */
-  name: 'relation',
+  export default {
 
-  props: {
-    table:           {},
-    feature:         { default: null },
-    relation:        {},
-    previousview:    {},
-    showChartButton: {},
-    cardinality:     {},
-  },
+    /** @since 3.8.6 */
+    name: 'relation',
 
-  inject: ['relationnoback'],
+    props: {
+      table:           {},
+      feature:         { default: null },
+      relation:        {},
+      previousview:    {},
+      showChartButton: {},
+      cardinality:     {},
+    },
 
-  mixins: [fieldsMixin, resizeMixin],
+    inject: ['relationnoback'],
 
-  components: {
-    Field,
-  },
+    mixins: [fieldsMixin, resizeMixin],
 
-  data() {
-    return {
-      fields: null,
-      chart: false,
-      headercomponent: null,
-      downloadButton: null,
-      downloadLayer: {
-        state: null,
-        config: {
-          downloads: [],
+    components: {
+      Field,
+    },
+
+    data() {
+      return {
+        fields: null,
+        chart: false,
+        headercomponent: null,
+        downloadButton: null,
+        downloadLayer: {
+          state: null,
+          config: {
+            downloads: [],
+          },
+        },
+      };
+    },
+
+    computed: {
+
+      /**
+       * @returns { number } count of available tools (editing icon, form structure, zoom to feature, ...)
+       *
+       * @since 3.9.0
+       */
+      showTools() {
+        return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
+      },
+
+      showrelationslist() {
+        return 'relations' === this.previousview  && !this.relationnoback;
+      },
+
+      one() {
+        return 'ONE' === this.relation.type;
+      },
+
+    },
+
+    methods: {
+
+     /**
+      * @param { Object } geometry
+      * @param geometry.type        Point, MultiPoint, etc ...
+      * @param geometry.coordinates
+      *
+      * @since 3.9.0
+      */
+      zoomToGeometry(geometry) {
+        if (geometry) {
+          GUI
+            .getService('map')
+            .zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), { highlight: true });
+        }
+      },
+
+      /**
+       * @returns { Promise<void> }
+       */
+      async createTable() {
+        const layer     = getCatalogLayerById(this.table.layerId);
+
+        this.isEditable = layer.isEditable() && !layer.isInEditing();
+
+        // check if feature has geometry.
+        // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
+        this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
+
+        const downloadformats = layer.getDownloadableFormats();
+
+        /** @FIXME add description */
+        if (downloadformats.length > 0) {
+          this.downloadButton = {
+            toggled: false,
+            tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
+            handler: downloadformats.length > 1
+              ? async () => {
+                  this.downloadButton.toggled         = !this.downloadButton.toggled;
+                  this.downloadLayer.state            = this.downloadLayer.state || layer.state;
+                  this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
+                    ? this.downloadLayer.config.downloads
+                    : downloadformats.map(format => ({
+                        id: format,
+                        format,
+                        cbk: () => {
+                          this.saveRelation(layer.getDownloadUrl(format));
+                          this.headercomponent = null;
+                        },
+                        download: true,
+                      })
+                  );
+                  this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
+                }
+              : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
+          }
+        }
+
+        VM.$on('reload-relations', () => { this.reloadLayout(); });
+
+        this.showChart = throttle(async () => {
+          this.chart = !this.chart;
+          await this.$nextTick();
+          this.chartContainer = this.chartContainer ||  $('#chart_content');
+          this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
+        });
+
+        await this.$nextTick();
+
+        SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
+
+        this.relation.title = this.relation.name;
+
+        if (!this.one) {
+          this.relationDataTable = $(this.$refs.relationtable).DataTable({
+            autoWidth:      false,
+            bLengthChange:  true,
+            dom:            'ltip',
+            columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
+            order:          [ this.showTools ? 1 : 0, 'asc' ],
+            pageLength:     10,
+            responsive:     true,
+            scrollResize:   true,
+            scrollCollapse: true,
+            scrollX:        true,
+          });
+          this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+        }
+
+        // resize after popping child relation
+        GUI.on('pop-content', () => setTimeout(() => this.resize()));
+
+        this.resize();
+      },
+
+      /**
+       * @returns { Promise<void> }
+       */
+      async resize() {
+        // skip when ..
+        if (!this.$refs.query_relation || 'none' === this.$refs.query_relation.parentNode.style.display) {
+          return;
+        }
+
+        // in case of waiting table
+        const table      = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
+        table.height(
+          $(".content").height()
+          - this.tableHeaderHeight
+          - $('.content_breadcrumb')                       .outerHeight()
+          - $('.navbar-header')                            .outerHeight()
+          - $('.close-panel-block')                        .outerHeight()
+          - $(this.$refs['relation-header'])               .outerHeight()
+          - $('.dataTables_filter').last()                 .outerHeight()
+          - $('.dataTables_paginate.paging_simple_numbers').outerHeight()
+          - $('.dataTables_scrollHead').last()             .outerHeight()
+        );
+
+        this.reloadLayout();
+      },
+
+      /**
+       * @param type
+       */
+      saveRelation(type) {
+        this.$emit('save-relation', type);
+        this.downloadButton.toggled = false;
+      },
+
+      /**
+       * @param event
+       * @param row
+       *
+       * @returns { Promise<void> }
+       */
+      async showFormStructureRow({ layerid, feature, fields, tabs } = {}) {
+        GUI.showContent({
+          content: new Component({
+            internalComponent: new (Vue.extend({
+              data() {
+                return {
+                  layerid,
+                  feature,
+                  fields,
+                  formStructure: tabs,
+                }
+              },
+              template: `
+                <div class="queryresults-wrapper">
+                  <table ref="table" class="table">
+                    <tbody>
+                    <tr class="featurebox-body">
+                      <td>
+                        <tabs
+                          :layerid = "layerid"
+                          :feature = "feature"
+                          :fields  = "fields"
+                          :tabs    = "formStructure" />
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              `,
+              async mounted() {
+                await this.$nextTick();
+                this.$refs.table.click();
+              }
+            }))
+          }),
+          push:       true,
+          showgoback: true,
+          closable:   false,
+        });
+
+      },
+
+      /**
+       * @param index
+       */
+      editFeature(index) {
+        GUI
+          .getService('queryresults')
+          .editFeature({
+            layer: {
+              id: this.table.layerId,
+              attributes: this.table.fields,
+            },
+            feature: this.table.features[index],
+          });
+      },
+
+      /**
+       * @param row
+       *
+       * @returns {*}
+       */
+      getRowFields(row) {
+        return this.table.fields.map((field, index) => {
+          field.value = row[index];
+          field.query = true;
+          field.input = { type: `${this.getFieldType(field)}` };
+          return field;
+        });
+      },
+
+      /**
+       * @FIXME add description
+       */
+      reloadLayout() {
+        if (this.relationDataTable) {
+          this.relationDataTable.columns.adjust();
+        }
+      },
+
+      /**
+       * @FIXME add description
+       */
+      back() {
+        this.$parent.setRelationsList();
+      },
+
+      /**
+       * @param type
+       * @param value
+       *
+       * @returns { boolean }
+       */
+      fieldIs(type, value) {
+        return this.getFieldType(value) === type;
+      },
+
+      /**
+       * @param type
+       * @param value
+       *
+       * @returns { boolean }
+       */
+      is(type, value) {
+        return this.fieldIs(type, value);
+      },
+
+      /**
+       * @param evt
+       */
+      moveFnc(evt) {
+        const sidebarHeaderSize             =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
+        const size                          = evt.pageX+2 - sidebarHeaderSize;
+        this.$refs.tablecontent.style.width = `${size}px`;
+        this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
+      },
+
+    },
+
+    watch: {
+
+      /**
+       * When showing a relation directly
+       */
+      table: {
+        immediate: true,
+        handler(table) {
+          if (table && table.rows.length) {
+            this.createTable();
+          }
         },
       },
-    };
-  },
 
-  computed: {
-
-    /**
-     * @returns { number } count of available tools (editing icon, form structure, zoom to feature, ...)
-     * 
-     * @since 3.9.0
-     */
-    showTools() {
-      return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
-    },
-
-    showrelationslist() {
-      return 'relations' === this.previousview  && !this.relationnoback;
-    },
-
-    one() {
-      return 'ONE' === this.relation.type;
-    },
-
-  },
-
-  methods: {
-
-   /**
-    * @param { Object } geometry 
-    * @param geometry.type        Point, MultiPoint, etc ...
-    * @param geometry.coordinates
-    * 
-    * @since 3.9.0
-    */
-    zoomToGeometry(geometry) {
-      if (geometry) {
-        GUI
-          .getService('map')
-          .zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), { highlight: true });
-      }
-    },
-
-    /**
-     * @returns { Promise<void> }
-     */
-    async createTable() {
-      const layer     = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
-
-      this.isEditable = layer.isEditable() && !layer.isInEditing();
-
-      // check if feature has geometry.
-      // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
-      this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
-
-      const downloadformats = layer.getDownloadableFormats();
-
-      /** @FIXME add description */
-      if (downloadformats.length > 0) {
-        this.downloadButton = {
-          toggled: false,
-          tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-          handler: downloadformats.length > 1
-            ? async () => {
-                this.downloadButton.toggled         = !this.downloadButton.toggled;
-                this.downloadLayer.state            = this.downloadLayer.state || layer.state;
-                this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
-                  ? this.downloadLayer.config.downloads
-                  : downloadformats.map(format => ({
-                      id: format,
-                      format,
-                      cbk: () => {
-                        this.saveRelation(layer.getDownloadUrl(format));
-                        this.headercomponent = null;
-                      },
-                      download: true,
-                    })
-                );
-                this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-              }
-            : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
-        }
-      }
-
-      VM.$on('reload', () => { this.reloadLayout(); });
-  
-      this.showChart = throttle(async () => {
-        this.chart = !this.chart;
+      /**
+       * @FIXME add description
+       */
+      async chart() {
         await this.$nextTick();
-        this.chartContainer = this.chartContainer ||  $('#chart_content');
-        this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
-      });
+        this.resize();
+      },
 
-      await this.$nextTick();
+      /**
+       * @FIXME add description
+       */
+      async headercomponent() {
+        await this.$nextTick();
+        this.resize();
+      },
 
-      SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
+    },
 
-      this.relation.title = this.relation.name;
-
-      if (!this.one) {
-        this.relationDataTable = $(this.$refs.relationtable).DataTable({
-          autoWidth:      false,
-          bLengthChange:  true,
-          dom:            'ltip',
-          columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-          order:          [ this.showTools ? 1 : 0, 'asc' ],
-          pageLength:     10,
-          responsive:     true,
-          scrollResize:   true,
-          scrollCollapse: true,
-          scrollX:        true,
-        });
-        this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-      }
-
-      // resize after popping child relation 
-      GUI.on('pop-content', () => setTimeout(() => this.resize()));
-
-      this.resize();
+    beforeCreate() {
+      this.delayType = 'debounce';
     },
 
     /**
-     * @returns { Promise<void> }
+     * @fires hide-chart
      */
-    async resize() {
+    async beforeDestroy() {
       // skip when ..
-      if (!this.$refs.query_relation || 'none' === this.$refs.query_relation.parentNode.style.display) {
+      if (!this.relationDataTable) {
         return;
       }
-
-      // in case of waiting table
-      const table      = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
-      table.height(
-        $(".content").height()
-        - this.tableHeaderHeight
-        - $('.content_breadcrumb')                       .outerHeight()
-        - $('.navbar-header')                            .outerHeight()
-        - $('.close-panel-block')                        .outerHeight()
-        - $(this.$refs['relation-header'])               .outerHeight()
-        - $('.dataTables_filter').last()                 .outerHeight()
-        - $('.dataTables_paginate.paging_simple_numbers').outerHeight()
-        - $('.dataTables_scrollHead').last()             .outerHeight()
-      );
-
-      /** In case of layer that has form Structure s */
-      if (this.table.rowFormStructure) {
-        $('.row-wrap-tabs > .tabs-wrapper').width(
-          table.width()
-          - $(this.$refs.relationtable).find('tr.selected > td').outerWidth()
-          - 20
-        );
+      this.relationDataTable.destroy();
+      this.relationDataTable = null;
+      if (this.chartContainer) {
+        this.$emit('hide-chart', this.chartContainer);
       }
-
-      this.reloadLayout();
+      this.chartContainer = null;
+      this.tableHeaderHeight = null;
+      GUI.off('pop-content', this.resize);
     },
 
-    /**
-     * @param type
-     */
-    saveRelation(type) {
-      this.$emit('save-relation', type);
-      this.downloadButton.toggled = false;
-    },
-
-    /**
-     * @param event
-     * @param row
-     *
-     * @returns { Promise<void> }
-     */
-    async showFormStructureRow(event, row) {
-      this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
-      this.fields                 = this.getRowFields(row);
-      await this.$nextTick();
-      $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
-      this.resize();
-    },
-
-    /**
-     * @param index
-     */
-    editFeature(index) {
-      GUI
-        .getService('queryresults')
-        .editFeature({
-          layer: {
-            id: this.table.layerId,
-            attributes: this.table.fields,
-          },
-          feature: this.table.features[index],
-        });
-    },
-
-    /**
-     * @param row
-     *
-     * @returns {*}
-     */
-    getRowFields(row) {
-      return this.table.fields.map((field, index) => {
-        field.value = row[index];
-        field.query = true;
-        field.input = { type: `${this.getFieldType(field)}` };
-        return field;
-      });
-    },
-
-    /**
-     * @FIXME add description
-     */
-    reloadLayout() {
-      if (this.relationDataTable) {
-        this.relationDataTable.columns.adjust();
-      }
-    },
-
-    /**
-     * @FIXME add description
-     */
-    back() {
-      this.$parent.setRelationsList();
-    },
-
-    /**
-     * @param type
-     * @param value
-     *
-     * @returns { boolean }
-     */
-    fieldIs(type, value) {
-      return this.getFieldType(value) === type;
-    },
-
-    /**
-     * @param type
-     * @param value
-     *
-     * @returns { boolean }
-     */
-    is(type, value) {
-      return this.fieldIs(type, value);
-    },
-
-    /**
-     * @param evt
-     */
-    moveFnc(evt) {
-      const sidebarHeaderSize             =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-      const size                          = evt.pageX+2 - sidebarHeaderSize;
-      this.$refs.tablecontent.style.width = `${size}px`;
-      this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
-    },
-
-  },
-
-  watch: {
-
-    /**
-     * When showing a relation directly
-     */
-    table: {
-      immediate: true,
-      handler(table) {
-        if (table && table.rows.length) {
-          this.createTable();
-        }
-      },
-    },
-
-    /**
-     * @FIXME add description
-     */
-    async chart() {
-      await this.$nextTick();
-      this.resize();
-    },
-
-    /**
-     * @FIXME add description
-     */
-    async headercomponent() {
-      await this.$nextTick();
-      this.resize();
-    },
-
-  },
-
-  beforeCreate() {
-    this.delayType = 'debounce';
-  },
-
-  /**
-   * @fires hide-chart
-   */
-  async beforeDestroy() {
-    // skip when ..
-    if (!this.relationDataTable) {
-      return;
-    }
-    this.relationDataTable.destroy();
-    this.relationDataTable = null;
-    if (this.chartContainer) {
-      this.$emit('hide-chart', this.chartContainer);
-    }
-    this.chartContainer = null;
-    this.tableHeaderHeight = null;
-    GUI.off('pop-content', this.resize);
-  },
-
-};
+  };
 </script>
 
 <style scoped>

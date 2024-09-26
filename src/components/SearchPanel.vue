@@ -90,7 +90,7 @@
                 :key   = "opt.value"
                 :value = "opt.value"
               >
-                <span v-if = "opt.value === allvalue" v-t = "'sdk.search.all'"></span>
+                <span v-if = "allvalue === opt.value" v-t = "'sdk.search.all'"></span>
                 <span v-else>{{ opt.key }}</span>
               </option>
             </select>
@@ -163,15 +163,14 @@
   import {
     FILTER_EXPRESSION_OPERATORS,
     SEARCH_ALLVALUE,
-  }                                            from 'app/constant';
-  import ApplicationState                      from 'store/application-state';
-  import ApplicationService                    from 'services/application';
+  }                                            from 'g3w-constants';
+  import ApplicationState                      from 'store/application';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import resizeMixin                           from 'mixins/resize';
 
-  const { t } = require('core/i18n/i18n.service');
+  const { t } = require('g3w-i18n');
 
   // store all select2 inputs
   const SELECTS = [];
@@ -190,11 +189,11 @@
     computed: {
 
       layers_url() {
-        return ApplicationService.getCurrentProject().getState().layers_url;
+        return ApplicationState.project.getState().layers_url;
       },
 
       is_staff() {
-        return ApplicationService.getConfig().user.is_staff;
+        return window.initConfig.user.is_staff;
       },
 
     },
@@ -216,7 +215,7 @@
         if (this.isMobile()) {
           const top = $(e.target).position().top - 10 ;
           await this.$nextTick();
-          setTimeout(() => $('.sidebar').scrollTop(top), 500);
+          setTimeout(() => $('.main-sidebar').scrollTop(top), 500);
         }
       },
 
@@ -398,7 +397,7 @@
           }
         } : null;
 
-        const select2 = $('#' + input.id).select2({
+        const select2 = $(`#${input.id}`).select2({
           ajax,
           width:              '100%',
           dropdownParent:     $('.g3w-search-form:visible'),
@@ -424,6 +423,7 @@
             inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
           },
         });
+
         SELECTS.push(select2);
 
         select2.on('select2:select select2:unselecting', e => {
@@ -440,14 +440,34 @@
           }
         });
 
+        // recreate select2 value when language change
+        const unwatch = this.$watch(() => ApplicationState.language, () => {
+          unwatch();
+          this.clearSelect2();
+          this.initSelect2Field(input);
+        });
+
         // set initial value
         select2.val(input.value).trigger('change');
       },
 
+      clearSelect2() {
+        // remove all select2 DOM events
+        SELECTS.forEach(select2 => {
+          select2.select2('destroy');
+          select2.off();
+          select2 = null;
+        })
+        // reset SELECTS to an empty array
+        SELECTS.splice(0);
+      }
+
     },
 
     async mounted() {
-      await this.state.mounted;
+      //@since 3.11.0 Need to add $nextTick()
+      // because can happen that .g3w-search-form is not yet visible for select2 dropdownParent:$('.g3w-search-form:visible'),
+      await Promise.allSettled([this.$nextTick(), this.state.mounted]);
       for (const input of this.state.forminputs) {
         await this.initSelect2Field(input);
         await this.initDateTimeField(input);
@@ -455,14 +475,7 @@
     },
 
     beforeDestroy() {
-      // remove all select2 DOM events
-      SELECTS.forEach(select2 => {
-        select2.select2('destroy');
-        select2.off();
-        select2 = null;
-      })
-      // reset SELECTS to empty array
-      SELECTS.splice(0);
+      this.clearSelect2();
     }
 
   };

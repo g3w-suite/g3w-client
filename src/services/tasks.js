@@ -2,25 +2,53 @@
  * @file
  * @since v3.6
  */
+import { XHR } from 'utils/XHR';
 
-const { XHR } = require('utils');
+/**
+ * SERVER
+ * """Returns the (possibly) new layer ID where the isochrone
+ data has been added. If the task has not yet completed, a status message is returned
+
+ Note: `project_id` is only used for permissions checking!
+
+ Returns 500 in case of exception
+ Returns 404 in case of a task didn't find
+ Returns 200 ok for all other cases
+
+ Response body:
+
+ {
+    "status": "complete",  // or "pending" or "error", full list at
+                         // https://huey.readthedocs.io/en/latest/signals.html#signals
+    "exception": "Normally empty, error message in case of errors",
+    "progress": [
+      100,  // Progress %
+    ],
+    "task_result": {
+        "qgis_ayer_id": "4f2a88a1-ca93-4859-9de3-75d9728cde0e"
+     }
+  }
+
+ **/
 
 /**
  * Singletone service to run async task
- * @constructor
  */
-function TaskService() {
-  /**
-   * Array contains all task id that are running. Each item is an object contain:
-   * {
-   *   taskId: //taskId,
-   *   intervalId: interval to clear clearInterval()
-   * }
-   **/
-  const tasks = [];
+export default new (class TaskService {
+  constructor() {
+    /**
+     * Array contains all task id that are running. Each item is an object contain:
+     * {
+     *   taskId: //taskId,
+     *   intervalId: interval to clear clearInterval()
+     * }
+     **/
+    this.tasks = [];
+  }
+
   /**
    *
-   * @param options: {
+   * @param opts: {
    *   method: http method to run task GET/POST
    *   url: api request url (that server start in background task)
    *   taskUrl = url to ask the status og task
@@ -32,8 +60,16 @@ function TaskService() {
    *
    * return a Promise that return a task id
    */
-  this.runTask = async function(options={}) {
-    let { method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener= () => {} } = options;
+  async runTask(opts = {}) {
+    let {
+      method = 'GET',
+      params = {},
+      url,
+      taskUrl,
+      interval = 1000,
+      timeout = Infinity,
+      listener = () => {}
+    } = opts;
     try {
       const response = 'GET' === method  ? await XHR.get({
         url,
@@ -74,7 +110,7 @@ function TaskService() {
         }, interval);
 
         // add current task to list of task
-        tasks.push({
+        this.tasks.push({
           task_id,
           intervalId,
         });
@@ -89,19 +125,19 @@ function TaskService() {
       }
 
     } catch(e) {
+      console.warn(e);
       return Promise.reject(e);
     }
   };
 
   /**
    *
-   * @param options: {
+   * @param opts: {
    *   taskId: taskId that is running
    * }
    */
-  this.stopTask = function(options= {}) {
-    const { task_id } = options;
-    const task = tasks.find(task => task.task_id === task_id);
+  stopTask(opts = {}) {
+    const task = this.tasks.find(t => opts.task_id === t.task_id);
     if (task) {
       clearInterval(task.intervalId);
     }
@@ -110,39 +146,9 @@ function TaskService() {
   /**
    * clare all task
    */
-  this.clear = function() {
-    tasks.forEach(({ taskId }) => this.stopTask({ taskId }));
+  clear() {
+    this.tasks.forEach(({ taskId }) => this.stopTask({ taskId }));
     //reset to empty tasks
-    tasks.splice(0);
+    this.tasks.splice(0);
   }
-}
-
-
-/**
- * SERVER
- * """Returns the (possibly) new layer ID where the isochrone
- data has been added. If the task has not yet completed a status message is returned
-
- Note: `project_id` is only used for permissions checking!
-
- Returns 500 in case of exceptions
- Returns 404 in case of task not found
- Returns 200 ok for all other cases
-
- Response body:
-
- {
-            "status": "complete",  // or "pending" or "error", full list at
-                                   // https://huey.readthedocs.io/en/latest/signals.html#signals
-            "exception": "Normally empty, error message in case of errors",
-            "progress": [
-                100,  // Progress %
-            ],
-            "task_result": {
-                "qgis_ayer_id": "4f2a88a1-ca93-4859-9de3-75d9728cde0e"
-            }
-        }
-
- **/
-
-export default new TaskService();
+});

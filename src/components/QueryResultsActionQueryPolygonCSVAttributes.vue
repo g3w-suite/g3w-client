@@ -37,9 +37,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'store/application-state'
+  import ApplicationState from 'store/application'
   
-  const {t} = require('core/i18n/i18n.service');
+  const {t} = require('g3w-i18n');
 
   export default {
 

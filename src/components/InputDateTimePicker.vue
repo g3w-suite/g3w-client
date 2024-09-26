@@ -36,11 +36,11 @@
 </template>
 
 <script>
-import ApplicationState from 'store/application-state';
-import { resizeMixin } from 'mixins';
+import ApplicationState   from 'store/application';
+import { resizeMixin }    from 'mixins';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 const Input = require('gui/inputs/input');
-const { getUniqueDomId } = require('utils');
 
 export default {
 
@@ -83,7 +83,7 @@ export default {
     onDatePickerChange() {
       const newDate = $(`#${this.idinputdatetimepiker}`).val();
       this.state.value =
-        _.isEmpty(_.trim(newDate))
+        _.isEmpty(newDate.trim())
           ? null
           : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
       this.change();

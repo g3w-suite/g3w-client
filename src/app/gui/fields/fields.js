@@ -5,7 +5,7 @@ import Geo      from 'components/FieldGeo.vue';
 import Media    from 'components/FieldMedia.vue';
 import VueField from 'components/FieldVue.vue';
 
-const Fields = {
+module.exports = {
   simple_field: Text,
   text_field:   Text,
   link_field:   Link,
@@ -15,5 +15,3 @@ const Fields = {
   media_field:  Media,
   vue_field:    VueField
 };
-
-module.exports = Fields;

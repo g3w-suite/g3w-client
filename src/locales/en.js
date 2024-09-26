@@ -37,7 +37,7 @@ export default {
         }
       },
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
+        title: "Bookmarks",
         helptext: "Move on map extent, insert name and click Add",
         input: {
           name: "Name"
@@ -185,7 +185,7 @@ export default {
           row_to_form: "Form View",
           zoomtogeometry: "Zoom to Geometry",
         },
-        copy_map_extent_url: 'Copy map view link',
+        copy_map_extent_url: 'Copy share URL',
         download_shapefile: "Download Shapefile",
         download_gpx: "Download GPX",
         download_gpkg: "Download GPKG",
@@ -258,9 +258,32 @@ export default {
               hint: "Print Atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copy map URL with this geometry feature extension",
+              hint: "Share via link",
               hint_change: "Copied"
             }
+          }
+        },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
           }
         },
         querybypolygon: {
@@ -278,20 +301,28 @@ export default {
           tooltip: 'Query By Polygon',
           no_geometry: 'No geometry on response',
           help: {
-            title:'Guide - Query By Polygon',
-            message: "<ul><li>Select a polygon layer on TOC.</li><li>Be sure that layer is visible.</li><li>Click on a feature of selected layer.</li></ul>"
+            message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Query by Draw Polygon ",
+          help: {
+            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers (underlined in yellow in legend)</li></ul>"
+          }
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Query BBox layer',
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
           help: {
-            title: 'Guide - Query BBox layer',
-            message: "<ul><li>Draw a square on map to query underlined layers on TOC</li></ul>"
+            message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -305,6 +336,7 @@ export default {
           tooltip: 'Geolocation'
         },
         measures: {
+          title: 'Measure',
           length: {
             tooltip: "Length",
             help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
@@ -313,6 +345,12 @@ export default {
             tooltip: "Area",
             help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
           }
+        },
+        screenshot: {
+          title: 'Screen capture',
+          screenshot: "PNG",
+          geoscreenshot: "GeoTIFF",
+          download: 'Generate'
         },
         scale: {
           no_valid_scale: "Invalid Scale"
@@ -333,7 +371,8 @@ export default {
         no_relations_found: 'No relations found',
         back_to_relations: 'Back to relations',
         list_of_relations_feature: 'List of relations of feature',
-        error_missing_father_field: "Field is missing"
+        error_missing_father_field: "Field is missing",
+        field: "Relation key field",
       },
       form: {
         loading: 'Loading ...',
@@ -505,7 +544,9 @@ export default {
         select_csv_x_field: "Select X field",
         select_csv_y_field: "Select Y field",
         select_color: "Select Layer Color",
-        drag_layer: "Drag and drop layer here"
+        drag_layer: "Drag and drop layer here",
+        persistent_data: "Persistent data",
+        persistent_help: "save layer into browser storage",
       },
       query: {
         input_relation: "Click to show relations"

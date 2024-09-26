@@ -165,21 +165,18 @@
 </template>
 
 <script>
-  import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'app/constant';
-  import Panel                             from 'core/g3w-panel';
-  import ProjectsRegistry                  from 'store/projects';
-  import ApplicationService                from 'services/application';
-  import DataRouterService                 from 'services/data';
-  import GUI                               from 'services/gui';
-  import { getUniqueDomId }                from 'utils/getUniqueDomId';
-  import { isURL }                         from 'utils/isURL';
+  import Panel              from 'g3w-panel';
+  import ApplicationState   from 'store/application'
+  import DataRouterService  from 'services/data';
+  import GUI                from 'services/gui';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-  import * as vuePanelComp                 from 'components/WMSLayersPanel.vue';
+  import * as vuePanelComp  from 'components/WMSLayersPanel.vue';
 
   /**
    * Current project id used to store data or get data to a current project
    */
-  let PID = ProjectsRegistry.getCurrentProject().getId();
+  let PID = ApplicationState.project.getId();
 
   let panel;
 
@@ -214,7 +211,7 @@
           (
             this.url !== null &&
             this.url.trim() &&
-            isURL(this.url)
+            this.url && this.url.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g) // whether is a valid url
           ) &&
           (
             this.id !== null &&
@@ -285,6 +282,44 @@
       },
 
       /**
+       * Add external WMS layer to map
+       * 
+       * @param { Object } wms
+       * @param { string } wms.url
+       * @param { string } wms.name
+       * @param wms.epsg
+       * @param wms.position
+       * @param wms.opacity
+       * @param wms.visible
+       * @param wms.layers
+       *
+       * @returns {Promise<unknown>}
+       */
+      _addExternalWMSLayer({
+        url,
+        layers,
+        name,
+        epsg     = GUI.getService('map').getEpsg(),
+        position = 'top',
+        opacity,
+        visible  = true
+      } = {}) {
+        const map             = GUI.getService('map');
+        const { RasterLayer } = require('map/layers/imagelayer');
+        const projection      = ol.proj.get(epsg);
+
+        const promise = new Promise((res, rej) => {
+          const wmslayer = new RasterLayer({ id: name || getUniqueDomId(), layers, projection, url });
+          const olLayer  = wmslayer.getOLLayer();
+          olLayer.getSource().once('imageloadend', res);
+          olLayer.getSource().once('imageloaderror', rej);
+          map.addExternalLayer(wmslayer, { position, opacity, visible });
+        });
+      
+        return promise;
+      },
+
+      /**
        * Check if a layer is already added to map
        * 
        * @param { Object } wms
@@ -336,7 +371,7 @@
           this.updateLocalWMSData(data);
 
           try {
-            await GUI.getService('map').addExternalWMSLayer(config);
+            await this._addExternalWMSLayer(config);
           } catch(e) {
             console.warn(e);
             GUI.getService('map').removeExternalLayer(name);
@@ -442,13 +477,13 @@
       deleteWms(name) {
         const data = this.getLocalWMSData();
         Object.keys(data.wms).find(url => {
-          const index = data.wms[url].findIndex(w => w.name == name);
+          const i = data.wms[url].findIndex(w => w.name == name);
           /** @TODO add description */
-          if (-1 !== index) {
-            data.wms[url].splice(index, 1);
+          if (-1 !== i) {
+            data.wms[url].splice(i, 1);
           }
           /** @TODO add description */
-          if (-1 !== index && 0 == data.wms[url].length) {
+          if (-1 !== i && 0 == data.wms[url].length) {
             delete data.wms[url];
           }
           return true;
@@ -483,7 +518,8 @@
        * @returns {*}
        */
       getLocalWMSData() {
-        return (ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {})[PID];
+        const item = window.localStorage.getItem('externalwms');
+        return ((item ? JSON.parse(item) : undefined) || {})[PID];
       },
 
       /**
@@ -492,17 +528,23 @@
        * @param data
        */
       updateLocalWMSData(data) {
-        const alldata = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {};
+        const item = window.localStorage.getItem('externalwms');
+        const alldata = (item ? JSON.parse(item) : undefined) || {};
         alldata[PID] = data;
-        ApplicationService.setLocalItem({ id: LOCALSTORAGE_EXTERNALWMS_ITEM, data: alldata });
+        try {
+          window.localStorage.setItem('externalwms', JSON.stringify(alldata));
+        } catch(e) {
+          console.warn(e);
+        }
       },
 
     },
 
     // Load WMS urls from local storage
     async mounted() {
+
       /**@deprecated Will be removed on v4.x **/
-      ProjectsRegistry
+      g3wsdk.core.project.ProjectsRegistry
         .onafter('setCurrentProject', async project => {
           this.projectId          = PID = project.getId();
           this.state.adminwmsurls = project.wmsurls || [];
@@ -534,7 +576,7 @@
         map.on('change-layer-visibility',   ({ id: name, visible } = {})  => this.changeLayerData(name, { key: 'visible',  value: visible }));
 
         // load eventually data
-        Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => map.addExternalWMSLayer({ url, ...d })); });
+        Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
       });
 
       this.state.localwmsurls = data.urls;

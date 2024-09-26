@@ -262,6 +262,29 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
         querybypolygon: {
           download: {
             title: "Attributes download",
@@ -277,20 +300,25 @@ export default {
           tooltip: 'Förfrågan med polygon',
           no_geometry: 'No geometry on response',
           help: {
-            title: 'Ohje - Förfrågan med polygon',
             message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Fråga efter ritpolygon"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
           nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
           help: {
-            title: 'Ohje - BBox-förfrågan som riktar sig till nivån',
             message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -332,7 +360,8 @@ export default {
         no_relations_found: 'Inga relationer hittades.',
         back_to_relations: 'Tillbaka till relationerna',
         list_of_relations_feature: 'Lista på egenskapens relationer',
-        error_missing_father_field: "Fält saknas"
+        error_missing_father_field: "Fält saknas",
+        field: "Relation key field",
       },
       form: {
         loading: 'Laddning...',

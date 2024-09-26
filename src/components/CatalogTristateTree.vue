@@ -120,8 +120,8 @@
         }"
         class            = "skin-tooltip-top g3w-long-text"
         data-placement   = "top"
-        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
@@ -227,21 +227,20 @@
 </template>
 
 <script>
-import { CatalogEventBus as VM }   from 'app/eventbus';
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import ApplicationState            from "store/application-state";
+import { VM }                      from 'g3w-eventbus';
+import ApplicationState            from "store/application";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
-
-const { downloadFile } = require('utils');
+import { downloadFile }            from 'utils/downloadFile';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 function _setAllLayersVisible(layers) {
   layers.nodes.forEach(n => {
     if (undefined === n.id) {
       _setAllLayersVisible({ nodes: n.nodes, visible: layers.visible && n.checked });
     } else if (n.parentGroup.checked && n.checked) {
-      CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(layers.visible);
+      getCatalogLayerById(n.id).setVisible(layers.visible);
     }
   });
 };
@@ -309,7 +308,7 @@ export default {
     },
 
     showscalevisibilityclass() {
-      return !this.isGroup && this.layerstree.scalebasedvisibility
+      return !this.isGroup && this.layerstree.scalebasedvisibility;
     },
 
     showScaleVisibilityToolip() {
@@ -329,7 +328,22 @@ export default {
     },
 
     isHighLight() {
-      return (this._isHighLightProjectLayer || this._isHighLightExternalLayer);
+      return (
+        // project layer
+        (
+          this.highlightlayers &&
+          !this.isGroup &&
+          getCatalogLayerById(this.layerstree.id).getTocHighlightable() &&
+          this.layerstree.visible
+        ) ||
+        // external layer
+          (
+          this.layerstree.external &&
+          this.layerstree.visible &&
+          "vector" /* <-- what the heck? */ && this.layerstree._type &&
+          true === this.layerstree.tochighlightable
+        )
+      );
     },
 
     isInGrey() {
@@ -341,34 +355,6 @@ export default {
      */
     getFeatureCount() {
       return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) => total + 1 * categoryFeatureCount, 0);
-    },
-
-    /**
-     * @TODO double check the name of this function (ie. matches its purpose?)
-     *
-     * @since 3.8.0
-     */
-     _isHighLightProjectLayer() {
-      return (
-        this.highlightlayers &&
-        !this.isGroup &&
-        CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).getTocHighlightable() &&
-        this.layerstree.visible
-      );
-    },
-
-    /**
-     * @TODO double check the name of this function (ie. matches its purpose?)
-     *
-     * @since 3.8.0
-     */
-    _isHighLightExternalLayer() {
-      return (
-        this.layerstree.external &&
-        this.layerstree.visible &&
-        "vector" /* <-- what the heck? */ && this.layerstree._type &&
-        true === this.layerstree.tochighlightable
-      )
     },
 
   },
@@ -393,7 +379,7 @@ export default {
      * @since 3.9.0
      */
     removeCurrentFilter() {
-      return CatalogLayersStoresRegistry.getLayerById(this.layerstree.id).deleteFilterToken();
+      return getCatalogLayerById(this.layerstree.id).deleteFilterToken();
     },
 
     /**
@@ -404,12 +390,14 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
+      const map = GUI.getService('map');
+
       if (!group.checked) {
         group.nodes.forEach(n => {
           if (undefined === n.id) {
             _setAllLayersVisible({ nodes: n.nodes, visible: false });
           } else if (n.checked) {
-            CatalogLayersStoresRegistry.getLayerById(n.id).setVisible(false);
+            getCatalogLayerById(n.id).setVisible(false);
           }
         });
         return; // NB exit early!
@@ -450,15 +438,18 @@ export default {
      */
     handleLayerChecked(layer) {
 
+      const map = GUI.getService('map'); 
+
       // external layer (eg. temporary layer through `addlayerscontrol`)
       if (!layer.projectLayer) {
         layer.visible = layer.checked;
-        GUI.getService('map').changeLayerVisibility({ id: layer.id, visible: layer.checked });
+        layer.setVisible(layer.checked);
+        map.emit('change-layer-visibility', { id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
 
       // project layer (eg. qgis layer)
-      const qlayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+      const qlayer  = getCatalogLayerById(layer.id);
       const checked = layer.checked;
 
       qlayer.setVisible(checked ? !layer.disabled : false)
@@ -483,18 +474,18 @@ export default {
      * @since 3.9.0
      */
     saveFilter(layerstree) {
-      CatalogLayersStoresRegistry.getLayerById(layerstree.id).saveFilter();
+      getCatalogLayerById(layerstree.id).saveFilter();
     },
 
     /**
-     * @fires CatalogEventBus~activefiltertokenlayer
+     * @fires VM~activefiltertokenlayer
      */
     toggleFilterLayer() {
       VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
     /**
-     * @fires CatalogEventBus~unselectionlayer
+     * @fires VM~unselectionlayer
      */
     clearSelection() {
       VM.$emit('unselectionlayer', this.storeid, this.layerstree);
@@ -511,24 +502,20 @@ export default {
     /**
      * Select legend item
      *
-     * @fires CatalogEventBus~treenodeexternalselected
-     * @fires CatalogEventBus~treenodeselected
+     * @fires VM~treenodeselected
      */
     select() {
-      // skip when `selected === undefined` (unselectable layer, eg. an external WMS  added  (no project layer))
-      if (undefined === this.layerstree.selected) {
-        return;
-      }
-      // check if is external and not a project Layer
-      if (this.layerstree.external && false === this.layerstree.projectLayer) {
-        VM.$emit('treenodeexternalselected', this.layerstree);
-      } else if (!this.isGroup && !this.isTable) {
-        VM.$emit('treenodeselected', this.storeid, this.layerstree);
+      // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
+      if (
+        undefined !== this.layerstree.selected &&
+        ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
+      ) {
+        VM.$emit('treenodeselected', this.layerstree);
       }
     },
 
     /**
-     * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
+     * @TODO refactor this, almost the Same as `CatalogContextMenu.vue::zoomToLayer(layer)`
      *
      * @since 3.10.0
      */
@@ -544,7 +531,7 @@ export default {
     },
 
     /**
-     * @TODO refactor this, almost the same as: `CatalogLayerContextMenu.vue::canZoom(layer))`
+     * @TODO refactor this, almost the same as: `CatalogContextMenu.vue::canZoom(layer))`
      *
      * @since v3.8
      */
@@ -579,17 +566,17 @@ export default {
       }
     },
 
-    removeExternalLayer(name, type) {
-      GUI.getService('map').removeExternalLayer(name, wms);
+    removeExternalLayer(name) {
+      GUI.getService('map').removeExternalLayer(name);
     },
 
     /**
      * @param evt
      * 
-     * @fires CatalogEventBus~hide-layer-context-menu
-     * @fires CatalogEventBus~hide-project-context-menu
-     * @fires CatalogEventBus~show-layer-context-menu
-     * @fires CatalogEventBus~show-project-context-menu
+     * @fires VM~hide-layer-context-menu
+     * @fires VM~hide-project-context-menu
+     * @fires VM~show-layer-context-menu
+     * @fires VM~show-project-context-menu
      * 
      * @since 3.10.0
      */

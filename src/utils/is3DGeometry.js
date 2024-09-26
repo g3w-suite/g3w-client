@@ -1,4 +1,4 @@
-import { GEOMETRY_TYPES } from 'app/constant';
+import { GEOMETRY_TYPES } from 'g3w-constants';
 
 export function is3DGeometry(geometryType) {
   return [

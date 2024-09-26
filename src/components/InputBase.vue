@@ -30,6 +30,15 @@
       </label>
     </slot>
 
+    <!-- @since 3.11.0 RELATION FIELD -->
+    <div
+      v-if   = "state.relationField"
+      style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
+    >
+      <span :class = "g3wtemplate.getFontClass('warning')"></span>
+      <span v-t = "'sdk.relations.field'"></span>
+    </div>
+
     <div class = "col-sm-12">
 
       <!-- SLOT LOADING -->
@@ -39,7 +48,7 @@
           style = "position:relative; width: 100%"
           slot  = "loading"
         >
-          <bar-loader loading = "true"/>
+          <bar-loader :loading = "true"/>
         </div>
       </slot>
 

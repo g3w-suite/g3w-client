@@ -39,6 +39,9 @@ initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEn
   get(target, prop, receiver) { console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`); return Reflect.get(...arguments); }
 }));
 
+// gid of panoramic map project
+initConfig.overviewproject = initConfig.overviewproject ? initConfig.overviewproject.gid : null;
+
 /**
  * @deprecated since v3.8. Will be removed in v4.x. Use ESM imports from 'vue-color' instead
  */

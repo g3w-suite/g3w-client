@@ -7,23 +7,21 @@
  * @since 3.9.0
  */
 
-import { G3W_FID }                         from 'app/constant';
+import { G3W_FID }                         from 'g3w-constants';
 import GUI                                 from 'services/gui';
-import { toRawType }                       from 'utils/toRawType';
 import { groupBy }                         from 'utils/groupBy';
 import { is3DGeometry }                    from 'utils/is3DGeometry';
 import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGeometry';
 import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature'
 import { reverseGeometry }                 from 'utils/reverseGeometry';
+import { Feature }                         from 'map/layers/feature';
 
-const Feature                              = require('core/layers/features/feature');
-const { t }                                = require('core/i18n/i18n.service');
+const { t }                                = require('g3w-i18n');
 
 Object
   .entries({
     G3W_FID,
     GUI,
-    toRawType,
     Feature,
     t,
     is3DGeometry,
@@ -45,8 +43,8 @@ export const ResponseParser = {
     switch (type) {
 
       case 'g3w-error':
-        return function(options = {}) {
-          let { error } = options;
+        return function(opts = {}) {
+          let { error } = opts;
           return ({
             parse({ type = 'responseJSON' } = {}) {
 
@@ -77,16 +75,17 @@ export const ResponseParser = {
 
       case 'g3w-table/json':
         return function(data = {}) {
-          return (data.features || []).map(f => {
-            const feature = new Feature();
-            feature.setProperties(f.properties);
-            feature.setId(f.id);
-            return feature;
-          });
+          return (data.features || [])
+            .map(f => {
+              const feature = new Feature();
+              feature.setProperties(f.properties);
+              feature.setId(f.id);
+              return feature;
+            });
         };
 
       case 'g3w-vector/gml':
-        return function ({ data, layer } = {}) {
+        return function({ data, layer } = {}) {
           try {
             return (
               new ol.format.WMSGetFeatureInfo({ layers: layer.getQueryLayerOrigName() })
@@ -108,13 +107,13 @@ export const ResponseParser = {
 
       case 'g3w-vector/geojson':
       case 'g3w-vector/json':
-        return function (data, options) {
+        return function(data, options) {
           try {
             return (new ol.format.GeoJSON({
               geometryName:      'geometry',
               dataProjection:    options.crs,
               featureProjection: options.mapCrs || options.crs,
-            })).readFeatures('String' === toRawType(data) ? JSON.parse(data) : data);
+            })).readFeatures('string' === typeof data ? JSON.parse(data) : data);
           } catch (e) {
             console.warn(e);
             return [];
@@ -122,7 +121,7 @@ export const ResponseParser = {
         };
 
       case 'application/json':
-        return function ({
+        return function({
           response,
           projections,
           layers = [],
@@ -162,7 +161,7 @@ export const ResponseParser = {
         };
 
       case 'application/geojson':
-        return function ({
+        return function({
           layers,
           response,
         } = {}) {
@@ -174,7 +173,7 @@ export const ResponseParser = {
 
       case 'text/plain':
       case 'text/html':
-        return function ({
+        return function({
           layers,
           response,
         } = {}) {
@@ -185,7 +184,7 @@ export const ResponseParser = {
         };
 
       case 'text/gml':
-        return function ({
+        return function({
           layers,
           response,
         }) {
@@ -196,12 +195,12 @@ export const ResponseParser = {
         };
 
       case 'application/vnd.ogc.gml':
-        return function ({
+        return function({
           response,
           projections,
           layers,
           wms = true,
-          id = false,
+          id =  false,
         } = {}) {
           // convert XML response to string
           if (response && 'string' !== typeof response && !(response instanceof String)) {
@@ -260,71 +259,77 @@ export const ResponseParser = {
             return [];
           }
 
-          // parse layer feature collection
-          const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
-          const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
-
-          const is_reprojected = (
-            olfeatures.length &&
-            !!olfeatures[0].getGeometry() &&
-            projections.layer &&
-            projections.layer.getCode() !== projections.map.getCode()
-          );
-
-          /** @FIXME add description */
-          if (olfeatures.length && invalids) {
-            const fields = Object.keys(olfeatures[0].getProperties()).filter(prop => -1 !== prop.indexOf(NUMERIC_FIELD));
-            olfeatures.forEach(f => {
-              fields.forEach(_field => {
-                const invalid = invalids.find((find) => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
-                f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
-                f.unset(_field);
-              })
-            });
-          }
-
-          // transform features
-          if (is_reprojected) {
-            olfeatures.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())))
-          }
-
-          // inverted axis --> reverse features coordinates
-          if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
-            olfeatures.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
-          }
-
           // handled responses
-          const parsed = [];
-
+          const parsed = []; //Array contains item object ({layer, features})
           const originalFeatureMember = [].concat(json.FeatureCollection.featureMember);
-
+          //Loop on each layer
           layers.forEach((layer, i/*, originalFeatureMember*/) => {
+            const name = id ? layer.getId() : `layer${i}`; // layer name
 
-            const name   = id ? layer.getId() : `layer${i}`;                                    // layer name
-            const fname  = originalFeatureMember.filter(f => f[name]);                          // features with same name
-            let features = fname.filter(f => Array.isArray(f[name])).map(f => f[name]).pop();   // feature member array
-            let prefix   = fname.filter(f => Array.isArray(f[name])).map(f => f.__prefix).pop();// feature member prefix
-            fname
-              .forEach(fn => {
-                if (fn[name]._fid) {
-                  olfeatures.find(f => fn[name]._fid === f.getId()).set(G3W_FID, fn[name]._fid.split('.')[1])
+            json.FeatureCollection.featureMember = originalFeatureMember
+              .filter(f => f[name])
+              .map(f => {
+                const fm = f[name];
+                const prefix = f.__prefix;
+                //set fid of each feature
+                [].concat(fm).forEach(_fm => {
+                  //need to get fid number removing <layer_name_or_id.fid>
+                  _fm._fid = _fm._fid && _fm._fid.split('.')[1];
+                  _fm[G3W_FID] = {
+                    __prefix: prefix,
+                    __text:   _fm._fid
+                  }
+                })
+                //in case of wms multi layer
+                if (Array.isArray(fm)) {
+                  const grouped = groupBy(fm, f => Object.keys(f));
+                  // check if features have the same fields. If not, group the features with the same fields
+                  //check if features have different fields (multilayers)
+                  // If its is a multilayers. Each feature has different fields
+                  return Object.keys(grouped).length > 1
+                    ? Object.keys(grouped)
+                       .map((key, index) => grouped[key].map((feature, sub_index) => ({ [`layer${index}_${sub_index}`]: feature, __prefix: prefix }) )).flat()
+                    : //for Each element have to add and object contain layerName and information, and __prefix
+                    fm.map(f => ({ [name]:   f,  __prefix: prefix }) );
+                } else {
+                  return f;
                 }
-              });
-            // check if features have the same fields. If not, group the features with the same fields
-            const grouped    = features && groupBy(features, f => Object.keys(f));
-            const is_grouped = grouped && Object.keys(grouped).length > 1;
-            const is_multi   = features && is_grouped;
 
-            // Handle WMS Multi Layers Response From QGIS SERVER
-            // check if features have different fields (multilayers)
-            // is a multilayers. Each feature has different fields
-            //  If a group has more than one feature split it and create single features
-            json.FeatureCollection.featureMember = is_multi
-              ? Object.keys(grouped).reduce((result, key, i) => {
-                grouped[key].forEach((feat, j) => result[`layer${i}_${j}`] = feat);
-                return result;
-              }, { __prefix: prefix })
-              : fname.filter(feature => !Array.isArray(feature[name]));
+              }).flat();
+            // parse layer feature collection
+            const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
+            const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
+
+            //Check if you need to re-project features because layers are in different projection of the map
+            const is_reprojected = (
+              olfeatures.length > 0  //has features
+              && !!olfeatures[0].getGeometry()  // has a geometry
+              && projections.layer //has a layer projection
+              && projections.layer.getCode() !== projections.map.getCode() //the layer has the same projection of the map
+            );
+
+            /** @FIXME add description */
+            if (olfeatures.length > 0 && invalids) {
+              const fields = Object.keys(olfeatures[0].getProperties()).filter(p => -1 !== p.indexOf(NUMERIC_FIELD));
+              olfeatures.forEach(f => {
+                fields.forEach(_field => {
+                  const invalid = invalids.find(find => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
+                  f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
+                  f.unset(_field);
+                })
+              });
+            }
+
+            // transform features
+            if (is_reprojected) {
+              olfeatures.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
+            }
+
+            // inverted axis --> reverse features coordinates
+            if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
+              olfeatures.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+            }
+
             // Remove Z values due an incorrect addition when using
             // ol.format.WMSGetFeatureInfo readFeatures method from XML
             // (ex. WMS getFeatureInfo);
@@ -332,17 +337,9 @@ export const ResponseParser = {
               olfeatures.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
             }
 
-            /** @FIXME add description */
-            []
-              .concat(is_multi ? Object.values(grouped) : layer)
-              .forEach(g => parsed.unshift({ layer, features: olfeatures }));
+            parsed.unshift({ layer, features: olfeatures });
 
-            // on each element add and object contain layer name and information, and __prefix
-            if (features && !is_grouped) {
-              features.forEach(f => { json.FeatureCollection.featureMember.push({ [name]: f, __prefix: prefix }); });
-            }
-
-          });
+          })
 
           return parsed;
         };
@@ -351,10 +348,7 @@ export const ResponseParser = {
         return function({
           layers = [],
         } = {}) {
-          return layers.map(layer => ({
-            layer,
-            rawdata: t('warning.not_supported_format')
-          }))
+          return layers.map(layer => ({ layer, rawdata: t('warning.not_supported_format') }))
         };
 
     }

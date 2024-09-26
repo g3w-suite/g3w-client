@@ -2,763 +2,521 @@
  * @file
  * @since v3.6
  */
-import { G3W_FID, QUERY_POINT_TOLERANCE }        from 'app/constant';
-import ProjectsRegistry                          from 'store/projects';
-import ApplicationService                        from 'services/application';
-import GUI                                       from 'services/gui';
-import IFrameRouterService                       from 'services/iframe';
-import { splitContextAndMethod }                 from 'utils/splitContextAndMethod';
-import { getFeaturesFromResponseVectorApi }      from 'utils/getFeaturesFromResponseVectorApi';
-import { getQueryLayersPromisesByCoordinates }   from 'utils/getQueryLayersPromisesByCoordinates';
-import { getQueryLayersPromisesByGeometry }      from 'utils/getQueryLayersPromisesByGeometry';
-import { getQueryLayersPromisesByBBOX }          from 'utils/getQueryLayersPromisesByBBOX';
-import { getMapLayersByFilter }                  from 'utils/getMapLayersByFilter';
-import { createOlFeatureFromApiResponseFeature } from 'utils/createOlFeatureFromApiResponseFeature';
-import { resolve }                               from 'utils/resolve';
-import { XHR }                                   from 'utils/XHR';
+import { G3W_FID, QUERY_POINT_TOLERANCE } from 'g3w-constants';
+import ApplicationState                   from 'store/application'
+import GUI                                from 'services/gui';
 
-const { t } = require('core/i18n/i18n.service');
+import { groupBy }                        from 'utils/groupBy';
+import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
+import { XHR }                            from 'utils/XHR';
+import { $promisify, promisify }          from 'utils/promisify';
 
-const DataService = {
+const { t }  = require('g3w-i18n');
 
-  defaultoutputplaces: ['gui'], // set deafult outputplace
-  currentoutputplaces: ['gui'], // array contains all
+const handleQueryPromises = async (promises = []) => {
+  const responses = await Promise.allSettled(promises);
+  // at least one response
+  if (responses.some(r => 'fulfilled' === r.status)) {
+    return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+  }
+  // show all errors
+  return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
+}
 
-  /**
-   * Object contain output function to show results
-   * @type {{gui(*=, *=): void, iframe(*=, *=): void}}
-   * dataPromise: is a promise request for data,
-   * options: {
-   *   show: method or Boolean to set if show or not the result on output
-   *   before: async function to handle data return from server
-   *   after: method to handle or do some this after show data
-   * }
-   */
-  ouputplaces: {
-
-    async gui(dataPromise, options = {}) {
-      GUI.setLoadingContent(true);
-      try {
-        GUI.outputDataPlace(dataPromise, options);
-        await dataPromise;
-      } catch(e) {
-        console.warn(e);
-      }
-      GUI.setLoadingContent(false);
-    },
-
-    async iframe(dataPromise, options = {}) {
-      IFrameRouterService.outputDataPlace(dataPromise, options);
-    }
-
-  },
+export default {
 
   /**
-   * @param contextAndMethod 'String contain type of service(search or query): method'
+   * @param { string } contextAndMethod function name (eg. "query:coordinates", "query:bbox", "query:polygon")
    * @param options
    * 
    * @returns {Promise<void>}
    */
   async getData(contextAndMethod, options = {}) {
-    const { context, method }     = splitContextAndMethod(contextAndMethod);
-    const service                 = DataService.getService(context);
-    const {inputs={}, outputs={}} = options;
-    //return a promise and not the data
-    const dataPromise = service[method](inputs);
+    const { inputs = {}, outputs = {} } = options;
+    const promise = this[contextAndMethod](inputs);
     if (outputs) {
-      DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](dataPromise, outputs));
+      GUI.outputDataPlace(promise, outputs);
     }
-    //return always data
-    return await (await dataPromise);
+    return await (await promise);
   },
 
   /**
-   * Force to show empty output data
+   * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
    */
-  showEmptyOutputs() {
-    DataService.currentoutputplaces.forEach(p => DataService.ouputplaces[p](Promise.resolve({ data: [] })));
-  },
+  async 'query:coordinates'({
+    coordinates,
+    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+    multilayers           = false,
+    query_point_tolerance = QUERY_POINT_TOLERANCE,
+    /** @since 3.8.0 **/
+    addExternal = true,
+    feature_count
+  } = {}) {
 
-  /**
-   * Set a costum datapromiseoutput to applicationa outputs settede
-   * 
-   * @param dataPromise
-   */
-  showCustomOutputDataPromise(dataPromise) {
-    DataService.currentoutputplaces.forEach(place => DataService.ouputplaces[place](dataPromise, {}));
-  },
-
-  /**
-   * @param serviceName
-   * 
-   * @returns {*}
-   */
-  getService(serviceName) {
-    return DataService.services[serviceName]
-  },
-
-  setOutputPlaces(places = []) {
-    DataService.currentoutputplaces = places;
-  },
-
-  /**
-   * @param place
-   */
-  addCurrentOutputPlace(place) {
-    if (place && -1 === DataService.currentoutputplaces.indexOf(place)) {
-      DataService.currentoutputplaces.push(place);
-    }
-  },
-
-  /**
-   * @param place
-   * @param method has to get two parameters data (promise) and options (Object)
-   * ex {
-   * place: <newplace>
-   * method(dataPromise, options={}) {}
-   *   }
-   */
-  addNewOutputPlace({ place, method = () => {} } = {}) {
-    let added = false;
-    if (undefined === DataService.ouputplaces[place] ) {
-      DataService.ouputplaces[place] = method;
-      added = true;
-    }
-    return added;
-  },
-
-  // reset default configuration
-  resetDefaultOutput() {
-    DataService.currentoutputplaces = [...DataService.defaultoutputplaces];
-  },
-
-};
-
-/**
- * @returns {Promise<void>}
- */
-DataService.init = async () => {
-  DataService.services = {
-
-    /**
-     * ORIGINAL SOURCE: src/services/data-query.js@v3.9.3
-     */
-    query: new (class extends BaseService {
-      
-      constructor() {
-        super();
-        /** @type {{filtrable: {ows: string}}} */
-        this.condition = { filtrable: { ows: 'WFS' } };
-      }
-
-      /**
-       * @param {{ feature: unknown, feature_count: unknown, filterConfig: unknown, multilayers: boolean, condition: boolean, excludeLayers: unknown[] }}
-       * 
-       * @returns {Promise<unknown>}
-       */
-      polygon({
-        feature,
-        feature_count   = this.project.getQueryFeatureCount(),
-        filterConfig    = {},
-        multilayers     = false,
-        condition       = this.condition,
-        /** @since 3.8.0 */
-        layerName       = '',
-        /** @since 3.8.0 */
-        excludeSelected = null,
-        /** @since 3.8.0 **/
-        external = {
-          add: true,
-          filter: {
-            SELECTED : false
+    const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+    const layers  = getMapLayersByFilter({
+      QUERYABLE:       true,
+      SELECTED_OR_ALL: (0 === layerIds.length),
+      VISIBLE:         true,
+      IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
+    });
+    try {
+      return {
+        result: true,
+        type: 'ows',
+        query: {
+          coordinates,
+          type: 'coordinates',
+          external: {
+            add: (!external || layerIds.length > 0)
+              ? (1 === layers.length && layers[0].isSelected() ? false : addExternal) // avoid querying a temporary layer (external layer) when another layer is selected
+              : addExternal,                                                          // an external layer is selected
+            filter: {
+              SELECTED: external
+            }
           }
         },
-        /**@since 3.9.0**/
-        type = 'polygon'
-      } = {}) {
-        const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-        const fid                       = (hasExternalLayersSelected) ? feature.getId() : feature.get(G3W_FID);
-        const geometry                  = feature.getGeometry();
+        data: ((!external || layerIds.length > 0) && await promisify(this.getQueryLayersPromisesByCoordinates(layers, {
+          multilayers,
+          feature_count,
+          query_point_tolerance,
+          coordinates
+        })) || []).flatMap(({ data = [] }) => data),
+        
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
 
-        // in case no geometry on polygon layer response
-        if (!geometry) {
-          return this.returnExceptionResponse({
-            usermessage: {
-              type: 'warning',
-              message: `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
-              messagetext: true,
-              autoclose: false
-            }
-          });
-        }
-        return this.handleRequest(
-          // request
-          getQueryLayersPromisesByGeometry(
-            // layers
-            getMapLayersByFilter({
-              ...(
-                "boolean" === typeof excludeSelected
-                  ? { SELECTED: !excludeSelected }
-                  : { SELECTED_OR_ALL: true }
-              ),
-              FILTERABLE: true,
-              VISIBLE: true
-            }, condition),
-            // options
-            {
-              geometry,
-              multilayers,
-              feature_count,
-              filterConfig,
-              projection: this.project.getProjection()
-            }
-          ),
-          // query
-          {
-            fid,
-            geometry,
-            layerName,
-            type,
-            filterConfig,
-            external
-          }
-        );
-      }
+  },
 
-      /**
-       *
-       * @param bbox
-       * @param feature_count
-       * @param multilayers
-       * @param condition
-       * @param filterConfig
-       * @param excludeSelected
-       * @param addExternal
-       * @param layersFilterObject
-       * @returns {Promise<unknown>}
-       */
-      bbox({
-        bbox,
-        feature_count      = this.project.getQueryFeatureCount(),
-        filterConfig       = {},
-        multilayers        = false,
-        condition          = this.condition,
-        /** @since 3.8.0 **/
-        excludeSelected    = null,
-        /** @since 3.8.0 **/
-        addExternal = true,
-        layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
-      } = {}) {
+  /**
+   * @param bbox
+   * @param feature_count
+   * @param multilayers
+   * @param condition
+   * @param filterConfig
+   * @param addExternal
+   * @param layersFilterObject
+   */
+  async 'query:bbox'({
+    bbox,
+    feature_count      = ApplicationState.project.state.feature_count || 5,
+    filterConfig       = {},
+    multilayers        = false,
+    condition          = { filtrable: { ows: 'WFS' } },
+    /** @since 3.8.0 **/
+    excludeSelected    = null,
+    /** @since 3.8.0 **/
+    addExternal = true,
+    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
+  } = {}) {
 
-        const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-        const query = {
+    const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
+
+    try {
+      return {
+        result: true,
+        type: 'ows',
+        query: {
           bbox,
           type: 'bbox',
           filterConfig,
           external: {
             add: addExternal,
             filter: {
-              SELECTED: hasExternalLayersSelected || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
+              SELECTED: selected
             }
           },
-        };
-
-        // Check If LayerIds is length === 0 so i check if add external Layer is selected
-        if (hasExternalLayersSelected) {
-          return this.handleRequest(this.getEmptyRequest(), query);
-        }
-
-        return this.handleRequest(
-          //request
-          getQueryLayersPromisesByBBOX(
-            // layers
-            getMapLayersByFilter( layersFilterObject, condition ),
-            //options
-            {
-              bbox,
-              feature_count,
-              filterConfig,
-              multilayers,
-            }
-          ),
-          // query
-          query
-        );
-
-      }
-
-      /**
-       * @param {{ coordinates: unknown, layerIds: unknown[], multilayers: boolean, query_point_tolerance: number, feature_count: number }}
-       * 
-       * @returns {Promise<unknown>}
-       */
-      async coordinates({
-        coordinates,
-        layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
-        multilayers           = false,
-        query_point_tolerance = QUERY_POINT_TOLERANCE,
-        /** @since 3.8.0 **/
-        addExternal = true,
-        feature_count
-      } = {}) {
-        const hasExternalLayersSelected = this.hasExternalLayerSelected({ type: "vector" });
-        const query = {
-          coordinates,
-          type: 'coordinates',
-          external: {
-            add: addExternal,
-            filter: {
-              SELECTED: hasExternalLayersSelected
-            }
+        },
+        data: (!external && await this.getQueryLayersPromisesByGeometry(
+          // layers
+          getMapLayersByFilter(layersFilterObject, condition),
+          // options
+          {
+            geometry: ol.geom.Polygon.fromExtent(bbox),
+            feature_count,
+            filterConfig,
+            multilayers,
+            projection: GUI.getService('map').getMap().getView().getProjection(),
           }
-        };
+        ) || []).flatMap(({ data = [] }) => data),
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
 
-        // Return an empty request if an external layer is selected
-        if (hasExternalLayersSelected && 0 === layerIds.length) {
-          return this.handleRequest(this.getEmptyRequest(), query);
-        }
+  },
 
-        const layersFilterObject = {
-          QUERYABLE: true,
-          SELECTED_OR_ALL: (0 === layerIds.length),
-          VISIBLE: true
-        };
-
-
-        if (Array.isArray(layerIds)) {
-          layerIds.forEach(id => {
-            if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
-            layersFilterObject.IDS.push(id);
-          });
-        }
-
-        const layers = getMapLayersByFilter(layersFilterObject);
-
-        // set external property `add: false` in case
-        // of selected layer in order to avoid querying
-        // a temporary layer (external layer)
-
-        if (1 === layers.length && layers[0].isSelected()) {
-          query.external.add = false;
-        }
-
-        return this.handleRequest(
-          // request
-          getQueryLayersPromisesByCoordinates(
-            // layers
-            layers,
-            // options
-            {
-              multilayers,
-              feature_count,
-              query_point_tolerance,
-              coordinates
-            }
-          ),
-          // query
-          query
-        );
-
+  /**
+   * @param {{ feature: unknown, feature_count: unknown, filterConfig: unknown, multilayers: boolean, condition: boolean, excludeLayers: unknown[] }}
+   */
+  async 'query:polygon'({
+    feature,
+    feature_count   = ApplicationState.project.state.feature_count || 5,
+    filterConfig    = {},
+    multilayers     = false,
+    condition       = { filtrable: { ows: 'WFS' } },
+    /** @since 3.8.0 */
+    layerName       = '',
+    /** @since 3.8.0 */
+    excludeSelected = null,
+    /** @since 3.8.0 **/
+    external = {
+      add: true,
+      filter: {
+        SELECTED : false
       }
+    },
+    /**@since 3.9.0**/
+    type = 'polygon'
+  } = {}) {
+    const geometry = feature.getGeometry();
 
-      /**
-      * Wrap jQuery request promise with native Promise
-      * @param request is a Promise(jquery promise)
-      * @param query
-      * @returns {Promise<unknown>}
-      */
-      handleRequest(request, query = {}) {
-        return new Promise((resolve, reject) => {
-          request
-            .then(response => {
-              const results = this.handleResponse(response, query);
-              resolve(results);
-            })
-            .fail(reject)
-        })
-      }
-
-      /**
-      *
-      * @param response
-      * @param query
-      * @returns {{result: boolean, data: FlatArray<*[][], 1>[], query: {}, type: string}}
-      */
-      handleResponse(response = [], query = {}) {
-        return {
-          query,
-          type:   'ows',
-          data:   response.map(({ data = [] }) => data).flat(),
-          result: true // set result to true
-        };
-
-      }
-
-      /**
-      * Exception response has user message attribute
-      */
-      async returnExceptionResponse({ usermessage }) {
-        return {
-          data:   [],
-          usermessage,
-          result: true,
-          error:  true
-        }
-      }
-
-    }),
-
-    /**
-     * ORIGINAL SOURCE: src/services/data-search.js@v3.9.3
-     */
-    search: new (class extends BaseService {
-
-      /**
-       * @TODO deprecate search_endpoint
-       * 
-       * Method to search features
-       * 
-       * @param options.layer
-       * @param { 'api' | 'ows' } options.search_endpoint
-       * @param options.filter
-       * @param options.raw
-       * @param options.queryUrl
-       * @param options.feature_count
-       * @param options.formatter
-       * @param options.ordering
-       * 
-       * @returns { Promise<{ data: [], query: { type: 'search', search: * }, type: 'api' | 'ows' }> }
-       */
-      async features(options = {
-        layer,
-        search_endpoint,
-        filter,
-        raw: false,
-        queryUrl,
-        feature_count,
-        formatter: 1,
-        ordering,
-      }) {
-        
-        options.search_endpoint = options.search_endpoint || 'api';
-
-        let promises                  = [];
-        const { layer, ...params }    = options;
-        const { raw = false, filter } = options;
-        let data                      = [];
-        const layers                  = [].concat(layer);         // check if layer is array
-        params.filter                 = [].concat(params.filter); // check if filter is array
-    
-        // if 'api' or 'ows' search_endpoint
-        if ('api' === params.search_endpoint) {
-          promises = layers.map((layer, i) => layer.searchFeatures({ ...params, filter: params.filter[i] }));
-        } else {
-          promises = [new Promise((resolve, reject) => {
-            layers[0]                                                  // get query provider for get one request only
-            .getProvider('search')
-            .query({ ...params, layers, ...layers[0].getSearchParams() /* get search params*/ })
-            .then(data => { resolve(data)})
-            .fail(reject)
-          })];
-        }
-    
-        (await Promise.allSettled(promises))
-          // filter only fulfilled response
-          .filter(d => 'fulfilled' === d.status)
-          .forEach(({ value } = {}) => {
-            if (raw) {
-              data.push({ data: value });
-            } else if ('api' !== params.search_endpoint) {
-              data = value.data = undefined !== value.data ? value.data : [];
-            } else if(Array.isArray(value.data) && value.data.length) {
-              data.push(value.data[0]);
-            }
-          });
-    
-        return {
-          data,
-          query: {
-            type: 'search',
-            search: filter,
-          },
-          type: params.search_endpoint,
-        };
-      }
-    
-      /**
-       * Return feature from api
-       * 
-       * @param opts.layer
-       * @param opts.formatter
-       * @param opts.fids
-       * 
-       * @returns { Promise<{ data: Array<{ layer: *, features: []}>, query: { type: 'search' }}> } 
-       */
-      async fids({
-        layer,
-        formatter = 0,
-        fids      = [],
-      } = {}) {
-        const features = []; 
-        try {
-          const feats = layer && await layer.getFeatureByFids({ fids, formatter });
-          if (feats) {
-            feats.forEach(f => features.push(createOlFeatureFromApiResponseFeature(f)));
+    try {
+      return {
+        result: true,
+        type: 'ows',
+        error: !geometry,
+        query: {
+          fid: GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
+          geometry,
+          layerName,
+          type,
+          filterConfig,
+          external
+        },
+        usermessage: !geometry && {
+          type:        'warning',
+          message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          messagetext: true,
+          autoclose:   false
+        },
+        data: (await this.getQueryLayersPromisesByGeometry(
+          // layers
+          getMapLayersByFilter({
+            ...(
+              "boolean" === typeof excludeSelected
+                ? { SELECTED: !excludeSelected }
+                : { SELECTED_OR_ALL: true }
+            ),
+            FILTERABLE: true,
+            VISIBLE: true
+          }, condition),
+          // options
+          {
+            geometry,
+            multilayers,
+            feature_count,
+            filterConfig,
+            projection: ApplicationState.project.getProjection()
           }
-        } catch(err) {
-          console.warn(err);
-        }
-        return {
-          data: [{
-            layer,
-            features
-          }],
-          query: { type: 'search' },
-        };
-      }
+        ) || []).flatMap(({ data = [] }) => data),
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+  },
+
+  /**
+   * Method to search features
+   * 
+   * @param options.layer
+   * @param options.filter
+   * @param options.raw
+   * @param options.queryUrl
+   * @param options.feature_count
+   * @param options.formatter
+   * @param options.ordering
+   * 
+   * @returns { Promise<{ data: [], query: { type: 'search', search: * }, type: 'api' | 'ows' }> }
+   */
+  async 'search:features'(options = {
+    layer,
+    filter,
+    raw: false,
+    queryUrl,
+    feature_count,
+    formatter: 1,
+    ordering,
+  }) {
+    const { layer, ...params } = options;
+    params.filter              = [].concat(params.filter); // check if filter is array
     
-      /**
-       * Search service function to load many layers with each one with its fids
-       * 
-       * @param options.layers    - Array of layers that we want serach fids features
-       * @param options.fids      - Array of array of fids
-       * @param options.formatter - how we want visualize
-       * 
-       * @returns { Promise<{ data: [], query: { type: 'search' }}> }
-       */
-      async layersfids({
-        layers    = [],
-        fids      = [],
-        formatter = 0,
-      } = {}) {
-        const promises = [];
-        const data     = [];
-        layers.forEach((layer, i) => { promises.push(this.fids({ layer, fids: fids[i], formatter })) });
-        try {
-          (await Promise.all(promises)).forEach(response => { data.push(response.data) });
-        } catch(err) {
-          console.warn(err);
-        }
-        return {
-          data,
-          query: { type: 'search' }
-        };
-      }
-    
-    }),
+    return {
+      data: (await Promise.allSettled(
+        [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
+      ))
+        .filter(d => 'fulfilled' === d.status)
+        .map(({ value } = {}) => {
+          if (options.raw)                                        { return { data: value }; }
+          if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
+        }),
+      query: {
+        type:   'search',
+        search: options.filter,
+      },
+      type: 'api',
+    };
+  },
 
-    /**
-     * ORIGINAL SOURCE: src/services/data-expression.js@v3.9.3
-     */
-    expression: new (class extends BaseService {
+  /**
+   * Return feature from api
+   * 
+   * @param opts.layer
+   * @param opts.formatter
+   * @param opts.fids
+   */
+  async 'search:fids'({
+    layer,
+    formatter = 0,
+    fids      = [],
+  } = {}) {
+    let features = []; 
+    try {
+      // convert API response to Open Layer Features
+      features = ((layer && await layer.getFeatureByFids({ fids, formatter })) || []).map(f => {
+        const properties    = undefined !== f.properties ? f.properties : {}
+        properties[G3W_FID] = f.id;
+        const olFeat          = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
+        olFeat.setProperties(properties);
+        olFeat.setId(f.id);
+        return olFeat;
+      });
+    } catch(e) {
+      console.warn(e);
+    }
+    return {
+      data: [{
+        layer,
+        features
+      }],
+      query: { type: 'search' },
+    };
+  },
 
-      /**
-       * POST only: accepts
-       * 
-       * Mandatory JSON body: expression
-       * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
-       * 
-       * @param params.qgis_layer_id layer id owner of the form data
-       * @param params.layer_id      layer owner of the data
-       * @param params.form_data
-       * @param params.field_name    since 3.8.0
-       * @param params.expression
-       * @param params.formatter
-       * @param params.parent
-       * 
-       * @returns { Promise<void> }
-       */
-      async expression(params= {}) {
-        try {
-          return this.handleResponse(
-            // response
-            await this.handleRequest({
-              url: `${this.project.getUrl('vector_data')}${params.layer_id}/`,
-              params
-            })
-          );
-        } catch(err) {
-          return Promise.reject(err);
-        }
+  /**
+   * Search service function to load many layers with each one with its fids
+   * 
+   * @param options.layers    - Array of layers that we want serach fids features
+   * @param options.fids      - Array of array of fids
+   * @param options.formatter - how we want visualize
+   */
+  async 'search:layersfids'({
+    layers    = [],
+    fids      = [],
+    formatter = 0,
+  } = {}) {
+    let data = [];
+    try {
+      data = (await Promise.all(
+        layers.map((layer, i) => this['search:fids']({ layer, fids: fids[i], formatter }))
+      )).map(response => response.data);
+    } catch(e) {
+      console.warn(e);
+    }
+    return {
+      data,
+      query: { type: 'search' }
+    };
+  },
 
-      }
+  /**
+   * POST only: accepts
+   * 
+   * Mandatory JSON body: expression
+   * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
+   * 
+   * @param params.qgis_layer_id layer id owner of the form data
+   * @param params.layer_id      layer owner of the data
+   * @param params.form_data
+   * @param params.field_name    since 3.8.0
+   * @param params.expression
+   * @param params.formatter
+   * @param params.parent
+   */
+  async 'expression:expression'(params = {}) {
+    try {
+      const response = await XHR.post({
+        url:         `${ApplicationState.project.getUrl('vector_data')}${params.layer_id}/`,
+        contentType: 'application/json',
+        data:        JSON.stringify(params),
+      });
 
-      /**
-       * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
-       *
-       * Mandatory JSON body: expression
-       * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
-       * 
-       * @param params.layer_id
-       * @param params.qgis_layer_id
-       * @param params.form_data
-       * @param params.field_name    since 3.8.0
-       * @param params.expression
-       * @param params.formatter
-       * @param params.parent
-       * 
-       * @returns { Promise<void> }
-       */
-      expression_eval(params={}) {
-        return this.handleRequest({
-          url: this.project.getUrl('expression_eval'),
-          params
-        });
-      }
+      return response.result ? (response.vector.data.features || []) : null;
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
+    }
+  },
 
-      /**
-       * Handle server request
-       * 
-       * @param url
-       * @param params
-       * @param contentType
-       * 
-       * @returns { Promise<*> }
-       */
-      handleRequest({ url, params = {}, contentType = 'application/json' } = {}) {
-        return XHR.post({ url, contentType, data: JSON.stringify(params) });
-      }
+  /**
+   * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
+   *
+   * Mandatory JSON body: expression
+   * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
+   * 
+   * @param params.layer_id
+   * @param params.qgis_layer_id
+   * @param params.form_data
+   * @param params.field_name    since 3.8.0
+   * @param params.expression
+   * @param params.formatter
+   * @param params.parent
+   */
+  'expression:expression_eval'(params = {}) {
+    return XHR.post({
+      url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+      contentType: 'application/json',
+      data:        JSON.stringify(params),
+    });
+  },
 
-      /**
-       * Handle server response
-       * 
-       * @param response
-       */
-      handleResponse(response = {}) {
-        return getFeaturesFromResponseVectorApi(response);
-      }
-    
-    }),
+  /**
+   * @param data: Object conitans data to pass to proxy
+   */
+  async 'proxy:wms'({ url, method='GET', params={}, headers={} } = {}) {
+    if (method === 'GET') {
+      url = new URL(url);
+      Object.keys(params).forEach(p => url.searchParams.set(p, params[p]));
+      url = url.toString();
+    }
+    try {
+      return {
+        response: await XHR.post({
+          data:        JSON.stringify({ url, params, headers, method }),
+          contentType: 'application/json',
+          url:         `${window.initConfig.proxyurl}`
+        }),
+        data: JSON.stringify({ url, params, headers, method }),
+      };
+    } catch(e) {
+      console.warn(e);
+    }
+  },
 
-    /**
-     * ORIGINAL SOURCE: src/services/data-proxy.js@v3.9.3
-     */
-    proxy: new (class extends BaseService {
-      /**
-       *
-       * @param data: Object conitans data to pass to proxy
-       * @returns {Promise<{data: string, response: *}>}
-       */
-      async wms({url, method='GET', params={}, headers={}}={}) {
-        let proxyUrl = `${ApplicationService.getProxyUrl()}`;
-        if (method === 'GET') {
-          url = new URL(url);
-          Object.keys(params).forEach(param => url.searchParams.set(param, params[param]));
-          url = url.toString();
-        }
-        try {
-          const data = JSON.stringify({
-            url,
-            params,
-            headers,
-            method
-          });
-          const response = await XHR.post({
-            url: proxyUrl,
-            contentType: 'application/json',
-            data
-          });
-          return {
-            response,
-            data
-          };
-        } catch(err) {
-          return;
-        }
-      }
+  /**
+   * Generic proxy data function
+   */
+  'proxy:data'(params = {}) {},
 
-      /**
-       * Generic proxy data function
-       * @param params
-       */
-      data(params={}) {}
-    }),
+  /**
+   * @param params
+   * 
+   * @returns {Promise<{data: string, response: *}>}
+   */
+  async 'ows:wmsCapabilities'({url} ={}) {
+    try {
+      return await XHR.post({
+        url:         `${window.initConfig.interfaceowsurl}`,
+        contentType: 'application/json',
+        data:        JSON.stringify({ url, service: "wms" })
+      });
+    } catch(e) {
+      console.warn(e);
+    }
+  },
 
-    /**
-     * ORIGINAL SOURCE: src/services/data-ows.js@v3.9.3
-     */
-    ows: new (class extends BaseService {
-      /**
-       * @param params
-       * 
-       * @returns {Promise<{data: string, response: *}>}
-       */
-      async wmsCapabilities({url} ={}) {
-        const owsUrl = `${ApplicationService.getInterfaceOwsUrl()}`;
-        try {
-          const params = {
-            url,
-            service: "wms"
-          };
-          const data = JSON.stringify(params);
-          const response = await XHR.post({
-            url: owsUrl,
-            contentType: 'application/json',
-            data
-          });
-          return response;
-        } catch(err) {
-          return;
-        }
-      }
-    }),
+  /**
+   * used by the following plugins: "archiweb"
+   * 
+   * @param layers 
+   * @param { Object } opts
+   * @param opts.coordinates
+   * @param opts.feature_count
+   * @param opts.query_point_tolerance
+   * @param { boolean } opts.multilayers Group query by layers instead single layer request
+   * @param opts.reproject
+   *  
+   * @returns { JQuery.Promise }
+   * 
+   * @since 3.11.0
+   */
+  getQueryLayersPromisesByCoordinates(layers, {
+    coordinates,
+    feature_count         = 10,
+    query_point_tolerance = QUERY_POINT_TOLERANCE,
+    multilayers           = false,
+    reproject             = true,
+  } = {}) {
+    // skip when no features
+    if (0 === layers.length) {
+      return $promisify(Promise.resolve(layers));
+    }
 
-  };
+    const map            = GUI.getService('map').getMap();
+    const size           = map.getSize();
+    const mapProjection  = map.getView().getProjection();
+    const resolution     = map.getView().getResolution();
+
+    return $promisify(async () => await handleQueryPromises(Object.values(
+      multilayers
+        ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
+        : layers
+    ).map(layers => promisify(
+      [].concat(layers)[0].query(
+        multilayers
+          ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers }
+          : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
+        )
+      )
+    )));
+
+  },
+
+  /**
+   * @param layers
+   * @param { Object } opts
+   * @param { boolean } opts.multilayers Group query by layers instead single layer request
+   * @param opts.bbox
+   * @param opts.geometry
+   * @param opts.projection
+   * @param opts.feature_count
+   * 
+   * @returns { JQuery.Promise<any, any, any> }
+   * 
+   * @since 3.11.0
+   */
+  async getQueryLayersPromisesByGeometry(layers,
+    {
+      geometry,
+      projection,
+      filterConfig  = {},
+      multilayers   = false,
+      feature_count = 10
+    } = {}
+  ) {
+    // skip when no features
+    if (0 === layers.length) {
+      return [];
+    }
+
+    const mapCrs = projection.getCode();
+
+    return await handleQueryPromises(Object.values(
+      multilayers
+        ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+        : layers
+    ).map(layers => {
+      const layer = [].concat(layers)[0];
+      const crs   = layer.getProjection().getCode();
+      const filter = {
+        config: filterConfig,
+        type:   'geometry',
+        // Convert filter geometry from map to layer CRS
+        value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
+      };
+      return promisify(layer.query(
+        multilayers
+          ? { filter, feature_count, layers }
+          : { filter, feature_count, filterConfig }
+      ))
+    }));
+  },
+
 };
 
-/**
- * ORIGINAL SOURCE: src/app/core/data/service.js@v3.9.3
- */
-class BaseService {
-
-  constructor() {
-    ProjectsRegistry.onbefore('setCurrentProject', project => this.project = project);
-    this.project = ProjectsRegistry.getCurrentProject();
-  }
-  /**
-   * @virtual method need to be implemented by subclasses
-   * 
-   * @param request is a Promise(jquery promise at moment
-   * @returns {Promise<unknown>}
-   */
-  handleRequest() {}
-
-  /**
-   * @virtual method need to be implemented by subclasses
-   */
-  async handleResponse() {}
-
-  /**
-   * @param {{ type: 'vector' }}
-   * 
-   * @returns { unknown[] } array of external layer add on project
-   * 
-   * @since 3.8.0
-   */
-  getSelectedExternalLayers({type = 'vector'}) {
-    return GUI.getService('catalog').state.external[type].filter(l => l.selected);
-  }
-
-  /**
-   * @returns {Promise<[]>} a resolved request (empty array)
-   * 
-   * @since 3.8.0
-   */
-  getEmptyRequest() {
-    return resolve([]);
-  }
-
-  /**
-   * @param {{ type: 'vector' }}
-   * 
-   * @returns {boolean}
-   * 
-   * @since 3.8.0
-   */
-  hasExternalLayerSelected({type = 'vector'}) {
-    return this.getSelectedExternalLayers({ type }).length > 0;
-  }
-
-}
-
-export default DataService;
