@@ -258,9 +258,19 @@ class QueryResultsService extends G3WObject {
     this._project = ProjectsRegistry.getCurrentProject();
 
     /**
-     * Keep the right order for query result based on TOC order layers
+     * Keep the right order for a query result based on TOC order layers
      */
-    this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
+    this._projectLayerIds = (() => {
+      const layersId = [];
+      const traverse = tree => {
+        (tree.nodes || [tree]).forEach(n => {
+          if (n.id) { layersId.push(n.id) }
+          else { traverse(n) }
+        });
+      };
+      this._project.state.layerstree.forEach(traverse);
+      return layersId;
+    })()
 
     /**
      * @FIXME add description
@@ -2358,9 +2368,9 @@ QueryResultsService.prototype.setters = {
       // set the right order of result layers based on TOC
       this._currentLayerIds = layers.map(layer => layer.id);
       // sort layers as Catalog project layers.
-      layers.sort((a, b) => (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
+      layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
     }
-    // get features from add pick layer in case of a new request query
+    // get features from added pick layer in case of a new request query
     layers.forEach(layer => { options.add ? this.updateLayerResultFeatures(layer) : this.state.layers.push(layer); });
     this.setActionsForLayers(layers, { add: options.add });
     this.state.changed = true;
