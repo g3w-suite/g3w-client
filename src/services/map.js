@@ -75,16 +75,7 @@ const CONTROLS = {
   'overview':           (opts = {}) => new InteractionControl({ ...opts, ol: new ol.control.OverviewMap(opts) }),
   /** @since 3.8.0 */
   'zoomhistory':        (opts = {}) => new InteractionControl({ element: (new (Vue.extend(MapControlZoomHistory))()).$mount().$el, tipLabel: "sdk.mapcontrols.addlayer.tooltip" }),
-  'geocoding':          (opts = {}) => new InteractionControl({ element: (new (Vue.extend(MapControlGeocoding))({
-    propsData: {
-      ...opts.config, // pass configuration from server
-      placeholder:    opts.placeholder || 'mapcontrols.geocoding.placeholder',
-      noresults:      opts.noresults   || 'mapcontrols.geocoding.noresults',
-      limit:          opts.limit       || 5,
-      viewbox:        opts.bbox        || (GUI.getService('map').getProject().state.initextent || GUI.getService('map').getProject().state.extent),
-      mapCrs:         opts.mapCrs      || GUI.getService('map').getProject().state.crs.epsg,
-    }
-  })).$mount().$el, offline: false}),
+  'geocoding':          (opts = {}) => new InteractionControl({ element: (new (Vue.extend(MapControlGeocoding))({ propsData: opts.config })).$mount().$el, offline: false}), // pass configuration from server
   'zoombox':            (opts = {}) => new InteractionControl({
     ...opts,
     name:             'zoombox',

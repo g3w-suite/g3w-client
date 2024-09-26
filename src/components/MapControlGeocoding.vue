@@ -21,9 +21,9 @@
         id              = "gcd-input-query"
         autocomplete    = "off"
         class           = "gcd-txt-input"
-        v-t-placeholder = "placeholder"
         @keyup          = "onQuery"
         @input          = "onValue"
+        :placeholder    = "placeholder"
       />
 
       <!-- RESET SEARCH -->
@@ -124,7 +124,7 @@
         <!-- NO RESULTS -->
         <span
           v-else-if = "item.__no_results"
-          v-t       = "noresults"
+          v-t       = "'mapcontrols.geocoding.noresults'"
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
@@ -192,6 +192,8 @@ import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
 import { getCatalogLayers }             from 'utils/getCatalogLayers';
+
+const { t } = require('g3w-i18n');
 
 /**
  * Provider definitions.
@@ -289,50 +291,15 @@ export default {
   data() {
     return {
       /** @since 3.9.0 */
-      results              : [],
+      results:            [],
       /** @since 3.9.0 */
-      disabled             : false, // disabled boolean control
+      disabled:           false, // disabled boolean control
       /** @since 3.9.0 */
-      results_panel_open   : false, // @TODO make use of `GUI.isSomething()`
+      results_panel_open: false, // @TODO make use of `GUI.isSomething()`
     };
   },
 
   props: {
-
-    placeholder: {
-      type:     String,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    noresults: {
-      type:     String,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    limit: {
-      type:     Number,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    viewbox: {
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    mapCrs: {
-      required: true,
-    },
 
     /**
      * @since 3.9.0
@@ -382,11 +349,22 @@ export default {
      * @since 3.9.0
      */
     extent() {
+      const map = GUI.getService('map');
+      const project = map.getProject().state;
       return ol.proj.transformExtent(
         Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
-          ? GUI.getService('map').getMapExtent()
-          : this.viewbox, this.mapCrs, 'EPSG:4326'
-      )
+          ? map.getMapExtent()
+          : (project.initextent || project.extent),
+        project.crs.epsg,
+        'EPSG:4326'
+      );
+    },
+
+    /**
+     * @since 3.11.0
+     */
+    placeholder() {
+      return ApplicationState.language && t('mapcontrols.geocoding.placeholder');
     },
 
   },
@@ -538,7 +516,7 @@ export default {
                 query:        q,
                 lang:         ApplicationState.language || 'it-IT',
                 // countrycodes: _options.countrycodes,             // <-- TODO ?
-                limit:        this.limit,
+                limit:        5,
                 extent:       this.extent,
               }))
           );
@@ -756,6 +734,7 @@ export default {
   },
 
   created() {
+
     const queryresults = GUI.getService('queryresults');
     const mapService   = GUI.getService('map');
     const map          = mapService.getMap();
