@@ -42,6 +42,16 @@ function RelationsPage(opts = {}) {
   });
 }
 
+function _setRelationField(node) {
+  if (node.nodes) {
+    for (const _node of node.nodes) {
+      _setRelationField(_node);
+    }
+  } else if (node.name) {
+    node.relation = true;
+  }
+};
+
 /**
  * Get and set vue reactivity to QueryResultsService
  *
@@ -124,17 +134,166 @@ export default new (class QueryResultsService extends G3WObject {
         }
 
         // Convert response from DataProvider into a QueryResult component data structure
-        const layers = [];
-        queryResponse.data.forEach(featuresForLayer => {
-          []
-            .concat(featuresForLayer)
-            .forEach(featuresForLayer => {
-            const layer = this._responseToLayer(featuresForLayer);
-            if (layer) {
-              layers.push(layer)
+        // Skip when layer has no features or rawdata is undefined (external wms)
+        const layers = queryResponse.data
+          .flatMap(d => [].concat(d))
+          .filter(d => d && (undefined !== d.rawdata || (Array.isArray(d.features) && d.features.length > 0)))
+          .map(({
+            layer,
+            features,
+            rawdata, // rawdata response
+            error
+          } = {}) => {
+
+            const is_layer  = layer instanceof Layer;
+            const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
+            const is_string = 'string' === typeof layer || layer instanceof String; // can be created by string
+
+            let sourceType;
+
+            if (is_string) {
+              sourceType = Layer.LayerTypes.VECTOR;
+            } else if (is_layer) {
+              try {
+                sourceType = layer.getSourceType();
+              } catch (error) {
+                console.warn('uknown source type for layer:', error, layer);
+              }
             }
+            
+            const name = is_string && layer.split('_');
+
+            const id = (is_layer ? layer.getId() : undefined) ||
+              (is_vector ? layer.get('id') : undefined) ||
+              (is_string ? layer : undefined);
+
+            let attributes;
+            let layerAttrs;
+
+            // sanity check (eg. external layers ?)
+            if (!features || !features.length) {
+              attributes = [];
+            }
+        
+            if (!attributes && layer instanceof Layer && 'ows' !== this.state.type) { 
+              layerAttrs = layer.getAttributes();
+            }
+        
+            // Sanitize OWS Layer attributes
+            if (!attributes && layer instanceof Layer && 'ows' === this.state.type) {
+              layerAttrs = layer
+                .getAttributes()
+                .map(attribute => {
+                  const sanitizeAttribute = {...attribute};
+                  sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
+                  return sanitizeAttribute
+                });
+            }
+        
+            if (!attributes && layer instanceof ol.layer.Vector) {
+              layerAttrs = layer.getProperties();
+            }
+        
+            if (!attributes && 'string' === typeof layer || layer instanceof String) {
+              layerAttrs = (features[0] ? features[0].getProperties() : [])
+            }
+        
+            const specialAttrs =
+              (!attributes && layer instanceof Layer)
+                ? layerAttrs.filter(attr => {
+                    try {
+                      return ('_' === attr.name[0] || Number.isInteger(1 * attr.name[0]))
+                    } catch(e) {
+                      return false;
+                    }
+                  }).map(attr => ({ alias: attr.name.replace(/_/, ''), name: attr.name }))
+                : [];
+        
+            if (!attributes && specialAttrs.length) {
+              features.forEach(f => {
+                // get attributes special keys from feature properties received by server request
+                const attrs = Object.keys(f.getProperties());
+                specialAttrs.forEach(layerAttr => {
+                  attrs.find(attr => {
+                    if (attr === layerAttr.alias) {
+                      f.set(layerAttr.name, f.get(attr));
+                      return true
+                    }
+                  })
+                });
+              });
+            }
+        
+            // Parse attributes to show on result based on field
+        
+            let attrs = !attributes && getAlphanumericPropertiesFromFeature(
+              Object.keys(this.getFeaturePropertiesAndGeometry(features[0]).properties)
+            );
+        
+            if (!attributes) {
+              attributes = (layerAttrs && layerAttrs.length > 0)
+                ? layerAttrs.filter(attr => attrs.indexOf(attr.name) > -1)
+                : attrs.map(featureAttr => ({
+                    name: featureAttr,
+                    label: featureAttr,
+                    show: G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
+                    type: 'varchar'
+                  }));
+            }
+
+            const external   = (is_vector || is_string);
+            const structure  = is_layer && layer.hasFormStructure() && layer.getLayerEditingFormStructure();
+            const has_form   = structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0;
+
+            if (has_form) {
+              for (const node of structure) {
+                _setRelationField(node);
+              }
+            }
+
+            // layerObj
+            return {
+              id,
+              attributes,
+              external,
+              features: (!rawdata && features || []).map(f => ({
+                id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
+                attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
+                geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
+                selection:  f.selection,
+                show:       true,
+              })),
+              hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => this.getFeaturePropertiesAndGeometry(f).geometry),
+              hasImageField:          Array.isArray(features) && !rawdata && features.length && attributes.some(attr => 'image' === attr.type),
+              loading:                false,
+              show:                   true,
+              expandable:             true,
+              addfeaturesresults:     { active: false },
+              [DownloadFormats.name]: { active: false },
+              editable:               is_layer   ? layer.isEditable()                                                     : false,
+              inediting:              is_layer   ? layer.isInEditing()                                                    : false,
+              source:                 is_layer   ? layer.getSource()                                                      : undefined,
+              infoformat:             is_layer   ? layer.getInfoFormat()                                                  : undefined,
+              infoformats:            is_layer   ? layer.getInfoFormats()                                                 : [],
+              downloads:              is_layer   ? layer.getDownloadableFormats()                                         : [],
+              formStructure:          has_form   ? {
+                structure,
+                fields: layer.getFields().filter(f => f.show).concat(
+                  (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
+                ), // get field show
+              } : undefined,
+              relationsattributes:    (is_layer || is_vector || is_string) ? []                                           : undefined,
+              filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
+              selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)  ? layer.state.selection  : undefined) ||
+                                      (is_vector ? layer.selection : undefined) ||
+                                      {},
+              title:                  (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
+              atlas:                  this.getAtlasByLayerId(id),
+              rawdata:                rawdata ? rawdata : null,
+              error:                  error   ? error   : '',
+              toc:                    external || layer.state.toc, //@since v3.10.0
+            };
           });
-        });
 
         this.setLayersData(layers, options);
 
@@ -1173,258 +1332,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Convert response from server
-   * @param { Object } opts
-   * @param opts.layer
-   * @param opts.features
-   * @param opts.rawdata  rawdata response
-   * @param opts.error
-   *
-   * @returns { layerObj | undefined }
-   *
-   * @since 3.9.0
-   */
-  _responseToLayer({
-    layer,
-    features,
-    rawdata,
-    error
-  } = {}) {
-
-    const has_features = Array.isArray(features) && features.length > 0;
-
-    // Skip when layer has no features or rawdata not undefined (wms external)
-    if (false === has_features && undefined === rawdata ) {
-      return;
-    }
-
-    const is_layer  = layer instanceof Layer;
-    const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
-    const is_string = 'string' === typeof layer || layer instanceof String; // can be created by string
-
-    let sourceType;
-
-    if (is_string) {
-      sourceType = Layer.LayerTypes.VECTOR;
-    } else if (is_layer) {
-      try {
-        sourceType = layer.getSourceType();
-      } catch (error) {
-        console.warn('uknown source type for layer:', error, layer);
-      }
-    }
-
-    // set selection filter and relation if not wms
-    const not_wms_wcs_wmst = -1 === [
-      Layer.SourceTypes.WMS,
-      Layer.SourceTypes.WCS,
-      Layer.SourceTypes.WMST
-    ].indexOf(sourceType);
-    
-    const name = is_string && layer.split('_');
-
-    const id = (is_layer ? layer.getId() : undefined) ||
-      (is_vector ? layer.get('id') : undefined) ||
-      (is_string ? layer : undefined);
-
-    const attributes = this._parseLayerObjAttributes(layer, features, sourceType);
-    const external   = (is_vector || is_string);
-
-    const layerObj = {
-      id,
-      attributes,
-      external,
-      features:               this._parseLayerObjFeatures(features, rawdata, external),
-      hasgeometry:            this._hasLayerObjGeometry(features, rawdata),
-      hasImageField:          this._hasLayerObjImageField(features, rawdata, attributes),
-      loading:                false,
-      show:                   true,
-      expandable:             true,
-      addfeaturesresults:     { active: false },
-      [DownloadFormats.name]: { active: false },
-      editable:               is_layer   ? layer.isEditable()                                                     : false,
-      inediting:              is_layer   ? layer.isInEditing()                                                    : false,
-      source:                 is_layer   ? layer.getSource()                                                      : undefined,
-      infoformat:             is_layer   ? layer.getInfoFormat()                                                  : undefined,
-      infoformats:            is_layer   ? layer.getInfoFormats()                                                 : [],
-      downloads:              is_layer   ? layer.getDownloadableFormats()                                         : [],
-      formStructure:          is_layer   ? this._parseLayerObjFormStructure(layer, features, rawdata, attributes) : undefined,
-      relationsattributes:    (is_layer || is_vector || is_string) ? []                                           : undefined,
-      filter:                 (is_layer && not_wms_wcs_wmst) ? layer.state.filter                                 : {},
-      selection:              (is_layer && not_wms_wcs_wmst ? layer.state.selection : undefined) ||
-                              (is_vector ? layer.selection : undefined) ||
-                              {},
-      title:                  (is_layer ? layer.getTitle() : undefined) ||
-                              (is_vector ? layer.get('name') : undefined) ||
-                              (is_string && name ? (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer) : undefined),
-      atlas:                  this.getAtlasByLayerId(id),
-      rawdata:                rawdata ? rawdata : null,
-      error:                  error   ? error   : '',
-      toc:                    external || layer.state.toc, //@since v3.10.0
-    };
-
-    return layerObj;
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _hasLayerObjGeometry(features, rawdata) {
-    return Array.isArray(features) && !rawdata && features.some(f => {
-      const props = this.getFeaturePropertiesAndGeometry(f);
-      if (props.geometry) {
-        return true;
-      }
-    });
-  }
-
-  /**
-   * @since 3.9.0 
-   */
-  _hasLayerObjImageField(features, rawdata, attributes) {
-    /** @FIXME add description */
-    return Array.isArray(features) && features.length && !rawdata && attributes.some(attr => {
-      if ('image' === attr.type) {
-        return true;
-      }
-    });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _parseLayerObjFeatures(features, rawdata, external) {
-    const _features = [];
-    if (!rawdata) {
-      features.forEach(f => {
-        const props = this.getFeaturePropertiesAndGeometry(f);
-        _features
-          .push({
-            id:         external ? f.getId() : props.id,
-            attributes: props.properties,
-            geometry:   props.geometry,
-            selection:  props.selection,
-            show:       true,
-          });
-      });
-    }
-    return _features;
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _parseLayerObjFormStructure(layer, features, rawdata, attributes) {
-    const structure = layer.hasFormStructure() && layer.getLayerEditingFormStructure();
-    if (false === (structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0)) {
-      return;
-    }
-    const setRelationField = (node) => {
-      if (node.nodes) {
-        for (const _node of node.nodes) {
-          setRelationField(_node);
-        }
-      } else if (node.name) {
-        node.relation = true;
-      }
-    };
-    for (const node of structure) {
-      setRelationField(node);
-    }
-
-    const formStructure = {
-      structure,
-      fields: layer.getFields().filter(f => f.show), // get field show
-    };
-
-    /** @FIXME add description */
-    if (!rawdata && Array.isArray(features) && features.length > 0) {
-      attributes
-        .forEach(attr => {
-          if (layer.getFields().some(f => f.name === attr.name)) {
-            formStructure.fields.push(attr);
-          }
-        });
-    }
-    return formStructure;
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _parseLayerObjAttributes(layer, features, sourceType) {
- 
-    let layerAttrs;
-
-    // sanity check (eg. external layers ?)
-    if (!features || !features.length) {
-      return [];
-    }
-
-    if (layer instanceof Layer && 'ows' !== this.state.type) { 
-      layerAttrs = layer.getAttributes();
-    }
-
-    // Sanitize OWS Layer attributes
-    if (layer instanceof Layer && 'ows' === this.state.type) {
-      layerAttrs = layer
-        .getAttributes()
-        .map(attribute => {
-          const sanitizeAttribute = {...attribute};
-          sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
-          return sanitizeAttribute
-        });
-    }
-
-    if (layer instanceof ol.layer.Vector) {
-      layerAttrs = layer.getProperties();
-    }
-
-    if ('string' === typeof layer || layer instanceof String) {
-      layerAttrs = (features[0] ? features[0].getProperties() : [])
-    }
-
-    const specialAttrs =
-      (layer instanceof Layer)
-        ? layerAttrs.filter(attr => {
-            try {
-              return ('_' === attr.name[0] || Number.isInteger(1 * attr.name[0]))
-            } catch(e) {
-              return false;
-            }
-          }).map(attr => ({ alias: attr.name.replace(/_/, ''), name: attr.name }))
-        : [];
-    if (specialAttrs.length) {
-      features.forEach(f => this._setSpecialAttributesFeatureProperty(specialAttrs, f));
-    }
-    return this._parseAttributes(layerAttrs, features[0], sourceType);
-  }
-
-  /**
-   * Set special attributes
-   *
-   * @param layerSpecialAttributesName
-   * @param feature
-   */
-  _setSpecialAttributesFeatureProperty(layerSpecialAttributesName = [], feature) {
-    if (0 === layerSpecialAttributesName.length) {
-      return;
-    }
-    // get attributes special keys from feature properties received by server request
-    const featureAttributesNames = Object.keys(feature.getProperties());
-    layerSpecialAttributesName
-      .forEach(layerAttr => {
-        featureAttributesNames
-          .find(featureAttr => {
-            if (featureAttr === layerAttr.alias) {
-              feature.set(layerAttr.name, feature.get(featureAttr));
-              return true
-            }
-          })
-      });
-  }
-
-  /**
    * Get `properties`, `geometry` and `id` from different types of feature
    *
    * @param feature
@@ -1439,38 +1346,6 @@ export default new (class QueryResultsService extends G3WObject {
       geometry:   isOlFeature ? feature.getGeometry()   : feature.geometry,
       id:         isOlFeature ? feature.getId()         : feature.id
     };
-  }
-
-  /**
-   * Parse attributes to show on result based on field
-   *
-   * @param layerAttributes
-   * @param feature
-   * @param sourceType
-   *
-   * @returns {{name: T, show: boolean, label: T}[]|*}
-   */
-  _parseAttributes(layerAttributes, feature, sourceType) {
-    let featureAttributesNames = getAlphanumericPropertiesFromFeature(
-      Object.keys(this.getFeaturePropertiesAndGeometry(feature).properties)
-    );
-    if (layerAttributes && layerAttributes.length > 0) {
-      return layerAttributes.filter(attr => featureAttributesNames.indexOf(attr.name) > -1);
-    }
-    const sourcesTypes = [
-      Layer.SourceTypes.GDAL,
-      Layer.SourceTypes.WMS,
-      Layer.SourceTypes.WCS,
-      Layer.SourceTypes.WMST,
-      /** @since 3.9.0 */
-      Layer.SourceTypes.POSTGRESRASTER,
-    ];
-    return featureAttributesNames.map(featureAttr => ({
-      name: featureAttr,
-      label: featureAttr,
-      show: (G3W_FID !== featureAttr) && (undefined === sourceType || -1 !== sourcesTypes.indexOf(sourceType)),
-      type: 'varchar'
-    }))
   }
 
   /**
