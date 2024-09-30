@@ -32,8 +32,7 @@
 
 <script>
 import GUI              from 'services/gui';
-
-const { t } = require('g3w-i18n');
+import { t }            from 'g3w-i18n';
 
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 

@@ -6,8 +6,7 @@
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-
-const { t } = require('g3w-i18n');
+import { t }                      from 'g3w-i18n';
 
 export class ScaleControl extends ol.control.Control {
 

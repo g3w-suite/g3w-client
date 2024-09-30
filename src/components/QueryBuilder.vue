@@ -122,8 +122,7 @@ import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-
-const { t } = require('g3w-i18n');
+import { t }                       from 'g3w-i18n';
 
 export default {
 

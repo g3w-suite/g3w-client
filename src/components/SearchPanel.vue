@@ -169,8 +169,7 @@
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import resizeMixin                           from 'mixins/resize';
-
-  const { t } = require('g3w-i18n');
+  import { t }                                 from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];

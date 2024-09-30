@@ -178,12 +178,9 @@ import { downloadFile }             from 'utils/downloadFile';
 import { printAtlas }               from 'utils/printAtlas';
 import { promisify }                from 'utils/promisify';
 import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
-
 import resizeMixin                  from 'mixins/resize';
-
 import * as vueComp                 from 'components/PrintPage.vue';
-
-const { t } = require('g3w-i18n');
+import { t }                        from 'g3w-i18n';
 
 export default {
 

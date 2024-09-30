@@ -597,16 +597,14 @@
 
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
-
   import LayerOpacityPicker            from 'components/LayerOpacityPicker.vue';
-
   import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application';
-    import GUI                           from 'services/gui';
+  import GUI                           from 'services/gui';
   import { downloadFile }              from 'utils/downloadFile';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
+  import  { t }                        from 'g3w-i18n';
 
-  const { t }                        = require('g3w-i18n');
   const shpwrite                     = require('shp-write');
 
   const OFFSETMENU  = { top: 50, left: 15 };

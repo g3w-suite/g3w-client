@@ -712,8 +712,7 @@ import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import getUniqueDomId     from 'utils/getUniqueDomId';
 import { XHR }            from 'utils/XHR';
 import { promisify }      from 'utils/promisify';
-
-const { t }        = require('g3w-i18n');
+import { t }              from 'g3w-i18n';
 
 export default {
 

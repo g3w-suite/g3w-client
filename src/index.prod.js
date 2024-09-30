@@ -61,9 +61,7 @@ import { noop }                    from 'utils/noop';
 import { XHR }                     from 'utils/XHR';
 import { $promisify }              from 'utils/promisify';
 import { getProject }              from 'utils/getProject';
-
-
-const { addI18n, t, tPlugin } = require('g3w-i18n');
+import { addI18n, t, tPlugin }     from 'g3w-i18n';
 
 /**
  * Install global components
