@@ -1,3 +1,6 @@
+/**
+ * ORIGINAL SOURCE: src/app/gui/inputs folder
+ */
 import ApplicationState                       from 'store/application';
 import GUI                                    from 'services/gui';
 import DataRouterService                      from 'services/data';

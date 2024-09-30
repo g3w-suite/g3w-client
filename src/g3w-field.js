@@ -1,5 +1,7 @@
+/**
+ * ORIGINAL SOURCE: src/app/gui/fields folder
+ */
 import { toRawType } from 'utils/toRawType';
-
 import Text          from 'components/FieldText.vue';
 import Link          from 'components/FieldLink.vue';
 import Image         from 'components/FieldImage.vue'
