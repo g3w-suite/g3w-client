@@ -28,8 +28,6 @@
 
 
 <script>
-  import {InputServices} from "../g3w-input";
-
   export default {
     /** @since 3.8.6 */
     name: 'input-picklayer',
