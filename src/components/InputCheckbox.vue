@@ -21,17 +21,12 @@
 </template>
 
 <script>
-import { widgetMixins }   from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-
-const Input              = require('gui/inputs/input');
 
 export default {
 
   /** @since 3.8.6 */
   name:'input-checkbox',
-
-  mixins: [Input, widgetMixins],
   data() {
     return {
       value: null,

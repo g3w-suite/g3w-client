@@ -26,16 +26,11 @@
   </baseinput>
 </template>
 
+
 <script>
-  const Input   = require('gui/inputs/input');
-  const Service = require('gui/inputs/picklayer/service');
-
   export default {
-
     /** @since 3.8.6 */
     name: 'input-picklayer',
-
-    mixins: [Input],
     methods: {
       pickLayer() {
         this.pickservice.pick()
@@ -44,9 +39,6 @@
       unpick() {
         setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200)
       }
-    },
-    created() {
-      this.pickservice = new Service(this.state.input.options)
     },
     beforeDestroy() {
       this.pickservice.clear();

@@ -33,21 +33,19 @@
 </template>
 
 <script>
-  import GUI                from 'services/gui';
-  import { getUniqueDomId } from 'utils/getUniqueDomId';
+  import GUI                        from 'services/gui';
+  import { getUniqueDomId }         from 'utils/getUniqueDomId';
+  import { Fields }                 from 'g3w-field';
 
-  const InputMixins                 = require('gui/inputs/input');
   const { t }                       = require('g3w-i18n');
-  const { media_field: MediaField } = require('gui/fields/fields');
 
   export default {
 
     /** @since 3.8.6 */
     name: 'input-media',
 
-    mixins: [InputMixins],
     components: {
-      'g3w-media': MediaField
+      'g3w-media': Fields.media_field
     },
     data() {
       return {

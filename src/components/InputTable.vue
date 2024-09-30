@@ -25,8 +25,7 @@
 <script>
   import InputTableHeader from 'components/InputTableHeader.vue';
   import InputTableBody   from 'components/InputTableBody.vue';
-
-  const Input = require('gui/inputs/input');
+  import { Input }        from 'g3w-input';
 
   export default {
 

@@ -78,25 +78,15 @@
 <script>
   import GUI                            from 'services/gui';
   import ApplicationState               from 'store/application'
-  import {
-    selectMixin,
-    select2Mixin
-  }                                     from 'mixins';
   import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-
-  const PickLayerInputService           = require('gui/inputs/picklayer/service');
   const { Layer }                       = require('map/layers/layer');
-  const InputMixin                      = require('gui/inputs/input');
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 
   export default {
-
     /** @since 3.8.6 */
     name: 'input-select',
-
-    mixins: [InputMixin, selectMixin, select2Mixin],
     data() {
       return {
         showPickLayer :       false,
@@ -149,7 +139,8 @@
             GUI.showUserMessage({ type: 'success', autoclose: true });
             this.picked = false;
           }
-        } catch(err) {
+        } catch(e) {
+          console.warn(e);
           GUI.showUserMessage({
             type:      "warning",
             message:   'sdk.form.inputs.messages.errors.picklayer',
@@ -443,7 +434,7 @@
             } = this.state.input.options;
 
             //create pick layer service
-            this.pickLayerInputService = new PickLayerInputService({
+            this.pickLayerInputService = new (this.getService('picklayer'))({
               layer_id,
               fields :    [value, key], //fields are key, and values
               //need to check if dependency layer is on editing,
@@ -452,7 +443,9 @@
             });
           }
 
-        } catch(err) {}
+        } catch(e) {
+          console.warn(e);
+        }
       }
     },
 

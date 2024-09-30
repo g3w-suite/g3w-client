@@ -86,6 +86,12 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
+import {
+  fieldsService as FieldsService,
+  Fields,
+}                                                  from 'g3w-field';
+
+import { InputsComponents }                        from "g3w-input";
 
 const i18n                        = require('g3w-i18n');
 const { Plugin }                  = require('./g3w-plugin');
@@ -95,11 +101,9 @@ const { PluginService }           = require('./g3w-plugin');
  * GUI modules
  */
 const { MapLayersStoresRegistry } = require('services/map').default;
-const FieldsService               = require('gui/fields/fieldsservice');
 const { SearchPanel }             = require('components/g3w-search');
 const { FormComponent }           = require('components/g3w-form');
 const { FormService }             = require('components/g3w-form');
-const Fields                      = require('gui/fields/fields');
 
 const g3wsdk = {
 
@@ -223,26 +227,7 @@ const g3wsdk = {
       Inputs: {
         G3wFormInputs,
         G3WInput,
-        InputsComponents: {
-          'text_input':                require('gui/inputs/text/vue/text'),
-          'texthtml_input':            require('gui/inputs/texthtml/vue/texthtml'),
-          'textarea_input':            require('gui/inputs/textarea/vue/textarea'),
-          'integer_input':             require('gui/inputs/integer/vue/integer'),
-          'string_input':              require('gui/inputs/text/vue/text'), //temporary
-          'float_input':               require('gui/inputs/float/vue/float'),
-          'radio_input':               require('gui/inputs/radio/vue/radio'),
-          'check_input':               require('gui/inputs/checkbox/vue/checkbox'),
-          'range_input':               require('gui/inputs/range/vue/range'),
-          'datetimepicker_input':      require('gui/inputs/datetimepicker/vue/datetimepicker'),
-          'unique_input':              require('gui/inputs/unique/vue/unique'),
-          'select_input':              require('gui/inputs/select/vue/select'),
-          'media_input':               require('gui/inputs/media/vue/media'),
-          'select_autocomplete_input': require('gui/inputs/select/vue/select'),
-          'picklayer_input':           require('gui/inputs/picklayer/vue/picklayer'),
-          'color_input':               require('gui/inputs/color/vue/color'),
-          'slider_input':              require('gui/inputs/sliderrange/vue/sliderrange'),
-          'lonlat_input':              require('gui/inputs/lonlat/vue/lonlat'),
-        }
+        InputsComponents
       },
       Fields,
       Mixins,

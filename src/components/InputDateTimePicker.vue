@@ -37,21 +37,11 @@
 
 <script>
 import ApplicationState   from 'store/application';
-import { resizeMixin }    from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-const Input = require('gui/inputs/input');
-
 export default {
-
   /** @since 3.8.6 */
   name: 'input-datetime-picker',
-
-  mixins: [
-    Input,
-    resizeMixin
-  ],
-
   data() {
     const uniqueValue = getUniqueDomId();
     return {

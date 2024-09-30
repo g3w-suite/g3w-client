@@ -3,11 +3,13 @@
  * @since v3.7
  */
 
+import { fieldsService } from 'g3w-field';
+
 export default {
   methods: {
     getFieldService() {
       if (undefined === this._fieldsService) {
-        this._fieldsService = require('gui/fields/fieldsservice');
+        this._fieldsService = fieldsService;
       }
       return this._fieldsService;
     },

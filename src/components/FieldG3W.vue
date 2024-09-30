@@ -7,13 +7,11 @@
   <component
     :is      = "type"
     :feature = "feature"
-    :state   = "state">
-  </component>
+    :state   = "state"/>
 </template>
 
 <script>
-const fieldsService = require('gui/fields/fieldsservice');
-const Fields        = require('gui/fields/fields');
+import {Fields, fieldsService } from "g3w-field";
 
 export default {
   name: "g3w-field",

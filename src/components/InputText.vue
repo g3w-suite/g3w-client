@@ -20,13 +20,8 @@
 </template>
 
 <script>
-  const Input = require('gui/inputs/input');
-
   export default {
-
     /** @since 3.8.6 */
     name: "input-text",
-
-    mixins: [Input],
   };
 </script>

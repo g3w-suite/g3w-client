@@ -27,7 +27,7 @@ export default {
     },
 
   },
-  watch:{
+  watch: {
     async notvalid(value) {
       await this.$nextTick();
       if (this.select2) {

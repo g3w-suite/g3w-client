@@ -22,17 +22,12 @@
 </template>
 
 <script>
-import { selectMixin }    from 'mixins';
+
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-const Input              = require('gui/inputs/input');
-
 export default {
-
   /** @since 3.8.6 */
   name: "input-unique",
-
-  mixins: [ Input, selectMixin ],
   data() {
     return { id : `unique_${getUniqueDomId()}`}
   },
