@@ -383,14 +383,17 @@ export const Input = {
 };
 
 export const InputServices = {
-  'text':                Service,
-  'textarea':            Service,
-  'texthtml':            Service,
-  'integer':             Service,
-  'string':              Service,
-  'float':               Service,
-  'radio':               Service,
-  'check':               class CheckBoxService extends Service {
+  'text':           Service,
+  'textarea':       Service,
+  'texthtml':       Service,
+  'integer':        Service,
+  'string':         Service,
+  'float':          Service,
+  'radio':          Service,
+  'media':          Service,
+  'unique':         Service,
+  'color':          Service,
+  'check':          class CheckBoxService extends Service {
     constructor(opts = {}) {
       const value = opts.state.input.options.values.find(v => false === v.checked);
       opts.validatorOptions = {
@@ -420,7 +423,7 @@ export const InputServices = {
       return option.checked;
     };
   },
-  'range':               class RangeService extends Service {
+  'range':          class RangeService extends Service {
     constructor(opts = {}) {
       const { min, max } = opts.state.input.options.values[0];
       opts.state.info = `[MIN: ${min} - MAX: ${max}]`;
@@ -437,7 +440,7 @@ export const InputServices = {
       return value <= max && value >= min;
     };
   },
-  'datetimepicker':      class DateTimePickerService extends Service {
+  'datetimepicker': class DateTimePickerService extends Service {
     constructor(opts = {}) {
       super(opts);
 
@@ -456,8 +459,7 @@ export const InputServices = {
       this.validatorOptions = opts;
     };
   },
-  'unique':              Service,
-  'select':              class SelectService extends Service {
+  'select':         class SelectService extends Service {
     constructor(opts = {}) {
       super(opts);
       this.layer = null;
@@ -525,8 +527,7 @@ export const InputServices = {
       });
     };
   },
-  'media':               Service,
-  'picklayer':           class PickLayerService {
+  'picklayer':      class PickLayerService {
     constructor(opts = {}) {
       this.pick_type   = opts.pick_type || 'wms';
       this.ispicked    = false;
@@ -629,8 +630,7 @@ export const InputServices = {
       this.mapService = this.interaction = this.field = null;
     };
   },
-  'color':               Service,
-  'slider':              class SliderRangeService extends Service {
+  'slider':         class SliderRangeService extends Service {
     constructor(opts = {}) {
       const { state } = opts;
       opts.state.info = `[MIN: ${state.input.options.min} - MAX: ${state.input.options.max}]`;
@@ -652,7 +652,7 @@ export const InputServices = {
       this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
     };
   },
-  'lonlat':              class LonLatService extends Service {
+  'lonlat':         class LonLatService extends Service {
     constructor(opts = {}) {
       super(opts);
       this.coordinatebutton;
@@ -713,6 +713,7 @@ export const InputServices = {
   },
 };
 
+//add select_autocomplete
 InputServices['select_autocomplete'] = InputServices.select;
 
 export const InputsComponents =  {
@@ -720,27 +721,18 @@ export const InputsComponents =  {
   'texthtml_input':            Vue.extend({ ...texthtmlVueComponentOptions,       mixins: [ Input ] }),
   'textarea_input':            Vue.extend({ ...textareaVueComponentOptions,       mixins: [ Input ] }),
   'integer_input':             Vue.extend({ ...integerVueComponentOptions,        mixins: [ Input ] }),
-  'string_input':              Vue.extend({ ...textVueComponentOptions,           mixins: [ Input ]}), //temporary
-  'float_input':               Vue.extend({ ...floatVueComponentOptions,          mixins: [ Input ]}),
-  'radio_input':               Vue.extend({ ...radioVueComponentOptions,          mixins: [ Input ]}),
+  'string_input':              Vue.extend({ ...textVueComponentOptions,           mixins: [ Input ] }), //temporary
+  'float_input':               Vue.extend({ ...floatVueComponentOptions,          mixins: [ Input ] }),
+  'radio_input':               Vue.extend({ ...radioVueComponentOptions,          mixins: [ Input ] }),
   'check_input':               Vue.extend({ ...checkboxVueComponentOptions,       mixins: [ Input, widgetMixins ]}),
-  'range_input':               Vue.extend({ ...rangeVueComponentOptions,          mixins: [ Input ]}),
+  'range_input':               Vue.extend({ ...rangeVueComponentOptions,          mixins: [ Input ] }),
   'datetimepicker_input':      Vue.extend({ ...datetimepickerVueComponentOptions, mixins: [ Input, resizeMixin ] }),
   'unique_input':              Vue.extend({ ...uniqueVueComponentOptions,         mixins: [ Input, selectMixin ] }),
   'select_input':              Vue.extend({ ...selectVueComponentOptions,         mixins: [ Input, selectMixin, select2Mixin ] }),
   'media_input':               Vue.extend({ ...mediaVueComponentOptions,          mixins: [ Input ]}),
-  'select_autocomplete_input': Vue.extend({
-                                            ...selectVueComponentOptions,
-                                            mixins: [ Input, selectMixin, select2Mixin ],
-                               }),
-  'picklayer_input':           Vue.extend({
-                                            ...picklayerVueComponentOptions,
-                                            mixins: [ Input ],
-                                            created() {
-                                              this.pickservice = new InputServices.picklayer(this.state.input.options)
-                                            },
-                               }),
-  'color_input':               Vue.extend({ ...colorVueComponentOptions,          mixins: [ Input ]}),
-  'slider_input':              Vue.extend({ ...sliderangeVueComponentOptions,     mixins: [ Input ]}),
-  'lonlat_input':              Vue.extend({ ...lonlatVueComponentOptions,         mixins: [ Input ]}),
+  'select_autocomplete_input': Vue.extend({ ...selectVueComponentOptions,         mixins: [ Input, selectMixin, select2Mixin ] }),
+  'picklayer_input':           Vue.extend({ ...picklayerVueComponentOptions,      mixins: [ Input ] }),
+  'color_input':               Vue.extend({ ...colorVueComponentOptions,          mixins: [ Input ] }),
+  'slider_input':              Vue.extend({ ...sliderangeVueComponentOptions,     mixins: [ Input ] }),
+  'lonlat_input':              Vue.extend({ ...lonlatVueComponentOptions,         mixins: [ Input ] }),
 }
