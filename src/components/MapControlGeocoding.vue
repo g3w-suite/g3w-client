@@ -9,7 +9,7 @@
 <template>
   <div
     v-if   = "has_providers"
-    :class = "[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
+    :class = "[ 'ol-geocoder', { 'g3w-disabled': disabled }]"
   >
 
     <div class = "gcd-txt-control">
@@ -90,7 +90,7 @@
         @click.stop   = "() => showMarkerResults(undefined, true)"
         title         = "Toggle sidebar panel"
       >
-      <code :style = "{ opacity: $data.results_panel_open ? 0.5 : undefined }">
+      <code :style = "{ opacity: results_panel_open ? 0.5 : undefined }">
         {{ features.length > 99 ? '99+' : features.length }}
       </code>
       </button>
@@ -103,7 +103,7 @@
       class = "gcd-txt-result"
     >
       <li
-        v-for   = "(item, i) in $data.results"
+        v-for   = "(item, i) in results"
         :class  = "[
           item.provider,
           item.__icon       ? 'gcd-icon-' + item.__icon : '',
@@ -372,18 +372,6 @@ export default {
   methods: {
 
     /**
-     * @param coordinates
-     * @param transform
-     * 
-     * @since 3.9.0
-     */
-    _showMarker(coords, transform = true) {
-      const map = GUI.getService('map');
-      coords = transform ? ol.proj.transform(coords, 'EPSG:4326', map.getEpsg()) : coords;
-      map.zoomToGeometry(new ol.geom.Point(coords));
-    },
-
-    /**
      * Remove marker from map
      * 
      * @since 3.9.0
@@ -412,7 +400,7 @@ export default {
      * @since 3.9.0
      */
     clearResults() {
-      this.$data.results.splice(0);
+      this.results.splice(0);
       //Remove eventually marker coordinates
       if (LAYER.getSource().getFeatureById('__g3w_marker_coordinates')) {
         LAYER.getSource().removeFeature(LAYER.getSource().getFeatureById('__g3w_marker_coordinates'));
@@ -423,11 +411,11 @@ export default {
       is_clearing = true;
       this._hideMarker();
       // set false to add
-      this.$data.results.forEach(i => i.__selected = false);
+      this.results.forEach(i => i.__selected = false);
       const layer = GUI.getService('queryresults').getState().layers.find(l => l.id === LAYER.get('id'));
       // check if marker is in query results
       if (layer) {
-        layer.features.forEach(f => { GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f) });
+        layer.features.forEach(f => GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f));
       }
       is_clearing = false;
     },
@@ -449,122 +437,110 @@ export default {
      *
      * @since 3.9.0
      */
-    query(q) {
+    async query(q) {
 
-      return new Promise(async (resolve, reject) => {
-        const isNumber     = value => 'number' === typeof value && !Number.isNaN(value);
-        let coordinates    = null;
-        let transform      = false;
-        const [x, y, epsg] = (q || '').split(',');
-        // get projection of coordinates is pass as third value
-        const projection    = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
-        // extract xCoord and yCoord
-        if (isNumber(1 * x) && isNumber(1 * y)) {
-          coordinates = [1 * x, 1 * y];
+      const map = GUI.getService('map');
+
+      const isNumber     = value => 'number' === typeof value && !Number.isNaN(value);
+      let coordinates    = null;
+      let transform      = false;
+      const [x, y, epsg] = (q || '').split(',');
+      // get projection of coordinates is pass as third value
+      const projection   = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
+
+      // extract xCoord and yCoord
+      if (isNumber(1 * x) && isNumber(1 * y)) {
+        coordinates = [1 * x, 1 * y];
+      }
+
+      // whether EPSGCode is allowed on this project
+      try {
+        if (projection) {
+          coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
+          transform = true;
         }
+      } catch (e) {
+        console.warn(e);
+      }
 
-        // whether EPSGCode is allowed on this project
-        try {
-          if (projection) {
-            coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
-            transform = true;
-          }
-        } catch (e) {
-          console.warn(e);
+      // request is for a single point (XCoord,YCoord)
+      if (coordinates) {
+        const source = LAYER.getSource();
+        //check if already added
+        if (source.getFeatureById('__g3w_marker_coordinates')) {
+          //remove
+          source.removeFeature(source.getFeatureById('__g3w_marker_coordinates'));
         }
-
-        // request is for a single point (XCoord,YCoord)
-        if (coordinates) {
-          const source = LAYER.getSource();
-          //check if already added
-          if (source.getFeatureById('__g3w_marker_coordinates')) {
-            //remove
-            source.removeFeature(source.getFeatureById('__g3w_marker_coordinates'));
-          }
-          //create marker coordinate feature
-          const feature = new ol.Feature({
-            geometry: new ol.geom.Point(transform ?
-              ol.proj.transform(coordinates, 'EPSG:4326', GUI.getService('map').getEpsg()) :
-              coordinates
-            ),
-            //add info for eventually query result
-            lon: coordinates[0],
-            lat: coordinates[1],
-          });
-          //set id
-          feature.setId('__g3w_marker_coordinates');
-          //add to a layer marker source
-          LAYER.getSource().addFeature(feature);
-          this._showMarker(coordinates, transform);
-          resolve(coordinates);
-        }
-
-        // request is for a place (Address, Place, etc..)
-        if (!coordinates) {
-
-          // clear previous result
-          this.clearResults();
-          this.$refs.reset.classList.add("gcd-spin");
-
-          // request data
-          const results = await Promise.allSettled(
-            Object
-              .entries(this.providers)
-              .map(([ p, config = {} ]) => PROVIDERS[p].fetch({
-                url:          config.url,
-                icon:         config.icon,
-                query:        q,
-                lang:         ApplicationState.language || 'it-IT',
-                // countrycodes: _options.countrycodes,             // <-- TODO ?
-                limit:        5,
-                extent:       this.extent,
-              }))
-          );
-
-          // update search results
-          this._showResults(results.filter(p => 'fulfilled' === p.status));
-          this.$refs.reset.classList.remove("gcd-spin");
-        }
-
-      });
-
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    _showResults(results=[]) {
-
-      // Loop through providers results
-      results.forEach((p) => {
-
-        // heading
-        this.$data.results.push({
-          __heading: true,
-          provider:  p.value.provider,
-          label:     this.providers[p.value.provider].label || p.value.label,
+        //create marker coordinate feature
+        const feature = new ol.Feature({
+          geometry: new ol.geom.Point(transform ? ol.proj.transform(coordinates, 'EPSG:4326', map.getEpsg()) : coordinates),
+          //add info for eventually query result
+          lon: coordinates[0],
+          lat: coordinates[1],
         });
+        //set id
+        feature.setId('__g3w_marker_coordinates');
+        //add to a layer marker source
+        LAYER.getSource().addFeature(feature);
+        // show marker
+        map.zoomToGeometry(new ol.geom.Point(transform ? ol.proj.transform(coordinates, 'EPSG:4326', map.getEpsg()) : coordinates));
+        return coordinates;
+      }
 
-        // no results
-        if (!(p.value.results && p.value.results.length)) {
-          this.$data.results.push({
-            __no_results: !(p.value.results && p.value.results.length),
+      // request is for a place (Address, Place, etc..)
+      if (!coordinates) {
+
+        // clear previous result
+        this.clearResults();
+        this.$refs.reset.classList.add("gcd-spin");
+
+        // request data and update search results
+        (await Promise.allSettled(
+          Object
+            .entries(this.providers)
+            .map(([ p, config = {} ]) => PROVIDERS[p].fetch({
+              url:          config.url,
+              icon:         config.icon,
+              query:        q,
+              lang:         ApplicationState.language || 'it-IT',
+              // countrycodes: _options.countrycodes,             // <-- TODO ?
+              limit:        5,
+              extent:       this.extent,
+            }))
+        ))
+          .filter(p => 'fulfilled' === p.status)
+          .forEach((p) => {
+
+            // heading
+            this.results.push({
+              __heading: true,
+              provider:  p.value.provider,
+              label:     this.providers[p.value.provider].label || p.value.label,
+            });
+
+            // no results
+            if (!(p.value.results && p.value.results.length)) {
+              this.results.push({
+                __no_results: !(p.value.results && p.value.results.length),
+              });
+              return;
+            }
+
+            // results
+            p.value.results.forEach(item => {
+              this.results.push(flattenObject({
+                ...item,
+                provider:   p.value.provider,
+                __uid:      getUniqueDomId(),
+                __icon:     this.providers[p.value.provider].icon || p.value.icon,
+                __selected: false,
+              }));
+            });
+
           });
-          return;
-        }
 
-        // results
-        p.value.results.forEach(item => {
-          this.$data.results.push(flattenObject({
-            ...item,
-            provider:   p.value.provider,
-            __uid:      getUniqueDomId(),
-            __icon:     this.providers[p.value.provider].icon || p.value.icon,
-            __selected: false,
-          }));
-        });
-
-      });
+        this.$refs.reset.classList.remove("gcd-spin");
+      }
 
     },
 
@@ -601,7 +577,7 @@ export default {
      * @since 3.9.0
      */
     _removeItem(uid) {
-      const item = (this.$data.results || []).find(r => uid === r.__uid);
+      const item = (this.results || []).find(r => uid === r.__uid);
 
       // check if clear markers are running
       if (this.features.length) {
@@ -627,28 +603,6 @@ export default {
     },
 
     /**
-     * Create an OL ffeature from item result
-     *
-     * @param item
-     * 
-     * @returns {*}
-     *
-     * @since 3.9.0
-     */
-    _createOlMarker(item) {
-      const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
-      const feature = new ol.Feature({
-        geometry: new ol.geom.Point(
-          ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
-        ),
-        ..._item, 
-      });
-      // set id of the feature
-      feature.setId(__uid);
-      return feature;
-    },
-
-    /**
      * @since 3.9.0
      */
     onItemClick(evt, item) {
@@ -662,8 +616,14 @@ export default {
         if (source.getFeatureById(item.__uid)) {
           this._removeItem(item.__uid);
         } else {
-          //add feature marker and zoom on it
-          const feature = this._createOlMarker(item);
+          // add feature marker and zoom on it
+          const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
+          const feature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
+            ..._item, 
+          });
+          // set id of the feature
+          feature.setId(__uid);
           source.addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
@@ -679,17 +639,17 @@ export default {
      * 
      * @since 3.9.0
      */
-    showMarkerResults(features, toggle = false) {
-      if (this.$data.results_panel_open && toggle) {
+    async showMarkerResults(features, toggle = false) {
+      if (this.results_panel_open && toggle) {
         GUI.closeContent();
         return;
       }
       // check if is already an open right panel
       if (GUI.getCurrentContent()) {
-        GUI.closeContent();
+        await GUI.closeContent();
       }
       GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: features || LAYER.getSource().getFeatures() }] });
-      this.$data.results_panel_open = true;
+      this.results_panel_open = true;
     },
 
     /**
@@ -706,7 +666,7 @@ export default {
       }
 
       // disable ol-gecoder while editing
-      this.$data.disabled = true;
+      this.disabled = true;
       try {
 
         // get a geometry type of target layer
@@ -728,7 +688,7 @@ export default {
       } catch(e) {
         console.warn(e);
       }
-      this.$data.disabled = false;
+      this.disabled = false;
     },
 
   },
@@ -753,8 +713,8 @@ export default {
     queryresults.registerVectorLayer(LAYER);
 
     /** @TODO delegate check for `is_results_panel_open` to an external queryresults or gui method */
-    GUI.on('closecontent',    () => { this.$data.results_panel_open = false; })
-    GUI.onafter('setContent', () => { if (this.$data.results_panel_open) this.$data.results_panel_open = false; });
+    GUI.on('closecontent',    () => { this.results_panel_open = false; })
+    GUI.onafter('setContent', () => { if (this.results_panel_open) this.results_panel_open = false; });
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
       if (LAYER.get('id') === layer.id) {
@@ -789,7 +749,7 @@ export default {
         action: {
           id:         'choose_layer',
           class:      GUI.getFontClass('pencil'),
-          state:      queryresults.createActionState({ layer }),
+          state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
           toggleable: true,
           hint:       'Choose a layer',
           cbk:        (layer, feature, action, index) => {
