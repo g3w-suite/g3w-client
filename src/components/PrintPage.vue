@@ -4,41 +4,70 @@
 -->
 
 <template>
-  <div id="print-output" style="height:100%; position: relative;">
-    <transition :duration="500" name="fade">
-      <bar-loader :loading="loading"/>
+  <div id = "print-output">
+    <transition :duration = "500" name = "fade">
+      <bar-loader :loading = "state.loading && state.layers" />
     </transition>
-    <iframe  v-if="format === 'pdf'" :type="state.mime_type" ref="printoutput"  style="border:0;width:100%;height:100%;" :src="state.url"></iframe>
-    <div v-else-if="format === 'png'" class="g3w-print-png-output" style="display: flex; flex-direction: column; position: relative; height: 100%">
-      <div id="g3w-print-header" style="display: flex; justify-content: flex-end; align-items: flex-end; margin-top: 5px; margin-bottom: 5px;">
-        <div :class="{'g3w-disabled': disableddownloadbutton}">
-          <a :href="state.url" :download="downloadImageName">
-            <button
-              @click="downloadImage"
-              class="btn skin-button skin-tooltip-left"
-              style="font-weight: bold;"
-              data-placement="left"
-              data-toggle="tooltip"
-              data-container="body"
-              v-t-tooltip.create="'sdk.print.download_image'"
-              :class="g3wtemplate.getFontClass('download')"
-              role="button"></button>
-          </a>
+
+    <template v-if = "state.layers">
+
+      <!-- PRINT as PDF or GEOPDF-->
+      <iframe
+        v-if   = "['pdf', 'geopdf'].includes(format)"
+        ref    = "out"
+        :src   = "state.url"
+        @load  = "ready = true"
+        @error = "ready = true"
+      ></iframe>
+
+      <!-- PRINT as PNG, JPG, SVG -->
+      <div
+        v-else
+        class     = "g3w-print-image-output"
+      >
+        <div id = "g3w-print-header">
+          <div :class = "{ 'g3w-disabled': !!(state.downloading && state.layers) }">
+            <a :href = "state.url" :download = "`download.${format}`">
+              <button
+                @click.stop        = "downloadImage"
+                class              = "btn skin-button skin-tooltip-left"
+                data-placement     = "left"
+                data-toggle        = "tooltip"
+                data-container     = "body"
+                v-t-tooltip.create = "'sdk.print.download_image'"
+                :class             = "g3wtemplate.getFontClass('download')"
+                role               = "button">
+              </button>
+            </a>
+          </div>
+        </div>
+        <div
+          v-if  = "state.url"
+          class = "g3w-print-url"
+        >
+          <img
+            ref    = "out"
+            :src   = "state.url"
+            @load  = "ready = true"
+            @error = "ready = true"
+          >
         </div>
       </div>
-      <div v-show="format==='png' && state.url" style="height: 100%; width: 100%; position: relative; overflow-y: auto" >
-        <img style="height:auto; max-width: 100%" ref="printoutput" :src="state.url">
-      </div>
-    </div>
-    <h4 style="font-weight: bold" v-if="!state.layers" v-t="'sdk.print.no_layers'"></h4>
+
+    </template>
+
+    <!---NO PRINT LAYERS-->
+    <h4
+      v-else
+      v-t = "'sdk.print.no_layers'">
+    </h4>
+
   </div>
 </template>
 
 <script>
-import { TIMEOUT } from 'app/constant';
-import GUI from 'services/gui';
-
-const { imageToDataURL } = require('utils');
+import ApplicationState from 'store/application'
+import GUI              from 'services/gui';
 
 export default {
 
@@ -46,65 +75,114 @@ export default {
   name: 'print-page',
 
   data() {
+    const state = this.$options.service.state || {};
     return {
-      state: null,
-      disableddownloadbutton: true,
-      downloadImageName: '',
-      format: null
+      state,
+      // extract `state.format` so it doesn't react to Print.vue changes
+      format: state.format,
+      ready : false,
     }
   },
-  computed: {
-    loading() {
-      return this.state.loading && this.state.layers;
-    }
-  },
-  methods: {
-    setLoading(bool=false){
-      GUI.disableSideBar(bool);
-      this.state.loading = bool;
-      this.disableddownloadbutton = bool;
-    },
-    downloadImage(){
-      this.setLoading(true);
-      if (this.format === 'jpg' || this.format === 'png' ) {
-        this.downloadImageName = `download.${this.state.format}`;
-        imageToDataURL({
-          src: this.state.url,
-          type: `image/${this.state.format}`,
-          callback: url => setTimeout(() => this.setLoading(false))
-        })
-      }
-    }
-  },
-  watch: {
-    'state.url': async function(url) {
-      if (url) {
-        this.format = this.state.format;
-        await this.$nextTick();
-        // add timeout
-        const timeOut = setTimeout(()=>{
-          this.setLoading(false);
-          GUI.showUserMessage({
-            type: 'alert',
-            message: 'timeout'
-          })
-        }, TIMEOUT);
 
-        $(this.$refs.printoutput).load(url, (response, status) => {
-          this.$options.service.stopLoading();
-          status === 'error' && this.$options.service.showError();
-          clearTimeout(timeOut);
-          this.setLoading(false);
-        });
+  methods: {
+
+    async downloadImage() {
+      try {
+        GUI.disableSideBar(true);
+        this.state.downloading = true;
+        if (['jpg', 'png', 'svg'].includes(this.format)) {
+          await this.imageToDataURL({ src: this.state.url, type: `image/${this.format}` });
+          setTimeout(() => {
+            GUI.disableSideBar(false);
+            this.state.downloading = false;
+          });
+        }
+      } catch (e) {
+        console.warn(e);
       }
+    },
+
+    imageToDataURL({
+      src,
+      type     = 'image/jpeg',
+      callback = () => {},
+    }) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = function() {
+          const canvas  = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = this.naturalHeight;
+          canvas.width  = this.naturalWidth;
+          context.drawImage(this, 0, 0);
+          const dataURL = canvas.toDataURL(type);
+          callback(dataURL);
+          resolve(dataURL);
+        };
+        image.onerror = reject;
+        image.src = src;
+      });
+    },
+
+  },
+  /**
+   * @since v3.11.0 To show to user loading bar
+   */
+  watch: {
+    ready: {
+      handler(bool) {
+        GUI.setLoadingContent(!bool);
+      },
+      immediate: true,
     }
   },
-  async mounted() {
-    await this.$nextTick();
-    this.state.layers && this.$options.service.startLoading();
-  },
+
   beforeDestroy() {
-    (this.state.url && this.state.method === 'POST') && window.URL.revokeObjectURL(this.state.url);
-  }
+    if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
+      window.URL.revokeObjectURL(this.state.url);
+    }
+  },
+
 };
 </script>
+
+<style scoped>
+#print-output {
+  height:100%;
+  position: relative;
+}
+#print-output > iframe {
+  border:0;
+  width:100%;
+  height:100%;
+}
+.g3w-print-image-output {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+}
+#g3w-print-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+#g3w-print-header button {
+  font-weight: bold;
+}
+.g3w-print-url {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow-y: auto;
+}
+.g3w-print-url > img {
+  height:auto;
+  max-width: 100%;
+}
+#print-output > h4 {
+  font-weight: bold;
+}
+</style>

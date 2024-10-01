@@ -24,7 +24,7 @@ export function createSelectedStyle({
       return new ol.style.Style({
         image: new ol.style.Circle({
           radius: 6,
-          fill: fill && new ol.style.Fill({ color }),
+          fill:   fill && new ol.style.Fill({ color }),
           stroke: !fill && new ol.style.Stroke({ color, width: 4 }),
         }),
         zIndex: Infinity,
@@ -34,7 +34,7 @@ export function createSelectedStyle({
     case 'Polygon':
       return new ol.style.Style({
         stroke: new ol.style.Stroke({ color, width: 4 }),
-        fill: fill && new ol.style.Fill({ color: ol.color.asString(ol.color.asArray(color).splice(3,1,0.5)) })
+        fill: fill && new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) // force rgba color transparency (alpha = .25)
       });
 
     default:

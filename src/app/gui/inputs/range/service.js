@@ -1,24 +1,19 @@
-const { inherit, base } = require('utils');
-const Service = require('gui/inputs/service');
-const Validators = require('utils/validators');
+const Service           = require('gui/inputs/service');
 
-function RangeService(options={}) {
-  const {min, max} = options.state.input.options.values[0];
-  options.state.info = `[MIN: ${min} - MAX: ${max}]`;
-  base(this, options);
-  const validator = Validators.get('range', {
-    min: 1*min,
-    max: 1*max
-  });
-  this.setValidator(validator);
-}
+module.exports = class RangeService extends Service {
+  constructor(opts = {}) {
+    const { min, max } = opts.state.input.options.values[0];
+    opts.state.info = `[MIN: ${min} - MAX: ${max}]`;
+    super(opts);
 
-inherit(RangeService, Service);
-
-const proto = Service.prototype;
-
-proto.isValueInRange = function(value, min, max) {
-  return value <= max && value >= min;
+    this.setValidator({
+      validate(value) {
+        value = 1 * value;
+        return value >= 1*min && value <= 1*max;
+      }
+    });
+  }
+  isValueInRange(value, min, max) {
+    return value <= max && value >= min;
+  };
 };
-
-module.exports = RangeService;

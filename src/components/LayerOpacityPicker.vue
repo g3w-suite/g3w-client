@@ -6,16 +6,16 @@
 <template>
 
   <div
-    @mouseleave.self="showLayerOpacityMenu(false, $event)"
-    @mouseover.self="showLayerOpacityMenu(true, $event)"
+    @mouseleave.self = "showLayerOpacityMenu(false, $event)"
+    @mouseover.self  = "showLayerOpacityMenu(true, $event)"
   >
 
-    <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
-    <span class="item-text" v-t="'catalog_items.contextmenu.layer_opacity'"></span>
-    <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+    <span class = "menu-icon skin-color-dark" :class = "g3wtemplate.getFontClass('slider')"></span>
+    <span class = "item-text" v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
+    <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
     <ul
-      v-show="layer && menu.show"
-      :style="{
+      v-show = "layer && menu.show"
+      :style = "{
         top:             menu.top       + 'px',
         left:            menu.left - 15 + 'px',
         maxHeight:       menu.maxHeight + 'px',
@@ -43,8 +43,8 @@
 </template>
 
 <script>
-  import CatalogLayersStoresRegistry from 'store/catalog-layers';
-  import { CatalogEventBus as VM }   from 'app/eventbus';
+  import { VM }                  from 'g3w-eventbus';
+  import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
   export default {
 
@@ -76,7 +76,7 @@
       /**
        * @param {{ id:? string, value: number }}
        * 
-       * @fires CatalogEventBus~layer-change-opacity
+       * @fires VM~layer-change-opacity
        */
       setLayerOpacity( { id = this.layer.id, value: opacity }) {
         // skip if nothing has changed
@@ -84,7 +84,7 @@
           return;
         }
         this.layer.opacity = opacity;
-        const layer = CatalogLayersStoresRegistry.getLayerById(id);
+        const layer = getCatalogLayerById(id);
         if (layer) {
           VM.$emit('layer-change-opacity', { layerId: id });
           layer.change();

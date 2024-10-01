@@ -1,10 +1,10 @@
-import { GEOMETRY_TYPES } from 'app/constant';
+import { GEOMETRY_TYPES } from 'g3w-constants';
 
 /**
  * core/geometry/geometry::isMultiGeometry@v3.4
  */
 export function isMultiGeometry(geometryType) {
-  return -1 !== [
+  return [
     GEOMETRY_TYPES.MULTIPOINT,
     GEOMETRY_TYPES.MULTIPOINTZ,
     GEOMETRY_TYPES.MULTIPOINTZM,
@@ -25,5 +25,5 @@ export function isMultiGeometry(geometryType) {
     GEOMETRY_TYPES.MULTIPOLYGONM,
     GEOMETRY_TYPES.MULTIPOLYGONZM,
     GEOMETRY_TYPES.MULTIPOLYGON25D,
-  ].indexOf(geometryType);
+  ].includes(geometryType);
 }

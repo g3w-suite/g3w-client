@@ -1,11 +1,11 @@
 {
   "name": "g3w-client",
-  "version": "3.10.0-alpha.0",
+  "version": "3.11.0-alpha.1",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "build": "gulp build",
+    "build": "gulp version && gulp build",
     "dev": "gulp dev",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
@@ -29,6 +29,7 @@
   "license": "MPL-2.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
+    "localforage": "^1.10.0",
     "lodash.clonedeep": "^4.5.0",
     "shp-write": "^0.3.2",
     "util-deprecate": "^1.0.2",

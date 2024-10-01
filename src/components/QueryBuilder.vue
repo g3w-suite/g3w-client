@@ -4,85 +4,126 @@
 -->
 
 <template>
-  <div id="query_builder" class="form-group" style="flex-wrap: nowrap !important">
-    <div id="query_builder_header"></div>
-      <div id="query_builder_layers" class="margin-between-element">
-        <label class="querybuilder-title" v-t="'sdk.querybuilder.panel.layers'"></label>
-        <select id="query_builder_layers_select" class="form-control">
-          <option v-for="(layer, index) in layers" :key="layer.label" :value="index" class="bold">{{ layer.label }}</option>
-        </select>
-      </div>
-      <div id="query_builder_fields" class="margin-between-element">
-        <div id="query_builder_fields_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.fields'"></div>
-        <div id="query_builder_fields_content" class="querybuilder-content">
-          <table class="table table-striped content-table">
-            <tbody>
-              <tr v-for="{name, label} in fields" :key="name" @click="select.field = name" @dblclick="addToExpression({value: name, type: 'field'})" :class="{'skin-background-color lighten': select.field===name}" style="cursor: pointer">
-                <th scope="row">{{ label }}</th>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div id="query_builder_values" class="margin-between-element">
-        <div id="query_builder_values_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.values'"></div>
-        <div v-if="!manual" id="query_builder_values_content" class="querybuilder-content margin-between-element">
-          <bar-loader :loading="loading.values"/>
-          <table class="table table-striped content-table">
-            <tbody>
-              <tr v-for="value in values" @click="select.value = value" :class="{'skin-background-color lighten': select.value===value}" :key="value" @dblclick="addToExpression({value: value, type: 'value'})" style="cursor: pointer">
-                <th scope="row">{{ value }}</th>
-              </tr>
-              <tr>
-                <th scope="row"></th>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else id="querybuilder-manual" class="margin-between-element" style="display:flex; justify-content: space-between; align-items: stretch">
-          <input class="form-control" style="" v-model="manualvalue" style="border: 0;">
-          <span style="cursor: pointer; font-size: 1.2em; background-color: white; color: #000000; padding: 9px;"
-                @click="manualvalue && addToExpression({value: manualvalue, type: 'value'})"
-                :class="g3wtemplate.getFontClass('plus')"></span>
-        </div>
-        <div id="query_builder_values_buttons" class="content-end skin-color">
-          <button id="query_builder_values_buttons_sample" class="query_builder_button btn btn-secondary bold " v-t="'sdk.querybuilder.panel.button.manual'" @click="manual = true" :class="{'skin-border-color' : manual}"></button>
-          <button id="query_builder_values_buttons_all" class="query_builder_button btn btn-secondary bold " v-t="'sdk.querybuilder.panel.button.all'" @click="all" :disabled="select.field === null" :class="{'skin-border-color' : !manual}"></button>
-        </div>
-      </div>
-      <div id="query_builder_operators" class="margin-between-element" style="margin-top: auto !important">
-        <div id="query_builder_operators_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.operators'"></div>
-        <div id="query_builder_operators_content" class="content-wrap">
-          <button v-for="operator in operators" @click="addToExpression({value: operator, type: 'operator'})" :key="operator" class="query_builder_button btn btn-secondary skin-color bold">{{ operator }}</button>
-        </div>
-      </div>
-      <div id="query_builder_footer">
-        <div id="query_builder_expression">
-          <div id="query_builder_expression_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.expression'"></div>
-          <div id="query_builder_expression_content">
-            <textarea style="width: 100%; resize: none; height: 100px; color:#000000" v-model="filter"></textarea>
-          </div>
-        </div>
-        <div id="query_builder_message" class="margin-between-element">
-          <bar-loader :loading="loading.test"/>
-          <span class="bold skin-color" v-show="message" v-t="'sdk.querybuilder.messages.number_of_features'"></span><span class="bold skin-color">{{message}}</span>
-        </div>
-        <div id="query_builder_footer_buttons" class="content-end margin-between-element">
-          <button class="query_builder_button btn btn-secondary  bold" @click="test" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.test'"></button>
-          <button class="query_builder_button btn btn-secondary  bold" @click="reset" v-t="'sdk.querybuilder.panel.button.clear'"></button>
-          <button class="query_builder_button btn btn-secondary  bold" @click="run" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.run'"></button>
-          <button class="query_builder_button btn btn-secondary  bold" @click="save" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.save'"></button>
-        </div>
-      </div>
+  <div id = "query_builder" class = "form-group">
+
+    <!-- SEARCH LAYER -->
+    <div
+      id    = "query_builder_layers"
+      class = "margin-between-element">
+      <label
+        class = "querybuilder-title"
+        v-t   = "'sdk.querybuilder.panel.expression'">
+      </label>
+      <a
+        :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#search-and-query-builder`"
+        target = "_blank"
+        style  = "float: right;"
+        title  = "Docs"
+      >
+        <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+      </a>
+      <select id = "query_builder_layers_select" class = "form-control">
+        <option
+          v-for  = "(layer, i) in layers"
+          :key   = "layer.label"
+          :value = "i"
+          class  = "bold"
+        >{{ layer.label }}</option>
+      </select>
+    </div>
+
+    <!-- SEARCH EXPRESSION -->
+    <textarea id = "query_builder_expression_content" v-model = "filter"></textarea>
+
+    <bar-loader :loading = "loading.test"/>
+
+    <b
+      class   = "skin-color"
+      v-show  = "message"
+    ><span v-t = "'sdk.querybuilder.messages.number_of_features'"></span>{{ message }}</b>
+
+    <div class = "content-end">
+      <button
+        class     = "query_builder_button btn btn-secondary bold"
+        @click    = "run"
+        :disabled = "disabled"
+        v-t       = "'sdk.querybuilder.panel.button.run'"
+      ><i :class = "g3wtemplate.getFontClass('run')" style = "color: green;"></i></button>
+      <button
+        class     = "query_builder_button btn btn-secondary bold"
+        @click    = "reset"
+        v-t       = "'sdk.querybuilder.panel.button.clear'"
+      ><i :class = "g3wtemplate.getFontClass('clear')"></i></button>
+      <button
+        class     = "query_builder_button btn btn-secondary bold"
+        @click    = "save"
+        :disabled = "disabled"
+        v-t       = "'sdk.querybuilder.panel.button.save'"
+      ><i :class = "g3wtemplate.getFontClass('save')"></i></button>
+    </div>
+
+    <hr>
+
+    <label v-t = "'sdk.querybuilder.panel.fields'"></label>
+
+    <!-- SEARCH FIELDS -->
+    <select ref = "search_fields" size = "4" class = "margin-between-element">
+      <option selected hidden></option>
+      <option
+        v-for     = "field in fields"
+        :key      = "field.name"
+        @click    = "select.field = field.name; addToExpression({ value: field.name, type: 'field' })"
+      >{{ field.label }}</option>
+    </select>
+
+    <!-- SEARCH OPERATORS -->
+    <div class = "content-wrap margin-between-element">
+      <button
+        v-for  = "operator in operators"
+        @click = "addToExpression({ value: operator, type: 'operator' })"
+        :key   = "operator"
+        class  = "query_builder_button btn btn-secondary bold"
+      >{{ operator }}</button>
+    </div>
+
+    <bar-loader :loading = "loading.values" />
+
+    <!-- SEARCH VALUES -->
+    <select v-if = "!manual" ref = "search_values" size = "4" class = "margin-between-element">
+      <option selected hidden></option>
+      <option
+        v-for     = "[key, value] in values"
+        @click    = "select.value = key; addToExpression({ value: key, type: 'value' })"
+        :key      = "key"
+      >{{ value }}</option>
+    </select>
+
+    <button
+      v-if      = "select.field !== null && !values.length"
+      class     = "btn btn-secondary bold"
+      @click    = "all"
+      :class    = "{'skin-border-color' : !manual }"
+      style     = "color: #000;"
+    >
+      <i :class = "g3wtemplate.getFontClass('search')"></i>
+      <span v-t = "'sdk.querybuilder.panel.button.all'"></span>
+    </button>
+
   </div>
+
 </template>
 
 <script>
-import QueryBuilderService from 'services/querybuilder';
-import { FILTER_OPERATORS as OPERATORS } from 'app/constant';
-import ProjectsRegistry from 'store/projects';
+import { FILTER_OPERATORS }        from 'g3w-constants';
+import ApplicationState            from 'store/application';
+import DataRouterService           from 'services/data';
+import GUI                         from 'services/gui';
+import { getUniqueDomId }          from 'utils/getUniqueDomId';
+import { createFilterFromString }  from 'utils/createFilterFromString';
+import { XHR }                     from 'utils/XHR';
+import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
-const operators = Object.values(OPERATORS);
+const { t } = require('g3w-i18n');
 
 export default {
 
@@ -90,19 +131,17 @@ export default {
   name: 'query-builder',
 
   data() {
-    const options = this.$options.options;
-    const edit = options !== undefined;
     return {
-      edit,
+      edit:         undefined !== this.$options.options,
       currentlayer: null,
-      message: '',
-      filter: edit ? options.filter : '',
+      message:      '',
+      filter:       (undefined !== this.$options.options ? this.$options.options.filter : ''),
       loading: {
-        test: false,
+        test:   false,
         values: false
       },
-      values: [],
-      manual: true,
+      values:      [],
+      manual:      true,
       manualvalue: null,
       select: {
         field: null,
@@ -110,146 +149,282 @@ export default {
       }
     }
   },
+
   computed:{
+
     fields() {
       return this.currentlayer ? this.currentlayer.fields : [];
     },
+
     disabled() {
       return !this.filter;
-    }
+    },
+
   },
+
   watch: {
-    'select.field'(){
+
+    'select.field'() {
       this.values = [];
       this.manual = true;
-    }
+    },
+
   },
+
   methods: {
-    addToExpression({value, type}={}){
+
+    addToExpression({ value, type } = {}) {
       switch(type) {
-        case 'operator':
-          value = ` ${value} `;
-          break;
-        case 'field':
-          value = `"${value}"`;
-          break;
-        case 'value':
-          value = `'${value}'`;
-          break;
+        case 'operator': value = ` ${value} `; break;
+        case 'field':    value = `"${value}"`; break;
+        case 'value':    value = `'${value}'`; break;
       }
       if (value) this.filter = (`${this.filter}${value}`);
     },
-    async all(){
+
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
+    async all() {
       this.loading.values = true;
       try {
-        this.values = await QueryBuilderService.getValues({
-          layerId: this.currentlayer.id,
-          field: this.select.field
-        });
-      } catch(err){}
+        let layerId    = this.currentlayer.id;
+        let field      = this.select.field;
+        let CACHE      = ApplicationState.querybuilder.cache;
+        CACHE[layerId] = CACHE[layerId] || {};
+        if (undefined !== CACHE[layerId][field]) {
+          this.values = CACHE[layerId][field];
+        } else {
+          const response = await XHR.get({
+            url: getCatalogLayerById(layerId).getUrl('data'),
+            params: { ordering: field, formatter: 1, fformatter: field }
+          });
+          if (response.result) {
+            CACHE[layerId][field] = CACHE[layerId][field] || response.data;
+          }
+          this.values = CACHE[layerId][field] || [];
+        }
+      } catch(e) {
+        console.warn(e);
+      }
       this.loading.values = false;
       await this.$nextTick();
-      this.manualvalue = null;
-      this.manual = false;
+      this.manualvalue    = null;
+      this.manual         = false;
     },
-    reset(){
-      this.filter = '';
-      this.message = '';
+
+    reset() {
+      this.filter                 = '';
+      this.message                = '';
       this.filterElement.previous = null;
-      this.filterElement.current = null;
-      this.filterElement.operator =null;
+      this.filterElement.current  = null;
+      this.filterElement.operator = null;
+      this.select.field           = null;
+      if (this.$refs.search_fields) { this.$refs.search_fields.selectedIndex = -1 }
+      if (this.$refs.search_values) { this.$refs.search_values.selectedIndex = -1 }
     },
-    async test() {
-      const layerId = this.currentlayer.id;
-      this.loading.test = true;
-      let number_of_features;
+
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
+    async run() {
       try {
-        number_of_features = await QueryBuilderService.test({
-          layerId,
-          filter: this.filter
+        this.loading.test = true;
+        const layer = getCatalogLayerById(this.currentlayer.id);
+        const { data } = await DataRouterService.getData('search:features', {
+          inputs: {
+            layer,
+            filter: createFilterFromString({ layer, filter: this.filter }),
+            feature_count: 100,
+          },
+          outputs: true,
         });
-        this.message = number_of_features !== undefined ? ` ${number_of_features}` : ''
-      } catch(err){
-        this.message = err;
+        const n         = data.length && data[0].features.length; // number of features
+        this.message    = undefined !== n ? ` ${n}` : '';
+        return data;
+      } catch(e) {
+        console.warn(e);
+      } finally {
+        this.loading.test = false;
       }
-      this.loading.test = false;
-      await this.$nextTick();
+      
     },
-    async run(){
-      const layerId = this.currentlayer.id;
-      this.loading.test = true;
+
+    /**
+     * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
+     */
+    async save() {
+      const id      = this.projectId || ApplicationState.project.getId();
+      const edit_id = this.edit && this.$options.options.id;
+      const item   = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      let searches = item ? JSON.parse(item) : undefined;
+
+      let query;
+
       try {
-        const response = await QueryBuilderService.run({
-          layerId,
-          filter: this.filter
-        });
-      } catch(err){}
-      this.loading.test = false;
+        query = {
+          layerId:   this.currentlayer.id,
+          filter:    this.filter,
+          layerName: getCatalogLayerById(this.currentlayer.id).getName(),
+          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.prompt(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
+          id:        edit_id || getUniqueDomId(),
+        };
+
+        // edit local item
+        if (edit_id) {
+          const i = searches[id].findIndex(s => s.id === query.id);
+          if (-1 !== i) {
+            searches[id][i] = query;
+          }
+        }
+
+        // add local item
+        else {
+          GUI.getService('search').state.querybuildersearches.push(query); // add query builder search
+          if (undefined === searches) {
+            searches     = { [id]: [query] };
+          } else {
+            searches[id] = [...(searches[id] || []), query];
+          }
+        }
+      } catch (e) {
+        console.warn(e);
+        return;
+      }
+
+      // reset items
+      const ITEMS = ApplicationState.querybuilder.searches;
+      
+      try {
+        window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(searches));
+      } catch(e) {
+        console.warn(e);
+      }
+
+      setTimeout(() => { searches[id].forEach(q => ITEMS[id].push(q)); }, 0);
+      ITEMS[id].splice(0);
+      GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });
     },
-    save() {
-      QueryBuilderService.save({
-        layerId: this.currentlayer.id,
-        filter: this.filter,
-        projectId: this.projectId,
-        name: this.edit && this.$options.options.name,
-        id: this.edit && this.$options.options.id,
-      });
-    }
+
   },
+
   created() {
+
     this.filterElement = {
-      current: null,
+      current:  null,
       previous: null,
       operator: null
     };
-    const project = ProjectsRegistry.getCurrentProject();
-    this.layers = project.getLayers().filter(layer => {
-      return !layer.baselayer && layer.geometrytype && layer.geometrytype !== 'NoGeometry' && Array.isArray(layer.fields);
-    }).map(layer => {
-      const relations = project.getRelationsByLayerId({
-        layerId: layer.id,
-        type: 'ONE'
+
+    const project = ApplicationState.project;
+
+    this.layers = project
+      .getLayers()
+      .filter(l => !l.baselayer && Array.isArray(l.fields))
+      .map(layer => {
+        // exclude join fields
+        let exclude = [];
+        project.state.relations
+          .filter(r => layer.id === r.referencedLayer && 'ONE' === r.type) // get relations by layerId
+          .forEach( r => {
+            const l = project.getLayerById(r.referencingLayer);
+            r.customPrefix = r.customPrefix === undefined ? `${l.getName()}_` : r.customPrefix;
+            exclude = [...exclude, ...l.getFields().map(field => `${r.customPrefix}${field.name}`)];
+          });
+        return {
+          id:     layer.id,
+          label:  layer.title,
+          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => !exclude.includes(f))
+        }
       });
-      let excludejoinfields = [];
-      relations.forEach( relation => {
-        let {customPrefix} = relation;
-        const joinLayer = project.getLayerById(relation.referencingLayer);
-        customPrefix = customPrefix === undefined ? `${joinLayer.getName()}_` : customPrefix;
-        const joinLayerFields = joinLayer.getFields().map(field => `${customPrefix}${field.name}`);
-        excludejoinfields = [...excludejoinfields, ...joinLayerFields];
-      });
-      return {
-        id: layer.id,
-        label: layer.name,
-        fields: layer.fields.filter(field => field.show).map(({label, name}) => ({
-          label,
-          name
-        })).filter(field => excludejoinfields.indexOf(field) === -1)
-      }
-    });
-    this.operators = operators;
-    this.currentlayer = this.edit ? this.layers.find(layer => layer.id === this.$options.options.layerId) : this.layers[0];
+
+    this.operators    = Object.values(FILTER_OPERATORS);
+
+    this.currentlayer = this.edit ? this.layers.find(l => l.id === this.$options.options.layerId) : this.layers[0];
+
   },
-  async mounted(){
+
+  async mounted() {
     await this.$nextTick();
-    this.select2 = $('#query_builder_layers_select').select2({
-      width: '100%',
-    });
+
+    this.select2 = $('#query_builder_layers_select').select2({ width: '100%' });
+
     if (this.edit) {
-      const index = this.layers.indexOf(this.currentlayer);
-      this.select2.val(index);
+      this.select2.val(this.layers.indexOf(this.currentlayer));
       this.select2.trigger('change');
     }
-    this.select2.on('select2:select', (evt) => {
-      this.currentlayer = this.layers[evt.params.data.id];
+
+    this.select2.on('select2:select', e => {
+      this.currentlayer = this.layers[e.params.data.id];
       this.select.field = null;
       this.select.value = null;
       this.reset();
     });
   },
-  beforeDestroy(){
+
+  beforeDestroy() {
     this.select2.select2('destroy');
     this.select2 = null;
-  }
+  },
+
 };
 </script>
+
+<style scoped>
+#query_builder {
+  font-family: monospace;
+  margin-bottom: 0;
+  height: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+}
+#query_builder .select2.select2-container {
+  font-weight: bold;
+}
+.querybuilder-title {
+  color: #fff;
+  font-weight: bold;
+}
+select {
+  background-color: #fff;
+  color: #000;
+  border: none;
+}
+option {
+  padding: 8px;
+  cursor: pointer;
+}
+option:checked {
+  background: var(--skin-color) linear-gradient(0deg, var(--skin-color) 0%, var(--skin-color) 100%);
+  color: #fff;
+}
+option:nth-of-type(2n+1) {
+  background-color: #f9f9f9;
+}
+.query_builder_button {
+  margin: 1px;
+  flex-basis: 78px;
+  flex-grow: 1;
+  color: #000;
+}
+.content-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+.content-end {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 5px;
+}
+.margin-between-element {
+  margin-bottom: 5px;
+}
+#query_builder_expression_content {
+  width: 100%;
+  resize: none;
+  height: 100px;
+  color:#000;
+}
+</style>

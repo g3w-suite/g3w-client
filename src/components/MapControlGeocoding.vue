@@ -8,11 +8,11 @@
 -->
 <template>
   <div
-    v-if = "has_providers"
-    :class = "[ 'ol-geocoder', { 'g3w-disabled': $data.disabled }]"
+    v-if   = "has_providers"
+    :class = "[ 'ol-geocoder', { 'g3w-disabled': disabled }]"
   >
 
-    <div class="gcd-txt-control">
+    <div class = "gcd-txt-control">
 
       <!-- INPUT SEARCH -->
       <input
@@ -21,9 +21,9 @@
         id              = "gcd-input-query"
         autocomplete    = "off"
         class           = "gcd-txt-input"
-        v-t-placeholder = "placeholder"
         @keyup          = "onQuery"
         @input          = "onValue"
+        :placeholder    = "placeholder"
       />
 
       <!-- RESET SEARCH -->
@@ -90,7 +90,7 @@
         @click.stop   = "() => showMarkerResults(undefined, true)"
         title         = "Toggle sidebar panel"
       >
-      <code :style="{ opacity: $data.results_panel_open ? 0.5 : undefined }">
+      <code :style = "{ opacity: results_panel_open ? 0.5 : undefined }">
         {{ features.length > 99 ? '99+' : features.length }}
       </code>
       </button>
@@ -103,7 +103,7 @@
       class = "gcd-txt-result"
     >
       <li
-        v-for   = "(item, i) in $data.results"
+        v-for   = "(item, i) in results"
         :class  = "[
           item.provider,
           item.__icon       ? 'gcd-icon-' + item.__icon : '',
@@ -124,7 +124,7 @@
         <!-- NO RESULTS -->
         <span
           v-else-if = "item.__no_results"
-          v-t       = "noresults"
+          v-t       = "'mapcontrols.geocoding.noresults'"
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
@@ -146,10 +146,19 @@
             height     = "24"
           />
           <!-- TODO: remove outer link (which is used only for styling purposes..) -->
-          <a href="" draggable="false">
-            <div v-if="item.type"         class="gcd-type">{{ item.type }}</div>
-            <div v-if="item.name"         class="gcd-name">{{ item.name }}</div>
-            <div v-if="item.address_name" class="gcd-road">{{ item.address_name }}</div>
+          <a href = "" draggable = "false">
+            <div
+              v-if  = "item.type"
+              class = "gcd-type"
+            >{{ item.type }}</div>
+            <div
+              v-if  = "item.name"
+              class = "gcd-name"
+            >{{ item.name }}</div>
+            <div
+              v-if  = "item.address_name"
+              class = "gcd-road"
+            >{{ item.address_name }}</div>
             <div
               v-if  = "item.address_road || item.address_building || item.address_house_number"
               class = "gcd-road"
@@ -172,17 +181,19 @@
 
 <script>
 import GUI                              from 'services/gui';
-import ApplicationState                 from 'store/application-state';
+import ApplicationState                 from 'store/application';
 import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
-import { PluginsRegistry }              from "store";
-import CatalogLayersStoresRegistry      from 'store/catalog-layers';
-import { toRawType, uniqueId }          from 'utils';
+import PluginsRegistry                  from 'store/plugins';
+import Projections                      from 'store/projections';
+import { getUniqueDomId }               from 'utils/getUniqueDomId';
 import { flattenObject }                from 'utils/flattenObject';
 import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
 import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
+import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
+import { getCatalogLayers }             from 'utils/getCatalogLayers';
 
-const Projections                   = require('g3w-ol/projection/projections');
+const { t } = require('g3w-i18n');
 
 /**
  * Provider definitions.
@@ -211,7 +222,7 @@ const Projections                   = require('g3w-ol/projection/projections');
  * VENDOR_KEYS['my_custom_provider'] = 'super.secret.key'
  * ```
  */
-const PROVIDERS = window.initConfig.group.mapcontrols.geocoding ? window.initConfig.group.mapcontrols.geocoding.providers : {};
+const PROVIDERS = window.initConfig.mapcontrols.geocoding ? window.initConfig.mapcontrols.geocoding.providers : {};
 Object
   .keys(PROVIDERS)
   .forEach(function(p) {
@@ -231,7 +242,7 @@ const LAYER = new ol.layer.Vector({
   name: 'Geocoding',
   source: new ol.source.Vector(),
   style(feature) { // set style function to check if a coordinate search or a search from provider
-    if ('__g3w_marker_coordinates' ===  feature.getId()) {
+    if ('__g3w_marker_coordinates' === feature.getId()) {
       return new ol.style.Style({
         text: new ol.style.Text({
           offsetY: -15, //move marker icon on base point coordinate and not center
@@ -280,56 +291,21 @@ export default {
   data() {
     return {
       /** @since 3.9.0 */
-      results              : [],
+      results:            [],
       /** @since 3.9.0 */
-      disabled             : false, // disabled boolean control
+      disabled:           false, // disabled boolean control
       /** @since 3.9.0 */
-      results_panel_open   : false, // @TODO make use of `GUI.isSomething()`
+      results_panel_open: false, // @TODO make use of `GUI.isSomething()`
     };
   },
 
   props: {
 
-    placeholder: {
-      type: String,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    noresults: {
-      type: String,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    limit: {
-      type: Number,
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    viewbox: {
-      required: true,
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    mapCrs: {
-      required: true,
-    },
-
     /**
      * @since 3.9.0
      */
     providers: {
-      type: Object, // {nominatim: {url:<url>, bing:{url:<url}}}
+      type:     Object, // {nominatim: {url:<url>, bing:{url:<url}}}
       default:  {}
     },
 
@@ -363,7 +339,7 @@ export default {
     },
 
     /**
-     * Get dynamic extent (eg. Bing Places)
+     * Get a dynamic extent (e.g., Bing Places)
      * 
      * @TODO add a checkbox to let user choose whether include searches only from current map extent
      * 
@@ -373,25 +349,27 @@ export default {
      * @since 3.9.0
      */
     extent() {
-      const has_dynamic_extent = Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
-      return ol.proj.transformExtent(has_dynamic_extent ? GUI.getService('map').getMapExtent() : this.viewbox, this.mapCrs, 'EPSG:4326')
+      const map = GUI.getService('map');
+      const project = map.getProject().state;
+      return ol.proj.transformExtent(
+        Object.keys(this.providers).filter(p => 'nominatim' != p).length > 0
+          ? map.getMapExtent()
+          : (project.initextent || project.extent),
+        project.crs.epsg,
+        'EPSG:4326'
+      );
+    },
+
+    /**
+     * @since 3.11.0
+     */
+    placeholder() {
+      return ApplicationState.language && t('mapcontrols.geocoding.placeholder');
     },
 
   },
 
   methods: {
-
-    /**
-     * @param coordinates
-     * @param transform
-     * 
-     * @since 3.9.0
-     */
-    _showMarker(coords, transform = true) {
-      const map = GUI.getService('map');
-      coords = transform ? ol.proj.transform(coords, 'EPSG:4326', map.getEpsg()) : coords;
-      map.zoomToGeometry(new ol.geom.Point(coords));
-    },
 
     /**
      * Remove marker from map
@@ -422,7 +400,7 @@ export default {
      * @since 3.9.0
      */
     clearResults() {
-      this.$data.results.splice(0);
+      this.results.splice(0);
       //Remove eventually marker coordinates
       if (LAYER.getSource().getFeatureById('__g3w_marker_coordinates')) {
         LAYER.getSource().removeFeature(LAYER.getSource().getFeatureById('__g3w_marker_coordinates'));
@@ -433,11 +411,11 @@ export default {
       is_clearing = true;
       this._hideMarker();
       // set false to add
-      this.$data.results.forEach(i => i.__selected = false);
+      this.results.forEach(i => i.__selected = false);
       const layer = GUI.getService('queryresults').getState().layers.find(l => l.id === LAYER.get('id'));
       // check if marker is in query results
       if (layer) {
-        layer.features.forEach(f => { GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f) });
+        layer.features.forEach(f => GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f));
       }
       is_clearing = false;
     },
@@ -459,122 +437,110 @@ export default {
      *
      * @since 3.9.0
      */
-    query(q) {
+    async query(q) {
 
-      return new Promise(async (resolve, reject) => {
-        const isNumber     = value => 'Number' === toRawType(value) && !Number.isNaN(value);
-        let coordinates    = null;
-        let transform      = false;
-        const [x, y, epsg] = (q || '').split(',');
-        // get projection of coordinates is pass as third value
-        const projection    = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
-        // extract xCoord and yCoord
-        if (isNumber(1 * x) && isNumber(1 * y)) {
-          coordinates = [1 * x, 1 * y];
+      const map = GUI.getService('map');
+
+      const isNumber     = value => 'number' === typeof value && !Number.isNaN(value);
+      let coordinates    = null;
+      let transform      = false;
+      const [x, y, epsg] = (q || '').split(',');
+      // get projection of coordinates is pass as third value
+      const projection   = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
+
+      // extract xCoord and yCoord
+      if (isNumber(1 * x) && isNumber(1 * y)) {
+        coordinates = [1 * x, 1 * y];
+      }
+
+      // whether EPSGCode is allowed on this project
+      try {
+        if (projection) {
+          coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
+          transform = true;
         }
+      } catch (e) {
+        console.warn(e);
+      }
 
-        // whether EPSGCode is allowed on this project
-        try {
-          if (projection) {
-            coordinates = ol.proj.transform(coordinates, projection.getCode(), 'EPSG:4326');
-            transform = true;
-          }
-        } catch (err) {
-          console.warn(err);
+      // request is for a single point (XCoord,YCoord)
+      if (coordinates) {
+        const source = LAYER.getSource();
+        //check if already added
+        if (source.getFeatureById('__g3w_marker_coordinates')) {
+          //remove
+          source.removeFeature(source.getFeatureById('__g3w_marker_coordinates'));
         }
-
-        // request is for a single point (XCoord,YCoord)
-        if (coordinates) {
-          const source = LAYER.getSource();
-          //check if already added
-          if (source.getFeatureById('__g3w_marker_coordinates')) {
-            //remove
-            source.removeFeature(source.getFeatureById('__g3w_marker_coordinates'));
-          }
-          //create marker coordinate feature
-          const feature = new ol.Feature({
-            geometry: new ol.geom.Point(transform ?
-              ol.proj.transform(coordinates, 'EPSG:4326', GUI.getService('map').getEpsg()) :
-              coordinates
-            ),
-            //add info for eventually query result
-            lon: coordinates[0],
-            lat: coordinates[1],
-          });
-          //set id
-          feature.setId('__g3w_marker_coordinates');
-          //add to layer marker source
-          LAYER.getSource().addFeature(feature);
-          this._showMarker(coordinates, transform);
-          resolve(coordinates);
-        }
-
-        // request is for a place (Address, Place, etc..)
-        if (!coordinates) {
-
-          // clear previous result
-          this.clearResults();
-          this.$refs.reset.classList.add("gcd-spin");
-
-          // request data
-          const results = await Promise.allSettled(
-            Object
-              .entries(this.providers)
-              .map(([ p, config = {} ]) => PROVIDERS[p].fetch({
-                url:          config.url,
-                icon:         config.icon,
-                query:        q,
-                lang:         ApplicationState.language || 'it-IT',
-                // countrycodes: _options.countrycodes,             // <-- TODO ?
-                limit:        this.limit,
-                extent:       this.extent,
-              }))
-          );
-
-          // update search results
-          this._showResults(results.filter(p => 'fulfilled' === p.status));
-          this.$refs.reset.classList.remove("gcd-spin");
-        }
-
-      });
-
-    },
-
-    /**
-     * @since 3.9.0
-     */
-    _showResults(results=[]) {
-
-      // Loop through providers results
-      results.forEach((p) => {
-
-        // heading
-        this.$data.results.push({
-          __heading: true,
-          provider: p.value.provider,
-          label: this.providers[p.value.provider].label || p.value.label,
+        //create marker coordinate feature
+        const feature = new ol.Feature({
+          geometry: new ol.geom.Point(transform ? ol.proj.transform(coordinates, 'EPSG:4326', map.getEpsg()) : coordinates),
+          //add info for eventually query result
+          lon: coordinates[0],
+          lat: coordinates[1],
         });
+        //set id
+        feature.setId('__g3w_marker_coordinates');
+        //add to a layer marker source
+        LAYER.getSource().addFeature(feature);
+        // show marker
+        map.zoomToGeometry(new ol.geom.Point(transform ? ol.proj.transform(coordinates, 'EPSG:4326', map.getEpsg()) : coordinates));
+        return coordinates;
+      }
 
-        // no results
-        if (!(p.value.results && p.value.results.length)) {
-          this.$data.results.push({
-            __no_results: !(p.value.results && p.value.results.length),
+      // request is for a place (Address, Place, etc..)
+      if (!coordinates) {
+
+        // clear previous result
+        this.clearResults();
+        this.$refs.reset.classList.add("gcd-spin");
+
+        // request data and update search results
+        (await Promise.allSettled(
+          Object
+            .entries(this.providers)
+            .map(([ p, config = {} ]) => PROVIDERS[p].fetch({
+              url:          config.url,
+              icon:         config.icon,
+              query:        q,
+              lang:         ApplicationState.language || 'it-IT',
+              // countrycodes: _options.countrycodes,             // <-- TODO ?
+              limit:        5,
+              extent:       this.extent,
+            }))
+        ))
+          .filter(p => 'fulfilled' === p.status)
+          .forEach((p) => {
+
+            // heading
+            this.results.push({
+              __heading: true,
+              provider:  p.value.provider,
+              label:     this.providers[p.value.provider].label || p.value.label,
+            });
+
+            // no results
+            if (!(p.value.results && p.value.results.length)) {
+              this.results.push({
+                __no_results: !(p.value.results && p.value.results.length),
+              });
+              return;
+            }
+
+            // results
+            p.value.results.forEach(item => {
+              this.results.push(flattenObject({
+                ...item,
+                provider:   p.value.provider,
+                __uid:      getUniqueDomId(),
+                __icon:     this.providers[p.value.provider].icon || p.value.icon,
+                __selected: false,
+              }));
+            });
+
           });
-          return;
-        }
 
-        // results
-        p.value.results.forEach(item => {
-          this.$data.results.push(flattenObject({
-            ...item,
-            provider:   p.value.provider,
-            __uid:      uniqueId(),
-            __icon:     this.providers[p.value.provider].icon || p.value.icon,
-            __selected: false,
-          }));
-        });
-
-      });
+        this.$refs.reset.classList.remove("gcd-spin");
+      }
 
     },
 
@@ -591,8 +557,8 @@ export default {
     /**
      * @since 3.9.0
      */
-    onValue(evt) {
-      this.$refs.reset.classList.toggle("gcd-hidden", evt.target.value.trim().length === 0);
+    onValue(e) {
+      this.$refs.reset.classList.toggle("gcd-hidden",0 === e.target.value.trim().length);
     },
 
     /**
@@ -611,20 +577,20 @@ export default {
      * @since 3.9.0
      */
     _removeItem(uid) {
-      const item = (this.$data.results || []).find(r => uid === r.__uid);
+      const item = (this.results || []).find(r => uid === r.__uid);
 
-      // check if clear markers is running
+      // check if clear markers are running
       if (this.features.length) {
         const source = LAYER.getSource();
         source.removeFeature(source.getFeatureById(uid));
       }
 
-      // check if is open result list
+      // check if is an open result list
       if (item) {
         item.__selected = false;
       }
 
-      // no markers are on map
+      // no markers are on the map
       if (0 === this.features.length) {
         this._hideMarker();
       }
@@ -634,28 +600,6 @@ export default {
         this.showMarkerResults(undefined, 0 === this.features.length);
       }
 
-    },
-
-    /**
-     * Create an OL ffeature from item result
-     *
-     * @param item
-     * 
-     * @returns {*}
-     *
-     * @since 3.9.0
-     */
-    _createOlMarker(item) {
-      const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
-      const feature = new ol.Feature({
-        geometry: new ol.geom.Point(
-          ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())
-        ),
-        ..._item, 
-      });
-      // set id of the feature
-      feature.setId(__uid);
-      return feature;
     },
 
     /**
@@ -672,8 +616,14 @@ export default {
         if (source.getFeatureById(item.__uid)) {
           this._removeItem(item.__uid);
         } else {
-          //add feature marker and zoom on it
-          const feature = this._createOlMarker(item);
+          // add feature marker and zoom on it
+          const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
+          const feature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
+            ..._item, 
+          });
+          // set id of the feature
+          feature.setId(__uid);
           source.addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
@@ -689,17 +639,17 @@ export default {
      * 
      * @since 3.9.0
      */
-    showMarkerResults(features, toggle = false) {
-      if (this.$data.results_panel_open && toggle) {
+    async showMarkerResults(features, toggle = false) {
+      if (this.results_panel_open && toggle) {
         GUI.closeContent();
         return;
       }
-      // check if is already open right panel
+      // check if is already an open right panel
       if (GUI.getCurrentContent()) {
-        GUI.closeContent();
+        await GUI.closeContent();
       }
       GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: features || LAYER.getSource().getFeatures() }] });
-      this.$data.results_panel_open = true;
+      this.results_panel_open = true;
     },
 
     /**
@@ -716,16 +666,16 @@ export default {
       }
 
       // disable ol-gecoder while editing
-      this.$data.disabled = true;
+      this.disabled = true;
       try {
 
-        // get geometry type of target layer
-        const type = CatalogLayersStoresRegistry.getLayerById(layerId).getGeometryType();
+        // get a geometry type of target layer
+        const type = getCatalogLayerById(layerId).getGeometryType();
 
         // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
         const _feature = addZValueToOLFeatureGeometry({
           geometryType: type,
-          feature: new ol.Feature({
+          feature:      new ol.Feature({
             ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(feature.attributes.provider + '_', '').toLowerCase()]: attr[1] }), {}),
             ...feature.attributes,
             geometry: convertSingleMultiGeometry(feature.geometry, type),
@@ -735,15 +685,16 @@ export default {
         // start editing session
         await editing.getApi().addLayerFeature({ layerId: layerId, feature: _feature });
 
-      } catch(err) {
-        console.warn(err);
+      } catch(e) {
+        console.warn(e);
       }
-      this.$data.disabled = false;
+      this.disabled = false;
     },
 
   },
 
   created() {
+
     const queryresults = GUI.getService('queryresults');
     const mapService   = GUI.getService('map');
     const map          = mapService.getMap();
@@ -762,8 +713,8 @@ export default {
     queryresults.registerVectorLayer(LAYER);
 
     /** @TODO delegate check for `is_results_panel_open` to an external queryresults or gui method */
-    GUI.on('closecontent',    () => { this.$data.results_panel_open = false; })
-    GUI.onafter('setContent', () => { if (this.$data.results_panel_open) this.$data.results_panel_open = false; });
+    GUI.on('closecontent',    () => { this.results_panel_open = false; })
+    GUI.onafter('setContent', () => { if (this.results_panel_open) this.results_panel_open = false; });
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
       if (LAYER.get('id') === layer.id) {
@@ -781,8 +732,7 @@ export default {
       }
 
       // Get editing layers that has Point/MultiPoint Geometry type
-      const editablePointLayers =  CatalogLayersStoresRegistry
-        .getLayers({ EDITABLE: true, GEOLAYER: true })
+      const editablePointLayers =  getCatalogLayers({ EDITABLE: true, GEOLAYER: true })
         .filter(l => isPointGeometryType(l.getGeometryType()))
         .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 
@@ -797,12 +747,12 @@ export default {
         id: QueryResultsActionChooseLayer.name,
         layer,
         action: {
-          id: 'choose_layer',
-          class: GUI.getFontClass('pencil'),
-          state: queryresults.createActionState({ layer }),
+          id:         'choose_layer',
+          class:      GUI.getFontClass('pencil'),
+          state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
           toggleable: true,
-          hint: 'Choose a layer',
-          cbk: (layer, feature, action, index) => {
+          hint:       'Choose a layer',
+          cbk:        (layer, feature, action, index) => {
             // skip layer choose when there is only a single editable layer
             if (1 === editablePointLayers.length) {
               this._editItem(editablePointLayers[0].id, feature);
@@ -934,7 +884,6 @@ export default {
     background-color: #fff;
     overflow: hidden;
     border-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     width: 100%;
     border: 2px solid var(--skin-color)
   }
@@ -1027,7 +976,6 @@ export default {
   }
 
   .ol-geocoder > ul {
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     border-radius: 3px !important;
     width: 100%;
     max-height: 200px;

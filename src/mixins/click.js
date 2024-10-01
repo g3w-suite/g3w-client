@@ -12,7 +12,7 @@ export default {
      * @see https://stackoverflow.com/q/41303982
      */
     this.__CLICK_EVENT = {
-      count: 0,                                   // count click events
+      count:     0,                                   // count click events
       timeoutID: null                             // timeoutID return by setTimeout Function
     };
   },
@@ -40,7 +40,7 @@ export default {
     },
 
     __resetClickMixin() {
-      this.__CLICK_EVENT.count = 0;
+      this.__CLICK_EVENT.count     = 0;
       this.__CLICK_EVENT.timeoutID = null;
     },
 

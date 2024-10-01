@@ -3,10 +3,10 @@
  * @since v3.7
  */
 
-import ApplicationState from 'store/application-state';
+import ApplicationState   from 'store/application';
 import { watch, unwatch } from 'directives/utils';
 
-const { t } = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 const attr = 'g3w-v-t-html-id';
 
@@ -21,5 +21,10 @@ export default {
       ]
     });
   },
-  unbind: (el) => unwatch({ el, attr })
+  update(el, binding) {
+    if (binding.value !== binding.oldValue) {
+      el.innerHTML = `${t(binding.value)}`;
+    }
+  },
+  unbind: el => unwatch({ el, attr })
 };

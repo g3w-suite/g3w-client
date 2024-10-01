@@ -12,4 +12,4 @@ export function groupBy(array, keyFn) {
     result[key].push(item);
     return result;
   }, {});
-};
+}

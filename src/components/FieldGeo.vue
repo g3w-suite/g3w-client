@@ -4,9 +4,11 @@
 -->
 
 <template>
-  <div class="geo-content">
-    <span @click.stop="showLayer()" class="show-hide-geo"
-          :class="[visible ? g3wtemplate.font['eye-close'] : g3wtemplate.font['eye']]">
+  <div class = "geo-content">
+    <span
+      @click.stop = "showLayer()"
+      class       = "show-hide-geo"
+      :class      = "[visible ? g3wtemplate.font['eye-close'] : g3wtemplate.font['eye']]">
     </span>
   </div>
 </template>
@@ -22,9 +24,9 @@ export default {
   mixins: [geoMixin],
   data() {
     return {
-      layerId: 'table_layer_' + Date.now(),
+      layerId: `table_layer_${Date.now()}`,
       visible: false,
-      id: 'geo_table_' + Date.now()
+      id:      `geo_table_${Date.now()}`
     }
   }
 };

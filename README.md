@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.10.0-alpha.0
+# G3W-CLIENT v3.11.0-alpha.1
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -167,10 +167,7 @@ For further information about plugin development, see also: [`src/plugins/README
 
 - [ ] Ensure all [milestones](https://github.com/g3w-suite/g3w-client/milestones) issues and pull requests are resolved.
 - [ ] Create or checkout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
-- [ ] Compile local code: `npm run build`
-- [ ] New tag: `git tag v3.5.1`
-- [ ] Push local code to remote: `git push`
-- [ ] Push local tags to remote: `git push --tags`
+- [ ] Compile and create new tag: `npm version v3.5.1`
 - [ ] Draft a new [GitHub Relase](https://github.com/g3w-suite/g3w-client/releases/new)
 
 <details>
@@ -360,8 +357,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.7-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.7.x)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.7-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.7.x)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.8-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.8.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.8-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.8.x)
 
 ---
 

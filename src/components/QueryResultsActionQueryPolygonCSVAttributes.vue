@@ -4,23 +4,42 @@
 -->
 
 <template>
-  <div style="width:100%">
-    <h5 class="skin-background-color g3w-polygonattributes-types-title" v-t="'sdk.mapcontrols.querybypolygon.download.title'"></h5>
-    <div class="g3w-polygonattributes-types-content">
-      <select ref="g3w_select_feature_featurepolygon" style="width: 100%" v-select2="'type'" class="form-control" :search="false">
-        <option :ref="choice.type" v-for="choice in config.choices" :key="choice.type" :value="choice.type" v-t="choice.label"></option>
+  <div style = "width:100%">
+    <h5
+      class = "skin-background-color g3w-polygonattributes-types-title"
+      v-t   = "'sdk.mapcontrols.querybypolygon.download.title'">
+    </h5>
+    <div class = "g3w-polygonattributes-types-content">
+      <select
+        ref       = "g3w_select_feature_featurepolygon"
+        style     = "width: 100%"
+        v-select2 = "'type'"
+        class     = "form-control"
+        :search   = "false"
+      >
+        <option
+          v-for  = "choice in config.choices"
+          :key   = "choice.type"
+          :value = "choice.type"
+          :ref   = "choice.type"
+          v-t    = "choice.label">
+        </option>
       </select>
-      <button style="border-radius: 0 3px 3px 0;" class="btn skin-button" @click.stop=config.download(type)>
-        <span :class="g3wtemplate.getFontClass('download')"></span>
+      <button
+        style       = "border-radius: 0 3px 3px 0;"
+        class       = "btn skin-button"
+        @click.stop = config.download(type)
+      >
+        <span :class = "g3wtemplate.getFontClass('download')"></span>
       </button>
     </div>
   </div>
 </template>
 
 <script>
-  import ApplicationState from 'store/application-state'
+  import ApplicationState from 'store/application'
   
-  const {t} = require('core/i18n/i18n.service');
+  const {t} = require('g3w-i18n');
 
   export default {
 
@@ -32,20 +51,23 @@
         type: Object
       },
       config: {
-        type: Object,
+        type:    Object,
         default: null
       },
     },
-    data(){
+    data() {
       return {
         type: this.config.choices[0].type
       }
     },
     created() {
-      this.unwatch =  this.$watch(()=>ApplicationState.language, ()=>{
-        this.config.choices.forEach(choice => $(this.$refs[choice.type]).text(t(choice.label)));
-        $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
-      })
+      this.unwatch = this.$watch(
+        () => ApplicationState.language,
+        () => {
+          this.config.choices.forEach(c => $(this.$refs[c.type]).text(t(c.label)));
+          $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
+        }
+      )
     },
     beforeDestroy() {
       this.unwatch && this.unwatch();

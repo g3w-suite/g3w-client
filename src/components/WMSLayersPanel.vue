@@ -4,12 +4,12 @@
 -->
 
 <template>
-  <div v-disabled="loading">
+  <div v-disabled = "loading">
 
     <!-- LOADING INDICATOR -->
-    <bar-loader :loading="loading" />
+    <bar-loader :loading = "loading" />
 
-    <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
+    <h3 class = "skin-color g3w-wms-panel-title">{{title}}</h3>
 
     <helpdiv
       v-if     = "abstract"
@@ -22,9 +22,9 @@
       v-t = "'sidebar.wms.panel.label.layers'">
     </label>
     <select
-      id        = "g3w-wms-layers"
-      multiple  = "multiple"
-      clear     = "true"
+      id         = "g3w-wms-layers"
+      :multiple  = "true"
+      :clear     = "true"
       v-select2 = "'selectedlayers'"
     >
       <option
@@ -74,7 +74,7 @@
     />
 
     <button
-      @click.stop = "addWMSlayer"
+      @click.stop = "$emit('add-wms-layer', { url, position, epsg, layers: selectedlayers, name: name && name.trim() || undefined })"
       v-disabled  = "0 === selectedlayers.length"
       class       = "btn wms-add-layer-button sidebar-button skin-button"
     >
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-const Projections = require('g3w-ol/projection/projections');
+import Projections from 'store/projections';
 
 export default {
 
@@ -115,43 +115,12 @@ export default {
   methods: {
 
     /**
-     * @returns {Promise<void>}
-     */
-    async addWMSlayer() {
-      const config = {
-        url:      this.url,
-        name:     this.name && this.name.trim() || undefined,
-        layers:   this.selectedlayers,
-        epsg:     this.epsg,
-        position: this.position,
-      };
-
-      this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
-
-      if (this.added) {
-        console.warn('WMS Layer already added');
-        return;
-      }
-
-      this.loading = true;
-
-      try {
-        await this.$options.service.addWMSlayer(config);
-      } catch(err) {
-        console.warn('unexpected error while adding WMS Layer');
-      }
-
-      this.loading = false;
-
-      this.clear();
-    },
-
-    /**
      * @FIXME add description
      */
     clear() {
       this.selectedlayers = [];
-      this.name = null;
+      this.name           = null;
+      this.loading        = false;
     },
 
     /**
@@ -162,14 +131,14 @@ export default {
     getLayersByEpsg(epsg) {
       return (null === epsg)
         ? this.$options.config.layers
-        : this.layers.filter(({ name }) => -1 !== this.layerProjections[name].crss.indexOf(epsg));
+        : this.layers.filter(({ name }) => this.layerProjections[name].crss.includes(epsg));
     },
 
     /**
      * @since 3.8.1
      */
     getProjectionsByName(name) {
-      return this.projections.filter((projection) => -1 !== this.layerProjections[name].crss.indexOf(projection));
+      return this.projections.filter(p => this.layerProjections[name].crss.includes(p));
     },
 
   },
@@ -178,15 +147,15 @@ export default {
     /**
      * Handle selected layers change  
      */
-    selectedlayers(layers) {
-      if (!layers.length) {             // Reset epsg and projections to initial values
+    selectedlayers(layers = []) {
+      if (0 === layers.length) {             // Reset epsg and projections to initial values
         this.epsg        = null;
         this.projections = [];
-      } else if (layers.length === 1) { // take first layer selected supported crss
+      } else if (1 === layers.length) { // take first layer selected supported crss
         this.epsg        = this.layerProjections[layers[0]].crss[0];
         this.projections = this.layerProjections[layers[0]].crss;
       } else {                          // TODO: add description
-        this.projections = this.getProjectionsByName(layers[layers.length -1]);;
+        this.projections = this.getProjectionsByName(layers[layers.length -1]);
       }
     },
 
@@ -214,8 +183,8 @@ export default {
      */
     try {
       this.url = methods.GetMap.urls.find(u => 'Get' === u.type).url;
-    } catch(err) {
-      console.warn(err);
+    } catch(e) {
+      console.warn(e);
       this.url = wmsurl;
     }
 

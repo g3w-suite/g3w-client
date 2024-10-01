@@ -4,24 +4,30 @@
 
 <template>
   <div
-    id="map_footer_left"
-    style="display: flex;"
+    id    = "map_footer_left"
+    style = "display: flex;"
   >
     <a
-      href="https://g3wsuite.it/"
-      style="margin-left: 5px; align-self: center; box-shadow: 0 1px 4px 0 rgba(0,0,0,.1), 0 4px 8px 0 rgba(0,0,0,.3);"
-      target="_blank"
+      href   = "https://g3wsuite.it/"
+      style  = "margin-left: 5px; align-self: center;"
+      target = "_blank"
+      :title = "version"
     >
       <img
-        height="15"
-        src="/static/client/images/g3wsuite_logo.png"
-        alt="">
+        height = "15"
+        src    = "/static/client/images/g3wsuite_logo.png"
+        alt    = "">
     </a>
   </div>
 </template>
 
 <script>
   export default {
-    name: 'Mapfooter'
+    name: 'Mapfooter',
+    computed: {
+      version() {
+        return 'Powered by G3W-SUITE ' + initConfig.version;
+      }
+    }
   };
 </script>

@@ -17,7 +17,7 @@ export default {
         nofilter: "Remove Filter",
         invert: "Invert Selection",
         clear: "Clear Selection",
-        show_features_on_map: "Show features visible on map",
+        show_features_on_map: "Update results when map moves",
         savefilter: "Save Filter",
         filterName: "Filter Name",
       }
@@ -37,7 +37,7 @@ export default {
         }
       },
       spatialbookmarks: {
-        title: "Spatial Bookmarks",
+        title: "Bookmarks",
         helptext: "Move on map extent, insert name and click Add",
         input: {
           name: "Name"
@@ -78,6 +78,7 @@ export default {
         help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
       },
       querybuilder: {
+        title: 'Advanced search',
         search: {
           run: "Run",
           info: "Information",
@@ -86,11 +87,11 @@ export default {
         },
         messages: {
           changed: 'Saved',
-          number_of_features: "Number of features"
+          number_of_features: "Features found:"
         },
         panel: {
           button: {
-            all: 'ALL',
+            all: 'SEARCH A VALUE',
             save: 'SAVE',
             test: 'TEST',
             clear: 'CLEAR',
@@ -184,14 +185,16 @@ export default {
           row_to_form: "Form View",
           zoomtogeometry: "Zoom to Geometry",
         },
-        copy_map_extent_url: 'Copy map view link',
+        copy_map_extent_url: 'Copy share URL',
         download_shapefile: "Download Shapefile",
         download_gpx: "Download GPX",
         download_gpkg: "Download GPKG",
         download_csv: "Download CSV",
         download_xls: "Download XLS",
+        download_pdf: "Download PDF",
         show_chart: "Show Chart",
-        atlas: "Print Atlas"
+        atlas: "Print Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,13 +251,39 @@ export default {
             download_xls: {
               hint: "Download feature XLS"
             },
+            download_pdf: {
+              hint: "Download feature PDF"
+            },
             atlas: {
               hint: "Print Atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copy map URL with this geometry feature extension",
+              hint: "Share via link",
               hint_change: "Copied"
             }
+          }
+        },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
           }
         },
         querybypolygon: {
@@ -272,28 +301,28 @@ export default {
           tooltip: 'Query By Polygon',
           no_geometry: 'No geometry on response',
           help: {
-            title:'Guide - Query By Polygon',
-            message: `
-                <ul>
-                  <li>Select a polygon layer on TOC.</li>
-                  <li>Be sure that layer is visible.</li>
-                  <li>Click on a feature of selected layer.</li>
-                </ul>`
+            message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon "
+          tooltip: "Query by Draw Polygon ",
+          help: {
+            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers (underlined in yellow in legend)</li></ul>"
+          }
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'Query BBox layer',
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
           help: {
-            title: 'Guide - Query BBox layer',
-            message:`
-                  <ul>
-                  <li>Draw a square on map to query underlined layers on TOC</li>
-                  </ul>`
+            message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -307,6 +336,7 @@ export default {
           tooltip: 'Geolocation'
         },
         measures: {
+          title: 'Measure',
           length: {
             tooltip: "Length",
             help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
@@ -315,6 +345,12 @@ export default {
             tooltip: "Area",
             help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
           }
+        },
+        screenshot: {
+          title: 'Screen capture',
+          screenshot: "PNG",
+          geoscreenshot: "GeoTIFF",
+          download: 'Generate'
         },
         scale: {
           no_valid_scale: "Invalid Scale"
@@ -335,7 +371,8 @@ export default {
         no_relations_found: 'No relations found',
         back_to_relations: 'Back to relations',
         list_of_relations_feature: 'List of relations of feature',
-        error_missing_father_field: "Field is missing"
+        error_missing_father_field: "Field is missing",
+        field: "Relation key field",
       },
       form: {
         loading: 'Loading ...',
@@ -375,6 +412,14 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Name of new map theme',
+        project_map_theme : 'Project Themes',
+        user_map_theme: 'User Themes',
+        question_delete_map_theme: "Do you want delete the theme?",
+        delete_map_theme: "Theme deleted successfully",
+        saved_map_theme: "Theme saved successfully",
+        updated_map_theme: "Theme updated successfully",
+        invalid_map_theme_name: "Invalid or exiting name",
         menu: {
           layerposition: 'Layer Position',
           setwmsopacity: "Set Opacity",
@@ -443,6 +488,7 @@ export default {
     server_error: "Server connection error",
     save: "Save",
     cancel: "Cancel",
+    update: "Update",
     close: "Close",
     /**
      * @since 3.8.0
@@ -481,7 +527,7 @@ export default {
       link_button: "Open"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Can't get your position"
       },
       geocoding: {
@@ -499,7 +545,9 @@ export default {
         select_csv_x_field: "Select X field",
         select_csv_y_field: "Select Y field",
         select_color: "Select Layer Color",
-        drag_layer: "Drag and drop layer here"
+        drag_layer: "Drag and drop layer here",
+        persistent_data: "Persistent data",
+        persistent_help: "save layer into browser storage",
       },
       query: {
         input_relation: "Click to show relations"
@@ -538,11 +586,13 @@ export default {
     dataTable: {
       previous: "Previous",
       next: "Next",
-      lengthMenu: "Show _MENU_",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Show _MENU_ values per page",
+      info: "_TOTAL_ entries",
       no_data: "No data",
       nodatafilterd: "No matching records found",
       infoFiltered: "(filtered from _MAX_ total records)"
-    }
+    },
+    /**@since 3.10.0 */
+    no_geometry: 'This item has no geometry',
   },
 };

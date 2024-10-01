@@ -1,42 +1,22 @@
-import { FILTER_EXPRESSION_OPERATORS } from 'app/constant';
+import { FILTER_EXPRESSION_OPERATORS } from 'g3w-constants';
 
-const Filter     = require('core/layers/filter/filter');
-const Expression = require('core/layers/filter/expression');
+const operators  = Object.entries(FILTER_EXPRESSION_OPERATORS);
 
-export function createFilterFromString({
-  layer,
-  search_endpoint = 'ows',
-  filter          = '',
-}) {
-  let stringFilter = filter;
-  switch (search_endpoint) {
+export function createFilterFromString({ filter = '' }) {
+  filter = operators
+    .reduce((acc, [_, op]) => acc
+      .replace(new RegExp(`\\s+${op}\\s+`, 'g'), `${op}`) // remove all blank space between operators
+      .replace(new RegExp(`'${op}`, 'g'), `${op}`)        // leading single quote
+      .replace(new RegExp(`${op}'`, 'g'), `${op}`)        // trailing single quote
+    , filter)
+    .replace(/'$/g, '')
+    .replace(/"/g, '');
+  filter = operators
+    .reduce((acc, [k, op]) => acc.replace(new RegExp(op, 'g'), ['AND', 'OR'].includes(op) ? `|${k},` : `|${k}|`), filter)
+    // encode value
+    .split('|')
+    .map((v, i) => (0 === (i+1) % 3) ? encodeURIComponent(v) : v)
+    .join('|');
 
-    case 'ows':
-      const expression = new Expression({ layerName: layer.getWMSLayerName(), filter:stringFilter });
-      filter = new Filter();
-      filter.setExpression(expression.get());
-      break;
-
-    case 'api':
-      Object
-        .values(FILTER_EXPRESSION_OPERATORS)
-        .forEach(operator => {
-          stringFilter = stringFilter.replace(new RegExp(`\\s+${operator}\\s+`, 'g'), `${operator}`); // remove all blank space between operators
-          stringFilter = stringFilter.replace(new RegExp(`'${operator}`, 'g'), `${operator}`);        // leading single quote
-          stringFilter = stringFilter.replace(new RegExp(`${operator}'`, 'g'), `${operator}`);        // traling single quote
-        });
-      stringFilter = stringFilter.replace(/'$/g, '');
-      filter = stringFilter.replace(/"/g, '');
-
-      Object
-        .entries(FILTER_EXPRESSION_OPERATORS)
-        .forEach(([key, value]) => {
-        filter = filter.replace(new RegExp(value, "g"), value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`);
-      });
-      //encode value
-      filter = filter.split('|').map((value, index) => (0 === (index +1 ) % 3) ? encodeURIComponent(value) : value).join('|');
-      break;
-
-  }
   return filter;
-};
+}

@@ -17,7 +17,7 @@ export default {
         nofilter: "Filter entfernen",
         invert: "Auswahl umkehren",
         clear: "Auswahl löschen",
-        show_features_on_map: "Auf der Karte sichtbare Features anzeigen",
+        show_features_on_map: "Aktualisieren Sie die Ergebnisse beim Verschieben der Karte",
         savefilter: "Filter speichern",
         filterName: "Filtername",
       }
@@ -190,8 +190,10 @@ export default {
         download_gpkg: "GPKG herunterladen",
         download_csv: "CSV herunterladen",
         download_xls: "XLS herunterladen",
+        download_pdf: "PDF herunterladen",
         show_chart: "Diagramm anzeigen",
-        atlas: "Atlas drucken"
+        atlas: "Atlas drucken",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,6 +250,9 @@ export default {
             download_xls: {
               hint: "Feature XLS herunterladen"
             },
+            download_pdf: {
+              hint: "Feature PDF herunterladen"
+            },
             atlas: {
               hint: "Atlas drucken"
             },
@@ -257,6 +262,30 @@ export default {
             }
           }
         },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
+          }
+        },
+
         querybypolygon: {
           download: {
             title: "Attribute herunterladen",
@@ -272,27 +301,17 @@ export default {
           tooltip: 'Query nach Polygon',
           no_geometry: 'Keine Geometrie in der Antwort',
           help: {
-            title:'Hilfe - Abfrage nach Polygon',
-            message: `
-                <ul>
-                  <li>Wählen Sie einen Polygon Layer auf TOC.</li>
-                  <li>Stellen Sie sicher, dass der Layer sichtbar ist.</li>
-                  <li>Klicken Sie auf ein Feature des ausgewählten Layers.</li>
-                </ul>`
+            message: "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Abfrage durch Polygon zeichnen"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'BBox Layer abfragen',
           nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
           help: {
-            title: 'Hilfe - Abfrage des BBox Layers',
-            message:`
-                 <ul>
-                  <li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li>
-                 </ul>`
+            message: "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>"
           }
         },
         addlayer: {
@@ -335,7 +354,8 @@ export default {
         no_relations_found: 'Keine Relationen gefunden',
         back_to_relations: 'Zurück zu den Relationen',
         list_of_relations_feature: 'Liste der Relationen des Features',
-        error_missing_father_field: "Ein Feld fehlt"
+        error_missing_father_field: "Ein Feld fehlt",
+        field: "Relation key field",
       },
       form: {
         loading: 'Laden ...',
@@ -375,8 +395,16 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEMA",
         choose_map_theme: "THEMA AUSWÄHLEN",
+        choose_map_theme_input_label: 'Name des neuen Themes',
+        project_map_theme : 'Projekt Themes',
+        user_map_theme: 'Benutzer Themes',
+        question_delete_map_theme: "Möchten Sie das Thema löschen??",
+        delete_map_theme: "Theme erfolgreich gelöscht",
+        saved_map_theme: "Thema erfolgreich gespeichert",
+        updated_map_theme: "Thema aktualisieren gespeichert",
+        invalid_map_theme_name: "Der Name ist bereits vorhanden oder falsch",
         menu: {
-          layerposition: 'Position des Layers',
+          layerposition: 'Position der Ebenen',
           setwmsopacity: "Opazität einstellen",
           wms: {
             title:"",
@@ -443,6 +471,7 @@ export default {
     server_error: "Server-Verbindungsfehler",
     save: "Speichern",
     cancel: "Abbrechen",
+    update: "Aktualisieren",
     close: "Schließen",
     /**
      * @since 3.8.0
@@ -481,7 +510,7 @@ export default {
       link_button: "Öffnen"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Position kann nicht bestimmt werden"
       },
       geocoding: {
@@ -538,8 +567,8 @@ export default {
     dataTable: {
       previous: "Vorherige",
       next: "Weiter",
-      lengthMenu: "_MENÜ_ anzeigen",
-      info: "Anzeige von _START_ bis _END_ der _TOTAL_ Einträge",
+      lengthMenu: "Zeigen Sie _MENU_ Werte pro Seite an",
+      info: "_TOTAL_ Ergebnissen",
       no_data: "Keine Daten",
       nodatafilterd: "Keine passenden Datensätze gefunden",
       infoFiltered: "(gefiltert aus _MAX_ Gesamtsätzen)"

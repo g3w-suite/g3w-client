@@ -3,28 +3,28 @@
  * @since v3.7
  */
 
-import GUI from 'services/gui';
-
-const { throttle, debounce } = require('utils');
+import GUI          from 'services/gui';
+import { throttle } from 'utils/throttle';
+import { debounce } from 'utils/debounce';
 
 const DELAY_TYPE = {
   throttle,
-  debounce
+  debounce,
 };
 
 export default {
-  created(){
+  created() {
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
-    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
+    this.delayResize   = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
     GUI.on('resize', this.delayResize);
   },
-  async mounted(){
+  async mounted() {
     await this.$nextTick();
-    this.resize && this.resize();
+    if (this.resize) { this.resize(); }
   },
-  beforeDestroy(){
+  beforeDestroy() {
     GUI.off('resize', this.delayResize);
     this.delayResize = null;
-    this.delayTime = null;
+    this.delayTime   = null;
   }
 };

@@ -2,7 +2,7 @@
 <!-- gui/fields/text.vue@v3.4 -->
 
 <template>
-  <field :state="state"></field>
+  <field :state = "state"/>
 </template>
 
 <script>
