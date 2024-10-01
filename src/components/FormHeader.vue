@@ -4,17 +4,31 @@
 -->
 
 <template>
-  <div class="g3wform_header box-header with-border" style="display: flex; flex-direction: column">
-    <section class="g3wform_header_content">
-      <span style="display:flex; justify-content: space-between; align-items: center" class="title" :style="{fontSize: isMobile() && '1em !important'}"
-        :class="[{item_selected: currentid === header.id && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
-        v-for="header in headers" :key="header.id"
-        @click.stop="click(header.id)">
-      <span v-if="header.icon" style="margin-right: 5px">
-        <i :class="header.icon"></i>
+  <div
+    class = "g3wform_header box-header with-border"
+    style = "display: flex; flex-direction: column"
+  >
+    <section class = "g3wform_header_content">
+      <span
+        v-for       = "header in headers"
+        :key        = "header.id"
+        style       = "display:flex; justify-content: space-between; align-items: center"
+        class       = "title"
+        :style      = "{fontSize: isMobile() && '1em !important'}"
+        :class      = "[{item_selected: currentid === header.id && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
+        @click.stop = "click(header.id)">
+      <span
+        v-if  = "header.icon"
+        style = "margin-right: 5px"
+      >
+        <i :class = "header.icon"></i>
       </span>
-      <span v-t:pre="header.title" class="g3w-long-text">{{ header.name }}</span>
-     <component :valid="valid" :update="update" :is="header.component"/>
+
+      <span v-t:pre = "header.title" class = "g3w-long-text">{{ header.name }}</span>
+     <component
+      :valid  = "valid"
+      :update = "update"
+      :is     = "header.component"/>
     </span>
     </section>
   </div>
@@ -32,7 +46,7 @@ export default Vue.extend({
   props: {
     headers: {
       type: Array,
-      default:[]
+      default: []
     },
     currentid: {
       type: String
@@ -50,11 +64,11 @@ export default Vue.extend({
        * @deprecated since 3.6.2
        * This was used when form headers has more than one (case relation)
        */
-      if (this.currentid !== id && this.headers.length > 1) {
+      if (id !== this.currentid  && this.headers.length > 1) {
         this.$emit('clickheader', id);
       }
     },
-    resizeForm(perc){
+    resizeForm(perc) {
       this.$emit('resize-form', perc);
     }
   }

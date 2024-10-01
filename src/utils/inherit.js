@@ -7,4 +7,4 @@ export function inherit(childCtor, parentCtor) {
   childCtor.superClass_ = parentCtor.prototype;
   childCtor.prototype = new tempCtor();
   childCtor.prototype.constructor = childCtor;
-};
+}

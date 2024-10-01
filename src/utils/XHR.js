@@ -1,100 +1,93 @@
-import { TIMEOUT } from 'app/constant';
+import { TIMEOUT }      from 'g3w-constants';
+import { downloadFile } from "utils/downloadFile";
 
 export const XHR = {
 
-  get({url, params={}}={}) {
-    return new Promise((resolve, reject) => {
-      url ?
-        $.get(url, params)
-          .then(response => {
-            resolve(response)
-          })
-          .fail(error => reject(error))
-      : reject('No url')
-    })
+  async get({ url, params = {} } = {}) {
+    if (!url) {
+      return Promise.reject('No url');
+    }
+
+    params = new URLSearchParams(JSON.parse(JSON.stringify(params || {}))).toString();
+
+    const response = await (await fetch(url + (params ? '?' : '') + params)).text();
+
+    // Try to parse response as JSON
+    try {
+      return JSON.parse(response);
+    } catch(e) {
+      return response;
+    }
   },
 
-  post({url, data, formdata = false, contentType} = {}, getResponseStatusHeaders=false) {
-    return new Promise((resolve, reject) => {
-      if (formdata) {
-        const formdata = new FormData();
-        for (const param in data) {
-          formdata.append(param, data[param])
-        }
-        $.ajax({
-          type: 'POST',
-          url,
-          data: formdata,
-          processData: false,
-          contentType: false
-        }).then((response, status, request) => {
-          getResponseStatusHeaders ? resolve({
-              data: response,
-              status,
-              request
-            }) : resolve(response)
-          })
-          .fail(error => {
-            reject(error);
-          })
-      } else if (contentType) {
-        $.ajax({
-          type: 'POST',
-          url,
-          data,
-          processData: false,
-          contentType: contentType || false
-        }).then((response, status, request) => {
-          getResponseStatusHeaders ? resolve({
-            data: response,
-            status,
-            request
-          }) : resolve(response)
+  async post({ url, data, formdata = false, contentType } = {}) {
+    if (formdata) {
+      formdata = new FormData();
+      Object.entries(data).forEach(([key, value]) => formdata.append(key, value));
+    } else if (!contentType) {
+      formdata = new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString();
+    } else {
+      formdata = 'string' === typeof data  ? data : JSON.stringify(data || {});
+    }
+
+    const response = await (await fetch(url, {
+      method:  'POST',
+      body:    formdata,
+      headers: {
+        'Content-Type': contentType || 'application/x-www-form-urlencoded'
+      },
+    })).text();
+
+    // Try to parse response as JSON
+    try {
+      return JSON.parse(response);
+    } catch(e) {
+      return response;
+    }
+  },
+
+  fileDownload({ url, data, httpMethod = "POST" } = {}) {
+    let timeout;
+    return new Promise(async (resolve, reject) => {
+      try {
+        timeout = setTimeout(() => {
+          reject('Timeout');
+        }, TIMEOUT);
+
+        downloadFile({
+          url:     'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url,
+          headers: {
+            'Content-Type':                  'application/json',
+            'Access-Control-Expose-Headers': 'Content-Disposition', //need to get filename from server
+          },
+          method:  httpMethod,
+          data:    data && JSON.stringify(data),
         })
-          .fail(error => {
-            reject(error);
-          })
-      } else {
-        $.post(url, data)
-          .then((response, status, request) => {
-            getResponseStatusHeaders ? resolve({
-              data: response,
-              status,
-              request
-            }) : resolve(response)
-          })
-          .fail(error => {
-            reject(error)
-          })
+        return resolve();
+      } catch(e) {
+        return reject(e);
+      } finally {
+        clearTimeout(timeout);
       }
     })
+
   },
 
-  htmlescape(string){
-    string = string.replace("&", "&amp;");
-    string = string.replace("<", "&lt;");
-    string = string.replace(">", "&gt;");
-    string = string.replace('"', "&quot;");
-    return string;
+  /**
+   * Delete request
+   *
+   * @param url
+   * @param data
+   * 
+   * @returns {Promise<Response>}
+   * 
+   * @since 3.10.0
+   */
+  async delete({ url, data = {} }) {
+    return (await fetch(url, {
+      method: 'DELETE',
+      body: JSON.stringify(data)
+    })).json();
   },
 
-  fileDownload({url, data, httpMethod="POST"} = {}) {
-    let timeoutId;
-    return new Promise((resolve, reject) => {
-      const downloadPromise = $.fileDownload(url, {
-        httpMethod,
-        data
-      });
-      timeoutId = setTimeout(()=>{
-        reject('Timeout');
-        downloadPromise.abort();
-      }, TIMEOUT);
-      downloadPromise
-        .done(()=>resolve())
-        .fail(()=> reject())
-        .always(()=>{
-          clearTimeout(timeoutId)
-        });
-    })
-  },
 };

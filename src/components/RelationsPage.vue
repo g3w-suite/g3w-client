@@ -4,28 +4,57 @@
 -->
 
 <template>
-  <div class="query-relations-page">
-    <component :loading="loading" @save-relation="saveRelations" @show-chart="showChart" @hide-chart="hideChart"
-      :ref="currentview"
-      :previousview="previousview"
-      :is="currentview"
-      :showChartButton="showChartButton"
-      :relations="relations"
-      :relation="relation"
-      :nmRelation="nmRelation"
-      :feature="feature"
-      :table="table"/>
+  <div class = "query-relations-page">
+    <component
+      :loading         = "loading"
+      @save-relation   = "saveRelations"
+      @show-chart      = "showChart"
+      @hide-chart      = "hideChart"
+      :ref             = "currentview"
+      :previousview    = "previousview"
+      :is              = "currentview"
+      :showChartButton = "showChartButton"
+      :relations       = "relations"
+      :relation        = "relation"
+      :nmRelation      = "nmRelation"
+      :feature         = "feature"
+      :table           = "table"/>
   </div>
 </template>
 
 <script>
-import GUI from 'services/gui';
-import RelationsComponent from 'components/Relations.vue';
-import RelationComponent from 'components/Relation.vue';
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
-import { RelationEventBus as VM } from 'app/eventbus';
+import { G3W_FID }                              from 'g3w-constants';
+import { VM }                                   from 'g3w-eventbus';
+import ApplicationState                         from 'store/application';
+import GUI                                      from "services/gui";
+import RelationsComponent                       from 'components/Relations.vue';
+import RelationComponent                        from 'components/Relation.vue';
 
-const {getFeaturesFromResponseVectorApi} = require('utils/geo');
+import DataRouterService                        from 'services/data';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+import { XHR }                                  from 'utils/XHR';
+import { createSingleFieldParameter }           from 'utils/createSingleFieldParameter';
+import { createRelationsUrl }                   from 'utils/createRelationsUrl';
+import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
+
+let _options;
+
+function _buildRelationTable(relations = [], id) {
+  relations = relations || [];
+  const layer = ApplicationState.project.getLayerById(id);
+  const attrs = Object.keys(relations[0] ? relations[0].attributes : {});
+  const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
+  return {
+    columns:          cols.map(c => c.label),
+    rows:             relations.map(r => cols.map(c => r.attributes[c.name])),
+    rows_fid:         relations.map(r => r.attributes[G3W_FID]),
+    features:         relations,
+    fields:           cols.length ? cols : null,
+    formStructure:    layer.getLayerEditingFormStructure(),
+    rowFormStructure: null,
+    layerId:          layer.getId()
+  };
+}
 
 export default {
 
@@ -33,122 +62,184 @@ export default {
   name: 'relation-page',
 
   data() {
-    this.chartRelationIds = this.$options.chartRelationIds || [];
     const {
-      table,
-      relation=null,
-      relations,
+      table =            null,
+      relation =         null,
+      relations =        [],
       nmRelation,
-      feature,
-      currentview,
-      service
+      feature =           null,
+      currentview =      'relations',
+      chartRelationIds = [],
+      layer,
     } = this.$options;
     return {
-      loading: false,
-      state: null,
-      error: false,
-      table: table ? service.buildRelationTable(table) : null,
-      relation,
-      relations,
-      nmRelation,
+      loading:         false,
+      state:           null,
+      error:           false,
+      table:           table ? _buildRelationTable(table) : null,
+      previousview:    currentview,
       showChartButton: false,
       feature,
       currentview,
-      previousview: currentview
+      relation,
+      relations,
+      nmRelation,
+      chartRelationIds,
+      layer,
     }
   },
   provide() {
     return {
-      relationnoback: this.$options.relations.length === 1
+      relationnoback: 1 === this.$options.relations.length
     }
   },
   components: {
     'relations': RelationsComponent,
-    'relation': RelationComponent
+    'relation':  RelationComponent
   },
   methods: {
-    saveRelations(type){
-      this.$options.service.saveRelations(type)
+    async saveRelations(type) {
+      ApplicationState.download = true;
+      try      {
+        await XHR.fileDownload({
+          url: createRelationsUrl(Object.assign(_options, { type })),
+          httpMethod: "GET",
+        })
+      }
+      catch(e) {
+        console.warn(e);
+        GUI.showUserMessage({
+          type: 'alert',
+          message: e || 'info.server_error',
+          closable: true,
+        });
+      }
+      ApplicationState.download = false;
     },
     reloadLayout() {
-      VM.$emit('reload');
+      VM.$emit('reload-relations');
     },
-    showChart(container, relationData){
-      const relationLayerId = this.relation.referencingLayer;
-      GUI.getService('queryresults').showChart([relationLayerId], container, relationData)
+    showChart(container, relationData) {
+      GUI.getService('queryresults').showChart([this.relation.referencingLayer], container, relationData)
     },
-    hideChart(container){
+    hideChart(container) {
       GUI.getService('queryresults').hideChart(container)
     },
+
+    /**
+     * ORIGINAL SOURCE: src/services/relations.js@v3.10.2
+     * 
+     * Get relations NM
+     * 
+     * @param nmRelation
+     * @param features
+     * 
+     * @returns {Promise<[]>}
+     * 
+     * @since 3.11.0
+     */
+    async getRelationsNM({ nmRelation, features = [] } = {}) {
+      const {
+        referencedLayer,
+        fieldRef: { referencingField, referencedField }
+      }               = nmRelation;
+      let relationsNM = []; // start with an empty relations result
+      if (features.length) {
+        const values   = features.map(f => f.attributes[referencingField]);
+        const { data } = await DataRouterService.getData('search:features', {
+          inputs: {
+            layer:     getCatalogLayerById(referencedLayer),
+            filter:    `${createSingleFieldParameter({ field: referencedField, value: values, logicop: 'OR' })}`,
+            formatter: 1, // set formatter to
+          },
+          outputs: null
+        });
+        if (data && data[0] && Array.isArray(data[0].features)) {
+          relationsNM = data[0].features.map(f => {
+            return {
+              id:         f.getId(),
+              geometry:   f.getGeometry(),
+              attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((accumulator, property) => {
+                accumulator[property] = f.get(property);
+                return accumulator;
+              }, {}),
+            }
+          })
+        }
+      }
+      return relationsNM;
+    },
+
     async showRelation(relation) {
       GUI.setLoadingContent(true);
-      this.loading = true;
-      this.relation = relation;
+      this.loading        = true;
+      this.relation       = relation;
       let relationLayerId = relation.referencingLayer;
-      const fid = this.feature.attributes[G3W_FID];
       try {
-        const response = await this.$options.service.getRelations({
+        _options = {
           layer: this.$options.layer,
+          fid:   this.feature.attributes[G3W_FID],
           relation,
-          fid
-        });
-        let relations = getFeaturesFromResponseVectorApi(response, {
-          type: 'result'
-        });
+        };
+        const response = await XHR.get({ url: createRelationsUrl(_options) }); // get relations
+        let relations  = response.result ? (response.vector.data.features || []).map(f => {
+          f.properties[G3W_FID] = f.id;
+          return {
+            geometry:   f.geometry,
+            attributes: f.properties,
+            id:         f.id,
+          };
+        }) : null;
+
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
-          relations = await this.$options.service.getRelationsNM({
+          relations = await this.getRelationsNM({
             nmRelation: this.nmRelation,
-            features: relations
+            features:   relations
           });
         }
-        this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
-        this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
+        this.showChartButton = !!this.chartRelationIds.find(id => relationLayerId === id);
+        this.table           = _buildRelationTable(relations, relationLayerId);
 
-        GUI.changeCurrentContentOptions({
+        GUI.setCurrentContentOptions({
           title: relation.name,
-          crumb: {
-            title: relation.name
-          }
+          crumb: { title: relation.name }
         });
+
         await this.$nextTick();
         this.previousview = this.currentview;
         this.currentview = 'relation';
-      } catch(err){
-        // manage error here
-      }
+      } catch(e) { console.warn(e); }
       GUI.setLoadingContent(false);
       this.loading = true;
     },
     setRelationsList() {
       this.previousview = 'relation';
-      this.currentview = 'relations';
-      GUI.changeCurrentContentOptions({
-        crumb: {
-          title: LIST_OF_RELATIONS_TITLE
-        }
-      });
+      this.currentview  = 'relations';
+      GUI.setCurrentContentOptions({ crumb: { title: 'info.list_of_relations' } });
       this.loading = false;
-    }
+    },
   },
   beforeMount() {
-    if (this.currentview === 'relation' || (this.relations.length === 1 && this.relations[0].type === 'ONE')) this.showRelation(this.relations[0])
+    if ('relation' === this.currentview  || (1 === this.relations.length && 'ONE' === this.relations[0].type)) {
+      this.showRelation(this.relations[0])
+    }
   },
   async mounted() {
     /**
      * Order relations by name
      */
-    this.relations.sort(({name:relationName1}, {name:relationName2}) => {
+    this.relations.sort(({ name: relationName1 }, { name: relationName2 }) => {
       if (relationName1 < relationName2) return -1;
       if (relationName1 > relationName2) return 1;
       return 0;
     });
     await this.$nextTick();
-    if (this.error)
-      requestAnimationFrame(() => {
-        GUI.popContent()
-      });
+    if (this.error) { requestAnimationFrame(() => GUI.popContent()) }
     this.error = false;
+  },
+  created() {
+    this.$on('resize-component', this.reloadLayout);
   }
 };
 </script>

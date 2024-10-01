@@ -4,9 +4,9 @@
 -->
 
 <template>
-  <div class="help_div_container">
-    <span class="help_icon">i</span>
-    <div v-t="message" class="g3w-help-message-content"></div>
+  <div class = "help_div_container">
+    <span class = "help_icon">i</span>
+    <div v-t = "message" class = "g3w-help-message-content"></div>
   </div>
 </template>
 
@@ -15,11 +15,11 @@
     name: "helpdiv",
     props: {
       message: {
-        type: String,
+        type:     String,
         required: true
       },
       type: {
-        type: String,
+        type:    String,
         default: 'info' // alert, warning
       }
     }
@@ -49,7 +49,6 @@
     left: 0;
     width: 15px;
     height: 15px;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
     border: 1px solid #ffffff;
     border-radius: 50%;
   }

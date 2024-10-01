@@ -5,29 +5,34 @@
 
 <template>
   <select
-    v-if="hasInfo"
-    class="skin-color"
-    v-select2="'infoformat'"
-    :select2_value="infoformat"
-    :search="false"
+    v-if           = "hasInfo"
+    class          = "skin-color"
+    v-select2      = "'infoformat'"
+    :select2_value = "infoformat"
+    :search        = "false"
   >
-    <option v-for="infoformat in infoformats" :key="infoformat" :value="infoformat">{{infoformat}}</option>
+    <option
+      v-for  = "infoformat in infoformats"
+      :key   = "infoformat"
+      :value = "infoformat"
+    >
+      {{infoformat}}
+    </option>
   </select>
 </template>
 
 <script>
-import CatalogLayersStoresRegistry from 'store/catalog-layers';
-import GUI from 'services/gui';
-
-const { response:responseParser } = require('utils/parsers');
-const { getAlphanumericPropertiesFromFeature } = require('utils/geo');
+import GUI                                      from 'services/gui';
+import { ResponseParser }                       from 'utils/parsers';
+import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 export default {
   name: 'Infoformats',
 
   props: {
     layer: {
-      type: Object,
+      type:     Object,
       required: true
     }
   },
@@ -58,23 +63,27 @@ export default {
 
     async reloadLayerDataWithChangedContentType(contenttype) {
       this.layer.loading = true;
+      // disable select during get data from server
+      this.$el.disabled = true;
       try {
         const response = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
           headers: { 'Content-Type': contenttype },
-          params: { INFO_FORMAT: contenttype }
+          params:  { INFO_FORMAT: contenttype }
         });
         this.layer.infoformat = contenttype;
         this.projectLayer.setInfoFormat(this.layer.infoformat);
-        const [data] = responseParser.get(contenttype)({ layers: [this.projectLayer], response });
+        const [data] = ResponseParser.get(contenttype)({ layers: [this.projectLayer], response });
         if (data.features) {
           this.__parsedata(data);
         } else {
           this.__parserawdata(data);
         }
-      } catch (err) {
-        console.log(err);
+      } catch (e) {
+        console.warn(e);
       }
       this.layer.loading = false;
+      // enable select during get data from server
+      this.$el.disabled = false;
     },
 
     /**
@@ -85,16 +94,21 @@ export default {
       this.layer.rawdata = null;
 
       data.features.forEach(feature => {
+
         const {
           id: fid,
           geometry,
           properties:attributes
-        } = queryService.getFeaturePropertiesAndGeometry(feature);
+        } = {
+          properties: feature instanceof ol.Feature ? feature.getProperties() : feature.properties,
+          geometry:   feature instanceof ol.Feature ? feature.getGeometry()   : feature.geometry,
+          id:         feature instanceof ol.Feature ? feature.getId()         : feature.id
+        };
 
-        // in case of starting raw data (html) need to sett attributes to visualized on result
+        // in the case of starting raw data (html) need to sett attributes to visualize on a result
         if (0 === this.layer.attributes.length) {
           this.layer.hasgeometry = !!geometry;
-          // need to setActionsForLayers to visualize eventually actions
+          // need to setActionsForLayers to visualize eventual actions
           queryService.setActionsForLayers([this.layer]);
           getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
             this.layer.attributes.push({
@@ -127,7 +141,7 @@ export default {
   },
 
   created() {
-    this.projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
+    this.projectLayer = getCatalogLayerById(this.layer.id);
   },
 
   beforeDestroy() {

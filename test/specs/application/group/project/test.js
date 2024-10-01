@@ -7,7 +7,7 @@ import TestCatalog from './catalog/test'
 import TestPrint from './print/test'
 import MapTest from './map/test';
 import TestPlugins from './plugins'
-const Project = require('core/project/project');
+const Project = require('g3w-project');
 
 export default function TestProject({plugins={}, testConfig={}, mapcontrols=[]}={}){
   const {gid} = testConfig;

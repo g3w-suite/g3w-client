@@ -6,23 +6,53 @@
 -->
 
 <template>
-  <div class="modal fade modal-fullscreen force-fullscreen" :id="id" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true" >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body">
+  <div
+    class           = "modal fade modal-fullscreen force-fullscreen"
+    :id             = "id"
+    tabindex        = "-1"
+    role            = "dialog"
+    aria-labelledby = ""
+    aria-hidden     = "true"
+  >
+    <div class = "modal-dialog">
+      <div class = "modal-content">
+        <div class = "modal-body">
           <!--begin carousel-->
-          <div :id="carouselId" class="carousel slide" data-interval="false">
-            <div class="carousel-inner">
-              <div v-for="(image, index) in images" class="item" :class="active == index ? 'active' : ''">
-                <img style="margin:auto" :src="isRelativePath(image.src)">
+          <div
+            :id           = "carouselId"
+            class         = "carousel slide"
+            data-interval = "false"
+          >
+            <div class = "carousel-inner">
+              <div
+                v-for  = "(image, index) in images"
+                class  = "item"
+                :class = "active == index ? 'active' : ''"
+              >
+                <img
+                  style = "margin:auto"
+                  alt = ""
+                  :src="isRelativePath(image.src)">
               </div>
             </div>
-            <a v-if="images.length> 1" class="left carousel-control" :href="'#'+carouselId" role="button" data-slide="prev">
-              <span :class="g3wtemplate.font['arrow-left']">
+            <a
+              v-if       = "images.length > 1"
+              class      = "left carousel-control"
+              :href      = "`#${carouselId}`"
+              role       = "button"
+              data-slide = "prev"
+            >
+              <span :class = "g3wtemplate.font['arrow-left']">
               </span>
             </a>
-            <a v-if="images.length> 1" class="right carousel-control" :href="'#'+carouselId" role="button" data-slide="next">
-              <span :class="g3wtemplate.font['arrow-right']">
+            <a
+              v-if       = "images.length > 1"
+              class      = "right carousel-control"
+              :href      = "`#${carouselId}`"
+              role       = "button"
+              data-slide = "next"
+            >
+              <span :class = "g3wtemplate.font['arrow-right']">
               </span>
             </a>
           </div>
@@ -33,7 +63,6 @@
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
 
 export default {
   name: "g3w-images-gallery",
@@ -52,18 +81,18 @@ export default {
   },
   data() {
     return {
-      carouselId: 'carousel_'+ Date.now()
+      carouselId: `carousel_${Date.now()}`,
     }
   },
   methods: {
     isActive(src) {
-      return src === active
+      return src === this.active;
     },
     isRelativePath(url) {
-      if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
-        return ProjectsRegistry.getConfig().mediaurl + url
+      if (!url.startsWith('/') && !url.startsWith('http')) {
+        return `${window.initConfig.mediaurl}${url}`;
       }
-      return url
+      return url;
     },
   }
 };
@@ -72,8 +101,6 @@ export default {
 <style scoped>
   .modal-content {
     background: rgba(255, 255, 255, 0.6);
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
     border-radius: 3px;
   }
   .modal-dialog {

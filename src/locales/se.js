@@ -17,7 +17,7 @@ export default {
         nofilter: "Avlägsna Filtrera",
         invert: "Invertera Urval",
         clear: "Annullera Urval",
-        show_features_on_map: "Visa funktioner som är synliga på kartan",
+        show_features_on_map: "Rezultatele se actualizează când harta este deplasată",
         savefilter: "Spara Filter",
         filterName: "Filternamn",
       }
@@ -190,8 +190,10 @@ export default {
         download_gpkg: "Ladda GPKG-fil",
         download_csv: "Ladda CSV-fil",
         download_xls: "Ladda XLS-fil",
+        download_pdf: "Ladda PDF-fil",
         show_chart: "Visa diagram", //Tero 9.12.2020
-        atlas: "Skriv ut Atlas"
+        atlas: "Skriv ut Atlas",
+        editing: "Editing",
       },
       mapcontrols: {
         query: {
@@ -248,6 +250,9 @@ export default {
             download_xls: {
               hint: "Ladda egenskapens XLS-fil"
             },
+            download_pdf: {
+              hint: "Ladda egenskapens PDF-fil"
+            },
             atlas: {
               hint: "Skriv ut Atlas"
             },
@@ -255,6 +260,29 @@ export default {
               hint: "Copy map URL with this geometry feature extension",
               hint_change: "Copied"
             }
+          }
+        },
+        queryby: {
+          title: 'Query area',
+          layer: 'Selected layer:',
+          none: 'NONE',
+          new: 'TEMPORARY LAYER',
+          all: 'ALL',
+          methods: {
+            intersects: 'intersects',
+            within: 'within'
+          },
+          querybypolygon: {
+            tooltip: 'select a polygon'
+          },
+          querybydrawpolygon: {
+            tooltip: 'draw a polygon'
+          },
+          querybbox: {
+            tooltip: 'draw a rectangle'
+          },
+          querybycircle: {
+            tooltip: 'draw a circle'
           }
         },
         querybypolygon: {
@@ -272,28 +300,25 @@ export default {
           tooltip: 'Förfrågan med polygon',
           no_geometry: 'No geometry on response',
           help: {
-            title: 'Ohje - Förfrågan med polygon',
-            message:`
-                <ul>
-                  <li>Välj polygonnivå i listan.</li>
-                  <li>Kontrollera att nivån är synlig.</li>
-                  <li>Välj egenskap på önskad nivå.</li>
-                </ul>`
+            message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
           }
         },
         querybydrawpolygon: {
           tooltip: "Fråga efter ritpolygon"
         },
-        querybybbox: {
+        querybbox: {
           tooltip: 'BBox-förfrågan som riktar sig till en nivå',
           nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
           help: {
-            title: 'Ohje - BBox-förfrågan som riktar sig till nivån',
-            message:`
-                 <ul>
-                  <li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li>
-                 </ul>`
+            message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
           }
+        },
+        querybycircle: {
+          tooltip: "Query by Draw Circle ",
+          label: 'Radius',
+          help: {
+            message: "<ul><li>Click on map to draw circle</li></ul>"
+          },
         },
         addlayer: {
           messages: {
@@ -335,14 +360,8 @@ export default {
         no_relations_found: 'Inga relationer hittades.',
         back_to_relations: 'Tillbaka till relationerna',
         list_of_relations_feature: 'Lista på egenskapens relationer',
-        error_missing_father_field: "Fält saknas"
-      },
-      workflow: {
-        steps: {
-          title: 'Skeden'
-        },
-        next: "Nästa",
-
+        error_missing_father_field: "Fält saknas",
+        field: "Relation key field",
       },
       form: {
         loading: 'Laddning...',
@@ -382,9 +401,17 @@ export default {
       catalog: {
         current_map_theme_prefix: "THEME",
         choose_map_theme: "CHOOSE THEME",
+        choose_map_theme_input_label: 'Namn på det nya temat',
+        project_map_theme : 'Temat de proiect',
+        user_map_theme: "Temat utilizator",
+        question_delete_map_theme: "Vill du ta bort temat?",
+        delete_map_theme: "Temat har tagits bort",
+        saved_map_theme: "Temat har sparats",
+        updated_map_theme: "Temat har uppdaterats",
+        invalid_map_theme_name: "Namnet finns redan eller är felaktigt",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: 'Lagerposition',
+          setwmsopacity: "Ställ in Opacitet",
           wms: {
             title:"",
             copy: "Tryck här för att kopiera url.",
@@ -449,6 +476,7 @@ export default {
     server_error: "Fel på anslutningen till servern",
     save: "Spara",
     cancel: "Ånga",
+    update: "Uppdatering",
     close: "Stäng",
     /**
      * @since 3.8.0
@@ -487,11 +515,13 @@ export default {
       link_button: "Öppna"
     },
     mapcontrols: {
-      geolocations: {
+      geolocation: {
         error: "Du kan inte lokaliseras"
       },
-      nominatim: {
+      geocoding: {
+        choose_layer: "Välj ett lager där du vill lägga till denna funktion",
         placeholder: "Adress ...",
+        nolayers: "Inga redigerbara punktlager hittades i det här projektet",
         noresults: "Inga resultat",
         notresponseserver: "Inget svar från servern"
       },
@@ -542,8 +572,8 @@ export default {
     dataTable: {
       previous: "Föregående",
       next: "Nästa",
-      lengthMenu: "Show _MENU_ items",
-      info: "Showing _START_ to _END_ of _TOTAL_ entries",
+      lengthMenu: "Visa _MENU_ värden per sida",
+      info: "_TOTAL_ resultat",
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"

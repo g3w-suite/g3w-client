@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <span class="divider"></span>
+  <span class = "divider"></span>
 </template>
 
 <script>

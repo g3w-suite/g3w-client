@@ -4,75 +4,127 @@
 -->
 
 <template>
-  <li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}" v-disabled="state.disabled">
-    <bar-loader :loading="state.loading"/>
-    <a @click.prevent="onClickItem" ref="anchor_click" href="#" style="display: flex; justify-content: space-between; align-items: center">
+  <li
+    :id        = "component.id"
+    v-show     = "component.state.visible"
+    class      = "treeview sidebaritem"
+    :class     = "{'active': open }"
+    v-disabled = "component.state.disabled"
+  >
+    <bar-loader :loading = "component.state.loading"/>
+    <a
+      href             = "#"
+      style            = "display: flex; justify-content: space-between; align-items: center"
+      v-t-tooltip:right.create = "sidebar.open ? '' : title"
+      :current-tooltip         = "sidebar.open ? '' : title"
+    >
       <div>
-        <i :class="icon" :style="{color: iconColor}"></i>
-        <span class="treeview-label" v-t="title"></span>
+        <span
+          v-if = "!sidebar.open"
+        >
+          <i :class = "icon" :style = "{ color: iconColor }"></i>
+        </span>
+        <i v-else :class = "icon" :style = "{ color: iconColor }"></i>
+        <span class = "treeview-label" v-t = "title"></span>
       </div>
       <div>
-        <span v-if="info.state" style="position: absolute; right: 5px; font-weight: bold" :class="info.class" :style="info.style" :title="info.tooltip">{{ info.state }}</span>
-        <sidebar-item-action v-for="action in actions" :component="component.internalComponent" :key="action.id" :action="action"/>
+        <span
+          v-if   = "info.state"
+          style  = "position: absolute; right: 5px; font-weight: bold"
+          :class = "info.class"
+          :style = "info.style"
+          :title = "info.tooltip"
+        >{{ info.state }}</span>
+        <!-- ORIGINAL SOURCE: src/components/SidebarItemAction.vue@v3.10.2 -->
+        <span
+          v-for                   = "action in actions"
+          :key                    = "action.id"
+          @click.stop             = "triggerAction(action, component.internalComponent)"
+          v-t-tooltip:left.create = "action.tooltip"
+          style                   = "font-weight: bold; padding:3px;"
+          :class                  = "action.class"
+          class                   = "action skin-tooltip-left"
+          :style                  = "action.style"
+        ></span>
       </div>
-      <i v-if="collapsible" :class="g3wtemplate.getFontClass('angle-left')" class="pull-right"></i>
+      <i
+        v-if   = "collapsible"
+        :class = "g3wtemplate.getFontClass('angle-left')"
+        class  ="pull-right">
+      </i>
     </a>
-    <div id="g3w-sidebarcomponent-placeholder"></div>
+    <div ref="component-placeholder" ></div>
   </li>
 </template>
 
 <script>
-  import { SidebarEventBus as VM } from 'app/eventbus';
-  import SidebarItemAction from 'components/SidebarItemAction.vue';
+
+  import ApplicationState from "store/application";
 
   export default {
     name: "SidebarItem",
     data() {
+      const { component } = this.$options;
       return {
-        info: this.$options.info || {
-          state: null,
-          style: null,
-          class: null
-        },
-        main: true,
-        component: this.$options.component,
-        active: false,
-        title: '',
-        open: false,
-        icon: null,
-        iconColor: null,
-        collapsible: null
+        info:        component.info || { state: null, style: null, class: null },
+        main:        true,
+        component,
+        active:      false,
+        title:       component.title || '',
+        open:        !!component.state.open,
+        icon:        component.icon,
+        iconColor:   component.iconColor,
+        collapsible: false !== component.collapsible,
+        actions:     component.actions,
+        sidebar :    ApplicationState.gui.sidebar
       };
     },
-    components: {
-      SidebarItemAction
-    },
     methods: {
-      onClickItem(evt) {
-        // force to close
-        this.component.isolate && evt.stopPropagation();
-        if (!this.component.isolate) {
-          // set state of opened component
-          this.$options.service.state.components.forEach(component => {
-            if (component !== this.component) {
-              if (component.getOpen()) {
-                component.click({
-                  open:component.isolate
-                });
-              }
+      triggerAction(action, component) {
+        action.fnc(component);
+      },
+    },
+
+    mounted() {
+      const opts    = this.$options.opts || {};
+      const sidebar = document.getElementById('g3w-sidebarcomponents');
+
+      // append to `g3w-sidebarcomponents`
+      if ([null, undefined].includes(opts.position) || opts.position < 0 || opts.position >= sidebar.children.length) {
+        $(sidebar).append(this.$el);
+      }
+  
+      // append to `g3w-sidebarcomponents` (by position)
+      else {
+        Array.from(sidebar.children).forEach((child, i) => {
+          if (i === opts.position || child.id === opts.position) {
+            child.insertAdjacentElement((!!opts.before || undefined === opts.before) ? 'beforebegin' : 'afterend', this.$el);
+          }
+        });
+      }
+
+      this.component.mount(this.$refs['component-placeholder']);
+
+      // set component click handler
+      this.component.click = ({ open = false } = {}) => {
+        if (open) {
+          ApplicationState.sidebar.components.forEach(comp => {
+            if (comp !== this.component && comp.getOpen()) {
+              comp.click({ open: false });
             }
           });
-          !this.component.collapsible && isMobile.any && VM.$emit('sidebaritemclick');
         }
-        this.component.setOpen(!this.component.state.open);
-      }
+        const node = this.component.getInternalComponent().$el;
+        //@since 3.11.0 Need to add check of sidebar components, in case, for example, close
+        // contents element and some sidebar component is related to it's close, for example, qplotly
+        //a toggle menu open of <ul>
+        node.classList.toggle('menu-open', open);
+        // toggle active of <li> element
+        node.parentNode.classList.toggle('active', open);
+
+        this.component.setOpen(open);
+      };
     },
-    created() {
-      this.component.openClose = () => this.$refs.anchor_click.click();
-    }
+
   }
 </script>
-
-<style scoped>
-
-</style>

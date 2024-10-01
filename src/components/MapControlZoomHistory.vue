@@ -4,40 +4,37 @@
 -->
 
 <template>
-  <div
-    style="display:flex;gap: 5px; "
-    class="ol-zoom-history ol-unselectable ol-control">
+  <div class = "ol-zoom-history ol-unselectable ol-control">
     
     <!-- STEP BACK -->
-    <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_last'">
+    <div v-t-tooltip:top.create = "'sdk.mapcontrols.zoomhistory.zoom_last'">
       <button
-        @click.stop.prevent="last"
-        type="button"
-        v-disabled="history.index === 0">
+        @click.stop.prevent = "last"
+        type                = "button"
+        v-disabled          = "0 === history.index"
+      >
         <i :class="g3wtemplate.getFontClass('reply')"></i>
       </button>
     </div>
 
-
     <!-- STEP FORWARD -->
-    <div v-t-tooltip:top.create="'sdk.mapcontrols.zoomhistory.zoom_next'">
+    <div v-t-tooltip:top.create = "'sdk.mapcontrols.zoomhistory.zoom_next'">
       <button
-        @click.stop.prevent="next"
-        type="button"
-        v-disabled="hasEmptyHistory">
-
-        <i :class="g3wtemplate.getFontClass('share')"></i>
+        @click.stop.prevent = "next"
+        type                = "button"
+        v-disabled          = "hasEmptyHistory"
+      >
+        <i :class = "g3wtemplate.getFontClass('share')"></i>
       </button>
     </div>
-
 
   </div>
 </template>
 
 
 <script>
-  import GUI from 'services/gui';
-  const { debounce } = require('utils');
+  import GUI          from 'services/gui';
+  import { debounce } from 'utils/debounce';
 
   export default {
     name: "MapControlZoomHistory",
@@ -50,15 +47,15 @@
       }
     },
     methods: {
-      last(){
+      last() {
         this.history.index--;
         this.setMapExtent();
       },
-      next(){
+      next() {
         this.history.index++;
         this.setMapExtent();
       },
-      setMapExtent(){
+      setMapExtent() {
         GUI.getService('map').getMap().getView().fit(this.history.items[this.history.index])
       }
     },
@@ -78,7 +75,7 @@
       this.history.items.push(view.calculateExtent(map.getSize()));
 
       this.changeKeyEvent = view.on('change' , debounce(evt => {
-        if (this.history.index !== this.history.items.length -1) {
+        if (this.history.index !== this.history.items.length - 1) {
           this.history.items.splice((this.history.index - this.history.items.length) + 1);
         }
         this.history.items.push(evt.target.calculateExtent(map.getSize()));
@@ -87,12 +84,15 @@
     },
 
     beforeDestroy() {
-      ol.Object.unByKey(this.changeKeyEvent);
+      ol.Observable.unByKey(this.changeKeyEvent);
     }
     
   }
 </script>
 
 <style scoped>
-
+  .ol-zoom-history {
+    display: flex !important;
+    gap: 5px;
+  }
 </style>

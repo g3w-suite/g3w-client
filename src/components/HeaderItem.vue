@@ -4,15 +4,37 @@
 -->
 
 <template>
-  <li class="customheaderlink dropdown user user-menu" :title="state.title">
-    <a v-if="state.type === 'link'" :href="state.url" :class="{ imagelink : !!state.img}" :target="state.target" class="dropdown-toggle">
-      <img style="max-height: 20px" v-if="state.img" :src="state.img">
+  <li
+    class  = "customheaderlink dropdown user user-menu"
+    :title = "state.title"
+  >
+    <a
+      v-if    = "'link' === state.type"
+      :href   = "state.url"
+      class   = "dropdown-toggle"
+      :class  = "{ imagelink : !!state.img}"
+      :target = "state.target"
+    >
+      <img
+        v-if  = "state.img"
+        style = "max-height: 20px"
+        :src  = "state.img">
       <span v-else>
-        <span v-if="state.i18n" v-t="state.title"></span>
+        <span
+          v-if = "state.i18n"
+          v-t  = "state.title">
+        </span>
         <span v-else>{{state.title}}</span>
       </span>
     </a>
-    <a v-else-if="state.type === 'modal'" style="cursor: pointer" @click="showCustomModal(state.id)" data-toggle="modal" data-target="#custom_modal" class="dropdown-toggle">
+    <a
+      v-else-if   = "'modal' === state.type"
+      style       = "cursor: pointer"
+      @click.stop = "showCustomModal(state.id)"
+      data-toggle = "modal"
+      data-target = "#custom_modal"
+      class       = "dropdown-toggle"
+    >
       <span>{{state.title}}</span>
     </a>
   </li>

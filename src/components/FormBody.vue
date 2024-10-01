@@ -5,32 +5,30 @@
 
 <template>
 <div>
-  <form class="form-horizontal g3w-form">
-    <div class="box-primary">
-      <div class="box-body">
+  <form class = "form-horizontal g3w-form">
+    <div class = "box-primary">
+      <div class = "box-body">
         <template v-if="hasFormStructure">
           <tabs
-            :layerid="state.layerid"
-            :feature="state.feature"
-            :handleRelation="handleRelation"
-            :contenttype="'editing'"
-            :addToValidate="addToValidate"
-            :changeInput="changeInput"
-            :removeToValidate="removeToValidate"
-            :tabs="state.formstructure"
-            :fields="state.fields">
-          </tabs>
+            :layerid          = "state.layerid"
+            :feature          = "state.feature"
+            :handleRelation   = "handleRelation"
+            :contenttype      = "'editing'"
+            :addToValidate    = "addToValidate"
+            :changeInput      = "changeInput"
+            :removeToValidate = "removeToValidate"
+            :tabs             = "state.formstructure"
+            :fields           = "state.fields"/>
         </template>
         <template v-else>
           <g3w-form-inputs
-            :state="state"
-            :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
-            :changeInput="changeInput"
-            @changeinput="changeInput"
-            @addinput="addToValidate"
-            @removeinput="removeToValidate">
-          </g3w-form-inputs>
+            :state            = "state"
+            :addToValidate    = "addToValidate"
+            :removeToValidate = "removeToValidate"
+            :changeInput      = "changeInput"
+            @changeinput      = "changeInput"
+            @addinput         = "addToValidate"
+            @removeinput      = "removeToValidate"/>
         </template>
       </div>
     </div>
@@ -62,7 +60,7 @@ export default Vue.extend({
     addToValidate(input) {
       this.$emit('addtovalidate', input);
     },
-    removeToValidate(input){
+    removeToValidate(input) {
       this.$emit('removetovalidate', input);
     },
     changeInput(input) {

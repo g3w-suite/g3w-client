@@ -4,32 +4,36 @@
 -->
 
 <template>
-  <div id="menu-projects" class="container">
-    <div class="row row-equal">
+  <div id = "menu-projects" class = "container">
+    <div class = "row row-equal">
       <!-- item -->
-      <div v-for="menuitem in state.menuitems"  :key="menuitem.title" @click="trigger(menuitem)" class="col-xs-12 col-sm-4 project-menu">
-        <div class="project-menu-item-image">
-          <img :src="logoSrc(menuitem.thumbnail)" class="img-responsive">
+      <div
+        v-for  = "menuitem in state.menuitems"
+        :key   = "menuitem.title"
+        @click = "trigger(menuitem)"
+        class  ="col-xs-12 col-sm-4 project-menu"
+      >
+        <div class = "project-menu-item-image">
+          <img :src = "logoSrc(menuitem.thumbnail)" class = "img-responsive">
         </div>
-        <div class="project-menu-item-content">
-          <div class="project-menu-item-text">
-            <h4 class="project-menu-item-title">{{ menuitem.title }}</h4>
-            <div v-html="menuitem.description"></div>
+        <div class = "project-menu-item-content">
+          <div class = "project-menu-item-text">
+            <h4 class = "project-menu-item-title">{{ menuitem.title }}</h4>
+            <div v-html = "menuitem.description"></div>
           </div>
         </div>
       </div>
-      <div v-if="!state.menuitems.length" style="margin-left:15px;">
-        <h2 v-t="'no_other_projects'"></h2>
+      <div v-if = "!state.menuitems.length" style = "margin-left:15px;">
+        <h2 v-t = "'no_other_projects'"></h2>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ProjectsRegistry from 'store/projects';
-import GUI from 'services/gui';
+import GUI              from 'services/gui';
 
-const {t} = require('core/i18n/i18n.service');
+const { t } = require('g3w-i18n');
 
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
@@ -40,7 +44,7 @@ export default {
 
   data() {
     return {
-      state: null,
+      state:   null,
       loading: false
     }
   },
@@ -83,15 +87,15 @@ export default {
     logoSrc(src) {
       let imageSrc;
       const host = this.$options.host || '';
-      const has_media = src && (-1 !== src.indexOf(ProjectsRegistry.config.mediaurl));
-      const not_static = src && (-1 === src.indexOf('static') && -1 === src.indexOf('media'))
+      const has_media = src && (src.includes(window.initConfig.mediaurl));
+      const not_static = src && (!src.includes('static') && !src.includes('media'))
 
       if (!src) {
         imageSrc = fakeImage
-      } else if(has_media) {
+      } else if (has_media) {
         imageSrc = src;
-      } else if(not_static) {
-        imageSrc = `${ProjectsRegistry.config.mediaurl}${src}`;
+      } else if (not_static) {
+        imageSrc = `${window.initConfig.mediaurl}${src}`;
       } else {
         imageSrc = fakeImage
       }
@@ -103,3 +107,48 @@ export default {
 
 };
 </script>
+
+<style scoped>
+  .project-menu {
+    cursor: pointer;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+  .project-menu-item-image {
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 50%;
+  }
+  .project-menu-item-image img {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+  }
+  .project-menu-item-content {
+    padding: 15px;
+    background: rgba(255,255,255,0.3);
+  }
+  .project-menu-item-text {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    text-align: justify;
+  }
+  .project-menu-item-title {
+    text-align: center;
+    font-weight: bold;
+    background: rgba(255,255,255,0.5);
+    padding: 5px;
+  }
+  #menu-projects {
+    width: 100%;
+    overflow-y: auto;
+  }
+  #menu-projects .row-equal {
+    display: flex;
+    flex-wrap: wrap;
+  }
+</style>

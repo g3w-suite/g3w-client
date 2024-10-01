@@ -4,7 +4,10 @@
 -->
 
 <template functional>
-  <span class="circle-icon skin-background-color lighten" @click.stop="fnc" :id="id" :title="title || id">
+  <span
+    class       = "circle-icon skin-background-color lighten"
+    @click.stop = "fnc" :id="id" :title="title || id"
+  >
     <i :class="fontClass"></i>
   </span>
 
@@ -15,19 +18,19 @@
     name: "addon",
     props: {
       id: {
-        type: String,
+        type:     String,
         required: true
       },
       title: {
-        type: String,
+        type:     String,
         required: false
       },
       fontClass: {
-        type: String,
+        type:     String,
         required: true
       },
       fnc: {
-        type:Function,
+        type:     Function,
         required: true
       }
     }

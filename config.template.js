@@ -16,6 +16,12 @@ const G3W_KEYS = {
   // bing: '<INSERT HERE YOUR BING API KEY>'
 };
 
+const G3W_IFRAME = {                  // testing MESSAGE sent to "Open in iframe" map control
+  id: null,
+  action: 'app:getcenter',            // or 'app:getextent'
+  data: { epsg: 4326 }	
+};
+
 let conf = {
   assetsFolder:  './src/assets',                                            // path to G3W-CLIENT assets folder
   pluginsFolder: './src/plugins',                                           // path to G3W-CLIENT plugins folder
@@ -39,13 +45,14 @@ let conf = {
       initConfig.group.vendorkeys = Object.assign(initConfig.group.vendorkeys || {}, G3W_KEYS);
       initConfig.group.plugins    = Object.assign(initConfig.group.plugins || {}, G3W_PLUGINS.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
     });
+    g3wsdk.gui.GUI.once('iframe:message', (w, e) => { w.postMessage(G3W_IFRAME, '*') });
     g3wsdk.gui.GUI.once('ready', () => { console.log('ready'); });
   }
 };
 
 // backward compatibilities (v3.x)
 if (version < '4') {
-  conf.assetsFolder           = (version < '3.7' ? './assets' : conf.assetsFolder);
+  conf.assetsFolder           = (version.localeCompare('3.7.0', undefined, { numeric: true, sensitivity: 'case' }) < 0 ? './assets' : conf.assetsFolder);
   conf.distFolder             = './dist';
   conf.clientFolder           = './dist/client';
   conf.admin_static_folder    = `${conf.admin_plugins_folder}/client/static`;

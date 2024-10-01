@@ -1,11 +1,6 @@
-const { base, inherit } = require('utils');
-const Service = require('gui/inputs/service');
-
-function FloatService(options={}) {
-  base(this, options);
-}
-
-inherit(FloatService, Service);
-
-
-module.exports = FloatService;
+const Service           = require('gui/inputs/service');
+module.exports = class FloatService extends Service {
+  constructor(opts = {}) {
+    super(opts);
+  }
+};
