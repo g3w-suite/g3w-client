@@ -851,7 +851,9 @@ export default new (class QueryResultsService extends G3WObject {
           state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
           toggleable: true,
           hint:       'Downloads',
-          change:     ({ features }) => features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false)),
+          change({ features }) {
+            features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
+          },
           cbk: (layer, feature, action, index) => {
             action.state.toggled[index] = !action.state.toggled[index];
             this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
@@ -889,7 +891,7 @@ export default new (class QueryResultsService extends G3WObject {
             }
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
-          change: ({ features }) => features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false)),
+          change({ features }) { features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false)) },
           cbk: throttle(this.addToSelection.bind(this))
         },
 
