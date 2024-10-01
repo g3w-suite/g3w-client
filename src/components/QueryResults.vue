@@ -856,7 +856,7 @@
       },
       onelayerresult(bool) {
         if (bool) {
-          this.$options.service.mapService.highlightFeatures(this.state.layers[0].features, { duration: Infinity });
+          GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }
     },
