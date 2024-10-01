@@ -654,7 +654,7 @@
         this.$options.service.showLayerDownloadFormats(layer)
       },
       saveLayerResult(layer, type="csv") {
-        this.$options.service.saveLayerResult({ layer, type });
+        this.$options.service.downloadFeatures(type, layer, layer.features);
       },
       hasLayerOneFeature(layer) {
         return layer.features.length === 1;
@@ -666,11 +666,13 @@
        * @since 3.9.0
        */
       saveFilter(layer) {
-        this.$options.service.saveFilter(layer);
+        getCatalogLayerById(layer.id).saveFilter();
       },
+
       addRemoveFilter(layer) {
-        this.$options.service.addRemoveFilter(layer);
+        getCatalogLayerById(layer.id).toggleFilterToken();
       },
+
       getContainerFromFeatureLayer({ layer, index } = {}) {
         return $(`#${layer.id}_${index} > td`);
       },
@@ -854,7 +856,7 @@
       },
       onelayerresult(bool) {
         if (bool) {
-          this.$options.service.highlightFeaturesPermanently(this.state.layers[0]);
+          this.$options.service.mapService.highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }
     },

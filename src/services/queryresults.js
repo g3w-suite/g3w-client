@@ -3,6 +3,7 @@
  * @since 3.11.0
  */
 
+import { VM }                                   from 'g3w-eventbus';
 import GUI                                      from 'services/gui';
 import { G3W_FID }                              from 'g3w-constants';
 import G3WObject                                from 'g3w-object';
@@ -31,17 +32,6 @@ import { VectorLayer }                          from 'map/layers/vectorlayer';
 
 const { t } = require('g3w-i18n');
 
-
-/**
- * ORIGINAL SOURCE: src/components/g3w-relationspage.js@v3.10.2
- */
-function RelationsPage(opts = {}) {
-  return new Component({
-    ...opts,
-    internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))(opts)
-  });
-}
-
 function _setRelationField(node) {
   if (node.nodes) {
     for (const _node of node.nodes) {
@@ -51,13 +41,6 @@ function _setRelationField(node) {
     node.relation = true;
   }
 };
-
-/**
- * Get and set vue reactivity to QueryResultsService
- *
- * @type {Vue}
- */
-const VM = new Vue();
 
 export default new (class QueryResultsService extends G3WObject {
 
@@ -107,30 +90,36 @@ export default new (class QueryResultsService extends G3WObject {
           const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
       
           // add visible layers to query response (vector layers)
-          this._vectorLayers
-            .forEach(layer => {
-              const id = layer.get('id');
-              const is_selected  = !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected;
-              const is_visible = layer.getVisible(); 
-              // TODO: extract this into `layer.isSomething()` ?
-              if (is_visible && ((is_selected === FILTER_SELECTED) || (undefined === FILTER_SELECTED))) {
-                queryResponse.data[
-                  '__g3w_marker' === id // keep geocoding control "marker" layer at top
-                  ? 'unshift'
-                  : 'push'
-                ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
-              }
-            });
+          this._vectorLayers.forEach(layer => {
+            const id = layer.get('id');
+            // TODO: extract this into `layer.isSomething()` ?
+            if (layer.getVisible() && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)) {
+              queryResponse.data[
+                '__g3w_marker' === id // keep geocoding control "marker" layer at top
+                ? 'unshift'
+                : 'push'
+              ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+            }
+          });
         }
 
-        if (false === options.add) {
-          switch (this.state.query.type) {
-            case 'coordinates': this.showCoordinates(this.state.query.coordinates); break;
-            case 'bbox':        this.showBBOX(this.state.query.bbox); break;
-            case 'polygon':
-            case 'drawpolygon':
-            case 'circle': this.showGeometry(this.state.query.geometry); break;
-          }
+        const geom = false === options.add && ({
+          'coordinates': 2 === (this.state.query.coordinates || []).length && new ol.geom.Point(this.state.query.coordinates),
+          'bbox':        4 === (this.state.query.bbox || []).length        && ol.geom.Polygon.fromExtent(this.state.query.bbox),
+          'polygon':     this.state.query.geometry,
+          'drawpolygon': this.state.query.geometry,
+          'circle':      this.state.query.geometry,
+        })[this.state.query.type];
+
+        // show query result on map
+        if (geom) {
+          const feature = new ol.Feature(geom);
+          feature.setId(undefined);
+          this.resultsQueryLayer.getSource().clear();
+          GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
+          this.resultsQueryLayer.getSource().addFeature(feature);
+          GUI.getService('map').getMap().addLayer(this.resultsQueryLayer);
+          this.resultsQueryLayer.setZIndex(GUI.getService('map').getMap().getLayers().getLength()); // ensure layer is on top of others
         }
 
         // Convert response from DataProvider into a QueryResult component data structure
@@ -175,19 +164,9 @@ export default new (class QueryResultsService extends G3WObject {
               attributes = [];
             }
         
-            if (!attributes && layer instanceof Layer && 'ows' !== this.state.type) { 
-              layerAttrs = layer.getAttributes();
-            }
-        
             // Sanitize OWS Layer attributes
-            if (!attributes && layer instanceof Layer && 'ows' === this.state.type) {
-              layerAttrs = layer
-                .getAttributes()
-                .map(attribute => {
-                  const sanitizeAttribute = {...attribute};
-                  sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
-                  return sanitizeAttribute
-                });
+            if (!attributes && layer instanceof Layer) {
+              layerAttrs = layer.getAttributes().map(attr => 'ows' === this.state.type ? ({ ...attr, name: attr.name.replace(/ /g, '_') }) : attr);
             }
         
             if (!attributes && layer instanceof ol.layer.Vector) {
@@ -198,16 +177,13 @@ export default new (class QueryResultsService extends G3WObject {
               layerAttrs = (features[0] ? features[0].getProperties() : [])
             }
         
-            const specialAttrs =
-              (!attributes && layer instanceof Layer)
-                ? layerAttrs.filter(attr => {
-                    try {
-                      return ('_' === attr.name[0] || Number.isInteger(1 * attr.name[0]))
-                    } catch(e) {
-                      return false;
-                    }
-                  }).map(attr => ({ alias: attr.name.replace(/_/, ''), name: attr.name }))
-                : [];
+            const specialAttrs = (!attributes && layer instanceof Layer && layerAttrs || []).filter(attr => {
+                try {
+                  return ('_' === attr.name[0] || Number.isInteger(1 * attr.name[0]))
+                } catch(e) {
+                  return false;
+                }
+              }).map(attr => ({ alias: attr.name.replace(/_/, ''), name: attr.name }));
         
             if (!attributes && specialAttrs.length) {
               features.forEach(f => {
@@ -227,7 +203,7 @@ export default new (class QueryResultsService extends G3WObject {
             // Parse attributes to show on result based on field
         
             let attrs = !attributes && getAlphanumericPropertiesFromFeature(
-              Object.keys(this.getFeaturePropertiesAndGeometry(features[0]).properties)
+              Object.keys(features[0] instanceof ol.Feature ? features[0].getProperties() : features[0].properties)
             );
         
             if (!attributes) {
@@ -263,34 +239,32 @@ export default new (class QueryResultsService extends G3WObject {
                 selection:  f.selection,
                 show:       true,
               })),
-              hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => this.getFeaturePropertiesAndGeometry(f).geometry),
+              hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
               hasImageField:          Array.isArray(features) && !rawdata && features.length && attributes.some(attr => 'image' === attr.type),
               loading:                false,
               show:                   true,
               expandable:             true,
               addfeaturesresults:     { active: false },
-              [DownloadFormats.name]: { active: false },
-              editable:               is_layer   ? layer.isEditable()                                                     : false,
-              inediting:              is_layer   ? layer.isInEditing()                                                    : false,
-              source:                 is_layer   ? layer.getSource()                                                      : undefined,
-              infoformat:             is_layer   ? layer.getInfoFormat()                                                  : undefined,
-              infoformats:            is_layer   ? layer.getInfoFormats()                                                 : [],
-              downloads:              is_layer   ? layer.getDownloadableFormats()                                         : [],
+              downloadformats:        { active: false },
+              editable:               is_layer   ? layer.isEditable()             : false,
+              inediting:              is_layer   ? layer.isInEditing()            : false,
+              source:                 is_layer   ? layer.getSource()              : undefined,
+              infoformat:             is_layer   ? layer.getInfoFormat()          : undefined,
+              infoformats:            is_layer   ? layer.getInfoFormats()         : [],
+              downloads:              is_layer   ? layer.getDownloadableFormats() : [],
               formStructure:          has_form   ? {
                 structure,
                 fields: layer.getFields().filter(f => f.show).concat(
                   (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
                 ), // get field show
               } : undefined,
-              relationsattributes:    (is_layer || is_vector || is_string) ? []                                           : undefined,
+              relationsattributes:    (is_layer || is_vector || is_string)                       ? []                     : undefined,
               filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-              selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)  ? layer.state.selection  : undefined) ||
-                                      (is_vector ? layer.selection : undefined) ||
-                                      {},
+              selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
               title:                  (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
               atlas:                  this.getAtlasByLayerId(id),
-              rawdata:                rawdata ? rawdata : null,
-              error:                  error   ? error   : '',
+              rawdata:                rawdata  || null,
+              error:                  error    || '',
               toc:                    external || layer.state.toc, //@since v3.10.0
             };
           });
@@ -307,14 +281,12 @@ export default new (class QueryResultsService extends G3WObject {
        */
       setLayersData(layers = [], options = { add: false }) {
         if (false === options.add) {
-          // set the right order of result layers based on TOC
-          this._currentLayerIds = layers.map(l => l.id);
           // sort layers as Catalog project layers.
           //external layer always on bottom
           layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
         }
         // get features from added pick layer in case of a new request query
-        layers.forEach(l => { options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l); });
+        layers.forEach(l => options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l));
         this.setActionsForLayers(layers, { add: options.add });
         this.state.changed = true;
       },
@@ -355,7 +327,17 @@ export default new (class QueryResultsService extends G3WObject {
        */
       changeLayerResult(layer) {
         this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
-        this.resetCurrentActionToolsLayer(layer);                                                     // reset layer current actions tools
+        // reset layer current actions tools
+        (layer.features || []).forEach((_, idx) => {
+            const tool = this.state.currentactiontools[layer.id];
+            if (undefined === tool) {
+              return;
+            }
+            if (undefined === tool[idx]) {
+              Vue.set(tool, idx, null);
+            }
+            tool[idx] = null;
+          });
       },
 
       /**
@@ -393,30 +375,9 @@ export default new (class QueryResultsService extends G3WObject {
     };
 
     /**
-     * BACKCOMP
-     */
-    this._changeLayerResult = this.setters.changeLayerResult;
-    this._addComponent      = this.setters.addComponent;
-    this.init               = this.clearState.bind(this);
-    this.reset              = this.clearState.bind(this);
-
-    /**
-     * @FIXME add description
-     */
-    this._currentLayerIds = [];
-
-    /**
      * @FIXME add description
      */
     this.unlistenerlayeractionevents = [];
-
-    /**
-     * @FIXME add description
-     */
-    this._actions = {
-      'highlightgeometry':      this.highlightGeometry.bind(this),
-      'clearHighlightGeometry': this.clearHighlightGeometry.bind(this),
-    };
 
     /**
      * <Object> to store relations (key is referenceLayer of relation)
@@ -520,7 +481,7 @@ export default new (class QueryResultsService extends G3WObject {
       /**
        * Used to show a custom component for a layer
        */
-      layerscustomcomponents:{} //
+      layerscustomcomponents: {}
 
     };
 
@@ -574,15 +535,10 @@ export default new (class QueryResultsService extends G3WObject {
      */
     this.resultsQueryLayer = new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style(feature) {
-        const stroke = new ol.style.Stroke({ color: 'black' });
-        if ('Point' === feature.getGeometry().getType()) {
-          return new ol.style.Style({
-            text: new ol.style.Text({ fill: stroke, text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 })
-          });
-        }
-        return new ol.style.Style({ stroke });
-      }
+      style: feat => new ol.style.Style('Point' === feat.getGeometry().getType()
+        ? { text:   new ol.style.Text({ fill: new ol.style.Stroke({ color: 'black' }), text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 }) }
+        : { stroke: new ol.style.Stroke({ color: 'black' }) }
+      )
     });
 
     /**
@@ -592,7 +548,7 @@ export default new (class QueryResultsService extends G3WObject {
     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', project => {
       this._project = project;
       this._setRelations(project);
-      this._setAtlasActions(project);
+      this._atlas = project.getPrint().filter(p => p.atlas) || [];
       this.state.download_data = false;
       this.plotLayerIds = [];
     });
@@ -625,13 +581,12 @@ export default new (class QueryResultsService extends G3WObject {
     /**
      * @FIXME add description
      */
-    this._setAtlasActions(this._project);
+    this._atlas = this._project.getPrint().filter(p => p.atlas) || [];
 
     /**
      * @FIXME add description
      */
     GUI.onbefore('setContent', (options) => {
-      this.mapService = this.mapService || GUI.getService('map');
       if (100 === options.perc && GUI.isMobile()) {
         this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
         this._asyncFnc.highLightLayerFeatures.async    = true;
@@ -643,27 +598,15 @@ export default new (class QueryResultsService extends G3WObject {
 
 
   /**
-   * @FIXME add description
+   * used by the following plugins: "qplotly"
    */
   addLayersPlotIds(layerIds = []) {
     this.plotLayerIds = layerIds;
   }
 
   /**
-   * @FIXME add description
-   */
-  getPlotIds() {
-    return this.plotLayerIds;
-  }
-
-  /**
-   * @FIXME add description
-   */
-  findPlotId(id) {
-    return this.plotLayerIds.find(plotId => plotId == id);
-  }
-
-  /**
+   * used by the following plugins: "br-service"
+   * 
    * Register for plugin or other component of application to add
    * custom component on result for each layer feature or layer
    *
@@ -691,43 +634,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Check position
-   *
-   * @param opts.id
-   * @param opts.layerId
-   * @param opts.type
-   * @param opts.position
-   */
-  unRegisterCustomComponent({
-    id,
-    layerId,
-    type,
-    position
-  }) {
-    const component = this.state.layerscustomcomponents[layerId][type];
-    const by_id     = ({ id: componentId }) => id !== componentId;
-
-    if (position) {
-      component[position] = component[position].filter(by_id);
-      return;
-    }
-
-    Object
-      .keys(component[position])
-      .forEach(position => { component[position] = component[position].filter(by_id); });
-  }
-
-  /**
-   * Add a feature to a current layer result
-   *
-   * @param layer
-   * @param feature
-   */
-  addFeatureLayerToResult(layer, feature) {
-    this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
-  }
-
-  /**
    * Loop over response features based on layer response and
    * check if features layer needs to be added or removed to
    * current `state.layers` results.
@@ -737,53 +643,48 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.8.0
    */
   updateLayerResultFeatures(responseLayer) {
-    const layer        = this._getLayer(responseLayer.id),                  // get layer from current `state.layers` showed on a result
-      responseFeatures = this._getLayerFeatures(responseLayer),             // extract features from responseLayer object
-      external         = this._getExternalLayer(responseLayer.id),          // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
-      has_features     = layer && this._getLayerFeatures(layer).length > 0; // check if the current layer has features on response
+    const layer        = this.state.layers.find(l => l.id === responseLayer.id)                   // get layer from current `state.layers` showed on a result
+      responseFeatures = responseLayer.features || [],                                            // extract features from responseLayer object
+      external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external, // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
+      has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
 
     if (has_features) {
-      const features_ids   = this._getFeaturesIds(layer.features, external);    // get features id from current layer on a result
-      responseFeatures
-        .forEach(feature => {
-          const feature_id = this._getFeatureId(feature, external);
-          if (features_ids.some(id => id === feature_id)) {                     // remove feature (because is already loaded)
-            this._removeLayerFeatureBox(layer, feature);
-            layer.features = this._getLayerFeatures(layer).filter(f => this._getFeatureId(f, external) !== feature_id);
-          } else {                                                              // add feature
-            layer.features.push(feature);
-          }
-        });
-      this
-        ._getLayerFeatures(layer)
-        .forEach(feature => this._toggleLayerFeatureBox(layer, feature, this._getLayerFeatures(layer).length > 1));
+      const features_ids = layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
+      responseFeatures.forEach(feat => {
+        const feature_id = this._getFeatureId(feat, external);
+        if (features_ids.some(id => id === feature_id)) {                     // remove feature (because is already loaded)
+          setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]);
+          layer.features = (layer.features || []).filter(f => this._getFeatureId(f, external) !== feature_id);
+        } else {                                                              // add feature
+          layer.features.push(feat);
+        }
+      });
+      // toggle layer feature box
+      (layer.features || []).forEach(feature => {
+        const collapsed = (layer.features || []).length > 1;
+        const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)];
+        if (box) {
+          setTimeout(() => box.collapsed = collapsed); // due to vue reactivity, wait a little bit before update layers
+        }
+      });
     }
 
-    // in case, no more features on layer remove interaction pickcoordinate to get a result from a map
-    this.checkIfLayerHasNoFeatures(layer);
-
-    // highlight new feature
-    if (1 === this.state.layers.length) {
-      this.highlightFeaturesPermanently(this.state.layers[0]);
-    }
-
-    this.changeLayerResult(layer);
-  }
-
-  /**
-   * Check and do action if layer has no features after delete feature(s)
-   *
-   * @param layer
-   */
-  checkIfLayerHasNoFeatures(layer) {
-    if (layer && 0 === this._getLayerFeatures(layer).length) {
+    // no more features on layer → remove interaction pickcoordinate to get a result from a map
+    if (layer && 0 === (layer.features || []).length) {
       // due to vue reactivity, wait a little bit before update layers
       setTimeout(() => {
         this.state.layers = this.state.layers.filter(l => l.id !== layer.id);
         this.clearHighlightGeometry(layer);
-        this.removeAddFeaturesLayerResultInteraction({ toggle: true });
+        this.removeAddFeaturesLayerResultInteraction(true);
       })
     }
+
+    // highlight new feature
+    if (1 === this.state.layers.length) {
+      GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
+    }
+
+    this.changeLayerResult(layer);
   }
 
   /**
@@ -818,98 +719,218 @@ export default new (class QueryResultsService extends G3WObject {
     // loop results
     layers.forEach(layer => {
 
-
-      const action_tools = {};
-      const action_layer = {};
-
-      this._getLayerFeatures(layer).forEach((_, idx) => {
-        action_tools[idx] = null;
-        action_layer[idx] = null;
-      });
-
       // set eventually layer action tool and need to be reactive
       this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
-      this.state.currentactiontools[layer.id]        = Vue.observable(action_tools);
-      this.state.currentactionfeaturelayer[layer.id] = Vue.observable(action_layer);
+      this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
+      this.state.currentactionfeaturelayer[layer.id] = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
+      this.state.layersactions[layer.id]             = this.state.layersactions[layer.id] || [];
 
-      const is_external_layer_or_wms = (layer.external) || (layer.source ? 'wms' === layer.source.type : false);
+      const download_format  = 1 === layer.downloads.length && (layer.downloads || []).at(0); // NB: format == layer.downloads[0]
+      const relations        = (this._relations[layer.id] || []).filter(r => 'MANY' === r.type);
+      const chartRelationIds = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
 
-      if (!this.state.layersactions[layer.id]) {
-        this.state.layersactions[layer.id] = [];
+      if (download_format) {
+        layer[download_format] = Vue.observable({ active: false });
       }
 
-      /**
-       * @TODO find out a wy to handle this within MapControlGeocoding.vue 
-       * 
-       * @since 3.9.0 In case of marker layers
-       */
-      const is_geocoding = '__g3w_marker' === layer.id;
-
-      // Lookup for layer geometry.
-      if (layer.hasgeometry) {
-        this._setActionGoToGeometry(layer);
-      }
-
-      // Lookup for layer relations.
-      if (this._relations && this._relations[layer.id]) {
-        this._setActionShowQueryAndPlotsRelations(layer);
-      }
-
-      // Lookup for layer print atlas.
-      if (this.getAtlasByLayerId(layer.id).length) {
-        this._setActionPrintAtlas(layer);
-      }
-
-      // Lookup for layer downloadable features (single).
-      if (layer.downloads.length === 1) {
-        this._setActionDownloadFeature(layer);
-      }
-
-      // Lookup for layer downloadable features (multi).
+      // set actionstools configs
       if (layer.downloads.length > 1) {
-        this._setActionMultiDownloadFeature(layer);
+        this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
+        this.state.actiontools.downloadformats[layer.id] = {
+          downloads: layer.downloads.map(format => ({
+            id:       `download_${format}_feature`,
+            download: true,
+            format,
+            class:    GUI.getFontClass(format),
+            hint:     `sdk.tooltips.download_${format}`,
+            cbk: (layer, feature, action, index, html) => {
+              // un-toggle downloads action
+              this.downloadFeatures(format, layer, feature, action, index, html);
+              if ('polygon' !== this.state.query.type) {
+                const downloadsaction = this.state.layersactions[layer.id].find(a => 'downloads' === a.id);
+                downloadsaction.cbk(layer, feature, downloadsaction, index, html);
+              }
+            }
+          }))
+        };
       }
 
-      // Lookup for not external layer or WMS.
-      if (false === is_external_layer_or_wms || is_geocoding) {
-        this._setActionRemoveFeatureFromResult(layer);
-      }
+      this.state.layersactions[layer.id].push(...([
 
-      // Lookup for layer selection status (active).
-      if (layer.toc && undefined !== layer.selection.active) {
-        this._setActionSelection(layer);
-      }
+        // zoom to geometry
+        layer.hasgeometry && {
+          id:        'gotogeometry',
+          mouseover: true,
+          class:     GUI.getFontClass('marker'),
+          hint:      'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
+          cbk:       throttle(this.goToGeometry.bind(this))
+        },
 
-      // Lookup for not external layer or WMS (copy link to feature).
-      if (false === is_external_layer_or_wms && layer.hasgeometry) {
-        this._setActionLinkZoomToFid(layer);
-      }
+        // show relations (query)
+        relations.length && {
+          id:       'show-query-relations',
+          class:    GUI.getFontClass('relation'),
+          hint:     'sdk.mapcontrols.query.actions.relations.hint',
+          cbk(layer, feature, action) {
+            GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
+            GUI.pushContent({
+              content: new Component({
+                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+                  relations:        action.relations,
+                  chartRelationIds: action.chartRelationIds,
+                  feature,
+                  layer
+                })
+              }),
+              backonclose: true,
+              title:      'info.list_of_relations',
+              id:         '__G3W_LIST_OF_RELATIONS_ID__',
+              crumb: {
+                title: 'info.list_of_relations',
+                trigger: null
+              },
+              closable: false
+            });
+          },
+          relations,
+          chartRelationIds
+        },
 
-      // Lookup for editable layer.
-      if (layer.editable && false === layer.inediting) {
-        this._setActionEditing(layer);
+        // show relations (plot)
+        chartRelationIds.length && {
+          id:       'show-plots-relations',
+          opened:   true,
+          class:    GUI.getFontClass('chart'),
+          state:    Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          hint:     'sdk.mapcontrols.query.actions.relations_charts.hint',
+          cbk: throttle((layer, feature, action, index, container) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+            if (action.state.toggled[index]) {
+              this.emit('show-chart', chartRelationIds, container, {
+                relations: this._relations[layer.id],
+                fid:       feature.attributes[G3W_FID],
+                height:    400
+              });
+            } else {
+              this.hideChart(container);
+            }
+          }),
+        },
+
+        // print (atlas)
+        this.getAtlasByLayerId(layer.id).length && {
+          id:       'printatlas',
+          download: true,
+          class:    GUI.getFontClass('print'),
+          hint:     'sdk.tooltips.atlas',
+          cbk:      this.printAtlas.bind(this)
+        },
+
+        // download features (single)
+        download_format && {
+          id:       `download_${download_format}_feature`,
+          download: true,
+          state:    Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          class:    GUI.getFontClass('download'),
+          hint:     `sdk.tooltips.download_${download_format}`,
+          cbk: (layer, feature, action, index, container) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+            if (action.state.toggled[index]) {
+              this.downloadFeatures(download_format, layer, feature, action, index, ('pdf' === download_format ? container[0].innerHTML : null));
+            } else {
+              this.setCurrentActionLayerFeatureTool({ index, action, layer })
+            }
+          }
+        },
+
+        // download features (multi)
+        layer.downloads.length > 1 && {
+          id:         'downloads',
+          download:   true,
+          class:      GUI.getFontClass('download'),
+          state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          toggleable: true,
+          hint:       'Downloads',
+          change:     ({ features }) => features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false)),
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+            this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
+          }
+        },
+
+        // remove feature
+        ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
+          id:        'removefeaturefromresult',
+          mouseover: true,
+          class:     GUI.getFontClass('minus-square'),
+          style:     { color: 'red' },
+          hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+          cbk:       this.removeFeatureLayerFromResult.bind(this)
+        },
+
+        // select feature
+        (layer.toc && undefined !== layer.selection.active) && {
+          id:       'selection',
+          class:    GUI.getFontClass('success'),
+          hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
+          state:    Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          // check feature selection
+          init:     ({ feature, index, action } = {}) => {
+            if (layer.external && undefined !== layer.selection.active) { // external layer
+              action.state.toggled[index] = feature.selection.selected;
+            } else if (feature && undefined !== layer.selection.active) { // project layer
+              const pLayer = getCatalogLayerById(layer.id);
+              action.state.toggled[index] = (
+                  //need to check if set active filter and no saved filter is set
+                  (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
+                  //or if feature fid is in selected array
+                  pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
+              );
+            }
+          },
+          /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
+          change: ({ features }) => features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false)),
+          cbk: throttle(this.addToSelection.bind(this))
+        },
+
+        // permalink (click to copy)
+        (layer.hasgeometry && !layer.external && 'wms' !== (layer.source || {}).type) && {
+          id:          'link_zoom_to_fid',
+          class:       GUI.getFontClass('share-alt'),
+          hint:        'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
+          hint_change: { hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change', duration: 1000 },
+          cbk(layer, feature, action) {
+            const url = new URL(location.href);
+            url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
+            copyUrl(url.toString());
+            action.hint_changed = true;
+          }
+        },
+
+        // edit
+        (layer.editable && false === layer.inediting) && {
+          id:    'editing',
+          class: GUI.getFontClass('pencil'),
+          hint:  'sdk.tooltips.editing',
+          cbk:   (layer, feature) => this.editFeature({ layer, feature })
+        },
+
+      ]).filter(Boolean));
+
+
+      // In case of external layer don't listen to `selection` event
+      if (layer.external && layer.toc && undefined !== layer.selection.active) {
+        layer.features.forEach(f => f.selection = (layer.selection.features.find(s => f.id === s.getId()) || ({ selection: { selected: false }})).selection);
+      } else if(!layer.external && layer.toc && undefined !== layer.selection.active) {
+        const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
+        getCatalogLayerById(layer.id).on('unselectionall', handler);
+        this.unlistenerlayeractionevents.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
       }
 
     });
 
     this.addActionsForLayers(this.state.layersactions, this.state.layers);
 
-  }
-
-  /**
-   * @FIXME add description
-   * 
-   * @param opts.layer
-   * @param opts.dynamicProperties
-   */
-  createActionState({
-    layer,
-    dynamicProperties = ['toggled'],
-  }) {
-    // number of download formats
-    const properties = dynamicProperties.reduce((obj, prop) => { obj[prop] = {}; return obj; }, {});
-    layer.features.map((_, idx) => { Object.keys(properties).forEach(prop => { properties[prop][idx] = null; }); });
-    return Vue.observable(properties);
   }
 
   /**
@@ -985,26 +1006,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * Reset current action tools on layer when feature layer change
-   *
-   * @param layer
-   */
-  resetCurrentActionToolsLayer(layer) {
-    this
-      ._getLayerFeatures(layer)
-      .forEach((_, idx) => {
-        const tool = this.state.currentactiontools[layer.id];
-        if (undefined === tool) {
-          return;
-        }
-        if (undefined === tool[idx]) {
-          Vue.set(tool, idx, null);
-        }
-        tool[idx] = null;
-      });
-  }
-
-  /**
    * @FIXME add description
    * @param {Object } opts
    * @param opts.layer current layer
@@ -1021,29 +1022,16 @@ export default new (class QueryResultsService extends G3WObject {
   };
 
   /**
-   * Copy `zoomtofid` url
-   *
-   * @param layer current layer
-   * @param feature current feature
-   * @param action action
-   */
-  copyZoomToFidUrl(layer, feature, action) {
-    const url = new URL(location.href);
-    url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
-    copyUrl(url.toString());
-    action.hint_changed = true;
-  }
-
-  /**
    * Clear all
    */
   clear() {
-    this.runAsyncTodo();
-    this.unlistenerEventsActions();
-    this.mapService.clearHighlightGeometry();
+    this._asyncFnc.todo()
+    // unlistener events actions
+    this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
+    this.unlistenerlayeractionevents = [];
+    GUI.getService('map').clearHighlightGeometry();
     this.resultsQueryLayer.getSource().clear();
-    this.removeAddFeaturesLayerResultInteraction({ toggle: true });
-    this._asyncFnc = null;
+    this.removeAddFeaturesLayerResultInteraction(true);
     this._asyncFnc = {
       todo:                      () => {},
       zoomToLayerFeaturesExtent: { async: false },
@@ -1052,35 +1040,8 @@ export default new (class QueryResultsService extends G3WObject {
     };
     this.clearState();
     this.closeComponent();
-    this.removeQueryResultLayerFromMap();
-  }
-
-  /**
-   * @FIXME add description
-   */
-  getCurrentLayersIds() {
-    return this._currentLayerIds;
-  }
-
-  /**
-   * @FIXME add description
-   */
-  runAsyncTodo() {
-    this._asyncFnc.todo();
-  }
-
-  /**
-   * @param bool whether to zoom to results
-   */
-  setZoomToResults(bool = true) {
-    this.state.zoomToResult = bool;
-  }
-
-  /**
-   * @FIXME add description
-   */
-  highlightFeaturesPermanently(layer) {
-    this.mapService.highlightFeatures(layer.features, { duration: Infinity });
+    this.resultsQueryLayer.getSource().clear();
+    GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
   }
 
   /**
@@ -1095,20 +1056,18 @@ export default new (class QueryResultsService extends G3WObject {
   /**
    * @FIXME add description
    *
-   * @param {boolean} opts.toggle If true toggle true the mapcontrol
+   * @param {boolean} toggle whether toggle mapcontrol
    */
-  removeAddFeaturesLayerResultInteraction({
-    toggle = false
-  } = {}) {
+  removeAddFeaturesLayerResultInteraction(toggle) {
     const interaction = this._addFeaturesLayerResultInteraction;
 
     if (null !== interaction.toggleeventhandler) {
-      this.mapService.off('mapcontrol:toggled', interaction.toggleeventhandler);
+      GUI.getService('map').off('mapcontrol:toggled', interaction.toggleeventhandler);
     }
 
     // remove current interaction to get features from layer
     if (null !== interaction.interaction) {
-      this.mapService.removeInteraction(interaction.interaction);
+      GUI.getService('map').removeInteraction(interaction.interaction);
     }
 
     // check if query map control is toggled and registered
@@ -1117,10 +1076,13 @@ export default new (class QueryResultsService extends G3WObject {
     }
 
     // reset values
-    interaction.interaction        = null;
-    interaction.id                 = null;
-    interaction.toggleeventhandler = null;
-    interaction.mapcontrol         = null;
+    Object.assign(interaction, {
+      interaction:        null,
+      id:                 null,
+      toggleeventhandler: null,
+      mapcontrol:         null,
+    });
+
   }
 
   /**
@@ -1141,7 +1103,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     // remove previous interaction
     if (not_current && interaction.interaction) {
-      this.mapService.removeInteraction(interaction.interaction);
+      GUI.getService('map').removeInteraction(interaction.interaction);
     }
 
     // set new layer
@@ -1150,20 +1112,20 @@ export default new (class QueryResultsService extends G3WObject {
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
 
     if (false === layer.addfeaturesresults.active) {
-      this.removeAddFeaturesLayerResultInteraction({ toggle: true });
+      this.removeAddFeaturesLayerResultInteraction(true);
     } else {
 
       this.activeMapInteraction(); // useful to send an event
 
-      const external_layer = this._getExternalLayer(layer.id);
+      const external_layer = (this.state.layers.find(l => l.id === layer.id) || {}).external;
 
       interaction.mapcontrol  =
         interaction.mapcontrol ||
-        this.mapService.getCurrentToggledMapControl() ||
+        GUI.getService('map').getCurrentToggledMapControl() ||
         null; //need to be set null when this.mapService.getCurrentToggledMapControl() is undefined
       interaction.interaction = new PickCoordinatesInteraction();
 
-      this.mapService.addInteraction(interaction.interaction, { close: false });
+      GUI.getService('map').addInteraction(interaction.interaction, { close: false });
 
       interaction.interaction
         .on('picked', async ({ coordinate: coordinates }) => {
@@ -1200,13 +1162,13 @@ export default new (class QueryResultsService extends G3WObject {
         }
       };
 
-      this.mapService.once('mapcontrol:toggled', interaction.toggleeventhandler);
+      GUI.getService('map').once('mapcontrol:toggled', interaction.toggleeventhandler);
 
     }
   }
 
   /**
-   * @FIXME add description
+   * used by the following plugins: "bforest"
    */
   deactiveQueryInteractions() {
     this.state.layers.forEach(l => {
@@ -1224,9 +1186,9 @@ export default new (class QueryResultsService extends G3WObject {
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
     if (this._asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(this.mapService, this._getLayerFeatures(layer), options);
+      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), layer.features || [], options);
     } else {
-      this.mapService.zoomToFeatures(this._getLayerFeatures(layer), options);
+      GUI.getService('map').zoomToFeatures(layer.features || [], options);
     }
   }
 
@@ -1238,13 +1200,11 @@ export default new (class QueryResultsService extends G3WObject {
    */
   highLightLayerFeatures(layer, options = {}) {
     if (this._asyncFnc.highLightLayerFeatures.async) {
-      this._asyncFnc.todo = this.mapService.highlightFeatures.bind(this.mapService, this._getLayerFeatures(layer), options);
+      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), layer.features || [], options);
     } else {
-      this.mapService.highlightFeatures(this._getLayerFeatures(layer), options);
+      GUI.getService('map').highlightFeatures(layer.features || [], options);
     }
   }
-
-
 
   /**
    * Reset internal state
@@ -1254,22 +1214,14 @@ export default new (class QueryResultsService extends G3WObject {
     this.state.query               = null;
     this.state.querytitle          = "";
     this.state.changed             = false;
-    this._clearActions();
-    this.state.layersFeaturesBoxes = {};
-    this.removeAddFeaturesLayerResultInteraction();
-  }
-
-  /**
-   * Clear layer actions (if present)
-   * 
-   * @since 3.9.0
-   */
-  _clearActions() {
+    // clear actions
     Object.values(this.state.layersactions).forEach(l => l.forEach(a => a.clear && a.clear()));
     this.state.layersactions       = {};
     this.state.actiontools         = {};
     this.state.layeractiontool     = {};
     this.state.currentactiontools  = {};
+    this.state.layersFeaturesBoxes = {};
+    this.removeAddFeaturesLayerResultInteraction();
   }
 
   /**
@@ -1294,14 +1246,9 @@ export default new (class QueryResultsService extends G3WObject {
    * @param project
    */
   _setRelations(project) {
-    this._relations = (
-      project.getRelations() || []
-    ).reduce((group, r) => {
-      const key = r.referencedLayer;
-      if (undefined === group[key]) {
-        group[key] = [];
-      }
-      group[key].push(r);
+    this._relations = (project.getRelations() || []).reduce((group, r) => {
+      group[r.referencedLayer] = group[r.referencedLayer] || [];
+      group[r.referencedLayer].push(r);
       return group;
     }, {});
   }
@@ -1316,36 +1263,10 @@ export default new (class QueryResultsService extends G3WObject {
   /**
    * @FIXME add description
    *
-   * @param project
-   */
-  _setAtlasActions(project) {
-    this._atlas = project.getPrint().filter(p => p.atlas) || [];
-  }
-
-  /**
-   * @FIXME add description
-   *
    * @param querytitle
    */
   setTitle(querytitle) {
     this.state.querytitle = querytitle || "";
-  }
-
-  /**
-   * Get `properties`, `geometry` and `id` from different types of feature
-   *
-   * @param feature
-   *
-   * @returns {{geometry: (undefined|*|null|ol.Feature), id: *, properties: string[]}|{geometry: *, id: *, properties: *}}
-   */
-  getFeaturePropertiesAndGeometry(feature) {
-    const isOlFeature = feature instanceof ol.Feature;
-    return {
-      selection:  feature.selection,
-      properties: isOlFeature ? feature.getProperties() : feature.properties,
-      geometry:   isOlFeature ? feature.getGeometry()   : feature.geometry,
-      id:         isOlFeature ? feature.getId()         : feature.id
-    };
   }
 
   /**
@@ -1358,34 +1279,22 @@ export default new (class QueryResultsService extends G3WObject {
    * @param container
    */
   async trigger(actionId, layer, feature, index, container) {
-    if (this._actions[actionId]) {
-      this._actions[actionId](layer, feature, index);
+    if ('highlightgeometry' === actionId) {
+      this.highlightGeometry(layer, feature, index);
+    }
+    if ('clearHighlightGeometry' === actionId) {
+      this.clearHighlightGeometry(layer, feature, index);
     }
     if (layer && this.state.layersactions[layer.id]) {
       const action = this.state.layersactions[layer.id].find(layerAction => layerAction.id === actionId);
-      if (action) {
-        await this.triggerLayerAction(action, layer, feature, index, container);
+      if (action && action.cbk) {
+        await action.cbk(layer, feature, action, index, container);
       }
-    }
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param action
-   * @param layer
-   * @param feature
-   * @param index
-   * @param container
-   */
-  async triggerLayerAction(action, layer, feature, index, container) {
-    if (action.cbk) {
-      await action.cbk(layer,feature, action, index, container);
-    }
-    if (action.route) {
-      let url = action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
-      if (url && '' !== url) {
-        GUI.goto(url);
+      if (action &&  action.route) {
+        let url = action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
+        if (url && '' !== url) {
+          GUI.goto(url);
+        }
       }
     }
   }
@@ -1436,10 +1345,10 @@ export default new (class QueryResultsService extends G3WObject {
 
     // case query coordinates
     if (has_coords) {
-      this.mapService.viewer.map.forEachFeatureAtPixel(
-        this.mapService.viewer.map.getPixelFromCoordinate(coordinates),
-        (feature, layer) => { features.push(feature); },
-        { layerFilter(layer) { return layer === vectorLayer; } }
+      GUI.getService('map').viewer.map.forEachFeatureAtPixel(
+        GUI.getService('map').viewer.map.getPixelFromCoordinate(coordinates),
+        f => { features.push(f); },
+        { layerFilter: l => l === vectorLayer }
       );
     }
 
@@ -1452,25 +1361,20 @@ export default new (class QueryResultsService extends G3WObject {
     const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
 
     // check query geometry (Polygon or MultiPolygon)
-    if (is_poly && !has_coords) {
-      switch (vectorLayer.constructor) {
-        case VectorLayer:
-          features = vectorLayer.getIntersectedFeatures(geometry);
-          break;
-        case ol.layer.Vector:
-          vectorLayer.getSource().getFeatures().forEach(feature => {
-            let add;
-            switch (filterConfig.spatialMethod) {
-              case 'intersects': add = intersects(geometry, feature.getGeometry());                  break;
-              case 'within':     add = within(geometry, feature.getGeometry());                      break;
-              default:           add = geometry.intersectsExtent(feature.getGeometry().getExtent()); break;
-            }
-            if (true === add) {
-              features.push(feature);
-            }
-          });
-          break;
-      }
+    if (is_poly && !has_coords && VectorLayer === vectorLayer.constructor) {
+      features = vectorLayer.getIntersectedFeatures(geometry);
+    } else if (is_poly && !has_coords && ol.layer.Vector === vectorLayer.constructor) {
+      vectorLayer.getSource().getFeatures().forEach(f => {
+        let add;
+        switch (filterConfig.spatialMethod) {
+          case 'intersects': add = intersects(geometry, f.getGeometry());                  break;
+          case 'within':     add = within(geometry, f.getGeometry());                      break;
+          default:           add = geometry.intersectsExtent(f.getGeometry().getExtent()); break;
+        }
+        if (true === add) {
+          features.push(f);
+        }
+      });
     }
 
     return {
@@ -1517,29 +1421,6 @@ export default new (class QueryResultsService extends G3WObject {
    */
   hideChart(container) {
     this.emit('hide-chart', container);
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param ids
-   * @param layer
-   * @param feature
-   * @param action
-   * @param index
-   * @param container
-   */
-  showRelationsChart(ids = [], layer, feature, action, index, container) {
-    action.state.toggled[index] = !action.state.toggled[index];
-    if (action.state.toggled[index]) {
-      this.emit('show-chart', ids, container, {
-        relations: this._relations[layer.id],
-        fid: feature.attributes[G3W_FID],
-        height: 400
-      });
-    } else {
-      this.hideChart(container);
-    }
   }
 
   /**
@@ -1593,16 +1474,15 @@ export default new (class QueryResultsService extends G3WObject {
    * @param layer
    */
   showLayerDownloadFormats(layer) {
-    const name = DownloadFormats.name;
-    layer[name].active = !layer[name].active;
+    layer.downloadformats.active = !layer.downloadformats.active;
     this.setLayerActionTool({
       layer,
-      component: layer[name].active ? DownloadFormats : null,
-      config: layer[name].active
+      component: layer.downloadformats.active ? DownloadFormats : null,
+      config: layer.downloadformats.active
         ? {
-            ...this.state.actiontools[name][layer.id],
+            ...this.state.actiontools.downloadformats[layer.id],
             //for download layer need to filter pdf format because it works only for a single feature
-            downloads: this.state.actiontools[name][layer.id].downloads.filter(d => 'pdf' !== d.format)
+            downloads: this.state.actiontools.downloadformats[layer.id].downloads.filter(d => 'pdf' !== d.format)
           }
         : null
     })
@@ -1642,7 +1522,7 @@ export default new (class QueryResultsService extends G3WObject {
     const runDownload = async (active=false) => {
 
       if (features.length > 1) {
-        layer[DownloadFormats.name].active = active;
+        layer.downloadformats.active = active;
         this.setLayerActionTool({ layer });
       }
 
@@ -1665,7 +1545,7 @@ export default new (class QueryResultsService extends G3WObject {
 
       /** @FIXME add description */
       if (features.length > 1 && undefined !== downloadsactions) {
-        layer[DownloadFormats.name].active = false;
+        layer.downloadformats.active = false;
       }
 
       /** @FIXME add description */
@@ -1755,176 +1635,6 @@ export default new (class QueryResultsService extends G3WObject {
 
   /**
    * @FIXME add description
-   */
-  downloadGpx({ id: layerId } = {}, feature) {
-    getCatalogLayerById(layerId)
-      .getGpx({ fid: feature ? feature.attributes[G3W_FID] : null })
-      .catch((err) => { GUI.notify.error(t("info.server_error")); })
-      .finally(()  => { this.layerMenu.loading.shp = false; this._hideMenu(); })
-  }
-
-  /**
-   * @FIXME add description
-   */
-  downloadXls({ id: layerId } = {}, feature) {
-    getCatalogLayerById(layerId)
-      .getXls({ fid: feature ? feature.attributes[G3W_FID] : null })
-      .catch(err  => { GUI.notify.error(t("info.server_error")); })
-      .finally(() => { this.layerMenu.loading.shp = false; this._hideMenu(); })
-  }
-
-  /**
-   *
-   * @FIXME add description
-   *
-   * @param layer
-   * @param actionId
-   */
-  listenClearSelection(layer, actionId) {
-    if (layer.external) {
-      layer.features
-        .forEach(feature => {
-          const selectionFeature = layer.selection.features.find(selectionFeature => feature.id === selectionFeature.getId());
-          feature.selection = (selectionFeature) ? selectionFeature.selection : { selected: false };
-        });
-    } else {
-      const _layer = getCatalogLayerById(layer.id);
-      const handler = () => {
-        layer.features.forEach((feature, index) =>
-          this.state.layersactions[layer.id].find(action => action.id === actionId).state.toggled[index] = false
-        );
-      };
-      _layer.on('unselectionall', handler);
-      this.unlistenerlayeractionevents.push({ layer:_layer, event:'unselectionall', handler });
-    }
-  }
-
-  /**
-   * @FIXME add description
-   */
-  unlistenerEventsActions() {
-    this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
-    this.unlistenerlayeractionevents = [];
-  }
-
-  /**
-   * Toggle filter token on a layer
-   *
-   * @param layer
-   */
-  addRemoveFilter(layer) {
-    getCatalogLayerById(layer.id).toggleFilterToken();
-  }
-
-  /**
-   * Save current filter for a layer
-   * 
-   * @since 3.9.0
-   */
-  saveFilter(layer) {
-    getCatalogLayerById(layer.id).saveFilter();
-  }
-
-  /**
-   * Initial check of selection active on layer
-   *
-   * @param opts.layer
-   * @param opts.feature
-   * @param opts.index
-   * @param opts.action
-   */
-  checkFeatureSelection({
-    layer,
-    feature,
-    index,
-    action
-  } = {}) {
-    if (layer.external) {
-      action.state.toggled[index] = feature.selection.selected;
-    } else if (feature) {
-      // project layer
-      const pLayer = getCatalogLayerById(layer.id);
-      action.state.toggled[index] = (
-          //need to check if set active filter and no saved filter is set
-          (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
-          //or if feature fid is in selected array
-          pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
-      );
-    }
-  }
-
-  /**
-   * @FIXME add description
-   */
-  removeQueryResultLayerFromMap() {
-    this.resultsQueryLayer.getSource().clear();
-    this.mapService.getMap().removeLayer(this.resultsQueryLayer)
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @since 3.9.0
-   */
-  addQueryResultLayerToMap(feature) {
-    this.resultsQueryLayer.getSource().addFeature(feature);
-    this.mapService.getMap().addLayer(this.resultsQueryLayer);
-  }
-
-  /**
-   * Show layerQuery result on map
-   */
-  addQueryResultsLayerToMap({ feature }) {
-    this.removeQueryResultLayerFromMap();
-    this.addQueryResultLayerToMap(feature);
-    // make sure that layer is on top of others.
-    if (this.resultsQueryLayer) {
-      this.resultsQueryLayer.setZIndex(this.mapService.getMap().getLayers().getLength());
-    }
-  }
-
-  /**
-   * Show feature from coordinates
-   *
-   * @param coordinates
-   */
-  showCoordinates(coordinates) {
-    let feature;
-    if (Array.isArray(coordinates) && 2 === coordinates.length) {
-      feature = new ol.Feature(new ol.geom.Point(coordinates));
-    }
-    this.addQueryResultsLayerToMap({ feature });
-  }
-
-  /**
-   * Show BBox
-   *
-   * @param bbox
-   */
-  showBBOX(bbox) {
-    let feature;
-    if (Array.isArray(bbox) && 4 === bbox.length) {
-      feature = new ol.Feature(ol.geom.Polygon.fromExtent(bbox))
-    }
-    this.addQueryResultsLayerToMap({ feature });
-  }
-
-  /**
-   * Show Geometry
-   *
-   * @param geometry
-   */
-  showGeometry(geometry) {
-    if (!geometry) {
-      return;
-    }
-    const feature = new ol.Feature(geometry);
-    feature.setId(undefined);
-    this.addQueryResultsLayerToMap({ feature });
-  }
-
-  /**
-   * @FIXME add description
    *
    * @param layer
    * @param feature
@@ -1933,35 +1643,18 @@ export default new (class QueryResultsService extends G3WObject {
     if (!feature.geometry) {
       return;
     }
-    const handlerOptions = {
-      mapServiceMethod: this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry',
-      firstParam:       this.isOneLayerResult() ? [feature] : feature.geometry,
-      options:          this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
-    };
     if (this._asyncFnc.goToGeometry.async) {
-      this._asyncFnc.todo = this.mapService[handlerOptions.mapServiceMethod].bind(
-        this.mapService,
-        handlerOptions.firstParam,
-        handlerOptions.options
+      this._asyncFnc.todo = GUI.getService('map')[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'].bind(
+        GUI.getService('map'),
+        this.isOneLayerResult() ? [feature] : feature.geometry,
+        this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
       );
     } else {
-      setTimeout(() => this.mapService[handlerOptions.mapServiceMethod](
-        handlerOptions.firstParam,
-        handlerOptions.options
+      setTimeout(() => GUI.getService('map')[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'](
+        this.isOneLayerResult() ? [feature] : feature.geometry,
+        this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
       ));
     }
-  }
-
-  /**
-   * Save layer result
-   * @param opts.layer current layer
-   * @parm opts.type type of format
-   */
-  saveLayerResult({
-    layer,
-    type = 'csv'
-  } = {}) {
-    this.downloadFeatures(type, layer, layer.features);
   }
 
   /**
@@ -1972,7 +1665,7 @@ export default new (class QueryResultsService extends G3WObject {
    */
   highlightGeometry(layer, feature) {
     if (feature.geometry) {
-      this.mapService.highlightGeometry(
+      GUI.getService('map').highlightGeometry(
         feature.geometry,
         { layerId: layer.id, zoom: false, duration: Infinity }
       );
@@ -1985,9 +1678,9 @@ export default new (class QueryResultsService extends G3WObject {
    * @param layer
    */
   clearHighlightGeometry(layer) {
-    this.mapService.clearHighlightGeometry();
+    GUI.getService('map').clearHighlightGeometry();
     if (this.isOneLayerResult()) {
-      this.highlightFeaturesPermanently(layer);
+      GUI.getService('map').highlightFeatures(layer.features, { duration: Infinity });
     }
   }
 
@@ -2005,13 +1698,15 @@ export default new (class QueryResultsService extends G3WObject {
   } = {}) {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
-      content: new RelationsPage({
-        currentview:      'relation',
-        relations:        [projectRelation],
-        chartRelationIds: this.findPlotId(projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
-        nmRelation:       this._project.getRelationById(relation.nmRelationId),
-        layer:            { id: layerId },
-        feature,
+      content: new Component({
+        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+          currentview:      'relation',
+          relations:        [projectRelation],
+          chartRelationIds: this.findPlotId(projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
+          nmRelation:       this._project.getRelationById(relation.nmRelationId),
+          layer:            { id: layerId },
+          feature,
+        })
       }),
       crumb: {
         title: projectRelation.name,
@@ -2024,325 +1719,12 @@ export default new (class QueryResultsService extends G3WObject {
   };
 
   /**
-   * @FIXME add description
-   *
-   * @param layer
-   * @param feature
-   * @param action
-   */
-  showQueryRelations(layer, feature, action) {
-    GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
-
-    GUI.pushContent({
-      content: new RelationsPage({
-        relations:        action.relations,
-        chartRelationIds: action.chartRelationIds,
-        feature,
-        layer
-      }),
-      backonclose: true,
-      title: 'info.list_of_relations',
-      id: '__G3W_LIST_OF_RELATIONS_ID__',
-      crumb: {
-        title: 'info.list_of_relations',
-        trigger: null
-      },
-      closable: false
-    });
-  }
-
-  /**
-   * Get layer from current state.layers showed on result
-   *
-   * @since 3.9.0
-   */
-  _getLayer(layerId) {
-    return this.state.layers.find(l => l.id === layerId);
-  }
-
-  /**
-   * Get external layer from current state.layers showed on result
-   *
-   * @since 3.9.0
-   */
-  _getExternalLayer(layerId) {
-    return (this._getLayer(layerId) || {}).external;
-  }
-
-  /**
    * Get id of the  feature
    *
    * @since 3.9.0
    */
   _getFeatureId(feature, external) {
     return external ? feature.id : feature.attributes[G3W_FID];
-  }
-
-  /**
-   * Get ids of the selected features
-   *
-   * @since 3.9.0
-   */
-  _getFeaturesIds(features, external) {
-    return features.map(feature => this._getFeatureId(feature, external));
-  }
-
-  /**
-   * Extract features from layer object
-   *
-   * @since 3.9.0
-   */
-  _getLayerFeatures(layer={}) {
-    return layer.features || [];
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _toggleLayerFeatureBox(layer, feature, collapsed) {
-    const boxId = this.getBoxId(layer, feature);
-    const box   = boxId && this.state.layersFeaturesBoxes[boxId];
-    if (box) {
-      setTimeout(() => box.collapsed = collapsed); // due to vue reactivity, wait a little bit before update layers
-    }
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _removeLayerFeatureBox(layer, feature_to_delete) {
-    setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feature_to_delete)]);
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionGoToGeometry(layer) {
-    this.state.layersactions[layer.id]
-      .push({
-        id: 'gotogeometry',
-        download: false,
-        mouseover: true,
-        class: GUI.getFontClass('marker'),
-        hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
-        cbk: throttle(this.goToGeometry.bind(this))
-      });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionShowQueryAndPlotsRelations(layer) {
-    const relations = this._relations[layer.id].filter(relation => 'MANY' === relation.type);
-    const chartRelationIds = [];
-
-    relations.forEach(relation => {
-      const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
-      if (id) {
-        chartRelationIds.push(id);
-      }
-    });
-
-    /** @FIXME add description */
-    if (relations.length > 0) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: 'show-query-relations',
-          download: false,
-          class: GUI.getFontClass('relation'),
-          hint: 'sdk.mapcontrols.query.actions.relations.hint',
-          cbk: this.showQueryRelations,
-          relations,
-          chartRelationIds
-        });
-    }
-
-    /** @FIXME add description */
-    if (chartRelationIds.length > 0) {
-      this.state.layersactions[layer.id]
-        .push({
-          id: 'show-plots-relations',
-          download: false,
-          opened: true,
-          class: GUI.getFontClass('chart'),
-          state: this.createActionState({ layer }),
-          hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
-          cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
-        });
-    }
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionPrintAtlas(layer) {
-    this.state.layersactions[layer.id]
-      .push({
-        id: `printatlas`,
-        download: true,
-        class: GUI.getFontClass('print'),
-        hint: `sdk.tooltips.atlas`,
-        cbk: this.printAtlas.bind(this)
-      });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionDownloadFeature(layer) {
-    const [format] = layer.downloads; // NB: format == layer.downloads[0]
-    const cbk = this.downloadFeatures.bind(this, format);
-    layer[format] = Vue.observable({ active: false });
-    this.state.layersactions[layer.id]
-      .push({
-        id: `download_${format}_feature`,
-        download: true,
-        state: this.createActionState({layer}),
-        class: GUI.getFontClass('download'),
-        hint: `sdk.tooltips.download_${format}`,
-        cbk: (layer, feature, action, index, container) => {
-          action.state.toggled[index] = !action.state.toggled[index];
-          if (action.state.toggled[index]) {
-            cbk(layer, feature, action, index, ('pdf' === format ? container[0].innerHTML : null));
-          } else {
-            this.setCurrentActionLayerFeatureTool({ index, action, layer })
-          }
-        }
-      });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionMultiDownloadFeature(layer) {
-
-    const downloads = [];
-    layer.downloads
-      .forEach(format => {
-        downloads.push({
-          id: `download_${format}_feature`,
-          download: true,
-          format,
-          class: GUI.getFontClass(format),
-          hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index, html) => {
-            // un-toggle downloads action
-            this.downloadFeatures(format, layer, feature, action, index, html);
-            if ('polygon' !== this.state.query.type) {
-              const downloadsaction = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-              downloadsaction.cbk(layer, feature, downloadsaction, index, html);
-            }
-          }
-        });
-      });
-
-    // set actionstools configs
-    this.state.actiontools[DownloadFormats.name] = this.state.actiontools[DownloadFormats.name] || {};
-    this.state.actiontools[DownloadFormats.name][layer.id] = { downloads };
-    // check if it has download actions
-    this.state.layersactions[layer.id]
-      .push({
-        id: `downloads`,
-        download: true,
-        class: GUI.getFontClass('download'),
-        state: this.createActionState({ layer }),
-        toggleable: true,
-        hint: `Downloads`,
-        change({features}) {
-          features
-            .forEach((feature, index) => {
-              if (undefined === this.state.toggled[index]) {
-                VM.$set(this.state.toggled, index, false);
-              } else {
-                this.state.toggled[index] = false;
-              }
-            });
-        },
-        cbk: (layer, feature, action, index) => {
-          action.state.toggled[index] = !action.state.toggled[index];
-          this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-        }
-      });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionRemoveFeatureFromResult(layer) {
-    this.state.layersactions[layer.id]
-      .push({
-        id: 'removefeaturefromresult',
-        download: false,
-        mouseover: true,
-        class: GUI.getFontClass('minus-square'),
-        style: {
-          color: 'red'
-        },
-        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-        cbk: this.removeFeatureLayerFromResult.bind(this)
-      });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionSelection(layer) {
-    this.state.layersactions[layer.id]
-      .push({
-        id:       'selection',
-        download: false,
-        class:    GUI.getFontClass('success'),
-        hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
-        state:    this.createActionState({ layer }),
-        init:     ({ feature, index, action } = {}) => { if (undefined !== layer.selection.active) { this.checkFeatureSelection({ layer, index, feature, action }) }
-        },
-        /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context */
-        change({features}) {
-          features
-            .forEach((feature, index) => {
-              // exclude existing feature
-              if (undefined === this.state.toggled[index]) {
-                //add reactive property of array
-                VM.$set(this.state.toggled, index, false);
-              }
-          });
-        },
-        cbk: throttle(this.addToSelection.bind(this))
-      });
-
-    // In case of external layer don't listen to `selection` event
-    this.listenClearSelection(layer, 'selection');
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionLinkZoomToFid(layer) {
-    this.state.layersactions[layer.id]
-      .push({
-        id: 'link_zoom_to_fid',
-        download: false,
-        class: GUI.getFontClass('share-alt'),
-        hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
-        hint_change: {
-          hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
-          duration: 1000
-        },
-        cbk: this.copyZoomToFidUrl.bind(this)
-      });
-  }
-
-  /**
-   * @since 3.9.0
-   */
-  _setActionEditing(layer) {
-    this.state.layersactions[layer.id]
-      .push({
-        id: 'editing',
-        class: GUI.getFontClass('pencil'),
-        hint: 'sdk.tooltips.editing',
-        cbk: (layer, feature) => { this.editFeature({ layer, feature }) }
-      });
   }
 
   /**
@@ -2360,18 +1742,16 @@ export default new (class QueryResultsService extends G3WObject {
     const map              = service.mapService;
 
     // TODO: avoid referencing this private stuff
-    const getFeaturesIds     = service._getFeaturesIds.bind(service);
     const getFeatureId       = service._getFeatureId.bind(service);
-    const getExternalLayer   = service._getExternalLayer.bind(service);
     const getActionLayerById = service.getActionLayerById.bind(service);
 
     const GIVE_ME_A_NAME = undefined === feature && undefined === action && undefined === index;
     const _action        = GIVE_ME_A_NAME ? getActionLayerById({ layer, id: 'selection' })                  : action;
     const toggled        = GIVE_ME_A_NAME && Object.values(_action.state.toggled).reduce((prev, curr) => prev && curr, true);
-    const _layer         = GIVE_ME_A_NAME ? (layer.external ? layer : getCatalogLayerById(layer.id))        : ((getExternalLayer(layer.id) || false) ? layer : getCatalogLayerById(layer.id));
+    const _layer         = GIVE_ME_A_NAME ? (layer.external ? layer : getCatalogLayerById(layer.id))        : (((service.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
     const features       = GIVE_ME_A_NAME ? (layer.features && layer.features.length ? layer.features : []) : [feature];
     const params         = GIVE_ME_A_NAME ? {
-      fids: features.length > 0 ? getFeaturesIds(features, _layer.external) : null,
+      fids: features.length > 0 ? features.map(f => _layer.external ? f.id : f.attributes[G3W_FID]) : null,
       features,
       force: toggled ? 'remove' : 'add'
     } : {
@@ -2515,48 +1895,6 @@ export default new (class QueryResultsService extends G3WObject {
 
     if (GIVE_ME_A_NAME) {
       layer.features.forEach((f, i) => _action.state.toggled[i] = !toggled);
-    }
-
-  }
-
-  /**
-   * @TODO make it a Layers class function ?
-   * 
-   * @since 3.9.0
-   */
-  removeFromSelection(layer, storeid) {
-
-    if (!layer) {
-      return console.warn('undefined layer');;
-    }
-
-    const service  = GUI.getService('queryresults');
-    const map      = service && service.mapService; // TODO: same as? --> GUI.getService('map')
-    const action   = layer.external && service.getActionLayerById({ layer, id: 'selection' });
-
-    /**
-     * PROJECT LAYER
-     */
-    if (!layer.external && storeid) {
-      ApplicationState.catalog[storeid].getLayerById(layer.id).clearSelectionFids();
-    }
-
-    /**
-     * EXTERNAL LAYER
-     */
-    if (layer.external) {
-      layer.selection.active = false;
-      layer.selection.features.forEach((feature, i) => {
-        // skip when ..
-        if (!feature.selection.selected) {
-          return;
-        }
-        feature.selection.selected = false;
-        if (action) {
-          action.state.toggled[i] = false;
-        }
-        map.setSelectionFeatures('remove', { feature });
-      });
     }
 
   }

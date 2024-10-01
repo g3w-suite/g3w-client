@@ -94,11 +94,16 @@ export default {
       this.layer.rawdata = null;
 
       data.features.forEach(feature => {
+
         const {
           id: fid,
           geometry,
           properties:attributes
-        } = queryService.getFeaturePropertiesAndGeometry(feature);
+        } = {
+          properties: feature instanceof ol.Feature ? feature.getProperties() : feature.properties,
+          geometry:   feature instanceof ol.Feature ? feature.getGeometry()   : feature.geometry,
+          id:         feature instanceof ol.Feature ? feature.getId()         : feature.id
+        };
 
         // in the case of starting raw data (html) need to sett attributes to visualize on a result
         if (0 === this.layer.attributes.length) {

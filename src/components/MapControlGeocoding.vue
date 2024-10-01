@@ -749,7 +749,7 @@ export default {
         action: {
           id:         'choose_layer',
           class:      GUI.getFontClass('pencil'),
-          state:      queryresults.createActionState({ layer }),
+          state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
           toggleable: true,
           hint:       'Choose a layer',
           cbk:        (layer, feature, action, index) => {
