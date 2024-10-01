@@ -1011,24 +1011,7 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu() {
-      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      GUI.closeSideBar();
-
-      GUI.setContent({
-        content: new Component({
-          id:                 'changemapmenu',
-          vueComponentObject: require('components/ChangeMapMenu.vue'),
-        }),
-        title: '',
-        perc: 100
-      });
+      GUI.openChangeMapMenu();
     },
 
     isNotLastCrumb(index) {
