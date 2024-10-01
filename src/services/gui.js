@@ -559,7 +559,7 @@ export default new (class GUI extends G3WObject {
   showQueryResults(title, results) {
     const queryresults = this.getComponent('queryresults').getService();
 
-    queryresults.reset();
+    queryresults.clearState();
 
     if (results) {
       queryresults.setQueryResponse(results);
@@ -762,7 +762,7 @@ export default new (class GUI extends G3WObject {
     options.perc = isMobile.any ? 100 : options.perc;
     options.push = true;
     this.setContent(options);
-  };
+  }
 
   //return number of a component of stack
   getContentLength() {

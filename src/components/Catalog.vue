@@ -645,12 +645,40 @@ export default {
     },
 
     /**
-     * @TODO add description
+     * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js::removeFromSelection
+     * 
+     * Remove layer from queryresults selection
      *
      * @since 3.10.0
      */
-    onUnSelectionLayer(storeid, layerstree) {
-      GUI.getService('queryresults').removeFromSelection(layerstree, storeid);
+    onUnSelectionLayer(storeid, layer) {
+      if (!layer) {
+        return console.warn('undefined layer');;
+      }
+
+      const service  = GUI.getService('queryresults');
+      const action   = layer.external && service.getActionLayerById({ layer, id: 'selection' });
+
+      // PROJECT LAYER
+      if (!layer.external && storeid) {
+        ApplicationState.catalog[storeid].getLayerById(layer.id).clearSelectionFids();
+      }
+
+      // EXTERNAL LAYER
+      if (layer.external) {
+        layer.selection.active = false;
+        layer.selection.features.forEach((feature, i) => {
+          // skip when ..
+          if (!feature.selection.selected) {
+            return;
+          }
+          feature.selection.selected = false;
+          if (action) {
+            action.state.toggled[i] = false;
+          }
+          GUI.getService('map').setSelectionFeatures('remove', { feature });
+        });
+      }
     },
 
     /**
