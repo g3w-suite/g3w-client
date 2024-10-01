@@ -1395,14 +1395,12 @@ export default new (class QueryResultsService extends G3WObject {
   } = {}) {
     let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
     return printAtlas({
-        field,
-        values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
-        template: atlas.name,
-        download: true
-      })
-      .then(({ url }) => {
-        GUI.downloadWrapper(downloadFile, { url, filename: atlas.name, mime_type: 'application/pdf' })
-      });
+      field,
+      values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
+      template: atlas.name,
+      download: true
+    })
+    .then(({ url }) => GUI.downloadWrapper(downloadFile, { url, filename: atlas.name, mime_type: 'application/pdf' }));
   }
 
   /**
