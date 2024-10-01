@@ -801,7 +801,7 @@ export default new (class QueryResultsService extends G3WObject {
           id:       'show-plots-relations',
           opened:   true,
           class:    GUI.getFontClass('chart'),
-          state:    Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
           hint:     'sdk.mapcontrols.query.actions.relations_charts.hint',
           cbk: throttle((layer, feature, action, index, container) => {
             action.state.toggled[index] = !action.state.toggled[index];
@@ -830,7 +830,7 @@ export default new (class QueryResultsService extends G3WObject {
         download_format && {
           id:       `download_${download_format}_feature`,
           download: true,
-          state:    Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => {a[i] = null; return a; }, {}) }),
           class:    GUI.getFontClass('download'),
           hint:     `sdk.tooltips.download_${download_format}`,
           cbk: (layer, feature, action, index, container) => {
@@ -848,7 +848,7 @@ export default new (class QueryResultsService extends G3WObject {
           id:         'downloads',
           download:   true,
           class:      GUI.getFontClass('download'),
-          state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
           toggleable: true,
           hint:       'Downloads',
           change({ features }) {
@@ -875,7 +875,7 @@ export default new (class QueryResultsService extends G3WObject {
           id:       'selection',
           class:    GUI.getFontClass('success'),
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
-          state:    Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
           // check feature selection
           init:     ({ feature, index, action } = {}) => {
             if (layer.external && undefined !== layer.selection.active) { // external layer
@@ -883,10 +883,10 @@ export default new (class QueryResultsService extends G3WObject {
             } else if (feature && undefined !== layer.selection.active) { // project layer
               const pLayer = getCatalogLayerById(layer.id);
               action.state.toggled[index] = (
-                  //need to check if set active filter and no saved filter is set
-                  (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
-                  //or if feature fid is in selected array
-                  pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
+                //need to check if set active filter and no saved filter is set
+                (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
+                //or if feature fid is in selected array
+                pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
               );
             }
           },
