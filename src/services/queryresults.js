@@ -1739,7 +1739,7 @@ export default new (class QueryResultsService extends G3WObject {
    */
   addToSelection(layer, feature, action, index) {
     const service          = GUI.getService('queryresults');
-    const map              = service.mapService;
+    const map              = GUI.getService('map');
 
     // TODO: avoid referencing this private stuff
     const getFeatureId       = service._getFeatureId.bind(service);

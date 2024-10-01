@@ -657,7 +657,6 @@ export default {
       }
 
       const service  = GUI.getService('queryresults');
-      const map      = service && service.mapService; // TODO: same as? --> GUI.getService('map')
       const action   = layer.external && service.getActionLayerById({ layer, id: 'selection' });
 
       // PROJECT LAYER
@@ -677,7 +676,7 @@ export default {
           if (action) {
             action.state.toggled[i] = false;
           }
-          map.setSelectionFeatures('remove', { feature });
+          GUI.getService('map').setSelectionFeatures('remove', { feature });
         });
       }
     },
