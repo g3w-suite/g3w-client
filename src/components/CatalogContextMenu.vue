@@ -604,8 +604,7 @@
   import { downloadFile }              from 'utils/downloadFile';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import  { t }                        from 'g3w-i18n';
-
-  const shpwrite                     = require('shp-write');
+  import shpwrite                      from 'shp-write';
 
   const OFFSETMENU  = { top: 50, left: 15 };
 

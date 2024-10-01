@@ -38,8 +38,7 @@
 
 <script>
   import ApplicationState from 'store/application'
-  
-  const {t} = require('g3w-i18n');
+  import  { t }           from 'g3w-i18n';
 
   export default {
 

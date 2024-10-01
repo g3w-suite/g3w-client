@@ -135,8 +135,7 @@
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
-
-  const { t }        = require('g3w-i18n');
+  import { t }                from 'g3w-i18n';
 
   const item = window.localStorage.getItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
   const SPATIAL_BOOKMARKS_LOCALITEMS = item ? JSON.parse(item) : undefined;

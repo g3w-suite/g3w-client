@@ -10,6 +10,9 @@ import './deprecated';
 // expose global variables
 import './g3w-globals';
 
+// run app (index.prod.js)
+import './index.prod';
+
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
 
@@ -57,9 +60,6 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
     localforage.setItem('externalLayers', externalLayers);
   });
 });
-
-// run app (index.prod.js)
-require('./index.prod');
 
 // custom map control: "Open in iframe"
 g3wsdk.gui.GUI.once('ready', () => {

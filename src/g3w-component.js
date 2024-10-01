@@ -7,10 +7,9 @@ import G3WObject      from 'g3w-object';
 import { noop }       from 'utils/noop';
 import { $promisify } from 'utils/promisify';
 import GUI            from 'services/gui';
-
+import deprecate      from 'util-deprecate';
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
-const deprecate  = require('util-deprecate');
+import _cloneDeep     from 'lodash.clonedeep';
 const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 function merge(destination, source) {

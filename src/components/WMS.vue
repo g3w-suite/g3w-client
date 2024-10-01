@@ -170,13 +170,9 @@
   import DataRouterService  from 'services/data';
   import GUI                from 'services/gui';
   import { getUniqueDomId } from 'utils/getUniqueDomId';
+  import { RasterLayer }    from 'map/layers/imagelayer';
 
   import * as vuePanelComp  from 'components/WMSLayersPanel.vue';
-
-  /**
-   * Current project id used to store data or get data to a current project
-   */
-  let PID = ApplicationState.project.getId();
 
   let panel;
 
@@ -305,7 +301,6 @@
         visible  = true
       } = {}) {
         const map             = GUI.getService('map');
-        const { RasterLayer } = require('map/layers/imagelayer');
         const projection      = ol.proj.get(epsg);
 
         const promise = new Promise((res, rej) => {
@@ -519,7 +514,7 @@
        */
       getLocalWMSData() {
         const item = window.localStorage.getItem('externalwms');
-        return ((item ? JSON.parse(item) : undefined) || {})[PID];
+        return ((item ? JSON.parse(item) : undefined) || {})[ApplicationState.project.getId()];
       },
 
       /**
@@ -530,7 +525,8 @@
       updateLocalWMSData(data) {
         const item = window.localStorage.getItem('externalwms');
         const alldata = (item ? JSON.parse(item) : undefined) || {};
-        alldata[PID] = data;
+
+        alldata[ApplicationState.project.getId()] = data;
         try {
           window.localStorage.setItem('externalwms', JSON.stringify(alldata));
         } catch(e) {
@@ -542,7 +538,10 @@
 
     // Load WMS urls from local storage
     async mounted() {
-
+      /**
+       * Current project id used to store data or get data to a current project
+       */
+      let PID = ApplicationState.project.getId();
       /**@deprecated Will be removed on v4.x **/
       g3wsdk.core.project.ProjectsRegistry
         .onafter('setCurrentProject', async project => {

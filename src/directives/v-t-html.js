@@ -5,7 +5,7 @@
 
 import ApplicationState   from 'store/application';
 import { watch, unwatch } from 'directives/utils';
-import { t }              from 'g3w-input';
+import { t }              from 'g3w-i18n';
 
 const attr = 'g3w-v-t-html-id';
 

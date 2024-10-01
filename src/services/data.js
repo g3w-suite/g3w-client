@@ -10,8 +10,7 @@ import { groupBy }                        from 'utils/groupBy';
 import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
 import { $promisify, promisify }          from 'utils/promisify';
-
-const { t }  = require('g3w-i18n');
+import { t }                              from 'g3w-i18n';
 
 const handleQueryPromises = async (promises = []) => {
   const responses = await Promise.allSettled(promises);

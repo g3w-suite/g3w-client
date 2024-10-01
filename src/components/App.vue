@@ -709,6 +709,7 @@ import { resizeMixin }    from "mixins";
 import HeaderItem         from 'components/HeaderItem.vue';
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
+import ChangeMapMenu      from "components/ChangeMapMenu.vue";
 import getUniqueDomId     from 'utils/getUniqueDomId';
 import { XHR }            from 'utils/XHR';
 import { promisify }      from 'utils/promisify';
@@ -1023,7 +1024,7 @@ export default {
       GUI.setContent({
         content: new Component({
           id:                 'changemapmenu',
-          vueComponentObject: require('components/ChangeMapMenu.vue'),
+          vueComponentObject: ChangeMapMenu,
         }),
         title: '',
         perc: 100

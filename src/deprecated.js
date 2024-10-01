@@ -4,6 +4,7 @@
  */
 
 import * as VueColor from 'vue-color';
+import VueCookie     from 'vue-cookie';
 
 const initConfig = window.initConfig;
 
@@ -50,4 +51,4 @@ window.VueColor = VueColor;
 /**
  * @deprecated since v3.8. Will be removed in v4.x. Use require('vue-cookie') instead of window.VueCookie
  */
-window.VueCookie = require('vue-cookie');
+window.VueCookie = VueCookie;

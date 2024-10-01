@@ -162,7 +162,7 @@
                     <!-- @since 3.9 add save -->
                     <span
                       v-if                    = "
-                        state.logged
+                        logged
                         && layer.filter.active
                         && (null === layer.filter.current || layer.selection.active)
                       "
@@ -481,6 +481,7 @@
   import { throttle }                from 'utils/throttle';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
   import GUI                         from 'services/gui';
+  import ApplicationState            from 'store/application';
 
   const MAX_SUBSET_LENGTH           = 3;
   const headerExpandActionCellWidth = 10;
@@ -503,6 +504,7 @@
         state:                       this.$options.service.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth:      headerActionsCellWidth,
+        logged:                      undefined !== ApplicationState.user.id,
       }
     },
     mixins: [fieldsMixin],

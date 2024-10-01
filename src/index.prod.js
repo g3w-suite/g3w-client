@@ -26,7 +26,11 @@ import Component                   from 'g3w-component';
 // services
 import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
-
+import {
+  MapService,
+  MapLayersStoresRegistry
+}                                  from 'services/map';
+import IFrameService               from 'services/iframe';
 // components
 import App                         from 'components/App.vue';
 import ImageComponent              from 'components/GlobalImage.vue';
@@ -349,8 +353,6 @@ $.ajaxSetup({
     .then((project) => {
       clearTimeout(timeout);
 
-      const { MapLayersStoresRegistry } = require('services/map').default;
-
       Object.assign(ApplicationState.project, project);
 
       // set in first position (map and catalog)
@@ -377,7 +379,7 @@ $.ajaxSetup({
       ApplicationState.map.epsg = project.state.crs.epsg;
 
       if (ApplicationState.iframe) {
-        require('services/iframe').default.init({ project });
+        IFrameService.init({ project });
       }
 
       // init local items
@@ -541,7 +543,7 @@ $.ajaxSetup({
                 title:                    ApplicationState.project.state.search_title || "search",
                 addTool(t)                { this.state.tools.push(t); },
                 addTools(tt)              { for (const t of tt) this.addTool(t); },
-                showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
+                showPanel(o)              { return new (G3wSearch).SearchPanel(o, true) },
                 getTitle()                { return this.title },
                 removeTools()             { this.state.tools.splice(0) },
                 stop(d)                   { return $promisify(Promise.resolve(d)) },
@@ -652,7 +654,7 @@ $.ajaxSetup({
                 }))(),
               });
             
-              comp._setOpen = (b=false) => {
+              comp._setOpen = (b = false) => {
                 comp.internalComponent.state.open = b;
                 if (b) {
                   GUI.closeContent();
@@ -786,7 +788,7 @@ $.ajaxSetup({
           map: new Component({
             id:                 'map',
             title:              'Map Component',
-            service:            new (require('services/map').default).MapService({ id: 'map' }),
+            service:            new MapService({ id: 'map' }),
             vueComponentObject: require('components/Map.vue'),
           }),
 

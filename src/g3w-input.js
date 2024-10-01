@@ -37,7 +37,7 @@ import {
   select2Mixin,
 }                                             from 'mixins';
 
-const { t }         = require('g3w-i18n');
+import { t }                                  from 'g3w-i18n';
 
 const Validators = {
 

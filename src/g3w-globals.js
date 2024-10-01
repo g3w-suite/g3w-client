@@ -92,18 +92,22 @@ import {
 }                                                  from 'g3w-field';
 
 import { InputsComponents }                        from "g3w-input";
+import i18n                                        from 'g3w-i18n';
+import {
+  Plugin,
+  PluginService,
+}                                                  from 'g3w-plugin';
 
-const i18n                        = require('g3w-i18n');
-const { Plugin }                  = require('./g3w-plugin');
-const { PluginService }           = require('./g3w-plugin');
+import { MapLayersStoresRegistry }                 from 'services/map';
 
 /**
  * GUI modules
  */
-const { MapLayersStoresRegistry } = require('services/map').default;
-const { SearchPanel }             = require('components/g3w-search');
-const { FormComponent }           = require('components/g3w-form');
-const { FormService }             = require('components/g3w-form');
+import { SearchPanel }                             from 'components/g3w-search';
+import {
+  FormComponent,
+  FormService,
+}                                                  from 'components/g3w-form';
 
 const g3wsdk = {
 

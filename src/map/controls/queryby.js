@@ -10,13 +10,13 @@ import {
 import { VM }                         from 'g3w-eventbus';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
+import { MapLayersStoresRegistry }    from 'services/map';
 import ApplicationState               from 'store/application'
 import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-
-const { t }                           = require('g3w-i18n');
+import { t }                          from 'g3w-i18n';
 
 const POLYGON_TYPES = [
   GEOMETRY_TYPES.POLYGON,
@@ -689,7 +689,6 @@ function _hasVisible(control) {
  * @TODO get rid of `s.getLayers` call
  */
 function _getAvailableLayers(type) {
-  const { MapLayersStoresRegistry } = require('services/map').default;
   const queryable = MapLayersStoresRegistry.getQuerableLayersStores();
   return [...new Set([
 

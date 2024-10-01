@@ -8,7 +8,7 @@ import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
 
-const { t }                        = require('g3w-i18n');
+import { t } from 'g3w-i18n';
 
 export class MeasureInteraction extends ol.interaction.Draw {
 

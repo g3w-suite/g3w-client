@@ -8,6 +8,7 @@ import GUI                            from 'services/gui';
 import ApplicationState               from 'store/application'
 import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
+import DataRouterService              from 'services/data';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
 import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
@@ -335,7 +336,6 @@ class BaseIframeService extends G3WObject {
     feature,
   }) {
     const { field, value }  = feature;
-    const DataRouterService = require('services/data').default;
     const { data = [] }     = await DataRouterService.getData('search:features', {
       inputs: {
         layer,

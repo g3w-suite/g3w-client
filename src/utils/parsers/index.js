@@ -15,8 +15,7 @@ import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGe
 import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature'
 import { reverseGeometry }                 from 'utils/reverseGeometry';
 import { Feature }                         from 'map/layers/feature';
-
-const { t }                                = require('g3w-i18n');
+import { t }                               from 'g3w-i18n';
 
 Object
   .entries({

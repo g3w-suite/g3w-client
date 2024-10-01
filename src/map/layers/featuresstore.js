@@ -8,7 +8,7 @@ import { $promisify } from 'utils/promisify';
 import { XHR }        from 'utils/XHR';
 
 /** @deprecated */
-const _cloneDeep        = require('lodash.clonedeep');
+import _cloneDeep     from 'lodash.clonedeep';
 
 export class FeaturesStore extends G3WObject {
 

@@ -80,7 +80,7 @@
   import ApplicationState               from 'store/application'
   import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-  const { Layer }                       = require('map/layers/layer');
+  import { Layer }                      from 'map/layers/layer';
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 

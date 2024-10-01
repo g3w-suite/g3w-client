@@ -36,8 +36,7 @@
   import GUI                        from 'services/gui';
   import { getUniqueDomId }         from 'utils/getUniqueDomId';
   import { Fields }                 from 'g3w-field';
-
-  const { t }                       = require('g3w-i18n');
+  import { t }                      from 'g3w-i18n';
 
   export default {
 
