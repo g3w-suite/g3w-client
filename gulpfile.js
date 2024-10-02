@@ -682,12 +682,3 @@ gulp.task('version', function() {
   production = true;
   setNODE_ENV();
 });
-
-// Backward compatibilities (v3.x)
-gulp.task('g3w-admin',                           ['build']);
-gulp.task('g3w-admin-plugins-select',            ['build:plugins']);
-gulp.task('g3w-admin-client',                    ['g3w-admin']);
-gulp.task('g3w-admin:plugins',                   ['build:plugins']);
-gulp.task('serve',                               ['dev']);
-gulp.task('default',                             ['dev']);
-gulp.task('watch:plugins',                       ['dev']);
