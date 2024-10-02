@@ -1,7 +1,6 @@
 *~
 .idea
 package-lock.json
-/assets/style/less/g3w-skins-custom/
 /build
 /config.js
 /cypress.env.json
@@ -16,10 +15,10 @@ package-lock.json
 /src/app/__dev__/
 /src/app/core/iframe/test/
 /src/app/dev/
-/src/config/dev/index.js
-/src/config/keys/index.js
+/src/config/
+/src/assets/style/less/g3w-skins-custom/
 /src/libs/sdk/config/dev/
 /src/libs/sdk/g3w-ol3/config/config.js
-/src/index.html
 /src/plugins/**
-!/src/plugins/.gitkeep
+!/src/plugins/README.md
+!/src/plugins/_version.js

@@ -1,77 +1,365 @@
-# G3W-SUITE
+# G3W-CLIENT v3.11.0-alpha.1
 
-G3W-CLIENT client module for G3W-SUITE.
+[![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
+G3W-SUITE scripts and configuration files needed to set up a suitable local development enviroment for the [g3w-client](https://g3w-suite.readthedocs.io/en/latest/g3wsuite_client.html) cartographic viewer.
 
-The following instructions are for a Ubuntu 18.04 LTS.
+![g3w-client](https://g3w-suite.readthedocs.io/en/latest/_images/g3wclient_interface.png)
 
-## Installation of node.js
+---
 
-```bash
-sudo apt-get install -y nodejs-legacy npm
+## Project setup
+
+Download and install [Node.js and NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and [Docker Compose](https://docs.docker.com/compose/install/) in your development enviroment.
+
+Clone and place the [g3w-suite-docker](https://github.com/g3w-suite/g3w-suite-docker), [g3w-admin](https://github.com/g3w-suite/g3w-admin) and [g3w-client](https://github.com/g3w-suite/g3w-client) repositories into three separated adjacent folders:
+
+```sh
+cd /path/to/your/development/workspace
+
+git clone https://github.com/g3w-suite/g3w-suite-docker.git --single-branch --branch dev ./g3w-suite-docker
+git clone https://github.com/g3w-suite/g3w-admin.git --single-branch --branch dev ./g3w-admin
+git clone https://github.com/g3w-suite/g3w-client.git --single-branch --branch dev ./g3w-client
+```
+Download all javascript and docker dependencies from within your [g3w-client](https://github.com/g3w-suite/g3w-client) local repository:
+
+```sh
+cd ./g3w-client
+```
+```sh
+npm install         # javascript dependencies (client)
+```
+```sh
+npm run docker pull # docker dependencies (admin)
 ```
 
-Note: You have to install Node version => v16.13.2
+Create these configuration files from the available templates:
 
+- `/g3w-client/config.js` ← [config.template.js](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js)
+- `/g3w-suite-docker/.env` ← [.env.example](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/.env.example)
+- `/g3w-suite-docker/config/g3w-suite/settings_docker.py` ← [settings_docker.py](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/config/g3w-suite/settings_docker.py)
+- `/g3w-suite-docker/shared-volume/` ← add this folder if it doesn't exist
 
-## Install G3W-CLIENT development dependencies
+And check that the following parameters are set as follows:
 
-The following instruction will install all node modules mandatory to use development enviromental
+```sh
+# /g3w-suite-docker/.env
 
-```bash
-npm install
+WEBGIS_DOCKER_SHARED_VOLUME=./shared-volume # path to docker container shared volume
+G3WSUITE_LOCAL_CODE_PATH=../g3w-admin       # path to local g3w-admin folder
+G3WSUITE_DEBUG=True                         # default: False
 ```
 
-## Local Server Configuration
+Now your folder structure should matches this one:
 
-This is the front-end part of the G3W-SUITE. Before run it in develop mode YOU NEED TO INSTALL AND RUN the server part  [**g3w-admin**](https://github.com/g3w-suite/g3w-admin)
+```
+.
+├── g3w-admin/
+│
+├── g3w-client/
+│   ├── node_modules/
+│   ├── package.json
+│   ├── package-lock.json
+│   └── config.js
+│
+└── g3w-suite-docker/
+    ├── config/
+    │   └── g3w-suite/
+    │       └── settings_docker.py
+    ├── shared-volume/
+    ├── scripts/
+    │   └── docker-entrypoint-dev.sh
+    ├── .env
+    ├── docker-compose-dev.yml
+    └── README_DEV.md
+    
+```
 
-After server side installation you can customize local server configuration through "config.js" file
+For more info about this project dependencies see:
+
+- [package.json](https://github.com/g3w-suite/g3w-client/blob/dev/package.json)
+- [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/docker-compose-dev.yml)
+
+---
+
+## How to develop
+
+From within your [g3w-client](https://github.com/g3w-suite/g3w-client) local repository:
+
+```sh
+cd ./g3w-client
+```
+
+You can start the built-in development servers by using the following:
+
+```sh
+npm run docker:up      # backend server   (g3w-admin)
+```
+
+```sh
+npm run dev            # frontend server  (g3w-client)
+```
+
+If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
+
+```sh
+# EXAMPLE 1:
+# project_group = "countries";
+# project_type  = "qdjango";
+# project_id    = "1"
+
+http://localhost:8000/en/map/countries/qdjango/1 # g3w-admin  (production)
+http://localhost:3000/en/map/countries/qdjango/1 # g3w-client (development)
+```
+
+```sh
+# EXAMPLE 2:
+# project_group = "eleprofile";
+# project_type  = "qdjango";
+# project_id    = "2"
+
+http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
+http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
+```
+
+### Plugins
+
+If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder:
+
+```sh
+.
+└── src/
+    └── plugins/
+        ├── base
+        ├── eleprofile
+        ├── sidebar
+        └── ...
+```
+
+Update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordingly:
+
+```js
+// overrides global `window.initConfig.group.plugins` property for custom plugin development
+
+const G3W_PLUGINS = [
+  'base',
+  'eleprofile',
+  'sidebar',
+  ...
+];
+```
+
+And then start again the development servers:
+
+```sh
+npm run docker:up      # backend server (g3w-admin)
+npm run dev            # frontend server (g3w-client)
+```
+
+For further information about plugin development, see also: [`src/plugins/README.md`](https://github.com/g3w-suite/g3w-client/blob/dev/src/src/plugins/README.md)
+
+## Publish
+
+<details>
+<summary> 1. Releasing a new version of G3W-CLIENT </summary
+
+## 
+
+- [ ] Ensure all [milestones](https://github.com/g3w-suite/g3w-client/milestones) issues and pull requests are resolved.
+- [ ] Create or checkout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
+- [ ] Compile and create new tag: `npm version v3.5.1`
+- [ ] Draft a new [GitHub Relase](https://github.com/g3w-suite/g3w-client/releases/new)
+
+<details>
+
+<summary> 1.1 <code>git tag</code> usage </summary>
+
+**Listing local tags:**
+```sh
+git tag
+```
+
+**Add a new tag:**
+```sh
+git tag v3.5
+```
+
+**Update an existing tag:**
+```sh
+git tag -f v3.5
+```
+
+**Delete an  existing tag:**
+```sh
+git tag -d v3.5
+```
+
+**Publish a local tag:**
+```sh
+git push origin v3.5
+```
+
+**Publish all local tags:**
+```sh
+git push --tags
+```
+
+---
+
+Fore more info:
+
+- https://www.atlassian.com/git/tutorials/inspecting-a-repository/git-tag
+
+</details>
+
+</details>
+
+<details>
+<summary> 2. Updating G3W-ADMIN after the release </summary
+
+##
+
+- [ ] Create a new branch from client release zip archive: https://github.com/g3w-suite/g3w-client/releases
+- [ ] Create a new PR with title: `⬆️ Bump g3w-client from <old_version> to <new_version>`
+- [ ] Add the [`dependencies`](https://github.com/g3w-suite/g3w-admin/pulls?q=is%3Apr+is%3Aclosed+label%3Adependencies) label
+- [ ] Add a link to changelog page in PR description (eg: `**g3w-client: [v3.8.10](https://github.com/g3w-suite/g3w-client/releases/tag/v3.8.10)**`)
+
+</details>
+
+---
+
+### FAQ
+
+<details>
+
+<summary>1. How can I start or stop docker containers?</summary>
+
+For those unfamiliar with docker development [docker-compose](https://docs.docker.com/compose/) is a tool for defining and running multi-container applications.
+
+Below are described the most frequent commands, that are also available here in this repository as [npm scripts](https://docs.npmjs.com/cli/run-script/), you can find similar information by running `npm run` from the command line.
 
 
-1) Create a new file named config.js form config.template.js and change local G3W-ADMIN path, server port, etc ..:
+Define and run the services that make up the g3w-client (admin) development server:
 
-    ```bash
-       ~/../g3w-client$ nano config.js
-     ```
-Go to ***g3w-client/src/config/dev*** folder and create a new ***index.js*** from index.template.js setting dev configuration
+```
+docker
+  docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker
+```
 
-Go to ***g3w-client/src/config/keys*** folder and create a new ***index.js*** from index.template.js setting your GOOGLE and BING KEYS
+Create and start containers (run default admin server at [localhost:8000](http://localhost:8000)):
 
-```js{1,2}
-export const GOOGLE_API_KEY = '<INSERT HERE YOUR GOOGLE API KEY>';
-export const BING_API_KEY = '<INSERT HERE YOUR BING API KEY>';
-export default {
-  GOOGLE_API_KEY,
-  BING_API_KEY
-}```
+```
+docker:up
+  npm run docker up -- -d
+```
 
-## Development Task Command
+Stop and remove containers, networks, images, and volumes:
 
+```
+docker:down
+  npm run docker down
+```
 
-We use [**Gulp**](https://gulpjs.com/)  for automating tasks in development
+Validate and view the Compose file (load and parse [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/docker-compose-dev.yml) and [.env](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/.env.example) variables):
 
+```
+docker:config
+  npm run docker config
+```
 
-The main gulp commands to use in develop enviroment are:
+View output from containers:
 
-1."Default Commad". It used to run local server. Run it from ~/../g3w-client$
+```
+docker:logs
+    npm run docker logs
+```
 
-  ```bash
-    ~/../g3w-client$ npm run default
-  ```
-2."Admin Command". It used to build and copy the client files (.js, .css, etc..) and index.html template to g3w-admin client folders
+For more info:
 
-  ```bash
-      npm run admin
-   ```
+- [Overview of docker-compose CLI](https://docs.docker.com/compose/reference/)
 
-# Internationalization
-It is possible to add internationalization translation adding/modified  g3w-client/src/config/i18n/index.js
+</details>
 
-#Run web client
-After add a group and at least one qgis project in admin you can run web client application following the below rules:
+<details>
 
-Es ADMIN_URL: http://localhost:8000/en/map/group1-maps/qdjango/1/ where http://localhost:8000/en/map/<group_name_in_lower_case>/<project_type>/<id_project>/
+<summary>2. How can I inspect actual docker configuration?</summary>
 
-Es CLIENT_URL: http://localhost:3000/?project=group1-maps/qdjango/1 where http://localhost:3000/?project=<group_name_in_lower_case>/<project_type>/<id_project>
+If you are having trouble with your current project configuration you can use the docker config command to inspect the actual values of the variables passed to your docker container:
 
+```sh
+npm run docker config
+```
+
+If your container struggles to boot properly you can also use the docker logs command related to a specific container:
+
+```sh
+npm run docker logs g3w-suite -- -f
+npm run docker logs postgis -- -f
+```
+
+For more info:
+
+- [Overview of g3w-suite dockerization](https://g3w-suite.readthedocs.io/en/latest/docker.html)
+
+</details>
+
+<details>
+
+<summary>3. How can I keep client plugins updated ?</summary>
+
+Currently built-in and custom plugins are managed with several "independent" git repositories, so there is currently no automated task to achieve this.
+
+You can use the following commands to fetch the latest changes of built-in plugins:
+
+```sh
+cd /g3w-client/src/plugins/editing
+
+git pull editing
+```
+
+```sh
+cd /g3w-client/src/plugins/openrouteservice
+
+git pull openrouteservice
+```
+
+```sh
+cd /g3w-client/src/plugins/qplotly
+
+git pull qplotly
+```
+
+```sh
+cd /g3w-client/src/plugins/qtimeseries
+
+git pull qtimeseries
+```
+
+If you are looking for an alternative workflow, also try to take a look at [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) or [git subtrees](https://www.atlassian.com/git/tutorials/git-subtree)
+
+</details>
+
+<details>
+
+<summary>4. How can I translate this project?</summary>
+
+Depending on your current project version, you can edit one of the following files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):
+
+- `/g3w-client/src/locales/` (> v3.4)
+- `/g3w-client/src/config/i18n/index.js` (<= v3.4)
+
+</details>
+
+### Changelog
+
+All notable changes to this project are documented in the [releases](https://github.com/g3w-suite/g3w-client/releases) page.
+
+---
+
+**Compatibile with:**
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.8-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.8.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.8-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.8.x)
+
+---
+
+**License:** MPL-2

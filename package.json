@@ -1,37 +1,45 @@
 {
   "name": "g3w-client",
-  "version": "3.4.0",
+  "version": "3.11.0-alpha.1",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "admin": "gulp g3w-admin --max-old-space-size=2048",
-    "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
-    "plugins": "gulp g3w-admin-plugins-select",
-    "default": "gulp default --max-old-space-size=2048",
-    "dev": "npm run default",
+    "build": "gulp version && gulp build",
+    "dev": "gulp dev",
+    "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
+    "docker:pull": "npm run docker pull",
+    "docker:up": "npm run docker up -- -d",
+    "docker:down": "npm run docker down",
+    "docker:config": "npm run docker config",
+    "docker:logs": "npm run docker logs",
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
-    "version": "npm run admin && git add -A dist",
-    "postversion": "git push && git push --tags"
+    "version": "npm run build && git add -A",
+    "postversion": "git push && git push --tags",
+    "build:plugins": "npm run build",
+    "watch:plugins": "npm run dev"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/g3w-suite/g3w-client.git"
   },
   "author": "",
-  "license": "GPL-3.0",
+  "license": "MPL-2.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
-    "regenerator-runtime": "^0.13.9",
+    "localforage": "^1.10.0",
+    "lodash.clonedeep": "^4.5.0",
     "shp-write": "^0.3.2",
-    "vue": "^2.6.12",
+    "util-deprecate": "^1.0.2",
+    "vue": "2.6.12",
+    "vue-color": "^2.8.1",
+    "vue-cookie": "^1.1.4",
     "vue-cookie-law": "^1.13.3"
   },
-  "resolutions": {
-    "graceful-fs": "4.2.3",
-    "glob-stream": "3.1.18"
+  "overrides": {
+    "graceful-fs": "^4.2.10"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -54,8 +62,7 @@
     "core-js-latest": "npm:core-js@^3.16.2",
     "current-git-branch": "^1.1.0",
     "del": "^2.2.2",
-    "generator-browserify": "^0.4.1",
-    "generator-karma": "^2.0.0",
+    "event-stream": "^4.0.1",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.2",
     "gulp-concat": "^2.6.1",
@@ -64,10 +71,12 @@
     "gulp-less": "^3.0.5",
     "gulp-prompt": "^1.2.0",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.4",
+    "gulp-replace": "^0.6.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-streamify": "^1.0.2",
+    "gulp-uglify": "^3.0.2",
     "gulp-useref": "^3.0.7",
     "gulp-watch": "^4.3.5",
-    "http-proxy": "^1.11.0",
     "imgurify": "^2.0.1",
     "inquirer": "^7.0.0",
     "jshint": "^2.9.1",
@@ -96,12 +105,14 @@
     "vinyl-buffer": "^1.0.0",
     "vinyl-paths": "^2.1.0",
     "vinyl-source-stream": "^1.1.0",
+    "vue-template-compiler": "2.6.12",
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
   },
-  "engines" : { 
-    "node" : ">=16.13.2",
-    "npm": ">=8.1.2"
+  "browserslist": "defaults",
+  "engines": {
+    "node": ">=16.15.0",
+    "npm": ">=8.5.5"
   }
 }

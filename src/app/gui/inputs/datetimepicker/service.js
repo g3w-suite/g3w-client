@@ -1,32 +1,23 @@
-const {inherit, base} = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
-const Service = require('gui/inputs/service');
+import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
 
-function DateTimePickerService(options={}) {
-  this.validatorOptions = {};
-  base(this, options);
-}
+const Service                               = require('gui/inputs/service');
 
-inherit(DateTimePickerService, Service);
+module.exports = class DateTimePickerService extends Service {
+  constructor(opts = {}) {
+    super(opts);
 
-const proto = DateTimePickerService.prototype;
-
-proto.getLocale = function() {
-  const applicationConfig = ApplicationService.getConfig();
-  return applicationConfig.user.i18n ? applicationConfig.user.i18n : 'en';
-};
-
-proto.convertQGISDateTimeFormatToMoment = function(datetimeformat) {
-  datetimeformat = datetimeformat.replace('yyyy', 'YYYY');
-  const matchDayInDate = datetimeformat.match(/d/g);
-  if (matchDayInDate && matchDayInDate.length < 3) {
-    datetimeformat = datetimeformat.replace('d'.repeat(matchDayInDate.length), 'D'.repeat(matchDayInDate.length))
+    this.validatorOptions = {};
   }
-  return datetimeformat
-};
 
-proto.setValidatorOptions = function(options) {
-  this.validatorOptions = options;
-};
+  getLocale() {
+    return window.initConfig.user.i18n ? window.initConfig.user.i18n : 'en';
+  };
 
-module.exports = DateTimePickerService;
+  convertQGISDateTimeFormatToMoment(datetimeformat) {
+    return convertQGISDateTimeFormatToMoment(datetimeformat);
+  };
+
+  setValidatorOptions(opts = {}) {
+    this.validatorOptions = opts;
+  };
+};

@@ -1,25 +1,5 @@
-const Input = require('gui/inputs/input');
-const Service = require('../service');
+import * as vueComponentOptions from 'components/InputPickLayer.vue';
 
-const PickLayerInput = Vue.extend({
-  mixins: [Input],
-  template: require('./picklayer.html'),
-  methods: {
-    pickLayer() {
-      this.pickservice.pick()
-        .then(value => this.state.value = value).catch(()=>{})
-    },
-    unpick() {
-      setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200)
-    }
-  },
-  created() {
-    this.pickservice = new Service(this.state.input.options)
-  },
-  beforeDestroy() {
-    this.pickservice.clear();
-    this.pickservice = null;
-  }
-});
+const PickLayerInput = Vue.extend(vueComponentOptions);
 
 module.exports = PickLayerInput;

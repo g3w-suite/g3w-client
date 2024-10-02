@@ -1,8 +1,5 @@
-const Input = require('gui/inputs/input');
+import * as vueComponentOptions from 'components/InputFloat.vue';
 
-const FloatInput = Vue.extend({
-  mixins: [Input],
-  template: require('./float.html')
-});
+const FloatInput = Vue.extend(vueComponentOptions);
 
 module.exports = FloatInput;

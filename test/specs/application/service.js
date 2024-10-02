@@ -1,14 +1,13 @@
-import { server as serverConfig } from '../../../src/config';
+import { server as serverConfig } from 'app/config';
 import { LOGIN as LoginConfig} from '../../config/config';
+import GUI from 'services/gui';
+import DataRouterService from 'services/data';
+import ApplicationService from 'services/application';
+import ProjectsRegistry from 'store/projects';
+import PluginsRegistry from 'store/plugins';
 window.g3wsdk = require('api'); //usefull for plugiin
-const GUI = require('gui/gui');
-const DataRouterService = require('core/data/routerservice');
-const ApplicationService = require('core/applicationservice');
-const XHR = require('core/utils/utils').XHR;
-const ProjectsRegistry = require('core/project/projectsregistry');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
-const Application = require('gui/app/index');
-window.g3wsdk = require('api');
+const {XHR} = require('utils');
+const Application = require('gui/app/main');
 const MapComponent = require('gui/map/vue/map');
 const mapDOM = {
   width: 1168,

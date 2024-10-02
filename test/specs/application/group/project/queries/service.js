@@ -1,6 +1,5 @@
-const Filter = require('core/layers/filter/filter');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const DataRouterService = require('core/data/routerservice');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService from 'services/data';
 
 const doQuery = function({coordinates}={}){
   return DataRouterService.getData('query:coordinates', {
@@ -18,7 +17,7 @@ const doQueryBBOX = ({mapService, bbox}={}) => {
     },
     outputs: false
   })
-}
+};
 
 const doQueryByPolygon = async function({layer, coordinates}={}){
   const setSelectedLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
@@ -40,7 +39,7 @@ const doQueryByPolygon = async function({layer, coordinates}={}){
       outputs: false
     });
   }
-}
+};
 
 module.exports = {
   query: {
@@ -52,4 +51,4 @@ module.exports = {
   querybypolygon: {
     run: doQueryByPolygon
   }
-}
+};

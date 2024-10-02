@@ -8,7 +8,7 @@ export default function TestSearches({print=[]}={}) {
     print.forEach(config => {
       it(`Print template ${config.name}`, async() => {
         try {
-          const response = await printService.doPrint()
+          const response = await printService.doPrint();
           assert.isOk(true);
         } catch (e) {
           assert.fail();
