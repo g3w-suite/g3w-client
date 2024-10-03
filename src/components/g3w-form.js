@@ -162,7 +162,7 @@ export class FormService extends G3WObject {
 
     /**
      * Force update state of the service
-     * (eg. setted on a child to parent form service relation)
+     * (e.g., setted on a child to parent form service relation)
      */
     this.state = {
       layerid:              layer.getId(),
@@ -180,7 +180,7 @@ export class FormService extends G3WObject {
       update:               feature.isNew(), // set update in case or not is a new feature
       // when input change will be updated
       tovalidate:           {},
-      feature,
+      feature:              this.feature, //need to get feature cloned
       componentstovalidate: {},
       footer,
       ready:                false
@@ -228,6 +228,8 @@ export class FormService extends G3WObject {
    * @param input
    */
   changeInput(input) {
+    //need to set property
+    this.feature.set(input.name, input.value);
     if (true === this.listenChangeInput) {
       this.evaluateFilterExpressionFields(input);
       this.evaluateDefaultExpressionFields(input);
@@ -273,7 +275,6 @@ export class FormService extends G3WObject {
   evaluateDefaultExpressionFields(input = {}) {
     const filter = this.default_expression_fields_dependencies[input.name];
     if (filter) {
-      this.feature.set(input.name, input.value);
       filter.forEach(dependency_field => {
         getDefaultExpression({
           parentData:   this.parentData,
@@ -295,8 +296,6 @@ export class FormService extends G3WObject {
     if (filter) {
       // on form service inititalization `filter_expression` option has
       // `referencing_fields` or `referenced_columns` from another layer
-      const fieldForm = this._getField(input.name);
-      if (fieldForm) { this.feature.set(fieldForm.name, fieldForm.value) }
       filter.forEach(dependency_field => {
         getFilterExpression({
           parentData:   this.parentData,
