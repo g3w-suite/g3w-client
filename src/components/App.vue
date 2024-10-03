@@ -28,7 +28,7 @@
       <!-- NAVBAR TOP (MAIN MENU) -->
       <nav
         ref   = "navbar"
-        class = "navbar navbar-inverse navbar-fixed-top"
+        class = "navbar"
         role  = "navigation"
       >
 
@@ -367,7 +367,7 @@
         href           = "#"
         class          = "sidebar-aside-toggle"
         :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
-        :style         = "{ zIndex: 4 }"
+        style         = "z-index: 1"
         @click.prevent = "toggleSidebar"
         role           = "button"
       >

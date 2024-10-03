@@ -2572,9 +2572,4 @@ Layer.CAPABILITIES = {
   EDITABLE:   4,
 };
 
-/**
- * BACKOMP v3.x
- */
-Layer.SELECTION_STATE = SELECTION;
-
 export { Layer };
