@@ -38,7 +38,7 @@
         v-if = "hasMetadataInfo(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
-        <b class = "item-text" v-t = "'Metadata'"></b>
+        <b class = "item-text" v-t = "'sdk.metadata.title'"></b>
         <ul style = "border-radius: 0 3px 3px 0;">
           <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
         </ul>
@@ -67,9 +67,12 @@
         v-if = "isExternalLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('sort')"></span>
-        <b class = "item-text" v-t = "'layer_position.message'"></b>
+        <b class = "item-text">
+          <span v-t = "'layer_position.message'"></span>
+          (<span v-t = "'layer_position.' + layer.position"></span>)
+        </b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
-        <ul style="text-transform: lowercase;">
+        <ul>
           <li
             v-for  = "position in ['top', 'bottom']"
             @click = "setLayerPosition(position)"
@@ -90,7 +93,10 @@
         v-if = "canShowStylesMenu(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('palette')"></span>
-        <b     class = "item-text" v-t = "'catalog_items.contextmenu.styles'"></b>
+        <b     class = "item-text">
+          <span v-t= "'catalog_items.contextmenu.styles'"></span>
+          ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
+        </b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
@@ -115,42 +121,64 @@
         style = "padding-right: 0"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
-        <b    class = "item-text" v-t = "'catalog_items.contextmenu.layer_opacity'"></b>
+        <b    class = "item-text">
+          <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
+          ({{ (layer.opacity / 100) }})
+        </b>
         <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
         <ul>
-          <li>
-            <range
-              :value        = "layer.opacity"
-              :min          = "0"
-              :max          = "100"
-              :step         = "1"
-              :sync         = "false"
-              :showValue    = "true"
-              :unit         = "'%'"
-              @change-range = "setLayerOpacity"
-            />
+          <li style="display: list-item;">
+            <input
+              type    = "range"
+              @change = "onLayerOpacity"
+              v-model = "layer.opacity"
+              min    = "0"
+              max    = "100"
+              step   = "1"
+              list   = "opacity-markers"
+            >
+            <datalist id="opacity-markers" style="  display: flex; justify-content: space-between;">
+              <option value="0">0</option>
+              <option value="25">0.25</option>
+              <option value="50">0.50</option>
+              <option value="75">0.75</option>
+              <option value="100">1</option>
+            </datalist>
           </li>
         </ul>
       </li>
 
       <!-- Change opacity (external wms layer) -->
       <li
-        v-if                = "isExternalWMSLayer(layer)"
-        @click.prevent.stop = ""
+        v-if = "isExternalWMSLayer(layer)"
       >
-        <div style = "display: flex; justify-content: space-between">
-          <b class = "item-text" v-t = "'sdk.catalog.menu.setwmsopacity'"></b>
-          <span style = "font-weight: bold; margin-left: 5px;">{{ layer.opacity }}</span>
-        </div>
-        <range
-          :value        = "layer.opacity"
-          :min          = "0"
-          :max          = "1"
-          :step         = "0.1"
-          :sync         = "true"
-          @changed      = "closeMenu"
-          @change-range = "setWMSOpacity"
-        />
+
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
+        <b    class = "item-text">
+          <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
+          ({{ layer.opacity }})
+        </b>
+        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
+        <ul>
+          <li style="display: list-item;">
+            <input
+              type    = "range"
+              @change = "onLayerOpacity"
+              v-model = "layer.opacity"
+              min    = "0"
+              max    = "1"
+              step   = "0.1"
+              list   = "opacity-markers"
+            >
+            <datalist id="opacity-markers" style="  display: flex; justify-content: space-between;">
+              <option>0</option>
+              <option>0.25</option>
+              <option>0.50</option>
+              <option>0.75</option>
+              <option>1</option>
+            </datalist>
+          </li>
+        </ul>
       </li>
 
       <!-- Color picker (external vector layer) -->
@@ -312,7 +340,7 @@
 
       <!-- OGC Service URLs -->
       <li
-        v-if             = "canShowWmsUrl(layer.id) || canShowWfsUrl(layer.id) || canShowWfsUrl(layer.id)"
+        v-if = "canShowWmsUrl(layer.id) || canShowWfsUrl(layer.id) || canShowWfsUrl(layer.id)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.ogc_services'"></b>
@@ -397,7 +425,7 @@
     </template>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <li v-if = "layers_url && layer_menu">
+    <li v-if = "layers_url && layer_menu && !isExternalLayer(layer)">
       <a :href = "layers_url" target = "_blank" style = "color: initial">
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <span class = "menu-icon">
@@ -615,18 +643,6 @@
           map.getLayerById(this.layer.id).setZIndex(({ top: map.layersCount, bottom: 0 })[position]);
           map.emit('change-layer-position-map', { id: this.layer.id, position });
           this.closeMenu();
-        }
-      },
-
-      setWMSOpacity({id=this.layer.id, value:opacity}) {
-        id = undefined !== id ? id : this.layer.id;
-        opacity = undefined !== opacity ? opacity : 1;
-        this.layer.opacity = opacity;
-        const map = GUI.getService('map');
-        const layer = map.getLayerById(id);
-        if (layer) {
-          layer.setOpacity(opacity);
-          map.emit('change-layer-opacity', { id, opacity });
         }
       },
 
@@ -873,24 +889,27 @@
       },
 
       /**
-       * @since 3.11.0
-       */
-      /**
        * @param {{ id:? string, value: number }}
        * 
        * @fires VM~layer-change-opacity
+       * 
+       * @since 3.11.0
        */
-      setLayerOpacity( { id = this.layer.id, value: opacity }) {
-        // skip if nothing has changed
-        if (this.layer.opacity == opacity) {
-          return;
+       onLayerOpacity() {
+        if (this.isExternalWMSLayer(this.layer)) {
+          const layer = GUI.getService('map').getLayerById(this.layer.id);
+          if (layer) {
+            layer.setOpacity(this.layer.opacity);
+            GUI.getService('map').emit('change-layer-opacity', { id: this.layer.id, opacity: this.layer.opacity });
+          }
+        } else {
+          const layer = getCatalogLayerById(this.layer.id);
+          if (layer) {
+            VM.$emit('layer-change-opacity', { layerId: this.layer.id });
+            layer.change();
+          }
         }
-        this.layer.opacity = opacity;
-        const layer = getCatalogLayerById(id);
-        if (layer) {
-          VM.$emit('layer-change-opacity', { layerId: id });
-          layer.change();
-        }
+
       },
 
     },

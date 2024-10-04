@@ -26,8 +26,8 @@ export default {
       not_supported_format: "Formato non supportato"
     },
     layer_position: {
-      top: 'IN CIMA',
-      bottom: 'IN FONDO',
+      top: 'in cima',
+      bottom: 'in fondo',
       message: "Posizione"
     },
     sdk: {
@@ -574,7 +574,7 @@ export default {
         zoomtolayer: "Zoom sul Layer",
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
-        styles: "Stili",
+        styles: "Stile",
         vector_color_menu:"Colore",
         layer_opacity: "Trasparenza",
         filters: "Filtri",

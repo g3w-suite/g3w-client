@@ -570,7 +570,7 @@ export default {
         zoomtolayer: "Zoom to Layer",
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
-        styles: 'Styles',
+        styles: 'Style',
         vector_color_menu:"Color",
         layer_opacity: "Opacity",
         filters: "Filters",

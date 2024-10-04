@@ -40,7 +40,7 @@
           <!-- LAYER POSITION -->
           <div class = "form-group">
             <label for="position-layer" v-t = "'layer_position.message'"></label>
-            <select class = "form-control" id = "position-layer" v-model = "position" style="text-transform: lowercase;">
+            <select class = "form-control" id = "position-layer" v-model = "position">
               <option :value = "'top'" v-t = "'layer_position.top'"></option>
               <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
             </select>

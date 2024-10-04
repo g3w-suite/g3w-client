@@ -367,7 +367,7 @@
         href           = "#"
         class          = "sidebar-aside-toggle"
         :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
-        style         = "z-index: 1"
+        style         = "z-index: 2"
         @click.prevent = "toggleSidebar"
         role           = "button"
       >
