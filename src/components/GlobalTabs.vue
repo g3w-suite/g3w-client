@@ -212,8 +212,7 @@
                 const field = this.fields.find(f => c === f.name);
                 this.unwatch.push(
                   this.$watch(() => field.value,
-                    async (v) => {
-                      this.feature.set(field.name, v);
+                    async () => {
                       await this.setVisibility(tab);
                     })
                 )
