@@ -578,6 +578,8 @@ export default {
         vector_color_menu:"Colore",
         layer_opacity: "Trasparenza",
         filters: "Filtri",
+        download: 'Esporta come',
+        ogc_services: 'Servizi OGC',
       }
     },
     dataTable: {

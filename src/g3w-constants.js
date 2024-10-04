@@ -364,7 +364,7 @@ export const FONT_AWESOME_ICONS = {
   /** @since 3.11.0 */
   tint:             'fa fa-tint',
   /** @since 3.11.0 */
-  sort:             'fa fa-sort'
+  sort:             'fa fa-sort',
 };
 
 /**

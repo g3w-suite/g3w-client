@@ -217,7 +217,7 @@
         style            = "display: list-item;"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
-        <b    class  = "item-text" v-t = "'Download'"></b>
+        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.download'"></b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
         <bar-loader :loading = "ApplicationState.download"/>
         <ul>
@@ -322,7 +322,7 @@
         @mouseover.self  = "showMenu($event.target)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
-        <b    class  = "item-text" v-t = "'Services'"></b>
+        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.ogc_services'"></b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
         <ul>
 
@@ -338,7 +338,7 @@
               style  = "color:#000"
             >
               <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
-              <b class  = "item-text">WMS URL</b>
+              <b class  = "item-text">WMS</b>
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
@@ -362,7 +362,7 @@
               style  = "color:#000"
             >
               <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
-              <b class  = "item-text">WFS URL</b>
+              <b class  = "item-text">WFS</b>
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
@@ -386,7 +386,7 @@
               style  = "color:#000"
             >
               <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
-              <b class  = "item-text">WFS 3 URL</b>
+              <b class  = "item-text">WFS 3</b>
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"

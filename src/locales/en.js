@@ -574,6 +574,8 @@ export default {
         vector_color_menu:"Color",
         layer_opacity: "Opacity",
         filters: "Filters",
+        download: 'Download',
+        ogc_services: 'OGC Services',
       }
     },
     dataTable: {
