@@ -837,7 +837,7 @@ export default {
         content: {
           width:         `${this.state.content.sizes.width}px`,
           height:        `${this.state.content.sizes.height}px`,
-          zIndex:        3,
+          zIndex:        1,
           minHeight:     'v' === this.state.split ? `${VIEWPORT.resize.content.min}px` : null,
           paddingTop:    '8px',
           paddingBottom: '8px',
