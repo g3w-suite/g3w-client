@@ -9,12 +9,14 @@
     id              = "layer-context-menu"
     ref             = "menu"
     class           = "catalog-context-menu"
+    @mouseover      = "showMenu"
     v-click-outside = "closeMenu"
     tabindex        = "-1"
     :style          = "{
       top:  top + 'px',
       left: left + 'px',
     }"
+
   >
 
     <!-- MENU NAME -->
@@ -33,8 +35,7 @@
 
       <!-- Layer Metadata -->
       <li
-        v-if             = "hasMetadataInfo(layer)"
-        @mouseover.self  = "showMenu($event.target)"
+        v-if = "hasMetadataInfo(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
         <b class = "item-text" v-t = "'Metadata'"></b>
@@ -63,8 +64,7 @@
 
       <!-- Change z-index of ol layer. On top or button -->
       <li
-        v-if             = "isExternalLayer(layer)"
-        @mouseover.self  = "showMenu($event.target)"
+        v-if = "isExternalLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('sort')"></span>
         <b class = "item-text" v-t = "'layer_position.message'"></b>
@@ -72,7 +72,7 @@
         <ul style="text-transform: lowercase;">
           <li
             v-for  = "position in ['top', 'bottom']"
-            @click = "changeLayerPosition(position)"
+            @click = "setLayerPosition(position)"
             style  = "display: list-item;"
           >
             <span
@@ -87,8 +87,7 @@
 
       <!-- Styles menu -->
       <li
-        v-if             = "canShowStylesMenu(layer)"
-        @mouseover.self  = "showMenu($event.target)"
+        v-if = "canShowStylesMenu(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('palette')"></span>
         <b     class = "item-text" v-t = "'catalog_items.contextmenu.styles'"></b>
@@ -96,7 +95,7 @@
         <ul>
           <li
             v-for       = "(style, i) in layer.styles"
-            @click.stop = "setCurrentLayerStyle(i)"
+            @click.stop = "setLayerStyle(i)"
             :key        = "style.name"
             style       = "display: list-item;"
           >
@@ -112,9 +111,8 @@
 
       <!-- Opacity menu -->
       <li
-        v-if             = "canShowOpacityPicker(layer)"
-        @mouseover.self  = "showMenu($event.target)"
-        style            = "padding-right: 0"
+        v-if  = "canShowOpacityPicker(layer)"
+        style = "padding-right: 0"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
         <b    class = "item-text" v-t = "'catalog_items.contextmenu.layer_opacity'"></b>
@@ -157,9 +155,7 @@
 
       <!-- Color picker (external vector layer) -->
       <li
-        v-if                = "isExternalVectorLayer(layer)"
-        @click.prevent.stop = ""
-        @mouseover.self     = "showMenu($event.target)"
+        v-if = "isExternalVectorLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('tint')"></span>
         <b class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
@@ -168,7 +164,7 @@
           <li style="padding: 14px; background-color: #E0E0E0;">
             <chrome-picker
               ref                 = "color_picker"
-              v-model             = "layer_color"
+              v-model             = "layer.color"
               @click.prevent.stop = ""
               @hook:beforeDestroy = "() => $refs.color_picker.$off()"
               @input              = "onChangeColor"
@@ -180,8 +176,7 @@
 
       <!-- Filters menu -->
       <li
-        v-if             = "canShowFiltersMenu(layer)"
-        @mouseover.self  = "showMenu($event.target)"
+        v-if = "canShowFiltersMenu(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('filter')"></span>
         <b class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></b>
@@ -191,7 +186,7 @@
             v-for       = "filter in layer.filters"
             :key        = "filter.fid"
             style       = "display: flex; justify-content: space-between; align-items: baseline"
-            @click.stop = "setCurrentLayerFilter(filter)"
+            @click.stop = "setLayerFilter(filter)"
           >
             <span
               v-if   = "layer.filter.current && layer.filter.current.fid === filter.fid"
@@ -211,10 +206,9 @@
 
       <!-- Click to Download -->
       <li
-        v-if             = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
-        @mouseover.self  = "showMenu($event.target)"
-        :disabled        = "ApplicationState.download"
-        style            = "display: list-item;"
+        v-if      = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
+        :disabled = "ApplicationState.download"
+        style     = "display: list-item;"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.download'"></b>
@@ -319,7 +313,6 @@
       <!-- OGC Service URLs -->
       <li
         v-if             = "canShowWmsUrl(layer.id) || canShowWfsUrl(layer.id) || canShowWfsUrl(layer.id)"
-        @mouseover.self  = "showMenu($event.target)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.ogc_services'"></b>
@@ -329,7 +322,7 @@
           <!-- Click to Copy WMS URL -->
           <li
             v-if   = "canShowWmsUrl(layer.id)"
-            @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wms'})"
+            @click = "copyUrl('Wms', $event.target)"
             style = "display: flex; justify-content: space-between;align-items: baseline;"
           >
             <a
@@ -353,7 +346,7 @@
           <!-- Click to Copy WFS URL -->
           <li
             v-if   = "canShowWfsUrl(layer.id)"
-            @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wfs' })"
+            @click = "copyUrl('Wfs', $event.target)"
             style = "display: flex; justify-content: space-between;align-items: baseline;"
           >
             <a
@@ -377,7 +370,7 @@
           <!-- Click to Copy WFS 3 URL -->
           <li
             v-if   = "canShowWfsUrl(layer.id)"
-            @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wfs3' })"
+            @click = "copyUrl('Wfs3', $event.target)"
             style  = "display: flex; justify-content: space-between;align-items: baseline;"
           >
             <a
@@ -464,18 +457,10 @@
         ApplicationState,
         layer:         null,
         layer_style:   null,
-        layer_color:   null,
         top:           0,
         left:          0,
         project_menu:  false,
         layer_menu:    false,
-        metadata_menu: false,
-        styles_menu:   false,
-        opacity_menu:  false,
-        download_menu: false,
-        ogc_menu:      false,
-        color_menu:    false,
-        filters_menu:  false,
       };
     },
 
@@ -500,27 +485,16 @@
       /**
        * @since 3.10.0
        */
-       async onShowLayerContextMenu(evt, layerstree) {
+       async onShowContextMenu(e, layerstree) {
         this.closeMenu();
         await this.$nextTick();
-        this.left        = evt.x;
-        this.layer       = layerstree;
-        this.layer_menu  = true;
-        this.layer_color = layerstree.color;
-
+        this.left         = e.x;
+        this.layer        = layerstree || null;
+        this.layer_menu   = !!layerstree;
+        this.project_menu = !layerstree;
         await this.$nextTick();
-        this.top = $(evt.target).offset().top - $(this.$refs['menu']).height() + ($(evt.target).height()/ 2);
+        this.top = $(e.target).offset().top - $(this.$refs['menu']).height() + ($(e.target).height()/ 2);
         $('.click-to-copy[data-toggle="tooltip"]').tooltip();
-      },
-
-      async onShowProjectContextMenu(evt) {
-        this.closeMenu();
-        await this.$nextTick();
-        this.left         = evt.x;
-        this.project_menu = true;
-        console.log(this.project_menu, this);
-        await this.$nextTick();
-        this.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height() / 2);
       },
 
       /**
@@ -579,13 +553,11 @@
       },
 
       /**
-       *
-       * @param evt
-       * @param layerId
-       * @param { string } type Wms, Wfs, Wfs3
+       * @param { 'Wms', 'Wfs', 'Wfs3' } format
+       * @param { HTMLElement } el
        */
-      copyUrl({ el, layerId, type } = {}) {
-        const url = this[`get${type}Url`](layerId);
+      copyUrl(format, el) {
+        const url = this[`get${format}Url`](this.layer.id);
         const a = document.createElement('a');
         const input = document.createElement('input');
         a.href = url;
@@ -636,7 +608,7 @@
       /**
        * @param { 'top', 'bottom' } position 
        */
-      changeLayerPosition(position) {
+      setLayerPosition(position) {
         if (position !== this.layer.position) {
           this.layer.position = position;
           const map = GUI.getService('map');
@@ -712,20 +684,19 @@
        * @returns {Promise<void>}
        */
       async downloadExternalShapefile(layer) {
-        const EPSG4326 = 'EPSG:4326';
         ApplicationState.download = true;
         let features = GUI.getService('map').getLayerByName(layer.name).getSource().getFeatures();
-        if (EPSG4326 !== layer.crs) {
-          features = features.map(feature => {
-            const clonefeature = feature.clone();
-            clonefeature.getGeometry().transform(layer.crs, EPSG4326);
-            return clonefeature;
-          })
+        if ('EPSG:4326' !== layer.crs) {
+          features = features.map(f => {
+            const feat = f.clone();
+            feat.getGeometry().transform(layer.crs, 'EPSG:4326');
+            return feat;
+          });
         }
         const name = layer.name.split(`.${layer.type}`)[0];
         shpwrite.download(
           // GeoJSONFile
-          (new ol.format.GeoJSON()).writeFeaturesObject(features, { featureProjection: EPSG4326 }),
+          (new ol.format.GeoJSON()).writeFeaturesObject(features, { featureProjection: 'EPSG:4326' }),
           {
             folder:         name,
             types: {
@@ -749,7 +720,7 @@
         this.closeMenu();
       },
 
-      setCurrentLayerStyle(index) {
+      setLayerStyle(index) {
         let changed = false;
         this.layer.styles.forEach((style, i) => {
           if (i === index) {
@@ -775,7 +746,7 @@
        *
        * @since 3.9.0
        */
-      async setCurrentLayerFilter(filter) {
+      async setLayerFilter(filter) {
         const changed = (
           null === this.layer.filter.current ||
           this.layer.filter.current.fid !== filter.fid
@@ -816,9 +787,9 @@
        * @param { string } menu
        * @param { HTMLElement } target
        */
-      async showMenu(target) {
-        await this.$nextTick();
-        const ul = target && target.querySelector('ul');
+      async showMenu(e) {
+        const li = e.target.closest('li');
+        const ul = li && li.querySelector('ul');
         if (ul) {
           const overflowY = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs['menu'].offsetHeight + this.$refs['menu'].getBoundingClientRect().top);
           ul.style.top       = ul.offsetHeight > this.$refs['menu'].offsetHeight ? 0 : undefined;
@@ -929,8 +900,8 @@
      * @listens VM~show-layer-context-menu
      */
     created() {
-      VM.$on('show-project-context-menu', this.onShowProjectContextMenu);
-      VM.$on('show-layer-context-menu', this.onShowLayerContextMenu );
+      VM.$on('show-project-context-menu', this.onShowContextMenu);
+      VM.$on('show-layer-context-menu', this.onShowContextMenu );
     },
 
   };
