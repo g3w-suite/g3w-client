@@ -35,11 +35,15 @@
 
       <!-- Layer Metadata -->
       <li
-        v-if = "hasMetadataInfo(layer)"
+        v-if                = "hasMetadata(layer)"
+        @click.prevent.stop = "showMetadata(layer.id)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
         <b class = "item-text" v-t = "'sdk.metadata.title'"></b>
-        <ul style = "border-radius: 0 3px 3px 0;">
+        <ul
+          v-if  = "layer.metadata.abstract"
+          style = "border-radius: 0 3px 3px 0;"
+        >
           <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
         </ul>
       </li>
@@ -736,6 +740,16 @@
         this.closeMenu();
       },
 
+      async showMetadata(layerId){
+        this.closeMenu();
+        GUI.getComponent('metadata').setOpen(true);
+        setTimeout(() => {
+          document.querySelector('#project-catalog [href="#metadata_layers"]').click();
+          document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').click();
+          // setTimeout(() => document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').scrollIntoView());
+        });
+      },
+
       setLayerStyle(index) {
         let changed = false;
         this.layer.styles.forEach((style, i) => {
@@ -877,8 +891,8 @@
       /**
        * @since 3.8.3
        */
-      hasMetadataInfo(layer) {
-        return layer.metadata && layer.metadata.abstract;
+      hasMetadata(layer) {
+        return layer.metadata /*&& layer.metadata.abstract*/;
       },
 
       /**
@@ -983,6 +997,7 @@
     font-weight: bold;
     border-bottom-width: 3px !important;
     flex-direction: column;
+    max-width: 250px;
   }
   .catalog-context-menu li.title:hover {
     cursor: default !important;
