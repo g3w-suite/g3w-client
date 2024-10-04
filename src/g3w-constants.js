@@ -363,6 +363,8 @@ export const FONT_AWESOME_ICONS = {
   measure:          'fas fa-ruler-horizontal',
   /** @since 3.11.0 */
   tint:             'fa fa-tint',
+  /** @since 3.11.0 */
+  sort:             'fa fa-sort'
 };
 
 /**

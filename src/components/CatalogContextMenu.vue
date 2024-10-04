@@ -31,17 +31,6 @@
     <!-- LAYER MENU -->
     <template v-if = "layer_menu">
 
-      <!-- Change z-index of ol layer. On top or button -->
-      <li v-if = "isExternalLayer(layer)">
-        <div style = "display: flex; justify-content: space-between; align-items: center">
-          <layerspositions
-            @layer-position-change = "changeLayerMapPosition({ position: $event, layer })"
-            style                  = "display: flex; flex-direction: column; justify-content: space-between"
-            :position              = "layer.position"
-          />
-        </div>
-      </li>
-
       <!-- Layer Metadata -->
       <li
         v-if             = "hasMetadataInfo(layer)"
@@ -70,6 +59,30 @@
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('list')"></span>
         <b class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></b>
+      </li>
+
+      <!-- Change z-index of ol layer. On top or button -->
+      <li
+        v-if             = "isExternalLayer(layer)"
+        @mouseover.self  = "showMenu($event.target)"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('sort')"></span>
+        <b class = "item-text" v-t = "'layer_position.message'"></b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <ul style="text-transform: lowercase;">
+          <li
+            v-for  = "position in ['top', 'bottom']"
+            @click = "changeLayerPosition(position)"
+            style  = "display: list-item;"
+          >
+            <span
+              v-if   = "position === layer.position"
+              style  = "font-size: 0.5em; margin-right: 3px;"
+              :class = "g3wtemplate.getFontClass('circle')"
+            ></span>
+            <span v-t = "'layer_position.' + position"></span>
+          </li>
+        </ul>
       </li>
 
       <!-- Styles menu -->
@@ -621,26 +634,16 @@
       },
 
       /**
-       *
-        * @param { String } position top, bottom
-       * @param { Object }  layer
+       * @param { 'top', 'bottom' } position 
        */
-      changeLayerMapPosition({ position, layer } = {}) {
-        const changed = layer.position !== position;
-        if (!changed) {
-          return;
+      changeLayerPosition(position) {
+        if (position !== this.layer.position) {
+          this.layer.position = position;
+          const map = GUI.getService('map');
+          map.getLayerById(this.layer.id).setZIndex(({ top: map.layersCount, bottom: 0 })[position]);
+          map.emit('change-layer-position-map', { id: this.layer.id, position });
+          this.closeMenu();
         }
-        layer.position = position;
-        position = undefined === position ? 'top' : position;
-        const map = GUI.getService('map');
-        //get map layer
-        const ml = map.getLayerById(layer.id);
-        switch(position) {
-          case 'top':    ml.setZIndex(map.layersCount); break;
-          case 'bottom': ml.setZIndex(0); break
-        }
-        map.emit('change-layer-position-map', { id: layer.id, position });
-        this.closeMenu();
       },
 
       setWMSOpacity({id=this.layer.id, value:opacity}) {

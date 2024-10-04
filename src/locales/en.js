@@ -28,7 +28,7 @@ export default {
     layer_position: {
       top: 'TOP',
       bottom: 'BOTTOM',
-      message: "Position relative to layers on TOC"
+      message: "Position"
     },
     sdk: {
       atlas: {
