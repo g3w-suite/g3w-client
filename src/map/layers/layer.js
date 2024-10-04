@@ -875,13 +875,13 @@ class Layer extends G3WObject {
   /**
    * @returns { boolean } whether it has a format to download
    */
-  isDownloadable()       { return !!(this.getDownloadableFormats().length); }
-  isGeoTIFFDownlodable() { return !this.isBaseLayer() && this.config.download && 'gdal' === this.config.source.type ; }
-  isShpDownlodable()     { return !this.isBaseLayer() && this.config.download && 'gdal' !== this.config.source.type; }
-  isXlsDownlodable()     { return !this.isBaseLayer() && !!this.config.download_xls; }
-  isGpxDownlodable()     { return !this.isBaseLayer() && !!this.config.download_gpx; }
-  isGpkgDownlodable()    { return !this.isBaseLayer() && !!this.config.download_gpkg; }
-  isCsvDownlodable()     { return !this.isBaseLayer() && !!this.config.download_csv; }
+  isDownloadable()        { return !!(this.getDownloadableFormats().length); }
+  isGeoTIFFDownloadable() { return !this.isBaseLayer() && this.config.download && 'gdal' === this.config.source.type ; }
+  isShpDownloadable()     { return !this.isBaseLayer() && this.config.download && 'gdal' !== this.config.source.type; }
+  isXlsDownloadable()     { return !this.isBaseLayer() && !!this.config.download_xls; }
+  isGpxDownloadable()     { return !this.isBaseLayer() && !!this.config.download_gpx; }
+  isGpkgDownloadable()    { return !this.isBaseLayer() && !!this.config.download_gpkg; }
+  isCsvDownloadable()     { return !this.isBaseLayer() && !!this.config.download_csv; }
 
   /******************************************************************************************
    * LAYER RELATIONS

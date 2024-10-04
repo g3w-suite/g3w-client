@@ -211,124 +211,93 @@
 
           <!-- Download as GeoTIFF -->
           <li
-            v-if = "canDownload('GeoTIFF', layer.id)"
+            v-if                = "canDownload('GeoTIFF', layer.id)"
+            @click.prevent.stop = "download('GeoTIFF', layer.id)"
             v-download
           >
-            <div
-              @click.prevent.stop = "download('GeoTIFF', layer.id)"
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')"></span>
-              <b class  = "item-text" v-t = "'GeoTiff'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')"></span>
+            <b class  = "item-text" v-t = "'GeoTiff'"></b>
           </li>
 
           <!-- Download as GeoTIFF -->
           <li
-            v-if = "canDownload('GeoTIFF', layer.id)"
+            v-if                = "canDownload('GeoTIFF', layer.id)"
+            @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
             v-download
           >
-            <div
-              @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
-              style               = "position: relative"
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')" style = "color:#777"></span>
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
-              <b class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff_map_extent'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')" style = "color:#777"></span>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
+            <b class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff_map_extent'"></b>
           </li>
 
           <!-- Download as SHP -->
           <li
-            v-if = "canDownload('Shp', layer.id)"
+            v-if                = "canDownload('Shp', layer.id)"
+            @click.prevent.stop = "download('Shp', layer.id)"
             v-download
           >
-            <div
-              @click.prevent.stop = "download('Shp', layer.id)"
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
-              <b class  = "item-text" v-t = "'Shapefile'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
+            <b class  = "item-text" v-t = "'Shapefile'"></b>
           </li>
 
           <!-- Download as GPX -->
           <li
-            v-if = "canDownload('Gpx', layer.id)"
+            v-if                = "canDownload('Gpx', layer.id)"
+            @click.prevent.stop = "download('Gpx', layer.id)"
+            v-download
           >
-            <div
-              @click.prevent.stop = "download('Gpx', layer.id)"
-              v-download
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpx')"></span>
-              <b class  = "item-text" v-t = "'GPX'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpx')"></span>
+            <b class  = "item-text" v-t = "'GPX'"></b>
           </li>
 
           <!-- Download as Gpkg -->
           <li
-            v-if = "canDownload('Gpkg', layer.id)"
+            v-if                = "canDownload('Gpkg', layer.id)"
+            @click.prevent.stop = "download('Gpkg', layer.id)"
+            v-download
           >
-            <div
-              @click.prevent.stop = "download('Gpkg', layer.id)"
-              v-download
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpkg')"></span>
-              <b class  = "item-text" v-t = "'GeoPackage'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpkg')"></span>
+            <b class  = "item-text" v-t = "'GeoPackage'"></b>
           </li>
 
           <!-- Download as CSV -->
           <li
-            v-if = "canDownload('Csv', layer.id)"
+            v-if                = "canDownload('Csv', layer.id)"
+            @click.prevent.stop = "download('Csv', layer.id)"
+            v-download
           >
-            <div
-              @click.prevent.stop = "download('Csv', layer.id)"
-              v-download
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('csv')"></span>
-              <b class  = "item-text" v-t = "'CSV'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('csv')"></span>
+            <b class  = "item-text" v-t = "'CSV'"></b>
           </li>
 
           <!-- Download as XLS -->
           <li
             v-if = "canDownload('Xls', layer.id)"
+            @click.prevent.stop = "download('Xls', layer.id)"
             v-download
           >
-            <div
-              @click.prevent.stop = "download('Xls', layer.id)"
-            >
-              <span :class  = "'menu-icon ' + g3wtemplate.getFontClass('xls')"></span>
-              <b class   = "item-text" v-t = "'Excel'"></b>
-            </div>
+            <span :class  = "'menu-icon ' + g3wtemplate.getFontClass('xls')"></span>
+            <b class   = "item-text" v-t = "'Excel'"></b>
           </li>
 
           <!-- Download an external layer file from a proxy server url -->
           <li
             v-if                = "isExternalVectorLayer(layer) && layer.downloadUrl"
-            @click.prevent.stop = ""
+            @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
             v-download
           >
-            <div
-              @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
-            >
-              <!-- <bar-loader :loading = "loading.unknow"/> -->
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
-              <b class  = "item-text" v-t   = "'sdk.catalog.menu.download.unknow'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
+            <b class  = "item-text" v-t   = "'sdk.catalog.menu.download.unknow'"></b>
           </li>
 
           <!-- Download an external layer file as shapefile -->
           <li
             v-if                = "isExternalVectorLayer(layer) && !layer.downloadUrl"
-            @click.prevent.stop = ""
+            @click.prevent.stop = "downloadExternalShapefile(layer)"
             v-download
           >
-            <div
-              @click.prevent.stop = "downloadExternalShapefile(layer)"
-            >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
-              <b class  = "item-text" v-t   = "'Shapefile'"></b>
-            </div>
+            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
+            <b class  = "item-text" v-t   = "'Shapefile'"></b>
           </li>
 
         </ul>
@@ -359,7 +328,7 @@
               <b class  = "item-text">WMS URL</b>
             </a>
             <b
-              class           = "catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-tooltip-top skin-color-dark"
               :class          ="g3wtemplate.getFontClass('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
@@ -383,7 +352,7 @@
               <b class  = "item-text">WFS URL</b>
             </a>
             <b
-              class           = "catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-tooltip-top skin-color-dark"
               :class          ="g3wtemplate.getFontClass('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
@@ -407,7 +376,7 @@
               <b class  = "item-text">WFS 3 URL</b>
             </a>
             <b
-              class           = "catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-tooltip-top skin-color-dark"
               :class          ="g3wtemplate.getFontClass('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
@@ -423,7 +392,7 @@
 
     <!-- Click to open G3W-ADMIN's project layers page -->
     <li v-if = "layers_url && layer_menu">
-      <div>
+      <a :href = "layers_url" target = "_blank" style = "color: initial">
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <span class = "menu-icon">
           <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
@@ -432,23 +401,25 @@
             <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
           </svg>
         </span>
-        <b><a :href = "layers_url" target = "_blank" style = "color: initial">Layers settings</a></b>
-      </div>
+        <b>Layers settings</b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+      </a>
     </li>
 
     <!-- Click to open G3W-ADMIN's project page -->
     <li v-if = "edit_url && project_menu">
-    <div>
-      <!-- TODO: g3wtemplate.getFontClass('qgis') -->
-      <span class = "menu-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
-          <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
-          <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
-          <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
-        </svg>
-      </span>
-      <b><a :href = "edit_url" @click.stop = "closeMenu" target = "_blank" style = "color: initial">Project settings</a></b>
-    </div>
+      <a :href = "edit_url" @click.stop = "closeMenu" target = "_blank" style = "color: initial">
+        <!-- TODO: g3wtemplate.getFontClass('qgis') -->
+        <span class = "menu-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
+            <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
+            <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
+            <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
+          </svg>
+        </span>
+        <b>Project settings</b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+      </a>
   </li>
 
   </ul>
@@ -526,7 +497,7 @@
 
         await this.$nextTick();
         this.top = $(evt.target).offset().top - $(this.$refs['menu']).height() + ($(evt.target).height()/ 2);
-        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
+        $('.click-to-copy[data-toggle="tooltip"]').tooltip();
       },
 
       async onShowProjectContextMenu(evt) {
@@ -573,7 +544,7 @@
        */
       canDownload(format, layerId) {
         const layer = getCatalogLayerById(layerId);
-        return layer && layer[format ? 'is' + format + 'Downlodable' : 'isDownloadable']();
+        return layer && layer['is' + format + 'Downloadable']();
       },
 
       getWmsUrl(layerId) {
@@ -1002,15 +973,15 @@
     margin-right: 3px;
     color: var(--skin-d20) !important;
   }
-  .catalog-context-menu li .wms-url-tooltip {
+  .catalog-context-menu li .click-to-copy {
     color: #000;
     opacity: 1;
   }
-  .catalog-context-menu li .wms-url-tooltip:hover {
+  .catalog-context-menu li .click-to-copy:hover {
     color: #FFF !important;
     transform: scale(1.1);
   }
-  .catalog-context-menu .wms-url-tooltip .tooltip-inner {
+  .catalog-context-menu .click-to-copy .tooltip-inner {
     min-width: 200px;
   }
   .catalog-context-menu li.title {
