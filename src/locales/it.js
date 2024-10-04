@@ -571,7 +571,7 @@ export default {
     catalog_items: {
       helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
       contextmenu: {
-        zoomtolayer: "Zoom sul Layer",
+        zoomtolayer: "Zoom sul livello",
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stile",
