@@ -30,23 +30,25 @@
       </div>
     </li>
 
+    <!-- Layer Metadata -->
+    <li
+      v-if                = "project_menu || hasMetadata(layer)"
+      @click.prevent.stop = "showMetadata(layer && layer.id)"
+    >
+      <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
+      <b class = "item-text" v-t = "'sdk.metadata.title'"></b>
+      <ul
+        v-if  = "layer && layer.metadata && layer.metadata.abstract"
+        style = "border-radius: 0 3px 3px 0;"
+      >
+        <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
+      </ul>
+    </li>
+
     <!-- LAYER MENU -->
     <template v-if = "layer_menu">
 
-      <!-- Layer Metadata -->
-      <li
-        v-if                = "hasMetadata(layer)"
-        @click.prevent.stop = "showMetadata(layer.id)"
-      >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
-        <b class = "item-text" v-t = "'sdk.metadata.title'"></b>
-        <ul
-          v-if  = "layer.metadata.abstract"
-          style = "border-radius: 0 3px 3px 0;"
-        >
-          <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
-        </ul>
-      </li>
+
 
       <!-- Zoom to Layer -->
       <li
@@ -743,11 +745,12 @@
       async showMetadata(layerId){
         this.closeMenu();
         GUI.getComponent('metadata').click({ open: true });
-        setTimeout(() => {
-          document.querySelector('#project-catalog [href="#metadata_layers"]').click();
-          document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').click();
-          // setTimeout(() => document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').scrollIntoView());
-        });
+        if (layerId) {
+          setTimeout(() => {
+            document.querySelector('#project-catalog [href="#metadata_layers"]').click();
+            document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').click();
+          });
+        }
       },
 
       setLayerStyle(index) {
