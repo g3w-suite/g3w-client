@@ -50,11 +50,7 @@
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
         <b class = "item-text" v-t = "'Metadata'"></b>
         <ul style = "border-radius: 0 3px 3px 0;">
-          <li
-            class  = "layer-menu-metadata-info"
-            style  = "padding: 5px; background-color: #FFF ; color:#000;"
-            v-html = "layer.metadata.abstract"
-          ></li>
+          <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
         </ul>
       </li>
 
@@ -64,7 +60,7 @@
         @click.prevent.stop = "zoomToLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('search')"></span>
-        <b class  = "item-text" v-t = "'catalog_items.contextmenu.zoomtolayer'"></b>
+        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.zoomtolayer'"></b>
       </li>
 
       <!-- Attribute Table -->
@@ -82,7 +78,7 @@
         @mouseover.self  = "showMenu($event.target)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('palette')"></span>
-        <b  class = "item-text" v-t = "'catalog_items.contextmenu.styles'"></b>
+        <b     class = "item-text" v-t = "'catalog_items.contextmenu.styles'"></b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
@@ -781,8 +777,8 @@
 
       setCurrentLayerStyle(index) {
         let changed = false;
-        this.layer.styles.forEach((style, idx) => {
-          if (idx === index) {
+        this.layer.styles.forEach((style, i) => {
+          if (i === index) {
             this.layer_style = style.name;
             changed = !style.current;
             style.current = true;
@@ -790,16 +786,10 @@
             style.current = false;
           }
         });
-        if (changed) {
-          const layerId = this.layer.id;
-          const layer   = getCatalogLayerById(layerId);
-          if (layer) {
-            VM.$emit('layer-change-style', {
-              layerId,
-              style: this.layer_style
-            });
-            layer.change();
-          }
+        const layer = changed && getCatalogLayerById(this.layer.id);
+        if (layer) {
+          VM.$emit('layer-change-style', { layerId: this.layer.id, style: this.layer_style });
+          layer.change();
         }
         this.closeMenu();
       },
@@ -1043,6 +1033,8 @@
     cursor: pointer;
   }
   .catalog-context-menu li .layer-menu-metadata-info {
+    background-color: #FFF ;
+    color:#000;
     padding: 5px;
     max-width: 200px;
     white-space: normal;
