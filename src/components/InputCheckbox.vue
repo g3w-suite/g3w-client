@@ -36,7 +36,7 @@ export default {
     return {
       value: null,
       label: null,
-      id: getUniqueDomId() // new id
+      id:    getUniqueDomId() // new id
     }
   },
   methods: {
@@ -58,9 +58,8 @@ export default {
     }
   },
   mounted() {
-    if (this.state.forceNull) {
-      this.setLabel();
-    }
+    //Need to set label and value
+    this.stateValueChanged();
   }
 };
 </script>
