@@ -742,7 +742,7 @@
 
       async showMetadata(layerId){
         this.closeMenu();
-        GUI.getComponent('metadata').setOpen(true);
+        GUI.getComponent('metadata').click({ open: true });
         setTimeout(() => {
           document.querySelector('#project-catalog [href="#metadata_layers"]').click();
           document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').click();
