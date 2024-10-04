@@ -431,13 +431,7 @@ export default {
           },
           download: {
             unknow: "Scarica",
-            shp: 'Scarica Shapefile',
-            gpx: 'Scarica GPX',
-            gpkg: 'Scarica GPKG',
-            csv: 'Scarica CSV',
-            xls: 'Scarica XLS',
-            geotiff: "Scarica GEOTIFF",
-            geotiff_map_extent: "Scarica GEOTIFF(estensione vista corrente)"
+            geotiff_map_extent: "GeoTiff (vista attuale)"
           }
         }
       },
@@ -581,7 +575,7 @@ export default {
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
         styles: "Stili",
-        vector_color_menu:"Setta/Cambia Colore",
+        vector_color_menu:"Colore",
         layer_opacity: "Trasparenza",
         filters: "Filtri",
       }
