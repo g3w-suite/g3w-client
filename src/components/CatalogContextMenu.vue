@@ -4,50 +4,12 @@
 -->
 
 <template>
-
-  <!-- PROJECT MENU -->
   <ul
-    v-if            = "edit_url && project_menu"
-    id              = "project-context-menu"
-    ref             = "project-context-menu"
-    class           = "catalog-context-menu"
-    v-click-outside = "() => project_menu = false"
-    tabindex        = "-1"
-    :style          = "{
-      top:  top + 'px',
-      left: left + 'px'
-    }"
-  >
-
-    <!-- Item Title -->
-    <li class = "title">
-      <div>G3W-ADMIN {{ project_name }}</div>
-    </li>
-
-    <!-- Click to open G3W-ADMIN's project page -->
-    <li>
-      <div>
-        <!-- TODO: g3wtemplate.getFontClass('qgis') -->
-        <span class = "menu-icon skin-color-dark">
-          <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
-            <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
-            <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
-            <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
-          </svg>
-        </span>
-        <b><a :href = "edit_url" @click.stop = "() => project_menu = false" target = "_blank" style = "color: initial">Project settings</a></b>
-      </div>
-    </li>
-
-  </ul>
-
-  <!-- LAYER MENU -->
-  <ul
-    v-else-if       = "layer_menu"
+    v-if            =  "layer_menu || (project_menu && edit_url)"
     id              = "layer-context-menu"
-    ref             = "layer-menu"
+    ref             = "menu"
     class           = "catalog-context-menu"
-    v-click-outside = "closeLayerMenu"
+    v-click-outside = "closeMenu"
     tabindex        = "-1"
     :style          = "{
       top:  top + 'px',
@@ -55,441 +17,419 @@
     }"
   >
 
-    <!-- Item Title -->
+    <!-- MENU NAME -->
     <li class = "title">
-      <div>{{ layer.title}}</div>
-      <div style = "font-weight: normal; font-size: 0.8em">
-        {{ getGeometryType(layer.id, layer.external) }}
+      <div v-if = "project_menu">G3W-ADMIN {{ ApplicationState.project.getName() }}</div>
+      <div v-else>
+        {{ layer.title }}
+        <div style = "font-weight: normal; font-size: 0.8em">
+          {{ getGeometryType(layer.id, layer.external) }}
+        </div>
       </div>
     </li>
 
-    <!-- Change z-index of ol layer. On top or button -->
-    <li v-if = "isExternalLayer(layer)">
-      <div style = "display: flex; justify-content: space-between; align-items: center">
-        <layerspositions
-          @layer-position-change = "changeLayerMapPosition({ position: $event, layer })"
-          style                  = "display: flex; flex-direction: column; justify-content: space-between"
-          :position              = "layer.position"
+    <!-- LAYER MENU -->
+    <template v-if = "layer_menu">
+
+      <!-- Change z-index of ol layer. On top or button -->
+      <li v-if = "isExternalLayer(layer)">
+        <div style = "display: flex; justify-content: space-between; align-items: center">
+          <layerspositions
+            @layer-position-change = "changeLayerMapPosition({ position: $event, layer })"
+            style                  = "display: flex; flex-direction: column; justify-content: space-between"
+            :position              = "layer.position"
+          />
+        </div>
+      </li>
+
+      <!-- Layer Metadata -->
+      <li
+        v-if             = "hasMetadataInfo(layer)"
+        @mouseover.self  = "showMenu($event.target)"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
+        <b class = "item-text" v-t = "'Metadata'"></b>
+        <ul style = "border-radius: 0 3px 3px 0;">
+          <li
+            class  = "layer-menu-metadata-info"
+            style  = "padding: 5px; background-color: #FFF ; color:#000;"
+            v-html = "layer.metadata.abstract"
+          ></li>
+        </ul>
+      </li>
+
+      <!-- Zoom to Layer -->
+      <li
+        v-if                = "canZoom(layer)"
+        @click.prevent.stop = "zoomToLayer(layer)"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('search')"></span>
+        <b class  = "item-text" v-t = "'catalog_items.contextmenu.zoomtolayer'"></b>
+      </li>
+
+      <!-- Attribute Table -->
+      <li
+        v-if                = "canOpenAttributeTable(layer)"
+        @click.prevent.stop = "showAttributeTable(layer.id)"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('list')"></span>
+        <b class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></b>
+      </li>
+
+      <!-- Styles menu -->
+      <li
+        v-if             = "canShowStylesMenu(layer)"
+        @mouseover.self  = "showMenu($event.target)"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('palette')"></span>
+        <b  class = "item-text" v-t = "'catalog_items.contextmenu.styles'"></b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <ul>
+          <li
+            v-for       = "(style, i) in layer.styles"
+            @click.stop = "setCurrentLayerStyle(i)"
+            :key        = "style.name"
+            style       = "display: list-item;"
+          >
+            <span
+              v-if   = "style.current"
+              style  = "font-size: 0.8em;"
+              :class = "g3wtemplate.getFontClass('circle')">
+            </span>
+            <span>{{ getStyleName(style) }}</span>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Opacity menu -->
+      <li
+        v-if             = "canShowOpacityPicker(layer)"
+        @mouseover.self  = "showMenu($event.target)"
+        style            = "padding-right: 0"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
+        <b    class = "item-text" v-t = "'catalog_items.contextmenu.layer_opacity'"></b>
+        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
+        <ul>
+          <li>
+            <range
+              :value        = "layer.opacity"
+              :min          = "0"
+              :max          = "100"
+              :step         = "1"
+              :sync         = "false"
+              :showValue    = "true"
+              :unit         = "'%'"
+              @change-range = "setLayerOpacity"
+            />
+          </li>
+        </ul>
+      </li>
+
+      <!-- Change opacity (external wms layer) -->
+      <li
+        v-if                = "isExternalWMSLayer(layer)"
+        @click.prevent.stop = ""
+      >
+        <div style = "display: flex; justify-content: space-between">
+          <b class = "item-text" v-t = "'sdk.catalog.menu.setwmsopacity'"></b>
+          <span style = "font-weight: bold; margin-left: 5px;">{{ layer.opacity }}</span>
+        </div>
+        <range
+          :value        = "layer.opacity"
+          :min          = "0"
+          :max          = "1"
+          :step         = "0.1"
+          :sync         = "true"
+          @changed      = "closeMenu"
+          @change-range = "setWMSOpacity"
         />
-      </div>
-    </li>
+      </li>
 
-    <!-- Layer Metadata -->
-    <li
-      v-if             = "hasMetadataInfo(layer)"
-      @mouseleave.self = "showMenu('metadata_menu')"
-      @mouseover.self  = "showMenu('metadata_menu', $event.target)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('info')"></span>
-      <span class = "item-text" v-t = "'Metadata'"></span>
-      <ul
-        v-if = "metadata_menu"
-        style  = "border-radius: 0 3px 3px 0;"
+      <!-- Color picker (external vector layer) -->
+      <li
+        v-if                = "isExternalVectorLayer(layer)"
+        @click.prevent.stop = ""
+        @mouseover.self     = "showMenu($event.target)"
       >
-        <li
-          class  = "layer-menu-metadata-info"
-          style  = "padding: 5px; background-color: #FFF ; color:#000;"
-          v-html = "layer.metadata.abstract"
-        ></li>
-      </ul>
-    </li>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('tint')"></span>
+        <b class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <ul>
+          <li style="padding: 14px; background-color: #E0E0E0;">
+            <chrome-picker
+              ref                 = "color_picker"
+              v-model             = "layer_color"
+              @click.prevent.stop = ""
+              @hook:beforeDestroy = "() => $refs.color_picker.$off()"
+              @input              = "onChangeColor"
+              style               = "width: 100%"
+            />
+          </li>
+        </ul>
+      </li>
 
-    <!-- Zoom to Layer -->
-    <li
-      v-if                = "canZoom(layer)"
-      @click.prevent.stop = "zoomToLayer(layer)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('search')"></span>
-      <span class  = "item-text" v-t = "'catalog_items.contextmenu.zoomtolayer'"></span>
-    </li>
-
-    <!-- Attribute Table -->
-    <li
-      v-if                = "canOpenAttributeTable(layer)"
-      @click.prevent.stop = "showAttributeTable(layer.id)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('list')"></span>
-      <span class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></span>
-    </li>
-
-    <!-- Styles menu -->
-    <li
-      v-if             = "canShowStylesMenu(layer)"
-      @mouseleave.self = "showMenu('styles_menu')"
-      @mouseover.self  = "showMenu('styles_menu', $event.target)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('palette')"></span>
-      <span  class = "item-text" v-t = "'catalog_items.contextmenu.styles'"></span>
-      <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
-      <ul
-        v-show    = "styles_menu"
+      <!-- Filters menu -->
+      <li
+        v-if             = "canShowFiltersMenu(layer)"
+        @mouseover.self  = "showMenu($event.target)"
       >
-        <li
-          v-for       = "(style, i) in layer.styles"
-          @click.stop = "setCurrentLayerStyle(i)"
-          :key        = "style.name"
-          style       = "display: list-item;"
-        >
-          <span
-            v-if   = "style.current"
-            style  = "font-size: 0.8em;"
-            :class = "g3wtemplate.getFontClass('circle')">
-          </span>
-          <span>{{ getStyleName(style) }}</span>
-        </li>
-      </ul>
-    </li>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('filter')"></span>
+        <b class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <ul>
+          <li
+            v-for       = "filter in layer.filters"
+            :key        = "filter.fid"
+            style       = "display: flex; justify-content: space-between; align-items: baseline"
+            @click.stop = "setCurrentLayerFilter(filter)"
+          >
+            <span
+              v-if   = "layer.filter.current && layer.filter.current.fid === filter.fid"
+              style  = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
+              :class = "g3wtemplate.getFontClass('circle')"
+            ></span>
+            <span style = "margin-right: 5px;">{{ filter.name }}</span>
+            <span
+              @click.stop = "deleteFilter(filter.fid)"
+              class       = "skin-border-color"
+              style       = "color: red; right: 0; padding-left: 10px; border-left: 2px solid;"
+              :class      = "g3wtemplate.getFontClass('trash')">
+            </span>
+          </li>
+        </ul>
+      </li>
 
-    <!-- Opacity menu -->
-    <li
-      v-if             = "canShowOpacityPicker(layer)"
-      @mouseleave.self = "showMenu('opacity_menu')"
-      @mouseover.self  = "showMenu('opacity_menu', $event.target)"
-      style            = "padding-right: 0"
-    >
-      <span class = "menu-icon skin-color-dark" :class = "g3wtemplate.getFontClass('slider')"></span>
-      <b    class = "item-text" v-t = "'catalog_items.contextmenu.layer_opacity'"></b>
-      <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
-      <ul
-        v-if  = "layer && opacity_menu"
+      <!-- Click to Download -->
+      <li
+        v-if             = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
+        @mouseover.self  = "showMenu($event.target)"
+        :disabled        = "ApplicationState.download"
+        style            = "display: list-item;"
       >
-        <li>
-          <range
-            :value        = "layer.opacity"
-            :min          = "0"
-            :max          = "100"
-            :step         = "1"
-            :sync         = "false"
-            :showValue    = "true"
-            :unit         = "'%'"
-            @change-range = "setLayerOpacity"
-          />
-        </li>
-      </ul>
-    </li>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
+        <b    class  = "item-text" v-t = "'Download'"></b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
+        <bar-loader :loading = "ApplicationState.download"/>
+        <ul>
 
-    <!-- Change opacity (external wms layer) -->
-    <li
-      v-if                = "isExternalWMSLayer(layer)"
-      @click.prevent.stop = ""
-    >
-      <div style = "display: flex; justify-content: space-between">
-        <span
-          class = "item-text"
-          v-t   = "'sdk.catalog.menu.setwmsopacity'">
-        </span>
-        <span style = "font-weight: bold; margin-left: 5px;">{{ layer.opacity }}</span>
-      </div>
-      <range
-        :value        = "layer.opacity"
-        :min          = "0"
-        :max          = "1"
-        :step         = "0.1"
-        :sync         = "true"
-        @changed      = "_hideMenu"
-        @change-range = "setWMSOpacity"
-      />
-    </li>
+          <!-- Download as GeoTIFF -->
+          <li
+            v-if = "canDownload('GeoTIFF', layer.id)"
+            v-download
+          >
+            <div
+              @click.prevent.stop = "download('GeoTIFF', layer.id)"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')"></span>
+              <b class  = "item-text" v-t = "'GeoTiff'"></b>
+            </div>
+          </li>
 
-    <!-- Color picker (external vector layer) -->
-    <li
-      v-if                = "isExternalVectorLayer(layer)"
-      @click.prevent.stop = ""
-      @mouseleave.self    = "showMenu('color_menu')"
-      @mouseover.self     = "showMenu('color_menu', $event.target)"
-    >
-      <span class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></span>
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
-      <ul
-        v-if = "color_menu"
-      >
-        <li style="padding: 14px; background-color: #E0E0E0;">
-          <chrome-picker
-            ref                 = "color_picker"
-            v-model             = "layer_color"
+          <!-- Download as GeoTIFF -->
+          <li
+            v-if = "canDownload('GeoTIFF', layer.id)"
+            v-download
+          >
+            <div
+              @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
+              style               = "position: relative"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')" style = "color:#777"></span>
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
+              <b class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff_map_extent'"></b>
+            </div>
+          </li>
+
+          <!-- Download as SHP -->
+          <li
+            v-if = "canDownload('Shp', layer.id)"
+            v-download
+          >
+            <div
+              @click.prevent.stop = "download('Shp', layer.id)"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
+              <b class  = "item-text" v-t = "'Shapefile'"></b>
+            </div>
+          </li>
+
+          <!-- Download as GPX -->
+          <li
+            v-if = "canDownload('Gpx', layer.id)"
+          >
+            <div
+              @click.prevent.stop = "download('Gpx', layer.id)"
+              v-download
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpx')"></span>
+              <b class  = "item-text" v-t = "'GPX'"></b>
+            </div>
+          </li>
+
+          <!-- Download as Gpkg -->
+          <li
+            v-if = "canDownload('Gpkg', layer.id)"
+          >
+            <div
+              @click.prevent.stop = "download('Gpkg', layer.id)"
+              v-download
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpkg')"></span>
+              <b class  = "item-text" v-t = "'GeoPackage'"></b>
+            </div>
+          </li>
+
+          <!-- Download as CSV -->
+          <li
+            v-if = "canDownload('Csv', layer.id)"
+          >
+            <div
+              @click.prevent.stop = "download('Csv', layer.id)"
+              v-download
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('csv')"></span>
+              <b class  = "item-text" v-t = "'CSV'"></b>
+            </div>
+          </li>
+
+          <!-- Download as XLS -->
+          <li
+            v-if = "canDownload('Xls', layer.id)"
+            v-download
+          >
+            <div
+              @click.prevent.stop = "download('Xls', layer.id)"
+            >
+              <span :class  = "'menu-icon ' + g3wtemplate.getFontClass('xls')"></span>
+              <b class   = "item-text" v-t = "'Excel'"></b>
+            </div>
+          </li>
+
+          <!-- Download an external layer file from a proxy server url -->
+          <li
+            v-if                = "isExternalVectorLayer(layer) && layer.downloadUrl"
             @click.prevent.stop = ""
-            @hook:beforeDestroy = "() => $refs.color_picker.$off()"
-            @input              = "onChangeColor"
-            style               = "width: 100%"
-          />
-        </li>
-      </ul>
-    </li>
-
-    <!-- Filters menu -->
-    <li
-      v-if             = "canShowFiltersMenu(layer)"
-      @mouseleave.self = "showMenu('filters_menu')"
-      @mouseover.self  = "showMenu('filters_menu', $event.target)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('filter')"></span>
-      <span class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></span>
-      <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
-      <ul
-        v-if = "filters_menu"
-      >
-        <li
-          v-for       = "filter in layer.filters"
-          :key        = "filter.fid"
-          style       = "display: flex; justify-content: space-between; align-items: baseline"
-          @click.stop = "setCurrentLayerFilter(filter)"
-        >
-          <span
-            v-if   = "layer.filter.current && layer.filter.current.fid === filter.fid"
-            style  = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
-            :class = "g3wtemplate.getFontClass('circle')"
-          ></span>
-          <span style = "margin-right: 5px;">{{ filter.name }}</span>
-          <span
-            @click.stop = "deleteFilter(filter.fid)"
-            class       = "skin-border-color"
-            style       = "color: red; right: 0; padding-left: 10px; border-left: 2px solid;"
-            :class      = "g3wtemplate.getFontClass('trash')">
-          </span>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Click to Download -->
-    <li
-      v-if             = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
-      @mouseleave.self = "showMenu('download_menu')"
-      @mouseover.self  = "showMenu('download_menu', $event.target)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('download')"></span>
-      <b    class  = "item-text" v-t = "'Download'"></b>
-      <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
-      <ul
-        v-if = "download_menu"
-      >
-
-        <!-- Download as GeoTIFF -->
-        <li
-          v-if = "canDownload('GeoTIFF', layer.id)"
-          v-download
-        >
-          <div
-            @click.prevent.stop = "download('GeoTIFF', layer.id)"
-          >
-            <bar-loader :loading="loading.geotiff"/>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('geotiff')"></span>
-            <span class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff'"></span>
-          </div>
-        </li>
-
-        <!-- Download as GeoTIFF -->
-        <li
-          v-if = "canDownload('GeoTIFF', layer.id)"
-          v-download
-        >
-          <div
-            @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
-            style               = "position: relative"
-          >
-            <bar-loader :loading = "loading.geotiff"/>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('geotiff')" style = "color:#777"></span>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
-            <span class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff_map_extent'"></span>
-          </div>
-        </li>
-
-        <!-- Download as SHP -->
-        <li
-          v-if = "canDownload('Shp', layer.id)"
-          v-download
-        >
-          <div
-            @click.prevent.stop = "download('Shp', layer.id)"
-          >
-            <bar-loader :loading = "loading.shp"/>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('shapefile')"></span>
-            <span class  = "item-text" v-t = "'sdk.catalog.menu.download.shp'"></span>
-          </div>
-        </li>
-
-        <!-- Download as GPX -->
-        <li
-          v-if = "canDownload('Gpx', layer.id)"
-        >
-          <div
-            @click.prevent.stop = "download('Gpx', layer.id)"
             v-download
           >
-            <bar-loader :loading = "loading.gpx"/>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('gpx')"></span>
-            <span class  = "item-text" v-t = "'sdk.catalog.menu.download.gpx'"></span>
-          </div>
-        </li>
+            <div
+              @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
+            >
+              <!-- <bar-loader :loading = "loading.unknow"/> -->
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
+              <b class  = "item-text" v-t   = "'sdk.catalog.menu.download.unknow'"></b>
+            </div>
+          </li>
 
-        <!-- Download as Gpkg -->
-        <li
-          v-if = "canDownload('Gpkg', layer.id)"
-        >
-          <div
-            @click.prevent.stop = "download('Gpkg', layer.id)"
+          <!-- Download an external layer file as shapefile -->
+          <li
+            v-if                = "isExternalVectorLayer(layer) && !layer.downloadUrl"
+            @click.prevent.stop = ""
             v-download
           >
-            <bar-loader :loading = "loading.gpkg"/>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('gpkg')"></span>
-            <span class  = "item-text" v-t = "'sdk.catalog.menu.download.gpkg'"></span>
-          </div>
-        </li>
+            <div
+              @click.prevent.stop = "downloadExternalShapefile(layer)"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
+              <b class  = "item-text" v-t   = "'Shapefile'"></b>
+            </div>
+          </li>
 
-        <!-- Download as CSV -->
-        <li
-          v-if = "canDownload('Csv', layer.id)"
-        >
-          <div
-            @click.prevent.stop = "download('Csv', layer.id)"
-            v-download
-          >
-            <bar-loader :loading = "loading.csv" />
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('csv')"></span>
-            <span class  = "item-text" v-t = "'sdk.catalog.menu.download.csv'"></span>
-          </div>
-        </li>
+        </ul>
+      </li>
 
-        <!-- Download as XLS -->
-        <li
-          v-if = "canDownload('Xls', layer.id)"
-          v-download
-        >
-          <div
-            @click.prevent.stop = "download('Xls', layer.id)"
-          >
-            <bar-loader :loading = "loading.xls"/>
-            <span :class  = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('xls')"></span>
-            <span class   = "item-text" v-t = "'sdk.catalog.menu.download.xls'"></span>
-          </div>
-        </li>
-
-        <!-- Download an external layer file from a proxy server url -->
-        <li
-          v-if                = "isExternalVectorLayer(layer) && layer.downloadUrl"
-          @click.prevent.stop = ""
-          v-download
-        >
-          <div
-            @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
-          >
-            <bar-loader :loading = "loading.unknow"/>
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('download')"></span>
-            <span class  = "item-text" v-t   = "'sdk.catalog.menu.download.unknow'"></span>
-          </div>
-        </li>
-
-        <!-- Download an external layer file as shapefile -->
-        <li
-          v-if                = "isExternalVectorLayer(layer) && !layer.downloadUrl"
-          @click.prevent.stop = ""
-          v-download
-        >
-          <div
-            @click.prevent.stop = "downloadExternalShapefile(layer)"
-          >
-            <bar-loader :loading = "loading.shp"/>
-
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('shapefile')"></span>
-            <span class  = "item-text" v-t   = "'sdk.catalog.menu.download.shp'"></span>
-          </div>
-        </li>
-
-      </ul>
-    </li>
-
-    <!-- OGC Service URLs -->
-    <li
-      v-if             = "canShowWmsUrl(layer.id) || canShowWfsUrl(layer.id) || canShowWfsUrl(layer.id)"
-      @mouseleave.self = "showMenu('ogc_menu')"
-      @mouseover.self  = "showMenu('ogc_menu', $event.target)"
-    >
-      <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('map')"></span>
-      <b    class  = "item-text" v-t = "'Services'"></b>
-      <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
-      <ul
-        v-if  = "ogc_menu"
+      <!-- OGC Service URLs -->
+      <li
+        v-if             = "canShowWmsUrl(layer.id) || canShowWfsUrl(layer.id) || canShowWfsUrl(layer.id)"
+        @mouseover.self  = "showMenu($event.target)"
       >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+        <b    class  = "item-text" v-t = "'Services'"></b>
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
+        <ul>
 
-        <!-- Click to Copy WMS URL -->
-        <li
-          v-if   = "canShowWmsUrl(layer.id)"
-          @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wms'})"
-          style = "display: flex; justify-content: space-between;align-items: baseline;"
-        >
-          <a
-            :href  = "this.getWmsUrl(layer.id)"
-            target = "_blank"
-            style  = "color:#000"
+          <!-- Click to Copy WMS URL -->
+          <li
+            v-if   = "canShowWmsUrl(layer.id)"
+            @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wms'})"
+            style = "display: flex; justify-content: space-between;align-items: baseline;"
           >
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('map')"></span>
-            <span class  = "item-text">WMS URL</span>
-          </a>
-          <span
-            class           = "bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-            :class          ="g3wtemplate.getFontClass('eye')"
-            data-placement  = "top"
-            data-toggle     = "tooltip"
-            data-container  = "body"
-            :title          = "getWmsUrl(layer.id)"
-          ></span>
-        </li>
+            <a
+              :href  = "getWmsUrl(layer.id)"
+              target = "_blank"
+              style  = "color:#000"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+              <b class  = "item-text">WMS URL</b>
+            </a>
+            <b
+              class           = "catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+              :class          ="g3wtemplate.getFontClass('eye')"
+              data-placement  = "top"
+              data-toggle     = "tooltip"
+              data-container  = "body"
+              :title          = "getWmsUrl(layer.id)"
+            ></b>
+          </li>
 
-        <!-- Click to Copy WFS URL -->
-        <li
-          v-if   = "canShowWfsUrl(layer.id)"
-          @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wfs' })"
-          style = "display: flex; justify-content: space-between;align-items: baseline;"
-        >
-          <a
-            :href  = "this.getWfsUrl(layer.id)"
-            target = "_blank"
-            style  = "color:#000"
+          <!-- Click to Copy WFS URL -->
+          <li
+            v-if   = "canShowWfsUrl(layer.id)"
+            @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wfs' })"
+            style = "display: flex; justify-content: space-between;align-items: baseline;"
           >
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('map')"></span>
-            <span class  = "item-text">WFS URL</span>
-          </a>
-          <span
-            class           = "bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-            :class          ="g3wtemplate.getFontClass('eye')"
-            data-placement  = "top"
-            data-toggle     = "tooltip"
-            data-container  = "body"
-            :title          = "getWfsUrl(layer.id)"
-          ></span>
-        </li>
+            <a
+              :href  = "getWfsUrl(layer.id)"
+              target = "_blank"
+              style  = "color:#000"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+              <b class  = "item-text">WFS URL</b>
+            </a>
+            <b
+              class           = "catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+              :class          ="g3wtemplate.getFontClass('eye')"
+              data-placement  = "top"
+              data-toggle     = "tooltip"
+              data-container  = "body"
+              :title          = "getWfsUrl(layer.id)"
+            ></b>
+          </li>
 
-        <!-- Click to Copy WFS 3 URL -->
-        <li
-          v-if   = "canShowWfsUrl(layer.id)"
-          @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wfs3' })"
-          style  = "display: flex; justify-content: space-between;align-items: baseline;"
-        >
-          <a
-            :href  = "this.getWfs3Url(layer.id)"
-            target = "_blank"
-            style  = "color:#000"
+          <!-- Click to Copy WFS 3 URL -->
+          <li
+            v-if   = "canShowWfsUrl(layer.id)"
+            @click = "copyUrl({ el: $event.target, layerId: layer.id, type:'Wfs3' })"
+            style  = "display: flex; justify-content: space-between;align-items: baseline;"
           >
-            <span :class = "'menu-icon skin-color-dark ' + g3wtemplate.getFontClass('map')"></span>
-            <span class  = "item-text">WFS 3 URL</span>
-          </a>
-          <span
-            class           = "bold catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
-            :class          ="g3wtemplate.getFontClass('eye')"
-            data-placement  = "top"
-            data-toggle     = "tooltip"
-            data-container  = "body"
-            :title          = "getWfs3Url(layer.id)"
-          ></span>
-        </li>
+            <a
+              :href  = "getWfs3Url(layer.id)"
+              target = "_blank"
+              style  = "color:#000"
+            >
+              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+              <b class  = "item-text">WFS 3 URL</b>
+            </a>
+            <b
+              class           = "catalog-menu-wms wms-url-tooltip skin-tooltip-top skin-color-dark"
+              :class          ="g3wtemplate.getFontClass('eye')"
+              data-placement  = "top"
+              data-toggle     = "tooltip"
+              data-container  = "body"
+              :title          = "getWfs3Url(layer.id)"
+            ></b>
+          </li>
 
-      </ul>
-    </li>
+        </ul>
+      </li>
+
+    </template>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <li v-if = "layers_url">
+    <li v-if = "layers_url && layer_menu">
       <div>
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
-        <span class = "menu-icon skin-color-dark">
+        <span class = "menu-icon">
           <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
             <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
             <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
@@ -499,6 +439,21 @@
         <b><a :href = "layers_url" target = "_blank" style = "color: initial">Layers settings</a></b>
       </div>
     </li>
+
+    <!-- Click to open G3W-ADMIN's project page -->
+    <li v-if = "edit_url && project_menu">
+    <div>
+      <!-- TODO: g3wtemplate.getFontClass('qgis') -->
+      <span class = "menu-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
+          <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
+          <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
+          <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
+        </svg>
+      </span>
+      <b><a :href = "edit_url" @click.stop = "closeMenu" target = "_blank" style = "color: initial">Project settings</a></b>
+    </div>
+  </li>
 
   </ul>
 </template>
@@ -526,14 +481,12 @@
 
     data() {
       return {
+        ApplicationState,
         layer:         null,
         layer_style:   null,
         layer_color:   null,
-        layer_name:    '',
-        project_name:  ApplicationState.project.getName(),
         top:           0,
         left:          0,
-        loading:       { shp: false, csv: false, gpx: false, gpkg: false, xls: false, unknow: false },
         project_menu:  false,
         layer_menu:    false,
         metadata_menu: false,
@@ -564,45 +517,45 @@
 
     methods: {
 
-      async onShowProjectContextMenu(evt) {
-        this.project_menu = false
+      /**
+       * @since 3.10.0
+       */
+       async onShowLayerContextMenu(evt, layerstree) {
+        this.closeMenu();
         await this.$nextTick();
-        this.left = evt.x;
+        this.left        = evt.x;
+        this.layer       = layerstree;
+        this.layer_menu  = true;
+        this.layer_color = layerstree.color;
+
+        await this.$nextTick();
+        this.top = $(evt.target).offset().top - $(this.$refs['menu']).height() + ($(evt.target).height()/ 2);
+        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
+      },
+
+      async onShowProjectContextMenu(evt) {
+        this.closeMenu();
+        await this.$nextTick();
+        this.left         = evt.x;
         this.project_menu = true;
+        console.log(this.project_menu, this);
         await this.$nextTick();
         this.top = $(evt.target).offset().top - $(this.$refs['project-context-menu']).height() + ($(evt.target).height() / 2);
       },
 
       /**
-       * @private
-       */
-      _hideMenu() {
-        this.layer_menu      = false;
-        this.loading.shp     = false;
-        this.loading.csv     = false;
-        this.loading.gpx     = false;
-        this.loading.gpkg    = false;
-        this.loading.xls     = false;
-        this.loading.geotiff = false;
-        this.loading.unknow  = false;
-      },
-
-      /**
        * @param { string } menu
        */
-      closeLayerMenu(menu = 'layer_menu') {
-        this._hideMenu();
-        this.showMenu('color_menu');
-        this.showMenu(menu);
+      closeMenu() {
+        this.layer_menu = false;
+        this.project_menu = false;
       },
 
       onChangeColor(val) {
-        const map                = GUI.getService('map');
         this.layer.color         = val;
-        const layer              = map.getLayerByName(this.layer_name);
+        const layer              = GUI.getService('map').getLayerByName(this.layer.name || '');
         const style              = layer.getStyle();
         style._g3w_options.color = val;
-
         layer.setStyle(style);
       },
 
@@ -665,9 +618,8 @@
         input.remove();
         a.remove();
         setTimeout(() => {
-          //remove tooltip
-          $('[data-toggle="tooltip"]').tooltip("destroy");
-          this._hideMenu()
+          $('[data-toggle="tooltip"]').tooltip("destroy"); // remove tooltip
+          this.closeMenu();
         }, 600);
       },
 
@@ -677,18 +629,17 @@
        * @param { boolean } map_extent
        * @since 3.11.0
        */
-      download(format, layerId, map_extent = false) {
+      async download(format, layerId, map_extent = false) {
         ApplicationState.download = true;
-        this.loading[format.toLowerCase()] = true;
-        getCatalogLayerById(layerId)['get' + format.charAt(0).toUpperCase() + format.slice(1)]({
-          data:  map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : undefined
-        })
-          .catch(err => GUI.notify.error(t("info.server_error")))
-          .finally(() => {
-            this.loading[format.toLowerCase()] = false;
-            ApplicationState.download = false;
-            this._hideMenu();
-          })
+        try {
+          await getCatalogLayerById(layerId)['get' + format]({
+            data:  map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : undefined
+          });
+        } catch (e) {
+          GUI.notify.error(t("info.server_error"));
+        }
+        ApplicationState.download = false;
+        this.closeMenu();
       },
 
       /**
@@ -697,9 +648,9 @@
        * @since 3.8.3
        */
        downloadExternal(url) {
-        this.loading.unknow = true;
+        ApplicationState.download = true;
         downloadFile({ url });
-        this.loading.unknow = false;
+        ApplicationState.download = false;
       },
 
       /**
@@ -722,7 +673,7 @@
           case 'bottom': ml.setZIndex(0); break
         }
         map.emit('change-layer-position-map', { id: layer.id, position });
-        this._hideMenu();
+        this.closeMenu();
       },
 
       setWMSOpacity({id=this.layer.id, value:opacity}) {
@@ -761,7 +712,7 @@
             textMessage: true,
           })
         }
-        this._hideMenu();
+        this.closeMenu();
       },
 
       /**
@@ -776,16 +727,12 @@
       },
 
       getGeometryType(layerId, external=false) {
-        let geometryType;
-        if (external) {
-          const layer = GUI.getService('catalog').state.external.vector.find(layer => layer.id === layerId);
-          if (layer) geometryType = layer.geometryType;
-        } else {
-          const originalLayer = getCatalogLayerById(layerId);
-          geometryType = originalLayer.config.geometrytype;
+        const layer = external ? GUI.getService('catalog').state.external.vector.find(l => l.id === layerId) : getCatalogLayerById(layerId);
+        if (layer) {
+          const type = external ? layer.geometryType : layer.config.geometrytype;
+          return layer && 'NoGeometry' !== type && type || '';
         }
-        geometryType = geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
-        return geometryType;
+        return '';
       },
 
       /**
@@ -796,7 +743,7 @@
        */
       async downloadExternalShapefile(layer) {
         const EPSG4326 = 'EPSG:4326';
-        this.loading.shp = true;
+        ApplicationState.download = true;
         let features = GUI.getService('map').getLayerByName(layer.name).getSource().getFeatures();
         if (EPSG4326 !== layer.crs) {
           features = features.map(feature => {
@@ -823,13 +770,13 @@
           }
         );
         await this.$nextTick();
-        this.loading.shp = false;
-        this._hideMenu();
+        ApplicationState.download = false;
+        this.closeMenu();
       },
 
       showAttributeTable(layerId) {
         getCatalogLayerById(layerId).openAttributeTable();
-        this._hideMenu();
+        this.closeMenu();
       },
 
       setCurrentLayerStyle(index) {
@@ -854,7 +801,7 @@
             layer.change();
           }
         }
-        this.closeLayerMenu('styles_menu');
+        this.closeMenu();
       },
 
       /**
@@ -876,7 +823,7 @@
           await layer.deleteFilterToken();
         }
         layer.change();
-        this.closeLayerMenu('filters_menu');
+        this.closeMenu();
       },
 
       /**
@@ -896,7 +843,7 @@
         await layer.deleteFilterToken(fid);
         if (change) { layer.change() }
 
-        this.closeLayerMenu('filters_menu');
+        this.closeMenu();
       },
 
       /**
@@ -905,36 +852,18 @@
        * @param { string } menu
        * @param { HTMLElement } target
        */
-      async showMenu(menu, target) {
-        this[menu] = !!target;
+      async showMenu(target) {
         await this.$nextTick();
         const ul = target && target.querySelector('ul');
         if (ul) {
-          const overflowY = (ul.offsetHeight + ul.getBoundingClientRect().top) > (this.$refs['layer-menu'].offsetHeight + this.$refs['layer-menu'].getBoundingClientRect().top);
-          ul.style.top       = ul.offsetHeight > this.$refs['layer-menu'].offsetHeight ? 0 : undefined;
-          ul.style.left      = this.$refs['layer-menu'].offsetWidth -2 + 'px';
-          ul.style.maxHeight = this.$refs['layer-menu'].offsetHeight + 'px';
+          const overflowY = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs['menu'].offsetHeight + this.$refs['menu'].getBoundingClientRect().top);
+          ul.style.top       = ul.offsetHeight > this.$refs['menu'].offsetHeight ? 0 : undefined;
+          ul.style.left      = this.$refs['menu'].offsetWidth -2 + 'px';
+          ul.style.maxHeight = this.$refs['menu'].offsetHeight + 'px';
           ul.style.bottom    = overflowY ? 0         : undefined;
-          ul.style.margintop = overflowY ? undefined : '-5px';
+          ul.style.marginTop = overflowY ? undefined : '-5px';
           ul.style.overflowY = 'auto';
         }
-      },
-
-      /**
-       * @since 3.10.0
-       */
-      async onShowLayerContextMenu (layerstree, evt) {
-        this._hideMenu();
-        await this.$nextTick();
-        this.left        = evt.x;
-        this.layer_name  = layerstree.name;
-        this.layer       = layerstree;
-        this.layer_menu  = true;
-        this.layer_color = layerstree.color;
-
-        await this.$nextTick();
-        this.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
-        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
       },
 
       /**
@@ -1033,17 +962,11 @@
 
     /**
      * @listens VM~show-project-context-menu
-     * @listens VM~hide-project-context-menu
-     * 
      * @listens VM~show-layer-context-menu
-     * @listens VM~hide-layer-context-menu
      */
     created() {
       VM.$on('show-project-context-menu', this.onShowProjectContextMenu);
-      VM.$on('hide-project-context-menu', () => this.project_menu = false);
-
       VM.$on('show-layer-context-menu', this.onShowLayerContextMenu );
-      VM.$on('hide-layer-context-menu', this._hideMenu)
     },
 
   };
@@ -1074,6 +997,9 @@
     background-color: #FFF;
     color:#000;
   }
+  .catalog-context-menu li:not(:hover) ul {
+    display: none;
+  }
   .catalog-context-menu li {
     border-bottom: 1px solid #E0E0E0;
     margin: 0;
@@ -1084,6 +1010,7 @@
   .catalog-context-menu li span.menu-icon {
     padding-right: 3px;
     margin-right: 3px;
+    color: var(--skin-d20) !important;
   }
   .catalog-context-menu li .wms-url-tooltip {
     color: #000;
@@ -1092,6 +1019,9 @@
   .catalog-context-menu li .wms-url-tooltip:hover {
     color: #FFF !important;
     transform: scale(1.1);
+  }
+  .catalog-context-menu .wms-url-tooltip .tooltip-inner {
+    min-width: 200px;
   }
   .catalog-context-menu li.title {
     background: transparent;
@@ -1119,9 +1049,6 @@
     overflow-y: auto;
     max-height: 150px;
   }
-  .catalog-context-menu .wms-url-tooltip .tooltip-inner {
-    min-width: 200px;
-  }
   .catalog-context-menu .tooltip-inner {
     word-break: break-all;
     font-weight: bold;
@@ -1129,10 +1056,7 @@
   .catalog-context-menu .item-text {
     margin-left: 3px;
   }
-  .catalog-context-menu li .item-text{
-    font-weight: bold;
-  }
-  .catalog-context-menu ul, .catalog-context-menu li {
+  .catalog-context-menu :is(ul, li) {
     list-style-type: none;
   }
 </style>

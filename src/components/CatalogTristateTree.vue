@@ -573,8 +573,6 @@ export default {
     /**
      * @param evt
      * 
-     * @fires VM~hide-layer-context-menu
-     * @fires VM~hide-project-context-menu
      * @fires VM~show-layer-context-menu
      * @fires VM~show-project-context-menu
      * 
@@ -585,10 +583,8 @@ export default {
         !this.isGroup &&
         (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
       ) {
-        VM.$emit('hide-project-context-menu');
-        VM.$emit('show-layer-context-menu', this.layerstree, evt);
+        VM.$emit('show-layer-context-menu', evt, this.layerstree);
       } else if (this.isGroup && true === this.layerstree.root) {
-        VM.$emit('hide-layer-context-menu');
         VM.$emit('show-project-context-menu', evt);
       }
     },
