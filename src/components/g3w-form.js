@@ -16,13 +16,13 @@ const Service  = require('gui/form/formservice');
  * 
  * Used by the following plugins: "editing", "cadastre", "geonotes", "iternet"  
  */
-export class FormComponent extends Component {
-  constructor(opts = {}) {
+export default class FormComponent extends Component {
+  constructor(opts={}) {
     super({
       ...opts,
-      id:                 opts.id || 'form',
-      perc:               null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc,
-      service:            new (opts.service || FormService)(),
+      id: opts.id || 'form',
+      perc: null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc,
+      service: new (opts.service || Service)(),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });
 
