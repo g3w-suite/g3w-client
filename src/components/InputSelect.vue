@@ -59,7 +59,7 @@
         </option>
 
         <option
-          v-for  = "({key, value}) in state.input.options.values"
+          v-for  = "({ key, value }) in state.input.options.values"
           :key   = "getValue(value)"
           :value = "getValue(value)">
             {{ key }}
@@ -102,7 +102,8 @@
         showPickLayer :       false,
         picked :              false,
         filterFields :        [], // each item is
-        isFilterFieldsReady : false /**{Boolean} @type it is used to show filter_fields select whe ready*/
+        isFilterFieldsReady : false, /**{Boolean} @type it is used to show filter_fields select whe ready*/
+        multiple: this.state.input.options.allowmulti || false, //@since v3.11.0 multi select value
       }
     },
     computed: {
@@ -111,7 +112,10 @@
        * @returns {boolean}
        */
       showNullOption() {
-        return [undefined, true].includes(this.state.nullOption);
+        /**
+         * In case of multiple select values, need to set doesn't show null value
+         */
+        return false === this.multiple && [undefined, true].includes(this.state.nullOption);
       },
       /**
        *
@@ -137,19 +141,33 @@
             //check if autocomplete
             if (this.autocomplete) {
               this.state.input.options.values.splice(0, this.state.input.options.values.length, {
-                key: values[this.state.input.options.key],
+                key:   values[this.state.input.options.key],
                 value: values[this.state.input.options.value]
               });
               await this.$nextTick();
             }
-            const { value:field } = this.state.input.options;
-            const value = values[field];
-            this.select2.val(value).trigger('change');
+            const { value: field } = this.state.input.options;
+            let value = values[field];
+            if (this.multiple) {
+              let values = this.getMultiValues();
+              if (values.find(v => value === v)) {
+                values = values.filter(v => value !== v);
+                value  = values.length > 0 ? `{${values.join()}}`: null;
+              } else {
+                values.push(value);
+                value = `{${values.join()}}`;
+              }
+              console.log(values)
+              this.select2.val(values).trigger('change');
+            } else {
+              this.select2.val(value).trigger('change');
+            }
             await this.changeSelect(value);
             GUI.showUserMessage({ type: 'success', autoclose: true });
             this.picked = false;
           }
-        } catch(err) {
+        } catch(e) {
+          console.warn(e);
           GUI.showUserMessage({
             type:      "warning",
             message:   'sdk.form.inputs.messages.errors.picklayer',
@@ -159,14 +177,40 @@
         }
       },
       /**
+       * @since 3.11.0
+       * return <Array> values
+       */
+      getMultiValues() {
+        return this.state.value ? this.state.value.replace(/{/, '').replace(/}/, '').split(',') : [];
+      },
+      /**
        * Method to handle select2 event
        */
       setAndListenSelect2Change() {
-        this.select2.on('select2:select', event => {
+        //Listen unselect/remove value
+        this.select2.on('select2:unselect', (e) => {
+          const value = e.params.data.$value
+            ? e.params.data.$value
+            : e.params.data.id;
+          if (this.multiple) {
+            const values = this.getMultiValues().filter(v => v !== value);
+            this.state.value = this.state.value.replace(value, '');
+            if (0 === values.length) {
+              this.changeSelect(null);
+            } else {
+              this.changeSelect(`{${values.join()}}`);
+            }
+          } else if (this.showNullOption) {
+            this.changeSelect(null);
+          }
+
+        })
+
+        this.select2.on('select2:select', e => {
           //get value from select2 option
-          let value = event.params.data.$value
-            ? event.params.data.$value
-            : event.params.data.id;
+          let value = e.params.data.$value
+            ? e.params.data.$value
+            : e.params.data.id;
 
           value = this.showNullOption
             ? value === G3W_SELECT2_NULL_VALUE
@@ -175,8 +219,16 @@
               : value.toString()
 
             : value.toString();
+          // in case of multiple select values, need to set value as {"value1", "value2",...}
+          if (this.multiple) {
+            value = (
+              this.state.value && (this.state.value.startsWith('{') && this.state.value.endsWith('}')) && this.state.value.length > 2
+            ) ? `{${[...this.getMultiValues(), value].join()}}`
+              : `{${value}}`
+          }
 
           this.changeSelect(value);
+
         });
       }
     },
@@ -326,8 +378,8 @@
                 }
               });
             }
-          } catch(err) {
-            console.warn(err);
+          } catch(e) {
+            console.warn(e);
           }
         }
         else {
@@ -396,8 +448,8 @@
                       }
                     }))
                   }
-                } catch (err) {
-                  console.warn(err);
+                } catch (e) {
+                  console.warn(e);
                 }
               }
               this.state.input.options.values = (
@@ -452,7 +504,7 @@
             });
           }
 
-        } catch(err) {}
+        } catch(e) { console.warn(e); }
       }
     },
 
@@ -462,13 +514,13 @@
       const selectElement  = $(this.$refs.select);
       const language       =  this.getLanguage();
       const dropdownParent = undefined === this.state.dropdownParent && $('#g3w-view-content');
-
       if (this.autocomplete) {
         this.select2 = selectElement.select2({
           minimumInputLength: 1,
           dropdownParent,
-          allowClear  : this.showNullOption,
-          placeholder : '', // need to set placeholder in case of allowClear, otherwise doesn't work
+          multiple:           this.multiple, //@since v3.11.0
+          allowClear:         this.showNullOption,
+          placeholder:        '', // need to set placeholder in case of allowClear, otherwise doesn't work
           language,
           ajax: {
             delay: 250,
@@ -479,7 +531,7 @@
               this.resetValues();
               this.service.getData({ search })
                 .then(values => success(values))
-                .catch(err => failure(err))
+                .catch(e => { console.warn(e); failure(e); })
             },
             processResults: (data, params) => {
               params.page = params.page || 1;
@@ -500,20 +552,21 @@
             search: this.state.value
           });
         }
-        if (this.showNullOption) {
-          this.select2.on('select2:unselect', () => {
-            this.changeSelect(null);
-          });
-        }
       } else {
         this.select2 = selectElement.select2({
           language,
           dropdownParent,
+          multiple: this.multiple, //@since v3.11.0
           minimumResultsForSearch: this.isMobile() ? - 1 : null
         });
       }
       this.setAndListenSelect2Change();
-      this.setValue();
+      if (this.multiple && this.getMultiValues().length > 0) {
+        this.select2.val(this.getMultiValues()).trigger('change');
+      } else {
+        this.setValue();
+      }
+
     },
     beforeDestroy() {
       if (this.pickLayerInputService) {
