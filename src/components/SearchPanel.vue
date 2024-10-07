@@ -118,7 +118,9 @@
 
           <!-- DEBUG INFO -->
           <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
-            <summary style="text-align: center;"><code style="background-color: var(--skin-l20);">🐞 <b>DEBUG</b></code></summary>
+            <summary style="text-align: center;">
+              <code style="border: 1px solid currentColor;color: var(--skin-color);background-color: transparent;">🐞 <b>DEBUG</b></code>
+            </summary>
             <sub >
               <br v-if = "input.options.description">
               <span class = "skin-color">{{ input.type }}</span> | <span class = "skin-color">{{ input.widget_type }}</span>
