@@ -5,7 +5,7 @@
 
 <template>
   <ul
-    v-if            =  "layer_menu || (project_menu && edit_url)"
+    v-if            =  "layer_menu || project_menu"
     id              = "layer-context-menu"
     ref             = "menu"
     class           = "catalog-context-menu"
@@ -16,7 +16,6 @@
       top:  top + 'px',
       left: left + 'px',
     }"
-
   >
 
     <!-- MENU NAME -->
@@ -48,8 +47,6 @@
     <!-- LAYER MENU -->
     <template v-if = "layer_menu">
 
-
-
       <!-- Zoom to Layer -->
       <li
         v-if                = "canZoom(layer)"
@@ -65,7 +62,7 @@
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('list')"></span>
-        <b class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></b>
+        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></b>
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
@@ -192,7 +189,7 @@
         v-if = "isExternalVectorLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('tint')"></span>
-        <b class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
+        <b    class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li style="padding: 14px; background-color: #E0E0E0;">
@@ -213,7 +210,7 @@
         v-if = "canShowFiltersMenu(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('filter')"></span>
-        <b class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></b>
+        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
@@ -687,7 +684,7 @@
        * @param layer
        */
       canZoom(layer) {
-        return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
+        return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coord => coord > 0));
       },
 
       getGeometryType(layerId, external=false) {

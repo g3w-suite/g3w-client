@@ -687,25 +687,16 @@ $.ajaxSetup({
              */
             new (function() {
 
-              const opts = {
-                id:          'catalog',
-                icon:        GUI.getFontClass('map'),
-                iconColor:   '#019A4C',
-                config:      { legend: { config: (window.initConfig.layout || {}).legend } },
-              };
-
               const state = {
-                highlightlayers: false,
-                external: {  // external layers
-                  wms:    [],   // added by wms sidebar component
-                  vector: [] // added to map controls for the moment
+                external: {   // external layers
+                  wms:    [], // added by wms sidebar component
+                  vector: []  // added to map controls for the moment
                 },
                 layerstrees:  Object.values(ApplicationState.catalog).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
                 layersgroups: [],
-                legend:       Object.assign(opts.config.legend || {}, { place: ApplicationState.project.state.legend_position || 'tab' }),
               };
             
-              const service = opts.service || new G3WObject({
+              const service = new G3WObject({
                 setters: {
                   /**
                    * @param {{ layer: unknown, type: 'vector' }}
@@ -746,7 +737,9 @@ $.ajaxSetup({
               service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
 
               const comp = new Component({
-                ...opts,
+                id:                 'catalog',
+                icon:               GUI.getFontClass('map'),
+                iconColor:          '#019A4C',
                 title:              'catalog',
                 resizable:          true,
                 vueComponentObject: require('components/Catalog.vue'),

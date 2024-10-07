@@ -477,7 +477,7 @@ export class QueryBy extends InteractionControl {
       this.cursorClass = control.cursorClass;
 
       if (['querybbox', 'querybydrawpolygon'].includes(type)) {
-        GUI.getService('catalog').state.highlightlayers = e.target.get(e.key); // highlight layers in legend
+        ApplicationState.highlightlayers = e.target.get(e.key); // highlight layers in legend
       }
     });
 

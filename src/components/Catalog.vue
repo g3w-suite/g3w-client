@@ -62,7 +62,7 @@
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
-          v-if   = "'tab' === state.legend.place && showlegend"
+          v-if   = "'tab' === legend_position && showlegend"
           role   = "presentation"
           :class = "{ active: ('legend' === activeTab) }"
         >
@@ -115,12 +115,11 @@
             <catalog-tristate-tree
               v-for                      = "tree in root.tree"
               :key                       = "tree.id"
-              :highlightlayers           = "state.highlightlayers"
               :layerstree                = "tree"
               class                      = "item"
               :parentFolder              = "false"
               :root                      = "true"
-              :legendplace               = "state.legend.place"
+              :legendplace               = "legend_position"
               :parent_mutually_exclusive = "false"
               :storeid                   = "root.storeid"
             />
@@ -224,7 +223,7 @@
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
         <div
-          v-if   = "'tab' === state.legend.place"
+          v-if   = "'tab' === legend_position"
           v-for  = "tree in state.layerstrees"
           :key   = "tree.id"
           role   = "tabpanel"
@@ -289,6 +288,7 @@ export default {
   data() {
     return {
       state:            this.$options.service.state || {},
+      legend_position:  ApplicationState.project.state.legend_position || 'tab',
       showlegend:       false,
       currentBaseLayer: null,
       activeTab:        'layers',
@@ -347,7 +347,7 @@ export default {
      */
     getLegendSrc(change = false) {
       // skip if not active
-      if ('tab' !== this.state.legend.place) { return }
+      if ('tab' !== this.legend_position) { return }
 
       this.state.layerstrees.forEach(t => {
         let layers = this._traverseVisibleLayers(t.tree);
@@ -402,7 +402,7 @@ export default {
         const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
         const catalogLayer = getCatalogLayerById(layer.id);
 
-        const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
+        const url          = catalogLayer ? catalogLayer.getLegendUrl((window.initConfig.layout || {}).legend, {
           all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
@@ -687,7 +687,6 @@ export default {
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
-      
       layerstree.filter.active = await ApplicationState.catalog[storeid].getLayerById(layerstree.id).toggleFilterToken();
     },
 

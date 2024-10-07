@@ -14,10 +14,10 @@
       marginLeft: !isGroup ? '5px' : '0'
     }"
     :class                    = "{
-      selected: !isGroup || !isTable ? layerstree.selected : false,
+      selected:         !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
-      disabled: isInGrey,
-      group: isGroup
+      disabled:         isInGrey,
+      group:            isGroup
     }"
   >
     <!-- GROUP LAYER -->
@@ -115,7 +115,7 @@
 
       <span
         :class           = "{
-          highlightlayer: isHighLight,
+          highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
         class            = "skin-tooltip-top g3w-long-text"
@@ -211,7 +211,6 @@
           :root                      = "false"
           :legendConfig              = "legend"
           :legendplace               = "legendplace"
-          :highlightlayers           = "highlightlayers"
           :parentFolder              = "isGroup"
           :layerstree                = "_layerstree"
           :storeid                   = "storeid"
@@ -255,7 +254,6 @@ export default {
     'storeid',
     'legend',
     'legendplace',
-    'highlightlayers',
     'parent_mutually_exclusive',
     'parentFolder',
     'externallayers',
@@ -328,22 +326,8 @@ export default {
     },
 
     isHighLight() {
-      return (
-        // project layer
-        (
-          this.highlightlayers &&
-          !this.isGroup &&
-          getCatalogLayerById(this.layerstree.id).getTocHighlightable() &&
-          this.layerstree.visible
-        ) ||
-        // external layer
-          (
-          this.layerstree.external &&
-          this.layerstree.visible &&
-          "vector" /* <-- what the heck? */ && this.layerstree._type &&
-          true === this.layerstree.tochighlightable
-        )
-      );
+      const layer = getCatalogLayerById(this.layerstree.id) || this.layerstree;
+      return layer && ApplicationState.highlightlayers && layer.isVisible() && layer.getTocHighlightable();
     },
 
     isInGrey() {
@@ -390,7 +374,6 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      const map = GUI.getService('map');
 
       if (!group.checked) {
         group.nodes.forEach(n => {
