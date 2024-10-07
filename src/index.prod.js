@@ -31,16 +31,11 @@ import GUI                         from 'services/gui';
 import App                         from 'components/App.vue';
 import ImageComponent              from 'components/GlobalImage.vue';
 import GalleryImagesComponent      from 'components/GlobalGallery.vue';
-import GeospatialComponet          from 'components/GlobalGeo.vue';
-import Skeleton                    from 'components/GlobalSkeleton.vue';
 import BarLoader                   from 'components/GlobalBarLoader.vue';
 import Progressbar                 from 'components/GlobalProgressBar.vue';
 import HelpDiv                     from 'components/GlobalHelpDiv.vue';
-import Resize                      from 'components/GlobalResize.vue'
-import LayerPositions              from 'components/GlobalLayerPositions.vue';
 import DateTime                    from 'components/GlobalDateTime.vue';
 import Range                       from 'components/GlobalRange.vue';
-import ResizeIcon                  from 'components/GlobalResizeIcon.vue';
 import Tabs                        from 'components/GlobalTabs.vue';
 import Divider                     from 'components/GlobalDivider.vue';
 
@@ -72,16 +67,11 @@ const { addI18n, t, tPlugin } = require('g3w-i18n');
  */
 Vue.component(ImageComponent.name, ImageComponent);
 Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
-Vue.component(GeospatialComponet.name, GeospatialComponet);
 Vue.component(BarLoader.name, BarLoader);
 Vue.component(Progressbar.name, Progressbar);
-Vue.component(Skeleton.name, Skeleton);
 Vue.component(HelpDiv.name, HelpDiv);
-Vue.component(Resize.name, Resize);
-Vue.component(LayerPositions.name, LayerPositions);
 Vue.component(DateTime.name, DateTime);
 Vue.component(Range.name, Range);
-Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
 
@@ -123,6 +113,8 @@ Vue.use(window.VueCookie);
  */
 Vue.use({
   install(Vue) {
+    /** @since 3.11.0 */
+    Vue.prototype.$t = t;
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
       font: FONT_AWESOME_ICONS,
@@ -235,9 +227,6 @@ Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendo
  * create application configuration
  */
 Object.assign(initConfig, {
-  logo_img:            initConfig.header_logo_img,
-  logo_link:           initConfig.header_logo_link,
-  terms_of_use_text:   initConfig.header_terms_of_use_text,
   urls: Object.assign(initConfig.urls || {}, {
     ows:             'ows',
     api:             'api',
@@ -251,7 +240,7 @@ Object.assign(initConfig, {
     vectorurl:       initConfig.vectorurl,
     proxyurl:        initConfig.proxyurl,
     rasterurl:       initConfig.rasterurl,
-    interfaceowsurl: initConfig.interfaceowsur,
+    interfaceowsurl: initConfig.interfaceowsurl,
   }),
   layout:  initConfig.layout || {},
   plugins: initConfig.plugins || {},
@@ -419,10 +408,6 @@ $.ajaxSetup({
              * ORIGINAL SOURCE: src/components/g3w-metadata.js@v3.10.2
              */
             new (function() {
-
-              // build project group metadata
-              const project = ApplicationState.project.getState();
-
               const comp = new Component({
                 id:          'metadata',
                 collapsible: false,
@@ -431,28 +416,14 @@ $.ajaxSetup({
                 title: 'sdk.metadata.title',
                 service: Object.assign(new G3WObject, {
                   state: {
-                    name: project.title,
+                    name:   ApplicationState.project.getState().title,
                     groups: Object.entries({
-                      general: [
-                        'title',
-                        'name',
-                        'description',
-                        'abstract',
-                        'keywords',
-                        'fees',
-                        'accessconstraints',
-                        'contactinformation',
-                        'wms_url',
-                      ],
-                      spatial: [
-                        'crs',
-                        'extent',
-                      ],
-                      layers: [
-                        'layers',
-                      ],
+                      general: [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url' ],
+                      spatial: [ 'crs', 'extent' ],
+                      layers:  [ 'layers' ],
                     }).reduce((g, [name, fields]) => {
                       g[name] = fields.reduce((f, field) => {
+                        const project = ApplicationState.project.getState();
                         const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
                         if (value) {
                           f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
@@ -475,9 +446,7 @@ $.ajaxSetup({
                 if (b) {
                   service.content        = new Component({
                     service,
-                    internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({
-                      state: service.state
-                    })
+                    internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({ state: service.state })
                   });
                   service.content.layout = noop;
                   GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
@@ -654,7 +623,7 @@ $.ajaxSetup({
                 }))(),
               });
             
-              comp._setOpen = (b=false) => {
+              comp._setOpen = (b = false) => {
                 comp.internalComponent.state.open = b;
                 if (b) {
                   GUI.closeContent();
@@ -753,26 +722,11 @@ $.ajaxSetup({
           /**
            * ORIGINAL SOURCE: src/components/g3w-queryresults.js@v3.10.2 
            */
-          queryresults: new (function() {
-            const comp = new Component({
-              id:                 'queryresults',
-              title:              'Query Results',
-              service:            require('services/queryresults').default,
-              vueComponentObject: require('components/QueryResults.vue'),
-            });
-
-            comp.getElement = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
-            comp.unmount    = () => { comp.getService().closeComponent(); return Component.prototype.unmount.call(comp) };
-            comp.layout     = noop;
-
-            comp.getService().onafter('setLayersData', async () => {
-              if (!comp.internalComponent) {
-                comp.setInternalComponent();
-              }
-              await comp.internalComponent.$nextTick();
-            });
-
-            return comp;
+          queryresults: new Component({
+            id:                 'queryresults',
+            title:              'Query Results',
+            service:            require('services/queryresults').default,
+            vueComponentObject: require('components/QueryResults.vue'),
           }),
 
           /**
@@ -781,7 +735,7 @@ $.ajaxSetup({
           map: new Component({
             id:                 'map',
             title:              'Map Component',
-            service:            new (require('services/map').default).MapService({ id: 'map' }),
+            service:            new (require('services/map').default).MapService(),
             vueComponentObject: require('components/Map.vue'),
           }),
 
@@ -824,7 +778,7 @@ $.ajaxSetup({
         // setup Font, Css class methods
         $(document).localize();
 
-        CONFIG.map.mount('#g3w-view-map', true);
+        CONFIG.map    .mount('#g3w-view-map', true);
         CONFIG.content.mount('#g3w-view-content', true);
 
         GUI.addComponent(CONFIG.map);

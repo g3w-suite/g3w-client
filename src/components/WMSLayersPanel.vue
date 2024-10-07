@@ -67,11 +67,14 @@
       v-t   = "'sidebar.wms.layer_id_already_added'">
     </div>
 
-    <!-- CHOOSE LAYER POSITION (TOP | BOTTOM) -->
-    <layerspositions
-      @layer-position-change = "position=$event"
-      :position              = "position"
-    />
+    <!-- LAYER POSITION -->
+    <div class = "form-group">
+      <label for="position-layer" v-t = "'layer_position.message'"></label>
+      <select class = "form-control" id = "position-layer" v-model = "position">
+        <option :value = "'top'" v-t = "'layer_position.top'"></option>
+        <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
+      </select>
+    </div>
 
     <button
       @click.stop = "$emit('add-wms-layer', { url, position, epsg, layers: selectedlayers, name: name && name.trim() || undefined })"
@@ -97,7 +100,7 @@ export default {
   data() {
     return {
       loading:        false,      // loading reactive status
-      position:       undefined,  // layer position on map
+      position:       'top',      // layer position on map
       name:           undefined,  // name of saved layer
       title:          null,       // title of layer
       abstract:       null,       // abstract

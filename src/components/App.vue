@@ -413,14 +413,13 @@
         :style = "styles.map"
       >
 
-        <g3w-resize
-          id           = "resize-map-and-content"
-          :show        = "showresize"
-          :moveFnc     = "moveFnc"
-          :orientation = "state.split"
-          :style       = "{backgroundColor:'transparent'}"
+        <div
+          v-show          = "showresize"
+          id              = "resize-map-and-content"
+          @mousedown.stop = "resizeStart"
+          :style          = "{ cursor: 'v' === state.split ? 'ns-resize' : 'col-resize' }"
           :class       = "`split-${state.split}`"
-        />
+        ></div>
 
         <div id="application-notifications">
           <div id = "offline_notification"
@@ -522,11 +521,34 @@
             style = "display: flex; align-items: center"
           >
             <component v-for = "tool in state.content.headertools" :is = "tool"/>
-            <resize-icon
+            <div
               v-if   = "showresizeicon"
-              :type  = "state.split"
-              style  = "font-size: 1em; padding: 0; align-self: center; margin-left: auto"
-              :style = "{marginRight: state.content.closable ? '5px': '0px'}"/>
+              style  = "
+                display: flex;
+                justify-content: space-between;
+                font-size: 1em;
+                padding: 0;
+                align-self: center;
+                margin-left: auto;
+                cursor: pointer;
+              "
+              :style = "{ marginRight: state.content.closable ? '5px': '0px' }"
+            >
+              <i
+                v-if                      = "undefined !== state.split"
+                :class                    = "g3wtemplate.getFontClass(`resize-${state.split}`)"
+                v-t-tooltip:bottom.create = "'enlange_reduce'"
+                style                     = "margin-right: 3px;"
+                class                     = "action-button skin-color-dark"
+                @click                    = "resizeFull"
+              ></i>
+              <i
+                :class                    = "g3wtemplate.getFontClass(`resize-default`)"
+                v-t-tooltip:left.create   = "'reset_default'"
+                class                     = "action-button skin-color-dark"
+                @click                    = "resizeDefault"
+              ></i>
+            </div>
             <span
               v-if = "state.content.closable && state.content.aside"
               @click = "closeContent"
@@ -770,7 +792,7 @@ export default {
     },
 
     logo_url() {
-      return ApplicationState.project.state.thumbnail || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
+      return ApplicationState.project.state.thumbnail || `${this.appconfig.mediaurl}${window.initConfig.header_logo_img}`;
     },
 
     project_title() {
@@ -841,7 +863,7 @@ export default {
           minHeight:     'v' === this.state.split ? `${VIEWPORT.resize.content.min}px` : null,
           paddingTop:    '8px',
           paddingBottom: '8px',
-        }
+        },
       }
     },
 
@@ -927,7 +949,7 @@ export default {
     },
 
     getLogoLink() {
-      return this.appconfig.logo_link || null;
+      return window.initConfig.header_logo_link;
     },
 
     /**
@@ -1045,6 +1067,31 @@ export default {
 
     closeUserMessage() {
       GUI.closeUserMessage();
+    },
+
+    wrapMoveFnc(e) {
+      this.moveFnc(e);
+    },
+
+    resizeStart() {
+      document.addEventListener('mousemove', this.wrapMoveFnc);
+      document.addEventListener('mouseup',   this.resizeStop, { once: true });
+    },
+
+    async resizeStop() {
+      document.removeEventListener('mousemove', this.wrapMoveFnc);
+      await this.$nextTick();
+      GUI.emit('resize');
+    },
+
+    resizeFull() {
+      GUI.toggleFullViewContent();
+      GUI.emit('resize');
+    },
+
+    resizeDefault() {
+      GUI.resetToDefaultContentPercentage();
+      GUI.emit('resize');
     },
 
     moveFnc(e) {

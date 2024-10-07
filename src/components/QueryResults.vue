@@ -866,9 +866,6 @@
         this.$options.service.zoomToLayerFeaturesExtent(layer);
       })
     },
-    beforeDestroy() {
-      this.state.zoomToResult = true;
-    },
     destroyed() {
       this.$options.service.clear();
     }

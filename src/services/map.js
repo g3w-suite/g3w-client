@@ -38,15 +38,11 @@ import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 
-const MAP_SETTINGS = {
-  ZOOM:            { maxScale: 1000, },
-  ANIMATION:       { duration: 2000, },
-};
-
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
 const MAP = {
+  maxZoom:            1000,
   controls:           {},
   offlineids:         [],
   selectedLayer:      null,
@@ -162,7 +158,7 @@ CONTROLS['querybypolygon']     = CONTROLS['queryby'];
 
 class MapService extends G3WObject {
 
-  constructor(options = {}) {
+  constructor() {
 
     super();
 
@@ -183,8 +179,6 @@ class MapService extends G3WObject {
       mapunits:              ['metric']
     };
 
-    this.id = 'MapService';
-
     /**
      * internal promise. Resolved when view is set
      *
@@ -194,13 +188,11 @@ class MapService extends G3WObject {
 
     this.viewer = null;
 
-    this.target = options.target || 'map';
+    this.target = 'map';
 
     this.layersCount = 0; // useful to set Zindex to layer order on map
 
-    this.maps_container = options.maps_container || 'g3w-maps';
-
-    this.project = options.project || ApplicationState.project;
+    this.project = ApplicationState.project;
 
     this._controls = [];
 
@@ -270,7 +262,7 @@ class MapService extends G3WObject {
       listener: null,
     };
 
-    this.config = options.config || window.initConfig;
+    this.config = window.initConfig;
 
     this._howManyAreLoading = 0;
 
@@ -292,13 +284,11 @@ class MapService extends G3WObject {
     };
 
     // on after setting a current project
-    if (!options.project) {
-      this._keyEvents.g3wobject.push({
-        who:     g3wsdk.core.project.ProjectsRegistry,
-        setter: 'setCurrentProject',
-        key:     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', this.onSetCurrentProject)
-      });
-    }
+    this._keyEvents.g3wobject.push({
+      who:     g3wsdk.core.project.ProjectsRegistry,
+      setter: 'setCurrentProject',
+      key:     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', this.onSetCurrentProject)
+    });
 
     this.debounces =  {
       setupCustomMapParamsToLegendUrl: {
@@ -710,9 +700,9 @@ class MapService extends G3WObject {
         }
 
         // update max scale
-        MAP_SETTINGS.ZOOM.maxScale = Math.min(
+        MAP.maxZoom = Math.min(
           getScaleFromResolution(this.getMap().getView().getResolutionForExtent(this.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
-          MAP_SETTINGS.ZOOM.maxScale
+          MAP.maxZoom
         );
 
         this.state.size     = this.viewer.map.getSize();
@@ -816,9 +806,9 @@ class MapService extends G3WObject {
         maxResolution
       });
       // update max scale
-      MAP_SETTINGS.ZOOM.maxScale = Math.min(
+      MAP.maxZoom = Math.min(
         getScaleFromResolution(this.getMap().getView().getResolutionForExtent(this.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
-        MAP_SETTINGS.ZOOM.maxScale
+        MAP.maxZoom
       );
       this.viewer.map.setView(view);
 
@@ -976,7 +966,7 @@ class MapService extends G3WObject {
         const canvas = $(
           map
             ? map.getViewport()
-            : $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0]
+            : $('#g3w-maps .g3w-map').last().children('.ol-viewport')[0]
         ).children('canvas')[0];
         if (navigator.msSaveBlob) { resolve(canvas.msToBlob()) }
         else { canvas.toBlob(blob => resolve(blob)) }
@@ -1883,7 +1873,7 @@ class MapService extends G3WObject {
     else {
       const curr = map.getView().getResolution();
       // max resolution of the map
-      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(MAP_SETTINGS.ZOOM.maxScale, this.getMapUnits()));
+      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(MAP.maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
@@ -1962,7 +1952,7 @@ class MapService extends G3WObject {
    * @returns { Promise<any> }
    */
   async highlightGeometry(geometryObj, options = {}) {
-    const duration  = options.duration || MAP_SETTINGS.ANIMATION.duration;
+    const duration  = options.duration || 2000;
     const hlayer    = this.defaultsLayers.highlightLayer;
     const hide      = 'function' === typeof options.hide      ? options.hide      : null;
     const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;

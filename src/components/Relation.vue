@@ -152,13 +152,17 @@
 
       </div>
 
-      <g3w-resize
-        :show    = "chart"
-        :moveFnc = "moveFnc"
-        :where   = "'content'"
-        class    = "skin-border-color lighten"
-        style    = "border-style: solid; border-width: 0 1px 0 1px"
-      />
+      <div
+        v-show          = "chart"
+        class           = "skin-border-color lighten"
+        style           = "border-style: solid; border-width: 0 1px 0 1px"
+        :style          = "{
+          minWidth:        '5px',
+          backgroundColor: '#dddddd',
+          cursor:          'col-resize',
+        }"
+        @mousedown.stop = "resizeStart"
+      ></div>
 
       <div
         v-show   = "chart"
@@ -492,6 +496,21 @@
        */
       is(type, value) {
         return this.fieldIs(type, value);
+      },
+
+      wrapMoveFnc(e) {
+        this.moveFnc(e);
+      },
+
+      resizeStart() {
+        document.getElementById('g3w-view-content').addEventListener('mousemove', this.wrapMoveFnc);
+        document.getElementById('g3w-view-content').addEventListener('mouseup', this.resizeStop, { once: true });
+      },
+
+      async resizeStop() {
+        document.getElementById('g3w-view-content').removeEventListener('mousemove', this.wrapMoveFnc);
+        await this.$nextTick();
+        GUI.emit('resize');
       },
 
       /**

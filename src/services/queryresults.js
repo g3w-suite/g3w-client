@@ -398,12 +398,8 @@ export default new (class QueryResultsService extends G3WObject {
      * Set reactive state
      */
     this.state = {
-      logged: undefined !== ApplicationState.user.id,
 
-      /**
-       * @FIXME add description
-       */
-      zoomToResult: true,
+      logged: undefined !== ApplicationState.user.id,
 
       /**
        * @FIXME add description
@@ -1702,7 +1698,7 @@ export default new (class QueryResultsService extends G3WObject {
         internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
           currentview:      'relation',
           relations:        [projectRelation],
-          chartRelationIds: this.findPlotId(projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
+          chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
           nmRelation:       this._project.getRelationById(relation.nmRelationId),
           layer:            { id: layerId },
           feature,
