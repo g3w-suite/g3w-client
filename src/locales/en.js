@@ -26,8 +26,8 @@ export default {
       not_supported_format: "Not supported format"
     },
     layer_position: {
-      top: 'TOP',
-      bottom: 'BOTTOM',
+      top: 'top',
+      bottom: 'bottom',
       message: "Position"
     },
     sdk: {
