@@ -29,7 +29,7 @@
         >
           <i
             style  = "color: #FFFFFF"
-            :class = "g3wtemplate.getFontClass('reply')">
+            :class = "$fa('reply')">
           </i>
         </span>
 

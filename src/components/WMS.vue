@@ -25,7 +25,7 @@
           style  = "float: right;"
           title  = "Docs"
         >
-          <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+          <i :class = "$fa('external-link')"></i>
         </a>
         <input
           id      = "add_custom_url_wms_input"
@@ -57,7 +57,7 @@
           @click.prevent.stop = "addwmsurl"
           class               = "btn btn-block skin-background-color"
         >
-          <i :class = "g3wtemplate.getFontClass('plus-square')"></i>
+          <i :class = "$fa('plus-square')"></i>
           <span v-t = "'add'"></span>
         </button>
       </div>
@@ -106,7 +106,7 @@
           >
             <i
               style  = "font-weight: bold; font-size: 1.3em;"
-              :class = "g3wtemplate.getFontClass('plus-square')">
+              :class = "$fa('plus-square')">
             </i>
           </span>
 
@@ -133,7 +133,7 @@
             >
               <i
                 class  = "wms-icon-action"
-                :class = "g3wtemplate.getFontClass('plus-square')">
+                :class = "$fa('plus-square')">
               </i>
             </span>
             <!-- DELETE WMS -->
@@ -145,7 +145,7 @@
               <i
                 style  = "color: red"
                 class  = "wms-icon-action"
-                :class = "g3wtemplate.getFontClass('trash')">
+                :class = "$fa('trash')">
               </i>
             </span>
           </div>

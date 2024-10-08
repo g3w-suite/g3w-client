@@ -35,7 +35,7 @@
                 data-toggle        = "tooltip"
                 data-container     = "body"
                 v-t-tooltip.create = "'sdk.print.download_image'"
-                :class             = "g3wtemplate.getFontClass('download')"
+                :class             = "$fa('download')"
                 role               = "button">
               </button>
             </a>

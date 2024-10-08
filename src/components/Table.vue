@@ -18,7 +18,7 @@
         v-if               = "layer.isGeoLayer()"
         class              = "skin-color action-button skin-tooltip-right"
         v-disabled         = "state.geolayer.active && current_layout.rightpanel.height_100"
-        :class             = "[ g3wtemplate.getFontClass('map'), state.geolayer.active ? 'toggled' : '' ]"
+        :class             = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
         data-placement     = "right"
         @click.stop        = "getDataFromBBOX"
@@ -28,7 +28,7 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        :class             = "g3wtemplate.getFontClass('clear')"
+        :class             = "$fa('clear')"
         v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
         data-placement     = "right"
         @click.stop        = "layer.clearSelectionFids()"
@@ -38,7 +38,7 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        :class             = "[ g3wtemplate.getFontClass('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
+        :class             = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.invert'"
         data-placement     = "right"
         @click.stop        = "inverseSelection"
@@ -48,7 +48,7 @@
       <div
         v-show             = "state.show_tools"
         class              = "skin-color action-button skin-tooltip-right"
-        :class             = "[ g3wtemplate.getFontClass('filter'), layer.state.filter.active ? 'toggled' : '' ]"
+        :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
         data-placement     = "right"
         @click.stop        = "layer.toggleFilterToken()"
@@ -117,19 +117,19 @@
                <i
                 @click.stop            = "openForm(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
-                :class                 = "'action-button skin-color ' + g3wtemplate.getFontClass('table')"
+                :class                 = "'action-button skin-color ' + $fa('table')"
               ></i>
               <i
                 v-if                   = "!feature.geometry"
                 v-t-tooltip:top.create = "'no_geometry'"
                 style                  = "color: currentColor !important;"
-                :class                 = "'action-button ' + g3wtemplate.getFontClass('alert')"
+                :class                 = "'action-button ' + $fa('alert')"
               ></i>
               <i
                 v-if                   = "layer.isEditable()"
                 @click.stop            = "editFeature(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-                :class                 = "'action-button skin-color ' + g3wtemplate.getFontClass('pencil')"
+                :class                 = "'action-button skin-color ' + $fa('pencil')"
               ></i>
             </div>
           </td>

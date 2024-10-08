@@ -14,7 +14,7 @@
       <ul role = "tablist" class = "nav nav-tabs metadata-nav-bar">
         <li v-for="tab in ['general', 'spatial', 'layers']" :class = "{ active: 'general' === tab }">
           <a data-toggle="tab" :href="'#metadata_' + tab" :class="'metadata-item-tab '+ tab">
-            <i class="action-button" :class="g3wtemplate.getFontClass(({general: 'info', spatial: 'globe', layers: 'bars' })[tab])" aria-hidden="true"></i>
+            <i class="action-button" :class="$fa(({ general: 'info', spatial: 'globe', layers: 'bars' })[tab])" aria-hidden="true"></i>
             <b v-t = "'sdk.metadata.groups.'+ tab +'.title'"></b>
           </a>
         </li>
@@ -48,7 +48,7 @@
               <div v-for = "(value, info) in data.value">
                 <div class = "row metadata-contact-row">
                   <div class = "col-sm-2 metadata-contact-label">
-                    <i class = "contact-icon" :class = "g3wtemplate.getFontClass(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
+                    <i class = "contact-icon" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
                     <span v-t="`sdk.metadata.groups.general.fields.subfields.contactinformation.${info}`"></span>
                   </div>
                   <div v-if = "'personprimary' === info" class = "col-sm-10">
@@ -79,7 +79,7 @@
           >
             <i :class="'layer-header-icon action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" aria-hidden="true"></i>
             <span class = "layer-name">{{ layer.name }}</span>
-            <span class = "action-button open-close" :class = "g3wtemplate.getFontClass('plus')"></span>
+            <span class = "action-button open-close" :class = "$fa('plus')"></span>
           </h4>
 
           <div :id = "layer.id" class = "collapse">

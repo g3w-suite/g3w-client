@@ -121,7 +121,7 @@ export class QueryBy extends InteractionControl {
                   style  = "position: absolute;inset: 1em 1em auto auto;"
                   title  = "Docs"
                 >
-                  <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+                  <i :class = "$fa('external-link')"></i>
                 </a>
                 <!-- SPATIAL METHOD -->
                 <div style="padding: 5px;">
@@ -152,7 +152,7 @@ export class QueryBy extends InteractionControl {
                       @click.stop = "radius = 0" 
                       class       = "btn btn-default"
                     >
-                      <i :class="g3wtemplate.getFontClass('clear')"></i>
+                      <i :class="$fa('clear')"></i>
                     </button>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export class QueryBy extends InteractionControl {
                 <!-- HELP TEXT -->
                 <div ref="help" v-t-html="help"></div>
                 <!-- CLEAR SELECTION -->
-                <button v-if = "!['__ALL__', '__NEW__'].includes(selectedLayer)" class="clear-selected-layer btn btn-block btn-warning"  @click.stop="selectedLayer = '__ALL__'"><i :class = "g3wtemplate.getFontClass('clear')"></i> <span v-t="'layer_selection_filter.tools.clear'"></span></button>
+                <button v-if = "!['__ALL__', '__NEW__'].includes(selectedLayer)" class="clear-selected-layer btn btn-block btn-warning"  @click.stop="selectedLayer = '__ALL__'"><i :class = "$fa('clear')"></i> <span v-t="'layer_selection_filter.tools.clear'"></span></button>
               </div>`,
             computed: {
               control()   { return CONTROLS[this.type]; },

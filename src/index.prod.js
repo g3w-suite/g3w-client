@@ -124,9 +124,11 @@ Vue.use({
         return added;
       },
       getFontClass(type) {
-        return undefined === this.font[type] ? '' : this.font[type];
+        return this.font[type] || '';
       }
     };
+    /** @since 3.11.0 */
+    Vue.prototype.$fa = Vue.prototype.g3wtemplate.getFontClass.bind(Vue.prototype.g3wtemplate);
     // include isMobile() method within all Vue instances
     Vue.mixin({
       methods: {

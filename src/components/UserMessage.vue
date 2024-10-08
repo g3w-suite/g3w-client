@@ -17,7 +17,7 @@
     >
       <i
         class  = "usermessage-header-icontype"
-        :class = "g3wtemplate.getFontClass(iconClass || type)">
+        :class = "$fa(iconClass || type)">
       </i>
       <div class = "usermessage-header-title">
         <slot name = "header">
@@ -38,7 +38,7 @@
           v-if   = "!autoclose && closable"
           @click = "closeUserMessage"
         >
-          <i class = "usermessage-header-right-item" :class = "g3wtemplate.getFontClass('close')"></i>
+          <i class = "usermessage-header-right-item" :class = "$fa('close')"></i>
         </div>
       </div>
     </div>

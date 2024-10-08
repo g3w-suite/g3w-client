@@ -20,7 +20,7 @@
         style  = "float: right;"
         title  = "Docs"
       >
-        <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+        <i :class = "$fa('external-link')"></i>
       </a>
       <select id = "query_builder_layers_select" class = "form-control">
         <option
@@ -48,18 +48,18 @@
         @click    = "run"
         :disabled = "disabled"
         v-t       = "'sdk.querybuilder.panel.button.run'"
-      ><i :class = "g3wtemplate.getFontClass('run')" style = "color: green;"></i></button>
+      ><i :class = "$fa('run')" style = "color: green;"></i></button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
         v-t       = "'sdk.querybuilder.panel.button.clear'"
-      ><i :class = "g3wtemplate.getFontClass('clear')"></i></button>
+      ><i :class = "$fa('clear')"></i></button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
         v-t       = "'sdk.querybuilder.panel.button.save'"
-      ><i :class = "g3wtemplate.getFontClass('save')"></i></button>
+      ><i :class = "$fa('save')"></i></button>
     </div>
 
     <hr>

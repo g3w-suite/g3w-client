@@ -23,7 +23,7 @@
           v-if                     = "showrelationslist"
           v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
           class                    = "action-button-icon action-button back-button"
-          :class                   = "g3wtemplate.getFontClass('exit')"
+          :class                   = "$fa('exit')"
           @click.stop              = "back">
         </span>
 
@@ -43,7 +43,7 @@
           v-download
           class                   = "action-button-icon action-button"
           :class                  = "[
-            g3wtemplate.getFontClass('download'),
+            $fa('download'),
             { 'toggled-white': downloadButton.toggled },
           ]"
           @click.stop             = "downloadButton.handler"
@@ -55,7 +55,7 @@
           v-if                      = "showChartButton"
           class                     = "action-button-icon action-button"
           :class                    = "[
-            g3wtemplate.getFontClass('chart'),
+            $fa('chart'),
             chart ? 'toggled-white' : '',
           ]"
           @click.stop               = "showChart"
@@ -124,21 +124,21 @@
                 @click.stop              = "zoomToGeometry(table.features[index].geometry)"
                 class                    = "action-button row-form skin-color"
                 v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
-                :class                   = "g3wtemplate.getFontClass('marker')"
+                :class                   = "$fa('marker')"
               ></span>
               <span
                 v-if                     = "table.formStructure"
                 @click.stop              = "showFormStructureRow({ layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
                 v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 class                    = "action-button row-form skin-color"
-                :class                   = "g3wtemplate.getFontClass('table')"
+                :class                   = "$fa('table')"
               ></span>
               <span
                 v-if                     = "isEditable"
                 @click.stop              = "editFeature(index)"
                 class                    = "action-button row-form skin-color"
                 v-t-tooltip:right.create = "'Edit'"
-                :class                   = "g3wtemplate.getFontClass('pencil')"
+                :class                   = "$fa('pencil')"
               ></span>
             </td>
             <td v-for = "value in row">

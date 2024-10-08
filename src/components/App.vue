@@ -46,7 +46,7 @@
             >
               <i
                 style  = "font-size: 1.3em;"
-                :class = "g3wtemplate.getFontClass('ellips-v')">
+                :class = "$fa('ellips-v')">
               </i>
             </button>
 
@@ -60,7 +60,7 @@
             >
               <i
                 style  = "font-size: 1.3em;"
-                :class = "g3wtemplate.getFontClass('bars')">
+                :class = "$fa('bars')">
               </i>
             </a>
 
@@ -126,7 +126,7 @@
               >
                 <a :href="login_url">
                   <i
-                    :class      = "g3wtemplate.getFontClass('sign-in')"
+                    :class      = "$fa('sign-in')"
                     aria-hidden = "true">
                   </i>
                   <span v-t = "'sign_in'"></span>
@@ -154,7 +154,7 @@
                   data-toggle = "dropdown"
                 >
                   <i
-                    :class      = "g3wtemplate.getFontClass('change-map')"
+                    :class      = "$fa('change-map')"
                     aria-hidden = "true">
                   </i>
                   <span v-t="'changemap'"></span>
@@ -179,7 +179,7 @@
                   class       = "dropdown-toggle"
                   data-toggle = "dropdown"
                 >
-                  <i :class = "g3wtemplate.getFontClass('user')"></i>
+                  <i :class = "$fa('user')"></i>
                   <span class = "hidden-xs">{{ user.username }}</span>
                 </a>
 
@@ -195,7 +195,7 @@
                       :href = "user.admin_url"
                       class = "btn btn-default btn-flat skin-color"
                     >
-                      <i :class="g3wtemplate.getFontClass('folder')"></i>
+                      <i :class="$fa('folder')"></i>
                       <b>Admin</b>
                     </a>
                     <a
@@ -203,7 +203,7 @@
                       class = "btn btn-default btn-flat skin-color"
                     >
                       <i
-                        :class = "g3wtemplate.getFontClass('sign-out')"
+                        :class = "$fa('sign-out')"
                         style  = "margin-right: 2px;">
                       </i>
                      <b v-t="'logout'"></b>
@@ -247,8 +247,7 @@
               >
                 <a :href="urls.frontendurl">
                   <span>
-                    <i :class="g3wtemplate.getFontClass('home')">
-                    </i> Home
+                    <i :class="$fa('home')"></i> Home
                   </span>
                 </a>
               </li>
@@ -328,8 +327,8 @@
                   v-t-tooltip.create = "'back'"
                   class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                 >
-                  <i :class = "g3wtemplate.getFontClass('circle')"     class = "fa-stack-1x panel-button"></i>
-                  <i :class = "g3wtemplate.getFontClass('arrow-left')" class = "fa-stack-1x panel-icon"></i>
+                  <i :class = "$fa('circle')"     class = "fa-stack-1x panel-button"></i>
+                  <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                 </span>
                 <span
                   @click             = "closeAllPanels"
@@ -339,8 +338,8 @@
                   v-t-tooltip.create = "'close'"
                   class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                 >
-                  <i :class = "g3wtemplate.getFontClass('circle')" class = "fa-stack-1x panel-button"></i>
-                  <i :class = "g3wtemplate.getFontClass('close')"  class = "fa-stack-1x panel-icon"></i>
+                  <i :class = "$fa('circle')" class = "fa-stack-1x panel-button"></i>
+                  <i :class = "$fa('close')"  class = "fa-stack-1x panel-icon"></i>
                 </span>
               </div>
 
@@ -371,7 +370,7 @@
         @click.prevent = "toggleSidebar"
         role           = "button"
       >
-          <i :class = "g3wtemplate.getFontClass('bars')"></i>
+          <i :class = "$fa('bars')"></i>
       </a>
 
     </aside>
@@ -426,12 +425,12 @@
             :class = "{ 'g3w-hide': app.online }"
             style = "color: #999"
           >
-            <i :class = "g3wtemplate.getFontClass('wifi')"></i>
+            <i :class = "$fa('wifi')"></i>
             <div style = "font-weight: bold; font-size:0.4em">offline</div>
           </div>
           <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
             <bar-loader :loading = "true"/>
-            <i style = "padding:3px" :class = "g3wtemplate.getFontClass('download')"></i>
+            <i style = "padding:3px" :class = "$fa('download')"></i>
           </div>
           <div
             id     = "plugins_notification"
@@ -439,7 +438,7 @@
             style  = "color: #994b10"
           >
             <bar-loader :loading = "true"/>
-            <i :class = "g3wtemplate.getFontClass('plugin')"></i>
+            <i :class = "$fa('plugin')"></i>
           </div>
         </div>
 
@@ -486,7 +485,7 @@
             >
               <span
                 class  = "action-button"
-                :class = "g3wtemplate.getFontClass('back')">
+                :class = "$fa('back')">
               </span>
               <span v-t="'back'"></span>
             </div>
@@ -497,7 +496,7 @@
             >
               <span
                 class  = "action-button"
-                :class = "g3wtemplate.getFontClass('back')">
+                :class = "$fa('back')">
               </span>
               <span v-t = "'backto'"></span>
               <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
@@ -536,14 +535,14 @@
             >
               <i
                 v-if                      = "undefined !== state.split"
-                :class                    = "g3wtemplate.getFontClass(`resize-${state.split}`)"
+                :class                    = "$fa(`resize-${state.split}`)"
                 v-t-tooltip:bottom.create = "'enlange_reduce'"
                 style                     = "margin-right: 3px;"
                 class                     = "action-button skin-color-dark"
                 @click                    = "resizeFull"
               ></i>
               <i
-                :class                    = "g3wtemplate.getFontClass(`resize-default`)"
+                :class                    = "$fa('resize-default')"
                 v-t-tooltip:left.create   = "'reset_default'"
                 class                     = "action-button skin-color-dark"
                 @click                    = "resizeDefault"
@@ -556,7 +555,7 @@
               class  = "action-button"
               style  = "display: flex; justify-content: center "
             >
-            <i class = "skin-color-dark" :class = "g3wtemplate.getFontClass('close')"></i>
+            <i class = "skin-color-dark" :class = "$fa('close')"></i>
           </span>
           </div>
         </div>
@@ -655,7 +654,7 @@
                   <span style="padding: 2px">
                     <span
                       style       = "color: #95ad36; font-weight: bold"
-                      :class      = "g3wtemplate.getFontClass('marker')"
+                      :class      = "$fa('marker')"
                       aria-hidden = "true"
                     >
                     </span> Montecatini Terme - Italy
@@ -664,7 +663,7 @@
                   <span style="padding: 2px">
                     <span
                       style       = "color: #95ad36"
-                      :class      = "g3wtemplate.getFontClass('mobile')"
+                      :class      = "$fa('mobile')"
                       aria-hidden = "true">
                     </span>  +39 393 8534336
                   </span>
@@ -672,7 +671,7 @@
                   <span style="padding: 2px">
                     <span
                       style       = "color: #95ad36"
-                      :class      = "g3wtemplate.getFontClass('mail')"
+                      :class      = "$fa('mail')"
                       aria-hidden = "true">
                     </span>
                     <a

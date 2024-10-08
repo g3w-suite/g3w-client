@@ -87,7 +87,7 @@
         >
           <span
             class  = "skin-color-dark hide-cursor-caret-color"
-            :class = "g3wtemplate.getFontClass('mouse')">
+            :class = "$fa('mouse')">
           </span>
         </div>
 
@@ -122,8 +122,8 @@
           v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
             class       = "skin-color-dark"
             :class      = "{
-              [g3wtemplate.getFontClass('link')]:   !urlCopied,
-              [g3wtemplate.getFontClass('success')]: urlCopied,
+              [$fa('link')]:   !urlCopied,
+              [$fa('success')]: urlCopied,
             }"
             @click.stop = "createCopyMapExtentUrl">
         </div>

@@ -83,7 +83,7 @@
     >
       <i
         style  = "font-weight: bold;"
-        :class = "g3wtemplate.getFontClass('plus-square')" >
+        :class = "$fa('plus-square')" >
       </i>
     </button>
 

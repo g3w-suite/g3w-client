@@ -34,7 +34,7 @@
       v-if                = "project_menu || hasMetadata(layer)"
       @click.prevent.stop = "showMetadata(layer && layer.id)"
     >
-      <span :class = "'menu-icon ' + g3wtemplate.getFontClass('info')"></span>
+      <span :class = "'menu-icon ' + $fa('info')"></span>
       <b class = "item-text" v-t = "'sdk.metadata.title'"></b>
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
@@ -52,7 +52,7 @@
         v-if                = "canEdit(layer)"
         @click.prevent.stop = "editLayer(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('pencil')"></span>
+        <span :class = "'menu-icon ' + $fa('pencil')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.edit'"></b>
       </li>
 
@@ -61,7 +61,7 @@
         v-if                = "canZoom(layer)"
         @click.prevent.stop = "zoomToLayer(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('search')"></span>
+        <span :class = "'menu-icon ' + $fa('search')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.zoomtolayer'"></b>
       </li>
 
@@ -70,7 +70,7 @@
         v-if                = "canOpenAttributeTable(layer)"
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('list')"></span>
+        <span :class = "'menu-icon ' + $fa('list')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></b>
       </li>
 
@@ -78,9 +78,9 @@
       <li
         v-if = "isExternalLayer(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('sort')"></span>
+        <span :class = "'menu-icon ' + $fa('sort')"></span>
         <b class = "item-text">{{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})</b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span :class = "'menu-icon ' + $fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
             v-for  = "position in ['top', 'bottom']"
@@ -90,7 +90,7 @@
             <span
               v-if   = "position === layer.position"
               style  = "font-size: 0.5em; margin-right: 3px;"
-              :class = "g3wtemplate.getFontClass('circle')"
+              :class = "$fa('circle')"
             ></span>
             <span v-t = "'layer_position.' + position"></span>
           </li>
@@ -101,12 +101,12 @@
       <li
         v-if = "canShowStylesMenu(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('palette')"></span>
+        <span :class = "'menu-icon ' + $fa('palette')"></span>
         <b     class = "item-text">
           <span v-t= "'catalog_items.contextmenu.styles'"></span>
           ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
         </b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span :class = "'menu-icon ' + $fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
             v-for       = "(style, i) in layer.styles"
@@ -117,7 +117,7 @@
             <span
               v-if   = "style.current"
               style  = "font-size: 0.8em;"
-              :class = "g3wtemplate.getFontClass('circle')">
+              :class = "$fa('circle')">
             </span>
             {{ style.name + (layer.styles.length > 1 && style.name === layer.defaultstyle ? ` (${$t('default')})` : '') }}
           </li>
@@ -129,12 +129,12 @@
         v-if  = "canShowOpacityPicker(layer)"
         style = "padding-right: 0"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
+        <span :class = "'menu-icon ' + $fa('slider')"></span>
         <b    class = "item-text">
           <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
           ({{ (layer.opacity / 100) }})
         </b>
-        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
+        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "$fa('arrow-right')"></span>
         <ul>
           <li style="display: list-item;">
             <input
@@ -161,12 +161,12 @@
       <li
         v-if = "isExternalWMSLayer(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
+        <span :class = "'menu-icon ' + $fa('slider')"></span>
         <b    class = "item-text">
           <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
           ({{ layer.opacity }})
         </b>
-        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "g3wtemplate.getFontClass('arrow-right')"></span>
+        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "$fa('arrow-right')"></span>
         <ul>
           <li style="display: list-item;">
             <input
@@ -193,10 +193,10 @@
       <li
         v-if = "isExternalVectorLayer(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('tint')"></span>
+        <span :class = "'menu-icon ' + $fa('tint')"></span>
         <b    class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li style="padding: 14px; background-color: #E0E0E0;">
             <chrome-picker
@@ -215,9 +215,9 @@
       <li
         v-if = "canShowFiltersMenu(layer)"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('filter')"></span>
+        <span :class = "'menu-icon ' + $fa('filter')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
             v-for       = "filter in layer.filters"
@@ -228,14 +228,14 @@
             <span
               v-if   = "layer.filter.current && layer.filter.current.fid === filter.fid"
               style  = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
-              :class = "g3wtemplate.getFontClass('circle')"
+              :class = "$fa('circle')"
             ></span>
             <span style = "margin-right: 5px;">{{ filter.name }}</span>
             <span
               @click.stop = "deleteFilter(filter.fid)"
               class       = "skin-border-color"
               style       = "color: red; right: 0; padding-left: 10px; border-left: 2px solid;"
-              :class      = "g3wtemplate.getFontClass('trash')">
+              :class      = "$fa('trash')">
             </span>
           </li>
         </ul>
@@ -248,9 +248,9 @@
         style     = "display: list-item;"
         ref       = "download_menu"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
+        <span :class = "'menu-icon ' + $fa('download')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.download'"></b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
+        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
         <bar-loader :loading = "ApplicationState.download"/>
         <ul>
 
@@ -260,7 +260,7 @@
             @click.prevent.stop = "download('GeoTIFF', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')"></span>
+            <span :class = "'menu-icon ' + $fa('geotiff')"></span>
             <b class  = "item-text" v-t = "'GeoTiff'"></b>
           </li>
 
@@ -270,8 +270,8 @@
             @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('geotiff')" style = "color:#777"></span>
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
+            <span :class = "'menu-icon ' + $fa('geotiff')" style = "color:#777"></span>
+            <span :class = "'menu-icon ' + $fa('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
             <b class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff_map_extent'"></b>
           </li>
 
@@ -281,7 +281,7 @@
             @click.prevent.stop = "download('Shp', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
+            <span :class = "'menu-icon ' + $fa('shapefile')"></span>
             <b class  = "item-text" v-t = "'Shapefile'"></b>
           </li>
 
@@ -291,7 +291,7 @@
             @click.prevent.stop = "download('Gpx', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpx')"></span>
+            <span :class = "'menu-icon ' + $fa('gpx')"></span>
             <b class  = "item-text" v-t = "'GPX'"></b>
           </li>
 
@@ -301,7 +301,7 @@
             @click.prevent.stop = "download('Gpkg', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('gpkg')"></span>
+            <span :class = "'menu-icon ' + $fa('gpkg')"></span>
             <b class  = "item-text" v-t = "'GeoPackage'"></b>
           </li>
 
@@ -311,7 +311,7 @@
             @click.prevent.stop = "download('Csv', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('csv')"></span>
+            <span :class = "'menu-icon ' + $fa('csv')"></span>
             <b class  = "item-text" v-t = "'CSV'"></b>
           </li>
 
@@ -321,7 +321,7 @@
             @click.prevent.stop = "download('Xls', layer.id)"
             v-download
           >
-            <span :class  = "'menu-icon ' + g3wtemplate.getFontClass('xls')"></span>
+            <span :class  = "'menu-icon ' + $fa('xls')"></span>
             <b class   = "item-text" v-t = "'Excel'"></b>
           </li>
 
@@ -331,7 +331,7 @@
             @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
+            <span :class = "'menu-icon ' + $fa('download')"></span>
             <b class  = "item-text" v-t   = "'sdk.catalog.menu.download.unknow'"></b>
           </li>
 
@@ -341,7 +341,7 @@
             @click.prevent.stop = "downloadExternalShapefile(layer)"
             v-download
           >
-            <span :class = "'menu-icon ' + g3wtemplate.getFontClass('shapefile')"></span>
+            <span :class = "'menu-icon ' + $fa('shapefile')"></span>
             <b class  = "item-text" v-t   = "'Shapefile'"></b>
           </li>
 
@@ -357,9 +357,9 @@
         ].filter(Boolean).length"
         ref  = "ogc_menu"
       >
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+        <span :class = "'menu-icon ' + $fa('map')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.ogc_services'"></b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
+        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
         <ul>
 
           <!-- Click to Copy WMS URL -->
@@ -373,12 +373,12 @@
               target = "_blank"
               style  = "color:#000"
             >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+              <span :class = "'menu-icon ' + $fa('map')"></span>
               <b class  = "item-text">WMS</b>
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
-              :class          ="g3wtemplate.getFontClass('eye')"
+              :class          ="$fa('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
               data-container  = "body"
@@ -397,12 +397,12 @@
               target = "_blank"
               style  = "color:#000"
             >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+              <span :class = "'menu-icon ' + $fa('map')"></span>
               <b class  = "item-text">WFS</b>
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
-              :class          ="g3wtemplate.getFontClass('eye')"
+              :class          ="$fa('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
               data-container  = "body"
@@ -421,12 +421,12 @@
               target = "_blank"
               style  = "color:#000"
             >
-              <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
+              <span :class = "'menu-icon ' + $fa('map')"></span>
               <b class  = "item-text">WFS 3</b>
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
-              :class          ="g3wtemplate.getFontClass('eye')"
+              :class          ="$fa('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
               data-container  = "body"
@@ -451,7 +451,7 @@
           </svg>
         </span>
         <b>Layers settings</b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span :class = "'menu-icon ' + $fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
       </a>
     </li>
 
@@ -467,7 +467,7 @@
           </svg>
         </span>
         <b>Project settings</b>
-        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span :class = "'menu-icon ' + $fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
       </a>
   </li>
 
