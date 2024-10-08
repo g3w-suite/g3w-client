@@ -120,7 +120,7 @@
                 :class                 = "'action-button skin-color ' + $fa('table')"
               ></i>
               <i
-                v-if                   = "!feature.geometry"
+                v-if                   = "layer.state.geolayer && !feature.geometry"
                 v-t-tooltip:top.create = "'no_geometry'"
                 style                  = "color: currentColor !important;"
                 :class                 = "'action-button ' + $fa('alert')"
