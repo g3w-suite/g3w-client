@@ -44,17 +44,17 @@
       </ul>
     </li>
 
+    <!-- Edit Layer -->
+    <li
+      v-if                = "canEdit(layer)"
+      @click.prevent.stop = "startEditing(layer)"
+    >
+      <span :class = "'menu-icon ' + $fa('pencil')"></span>
+      <b    class  = "item-text" v-t = "'catalog_items.contextmenu.edit'"></b>
+    </li>
+
     <!-- LAYER MENU -->
     <template v-if = "layer_menu">
-
-      <!-- Edit Layer -->
-      <li
-        v-if                = "canEdit(layer)"
-        @click.prevent.stop = "editLayer(layer)"
-      >
-        <span :class = "'menu-icon ' + $fa('pencil')"></span>
-        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.edit'"></b>
-      </li>
 
       <!-- Zoom to Layer -->
       <li
@@ -715,17 +715,19 @@
        * @since 3.11.0
        */
        canEdit(layer) {
-        return !layer.external && getCatalogLayerById(layer.id).isEditable();
+        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() : g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing');
       },
 
       /**
        * @since 3.11.0
        */
-      editLayer(layer) {
-        const editing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing').getApi();
-        editing.showPanel({ toolboxes: [layer.id] });
-        editing.startEditing(layer.id);
+       startEditing(layer) {
         this.closeMenu();
+        const editing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing');
+        editing.showPanel(layer ? { toolboxes: [layer.id] } : undefined);
+        if (layer) {
+          editing.startEditing(layer.id);
+        }
       },
 
       /**
