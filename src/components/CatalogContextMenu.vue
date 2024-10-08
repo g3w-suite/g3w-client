@@ -46,6 +46,14 @@
 
     <!-- LAYER MENU -->
     <template v-if = "layer_menu">
+      <!-- Edit Layer -->
+      <li
+        v-if                = "!layer.external && isEditable(layer.id)"
+        @click.prevent.stop = "editLayer(layer.id)"
+      >
+        <span :class = "'menu-icon ' + g3wtemplate.getFontClass('pencil')"></span>
+        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.edit'"></b>
+      </li>
 
       <!-- Zoom to Layer -->
       <li
@@ -698,6 +706,30 @@
             textMessage: true,
           })
         }
+        this.closeMenu();
+      },
+      /**
+       * @since v3.11.0
+       * Check is layer is editable
+        * @param id
+       * @return {Boolean}
+       */
+      isEditable(id) {
+        return getCatalogLayerById(id).isEditable();
+      },
+      /**
+       * @since v3.11.0
+       * Start editing layer
+       * @param id
+      */
+      editLayer(id) {
+        const editingApi = g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing').getApi();
+        editingApi.showPanel({
+          toolboxes: [id],
+        })
+
+        editingApi.startEditing(id);
+
         this.closeMenu();
       },
 

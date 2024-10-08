@@ -576,6 +576,7 @@ export default {
         filters: "Filters",
         download: 'Save as',
         ogc_services: 'OGC Services',
+        edit: "Edit Layer",
       }
     },
     dataTable: {

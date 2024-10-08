@@ -580,6 +580,7 @@ export default {
         filters: "Filtri",
         download: 'Esporta come',
         ogc_services: 'Servizi OGC',
+        edit: "Edita Layer",
       }
     },
     dataTable: {
