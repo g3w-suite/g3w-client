@@ -5,14 +5,13 @@
 
 <template>
   <ul
-    v-if            =  "layer_menu || project_menu"
-    id              = "layer-context-menu"
-    ref             = "menu"
-    class           = "catalog-context-menu"
-    @mouseover      = "showMenu"
-    v-click-outside = "closeMenu"
-    tabindex        = "-1"
-    :style          = "{
+    v-if       =  "layer_menu || project_menu"
+    id         = "layer-context-menu"
+    ref        = "menu"
+    class      = "catalog-context-menu"
+    @mouseover = "showMenu"
+    tabindex   = "-1"
+    :style     = "{
       top:  top + 'px',
       left: left + 'px',
     }"
@@ -70,10 +69,7 @@
         v-if = "isExternalLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('sort')"></span>
-        <b class = "item-text">
-          <span v-t = "'layer_position.message'"></span>
-          (<span v-t = "'layer_position.' + layer.position"></span>)
-        </b>
+        <b class = "item-text">{{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})</b>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li
@@ -113,7 +109,7 @@
               style  = "font-size: 0.8em;"
               :class = "g3wtemplate.getFontClass('circle')">
             </span>
-            <span>{{ getStyleName(style) }}</span>
+            {{ style.name + (layer.styles.length > 1 && style.name === layer.defaultstyle ? ` (${$t('default')})` : '') }}
           </li>
         </ul>
       </li>
@@ -155,7 +151,6 @@
       <li
         v-if = "isExternalWMSLayer(layer)"
       >
-
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('slider')"></span>
         <b    class = "item-text">
           <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
@@ -190,6 +185,7 @@
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('tint')"></span>
         <b    class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
+        <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li style="padding: 14px; background-color: #E0E0E0;">
@@ -240,6 +236,7 @@
         v-if      = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
         :disabled = "ApplicationState.download"
         style     = "display: list-item;"
+        ref       = "download_menu"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('download')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.download'"></b>
@@ -343,7 +340,12 @@
 
       <!-- OGC Service URLs -->
       <li
-        v-if = "canShowWmsUrl(layer.id) || canShowWfsUrl(layer.id) || canShowWfsUrl(layer.id)"
+        v-if = "[
+          this.canShowWmsUrl(this.layer.id),
+          this.canShowWfsUrl(this.layer.id),
+          this.canShowWfsUrl(this.layer.id)
+        ].filter(Boolean).length"
+        ref  = "ogc_menu"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('map')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.ogc_services'"></b>
@@ -524,8 +526,10 @@
         this.layer_menu   = !!layerstree;
         this.project_menu = !layerstree;
         await this.$nextTick();
-        this.top = $(e.target).offset().top - $(this.$refs['menu']).height() + ($(e.target).height()/ 2);
+        this.top = e.target.getBoundingClientRect().top - this.$refs['menu'].clientHeight + (e.target.clientHeight / 2);
         $('.click-to-copy[data-toggle="tooltip"]').tooltip();
+        // conditionally inline "download_menu" and "ogc_menu" when they contain a single item
+        [this.$refs.download_menu, this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
       },
 
       /**
@@ -538,6 +542,7 @@
 
       onChangeColor(val) {
         this.layer.color         = val;
+        this.$refs.layer_color.style.backgroundColor = val.hex;
         const layer              = GUI.getService('map').getLayerByName(this.layer.name || '');
         const style              = layer.getStyle();
         style._g3w_options.color = val;
@@ -846,19 +851,6 @@
       },
 
       /**
-       * Get category style name eventually suffixed by "(default)" string
-       * 
-       * @since 3.8.0
-       */
-      getStyleName(style) {
-        return style.name + (
-          style.name === this.layer.defaultstyle && this.layer.styles.length > 1
-            ? ` (${t('default')})`
-            : ''
-          );
-      },
-
-      /**
        * @since 3.8.3
        */
       isExternalWMSLayer(layer) {
@@ -926,6 +918,16 @@
 
       },
 
+      /**
+       * Close context menu when clicking outside
+       */
+      onClickOutside(e) {
+        if (this.$el !== e.target && !this.$el.contains(e.target)) {
+          e.stopPropagation();
+          this.closeMenu(e);
+        }
+      }
+
     },
 
     /**
@@ -933,8 +935,17 @@
      * @listens VM~show-layer-context-menu
      */
     created() {
+      this.onClickOutside = this.onClickOutside.bind(this);
       VM.$on('show-project-context-menu', this.onShowContextMenu);
-      VM.$on('show-layer-context-menu', this.onShowContextMenu );
+      VM.$on('show-layer-context-menu', this.onShowContextMenu);
+    },
+
+    mounted() {
+      document.body.addEventListener('click', this.onClickOutside, true);
+    },
+
+    beforeDestroy() {
+      document.body.removeEventListener('click', this.onClickOutside, true);
     },
 
   };
@@ -1029,5 +1040,19 @@
   }
   .catalog-context-menu :is(ul, li) {
     list-style-type: none;
+  }
+
+  .catalog-context-menu li.inline-submenu {
+    display: list-item;
+    padding: 0;
+  }
+  .catalog-context-menu li.inline-submenu > * {
+    display: none;
+  }
+  .catalog-context-menu li.inline-submenu > ul {
+    display: block;
+    position: relative;
+    left: 0 !important;
+    width: 100%;
   }
 </style>
