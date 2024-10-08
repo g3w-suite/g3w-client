@@ -2069,7 +2069,7 @@ class Layer extends G3WObject {
    * @returns { string } Server type
    */
   getServerType() {
-    return this.config.servertype || Layer.ServerTypes.QGIS;
+    return this.config.servertype || "QGIS";
   }
 
   /**
@@ -2353,25 +2353,18 @@ class Layer extends G3WObject {
     }
 
     if (
-      Layer.ServerTypes.QGIS === this.getServerType()
-      && ([
-        Layer.SourceTypes.POSTGIS,
-        Layer.SourceTypes.ORACLE,
-        Layer.SourceTypes.WFS,
-        Layer.SourceTypes.OGR,
-        Layer.SourceTypes.MSSQL,
-        Layer.SourceTypes.SPATIALITE
-      ].includes(this.config.source.type))
+      "QGIS" === this.getServerType()
+      && ["postgres", "oracle", "wfs", "ogr", "mssql", "spatialite"].includes(this.config.source.type)
       && this.isQueryable()
     ) {
       return this.getTableFields().length > 0;
     }
     
-    if (Layer.ServerTypes.G3WSUITE === this.getServerType() && "geojson" === this.get('source').type) {
+    if ("G3WSUITE" === this.getServerType() && "geojson" === this.get('source').type) {
       return true
     }
 
-    if (Layer.ServerTypes.G3WSUITE !== this.getServerType() && this.isFilterable()) {
+    if ("G3WSUITE" !== this.getServerType() && this.isFilterable()) {
       return true;
     }
 
@@ -2518,49 +2511,6 @@ Layer.LayerTypes = {
   TABLE:  "table",
   IMAGE:  "image",
   VECTOR: "vector"
-};
-
-/**
- * Server Types
- */
-Layer.ServerTypes = {
-  OGC:             "OGC",
-  QGIS:            "QGIS",
-  Mapserver:       "Mapserver",
-  Geoserver:       "Geoserver",
-  ARCGISMAPSERVER: "ARCGISMAPSERVER",
-  OSM:             "OSM",
-  BING:            "Bing",
-  LOCAL:           "Local",
-  TMS:             "TMS",
-  WMS:             "WMS",
-  WMTS:            "WMTS",
-  G3WSUITE:        "G3WSUITE"
-};
-
-/**
- * Source Types
- */
-Layer.SourceTypes = {
-  VIRTUAL:         "virtual",
-  POSTGIS:         "postgres",
-  SPATIALITE:      "spatialite",
-  ORACLE:          "oracle",
-  MSSQL:           "mssql",
-  CSV:             "delimitedtext",
-  OGR:             "ogr",
-  GDAL:            "gdal",
-  WMS:             "wms",
-  WMST:            "wmst",
-  WFS:             "wfs",
-  WCS:             "wcs",
-  MDAL:            "mdal",
-  'VECTOR-TILE':   "vector-tile",
-  VECTORTILE:      "vectortile",
-  ARCGISMAPSERVER: "arcgismapserver",
-  GEOJSON:         "geojson",
-  /** @since 3.9.0 */
-  POSTGRESRASTER:  "postgresraster",
 };
 
 /**
