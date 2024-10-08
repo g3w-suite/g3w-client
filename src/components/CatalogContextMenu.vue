@@ -949,6 +949,7 @@
     created() {
       VM.$on('show-project-context-menu', this.onShowContextMenu);
       VM.$on('show-layer-context-menu', this.onShowContextMenu);
+      document.addEventListener('keyup', e => 'Escape' === e.key && this.closeMenu());
     },
 
   };
