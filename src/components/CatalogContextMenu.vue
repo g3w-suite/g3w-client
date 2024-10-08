@@ -34,8 +34,7 @@
       v-if                = "project_menu || hasMetadata(layer)"
       @click.prevent.stop = "showMetadata(layer && layer.id)"
     >
-      <span :class = "'menu-icon ' + $fa('info')"></span>
-      <b class = "item-text" v-t = "'sdk.metadata.title'"></b>
+      <i :class = "$fa('info')"></i> {{ $t('sdk.metadata.title') }}
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
         style = "border-radius: 0 3px 3px 0;"
@@ -49,8 +48,7 @@
       v-if                = "canEdit(layer)"
       @click.prevent.stop = "startEditing(layer)"
     >
-      <span :class = "'menu-icon ' + $fa('pencil')"></span>
-      <b    class  = "item-text" v-t = "'catalog_items.contextmenu.edit'"></b>
+      <i :class = "$fa('pencil')"></i> {{ $t('catalog_items.contextmenu.edit') }}
     </li>
 
     <!-- LAYER MENU -->
@@ -61,8 +59,7 @@
         v-if                = "canZoom(layer)"
         @click.prevent.stop = "zoomToLayer(layer)"
       >
-        <span :class = "'menu-icon ' + $fa('search')"></span>
-        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.zoomtolayer'"></b>
+        <i :class = "$fa('search')"></i> {{ $t('catalog_items.contextmenu.zoomtolayer') }}
       </li>
 
       <!-- Attribute Table -->
@@ -70,17 +67,16 @@
         v-if                = "canOpenAttributeTable(layer)"
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
-        <span :class = "'menu-icon ' + $fa('list')"></span>
-        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.open_attribute_table'"></b>
+        <i :class = "$fa('list')"></i> {{ $t('catalog_items.contextmenu.open_attribute_table') }}
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
       <li
         v-if = "isExternalLayer(layer)"
       >
-        <span :class = "'menu-icon ' + $fa('sort')"></span>
-        <b class = "item-text">{{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})</b>
-        <span :class = "'menu-icon ' + $fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <i :class = "$fa('sort')"></i>
+        {{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})
+        <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul>
           <li
             v-for  = "position in ['top', 'bottom']"
@@ -101,12 +97,9 @@
       <li
         v-if = "canShowStylesMenu(layer)"
       >
-        <span :class = "'menu-icon ' + $fa('palette')"></span>
-        <b     class = "item-text">
-          <span v-t= "'catalog_items.contextmenu.styles'"></span>
-          ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
-        </b>
-        <span :class = "'menu-icon ' + $fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        <i :class = "$fa('palette')"></i>
+        {{ $t('catalog_items.contextmenu.styles') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
+        <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul>
           <li
             v-for       = "(style, i) in layer.styles"
@@ -129,12 +122,9 @@
         v-if  = "canShowOpacityPicker(layer)"
         style = "padding-right: 0"
       >
-        <span :class = "'menu-icon ' + $fa('slider')"></span>
-        <b    class = "item-text">
-          <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
-          ({{ (layer.opacity / 100) }})
-        </b>
-        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "$fa('arrow-right')"></span>
+        <i :class = "$fa('slider')"></i>
+        {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ (layer.opacity / 100) }})
+        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul>
           <li style="display: list-item;">
             <input
@@ -161,12 +151,9 @@
       <li
         v-if = "isExternalWMSLayer(layer)"
       >
-        <span :class = "'menu-icon ' + $fa('slider')"></span>
-        <b    class = "item-text">
-          <span v-t = "'catalog_items.contextmenu.layer_opacity'"></span>
-          ({{ layer.opacity }})
-        </b>
-        <span class = "menu-icon" style = "position: absolute; right: 0; margin-top: 3px" :class = "$fa('arrow-right')"></span>
+        <i :class = "$fa('slider')"></i>
+        {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ layer.opacity }})
+        <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul>
           <li style="display: list-item;">
             <input
@@ -193,10 +180,10 @@
       <li
         v-if = "isExternalVectorLayer(layer)"
       >
-        <span :class = "'menu-icon ' + $fa('tint')"></span>
-        <b    class  = "item-text" v-t   = "'catalog_items.contextmenu.vector_color_menu'"></b>
+        <i :class = "$fa('tint')"></i>
+        {{ $t('catalog_items.contextmenu.vector_color_menu') }}
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
-        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul>
           <li style="padding: 14px; background-color: #E0E0E0;">
             <chrome-picker
@@ -215,9 +202,9 @@
       <li
         v-if = "canShowFiltersMenu(layer)"
       >
-        <span :class = "'menu-icon ' + $fa('filter')"></span>
-        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.filters'"></b>
-        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <i :class = "$fa('filter')"></i>
+        {{ $t('catalog_items.contextmenu.filters') }}
+        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul>
           <li
             v-for       = "filter in layer.filters"
@@ -248,9 +235,9 @@
         style     = "display: list-item;"
         ref       = "download_menu"
       >
-        <span :class = "'menu-icon ' + $fa('download')"></span>
-        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.download'"></b>
-        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
+        <i :class = "$fa('download')"></i>
+        {{ $t('catalog_items.contextmenu.download') }}
+        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <bar-loader :loading = "ApplicationState.download"/>
         <ul>
 
@@ -260,8 +247,7 @@
             @click.prevent.stop = "download('GeoTIFF', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('geotiff')"></span>
-            <b class  = "item-text" v-t = "'GeoTiff'"></b>
+            <i :class = "$fa('geotiff')"></i> {{ $t('GeoTiff') }}
           </li>
 
           <!-- Download as GeoTIFF -->
@@ -270,9 +256,9 @@
             @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('geotiff')" style = "color:#777"></span>
-            <span :class = "'menu-icon ' + $fa('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></span>
-            <b class  = "item-text" v-t = "'sdk.catalog.menu.download.geotiff_map_extent'"></b>
+            <i :class = "$fa('geotiff')" style = "color:#777"></i>
+            <i :class = "$fa('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></i>
+            {{ $t('sdk.catalog.menu.download.geotiff_map_extent') }}
           </li>
 
           <!-- Download as SHP -->
@@ -281,8 +267,7 @@
             @click.prevent.stop = "download('Shp', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('shapefile')"></span>
-            <b class  = "item-text" v-t = "'Shapefile'"></b>
+            <i :class = "$fa('shapefile')"></i> {{ $t('Shapefile') }}
           </li>
 
           <!-- Download as GPX -->
@@ -291,8 +276,7 @@
             @click.prevent.stop = "download('Gpx', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('gpx')"></span>
-            <b class  = "item-text" v-t = "'GPX'"></b>
+            <i :class = "$fa('gpx')"></i> {{ $t('GPX') }}
           </li>
 
           <!-- Download as Gpkg -->
@@ -301,8 +285,7 @@
             @click.prevent.stop = "download('Gpkg', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('gpkg')"></span>
-            <b class  = "item-text" v-t = "'GeoPackage'"></b>
+            <i :class = "$fa('gpkg')"></i> {{ $t('GeoPackage') }}
           </li>
 
           <!-- Download as CSV -->
@@ -311,8 +294,7 @@
             @click.prevent.stop = "download('Csv', layer.id)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('csv')"></span>
-            <b class  = "item-text" v-t = "'CSV'"></b>
+            <i :class = "$fa('csv')"></i> {{ $t('CSV') }}
           </li>
 
           <!-- Download as XLS -->
@@ -321,28 +303,25 @@
             @click.prevent.stop = "download('Xls', layer.id)"
             v-download
           >
-            <span :class  = "'menu-icon ' + $fa('xls')"></span>
-            <b class   = "item-text" v-t = "'Excel'"></b>
+            <i :class  = "$fa('xls')"></i> {{ $t('Excel') }}
           </li>
 
-          <!-- Download an external layer file from a proxy server url -->
+          <!-- Download an external layer (from a proxy file server) -->
           <li
             v-if                = "isExternalVectorLayer(layer) && layer.downloadUrl"
             @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('download')"></span>
-            <b class  = "item-text" v-t   = "'sdk.catalog.menu.download.unknow'"></b>
+            <i :class = "$fa('download')"></i> {{ $t('sdk.catalog.menu.download.unknow') }}
           </li>
 
-          <!-- Download an external layer file as shapefile -->
+          <!-- Download an external layer (shapefile) -->
           <li
             v-if                = "isExternalVectorLayer(layer) && !layer.downloadUrl"
             @click.prevent.stop = "downloadExternalShapefile(layer)"
             v-download
           >
-            <span :class = "'menu-icon ' + $fa('shapefile')"></span>
-            <b class  = "item-text" v-t   = "'Shapefile'"></b>
+            <i :class = "$fa('shapefile')"></i> {{ $t('Shapefile') }}
           </li>
 
         </ul>
@@ -357,9 +336,8 @@
         ].filter(Boolean).length"
         ref  = "ogc_menu"
       >
-        <span :class = "'menu-icon ' + $fa('map')"></span>
-        <b    class  = "item-text" v-t = "'catalog_items.contextmenu.ogc_services'"></b>
-        <span :class = "'menu-icon ' + $fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></span>
+        <i :class = "$fa('map')"></i> {{ $t('catalog_items.contextmenu.ogc_services') }}
+        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <ul>
 
           <!-- Click to Copy WMS URL -->
@@ -373,8 +351,7 @@
               target = "_blank"
               style  = "color:#000"
             >
-              <span :class = "'menu-icon ' + $fa('map')"></span>
-              <b class  = "item-text">WMS</b>
+              <i :class = "$fa('map')"></i> WMS
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
@@ -397,8 +374,7 @@
               target = "_blank"
               style  = "color:#000"
             >
-              <span :class = "'menu-icon ' + $fa('map')"></span>
-              <b class  = "item-text">WFS</b>
+              <i :class = "$fa('map')"></i> WFS
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
@@ -421,8 +397,7 @@
               target = "_blank"
               style  = "color:#000"
             >
-              <span :class = "'menu-icon ' + $fa('map')"></span>
-              <b class  = "item-text">WFS 3</b>
+              <i :class = "$fa('map')"></i> WFS 3
             </a>
             <b
               class           = "click-to-copy skin-tooltip-top skin-color-dark"
@@ -450,8 +425,8 @@
             <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
           </svg>
         </span>
-        <b>Layers settings</b>
-        <span :class = "'menu-icon ' + $fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        Layers settings
+        <i :class = "$fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
     </li>
 
@@ -466,8 +441,8 @@
             <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
           </svg>
         </span>
-        <b>Project settings</b>
-        <span :class = "'menu-icon ' + $fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></span>
+        Project settings
+        <i :class = "$fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
   </li>
 
@@ -1016,9 +991,9 @@
     display: flex;
     flex-direction: row;
   }
-  .catalog-context-menu li span.menu-icon {
+  .catalog-context-menu li :is(i, .menu-icon) {
     padding-right: 3px;
-    margin-right: 3px;
+    margin-right: 6px;
     color: var(--skin-d20) !important;
   }
   .catalog-context-menu li .click-to-copy {
@@ -1071,10 +1046,12 @@
   .catalog-context-menu :is(ul, li) {
     list-style-type: none;
   }
-
   .catalog-context-menu li.inline-submenu {
     display: list-item;
     padding: 0;
+    text-indent: 100%;
+    line-height: 0;
+    overflow: hidden;
   }
   .catalog-context-menu li.inline-submenu > * {
     display: none;
@@ -1084,5 +1061,14 @@
     position: relative;
     left: 0 !important;
     width: 100%;
+    text-indent: 0;
+    line-height: initial;
+  }
+  .catalog-context-menu li,
+  .catalog-context-menu li.inline-submenu > ul > li {
+    font-weight: bold;
+  }
+  .catalog-context-menu li li {
+    font-weight: normal;
   }
 </style>
