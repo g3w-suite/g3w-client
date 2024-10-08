@@ -103,7 +103,6 @@
         picked :              false,
         filterFields :        [], // each item is
         isFilterFieldsReady : false, /**{Boolean} @type it is used to show filter_fields select whe ready*/
-        multiple: this.state.input.options.allowmulti || false, //@since v3.11.0 multi select value
       }
     },
     computed: {
@@ -181,7 +180,9 @@
        * return <Array> values
        */
       getMultiValues() {
-        return this.state.value ? this.state.value.replace(/{/, '').replace(/}/, '').split(',') : [];
+        return [undefined, null, ''].includes(this.state.value)
+          ? [] //return empty array values
+          : `${this.state.value}`.replace(/{/, '').replace(/}/, '').split(','); //remove open and close curly branches
       },
       /**
        * Method to handle select2 event
@@ -193,14 +194,12 @@
             ? e.params.data.$value
             : e.params.data.id;
           if (this.multiple) {
+            //get array of values
             const values = this.getMultiValues().filter(v => v !== value);
-            this.state.value = this.state.value.replace(value, '');
-            if (0 === values.length) {
-              this.changeSelect(null);
-            } else {
-              this.changeSelect(`{${values.join()}}`);
-            }
-          } else if (this.showNullOption) {
+            this.changeSelect(0 === values.length ? null : `{${values.join()}}`);
+          }
+
+          if (this.showNullOption && !this.multiple) {
             this.changeSelect(null);
           }
 
@@ -222,7 +221,7 @@
           // in case of multiple select values, need to set value as {"value1", "value2",...}
           if (this.multiple) {
             value = (
-              this.state.value && (this.state.value.startsWith('{') && this.state.value.endsWith('}')) && this.state.value.length > 2
+              this.getMultiValues().length > 0
             ) ? `{${[...this.getMultiValues(), value].join()}}`
               : `{${value}}`
           }
@@ -249,7 +248,7 @@
         if (values.length === 0) {
           value = G3W_SELECT2_NULL_VALUE;
         } else {
-          const findvalue = values.find(keyvalue => keyvalue.value == this.state.value);
+          const findvalue = values.find(({ value }) => value == this.state.value);
           value = undefined === findvalue ? G3W_SELECT2_NULL_VALUE : findvalue.value;
         }
 
@@ -264,17 +263,21 @@
     },
 
     async created() {
+
       //unwatch attributes
       this.unwatch;
       this.filterFieldsUnwatches;
 
       const {
-        filter_fields = [],
-        relation_reference = false,
         relation_id,
-        chain_filters = false, /** @type Boolean if true filter_fields select are related ech other*/
+        filter_fields =      [],
+        relation_reference = false,
+        chain_filters =      false, /** @type Boolean if true filter_fields select are related ech other*/
+        allowmulti =         false, //@since v3.11.0 multi select value
       } = this.state.input.options;
-      //In case of relation reference check if filter_fields is set
+      //set multiple values
+      this.multiple = allowmulti;
+        //In case of relation reference check if filter_fields is set
       if (relation_reference && Array.isArray(filter_fields) && filter_fields.length > 0) {
         //set loading true
         this.setLoading(true);
@@ -561,6 +564,7 @@
         });
       }
       this.setAndListenSelect2Change();
+      //in the case of multiple selection, need to set array values as select2
       if (this.multiple && this.getMultiValues().length > 0) {
         this.select2.val(this.getMultiValues()).trigger('change');
       } else {
