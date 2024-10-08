@@ -5,11 +5,12 @@
 
 <template>
   <ul
-    v-if       =  "layer_menu || project_menu"
-    id         = "layer-context-menu"
-    ref        = "menu"
-    class      = "catalog-context-menu"
-    @mouseover = "showMenu"
+    v-if            =  "layer_menu || project_menu"
+    id              = "layer-context-menu"
+    ref             = "menu"
+    class           = "catalog-context-menu"
+    @mouseover      = "showMenu"
+    v-click-outside = "closeMenu"
     tabindex   = "-1"
     :style     = "{
       top:  top + 'px',
@@ -513,6 +514,25 @@
       'chrome-picker': ChromeComponent,
     },
 
+    directives: {
+      'click-outside': {
+        bind(el, binding, vnode) {
+          this.event = e => {
+            // skip if a clicked element is a child of element
+            if (el === e.target || el.contains(e.target)) {
+              return;
+            }
+            e.stopPropagation();
+            vnode.context[binding.expression](e);
+          };
+          document.body.addEventListener('click', this.event, true)
+        },
+        unbind() {
+          document.body.removeEventListener('click', this.event, true)
+        }
+      }
+    },
+
     methods: {
 
       /**
@@ -918,16 +938,6 @@
 
       },
 
-      /**
-       * Close context menu when clicking outside
-       */
-      onClickOutside(e) {
-        if (this.$el !== e.target && !this.$el.contains(e.target)) {
-          e.stopPropagation();
-          this.closeMenu(e);
-        }
-      }
-
     },
 
     /**
@@ -935,17 +945,8 @@
      * @listens VM~show-layer-context-menu
      */
     created() {
-      this.onClickOutside = this.onClickOutside.bind(this);
       VM.$on('show-project-context-menu', this.onShowContextMenu);
       VM.$on('show-layer-context-menu', this.onShowContextMenu);
-    },
-
-    mounted() {
-      document.body.addEventListener('click', this.onClickOutside, true);
-    },
-
-    beforeDestroy() {
-      document.body.removeEventListener('click', this.onClickOutside, true);
     },
 
   };
