@@ -997,6 +997,7 @@
   .catalog-context-menu li .click-to-copy {
     color: #000;
     opacity: 1;
+    margin-left: 1ch;
     margin-right: -15px;
     margin-top: 8px;
   }
