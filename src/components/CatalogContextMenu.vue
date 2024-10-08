@@ -997,6 +997,8 @@
   .catalog-context-menu li .click-to-copy {
     color: #000;
     opacity: 1;
+    margin-right: -15px;
+    margin-top: 8px;
   }
   .catalog-context-menu li .click-to-copy:hover {
     color: #FFF !important;
