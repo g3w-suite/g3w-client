@@ -119,7 +119,7 @@ export class TableLayer extends Layer {
           await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
             // add editing configurations
             this.config.editing =  {
-              fields:       vector.fields,
+              fields:       vector.fields || [],
               format:       vector.format,
               constraints,
               capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
@@ -268,16 +268,11 @@ export class TableLayer extends Layer {
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param { Boolean }  editable In case we want only editable fields
    * @returns layer fields
    */
   getEditingFields(editable = false) {
-    let fields = this.config.editing.fields.length
-      ? this.config.editing.fields
-      : this.config.fields;
-    if (editable) {
-      fields = fields.filter(f => f.editable);
-    }
-    return fields;
+    return editable ? (this.config.editing.fields || []).filter(f => f.editable) : (this.config.editing.fields || []);
   }
 
   /**
