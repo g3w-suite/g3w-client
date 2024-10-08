@@ -221,6 +221,8 @@
       </span>
     </ul>
 
+    <i v-if="!isGroup" :class="$fa('ellips-h')"></i>
+
   </li>
 
 </template>
