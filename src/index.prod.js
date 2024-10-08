@@ -49,7 +49,6 @@ import vTTitle                     from 'directives/v-t-title';
 import vT                          from "directives/v-t";
 import vTPlugin                    from 'directives/v-t-plugin';
 import vDownload                   from 'directives/v-download';
-import vClickOutside               from 'directives/v-click-outside';
 
 // utils
 import { noop }                    from 'utils/noop';
@@ -97,7 +96,6 @@ Vue.directive('t-title', vTTitle);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
 Vue.directive("download", vDownload);
-Vue.directive("click-outside", vClickOutside);
 
 /**
  * Install global plugins
