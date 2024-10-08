@@ -46,10 +46,11 @@
 
     <!-- LAYER MENU -->
     <template v-if = "layer_menu">
+
       <!-- Edit Layer -->
       <li
-        v-if                = "!layer.external && isEditable(layer.id)"
-        @click.prevent.stop = "editLayer(layer.id)"
+        v-if                = "canEdit(layer)"
+        @click.prevent.stop = "editLayer(layer)"
       >
         <span :class = "'menu-icon ' + g3wtemplate.getFontClass('pencil')"></span>
         <b    class  = "item-text" v-t = "'catalog_items.contextmenu.edit'"></b>
@@ -708,28 +709,22 @@
         }
         this.closeMenu();
       },
+
       /**
-       * @since v3.11.0
-       * Check is layer is editable
-        * @param id
-       * @return {Boolean}
+       * @returns {Boolean} whether layer is editable
+       * @since 3.11.0
        */
-      isEditable(id) {
-        return getCatalogLayerById(id).isEditable();
+       canEdit(layer) {
+        return !layer.external && getCatalogLayerById(layer.id).isEditable();
       },
+
       /**
-       * @since v3.11.0
-       * Start editing layer
-       * @param id
-      */
-      editLayer(id) {
-        const editingApi = g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing').getApi();
-        editingApi.showPanel({
-          toolboxes: [id],
-        })
-
-        editingApi.startEditing(id);
-
+       * @since 3.11.0
+       */
+      editLayer(layer) {
+        const editing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing').getApi();
+        editing.showPanel({ toolboxes: [layer.id] });
+        editing.startEditing(layer.id);
         this.closeMenu();
       },
 
