@@ -11,7 +11,8 @@
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
     :style="{
-      marginLeft: !isGroup ? '5px' : '0'
+      marginLeft: !isGroup ? '5px' : '0',
+      position: 'relative',
     }"
     :class                    = "{
       selected:         !isGroup || !isTable ? layerstree.selected : false,
@@ -220,6 +221,12 @@
 
       </span>
     </ul>
+
+    <i
+      v-if="!isGroup"
+      :class="'toggle-context-menu ' + $fa('ellips-h')"
+      @click.prevent.stop="showContextMenu"
+    ></i>
 
   </li>
 
