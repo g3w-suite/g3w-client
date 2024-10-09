@@ -223,11 +223,11 @@
     </ul>
 
     <a
-      v-if                = "!isGroup"
-      :class              = "'toggle-context-menu ' + $fa('ellips-h')"
-      @click.prevent.stop = "showContextMenu"
-      title               = "Open context menu"
-      href                = "#"
+      v-if                    = "!isGroup"
+      :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
+      @click.prevent.stop     = "showContextMenu"
+      href                    = "#"
+      v-t-tooltip:left.create = "'catalog_items.helptext'"
     ></a>
 
   </li>
@@ -589,7 +589,7 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    $('span.scalevisibility').tooltip();
+    $('span.scalevisibility, a.toggle-context-menu').tooltip();
   }
 
 };

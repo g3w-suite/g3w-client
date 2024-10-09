@@ -565,7 +565,7 @@ export default {
       }
     },
     catalog_items: {
-      helptext: "Right-click on individual layer to access additional features",
+      helptext: "Open menu",
       contextmenu: {
         zoomtolayer: "Zoom to Layer",
         open_attribute_table: "Open Attribute Table",

@@ -91,8 +91,6 @@
           :class = "{ active: ('layers' === activeTab) }"
         >
 
-          <helpdiv message = "catalog_items.helptext" />
-
           <!-- TOOLBAR -->
           <div
             id    = "g3w-catalog-toc-layers-toolbar"
@@ -896,7 +894,7 @@ export default {
     font-weight: bold;
   }
   .catalog ul {
-    line-height: 1.5em;
+    line-height: 1.75em;
     list-style-type: none;
   }
   .catalog .list-group-item {
@@ -1086,8 +1084,18 @@ export default {
     display: none !important;
   }
 
-  #catalog .tree-item > .toggle-context-menu { opacity: 0; position: absolute; top: 0; right: 8px; cursor: pointer; }
-  #catalog .tree-item:hover > .toggle-context-menu { opacity: 1; }
+  #catalog .tree-item > .toggle-context-menu {
+    opacity: 0;
+    position: absolute;
+    inset: 0 4px auto auto;
+    color: #fff;
+    padding: 4px 8px;
+    border: 1px solid;
+    border-radius: 3px;
+  }
+  #catalog .tree-item:hover > .toggle-context-menu {
+    opacity: 1;
+  }
 </style>
 
 <style scoped>

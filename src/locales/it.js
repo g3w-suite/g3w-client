@@ -569,7 +569,7 @@ export default {
       }
     },
     catalog_items: {
-      helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
+      helptext: "Apri menu",
       contextmenu: {
         zoomtolayer: "Zoom sul livello",
         open_attribute_table: "Apri tabella attributi",
