@@ -222,11 +222,13 @@
       </span>
     </ul>
 
-    <i
-      v-if="!isGroup"
-      :class="'toggle-context-menu ' + $fa('ellips-h')"
-      @click.prevent.stop="showContextMenu"
-    ></i>
+    <a
+      v-if                = "!isGroup"
+      :class              = "'toggle-context-menu ' + $fa('ellips-h')"
+      @click.prevent.stop = "showContextMenu"
+      title               = "Open context menu"
+      href                = "#"
+    ></a>
 
   </li>
 
@@ -563,20 +565,12 @@ export default {
     /**
      * @param evt
      * 
-     * @fires VM~show-layer-context-menu
-     * @fires VM~show-project-context-menu
+     * @fires VM~context-menu
      * 
      * @since 3.10.0
      */
     showContextMenu(evt) {
-      if (
-        !this.isGroup &&
-        (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
-      ) {
-        VM.$emit('show-layer-context-menu', evt, this.layerstree);
-      } else if (this.isGroup && true === this.layerstree.root) {
-        VM.$emit('show-project-context-menu', evt);
-      }
+      VM.$emit('context-menu', evt, this.layerstree);
     },
 
   },

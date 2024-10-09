@@ -1086,7 +1086,7 @@ export default {
     display: none !important;
   }
 
-  #catalog .tree-item > .toggle-context-menu { opacity: 0; position: absolute; top: 0; right: 8px;}
+  #catalog .tree-item > .toggle-context-menu { opacity: 0; position: absolute; top: 0; right: 8px; cursor: pointer; }
   #catalog .tree-item:hover > .toggle-context-menu { opacity: 1; }
 </style>
 

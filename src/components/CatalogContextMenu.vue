@@ -459,6 +459,45 @@
   const { t }                        = require('g3w-i18n');
   const shpwrite                     = require('shp-write');
 
+  /**
+   * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
+   */
+   function dragElement(menu) {
+    const el = menu.querySelector('li.title');
+    if (!el || menu._drag) {
+      return;
+    } else {
+      menu._drag = true;
+    }
+    let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
+    el.addEventListener('mousedown', function(e) {
+      // skip dragging on form elements
+      if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
+        return;
+      }
+      e.preventDefault();
+      x1 = e.clientX;
+      y1 = e.clientY;
+      document.addEventListener('mouseup', mouseUp);
+      document.addEventListener('mousemove', mouseMove);
+    });
+    function mouseUp() {
+      document.removeEventListener('mouseup', mouseUp);
+      document.removeEventListener('mousemove', mouseMove);
+    }
+    function mouseMove(e) {
+      e.preventDefault();
+      x2 = x1 - e.clientX;
+      y2 = y1 - e.clientY;
+      x1 = e.clientX;
+      y1 = e.clientY;
+      if (menu.style.marginLeft) { x2 -= parseInt(menu.style.marginLeft); menu.style.marginLeft = null; }
+      if (menu.style.marginTop)  { y2 -= parseInt(menu.style.marginTop);  menu.style.marginTop  = null; }
+      menu.style.top  = (menu.offsetTop - y2)    + "px";
+      menu.style.left = (menu.offsetLeft - x2) + "px";
+    }
+  }
+
   export default {
     name: 'catalog-context-menu',
 
@@ -524,14 +563,16 @@
         this.closeMenu();
         await this.$nextTick();
         this.left         = e.x;
-        this.layer        = layerstree || null;
-        this.layer_menu   = !!layerstree;
-        this.project_menu = !layerstree;
+        const layer       = !(layerstree || {}).nodes && layerstree; // check for "layer" or "group"
+        this.layer        = layer || null;
+        this.layer_menu   = !!layer;
+        this.project_menu = !layer;
         await this.$nextTick();
         this.top = e.target.getBoundingClientRect().top - this.$refs['menu'].clientHeight + (e.target.clientHeight / 2);
         $('.click-to-copy[data-toggle="tooltip"]').tooltip();
         // conditionally inline "download_menu" and "ogc_menu" when they contain a single item
         [this.$refs.download_menu, this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
+        dragElement(this.$refs.menu);
       },
 
       /**
@@ -943,12 +984,10 @@
     },
 
     /**
-     * @listens VM~show-project-context-menu
-     * @listens VM~show-layer-context-menu
+     * @listens VM~context-menu
      */
     created() {
-      VM.$on('show-project-context-menu', this.onShowContextMenu);
-      VM.$on('show-layer-context-menu', this.onShowContextMenu);
+      VM.$on('context-menu', this.onShowContextMenu);
       document.addEventListener('keyup', e => 'Escape' === e.key && this.closeMenu());
     },
 
@@ -1010,17 +1049,14 @@
     min-width: 200px;
   }
   .catalog-context-menu li.title {
-    background: transparent;
+    background: transparent !important;
     font-size: 1.1em;
     font-weight: bold;
     border-bottom-width: 3px !important;
     flex-direction: column;
     max-width: 250px;
-  }
-  .catalog-context-menu li.title:hover {
-    cursor: default !important;
-    background: transparent !important;
-    color: #000;
+    cursor: move !important;
+    color: #000 !important;
   }
   .catalog-context-menu li:last-child {
     border-bottom: none;
