@@ -470,10 +470,11 @@
     </div>
 
     <!-- QUERY MODE -->
-    <div v-if = "state.query && 'coordinates' === state.query.type" style="position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
-      <label style="margin-top: 5px;">{{ $t('query_mode') }}</label>
+    <div v-if = "state.query" style="position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
+      <label style="margin-top: 5px;">{{ $t('query_filter') }}</label>
       <select style="flex: 1;">
-        <option selected>{{ $t('query_selected') }} ({{ selectedLayer ? selectedLayer.getName() : $t('sdk.mapcontrols.queryby.all') }})</option>
+        <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
+        <option :selected="!selectedLayer">{{ $t('sdk.mapcontrols.queryby.all') }}</option>
       </select>
     </div>
 
@@ -489,6 +490,7 @@
   import { toRawType }               from 'utils/toRawType';
   import { throttle }                from 'utils/throttle';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
+  import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
   import GUI                         from 'services/gui';
 
   const MAX_SUBSET_LENGTH           = 3;
@@ -582,6 +584,10 @@
 
         return { icon: null, message: null };
 
+      },
+
+      queryableLayers() {
+        return getMapLayersByFilter({ QUERYABLE: true });
       },
 
       selectedLayer() {

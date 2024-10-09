@@ -590,7 +590,6 @@ export default {
     },
     /**@since 3.10.0 */
     no_geometry: 'This item has no geometry',
-    query_mode: 'Mode:',
-    query_selected: 'Selected layer',
+    query_filter: 'Filter by:',
   },
 };
