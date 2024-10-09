@@ -75,9 +75,6 @@
         style ="display: flex;"
       >
 
-        <!-- SCALE CONTROL -->
-        <div id = "scale-control"></div>
-
         <!-- SWITCH COORDINATES  -->
         <div
           v-if                   = "mouse.visible && mouse.switch_icon && !isMobile()"
@@ -98,6 +95,20 @@
         ></div>
 
         <div
+          id                     = "permalink"
+          v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
+            class       = "skin-color-dark"
+            :class      = "{
+              [$fa('link')]:   !urlCopied,
+              [$fa('success')]: urlCopied,
+            }"
+            @click.stop = "createCopyMapExtentUrl">
+        </div>
+
+        <!-- SCALE CONTROL -->
+        <div id = "scale-control"></div>
+
+        <div
           v-if = "showmapunits"
           id   = "scale-line-units"
         >
@@ -115,17 +126,6 @@
             </option>
           </select>
 
-        </div>
-
-        <div
-          id                     = "permalink"
-          v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
-            class       = "skin-color-dark"
-            :class      = "{
-              [$fa('link')]:   !urlCopied,
-              [$fa('success')]: urlCopied,
-            }"
-            @click.stop = "createCopyMapExtentUrl">
         </div>
 
       </div>
