@@ -711,6 +711,9 @@
 
     </div>
 
+    <!-- Add layer compnent -->
+    <map-add-layer />
+
   </div>
 </template>
 
@@ -730,6 +733,7 @@ import { resizeMixin }    from "mixins";
 import HeaderItem         from 'components/HeaderItem.vue';
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
+import MapAddLayer        from 'components/MapAddLayer.vue';
 import getUniqueDomId     from 'utils/getUniqueDomId';
 import { XHR }            from 'utils/XHR';
 import { promisify }      from 'utils/promisify';
@@ -761,6 +765,7 @@ export default {
     CookieLaw,
     userMessage,
     CatalogContextMenu,
+    MapAddLayer,
   },
 
   computed: {

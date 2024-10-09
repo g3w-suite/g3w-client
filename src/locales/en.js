@@ -75,7 +75,7 @@ export default {
         download_image: "Download Image",
         fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
         fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-        help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
+        help: "Exported layers are defined by the administrator"
       },
       querybuilder: {
         title: 'Advanced search',

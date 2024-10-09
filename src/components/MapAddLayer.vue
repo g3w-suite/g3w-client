@@ -198,11 +198,13 @@
 </template>
 
 <script>
-import { Chrome as ChromeComponent }        from 'vue-color';
+import { Chrome as ChromeComponent } from 'vue-color';
 
-import { EPSG }                             from 'g3w-constants';
-import Projections                          from 'store/projections';
-import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
+import { EPSG }                      from 'g3w-constants';
+import ApplicationState              from 'store/application';
+import Projections                   from 'store/projections';
+import GUI                           from 'services/gui';
+import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile';
 
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS   = [',', ';'];
@@ -224,12 +226,13 @@ export default {
   /** @since 3.8.6 */
   name: 'map-add-layer',
 
-  props: ['service'],
   data() {
 
+    const crs = ApplicationState.project.getProjection().getCode();
+
     // add map crs if not present
-    if (!EPSG.includes(this.service.getCrs())) {
-      EPSG.unshift(this.service.getCrs())
+    if (!EPSG.includes(crs)) {
+      EPSG.unshift(crs)
     }
 
     return {
@@ -314,7 +317,7 @@ export default {
 
       this.error_message = '';
 
-      this.layer.mapCrs = this.service.getEpsg();
+      this.layer.mapCrs = GUI.getService('map').getEpsg();
       this.layer.name   = name;
       this.layer.title  = name;
       this.layer.id     = name;
@@ -411,7 +414,7 @@ export default {
 
       try {
         this.vectorLayer = await createVectorLayerFromFile(this.layer);
-        await this.service.addExternalLayer(this.vectorLayer, {
+        await GUI.getService('map').addExternalLayer(this.vectorLayer, {
           crs:      this.layer.crs,
           type:     this.layer.type,
           position: this.position,
@@ -438,7 +441,7 @@ export default {
       this.layer.title   = null;
       this.layer.id      = null;
       this.layer.type    = null;
-      this.layer.crs     = this.service.getCrs();
+      this.layer.crs     = GUI.getService('map').getCrs();
       this.layer.color   = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
       this.layer.data    = null;
       this.vectorLayer   = null;
@@ -462,20 +465,19 @@ export default {
   },
 
   created() {
-    this.layer.crs = this.service.getCrs();
-    this.service.on('addexternallayer', () => this.modal.modal('show'));
+    this.layer.crs = ApplicationState.project.getProjection().getCode();
   },
 
   async mounted() {
     await this.$nextTick();
-    this.modal = $('#modal-addlayer').modal('hide');
-    this.modal.on('hide.bs.modal',  () => this.clear() );
+    $('#modal-addlayer').modal('hide');
+    $('#modal-addlayer').on('hide.bs.modal',  () => this.clear() );
   },
 
   beforeDestroy() {
     this.clear();
-    this.modal.modal('hide');
-    this.modal.remove();
+    $('#modal-addlayer').modal('hide')
+    $('#modal-addlayer').remove();
   },
 
 };

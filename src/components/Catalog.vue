@@ -1094,7 +1094,7 @@ export default {
     border: 1px solid;
     border-radius: 3px;
   }
-  #catalog .tree-item:hover > .toggle-context-menu {
+  #catalog .tree-item:not(.group):hover > .toggle-context-menu {
     opacity: 1;
   }
 </style>

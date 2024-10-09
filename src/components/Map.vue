@@ -37,9 +37,6 @@
       <!-- DIV that will contain marker on map -->
       <div style = "display: none;"><div id = "marker"></div></div>
 
-      <!-- Add layer compnent -->
-      <addlayer :service = "service" />
-
       <!-- @since 3.8.0   -->
       <div class="g3w-map-controls-left-bottom"></div>
 
@@ -138,8 +135,6 @@
 import ApplicationState from 'store/application';
 import { copyUrl }      from 'utils/copyUrl';
 
-import AddLayerComponent from 'components/MapAddLayer.vue';
-
 export default {
 
   /** @since 3.8.6 */
@@ -161,10 +156,6 @@ export default {
       urlCopied: false,
       mapunit:   ApplicationState.map.unit,
     }
-  },
-
-  components: {
-    'addlayer': AddLayerComponent,
   },
 
   computed: {

@@ -272,23 +272,14 @@ class MapService extends G3WObject {
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
     this.onExtraParamsSet    = this.onExtraParamsSet.bind(this);
-    this.onSetCurrentProject = this.onSetCurrentProject.bind(this);
     this.updateMapLayers     = this.updateMapLayers.bind(this);
 
     this._keyEvents = {
       ol:           [],
-      g3wobject:    [],
       stores:       [], // layers stores
       base:         this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
       unwatches:    [],
     };
-
-    // on after setting a current project
-    this._keyEvents.g3wobject.push({
-      who:     g3wsdk.core.project.ProjectsRegistry,
-      setter: 'setCurrentProject',
-      key:     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', this.onSetCurrentProject)
-    });
 
     this.debounces =  {
       setupCustomMapParamsToLegendUrl: {
@@ -468,10 +459,7 @@ class MapService extends G3WObject {
                                 project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false })
                                   .reduce((group, l) => {
                                     const id = l.getMultiLayerId();
-                                    //initialize group[id] layer
-                                    if (undefined === group[id]) {
-                                      group[id] = [];
-                                    }
+                                    group[id] = group[id] || [];
                                     group[id].push(l);
                                     return group;
                                   }, {}) || []
@@ -766,7 +754,6 @@ class MapService extends G3WObject {
     };
 
     this.on('extraParamsSet', this.onExtraParamsSet);
-
   }
 
   /**
@@ -775,52 +762,6 @@ class MapService extends G3WObject {
   onExtraParamsSet(extraParams, update) {
     if (update) {
       this.getMapLayers().forEach(l => l.update(this.state, extraParams));
-    }
-  }
-
-  /**
-   * @since 3.11.0
-   */
-  onSetCurrentProject(project) {
-    this.removeLayers();
-    // remove listeners
-    if (this._keyEvents.base) {
-      this.project.un('setBaseLayer', this._keyEvents.base);
-    }
-    // check if reload a same project
-    const reload = this.project.getId() === project.getId();
-    this.project = project;
-    const changeProjectCallBack = () => {
-
-      // reset view
-      const [width, height] = this.viewer.map.getSize();
-      const extent = this.project.state.extent;
-      const maxxRes = ol.extent.getWidth(extent) / width;
-      const minyRes = ol.extent.getHeight(extent) / height;
-      const maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
-      const view = new ol.View({
-        extent,
-        projection: this.viewer.map.getView().getProjection(),
-        center:     this.viewer.map.getView().getCenter(),
-        resolution: this.viewer.map.getView().getResolution(),
-        maxResolution
-      });
-      // update max scale
-      MAP.maxZoom = Math.min(
-        getScaleFromResolution(this.getMap().getView().getResolutionForExtent(this.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
-        MAP.maxZoom
-      );
-      this.viewer.map.setView(view);
-
-      this._setupAllLayers();
-      this.setUpMapOlEvents();
-      this.setupCustomMapParamsToLegendUrl();
-    };
-    if (reload || ApplicationState.iframe) {
-      changeProjectCallBack();
-    }
-    if (!reload) {
-      this.getMap().once('change:size', changeProjectCallBack);
     }
   }
 
@@ -902,14 +843,8 @@ class MapService extends G3WObject {
    */
   clear() {
     this.removeListener('extraParamsSet', this.onExtraParamsSet);
-    ['ol', 'g3wobject'].forEach(type => {
-      switch(type) {
-        case 'ol':           this._keyEvents[type].forEach(key => ol.Observable.unByKey(key)); break;
-        case 'g3wobject':    this._keyEvents[type].forEach(({ who, setter, key }) => who.un(setter, key)); break;
-        case 'eventemitter': this._keyEvents[type].forEach(({ event, listener }) => this.removeListener(event, listener)); break;
-      }
-      this._keyEvents[type].splice(0);
-    });
+    this._keyEvents.ol.forEach(key => ol.Observable.unByKey(key));
+    this._keyEvents.ol.splice(0);
     MAP.layers.getLayersStores().forEach(this._removeEventsKeysToLayersStore.bind(this))
   }
 
@@ -1124,6 +1059,7 @@ class MapService extends G3WObject {
   }
 
   showAddLayerModal() {
+    $('#modal-addlayer').modal('show');
     this.emit('addexternallayer');
   }
 
