@@ -17,11 +17,9 @@
 
       <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
       <div
-        ref        = "g3w-map-controls"
-        class      = "g3w-map-controls"
-        style      = "display: flex"
-        v-disabled = "disableMapControls"
-        :class     = "mapcontrolsalignement"
+        ref   = "g3w-map-controls"
+        class = "g3w-map-controls rv"
+        style = "display: flex"
       ></div>
 
       <!-- FIXME: add description -->
@@ -168,14 +166,6 @@ export default {
       return this.service.state.mapunits.length > 1;
     },
 
-    mapcontrolsalignement() {
-      return this.service.state.mapcontrolsalignement;
-    },
-
-    disableMapControls() {
-      return this.service.state.mapControl.disabled;
-    },
-
   },
 
   methods: {
@@ -214,8 +204,6 @@ export default {
     this.crs = this.service.getCrs();
 
     await this.$nextTick();
-
-    this.service.setMapControlsContainer($(this.$refs['g3w-map-controls']));
 
     // listen of after addHideMap
     this.service.onafter('addHideMap', async ({ratio, layers=[], mainview=false, switchable=false} = {}) => {

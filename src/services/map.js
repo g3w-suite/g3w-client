@@ -163,20 +163,16 @@ class MapService extends G3WObject {
     super();
 
     this.state = {
-      mapUnits:              'm',
-      bbox:                  [],
-      hidemaps:              [],
-      resolution:            null,
-      center:                null,
-      loading:               false,
-      hidden:                true,
-      scale:                  0,
-      mapcontrolsalignement: 'rv',
-      mapcontrolDOM:         null,
-      mapcontrolready:       false,
-      mapControl:            { disabled: false },
-      map_info:              { info: null, style: null },
-      mapunits:              ['metric']
+      mapUnits:   'm',
+      bbox:       [],
+      hidemaps:   [],
+      resolution: null,
+      center:     null,
+      loading:    false,
+      hidden:     true,
+      scale:      0,
+      map_info:   { info: null, style: null },
+      mapunits:   ['metric']
     };
 
     /**
@@ -277,9 +273,10 @@ class MapService extends G3WObject {
     this._keyEvents = {
       ol:           [],
       stores:       [], // layers stores
-      base:         this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
       unwatches:    [],
     };
+
+    this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
 
     this.debounces =  {
       setupCustomMapParamsToLegendUrl: {
@@ -579,20 +576,18 @@ class MapService extends G3WObject {
           this.viewer.destroy();
         }
 
-        const olView = this._calculateViewOptions({
-          width,
-          height,
-          project: this.project,
-          map_extent: search.get('map_extent'), /** @since 3.10.0 */
-        });
-
         const olMap = new ol.Map({
           controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
           interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
           ol3Logo:             false,
-          view:                new ol.View(olView),
           keyboardEventTarget: document,
           target:              this.target,
+          view:                new ol.View(this._calculateViewOptions({
+            width,
+            height,
+            project: this.project,
+            map_extent: search.get('map_extent'), /** @since 3.10.0 */
+          })),
         });
 
         this.viewer = {
@@ -1167,10 +1162,6 @@ class MapService extends G3WObject {
     return url.toString()
   }
 
-  setMapControlsContainer(mapControlDom) {
-    this.state.mapcontrolDOM = mapControlDom;
-  }
-
   getMapControlByType(type) {
     // BACKOMP v3.x
     if ("string" !== typeof type) {
@@ -1187,7 +1178,6 @@ class MapService extends G3WObject {
    * @param visible
    */
   addControl(id, type, control, addToMapControls = true, visible = true) {
-    this.state.mapcontrolready = false;
     this.viewer.map.addControl(control);
 
     control.on('toggled', e => this.emit('mapcontrol:toggled', e));
@@ -1232,8 +1222,6 @@ class MapService extends G3WObject {
     if (false === control.offline && control.getEnable()) {
       control.setEnable(ApplicationState.online);
     }
-
-    this.state.mapcontrolready = true;
   }
 
   showControls(types) {
