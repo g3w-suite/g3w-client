@@ -148,15 +148,13 @@
             const { value: field } = this.state.input.options;
             let value = values[field];
             if (this.multiple) {
+              //get an array of values from string
               let values = this.getMultiValues();
-              if (values.find(v => value === v)) {
-                values = values.filter(v => value !== v);
-                value  = values.length > 0 ? `{${values.join()}}`: null;
-              } else {
+              //if not already added, add it to value
+              if (undefined === values.find(v => value === v)) {
                 values.push(value);
                 value = `{${values.join()}}`;
               }
-              console.log(values)
               this.select2.val(values).trigger('change');
             } else {
               this.select2.val(value).trigger('change');
@@ -182,7 +180,9 @@
       getMultiValues() {
         return [undefined, null, ''].includes(this.state.value)
           ? [] //return empty array values
-          : `${this.state.value}`.replace(/{/, '').replace(/}/, '').split(','); //remove open and close curly branches
+          : Array.from(
+              new Set(`${this.state.value}`.replace(/{/, '').replace(/}/, '').split(','))
+            ).filter(v => this.state.input.options.values.map(({ value }) => `${value}`).includes(v)); //remove open and close curly branches
       },
       /**
        * Method to handle select2 event
@@ -238,23 +238,36 @@
        * @param {Array} values Array of key value objects
        * @return {Promise<void>}
        */
-      async 'state.input.options.values'(values) {
+      async 'state.input.options.values'(values = []) {
         await this.$nextTick();
         if (this.autocomplete) {
           return;
         }
-
         let value;
-        if (values.length === 0) {
+        //check if is an empty array values
+        const is_empty = 0 === values.length;
+        //if values is empty array or current state.value {val1, val2} has not value of current values
+        if (is_empty || (this.multiple && 0 === this.getMultiValues().length)) {
+          //set null
           value = G3W_SELECT2_NULL_VALUE;
-        } else {
-          const findvalue = values.find(({ value }) => value == this.state.value);
-          value = undefined === findvalue ? G3W_SELECT2_NULL_VALUE : findvalue.value;
+        }
+        //in the case of multiple selection, need to set array values as select2
+        if (!is_empty && this.multiple && this.getMultiValues().length > 0) {
+          //get current value
+          value = `{${this.getMultiValues().join()}}`;
+        }
+        //no empty values and not multiple select values
+        if (!is_empty && !this.multiple) {
+          value = (values.find(({ value }) => value == this.state.value) || { value:  G3W_SELECT2_NULL_VALUE }).value;
         }
 
-        const changed = value != this.state.value;
+        //check if changed value
+        const changed    = value != this.state.value;
+
+        //set value
         this.state.value = value;
-        this.setValue();
+
+        this.select2.val(this.multiple ? this.getMultiValues() : this.state.value).trigger('change');
 
         if (changed) {
           this.change();
