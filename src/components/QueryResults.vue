@@ -5,7 +5,11 @@
 
 <template>
   <div id = "search-results" class = "queryresults-wrapper">
-    <div
+      <div v-if = "state.query && state.query.selected">
+          {{ state.query.selected }}
+      </div>
+
+      <div
       v-if  = "info.message"
       class = "skin-color"
       style = "font-weight: bold; margin-bottom: 3px; font-size: 1.1em;"
