@@ -5,10 +5,6 @@
 
 <template>
   <div id = "search-results" class = "queryresults-wrapper">
-      <div v-if = "state.query && state.query.selected">
-          {{ state.query.selected }}
-      </div>
-
       <div
       v-if  = "info.message"
       class = "skin-color"
@@ -472,6 +468,15 @@
       </template>
 
     </div>
+
+    <!-- QUERY MODE -->
+    <div v-if = "state.query && 'coordinates' === state.query.type" style="position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
+      <label style="margin-top: 5px;">{{ $t('query_mode') }}</label>
+      <select style="flex: 1;">
+        <option selected>{{ $t('query_selected') }} ({{ selectedLayer ? selectedLayer.getName() : $t('sdk.mapcontrols.queryby.all') }})</option>
+      </select>
+    </div>
+
   </div>
 </template>
 
@@ -577,7 +582,11 @@
 
         return { icon: null, message: null };
 
-      }
+      },
+
+      selectedLayer() {
+        return GUI.getService('map').getSelectedLayer();
+      },
 
     },
     methods: {

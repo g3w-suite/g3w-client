@@ -593,5 +593,8 @@ export default {
     },
     /**@since 3.10.0 */
     no_geometry: 'Questo elemento non ha geometria',
+    /**@since 3.11.0 */
+    query_mode: 'Modo:',
+    query_selected: 'Livello selezionato',
   },
 };

@@ -67,7 +67,6 @@ export default {
         query: {
           coordinates,
           type: 'coordinates',
-          selected: external ? GUI.getService('catalog').state.external.vector.find(l => l.selected).name : (1 === layers.length && layers[0].isSelected() && layers[0].getName()), //@since 3.11.0 Set selected layer
           external: {
             add: (!external || layerIds.length > 0)
               ? (1 === layers.length && layers[0].isSelected() ? false : addExternal) // avoid querying a temporary layer (external layer) when another layer is selected
