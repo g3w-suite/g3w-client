@@ -912,6 +912,7 @@ export default {
     width: 80%;
     display: inline-flex;
     justify-content: space-between;
+    user-select: none;
   }
   .catalog .tree-item div.tree-node-title.disabled,
   .catalog #legend div div.tree-node-title.disabled {
