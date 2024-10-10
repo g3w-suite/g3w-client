@@ -145,22 +145,27 @@
               });
               await this.$nextTick();
             }
+
             const { value: field } = this.state.input.options;
             let value = values[field];
+
+            //check if is multiple and get value in not in current values
             if (this.multiple) {
-              //get an array of values from string
-              let values = this.getMultiValues();
-              //if not already added, add it to value
-              if (undefined === values.find(v => value === v)) {
-                values.push(value);
-                value = `{${values.join()}}`;
-              }
-              this.select2.val(values).trigger('change');
-            } else {
-              this.select2.val(value).trigger('change');
+              //set new value. If value is already selected, get current value of state.value
+              value = undefined === this.getMultiValues().find(v => value == v) ? `{${[...this.getMultiValues(), value].join()}}` : this.state.value;
             }
-            await this.changeSelect(value);
+
+            // Check if the value is change (Use comparison operator, NOT STRICT, because value and this.state.value can be different type Number, String)
+            if (value != this.state.value) {
+              //set new value to this.state.value
+              await this.changeSelect(value);
+              //trigger change value on select2
+              this.select2.val(this.multiple ? this.getMultiValues() : value).trigger('change');
+            }
+
+            //show a success message
             GUI.showUserMessage({ type: 'success', autoclose: true });
+
             this.picked = false;
           }
         } catch(e) {
@@ -195,7 +200,7 @@
             : e.params.data.id;
           if (this.multiple) {
             //get array of values
-            const values = this.getMultiValues().filter(v => v !== value);
+            const values = this.getMultiValues().filter(v => v != value);
             this.changeSelect(0 === values.length ? null : `{${values.join()}}`);
           }
 
@@ -324,15 +329,14 @@
             this.state.input.options.values = (
               (await layer.getFilterData({
                 fformatter: referencingField[0],
-                order: referencingField[0],
-                //create a filet with filter fields values (ex. field1|eq|1|AND,field2|eq|test)
-                ffield: filter_fields
+                order:      referencingField[0],
+                ffield:     filter_fields //create a filet with filter fields values (ex. field1|eq|1|AND,field2|eq|test)
                   .map((f, i) => {
                     const value = undefined === data[0].features[0].get(f) ? `${G3W_SELECT2_NULL_VALUE}` : data[0].features[0].get(f);
                     //get the value of filter_field from feature response
                     //and set as value. Used after to set initial value of filter field of select
                     this.filterFields.push({
-                      id: f, //field name
+                      id:     f, //field name
                       values: [
                         {
                           key: `[${relationLayerFields.find(_f => _f.name === f).label}]`,
@@ -355,42 +359,42 @@
             if (chain_filters) {
               //first filter field need to get all value avery time
               (await relationLayer.getFilterData({
-                unique: filter_fields[0],
-                ordering: filter_fields[0],
+                unique:    filter_fields[0],
+                ordering:  filter_fields[0],
                 formatter: 0,
-              })).forEach(v => this.filterFields[0].values.push({key:v, value:v}));
+              })).forEach(v => this.filterFields[0].values.push({ key: v, value: v }));
 
               (await Promise.allSettled(
                 filter_fields
                   .slice(1)
                   .map((f,i) => {
                     return relationLayer.getFilterData({
-                      unique: filter_fields[i+1],
-                      ordering: filter_fields[i+1],
+                      unique:    filter_fields[i+1],
+                      ordering:  filter_fields[i+1],
                       formatter: 0,
                       field: this.filterFields.slice(0, i+1)
-                        .filter((f) => 'null' !== f.value)
-                        .map((f) => createSingleFieldParameter({
+                        .filter(f => 'null' !== f.value)
+                        .map(f => createSingleFieldParameter({
                           field: f.id,
                           value: f.value
                         })).join('|AND,')
                     })
                   })
               ))
-              .forEach(({status, value:data}, i) => {
+              .forEach(({ status, value: data }, i) => {
                 if ('fulfilled' === status) {
-                  data.forEach(v => this.filterFields[i+1].values.push({key:v, value: v}));
+                  data.forEach(v => this.filterFields[i+1].values.push({ key: v, value: v }));
                 }
               })
             } else {
               //No chain filters
               (await Promise.allSettled(
-                filter_fields.map(f => relationLayer.getFilterData({unique: f, ordering: f, formatter: 0}))
+                filter_fields.map(f => relationLayer.getFilterData({ unique: f, ordering: f, formatter: 0 }))
               ))
-              .forEach(({status, value:data}, index) => {
+              .forEach(({ status, value: data }, index) => {
                 if ('fulfilled' === status) {
                   //set values for all filer fields
-                  data.forEach(v => this.filterFields[index].values.push({key:v, value:v}));
+                  data.forEach(v => this.filterFields[index].values.push({ key: v, value: v }));
                 }
               });
             }
@@ -404,14 +408,14 @@
             filter_fields
               .map((f, i) => {
                 this.filterFields.push({
-                  id: f, //field name
+                  id:     f, //field name
                   values: [
                     {
                       key: `[${relationLayerFields.find(_f => _f.name === f).label}]`,
                       value:`${G3W_SELECT2_NULL_VALUE}` //null
                     }
                   ], //values
-                  value: `${G3W_SELECT2_NULL_VALUE}`, //current value
+                  value:    `${G3W_SELECT2_NULL_VALUE}`, //current value
                   disabled: chain_filters && i > 0,
                 })
                 return relationLayer.getFilterData({
@@ -423,7 +427,7 @@
           ))
           .forEach(({ status, value:data }, i) => {
             if ('fulfilled' === status) {
-              data.forEach(v => this.filterFields[i].values.push({key:v, value:v}))
+              data.forEach(v => this.filterFields[i].values.push({ key: v, value: v }))
             }
           });
         }
@@ -452,7 +456,7 @@
                       value: f.value
                     })).join('|AND,');
 
-                  const { data: rdata = [] } = await relationLayer.getFilterData({field: filter});
+                  const { data: rdata = [] } = await relationLayer.getFilterData({ field: filter });
 
                   if (rdata[0] && rdata[0].features) {
                     const filterReferencedFieldValues = [];
@@ -476,7 +480,7 @@
                                  .filter((f) => `${G3W_SELECT2_NULL_VALUE}` !== f.value)
                                  .map((f) => createSingleFieldParameter({ field: f.id, value: f.value }))
                                  .join('|AND,')
-                })).data || []).map(([value, key]) => ({key, value}));
+                })).data || []).map(([value, key]) => ({ key, value }));
               //in the case of values length
               if (this.state.input.options.values.length > 0) {
                 this.state.value = this.state.input.options.values[0].value;
@@ -572,7 +576,7 @@
         this.select2 = selectElement.select2({
           language,
           dropdownParent,
-          multiple: this.multiple, //@since v3.11.0
+          multiple:                this.multiple, //@since v3.11.0
           minimumResultsForSearch: this.isMobile() ? - 1 : null
         });
       }
