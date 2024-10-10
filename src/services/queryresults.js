@@ -40,7 +40,7 @@ function _setRelationField(node) {
   } else if (node.name) {
     node.relation = true;
   }
-};
+}
 
 export default new (class QueryResultsService extends G3WObject {
 
@@ -210,18 +210,17 @@ export default new (class QueryResultsService extends G3WObject {
               attributes = (layerAttrs && layerAttrs.length > 0)
                 ? layerAttrs.filter(attr => attrs.indexOf(attr.name) > -1)
                 : attrs.map(featureAttr => ({
-                    name: featureAttr,
+                    name:  featureAttr,
                     label: featureAttr,
-                    show: G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
-                    type: 'varchar'
+                    show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
+                    type:  'varchar'
                   }));
             }
 
             const external   = (is_vector || is_string);
             const structure  = is_layer && layer.hasFormStructure() && layer.getLayerEditingFormStructure();
-            const has_form   = structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0;
 
-            if (has_form) {
+            if (structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0) {
               for (const node of structure) {
                 _setRelationField(node);
               }
@@ -252,11 +251,12 @@ export default new (class QueryResultsService extends G3WObject {
               infoformat:             is_layer   ? layer.getInfoFormat()          : undefined,
               infoformats:            is_layer   ? layer.getInfoFormats()         : [],
               downloads:              is_layer   ? layer.getDownloadableFormats() : [],
-              formStructure:          has_form   ? {
+              formStructure:          structure  ? {
                 structure,
+                // get field show
                 fields: layer.getFields().filter(f => f.show).concat(
                   (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
-                ), // get field show
+                ),
               } : undefined,
               relationsattributes:    (is_layer || is_vector || is_string)                       ? []                     : undefined,
               filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
@@ -1702,7 +1702,7 @@ export default new (class QueryResultsService extends G3WObject {
         internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
           currentview:      'relation',
           relations:        [projectRelation],
-          chartRelationIds: this.findPlotId(projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
+          chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
           nmRelation:       this._project.getRelationById(relation.nmRelationId),
           layer:            { id: layerId },
           feature,
