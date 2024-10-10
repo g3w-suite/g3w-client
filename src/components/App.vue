@@ -142,7 +142,7 @@
               />
 
               <!-- CHANGE MAP -->
-              <li
+              <!-- <li
                 v-if  = "hasRelatedMaps"
                 id    = "changemaps"
                 class = "dropdown user"
@@ -159,11 +159,31 @@
                   </i>
                   <span v-t="'changemap'"></span>
                 </a>
-              </li>
+              </li> -->
 
               <!-- TODO: add description -->
               <header-item
                 v-for                      = "state in custom_headers[1]"
+                :key                       = "state.id"
+                :state                     = "state"
+                @show-custom-modal-content = "showCustomModalContent"
+              />
+
+              <!-- CREDITS -->
+              <li class="dropdown user user-menu">
+                <a
+                  href        = "#"
+                  data-toggle = "modal"
+                  data-target = "#credits"
+                  class       = "dropdown-toggle"
+                >
+                  <i :class="$fa('unknow')"></i> <span v-t="'help'"></span>
+                </a>
+              </li>
+
+              <!-- TODO: add description -->
+              <header-item
+                v-for                      = "state in custom_headers[2]"
                 :key                       = "state.id"
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
@@ -210,26 +230,6 @@
                     </a>
                   </li>
                 </ul>
-              </li>
-
-              <!-- TODO: add description -->
-              <header-item
-                v-for                      = "state in custom_headers[2]"
-                :key                       = "state.id"
-                :state                     = "state"
-                @show-custom-modal-content = "showCustomModalContent"
-              />
-
-              <!-- CREDITS -->
-              <li class="dropdown user user-menu">
-                <a
-                  href        = "#"
-                  data-toggle = "modal"
-                  data-target = "#credits"
-                  class       = "dropdown-toggle"
-                >
-                  <span>Credits</span>
-                </a>
               </li>
 
               <!-- TODO: add description -->
@@ -816,9 +816,9 @@ export default {
      *
      * @since 3.8.0
      */
-    hasRelatedMaps() {
-      return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
-    },
+    // hasRelatedMaps() {
+    //   return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
+    // },
 
     main_title() {
       const main_title = this.appconfig.main_map_title;
@@ -1036,26 +1036,26 @@ export default {
     /**
      * @since 3.8.0
      */
-    openChangeMapMenu() {
-      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-        GUI.closeContent();
-        return;
-      }
-      if (this.isMobile()) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      GUI.closeSideBar();
+    // openChangeMapMenu() {
+    //   if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
+    //     GUI.closeContent();
+    //     return;
+    //   }
+    //   if (this.isMobile()) {
+    //     GUI.hideSidebar();
+    //     $('#main-navbar.navbar-collapse').removeClass('in');
+    //   }
+    //   GUI.closeSideBar();
 
-      GUI.setContent({
-        content: new Component({
-          id:                 'changemapmenu',
-          vueComponentObject: require('components/ChangeMapMenu.vue'),
-        }),
-        title: '',
-        perc: 100
-      });
-    },
+    //   GUI.setContent({
+    //     content: new Component({
+    //       id:                 'changemapmenu',
+    //       vueComponentObject: require('components/ChangeMapMenu.vue'),
+    //     }),
+    //     title: '',
+    //     perc: 100
+    //   });
+    // },
 
     isNotLastCrumb(index) {
       return index < this.breadcrumb.length - 1;

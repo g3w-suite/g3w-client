@@ -252,24 +252,36 @@
 
     </div>
 
-    <a
-      v-if   = "'legend' !== activeTab"
-      href   = "#"
-      @click = "showaddLayerModal"
+    <div
+      v-if="hasRelatedMaps || 'legend' !== activeTab"
       style  = "
         position: sticky;
         bottom: 0;
         background-color: #222d32;
-        display: block;
+        display: flex;
         text-align: center;
         line-height: 48px;
         color: #fff;
         border-top: 2px solid var(--skin-color);
         margin-top: 12px;
+        justify-content: space-around;
       "
     >
-      <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
-    </a>
+      <a
+        v-if   = "hasRelatedMaps"
+        href   = "#"
+        @click = "openChangeMapMenu"
+      >
+        <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
+      </a>
+      <a
+        v-if   = "'legend' !== activeTab"
+        href   = "#"
+        @click = "showaddLayerModal"
+      >
+        <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
+      </a>
+    </div>
 
   </div>
 </template>
@@ -277,6 +289,7 @@
 <script>
 
 import { VM }                      from 'g3w-eventbus';
+import Component                   from 'g3w-component';
 import ApplicationState            from 'store/application';
 import GUI                         from 'services/gui';
 import { XHR }                     from 'utils/XHR';
@@ -342,6 +355,15 @@ export default {
         || this.state.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
         || this.state.layersgroups.length > 0
       );
+    },
+
+    /**
+     * @returns {boolean} whether it should list any related projects or maps.
+     *
+     * @since 3.8.0
+     */
+     hasRelatedMaps() {
+      return window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length > 1;
     },
 
   },
@@ -729,8 +751,35 @@ export default {
       GUI.getService('map').selectLayer(node.id);
     },
 
+    /**
+     * @since 3.11.0
+     */
     showaddLayerModal() {
       $('#modal-addlayer').modal('show');
+    },
+
+    /**
+     * @since 3.11.0
+     */
+    openChangeMapMenu() {
+      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
+        GUI.closeContent();
+        return;
+      }
+      if (isMobile.any) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      GUI.closeSideBar();
+
+      GUI.setContent({
+        content: new Component({
+          id:                 'changemapmenu',
+          vueComponentObject: require('components/ChangeMapMenu.vue'),
+        }),
+        title: '',
+        perc: 100
+      });
     },
     
 
@@ -768,7 +817,6 @@ export default {
         this.$el.parentElement.classList.remove(`tab-${oldTab}`);
         this.$el.parentElement.classList.add(`tab-${activeTab}`);
       }
-      console.log(this);
     },
 
   },

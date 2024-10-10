@@ -590,6 +590,9 @@ export default {
     },
     /**@since 3.10.0 */
     no_geometry: 'This item has no geometry',
+    /**@since 3.11.0 */
     query_filter: 'Filter by:',
+    /**@since 3.11.0 */
+    help: 'Aiuto',
   },
 };
