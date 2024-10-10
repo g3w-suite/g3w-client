@@ -31,11 +31,9 @@
 </template>
 
 <script>
-import GUI              from 'services/gui';
+import GUI from 'services/gui';
 
 const { t } = require('g3w-i18n');
-
-const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
 export default {
 
@@ -91,13 +89,13 @@ export default {
       const not_static = src && (!src.includes('static') && !src.includes('media'))
 
       if (!src) {
-        imageSrc = fakeImage
+        imageSrc = '/static/client/images/FakeProjectThumb.png';
       } else if (has_media) {
         imageSrc = src;
       } else if (not_static) {
         imageSrc = `${window.initConfig.mediaurl}${src}`;
       } else {
-        imageSrc = fakeImage
+        imageSrc = '/static/client/images/FakeProjectThumb.png';
       }
   
       return `${host}${imageSrc}`;

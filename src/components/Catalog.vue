@@ -252,6 +252,25 @@
 
     </div>
 
+    <a
+      v-if   = "'legend' !== activeTab"
+      href   = "#"
+      @click = "showaddLayerModal"
+      style  = "
+        position: sticky;
+        bottom: 0;
+        background-color: #222d32;
+        display: block;
+        text-align: center;
+        line-height: 48px;
+        color: #fff;
+        border-top: 2px solid var(--skin-color);
+        margin-top: 12px;
+      "
+    >
+      <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
+    </a>
+
   </div>
 </template>
 
@@ -710,6 +729,11 @@ export default {
       GUI.getService('map').selectLayer(node.id);
     },
 
+    showaddLayerModal() {
+      $('#modal-addlayer').modal('show');
+    },
+    
+
   },
 
   watch: {
@@ -736,10 +760,15 @@ export default {
       immediate: false
     },
 
-    activeTab(tab) {
-      if ('legend' === tab) {
+    activeTab(activeTab, oldTab) {
+      if ('legend' === activeTab) {
         this.getLegendSrc(true);
       }
+      if (this.$el) {
+        this.$el.parentElement.classList.remove(`tab-${oldTab}`);
+        this.$el.parentElement.classList.add(`tab-${activeTab}`);
+      }
+      console.log(this);
     },
 
   },
@@ -1081,6 +1110,7 @@ export default {
   #catalog #layers .sidebar-menu > li > a {
     border: 0;
   }
+
   #catalog > a {
     display: none !important;
   }

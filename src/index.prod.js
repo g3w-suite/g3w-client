@@ -634,24 +634,6 @@ $.ajaxSetup({
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
-             */
-            Object.assign(new Component({
-              id:                'wms',
-              icon:              GUI.getFontClass('layers'),
-              title:             'sidebar.wms.add_wms_layer',
-              service:           {},
-              internalComponent: new (Vue.extend(require('components/WMS.vue')))(),
-            }), {
-              _setOpen(b = false) {
-                this.getInternalComponent().state.open = b;
-                if (b) {
-                  GUI.closeContent();
-                }
-              }
-            }),
-
-            /**
              * ORIGINAL SOURCE: src/components/g3w-catalog.js@v3.10.2 
              */
             new (function() {
@@ -717,6 +699,19 @@ $.ajaxSetup({
             
               return comp;
             }),
+
+            /**
+             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
+             */
+            // Object.assign(new Component({
+            //   id:                 'layer',
+            //   icon:               GUI.getFontClass('layers'),
+            //   title:              'mapcontrols.add_layer_control.header',
+            //   vueComponentObject: { template: `<i></i>` },
+            // }), {
+            //   _setOpen: b => $('#modal-addlayer').modal(b ? 'show' : 'hide')
+            // }),
+
           ],
 
           /**

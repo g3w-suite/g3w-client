@@ -222,6 +222,9 @@ export class QueryBy extends InteractionControl {
                       map.selectLayer(l.get('id'));
                       this.reset();
                     });
+                    const select = document.querySelector('#add-layer-type');
+                    select.value = 'file';
+                    select.dispatchEvent(new Event('change'));
                     $('#modal-addlayer').one('hidden.bs.modal', () => map.un('loadExternalLayer', listener));
                     map.showAddLayerModal();
                   }
