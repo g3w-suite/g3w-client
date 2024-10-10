@@ -155,7 +155,11 @@
 
               <h3 class = "skin-color g3w-wms-panel-title">{{title}}</h3>
 
-              <helpdiv v-if = "abstract" :message = "abstract" />
+              <!-- LAYER INFO -->
+              <fieldset v-if="abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
+                <legend style="width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: #222d32;font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
+                <span v-t = "abstract"></span>
+              </fieldset>
 
               <!-- LAYERS NAME   -->
               <label for = "g3w-wms-layers" v-t = "'sidebar.wms.panel.label.layers'"></label>
@@ -169,14 +173,6 @@
                 <option v-for = "proj in projections" :key = "proj" :value = "proj">{{ proj }}</option>
               </select>
 
-              <!-- NAME OF LAYER TO SAVE -->
-              <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
-              <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
-
-              <div v-if  = "added" class = "g3w-wms-external-panel-layer-added-message"
-                v-t   = "'sidebar.wms.layer_id_already_added'">
-              </div>
-
               <!-- LAYER POSITION -->
               <div class = "form-group">
                 <label for = "position-layer" v-t = "'layer_position.message'"></label>
@@ -184,6 +180,14 @@
                   <option :value = "'top'"    v-t = "'layer_position.top'"></option>
                   <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
                 </select>
+              </div>
+
+              <!-- NAME OF LAYER TO SAVE -->
+              <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
+              <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
+
+              <div v-if  = "added" class = "g3w-wms-external-panel-layer-added-message"
+                v-t   = "'sidebar.wms.layer_id_already_added'">
               </div>
 
             </div>

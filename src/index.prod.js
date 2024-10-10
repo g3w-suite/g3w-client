@@ -448,7 +448,7 @@ $.ajaxSetup({
                     service,
                     internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({ state: service.state })
                   });
-                  service.content.layout = noop;
+                  // service.content.layout = noop;
                   GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
                   service.show = true;
                 } else {
@@ -699,18 +699,6 @@ $.ajaxSetup({
             
               return comp;
             }),
-
-            /**
-             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
-             */
-            // Object.assign(new Component({
-            //   id:                 'layer',
-            //   icon:               GUI.getFontClass('layers'),
-            //   title:              'mapcontrols.add_layer_control.header',
-            //   vueComponentObject: { template: `<i></i>` },
-            // }), {
-            //   _setOpen: b => $('#modal-addlayer').modal(b ? 'show' : 'hide')
-            // }),
 
           ],
 
