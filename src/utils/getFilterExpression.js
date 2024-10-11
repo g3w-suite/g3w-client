@@ -61,8 +61,8 @@ export async function getFilterExpression({
       const values = [];
       for (let i = 0; i < features.length; i++) {
         values.push({
-          key:   features[i].properties[key],
-          value: features[i].properties[value]
+          key:   features[i].properties[value],
+          value: features[i].properties[key]
         })
       }
 
