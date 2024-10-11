@@ -140,13 +140,13 @@
             //check if autocomplete
             if (this.autocomplete) {
               this.state.input.options.values.splice(0, this.state.input.options.values.length, {
-                key:   values[this.state.input.options.key],
-                value: values[this.state.input.options.value]
+                key:   values[this.state.input.options.value],
+                value: values[this.state.input.options.key]
               });
               await this.$nextTick();
             }
 
-            const { value: field } = this.state.input.options;
+            const { key: field } = this.state.input.options;
             let value = values[field];
 
             //check if is multiple and get value in not in current values
@@ -183,11 +183,16 @@
        * return <Array> values
        */
       getMultiValues() {
+
         return [undefined, null, ''].includes(this.state.value)
           ? [] //return empty array values
           : Array.from(
-              new Set(`${this.state.value}`.replace(/{/, '').replace(/}/, '').split(','))
-            ).filter(v => this.state.input.options.values.map(({ value }) => `${value}`).includes(v)); //remove open and close curly branches
+              new Set(
+                `${this.state.value}`
+                  .replace(/^{|}$/g, '')  // Remove both open and close curly braces
+                  .replace(/"/g, "") //remove ""
+                  .split(','))
+            ).filter(v => this.state.input.options.values.map(({ value }) => `${value}`).includes(`${v}`));
       },
       /**
        * Method to handle select2 event
