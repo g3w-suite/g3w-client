@@ -187,7 +187,7 @@
                       :href = "user.admin_url"
                       class = "btn btn-default btn-flat skin-color"
                     >
-                      <b>Admin</b><i :class="$fa('folder')"></i>
+                      <b>Admin</b><i :class="$fa('tool')"></i>
                     </a>
                     <!-- HOME URL -->
                     <a
