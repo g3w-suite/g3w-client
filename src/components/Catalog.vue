@@ -268,18 +268,20 @@
       "
     >
       <a
-        v-if   = "hasRelatedMaps"
-        href   = "#"
-        @click = "openChangeMapMenu"
-      >
-        <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
-      </a>
-      <a
         v-if   = "'legend' !== activeTab"
+        id     = "catalog-add-layer"
         href   = "#"
         @click = "showaddLayerModal"
       >
         <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
+      </a>
+      <a
+        v-if   = "hasRelatedMaps && 'legend' !== activeTab"
+        id     = "catalog-change-map"
+        href   = "#"
+        @click = "openChangeMapMenu"
+      >
+        <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
       </a>
     </div>
 
@@ -762,24 +764,10 @@ export default {
      * @since 3.11.0
      */
     openChangeMapMenu() {
-      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-        GUI.closeContent();
-        return;
+      const a = document.getElementById('user-menu-change-map');
+      if (a) {
+        a.click();
       }
-      if (isMobile.any) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      GUI.closeSideBar();
-
-      GUI.setContent({
-        content: new Component({
-          id:                 'changemapmenu',
-          vueComponentObject: require('components/ChangeMapMenu.vue'),
-        }),
-        title: '',
-        perc: 100
-      });
     },
     
 

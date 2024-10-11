@@ -119,20 +119,6 @@
               class = "nav navbar-nav navbar-right app-navbar-nav"
             >
 
-              <!-- LOGIN -->
-              <li
-                v-if  = "!user"
-                class = "dropdown user user-menu"
-              >
-                <a :href="login_url">
-                  <i
-                    :class      = "$fa('sign-in')"
-                    aria-hidden = "true">
-                  </i>
-                  <span v-t = "'sign_in'"></span>
-                </a>
-              </li>
-
               <!-- TODO: add description -->
               <header-item
                 v-for                      = "state in custom_headers[0]"
@@ -140,26 +126,6 @@
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
               />
-
-              <!-- CHANGE MAP -->
-              <!-- <li
-                v-if  = "hasRelatedMaps"
-                id    = "changemaps"
-                class = "dropdown user"
-              >
-                <a
-                  href        = "#"
-                  @click.stop = "openChangeMapMenu"
-                  class       = "dropdown-toggle"
-                  data-toggle = "dropdown"
-                >
-                  <i
-                    :class      = "$fa('change-map')"
-                    aria-hidden = "true">
-                  </i>
-                  <span v-t="'changemap'"></span>
-                </a>
-              </li> -->
 
               <!-- TODO: add description -->
               <header-item
@@ -170,12 +136,11 @@
               />
 
               <!-- CREDITS -->
-              <li class="dropdown user user-menu">
+              <li>
                 <a
                   href        = "#"
                   data-toggle = "modal"
                   data-target = "#credits"
-                  class       = "dropdown-toggle"
                 >
                   <i :class="$fa('unknow')"></i> <span v-t="'help'"></span>
                 </a>
@@ -189,9 +154,8 @@
                 @show-custom-modal-content = "showCustomModalContent"
               />
 
-              <!-- ADMIN / LOGOUT -->
+              <!-- ACCOUNT -->
               <li
-                v-if  = "user"
                 class = "dropdown user user-menu"
               >
                 <a
@@ -199,34 +163,57 @@
                   class       = "dropdown-toggle"
                   data-toggle = "dropdown"
                 >
-                  <i :class = "$fa('user')"></i>
-                  <span class = "hidden-xs">{{ user.username }}</span>
+                  <span v-if = "user"><i :class = "$fa('user')"></i> {{ user.username }}</span>
+                  <span v-else><i :class="$fa('sign-in')"></i> <span v-t = "'sign_in'"></span></span>
                 </a>
 
                 <ul class = "dropdown-menu">
-                  <li class = "user-header">
-                    <p>
-                      {{ user.first_name }} {{ user.last_name }}
-                    </p>
+                  <!-- USER NAME -->
+                  <li v-if = "user" class = "user-header">
+                    👋 {{ user.first_name }} {{ user.last_name }}
                   </li>
                   <li class = "user-footer">
+                    <!-- LOGIN URL -->
                     <a
-                      v-if  = "user.admin_url"
+                      v-if  = "!user"
+                      :href = "login_url"
+                      class = "btn btn-default btn-flat skin-color"
+                    >
+                      <b v-t = "'sign_in'"></b><i :class="$fa('sign-in')"></i>
+                    </a>
+                    <!-- ADMIN URL -->
+                    <a
+                      v-if  = "user && user.admin_url"
                       :href = "user.admin_url"
                       class = "btn btn-default btn-flat skin-color"
                     >
-                      <i :class="$fa('folder')"></i>
-                      <b>Admin</b>
+                      <b>Admin</b><i :class="$fa('folder')"></i>
                     </a>
+                    <!-- HOME URL -->
                     <a
+                      v-if  = "urls.frontendurl"
+                      :href = "urls.frontendurl"
+                      class = "btn btn-default btn-flat skin-color"
+                    >
+                    <b>Home</b><i :class="$fa('home')"></i>
+                    </a>
+                    <!-- LOGOUT URL -->
+                    <a
+                      v-if  = "user && user.logout_url"
                       :href = "user.logout_url"
                       class = "btn btn-default btn-flat skin-color"
                     >
-                      <i
-                        :class = "$fa('sign-out')"
-                        style  = "margin-right: 2px;">
-                      </i>
-                     <b v-t="'logout'"></b>
+                      <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
+                    </a>
+                    <!-- CHANGE MAP -->
+                    <a
+                      v-if   = "hasRelatedMaps"
+                      href   = "#"
+                      id     = "user-menu-change-map"
+                      @click = "openChangeMapMenu"
+                      class  = "btn btn-default btn-flat"
+                    >
+                      <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
                     </a>
                   </li>
                 </ul>
@@ -239,18 +226,6 @@
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
               />
-
-              <!-- HOME PAGE -->
-              <li
-                v-if  = "urls.frontendurl"
-                class = "dropdown"
-              >
-                <a :href="urls.frontendurl">
-                  <span>
-                    <i :class="$fa('home')"></i> Home
-                  </span>
-                </a>
-              </li>
 
               <!-- LANGUAGE SWITCHER -->
               <li v-if="languages" class="g3w-languages">
@@ -816,9 +791,9 @@ export default {
      *
      * @since 3.8.0
      */
-    // hasRelatedMaps() {
-    //   return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
-    // },
+    hasRelatedMaps() {
+      return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
+    },
 
     main_title() {
       const main_title = this.appconfig.main_map_title;
@@ -1036,26 +1011,26 @@ export default {
     /**
      * @since 3.8.0
      */
-    // openChangeMapMenu() {
-    //   if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-    //     GUI.closeContent();
-    //     return;
-    //   }
-    //   if (this.isMobile()) {
-    //     GUI.hideSidebar();
-    //     $('#main-navbar.navbar-collapse').removeClass('in');
-    //   }
-    //   GUI.closeSideBar();
+    openChangeMapMenu() {
+      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
+        GUI.closeContent();
+        return;
+      }
+      if (isMobile.any) {
+        GUI.hideSidebar();
+        $('#main-navbar.navbar-collapse').removeClass('in');
+      }
+      GUI.closeSideBar();
 
-    //   GUI.setContent({
-    //     content: new Component({
-    //       id:                 'changemapmenu',
-    //       vueComponentObject: require('components/ChangeMapMenu.vue'),
-    //     }),
-    //     title: '',
-    //     perc: 100
-    //   });
-    // },
+      GUI.setContent({
+        content: new Component({
+          id:                 'changemapmenu',
+          vueComponentObject: require('components/ChangeMapMenu.vue'),
+        }),
+        title: '',
+        perc: 100
+      });
+    },
 
     isNotLastCrumb(index) {
       return index < this.breadcrumb.length - 1;
@@ -1396,16 +1371,20 @@ export default {
     cursor: pointer;
   }
 
-  .user-header              { background-color: var(--skin-color); }
-  .user-header              { height: 175px; padding: 10px; text-align: center; }
-  .user-header > p          { z-index: 5; color: #fff; color: rgba(255, 255, 255, 0.8); font-size: 17px; margin-top: 10px; }
-  .user-footer              { background-color: #f9f9f9; padding: 10px; display: flex;justify-content: space-between; }
-  .user-footer .btn-default { color: #666; }
+  .user-header                          { padding: 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,.3); }
+  .user-footer                          { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
+  .user-footer .btn-default             { color: rgba(0,0,0,.75); border-color: currentColor; display: flex !important; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
+  .user-footer .btn-default:not(:hover) { background-color: transparent; }
+  .user-menu > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid; border-radius: 0; }
 
   @media (max-width: 767px) {
     #g3w-small-screen-hamburger-sidebar { display: block; }
-    .user-footer .btn-default:hover     { background-color: #f9f9f9; }
+    .user-footer                        { background-color: transparent; border: none; }
+    .user-menu > ul                     { display: block; position: relative; float:none; border: none; background-color: transparent; }
+    .user-menu .btn.skin-color          { color: #fff !important; }
+    .user-menu > .dropdown-toggle,
     .user-header                        { display: none; }
+    .user-menu > .dropdown-menu         { border: none; }
   }
 
 </style>

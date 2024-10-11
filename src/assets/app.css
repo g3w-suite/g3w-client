@@ -438,12 +438,11 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 .main-header .logo                                           { transition: width .3s ease-in-out; display: block; float: left; height: 50px; font-size: 20px; line-height: 50px; text-align: center; width: var(--sidebar-width); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 0 15px; font-weight: 300; overflow: hidden; }
 .navbar-toggle                                               { color: #fff; border: 0; padding: 11px 15px 9px 15px; margin: 5px 20px 4px 4px; }
 
-.dropdown-menu                                                                                                 { box-shadow: none; border-color: #eee; }
-.dropdown-menu > li > a                                                                                        { color: #777; }
-.dropdown-menu > li > a > :is(.glyphicon,.fa, .ion)                                                            { margin-right: 10px; }
-.dropdown-menu > li > a:hover                                                                                  { background-color: #e1e3e9; color: #333; }
-.dropdown-menu > .divider                                                                                      { background-color: #eee; }
-.navbar-nav > .user-menu > .dropdown-menu                                                                      { border-top-right-radius: 0; border-top-left-radius: 0; padding: 1px 0 0 0; border-top-width: 0; width: 280px; }
+.dropdown-menu                                                 { box-shadow: none; border-color: #eee; }
+.dropdown-menu > li > a                                        { color: #777; }
+.dropdown-menu > li > a > :is(.glyphicon,.fa, .ion)            { margin-right: 10px; }
+.dropdown-menu > li > a:hover                                  { background-color: #e1e3e9; color: #333; }
+.dropdown-menu > .divider                                      { background-color: #eee; }
 
 .main-header .navbar                                           { background-color: var(--skin-color); }
 .main-header .navbar .nav > li > a                             { color: #fff; }
@@ -469,7 +468,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 
 header.main-header .container-fluid                            { padding: 0 !important; }
 header.main-header .navbar-header                              { margin-left: 0 !important; }
-header.main-header #main-navbar .navbar-right.app-navbar-nav   { padding-right: 10px; }
 .main-header .navbar .navbar-toggle:is(:focus, :hover)         { margin-top: 5px; }
 .main-header .customheaderlink a.imagelink                     { padding:14px; }
 .main-header .g3w-languages                                    { margin-top: 9px; margin-left: 10px; margin-right: -7px; }
