@@ -105,15 +105,6 @@
             style = "text-align: center; overflow: hidden; margin: 0 0;"
           >
 
-            <!-- ORIGINAL SOURCE: src/components/NavbaritemsRight.vue@v3.10.1 -->
-            <ul class = "nav navbar-nav navbar-right">
-              <li
-                v-for = "item in app.navbaritems"
-                :is = "item"
-                :key = "item.id"
-              ></li>
-            </ul>
-
             <ul
               ref   = "app-navbar-nav"
               class = "nav navbar-nav navbar-right app-navbar-nav"
@@ -150,9 +141,21 @@
                 <a
                   href        = "#"
                   data-toggle = "modal"
-                  data-target = "#credits"
+                  data-target = "#modal-credits"
+                  tabindex    = "-1"
                 >
-                  <i :class="$fa('unknow')"></i> <span v-t="'help'"></span>
+                  <i :class="$fa('unknow')"></i> Credits
+                </a>
+              </li>
+
+              <li>
+                <!-- CHANGE MAP -->
+                <a
+                  v-if   = "hasRelatedMaps && !custom_links.length"
+                  href   = "#"
+                  @click = "openChangeMapMenu"
+                >
+                  <i :class = "$fa('refresh')"></i> <span v-t="'changemap'"></span>
                 </a>
               </li>
 
@@ -209,9 +212,8 @@
                     </a>
                     <!-- CHANGE MAP -->
                     <a
-                      v-if   = "hasRelatedMaps"
+                      v-if   = "hasRelatedMaps && custom_links.length"
                       href   = "#"
-                      id     = "user-menu-change-map"
                       @click = "openChangeMapMenu"
                       class  = "btn btn-default btn-flat"
                     >
@@ -324,15 +326,15 @@
       </div>
       <!-- TOGGLE BUTTON (desktop only) -->
       <a
-        href           = "#"
-        class          = "sidebar-aside-toggle"
-        :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
-        style         = "z-index: 2"
-        @click.prevent = "toggleSidebar"
-        role           = "button"
-      >
-          <i :class = "$fa('bars')"></i>
-      </a>
+        href               = "#"
+        class              = "sidebar-aside-toggle"
+        :class             = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
+        style              = "z-index: 2"
+        @click.prevent     = "toggleSidebar"
+        role               = "button"
+        data-placement     = "right"
+        v-t-tooltip.create = "'sidebar_menu'"
+      ></a>
 
     </aside>
 
@@ -529,18 +531,18 @@
     <!-- MODAL (FULL SCREEN) -->
     <div
       class           = "modal fade modal-fullscreen force-fullscreen"
-      id              = "full-screen-modal"
+      id              = "modal-full-screen"
       tabindex        = "-1"
       role            = "dialog"
       data-backdrop   = "static"
       data-keyboard   = "false"
-      aria-labelledby = "full-screen-modal"
+      aria-labelledby = "modal-full-screen"
       aria-hidden     = "true"
     ></div>
 
     <!-- MODAL CREDITS -->
     <div
-      id    = "credits"
+      id    = "modal-credits"
       class = "modal fade"
     >
       <div
@@ -668,7 +670,7 @@ export default {
   name: 'app',
 
   data() {
-    const custom_links = (window.initConfig.header_custom_links || []).filter(Boolean)
+    const custom_links = (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean)
     custom_links.forEach(item => (item.id = getUniqueDomId()));
 
     return {
@@ -1321,9 +1323,10 @@ export default {
   .user-menu > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
 
   @media (max-width: 767px) {
+    .app-navbar-nav                     { flex-direction: column; }
     #g3w-small-screen-hamburger-sidebar { display: block; }
     .user-footer                        { background-color: transparent; border: none; }
-    .user-menu > ul                     { display: block; position: relative; float:none; border: none; background-color: transparent; }
+    .user-menu > ul                     { display: block; position: static; float:none; border: none; background-color: transparent; }
     .user-menu .btn.skin-color          { color: #fff !important; }
     .user-menu > .dropdown-toggle,
     .user-header                        { display: none; }

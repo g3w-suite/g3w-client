@@ -593,6 +593,6 @@ export default {
     /**@since 3.11.0 */
     query_filter: 'Filter by:',
     /**@since 3.11.0 */
-    help: 'Aiuto',
+    sidebar_menu: 'Sidebar menu',
   },
 };

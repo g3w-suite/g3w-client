@@ -596,6 +596,6 @@ export default {
     /**@since 3.11.0 */
     query_filter: 'Filtra per:',
     /**@since 3.11.0 */
-    help: 'Aiuto',
+    sidebar_menu: 'Menu laterale',
   },
 };

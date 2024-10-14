@@ -45,7 +45,7 @@ export default {
 
     // check if already registered
     if (!p) {
-      const { result, data } = await (await fetch(`/crs/${epsg.split(':')[1]}`)).json();
+      const { result, data } = await (await fetch(`/crs/${epsg.split(':')[1]}/`)).json();
       if (result)  {
         data.epsg  = normalizeEpsg(data.epsg);
         p = this.get(data);

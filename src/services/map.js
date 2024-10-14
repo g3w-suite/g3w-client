@@ -482,7 +482,7 @@ class MapService extends G3WObject {
                           }
                         });
                       });
-                      observer.observe(document.querySelector('.ol-custom-overviewmap'), {attributes: true});
+                      observer.observe(document.querySelector('.ol-custom-overviewmap'), { attributes: true });
                     })
                     .catch(e => console.warn(e))
                 }

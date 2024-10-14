@@ -10,7 +10,7 @@
     id       = "modal-changemap"
     tabindex = "-1"
   >
-    <div class = "modal-dialog" style="width: 80vw;">
+    <div class = "modal-dialog" style="min-width: 80vw;">
       <div class = "modal-content">
 
         <div id = "g3w-change-map-menu" class="modal-body" style="height: 80vh;">
@@ -34,23 +34,15 @@
                 margin: 5px;
                 cursor: pointer;
                 padding: 3px;
-                border: 2px solid #ffffff;
+                border: 2px solid #fff;
                 border-radius: 3px;
               "
             >
-              <i
-                style  = "color: #FFFFFF"
-                :class = "$fa('reply')">
-              </i>
+              <i style  = "color: #FFF" :class = "$fa('reply')"></i>
             </span>
 
-              <div
-                v-if  = "parent"
-                style = "margin: auto"
-              >
-                <h3 style = "font-weight: bold">
-                  {{parent.title || parent.name}}
-                </h3>
+              <div v-if = "parent" style = "margin: auto">
+                <h3 style = "font-weight: bold">{{ parent.title || parent.name }}</h3>
               </div>
             </div>
 
@@ -90,12 +82,12 @@
 
           <h3 v-else
             style = "font-weight: bold"
-            v-t   = "` no_other_${current}`">
+            v-t   = "`no_other_${current}`">
           </h3>
 
         </div>
 
-        <div class = "modal-footer">
+        <div class = "modal-footer" style="position: relative; background: #fff;">
           <button
             v-t          = "'close'"
             type         = "button"

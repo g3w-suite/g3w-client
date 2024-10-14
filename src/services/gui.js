@@ -735,7 +735,7 @@ export default new (class GUI extends G3WObject {
   /**
    * Toggle set full screen modal
    */
-  showFullModal({element = "#full-screen-modal", show = true} = {}) {
+  showFullModal({element = "#modal-full-screen", show = true} = {}) {
     $(element).modal(show ? 'show' : 'hide')
   }
 
