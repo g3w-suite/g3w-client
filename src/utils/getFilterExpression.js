@@ -25,6 +25,7 @@ export async function getFilterExpression({
     layer_id = qgs_layer_id,
     filter_expression,
     loading,
+    orderbyvalue
   } = field.input.options;
 
   /**
@@ -49,6 +50,7 @@ export async function getFilterExpression({
         }),
         formatter:  0,
         expression: filter_expression.expression,
+        ordering: [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
       },
       outputs: false,
     });
@@ -59,19 +61,11 @@ export async function getFilterExpression({
       const values = [];
       for (let i = 0; i < features.length; i++) {
         values.push({
-          key:   features[i].properties[key],
-          value: features[i].properties[value]
+          key:   features[i].properties[value],
+          value: features[i].properties[key]
         })
       }
-      values.sort(({ key: aKey }, { key: bKey }) => {
-        if ('string' === typeof aKey ) {
-          aKey = aKey.toLowerCase();
-          bKey = bKey.toLowerCase()
-        }
-        if (aKey < bKey) return -1;
-        if (aKey > bKey) return 1;
-        return 0;
-      });
+
       field.input.options.values = values;
     }
 
