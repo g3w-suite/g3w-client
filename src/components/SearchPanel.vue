@@ -296,7 +296,8 @@
                 field:      filter,
               });
 
-              data.data = (data.data || []).map(([key, value]) => ({ key: value, value }));
+              //@since 3.11.0 first array value is value, second is key
+              data.data = (data.data || []).map(([value, key]) => ({ key, value }));
 
               // case value map
               if (!d.dependance_strict && 'selectfield' === d.type) {
