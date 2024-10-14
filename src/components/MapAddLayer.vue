@@ -6,10 +6,11 @@
 <template>
   <!-- Modal -->
   <div
-    class = "modal fade"
-    id    = "modal-addlayer"
-    ref   = "modal_addlayer"
-    role  = "dialog"
+    class    = "modal fade"
+    id       = "modal-addlayer"
+    ref      = "modal_addlayer"
+    role     = "dialog"
+    tabindex = "-1"
   >
     <div class = "modal-dialog">
       <div class = "modal-content">

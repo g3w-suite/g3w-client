@@ -117,23 +117,33 @@
             <ul
               ref   = "app-navbar-nav"
               class = "nav navbar-nav navbar-right app-navbar-nav"
+              style = "display: flex;"
             >
 
-              <!-- TODO: add description -->
-              <header-item
-                v-for                      = "state in custom_headers[0]"
-                :key                       = "state.id"
-                :state                     = "state"
-                @show-custom-modal-content = "showCustomModalContent"
-              />
-
-              <!-- TODO: add description -->
-              <header-item
-                v-for                      = "state in custom_headers[1]"
-                :key                       = "state.id"
-                :state                     = "state"
-                @show-custom-modal-content = "showCustomModalContent"
-              />
+              <!-- CUSTOM LINKS -->
+              <li
+                v-for  = "item in custom_links"
+                :key   = "item.id"
+                class  = "customheaderlink"
+                :title = "item.title"
+                :style = "{ order: item.position }"
+              >
+                <a
+                  v-if        = "'modal' === item.type"
+                  style       = "cursor: pointer;"
+                  @click.stop = "showCustomModal(item.id)"
+                >{{ item.title }}</a>
+                <a
+                  v-else
+                  :href   = "item.url"
+                  :class  = "{ imagelink : !!item.img}"
+                  :target = "item.target"
+                >
+                  <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" />
+                  <span v-else-if = "item.i18n" v-t = "item.title"></span>
+                  <span v-else>{{ item.title }}</span>
+                </a>
+              </li>
 
               <!-- CREDITS -->
               <li>
@@ -145,14 +155,6 @@
                   <i :class="$fa('unknow')"></i> <span v-t="'help'"></span>
                 </a>
               </li>
-
-              <!-- TODO: add description -->
-              <header-item
-                v-for                      = "state in custom_headers[2]"
-                :key                       = "state.id"
-                :state                     = "state"
-                @show-custom-modal-content = "showCustomModalContent"
-              />
 
               <!-- ACCOUNT -->
               <li
@@ -219,14 +221,6 @@
                 </ul>
               </li>
 
-              <!-- TODO: add description -->
-              <header-item
-                v-for                      = "state in custom_headers[3]"
-                :key                       = "state.id"
-                :state                     = "state"
-                @show-custom-modal-content = "showCustomModalContent"
-              />
-
               <!-- LANGUAGE SWITCHER -->
               <li v-if="languages" class="g3w-languages">
                 <select
@@ -249,14 +243,6 @@
                   </option>
                 </select>
               </li>
-
-              <!-- TODO: add description -->
-              <header-item
-                v-for                      = "state in custom_headers[4]"
-                :key                       = "state.id"
-                :state                     = "state"
-                @show-custom-modal-content = "showCustomModalContent"
-              />
 
             </ul>
 
@@ -568,17 +554,14 @@
               class        = "close"
               data-dismiss = "modal"
               aria-label   = "Close"
-              style        = "color: #ffffff; font-weight: bold; opacity: 1; position: absolute; right: 25px; top: 20px"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+              style        = "color: #fff; font-weight: bold; opacity: 1; position: absolute; right: 25px; top: 20px"
+            >&times;</button>
             <div style="display: flex; flex-direction: column; justify-content: space-around; justify-items: center; align-items: center">
               <div
                 v-if   = "!!customcredits"
                 class  = "customcredits"
                 v-html = "customcredits"
-              >
-              </div>
+              ></div>
 
               <div
                 v-if="powered_by"
@@ -618,44 +601,24 @@
                       style = "margin-left: 5px"
                       :src  = "`${urls.clienturl}images/logo_gis3w_156_85.png`"
                       class = "img-responsive center-block"
-                      alt   = "">
+                      alt   = ""
+                    />
                   </a>
                 </div>
 
                 <address
                   id    = "address-credits"
-                  style = "line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center"
+                  style = "line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center; gap: 2px;"
                 >
-                  <span style="padding: 2px">
-                    <span
-                      style       = "color: #95ad36; font-weight: bold"
-                      :class      = "$fa('marker')"
-                      aria-hidden = "true"
-                    >
-                    </span> Montecatini Terme - Italy
-                  </span>
-
-                  <span style="padding: 2px">
-                    <span
-                      style       = "color: #95ad36"
-                      :class      = "$fa('mobile')"
-                      aria-hidden = "true">
-                    </span>  +39 393 8534336
-                  </span>
-
-                  <span style="padding: 2px">
-                    <span
-                      style       = "color: #95ad36"
-                      :class      = "$fa('mail')"
-                      aria-hidden = "true">
-                    </span>
-                    <a
-                      href  = "mailto:info@gis3w.it"
-                      style = "color:#000000"
-                    > info@gis3w.it</a>
-                  </span>
-
+                  <span><b :class = "$fa('marker')" style = "color: #95ad36;" aria-hidden="true"></b> Montecatini Terme - Italy</span>
+                  <span><i :class = "$fa('mobile')" style = "color: #95ad36"  aria-hidden="true"></i> <a href = "tel:+393938534336"    style = "color:#000">+39 393 8534336</a></span>
+                  <span><i :class = "$fa('mail')"   style = "color: #95ad36"  aria-hidden="true"></i> <a href = "mailto:info@gis3w.it" style = "color:#000">info@gis3w.it</a></span>
                 </address>
+
+                <div style="display: flex;justify-content: center;gap: 20px;">
+                  <a :href="docs_url" rel="nofollow">📖 Docs</a>
+                  <a href="mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
+                </div>
 
               </div>
 
@@ -669,25 +632,8 @@
 
     </div>
 
-    <div
-      id    = "custom_modal"
-      class = "modal fade"
-    >
-      <div
-        class = "modal-dialog"
-        role  = "document"
-      >
-        <div
-          class  = "modal-content"
-          v-html = "current_custom_modal_content">
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- Add layer compnent -->
     <map-add-layer />
+    <change-map />
 
   </div>
 </template>
@@ -703,44 +649,46 @@ import ApplicationState   from 'store/application';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
 import GUI                from 'services/gui';
-import { resizeMixin }    from "mixins";
 
-import HeaderItem         from 'components/HeaderItem.vue';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { XHR }            from 'utils/XHR';
+import { promisify }      from 'utils/promisify';
+import { debounce }       from 'utils/debounce';
+
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import MapAddLayer        from 'components/MapAddLayer.vue';
-import getUniqueDomId     from 'utils/getUniqueDomId';
-import { XHR }            from 'utils/XHR';
-import { promisify }      from 'utils/promisify';
+import ChangeMap          from 'components/ChangeMap.vue';
 
-const { t }        = require('g3w-i18n');
+const { t }               = require('g3w-i18n');
 
 export default {
 
   /** @since 3.8.6 */
   name: 'app',
 
-  mixins: [resizeMixin],
-
   data() {
+    const custom_links = (window.initConfig.header_custom_links || []).filter(Boolean)
+    custom_links.forEach(item => (item.id = getUniqueDomId()));
+
     return {
       customcredits:                false,
-      current_custom_modal_content: null,
       language:                     null,
       cookie_law_buttonText:        t('cookie_law.buttonText'),
       app:                          ApplicationState,
       state:                        ApplicationState.viewport,
       updatePreviousTitle:          false,
       header:                       t('main navigation'),
+      custom_links,
     }
   },
 
   components: {
-    HeaderItem,
     CookieLaw,
     userMessage,
     CatalogContextMenu,
     MapAddLayer,
+    ChangeMap
   },
 
   computed: {
@@ -799,6 +747,14 @@ export default {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.title || this.appconfig.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
+    },
+
+    /**
+     * @since 3.11.0
+     */
+     docs_url() {
+      const version = window.initConfig.version.split('-')[0].split('.');
+      return `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`
     },
 
     breadcrumb() {
@@ -923,8 +879,21 @@ export default {
       }
     },
 
-    showCustomModalContent(id) {
-      this.current_custom_modal_content = this.custom_modals.find(m => m.id === id).content;
+    /**
+     * @since 3.11.0
+     */
+    showCustomModal(id) {
+      $('body').append(/* html */`
+        <div id = "custom_modal" class = "modal fade">
+          <div class = "modal-dialog">
+            <div class  = "modal-content">${
+              this.custom_links.find(item => 'modal' === item.type && id === item.id).content
+            }</div>
+          </div>
+        </div>
+      `);
+      $('#custom_modal').modal('show');
+      $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
     },
 
     getLogoLink() {
@@ -1012,24 +981,7 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu() {
-      if (GUI.getComponent('contents').getComponentById('changemapmenu')) {
-        GUI.closeContent();
-        return;
-      }
-      if (isMobile.any) {
-        GUI.hideSidebar();
-        $('#main-navbar.navbar-collapse').removeClass('in');
-      }
-      GUI.closeSideBar();
-
-      GUI.setContent({
-        content: new Component({
-          id:                 'changemapmenu',
-          vueComponentObject: require('components/ChangeMapMenu.vue'),
-        }),
-        title: '',
-        perc: 100
-      });
+      $('#modal-changemap').modal('show');
     },
 
     isNotLastCrumb(index) {
@@ -1159,7 +1111,7 @@ export default {
         this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
         this.resize()
       }
-    }
+    },
 
   },
 
@@ -1182,30 +1134,11 @@ export default {
 
   },
 
-  beforeCreate() {
-    this.delayType = 'debounce';
-    this.delayTime = 0;
-  },
-
   created() {
-    this.language       = this.appconfig.user.i18n;
-    this.custom_modals  = [];
-    this.custom_headers = { 0: [], 1: [], 2: [], 3: [], 4: [] };
+    this.resize = debounce(this.resize.bind(this), 0);
+    GUI.on('resize', this.resize);
 
-    this.customlinks = Array.isArray(this.appconfig.header_custom_links)
-      ? this.appconfig.header_custom_links
-        .filter(item => {
-          if (null !== item !== null) {
-            const id = item.id = getUniqueDomId();
-            item.type === 'modal' && this.custom_modals.push({ id, content: item.content });
-            let position = 1*(item.position || 0);
-            position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
-            this.custom_headers[position].push(item);
-            return true
-          }
-          return false;
-        })
-      : [];
+    this.language       = this.appconfig.user.i18n;
 
     if (!!this.appconfig.credits) {
       XHR.get({ url: this.appconfig.credits })
@@ -1255,7 +1188,17 @@ export default {
 
     await this.$nextTick();
 
-    this.state.resized.start = true
+    this.state.resized.start = true;
+
+    await this.$nextTick();
+
+    if (this.resize) {
+      this.resize();
+    }
+  },
+
+  beforeDestroy() {
+    GUI.off('resize', this.resize);
   },
 
 };
@@ -1375,7 +1318,7 @@ export default {
   .user-footer                          { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
   .user-footer .btn-default             { color: rgba(0,0,0,.75); border-color: currentColor; display: flex !important; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
   .user-footer .btn-default:not(:hover) { background-color: transparent; }
-  .user-menu > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid; border-radius: 0; }
+  .user-menu > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
 
   @media (max-width: 767px) {
     #g3w-small-screen-hamburger-sidebar { display: block; }

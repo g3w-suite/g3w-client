@@ -276,7 +276,7 @@
         <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
       </a>
       <a
-        v-if   = "hasRelatedMaps && 'legend' !== activeTab"
+        v-if   = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
         id     = "catalog-change-map"
         href   = "#"
         @click = "openChangeMapMenu"
@@ -291,7 +291,6 @@
 <script>
 
 import { VM }                      from 'g3w-eventbus';
-import Component                   from 'g3w-component';
 import ApplicationState            from 'store/application';
 import GUI                         from 'services/gui';
 import { XHR }                     from 'utils/XHR';
@@ -321,6 +320,7 @@ export default {
     return {
       state:            this.$options.service.state || {},
       legend_position:  ApplicationState.project.state.legend_position || 'tab',
+      iframe:           ApplicationState.iframe,
       showlegend:       false,
       currentBaseLayer: null,
       activeTab:        'layers',
@@ -764,10 +764,7 @@ export default {
      * @since 3.11.0
      */
     openChangeMapMenu() {
-      const a = document.getElementById('user-menu-change-map');
-      if (a) {
-        a.click();
-      }
+      $('#modal-changemap').modal('show');
     },
     
 

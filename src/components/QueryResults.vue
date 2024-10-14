@@ -469,8 +469,8 @@
 
     </div>
 
-    <!-- QUERY MODE -->
-    <div v-if = "state.query" style="position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
+    <!-- TODO: SHOW SELECTED LAYER -->
+    <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
       <label style="margin-top: 5px;">{{ $t('query_filter') }}</label>
       <select style="flex: 1;">
         <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>

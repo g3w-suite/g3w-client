@@ -1,91 +1,112 @@
 <!--
   @file
-  @since 3.8.0
+  @since 3.11.0
 -->
 
 <template>
-  <div id = "g3w-change-map-menu">
-    <!-- current node is a child -->
-    <template v-if = "'root' !== this.current">
-      <div
-        style = "
-          display: flex;
-          align-items: center;
-          color: #ffffff"
-        class = "skin-background-color"
-      >
-        <span
-          v-t-tooltip:bottom.create = "'change_session'"
-          v-disabled                = "loading"
-          @click.stop               = "back"
-          style                     = "
-            font-size: 2em;
-            margin: 5px;
-            cursor: pointer;
-            padding: 3px;
-            border: 2px solid #ffffff;
-            border-radius: 3px;
-          "
-        >
-          <i
-            style  = "color: #FFFFFF"
-            :class = "$fa('reply')">
-          </i>
-        </span>
+  <!-- Modal -->
+  <div
+    class    = "modal fade"
+    id       = "modal-changemap"
+    tabindex = "-1"
+  >
+    <div class = "modal-dialog" style="width: 80vw;">
+      <div class = "modal-content">
 
-        <div
-          v-if  = "parent"
-          style = "margin: auto"
-        >
-          <h3 style = "font-weight: bold">
-            {{parent.title || parent.name}}
-          </h3>
-        </div>
-      </div>
-    </template>
+        <div id = "g3w-change-map-menu" class="modal-body" style="height: 80vh;">
 
-    <div
-      v-if  = "items.length"
-      class = "g3w-change-map-menu-container">
-      <div
-        v-for = "item in items"
-        :key  = "item.name"
-        class = "menu-item"
-      >
-
-      <!-- ITEM IMAGE -->
-        <div
-          class       = "menu-item-image"
-          @click.stop = "trigger(item)"
-        >
-          <img
-            :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
-            @error = "setItemImageSrc({ item, type: 'net_error' })"
-            alt    = "logo"
-            class  = "img-responsive"
+          <!-- CHILD NODE -->
+          <div
+            v-if  = "'root' !== this.current"
+            style = "
+              display: flex;
+              align-items: center;
+              color: #fff
+            "
+            class = "skin-background-color"
           >
+            <span
+              v-t-tooltip:bottom.create = "'change_session'"
+              v-disabled                = "loading"
+              @click.stop               = "back"
+              style                     = "
+                font-size: 2em;
+                margin: 5px;
+                cursor: pointer;
+                padding: 3px;
+                border: 2px solid #ffffff;
+                border-radius: 3px;
+              "
+            >
+              <i
+                style  = "color: #FFFFFF"
+                :class = "$fa('reply')">
+              </i>
+            </span>
+
+              <div
+                v-if  = "parent"
+                style = "margin: auto"
+              >
+                <h3 style = "font-weight: bold">
+                  {{parent.title || parent.name}}
+                </h3>
+              </div>
+            </div>
+
+          <div
+            v-if  = "items.length"
+            class = "g3w-change-map-menu-container"
+          >
+            <div
+              v-for = "item in items"
+              :key  = "item.name"
+              class = "menu-item"
+            >
+
+            <!-- ITEM IMAGE -->
+              <div
+                class       = "menu-item-image"
+                @click.stop = "trigger(item)"
+              >
+                <img
+                  :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
+                  @error = "setItemImageSrc({ item, type: 'net_error' })"
+                  alt    = "logo"
+                  class  = "img-responsive"
+                />
+              </div>
+
+              <!-- ITEM CONTENT -->
+              <div class = "menu-item-content">
+                <div class = "menu-item-text">
+                  <h4 class = "menu-item-title">{{ item.title }}</h4>
+                  <div v-html = "item.description"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <h3 v-else
+            style = "font-weight: bold"
+            v-t   = "` no_other_${current}`">
+          </h3>
+
         </div>
 
-        <!-- ITEM CONTENT -->
-        <div class = "menu-item-content">
-          <div class = "menu-item-text">
-            <h4 class = "menu-item-title">{{ item.title }}</h4>
-            <div v-html = "item.description"></div>
-          </div>
+        <div class = "modal-footer">
+          <button
+            v-t          = "'close'"
+            type         = "button"
+            class        = "btn btn-default"
+            data-dismiss = "modal"
+          ></button>
         </div>
 
       </div>
     </div>
-
-    <template v-else>
-      <h3
-        style = "font-weight: bold"
-        v-t   = "` no_other_${current}`">
-      </h3>
-    </template>
-
   </div>
-
 </template>
 
 <script>
@@ -112,45 +133,31 @@ async function get_group(id) {
 
 export default {
 
-  /** @since 3.8.6 */
-  name: 'change-map-menu',
+  /** @since 3.11.0 */
+  name: 'change-map',
 
   data() {
     return {
       
-      /**
-       * @type {uknown}
-       */
+      /** @type { uknown } */
       state:      null,
 
-      /**
-       * @type {boolean}
-       */
+      /** @type {boolean} */
       loading:    false,
 
-      /**
-       * @type { 'projects' | 'groups' | 'root' }
-       */
+      /** @type { 'projects' | 'groups' | 'root' } */
       current:    'projects',
 
-      /**
-       * @type {Array}
-       */
+      /** @type { Array } */
       items:      [],
 
-      /**
-       * @type {uknown}
-       */
+      /** @type { uknown } */
       parent:     null,
 
-      /**
-       * @type { Array } all items from top to bottom
-       */
+      /** @type { Array } all items from top to bottom */
       steps:      [],
 
-      /**
-       * @type { string } ID of a current project group
-       */
+      /** @type { string } ID of a current project group */
       curr_group: null,
  
     }
@@ -367,10 +374,6 @@ export default {
 </script>
 
 <style scoped>
-  #g3w-change-map-menu {
-    width: 100%;
-    position: relative;
-  }
   .g3w-change-map-menu-container {
     height: 100%;
     display: grid;
