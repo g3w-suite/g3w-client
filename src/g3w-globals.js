@@ -313,7 +313,7 @@ g3wsdk.core.ApplicationService.getLocalItem         = id => window.localStorage.
 /** used by the following plugins: "bforest" */
 g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.user;
 /** used by the following plugins: "archiweb", "iframe" */
-g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
+g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
 /** used by the following plugins: "openrouteservice" */
 g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ApplicationState.project.getGid() });
 /** used by the following plugins: "editing" */

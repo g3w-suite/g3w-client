@@ -291,7 +291,7 @@ export default {
       } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
-      url = GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      url = await GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
       history.replaceState(null, null, url);
       location.replace(url);
     },

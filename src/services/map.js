@@ -7,6 +7,7 @@ import localforage                          from 'localforage';
 import G3WObject                            from 'g3w-object';
 import ApplicationState                     from 'store/application';
 import PluginsRegistry                      from 'store/plugins';
+import Projections                          from "store/projections";
 import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
 import { isPointGeometryType }              from 'utils/isPointGeometryType';
 import { isLineGeometryType }               from 'utils/isLineGeometryType';
@@ -1149,12 +1150,16 @@ class MapService extends G3WObject {
    *
    * @returns {string}
    */
-  addMapExtentUrlParameterToUrl(url, epsg) {
+  async addMapExtentUrlParameterToUrl(url, epsg) {
     url = new URL(url);
+    const changed = undefined !== epsg && epsg !== this.getEpsg();
+    if (changed) {
+      await Projections.registerProjection(epsg);
+    }
     url.searchParams.set(
       'map_extent',
       (
-        undefined !== epsg && epsg !== this.getEpsg()
+        changed
           ? ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg)
           : this.getMapExtent()
       ).toString()

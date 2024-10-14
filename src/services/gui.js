@@ -809,7 +809,7 @@ export default new (class GUI extends G3WObject {
             thumbnail:   p.thumbnail,
             gid:         p.gid,
             cbk:         opts.cbk || ((o = {}) => $promisify(async () => {
-              const url = GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
+              const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
               try { history.replaceState(null, null, url); }
               catch (e) { console.warn(e); } location.replace(url);}
             )),
