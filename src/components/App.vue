@@ -164,23 +164,12 @@
                 class = "dropdown user user-menu"
               >
                 <a
-                  v-if        = "user"
                   href        = "#"
                   class       = "dropdown-toggle"
                   data-toggle = "dropdown"
                 >
                   <span v-if = "user"><i :class = "$fa('user')"></i> {{ user.username }}</span>
-                </a>
-                <!-- LOGIN -->
-
-                <a
-                  v-else
-                  href        = "#"
-                  data-toggle = "modal"
-                  data-target = "#login"
-                  class       = "dropdown-toggle"
-                >
-                  <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
+                  <span v-else><i :class="$fa('sign-in')"></i> <span v-t = "'sign_in'"></span></span>
                 </a>
 
                 <ul class = "dropdown-menu">
@@ -190,6 +179,18 @@
                   </li>
 
                   <li class = "user-footer">
+                    
+                    <!-- LOGIN URL -->
+                    <a
+                      v-if        = "!user"
+                      :src        = "login_url"
+                      :data-toggle = "has_iframe_login ? 'modal'        : undefined"
+                      :data-target = "has_iframe_login ? '#modal-login' : undefined"
+                      class       = "btn btn-default btn-flat skin-color"
+                    >
+                      <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
+                    </a>
+
                     <!-- ADMIN URL -->
                     <a
                       v-if  = "user && user.admin_url"
@@ -198,6 +199,7 @@
                     >
                       <b>Admin</b><i :class="$fa('tool')"></i>
                     </a>
+
                     <!-- HOME URL -->
                     <a
                       v-if  = "urls.frontendurl"
@@ -638,30 +640,33 @@
       </div>
 
     </div>
+
     <!-- MODAL LOGIN -->
     <div
-      v-if  = "!user"
-      id    = "login"
-      class = "modal fade"
+      v-if     = "!user && has_iframe_login"
+      id       = "modal-login"
+      class    = "modal fade"
+      tabindex = "-1"
+      role     = "document"
     >
-      <div
-        class = "modal-dialog"
-        role  = "document"
-        style = "height: 60%; width: 60%"
-      >
-        <div class = "modal-content" style = "height: 100%;">
+      <div class = "modal-dialog" style = "height: 60%; width: 60%;">
+        <div class = "modal-content" style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
+          <button
+            type         = "button"
+            class        = "close"
+            data-dismiss = "modal"
+            style        = "position: absolute;inset: 0 0 auto auto;padding: 10px 15px;"
+          >&times;</button>
+          <span style="grid-area: iframe;">Loading..</span>
           <iframe
-            id          = "login_iframe"
-            style       = "height:100%; width:100%;"
-            :src        = "login_url"
-            frameborder = "0"
-            @load.stop  = "reload"
-            ref         = "iframe_login">
-          </iframe>
+            loading = "lazy"
+            style   = "border: 0; width: 100%; height: 100%; grid-area: iframe;"
+            :src    = "login_url"
+            @load   = "onIframeLoaded"
+            ref     = "login_iframe"
+          ></iframe>
         </div>
-
       </div>
-
     </div>
 
     <map-add-layer />
@@ -686,11 +691,13 @@ import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { XHR }            from 'utils/XHR';
 import { promisify }      from 'utils/promisify';
 import { debounce }       from 'utils/debounce';
+import { sameOrigin }     from 'utils/sameOrigin';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import MapAddLayer        from 'components/MapAddLayer.vue';
 import ChangeMap          from 'components/ChangeMap.vue';
+
 
 const { t }               = require('g3w-i18n');
 
@@ -767,6 +774,13 @@ export default {
     },
 
     /**
+     * @since 3.11.0
+     */
+    has_iframe_login() {
+      return this.login_url && ('/' === this.login_url[0] || sameOrigin(this.login_url, window.location.href));
+    },
+
+    /**
      * @returns {boolean} whether it should list any related projects or maps.
      *
      * @since 3.8.0
@@ -784,7 +798,7 @@ export default {
     /**
      * @since 3.11.0
      */
-     docs_url() {
+    docs_url() {
       const version = window.initConfig.version.split('-')[0].split('.');
       return `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`
     },
@@ -885,15 +899,17 @@ export default {
   },
 
   methods: {
+
     /**
      * @since v3.11
      */
-    reload() {
-      if (document.getElementById('login').style.display === 'block') {
-        document.getElementById('login').style.visibility = "hidden";
+    onIframeLoaded(e) {
+      const iframe = this.$refs.login_iframe.contentWindow.g3wsdk && this.$refs.login_iframe.contentWindow.g3wsdk.core.ApplicationState;
+      if (iframe && iframe.user && iframe.user.logout_url) {
         window.location.reload();
       }
     },
+
     /**
      * Language switcher item template (select2)
      * 
