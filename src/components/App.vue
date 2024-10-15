@@ -164,12 +164,23 @@
                 class = "dropdown user user-menu"
               >
                 <a
+                  v-if        = "user"
                   href        = "#"
                   class       = "dropdown-toggle"
                   data-toggle = "dropdown"
                 >
                   <span v-if = "user"><i :class = "$fa('user')"></i> {{ user.username }}</span>
-                  <span v-else><i :class="$fa('sign-in')"></i> <span v-t = "'sign_in'"></span></span>
+                </a>
+                <!-- LOGIN -->
+
+                <a
+                  v-else
+                  href        = "#"
+                  data-toggle = "modal"
+                  data-target = "#login"
+                  class       = "dropdown-toggle"
+                >
+                  <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
                 </a>
 
                 <ul class = "dropdown-menu">
@@ -177,15 +188,8 @@
                   <li v-if = "user" class = "user-header">
                     👋 {{ user.first_name }} {{ user.last_name }}
                   </li>
+
                   <li class = "user-footer">
-                    <!-- LOGIN URL -->
-                    <a
-                      v-if  = "!user"
-                      :href = "login_url"
-                      class = "btn btn-default btn-flat skin-color"
-                    >
-                      <b v-t = "'sign_in'"></b><i :class="$fa('sign-in')"></i>
-                    </a>
                     <!-- ADMIN URL -->
                     <a
                       v-if  = "user && user.admin_url"
@@ -200,8 +204,9 @@
                       :href = "urls.frontendurl"
                       class = "btn btn-default btn-flat skin-color"
                     >
-                    <b>Home</b><i :class="$fa('home')"></i>
+                      <b>Home</b><i :class="$fa('home')"></i>
                     </a>
+
                     <!-- LOGOUT URL -->
                     <a
                       v-if  = "user && user.logout_url"
@@ -224,7 +229,7 @@
               </li>
 
               <!-- LANGUAGE SWITCHER -->
-              <li v-if="languages" class="g3w-languages">
+              <li v-if = "languages" class="g3w-languages">
                 <select
                   v-select2          = "'language'"
                   class              = "form-control"
@@ -633,6 +638,31 @@
       </div>
 
     </div>
+    <!-- MODAL LOGIN -->
+    <div
+      v-if  = "!user"
+      id    = "login"
+      class = "modal fade"
+    >
+      <div
+        class = "modal-dialog"
+        role  = "document"
+        style = "height: 60%; width: 60%"
+      >
+        <div class = "modal-content" style = "height: 100%;">
+          <iframe
+            id          = "login_iframe"
+            style       = "height:100%; width:100%;"
+            :src        = "login_url"
+            frameborder = "0"
+            @load.stop  = "reload"
+            ref         = "iframe_login">
+          </iframe>
+        </div>
+
+      </div>
+
+    </div>
 
     <map-add-layer />
     <change-map />
@@ -855,7 +885,15 @@ export default {
   },
 
   methods: {
-
+    /**
+     * @since v3.11
+     */
+    reload() {
+      if (document.getElementById('login').style.display === 'block') {
+        document.getElementById('login').style.visibility = "hidden";
+        window.location.reload();
+      }
+    },
     /**
      * Language switcher item template (select2)
      * 
