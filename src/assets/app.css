@@ -467,7 +467,7 @@ header.main-header .container-fluid                            { padding: 0 !imp
 header.main-header .navbar-header                              { margin-left: 0 !important; }
 .main-header .navbar .navbar-toggle:is(:focus, :hover)         { margin-top: 5px; }
 .main-header .customheaderlink a.imagelink                     { padding:14px; }
-.main-header .g3w-languages                                    { margin-top: 9px; margin-left: 10px; margin-right: -7px; }
+.main-header .g3w-languages                                    { margin-top: 9px; margin-left: 10px; margin-right: 0; }
 .sidebar-aside-toggle                                          { position: absolute; left: 350px; top: 50px; color: #fff !important; padding: 11.6px; background-color: rgba(0, 0, 0, 0.65); }
 .is-iframe .sidebar-aside-toggle                               { top: 0; }
 .sidebar-aside-toggle:before,
