@@ -880,7 +880,7 @@ export default {
     position: relative;
     display: flex;
     justify-content: flex-end;
-    height: 40px;
+    height: 41px;
     background-color: #fff;
     overflow: hidden;
     border-radius: 2px;
@@ -947,7 +947,7 @@ export default {
     position: absolute;
     max-width: 300px;
     height: 4.375em;
-    top: 7px;
+    top: 3px;
     left: 45px;
     width: 50%;
     height: 6px;

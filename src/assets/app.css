@@ -479,6 +479,7 @@ header.main-header .navbar-header                              { margin-left: 0 
 .navbar .navbar-toggle:is(:focus, :hover)                      { outline: #fff 1px solid; background-color: transparent; }
 .navbar .navbar-collapse                                       { border-color: transparent; background-color: var(--skin-color); }
 .g3w-languages .select2-selection__rendered                    { color: var(--skin-color) !important; }
+.g3w-languages .select2-dropdown.select2-dropdown--below       { margin-top: 7px; }
 
 @media (max-width: 767px) {
   .main-header .navbar-right a                            { color: inherit; background: transparent; }
@@ -765,7 +766,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-attribution ul                                                     { font-size: 1.0em !important; }
 .ol-attribution.ol-uncollapsible                                       { height: 1.3em !important; }
 .g3w-map-controls                                                      { position: absolute; flex-wrap: wrap; z-index: 1; display: flex; top: 60px; left: 0; align-items: flex-start; flex-direction: column;}
-.g3w-map-controls.rv                                                   { top: 8px; right: 5px; left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
+.g3w-map-controls.rv                                                   { top: 0; right: 5px; left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
 .g3w-map-controls.lv                                                   { top:60px; left: 0; align-items: flex-start; }
 .g3w-map-controls.lh                                                   { top:60px; left: 0; flex-direction: row; }
 .g3w-map-controls.rh                                                   { top:8px; right: 0; flex-direction: row; }
