@@ -34,8 +34,8 @@
             <!-- LOGO -->
             <a
               v-if    = "logo_url"
-              :href   = "getLogoLink() || '#'"
-              :target = "getLogoLink() ? '_blank' : ''"
+              :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
+              :target = "appconfig.header_logo_link ? '_blank' : ''"
               style   = "padding: 4px; display: inline-block; height: 50px;"
             >
               <img style="height: 100%;" alt = "" :src = "logo_url" />
@@ -693,7 +693,7 @@ export default {
     showresize() {
       const layout = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
       const currentPerc = layout[this.state.split === 'h' ? 'width' : 'height'];
-      return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
+      return this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
     },
 
     showresizeicon() {
@@ -833,10 +833,6 @@ export default {
       $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
     },
 
-    getLogoLink() {
-      return window.initConfig.header_logo_link;
-    },
-
     /**
      * Display dialog messages on a first page load (on app bootstrap).
      * 
@@ -850,30 +846,27 @@ export default {
         return;
       }
 
-      const projectId = ApplicationState.project.getId();
+      const pid = ApplicationState.project.getId();
 
       for (let i = 0; i < messages.items.length; i++) {
         const message = messages.items[i];
-        const item = window.localStorage.getItem(LOCAL_ITEM_IDS.MESSAGES.id);
-        const data = (item ? JSON.parse(item) : undefined) || LOCAL_ITEM_IDS.MESSAGES.value;
-
-        if (undefined === data[projectId]) { data[projectId] = [] }
+        const item    = window.localStorage.getItem(LOCAL_ITEM_IDS.MESSAGES.id);
+        const data    = (item ? JSON.parse(item) : undefined) || LOCAL_ITEM_IDS.MESSAGES.value;
+        data[pid]     = data[pid] || []
 
         // check if a current project has already messages stored
-        if (undefined !== data[projectId].find(id => id === message.id)) { continue }
+        if (undefined !== data[pid].find(id => id === message.id)) {
+          continue
+        }
 
         // create "Do Not Show Again" component
         const doNotShowAgainVueComponent = new (Vue.extend({
           data: () => ({ id: getUniqueDomId(), checked: false }),
-          template: `
+          template: /* html */ `
             <div style="display: flex; margin-top: 10px;">
-              <input :id="id"
-                v-model="checked"
-                class="magic-checkbox"
-                type="checkbox"/>
+              <input :id="id"  v-model="checked" class="magic-checkbox" type="checkbox" />
               <label :for="id" v-t="'dont_show_again'"/>
-            </div>
-          `
+            </div>`
         }));
     
         // create content message div
@@ -899,7 +892,7 @@ export default {
                   // update locale storage if "Do Not Show Again" checkbox is checked 
                   try {
                     if (doNotShowAgainVueComponent.checked) {
-                      data[projectId].push(message.id);
+                      data[pid].push(message.id);
                       window.localStorage.setItem(LOCAL_ITEM_IDS.MESSAGES.id, JSON.stringify(data));
                     }
                   } catch(e) {
@@ -1070,12 +1063,12 @@ export default {
   },
 
   created() {
-    this.language       = this.appconfig.user.i18n;
+    this.language = this.appconfig.user.i18n;
   },
 
   async mounted() {
 
-    //check if show Project messages when app is mounted
+    // check if show Project messages when app is mounted
     this.initDialogMessages();
 
     await this.$nextTick();
@@ -1106,13 +1099,6 @@ export default {
 
     document.body.classList.toggle('is-mobile', this.isMobile());
     document.body.classList.toggle('is-iframe', this.iframe);
-
-    await this.$nextTick();
-
-    this.state.resized.start = true;
-
-    await this.$nextTick();
-
   },
 
 };
