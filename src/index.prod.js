@@ -311,7 +311,7 @@ $.ajaxSetup({
   } catch(e) {
     console.warn(e);
   }
-  
+
   /** @since 3.8.0 */
   try {
     initConfig.groups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/group/nomacrogroup/` })
@@ -510,7 +510,7 @@ $.ajaxSetup({
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-print.js@v3.10.2 
+             * ORIGINAL SOURCE: src/components/g3w-print.js@v3.10.2
              */
             Object.assign(new Component({
               id:                'print',
@@ -526,7 +526,7 @@ $.ajaxSetup({
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-search.js@v3.10.2 
+             * ORIGINAL SOURCE: src/components/g3w-search.js@v3.10.2
              */
             new Component({
               id:         'search',
@@ -575,7 +575,7 @@ $.ajaxSetup({
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-tools.js@v3.10.2 
+             * ORIGINAL SOURCE: src/components/g3w-tools.js@v3.10.2
              */
             new (function() {
 
@@ -587,7 +587,7 @@ $.ajaxSetup({
                 visible: false,
                 loading: false
               };
-            
+
               const service = new G3WObject({ setters: {
                 addTool(tool, { title, position }) {
                   let group = state.toolsGroups.find(g => g.name === title);
@@ -600,24 +600,24 @@ $.ajaxSetup({
                 addToolGroup(position, name) {
                   let group = state.toolsGroups.find(g => g.name === name);
                   if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-                  return group;  
+                  return group;
                 },
                 addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
                 removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
                 removeTools()                { state.toolsGroups.splice(0); },
               }});
-            
+
               service.state            = state;
               service.config           = null;
               service.getState         = () => state;
               service.reload           = () => { service.removeTools(); };
               service.setLoading       = (bool = false) => { state.loading = bool; }
-            
+
               // static class field
               service.ACTIONS = ACTIONS;
-            
+
               const tools = ApplicationState.project.getState().tools || {};
-            
+
               for (let t in tools) {
                 service.addToolGroup(0, t.toUpperCase());
                 service.addTools(
@@ -625,7 +625,7 @@ $.ajaxSetup({
                   { position: 0, title: t.toUpperCase() }
                 );
               }
-            
+
               const comp = new Component({
                 id:          'tools',
                 icon:        GUI.getFontClass('tools'),
@@ -653,19 +653,19 @@ $.ajaxSetup({
                   },
                 }))(),
               });
-            
+
               comp._setOpen = (b=false) => {
                 comp.internalComponent.state.open = b;
                 if (b) {
                   GUI.closeContent();
                 }
               };
-            
+
               return comp;
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
+             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2
              */
             Object.assign(new Component({
               id:                'wms',
@@ -683,7 +683,7 @@ $.ajaxSetup({
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-catalog.js@v3.10.2 
+             * ORIGINAL SOURCE: src/components/g3w-catalog.js@v3.10.2
              */
             new (function() {
 
@@ -704,7 +704,7 @@ $.ajaxSetup({
                 layersgroups: [],
                 legend:       Object.assign(opts.config.legend || {}, { place: ApplicationState.project.state.legend_position || 'tab' }),
               };
-            
+
               const service = opts.service || new G3WObject({
                 setters: {
                   /**
@@ -735,9 +735,9 @@ $.ajaxSetup({
                   },
                 }
               });
-            
+
               service.state             = state;
-            
+
               /** used by the following plugins: "stress" */
               service.createLayersGroup = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
               /** used by the following plugins: "stress" */
@@ -752,13 +752,13 @@ $.ajaxSetup({
                 vueComponentObject: require('components/Catalog.vue'),
                 service,
               });
-            
+
               return comp;
             }),
           ],
 
           /**
-           * ORIGINAL SOURCE: src/components/g3w-queryresults.js@v3.10.2 
+           * ORIGINAL SOURCE: src/components/g3w-queryresults.js@v3.10.2
            */
           queryresults: new (function() {
             const comp = new Component({
@@ -783,7 +783,7 @@ $.ajaxSetup({
           }),
 
           /**
-           * ORIGINAL SOURCE: src/components/g3w-map.js@v3.10.2 
+           * ORIGINAL SOURCE: src/components/g3w-map.js@v3.10.2
            */
           map: new Component({
             id:                 'map',
@@ -793,7 +793,7 @@ $.ajaxSetup({
           }),
 
           /**
-           * ORIGINAL SOURCE: src/components/g3w-contentsviewer.js@v3.10.2 
+           * ORIGINAL SOURCE: src/components/g3w-contentsviewer.js@v3.10.2
            */
           content: Object.assign(new Component({
             id:                 'contents',
