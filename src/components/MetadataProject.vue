@@ -13,7 +13,7 @@
     <div class = "modal-dialog" style="min-width: 80vw;">
       <div class = "modal-content">
 
-        <div id = "project-catalog" class="modal-body" style="height: 80vh;">
+        <div id = "project-catalog" class="modal-body" style="min-height: 65vh; max-height: 80vh;">
 
           <!-- METADATA TABS -->
           <ul role = "tablist" class = "nav nav-tabs metadata-nav-bar">

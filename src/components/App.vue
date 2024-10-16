@@ -63,10 +63,10 @@
             style = "overflow: hidden; margin: 0;"
           >
 
-            <div class  = "project_title">
-              <div class = "main_title">{{ main_title }}</div>
-              <div class = "sub_title">{{ project_title }}</div>
-            </div>
+            <hgroup class  = "project_title">
+              <p class = "h2">{{ main_title }}</p>
+              <h1>{{ project_title }}</h1>
+            </hgroup>
 
             <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px; text-align: center;">
 
@@ -288,7 +288,6 @@
         >
 
         <li id="metadata" class="treeview sidebaritem">
-          
           <a
             href           = "#"
             style          = "display: flex; justify-content: space-between; align-items: center;"
@@ -298,11 +297,13 @@
             v-t-tooltip    = "'sdk.metadata.title'"
             data-toggle    = "modal"
             data-target    = "#modal-metadata"
-          ><div>
-            <i :class="$fa('file')" style="color: #fff;"></i>
-            <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
-          </div>
-        </a></li>
+          >
+            <div>
+              <i :class="$fa('file')" style="color: #fff;"></i>
+              <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
+            </div>
+          </a>
+        </li>
 
       </ul>
 
@@ -408,12 +409,14 @@
             <span
               class  = "skin-color-dark"
               :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
-              v-t    = "crumb.text ? null : crumb.title" >
-                <span v-if = "crumb.text"> {{ crumb.title }} </span>
+              v-t    = "crumb.text ? null : crumb.title"
+            >
+              <span v-if = "crumb.text"> {{ crumb.title }} </span>
             </span>
             <span
               v-if  = "isNotLastCrumb(index)"
-              style = "font-weight: bold; margin: 3px 0">/</span>
+              style = "font-weight: bold; margin: 3px 0"
+            >/</span>
           </span>
         </section>
         <div
@@ -1073,9 +1076,6 @@ export default {
 
     await this.$nextTick();
 
-    // margin right
-    Array.from(!this.isIframe && this.$refs.mainnavbar.getElementsByTagName('ul') || []).reduce((w, item) => w + item.offsetWidth, 15);
-
     this.language = this.appconfig.user.i18n;
 
     await this.$nextTick();
@@ -1137,10 +1137,10 @@ export default {
 </style>
 
 <style scoped>
-  .project_title                           { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; }
-  .project_title > div                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .project_title .main_title               { font-size: 1.6em; }
-  .project_title .sub_title                { font-size: 1.3em; }
+  .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; }
+  .project_title > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
+  .project_title .h2 { font-size: 1.6em; }
+  .project_title h1  { font-size: 1.3em; }
 
   #g3w-sidebarpanel-header-placeholder {
     overflow: hidden;
