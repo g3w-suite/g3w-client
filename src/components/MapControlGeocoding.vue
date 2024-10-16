@@ -946,7 +946,6 @@ export default {
     box-sizing: border-box;
     position: absolute;
     max-width: 300px;
-    height: 4.375em;
     top: 3px;
     left: 45px;
     width: 50%;
