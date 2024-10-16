@@ -455,7 +455,7 @@ export default {
     no: "No",
     back: "Back",
     backto: "Back to ",
-    changemap: "Change Map",
+    changemap: "Change map",
     change_session: "Change Session",
     component: "Generic Component",
     search: "Search",

@@ -31,6 +31,16 @@
 
           <div class="navbar-header">
 
+            <!-- LOGO -->
+            <a
+              v-if    = "logo_url"
+              :href   = "getLogoLink() || '#'"
+              :target = "getLogoLink() ? '_blank' : ''"
+              style   = "padding: 4px; display: inline-block; height: 50px;"
+            >
+              <img style="height: 100%;" alt = "" :src = "logo_url" />
+            </a>
+
             <!-- ELLIPSIS BUTTON (MAIN MENU) -->
             <button
               ref         = 'navbar_toggle'
@@ -38,40 +48,10 @@
               class       = "navbar-toggle"
               data-toggle = "collapse"
               data-target = "#main-navbar"
+              style       = "font-size: 1.3em;"
             >
-              <i :class = "$fa('ellips-v')" style = "font-size: 1.3em;" ></i>
+              <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
             </button>
-
-            <!-- LOGO -->
-            <div
-              class  = "logo-wrapper"
-              :class = "{'mobile': isMobile()}"
-            >
-              <a
-                v-if    = "logo_url"
-                :href   = "getLogoLink() || '#'"
-                :target = "getLogoLink() ? '_blank' : ''"
-                class   = "project_logo_link"
-              >
-                <img
-                  class = "img-responsive"
-                  style = "max-width: 250px;"
-                  ref   = "img_logo"
-                  alt   = ""
-                  :src  = "logo_url"
-                  @load = "setImgOffset"
-                />
-              </a>
-
-              <div
-                ref    = "main_title_project_title"
-                class  = "project_title_content"
-                :class = "{'mobile': isMobile()}"
-              >
-                <div class = "main_title">{{ main_title }}</div>
-                <div class = "sub_title">{{ project_title }}</div>
-              </div>
-            </div>
 
           </div>
 
@@ -80,10 +60,15 @@
             ref   = "mainnavbar"
             id    = "main-navbar"
             class = "collapse navbar-collapse"
-            style = "text-align: center; overflow: hidden; margin: 0 0;"
+            style = "overflow: hidden; margin: 0;"
           >
 
-            <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px;">
+            <div class  = "project_title">
+              <div class = "main_title">{{ main_title }}</div>
+              <div class = "sub_title">{{ project_title }}</div>
+            </div>
+
+            <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px; text-align: center;">
 
               <!-- CUSTOM LINKS -->
               <li
@@ -195,7 +180,7 @@
                       @click = "toggleSidebar"
                       class  = "nav-sidebar btn btn-default btn-flat"
                     >
-                      <b v-t="'sidebar_menu'"></b><i :class = "$fa('bars')"></i>
+                      <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
                     </a>
                     
                   </li>
@@ -821,16 +806,6 @@ export default {
       );
     },
 
-    async resize() {
-      if (!this.isIframe) {
-        await this.$nextTick();
-        const max_width = this.$refs.navbar_toggle.offsetWidth > 0
-          ? this.$refs.navbar.offsetWidth     - this.$refs.navbar_toggle.offsetWidth
-          : this.$refs.mainnavbar.offsetWidth - this.$refs['mainnavbar'].querySelector('.navbar-nav').offsetWidth;
-        this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
-      }
-    },
-
     /**
      * @since 3.11.0
      */
@@ -1073,18 +1048,6 @@ export default {
       component.click({ open: !open });
     },
 
-    /**
-     * Add some marging to the logo
-     * 
-     * @since 3.11.0
-     */
-    setImgOffset() {
-      if (!this.isIframe) {
-        this.logoWidth = this.$refs.img_logo.offsetWidth + 15;
-        this.resize()
-      }
-    },
-
   },
 
   watch: {
@@ -1107,9 +1070,6 @@ export default {
   },
 
   created() {
-    this.resize = debounce(this.resize.bind(this), 0);
-    GUI.on('resize', this.resize);
-
     this.language       = this.appconfig.user.i18n;
   },
 
@@ -1117,8 +1077,6 @@ export default {
 
     //check if show Project messages when app is mounted
     this.initDialogMessages();
-
-    this.logoWidth = 0;
 
     await this.$nextTick();
 
@@ -1155,13 +1113,6 @@ export default {
 
     await this.$nextTick();
 
-    if (this.resize) {
-      this.resize();
-    }
-  },
-
-  beforeDestroy() {
-    GUI.off('resize', this.resize);
   },
 
 };
@@ -1200,21 +1151,10 @@ export default {
 </style>
 
 <style scoped>
-  .logo-wrapper                                    { display: flex; max-height: 50px; height: 50px; font-weight: bold; align-items: center; color: white; }
-  .logo-wrapper a.project_logo_link                { height: 46px; padding: 2px; }
-  .logo-wrapper a.project_logo_link img            { height: 100%; }
-  .project_title_content                           { display:flex; flex-direction: column; justify-content: center; height: 100%; }
-  .project_title_content > div                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .project_title_content .main_title               { font-size: 1.6em; }
-  .project_title_content .sub_title                { font-size: 1.3em; }
-
-  /* TODO: remove isMobile(), use only css @media queries */
-  .logo-wrapper.mobile                             { padding: 5px; }
-  .logo-wrapper.mobile img                         { height: 23px; max-width: 150px !important; padding-left: 0; margin-right: 5px; }
-  .logo-wrapper.mobile .main_title                 { font-size: 1.1em; }
-  .logo-wrapper.mobile .sub_title                  { font-size: 1em; }
-  .project_title_content.mobile                    { margin-top: 2px; }
-  .project_title_content.mobile .sub_title         { height: auto; }
+  .project_title                           { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; }
+  .project_title > div                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .project_title .main_title               { font-size: 1.6em; }
+  .project_title .sub_title                { font-size: 1.3em; }
 
   #g3w-sidebarpanel-header-placeholder {
     overflow: hidden;

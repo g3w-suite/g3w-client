@@ -456,7 +456,7 @@ export default {
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
-    changemap: "Cambia Mappa",
+    changemap: "Cambia mappa",
     change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",

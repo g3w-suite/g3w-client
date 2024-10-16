@@ -25,7 +25,7 @@
             </li>
           </ul>
 
-          <div class = "col-sm-12 metadata-body tab-content">
+          <div class = "tab-content">
 
             <!-- GENERAL METADATA | SPATIAL METADATA -->
             <div v-for="item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane fade" :class="{ in: 'general' === item, active: 'general' === item }">

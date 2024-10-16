@@ -437,7 +437,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 
 .dropdown-menu                                                 { box-shadow: none; border-color: #eee; }
 .dropdown-menu > li > a                                        { color: #777; }
-.dropdown-menu > li > a > :is(.glyphicon,.fa, .ion)            { margin-right: 10px; }
 .dropdown-menu > li > a:hover                                  { background-color: #e1e3e9; color: #333; }
 .dropdown-menu > .divider                                      { background-color: #eee; }
 
