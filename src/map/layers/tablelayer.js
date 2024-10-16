@@ -114,6 +114,7 @@ export class TableLayer extends Layer {
             vector,
             constraints = {},
             capabilities,
+            visible     = true //@since 3.11.0 let know if layer should be editable directly (true) or through relation layer (false)
           } = await promisify(this.getProvider('data').getConfig(opts));
 
           await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
@@ -125,7 +126,8 @@ export class TableLayer extends Layer {
               capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
               form:         { perc: null },                                                      // set editing form `perc` to null at beginning
               style:        vector.style,                                                        // get vector layer style
-              geometrytype: vector.geometrytype                                                  // whether is a vector layer
+              geometrytype: vector.geometrytype,                                                  // whether is a vector layer,
+              visible,
             }
 
             if (vector.style) {                              // set vector layer color 
