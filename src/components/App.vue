@@ -140,7 +140,13 @@
                 :state                     = "state"
                 @show-custom-modal-content = "showCustomModalContent"
               />
-
+                <!-- READ THE DOCS -->
+            <li>
+              <a target="_blank" :href="docs_url">
+                <i :class="g3wtemplate.getFontClass('unknow')" aria-hidden="true"></i>
+                <span v-t="'help'"></span>
+              </a>
+            </li>
               <!-- CHANGE MAP -->
               <li
                 v-if  = "hasRelatedMaps"
@@ -800,6 +806,14 @@ export default {
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
 
+    /**
+     * @since 3.11.0
+     */
+    docs_url() {
+      const version = window.initConfig.version.split('-')[0].split('.');
+      return `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`
+    },
+
     breadcrumb() {
         return this.state.content.contentsdata
           .filter(c => c.options.crumb)
@@ -1093,7 +1107,7 @@ export default {
 
     /**
      * Toggle sidebar tree items on click
-     * 
+     *
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
@@ -1125,7 +1139,7 @@ export default {
 
     /**
      * Add some marging to the logo
-     * 
+     *
      * @since 3.11.0
      */
     setImgOffset() {

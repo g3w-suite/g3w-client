@@ -447,6 +447,7 @@ export default {
     no: "Ei",
     back: "Palaa",
     backto: "Takaisin ",
+    help: "Auta",
     changemap: "Vaihda karttaa",
     change_session: "Vaihda istuntoa",
     component: "Yleinen komponentti",

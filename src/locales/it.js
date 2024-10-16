@@ -462,6 +462,7 @@ export default {
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
+    help: "Aiuto",
     changemap: "Cambia Mappa",
     change_session: "Cambia Sessione",
     component: "Componente Generico",

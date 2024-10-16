@@ -447,6 +447,7 @@ export default {
     no: "Nej",
     back: "Gå tillbaka",
     backto: "Tillbaka ",
+    help: "Hjälp",
     changemap: "Byt karta",
     change_session: "Ändra session",
     component: "Allmän komponent",
