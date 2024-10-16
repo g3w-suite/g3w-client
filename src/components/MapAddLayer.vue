@@ -31,11 +31,11 @@
         <div class = "modal-body">
 
           <div class="form-group">
-            <label>Layer type</label>
+            <label v-t="'layer_type'"></label>
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
-              <option disabled :value="undefined">Choose type</option>
-              <option value="wms">WMS</option>
-              <option value="file">File</option>
+              <option disabled :value="undefined" v-t="'choose_type'"></option>
+              <option value="wms" v-t="'remote_wms_url'"></option>
+              <option value="file" v-t="'local_file'"></option>
             </select>
           </div>
 

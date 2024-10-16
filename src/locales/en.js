@@ -597,5 +597,13 @@ export default {
     query_filter: 'Filter by:',
     /**@since 3.11.0 */
     sidebar_menu: 'Sidebar menu',
+    /**@since 3.11.0 */
+    layer_type: 'Layer type',
+    /** @since 3.11.0 */
+    choose_type: 'Choose type',
+    /**@since 3.11.0 */
+    remote_wms_url: 'Remote URL (WMS)',
+    /**@since 3.11.0 */
+    local_file: 'Local file',
   },
 };

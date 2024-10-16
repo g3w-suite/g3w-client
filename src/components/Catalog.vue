@@ -269,7 +269,6 @@
     >
       <a
         v-if   = "'legend' !== activeTab"
-        id     = "catalog-add-layer"
         href   = "#"
         @click = "showaddLayerModal"
       >
@@ -277,7 +276,6 @@
       </a>
       <a
         v-if   = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
-        id     = "catalog-change-map"
         href   = "#"
         @click = "openChangeMapMenu"
       >

@@ -597,5 +597,13 @@ export default {
     query_filter: 'Filtra per:',
     /**@since 3.11.0 */
     sidebar_menu: 'Menu laterale',
+    /**@since 3.11.0 */
+    layer_type: 'Tipologia livello',
+    /**@since 3.11.0 */
+    choose_type: 'Scegli un tipo',
+    /**@since 3.11.0 */
+    remote_wms_url: 'URL remoto (WMS)',
+    /**@since 3.11.0 */
+    local_file: 'File locale',
   },
 };

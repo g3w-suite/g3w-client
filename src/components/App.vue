@@ -115,8 +115,10 @@
                   class       = "dropdown-toggle"
                   data-toggle = "dropdown"
                 >
-                  <span v-if = "user"><i :class = "$fa('user')"></i> {{ user.username }}</span>
-                  <span v-else><i :class="$fa('sign-in')"></i> <span v-t = "'sign_in'"></span></span>
+                  <i :class = "$fa('user')"></i>
+                  <span v-if = "user">{{ user.username }}</span>
+                  <span v-else v-t = "'sign_in'"></span>
+                  <i class="triangle"></i>
                 </a>
 
                 <ul class = "dropdown-menu">
@@ -175,6 +177,16 @@
                       class  = "nav-changemap btn btn-default btn-flat"
                     >
                       <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
+                    </a>
+
+                    <!-- ADD LAYER -->
+                    <a
+                      v-if   = "'legend' !== activeTab"
+                      href   = "#"
+                      @click = "showaddLayerModal"
+                      class  = "nav-addlayer btn btn-default btn-flat"
+                    >
+                      <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
                     </a>
 
                     <!-- SIDEBAR MENU -->
@@ -928,9 +940,18 @@ export default {
     },
 
     /**
+     * @since 3.11.0
+     */
+    showaddLayerModal() {
+      $('#main-navbar').collapse('hide');
+      $('#modal-addlayer').modal('show');
+    },
+
+    /**
      * @since 3.8.0
      */
     openChangeMapMenu() {
+      $('#main-navbar').collapse('hide');
       $('#modal-changemap').modal('show');
     },
 
@@ -1238,10 +1259,13 @@ export default {
   .user-footer                          { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
   .user-footer .btn-default             { color: rgba(0,0,0,.75); border-color: currentColor; display: flex; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
   .user-footer .btn-default:not(:hover) { background-color: transparent; }
-  .nav-user > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
+  .nav-user > .dropdown-menu            { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
+
+  .nav-user .triangle                   { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
+  .nav-user.open .triangle              { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
 
   @media (min-width: 767px) {
-    .user-footer .nav-sidebar.btn-default { display: none; }
+    .user-footer :is(.nav-sidebar, .nav-addlayer).btn-default { display: none; }
   }
 
   @media (max-width: 767px) {
