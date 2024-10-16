@@ -650,7 +650,6 @@ header.main-header .navbar-header                              { margin-left: 0 
 .g3w-view .close-panel-block span i.panel-button                                 { color: transparent; }
 .g3w-view .close-panel-block span.g3w-span-button                                { height: 1.1em; line-height: 1.1em; width: 1.1em; font-size: 1em !important; margin-top: 8px; margin-bottom: 5px; margin-right: 5px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 30%; caret-color: rgba(0,0,0,0); }
 .g3w-view .close-panel-block span.g3w-span-button.mobile                         { margin-top: 3px; }
-.g3w-view #contenttitle                                                          { font-weight: bold; color: var(--skin-d20); }
 
 .g3w-view.content .action-button-icon,
 .g3w-view.content .g3w_contents_back > div                                       { color: var(--skin-color); }
@@ -882,7 +881,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .back-btn .back-link,
 .query_relation_field_message,
 .queryresults-container ul > li span.key,
-.queryresults-container ul > li .box-title, 
 .queryresults-container .link,
 .queryresults-container .law-button                                                                          { color: var(--skin-color); }
 

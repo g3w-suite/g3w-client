@@ -605,5 +605,9 @@ export default {
     remote_wms_url: 'Remote URL (WMS)',
     /**@since 3.11.0 */
     local_file: 'Local file',
+    /**@since 3.11.0 */
+    embed_map: 'Embed map',
+    /** @since 3.11.0 */
+    homepage: 'Home'
   },
 };

@@ -142,7 +142,7 @@
                       :href = "urls.frontendurl"
                       class = "nav-home btn btn-default btn-flat skin-color"
                     >
-                      <b>Home</b><i :class="$fa('home')"></i>
+                      <b v-t="'homepage'"></b><i :class="$fa('home')"></i>
                     </a>
 
                     <!-- LOGOUT URL -->
@@ -152,6 +152,15 @@
                       class = "nav-logout btn btn-default btn-flat skin-color"
                     >
                       <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
+                    </a>
+
+                    <!-- SHARE URL -->
+                    <a
+                      href   = "#"
+                      @click = "showEmbedModal"
+                      class  = "nav-embedmap btn btn-default btn-flat skin-color"
+                    >
+                      <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
                     </a>
 
                     <!-- CHANGE MAP -->
@@ -457,12 +466,12 @@
             :style = "[state.content.style.title]"
             :class = "{'mobile': isMobile()}"
           >
-          <span id = "contenttitle">
+          <b id = "contenttitle">
             <span v-t = "contentTitle.text ? null : contentTitle.title">
               <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
             </span>
             <span v-t = "contentTitle.post_title"></span>
-          </span>
+          </b>
           </div>
           <div
             class = "g3-content-header-action-tools"
@@ -574,9 +583,7 @@ import Component          from 'g3w-component';
 import GUI                from 'services/gui';
 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-import { XHR }            from 'utils/XHR';
 import { promisify }      from 'utils/promisify';
-import { debounce }       from 'utils/debounce';
 import { sameOrigin }     from 'utils/sameOrigin';
 
 import userMessage        from 'components/UserMessage.vue';
@@ -826,7 +833,7 @@ export default {
         return;
       }
       $('body').append(/* html */`
-        <div id = "custom_modal" class = "modal fade">
+        <div id = "custom_modal" class = "modal fade" tabindex="-1">
           <div class = "modal-dialog">
             <div class  = "modal-content">${ item.content }</div>
           </div>
@@ -834,6 +841,28 @@ export default {
       `);
       $('#custom_modal').modal('show');
       $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
+    },
+    
+    showEmbedModal() {
+      const url = new URL(location.href);
+      url.searchParams.set('map_extent', GUI.getService('map').getMapExtent().toString());
+
+      $('body').append(/* html */`
+        <div id = "share_modal" class = "modal fade" tabindex="-1">
+          <div class = "modal-dialog">
+            <div class  = "modal-content">
+              <div class = "modal-header">
+                <h4 style = "font-weight: bold" class = "modal-title">${this.$t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
+              </div>
+              <div class="form-group modal-body">
+                <input readonly value="${url.toString()}" onfocus="event.target.select()" class="form-control" />
+                <button onclick="event.target.previousElementSibling.focus() || document.execCommand('copy') && $('#share_modal').modal('hide')" class="form-control btn btn-success">${ this.$t('sdk.tooltips.copy_map_extent_url') }</button>
+              </div>
+          </div>
+        </div>
+      `);
+      $('#share_modal').modal('show');
+      $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
     },
 
     /**
