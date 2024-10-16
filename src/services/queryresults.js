@@ -245,12 +245,12 @@ export default new (class QueryResultsService extends G3WObject {
               expandable:             true,
               addfeaturesresults:     { active: false },
               downloadformats:        { active: false },
-              editable:               is_layer   ? layer.isEditable()             : false,
-              inediting:              is_layer   ? layer.isInEditing()            : false,
-              source:                 is_layer   ? layer.getSource()              : undefined,
-              infoformat:             is_layer   ? layer.getInfoFormat()          : undefined,
-              infoformats:            is_layer   ? layer.getInfoFormats()         : [],
-              downloads:              is_layer   ? layer.getDownloadableFormats() : [],
+              editable:               is_layer   ? layer.isEditable() && layer.config.editing.visible : false,
+              inediting:              is_layer   ? layer.isInEditing()                                : false,
+              source:                 is_layer   ? layer.getSource()                                  : undefined,
+              infoformat:             is_layer   ? layer.getInfoFormat()                              : undefined,
+              infoformats:            is_layer   ? layer.getInfoFormats()                             : [],
+              downloads:              is_layer   ? layer.getDownloadableFormats()                     : [],
               formStructure:          structure  ? {
                 structure,
                 // get field show
