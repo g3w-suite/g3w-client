@@ -465,7 +465,7 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 
 header.main-header .container-fluid                            { padding: 0 !important; }
 header.main-header .navbar-header                              { margin-left: 0 !important; }
-.main-header .nav-lang                                         { margin-top: 9px; margin-left: 10px; margin-right: -7px; }
+.main-header .nav-lang                                         { margin-top: 9px; margin-left: 10px; margin-right: 0; }
 .sidebar-aside-toggle                                          { position: absolute; left: 350px; top: 50px; color: #fff !important; padding: 11.6px; background-color: rgba(0, 0, 0, 0.65); }
 .is-iframe .sidebar-aside-toggle                               { top: 0; }
 .sidebar-aside-toggle:before,
@@ -476,6 +476,7 @@ header.main-header .navbar-header                              { margin-left: 0 
 .navbar .navbar-toggle                                         { outline: 1; margin-top: 5px; outline: #fff 1px solid; }
 .navbar .navbar-collapse                                       { border-color: transparent; background-color: var(--skin-color); }
 .nav-lang .select2-selection__rendered                         { color: var(--skin-color) !important; }
+.nav-lang .select2-dropdown.select2-dropdown--below            { margin-top: 7px; }
 
 @media (max-width: 767px) {
   .main-header .navbar-right a                            { color: inherit; background: transparent; }
@@ -762,7 +763,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-attribution ul                                                     { font-size: 1.0em !important; }
 .ol-attribution.ol-uncollapsible                                       { height: 1.3em !important; }
 .g3w-map-controls                                                      { position: absolute; flex-wrap: wrap; z-index: 1; display: flex; top: 60px; left: 0; align-items: flex-start; flex-direction: column;}
-.g3w-map-controls.rv                                                   { top: 8px; right: 5px; left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
+.g3w-map-controls.rv                                                   { top: 0; right: 5px; left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
 .g3w-map-controls.lv                                                   { top:60px; left: 0; align-items: flex-start; }
 .g3w-map-controls.lh                                                   { top:60px; left: 0; flex-direction: row; }
 .g3w-map-controls.rh                                                   { top:8px; right: 0; flex-direction: row; }
