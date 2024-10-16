@@ -10,14 +10,9 @@
     v-disabled = "app.gui.app.disabled"
   >
 
-    <cookie-law
-      theme       = "dark-lime"
-      :buttonText = "cookie_law_buttonText"
-    >
-      <div
-        slot="message"
-        v-t="'cookie_law.message'">
-      </div>
+    <!-- COOKIE BANNER -->
+    <cookie-law theme = "dark-lime" :buttonText = "cookie_law_buttonText">
+      <div slot="message" v-t="'cookie_law.message'"></div>
     </cookie-law>
 
     <header
@@ -44,25 +39,8 @@
               data-toggle = "collapse"
               data-target = "#main-navbar"
             >
-              <i
-                style  = "font-size: 1.3em;"
-                :class = "$fa('ellips-v')">
-              </i>
+              <i :class = "$fa('ellips-v')" style = "font-size: 1.3em;" ></i>
             </button>
-
-            <!-- HAMBURGER BUTTON (SIDEBAR MENU) -->
-            <a
-              id             = "g3w-small-screen-hamburger-sidebar"
-              href           = "#"
-              class          = "sidebar-toggle"
-              @click.prevent = "toggleSidebar"
-              role           = "button"
-            >
-              <i
-                style  = "font-size: 1.3em;"
-                :class = "$fa('bars')">
-              </i>
-            </a>
 
             <!-- LOGO -->
             <div
@@ -105,63 +83,32 @@
             style = "text-align: center; overflow: hidden; margin: 0 0;"
           >
 
-            <ul
-              ref   = "app-navbar-nav"
-              class = "nav navbar-nav navbar-right app-navbar-nav"
-              style = "display: flex;"
-            >
+            <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px;">
 
               <!-- CUSTOM LINKS -->
               <li
                 v-for  = "item in custom_links"
                 :key   = "item.id"
-                class  = "customheaderlink"
-                :title = "item.title"
                 :style = "{ order: item.position }"
+                :class = "`nav-${item.id}`"
               >
                 <a
-                  v-if        = "'modal' === item.type"
-                  style       = "cursor: pointer;"
-                  @click.stop = "showCustomModal(item.id)"
-                >{{ item.title }}</a>
-                <a
-                  v-else
-                  :href   = "item.url"
-                  :class  = "{ imagelink : !!item.img}"
-                  :target = "item.target"
+                  :href          = "item.url || '#'"
+                  @click         = "oncCustomItemClick($event, item)"
+                  :target        = "item.target"
+                  data-placement = "bottom"
+                  data-toggle    = "tooltip"
+                  data-container = "body"
+                  v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
                 >
-                  <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" />
-                  <span v-else-if = "item.i18n" v-t = "item.title"></span>
-                  <span v-else>{{ item.title }}</span>
-                </a>
-              </li>
-
-              <!-- CREDITS -->
-              <li>
-                <a
-                  href        = "#"
-                  data-toggle = "modal"
-                  data-target = "#modal-credits"
-                  tabindex    = "-1"
-                >
-                  <i :class="$fa('unknow')"></i> Credits
-                </a>
-              </li>
-
-              <li>
-                <!-- CHANGE MAP -->
-                <a
-                  v-if   = "hasRelatedMaps && !custom_links.length"
-                  href   = "#"
-                  @click = "openChangeMapMenu"
-                >
-                  <i :class = "$fa('refresh')"></i> <span v-t="'changemap'"></span>
+                  <i v-if   = "item.icon" :class = "item.icon"></i>
+                  <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
                 </a>
               </li>
 
               <!-- ACCOUNT -->
               <li
-                class = "dropdown user user-menu"
+                class = "nav-user dropdown"
               >
                 <a
                   href        = "#"
@@ -175,18 +122,20 @@
                 <ul class = "dropdown-menu">
                   <!-- USER NAME -->
                   <li v-if = "user" class = "user-header">
-                    👋 {{ user.first_name }} {{ user.last_name }}
+                    👋
+                    <span v-if="!user.first_name && !user.last_name">{{ user.username }}</span>
+                    <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
                   </li>
 
                   <li class = "user-footer">
                     
                     <!-- LOGIN URL -->
                     <a
-                      v-if        = "!user"
-                      :src        = "login_url"
+                      v-if         = "!user"
+                      :src         = "login_url"
                       :data-toggle = "has_iframe_login ? 'modal'        : undefined"
                       :data-target = "has_iframe_login ? '#modal-login' : undefined"
-                      class       = "btn btn-default btn-flat skin-color"
+                      class        = "nav-login btn btn-default btn-flat skin-color"
                     >
                       <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
                     </a>
@@ -195,7 +144,7 @@
                     <a
                       v-if  = "user && user.admin_url"
                       :href = "user.admin_url"
-                      class = "btn btn-default btn-flat skin-color"
+                      class = "nav-admin btn btn-default btn-flat skin-color"
                     >
                       <b>Admin</b><i :class="$fa('tool')"></i>
                     </a>
@@ -204,7 +153,7 @@
                     <a
                       v-if  = "urls.frontendurl"
                       :href = "urls.frontendurl"
-                      class = "btn btn-default btn-flat skin-color"
+                      class = "nav-home btn btn-default btn-flat skin-color"
                     >
                       <b>Home</b><i :class="$fa('home')"></i>
                     </a>
@@ -213,25 +162,36 @@
                     <a
                       v-if  = "user && user.logout_url"
                       :href = "user.logout_url"
-                      class = "btn btn-default btn-flat skin-color"
+                      class = "nav-logout btn btn-default btn-flat skin-color"
                     >
                       <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
                     </a>
+
                     <!-- CHANGE MAP -->
                     <a
-                      v-if   = "hasRelatedMaps && custom_links.length"
+                      v-if   = "hasRelatedMaps"
                       href   = "#"
                       @click = "openChangeMapMenu"
-                      class  = "btn btn-default btn-flat"
+                      class  = "nav-changemap btn btn-default btn-flat"
                     >
                       <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
                     </a>
+
+                    <!-- SIDEBAR MENU -->
+                    <a
+                      href   = "#"
+                      @click = "toggleSidebar"
+                      class  = "nav-sidebar btn btn-default btn-flat"
+                    >
+                      <b v-t="'sidebar_menu'"></b><i :class = "$fa('bars')"></i>
+                    </a>
+                    
                   </li>
                 </ul>
               </li>
 
               <!-- LANGUAGE SWITCHER -->
-              <li v-if = "languages" class="g3w-languages">
+              <li v-if = "languages" class="nav-lang">
                 <select
                   v-select2          = "'language'"
                   class              = "form-control"
@@ -328,7 +288,26 @@
           class  = "sidebar-menu"
           :class = "{ 'g3w-disabled': disabled }"
           @click = "toggleSidebarItem"
-        ></ul>
+        >
+
+        <li id="metadata" class="treeview sidebaritem">
+          
+          <a
+            href           = "#"
+            style          = "display: flex; justify-content: space-between; align-items: center;"
+            data-placement = "right"
+            class          = "skin-tooltip-right"
+            data-container = "body"
+            v-t-tooltip    = "'sdk.metadata.title'"
+            data-toggle    = "modal"
+            data-target    = "#modal-metadata"
+          ><div>
+            <i :class="$fa('file')" style="color: #fff;"></i>
+            <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
+          </div>
+        </a></li>
+
+      </ul>
 
       </div>
       <!-- TOGGLE BUTTON (desktop only) -->
@@ -547,100 +526,6 @@
       aria-hidden     = "true"
     ></div>
 
-    <!-- MODAL CREDITS -->
-    <div
-      id    = "modal-credits"
-      class = "modal fade"
-    >
-      <div
-        class = "modal-dialog"
-        role  = "document"
-      >
-        <div class="modal-content">
-          <div class="modal-header">
-            <button
-              type         = "button"
-              class        = "close"
-              data-dismiss = "modal"
-              aria-label   = "Close"
-              style        = "color: #fff; font-weight: bold; opacity: 1; position: absolute; right: 25px; top: 20px"
-            >&times;</button>
-            <div style="display: flex; flex-direction: column; justify-content: space-around; justify-items: center; align-items: center">
-              <div
-                v-if   = "!!customcredits"
-                class  = "customcredits"
-                v-html = "customcredits"
-              ></div>
-
-              <div
-                v-if="powered_by"
-              >
-                <div class="g3w-credits-block">
-                  <div
-                    v-t   = "'credits.g3wSuiteFramework'"
-                    style = "background-color: #95ad36; padding: 5px; border-radius:3px; color: #ffffff"
-                    class = "credit-title-logo">
-                  </div>
-                  <a
-                    target = "_blank"
-                    href   = "https://g3wsuite.it/"
-                  >
-                    <img
-                      class = "g3w-suite-logo"
-                      :src  = "`${urls.clienturl}images/g3wsuite_logo.png`"
-                      alt   = "">
-                  </a>
-                  <div
-                    v-t  = "'credits.g3wSuiteDescription'"
-                    style = "margin-top: 10px;">
-                  </div>
-                </div>
-                <div
-                  v-t:pre = "'credits.productOf'"
-                  class   = "credit-title-logo g3w-credits-block"
-                  style   = "font-size: 1em; display: flex; justify-content: center"
-                >
-                  <a
-                    style  = "text-align: center!important;"
-                    href   = "http://www.gis3w.it"
-                    target = "_blank"
-                  >
-                    <img
-                      width = "60"
-                      style = "margin-left: 5px"
-                      :src  = "`${urls.clienturl}images/logo_gis3w_156_85.png`"
-                      class = "img-responsive center-block"
-                      alt   = ""
-                    />
-                  </a>
-                </div>
-
-                <address
-                  id    = "address-credits"
-                  style = "line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center; gap: 2px;"
-                >
-                  <span><b :class = "$fa('marker')" style = "color: #95ad36;" aria-hidden="true"></b> Montecatini Terme - Italy</span>
-                  <span><i :class = "$fa('mobile')" style = "color: #95ad36"  aria-hidden="true"></i> <a href = "tel:+393938534336"    style = "color:#000">+39 393 8534336</a></span>
-                  <span><i :class = "$fa('mail')"   style = "color: #95ad36"  aria-hidden="true"></i> <a href = "mailto:info@gis3w.it" style = "color:#000">info@gis3w.it</a></span>
-                </address>
-
-                <div style="display: flex;justify-content: center;gap: 20px;">
-                  <a :href="docs_url" rel="nofollow">📖 Docs</a>
-                  <a href="mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
     <!-- MODAL LOGIN -->
     <div
       v-if     = "!user && has_iframe_login"
@@ -671,6 +556,7 @@
 
     <map-add-layer />
     <change-map />
+    <metadata-project />
 
   </div>
 </template>
@@ -697,6 +583,7 @@ import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
 import MapAddLayer        from 'components/MapAddLayer.vue';
 import ChangeMap          from 'components/ChangeMap.vue';
+import MetadataProject    from 'components/MetadataProject.vue';
 
 
 const { t }               = require('g3w-i18n');
@@ -708,16 +595,24 @@ export default {
 
   data() {
     const custom_links = (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean)
-    custom_links.forEach(item => (item.id = getUniqueDomId()));
+
+    custom_links.unshift({
+      id: 'credits',
+      type: 'metadata',
+      target: '#metadata_credits',
+      icon: 'far fa-question-circle',
+      title: 'Credits'
+    });
+
+    custom_links.forEach(item => !item.id && (item.id = getUniqueDomId()));
 
     return {
-      customcredits:                false,
-      language:                     null,
-      cookie_law_buttonText:        t('cookie_law.buttonText'),
-      app:                          ApplicationState,
-      state:                        ApplicationState.viewport,
-      updatePreviousTitle:          false,
-      header:                       t('main navigation'),
+      language:              null,
+      cookie_law_buttonText: t('cookie_law.buttonText'),
+      app:                   ApplicationState,
+      state:                 ApplicationState.viewport,
+      updatePreviousTitle:   false,
+      header:                t('main navigation'),
       custom_links,
     }
   },
@@ -727,7 +622,8 @@ export default {
     userMessage,
     CatalogContextMenu,
     MapAddLayer,
-    ChangeMap
+    ChangeMap,
+    MetadataProject
   },
 
   computed: {
@@ -751,10 +647,6 @@ export default {
 
     urls() {
       return this.appconfig.urls;
-    },
-
-    powered_by() {
-      return this.appconfig.powered_by;
     },
 
     logo_url() {
@@ -793,14 +685,6 @@ export default {
       const main_title = this.appconfig.main_map_title;
       const group_name = this.appconfig.title || this.appconfig.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
-    },
-
-    /**
-     * @since 3.11.0
-     */
-    docs_url() {
-      const version = window.initConfig.version.split('-')[0].split('.');
-      return `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`
     },
 
     breadcrumb() {
@@ -930,7 +814,7 @@ export default {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0
           ? this.$refs.navbar.offsetWidth     - this.$refs.navbar_toggle.offsetWidth
-          : this.$refs.mainnavbar.offsetWidth - this.$refs['app-navbar-nav'].offsetWidth;
+          : this.$refs.mainnavbar.offsetWidth - this.$refs['mainnavbar'].querySelector('.navbar-nav').offsetWidth;
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
@@ -938,13 +822,23 @@ export default {
     /**
      * @since 3.11.0
      */
-    showCustomModal(id) {
+    oncCustomItemClick(e, item) {
+      if (!['modal', 'metadata'].includes(item.type)) {
+        return;
+      }
+      e.preventDefault();
+      if (item.target && 'modal' === item.type && document.querySelector(item.target)) {
+        return $(item.target).modal('show');
+      }
+      if (item.target && 'metadata' === item.type && document.querySelector('#modal-metadata')) {
+        $('#modal-metadata').modal('show');
+        document.querySelector('#modal-metadata a[href="' + item.target + '"]').click();
+        return;
+      }
       $('body').append(/* html */`
         <div id = "custom_modal" class = "modal fade">
           <div class = "modal-dialog">
-            <div class  = "modal-content">${
-              this.custom_links.find(item => 'modal' === item.type && id === item.id).content
-            }</div>
+            <div class  = "modal-content">${ item.content }</div>
           </div>
         </div>
       `);
@@ -1122,6 +1016,7 @@ export default {
      * @since 3.11.0
      */
     toggleSidebar() {
+      $('#main-navbar').collapse('hide');
       GUI.toggleSidebar();
     },
 
@@ -1195,12 +1090,6 @@ export default {
     GUI.on('resize', this.resize);
 
     this.language       = this.appconfig.user.i18n;
-
-    if (!!this.appconfig.credits) {
-      XHR.get({ url: this.appconfig.credits })
-        .then(c => this.customcredits = 'None' !== c && c )
-        .catch(e => console.warn(e))
-    }
   },
 
   async mounted() {
@@ -1213,10 +1102,7 @@ export default {
     await this.$nextTick();
 
     // margin right
-    this.rightNavbarWidth = Array.from(this.isIframe
-      ? []
-      : this.$refs.mainnavbar.getElementsByTagName('ul')
-    ).reduce((w, item) => w + item.offsetWidth, 15);
+    Array.from(!this.isIframe && this.$refs.mainnavbar.getElementsByTagName('ul') || []).reduce((w, item) => w + item.offsetWidth, 15);
 
     this.language = this.appconfig.user.i18n;
 
@@ -1271,21 +1157,21 @@ export default {
   .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
   .g3w-modal-project-message.Critical .modal-header { background-color: #605ca8; }
   .g3w-modal-project-message h4.modal-title         { color: #FFF !important; }
-  .g3w-languages .select2-container--default .select2-selection--single {
+  .nav-lang .select2-container--default .select2-selection--single {
     background: none;
     border: none;
   }
-  .g3w-languages .select2-container--default .select2-selection--single .select2-selection__arrow b {
+  .nav-lang .select2-container--default .select2-selection--single .select2-selection__arrow b {
     border-color: #fff transparent transparent transparent
   }
-  .g3w-languages .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+  .nav-lang .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
     border-color: transparent transparent #fff transparent;
   }
-  .g3w-languages .select2-container--default .select2-selection--single .select2-selection__rendered {
+  .nav-lang .select2-container--default .select2-selection--single .select2-selection__rendered {
     color: #fff !important;
   }
   @media (min-width: 768px) {
-    .g3w-languages .select2-container {
+    .nav-lang .select2-container {
       right: 0;
       left: auto !important;
     }
@@ -1293,8 +1179,6 @@ export default {
 </style>
 
 <style scoped>
-  #g3w-small-screen-hamburger-sidebar              { display: none; }
-
   .logo-wrapper                                    { display: flex; max-height: 50px; height: 50px; font-weight: bold; align-items: center; color: white; }
   .logo-wrapper a.project_logo_link                { height: 46px; padding: 2px; }
   .logo-wrapper a.project_logo_link img            { height: 100%; }
@@ -1304,7 +1188,6 @@ export default {
   .project_title_content .sub_title                { font-size: 1.3em; }
 
   /* TODO: remove isMobile(), use only css @media queries */
-  @media (max-width: 767px)                        { .logo-wrapper { padding-left: 5px; } }
   .logo-wrapper.mobile                             { padding: 5px; }
   .logo-wrapper.mobile img                         { height: 23px; max-width: 150px !important; padding-left: 0; margin-right: 5px; }
   .logo-wrapper.mobile .main_title                 { font-size: 1.1em; }
@@ -1312,25 +1195,6 @@ export default {
   .project_title_content.mobile                    { margin-top: 2px; }
   .project_title_content.mobile .sub_title         { height: auto; }
 
-  .credit-title-logo {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-bottom: 15px;
-  }
-  .g3w-credits-block {
-    text-align: center!important;
-    margin-bottom: 20px;
-  }
-  .g3w-suite-logo {
-    width: 50% !important;
-  }
-  .customcredits {
-    margin-bottom : 10px;
-    margin-top: 5px;
-  }
-  #address-credits span {
-    padding-left: 3px;
-  }
   #g3w-sidebarpanel-header-placeholder {
     overflow: hidden;
     line-height: 14px;
@@ -1372,19 +1236,22 @@ export default {
 
   .user-header                          { padding: 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,.3); }
   .user-footer                          { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
-  .user-footer .btn-default             { color: rgba(0,0,0,.75); border-color: currentColor; display: flex !important; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
+  .user-footer .btn-default             { color: rgba(0,0,0,.75); border-color: currentColor; display: flex; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
   .user-footer .btn-default:not(:hover) { background-color: transparent; }
-  .user-menu > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
+  .nav-user > .dropdown-menu           { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
+
+  @media (min-width: 767px) {
+    .user-footer .nav-sidebar.btn-default { display: none; }
+  }
 
   @media (max-width: 767px) {
-    .app-navbar-nav                     { flex-direction: column; }
-    #g3w-small-screen-hamburger-sidebar { display: block; }
-    .user-footer                        { background-color: transparent; border: none; }
-    .user-menu > ul                     { display: block; position: static; float:none; border: none; background-color: transparent; }
-    .user-menu .btn.skin-color          { color: #fff !important; }
-    .user-menu > .dropdown-toggle,
-    .user-header                        { display: none; }
-    .user-menu > .dropdown-menu         { border: none; }
+    .navbar-nav                           { flex-direction: column; }
+    .user-footer                          { background-color: transparent; border: none; }
+    .nav-user > ul                        { display: block; position: static; float:none; border: none; background-color: transparent; }
+    .nav-user .btn.skin-color             { color: #fff !important; }
+    .nav-user > .dropdown-toggle,
+    .user-header                          { display: none; }
+    .nav-user > .dropdown-menu            { border: none; }
   }
 
 </style>

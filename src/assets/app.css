@@ -426,8 +426,8 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 .navbar-right                                                { float: right; }
 .navbar-right li                                             { font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); }
 .navbar-right li:last-child                                  { border: 0; }
-.app-navbar-nav li                                           { font-weight: bold; }
-.app-navbar-nav li:last-child                                { border: 0; }
+.navbar-nav li                                               { font-weight: bold; }
+.navbar-nav li:last-child                                    { border: 0; }
 .sidebar-toggle                                              { float: left; background-color: transparent; background-image: none; padding: 15px 10px 14px; margin-left: 5px; }
 .sidebar-toggle:hover                                        { color: #fff; }
 .navbar .nav > li.user > a > :is(.fa, .glyphicon, .ion)      { margin-right: 5px; }
@@ -465,9 +465,7 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 
 header.main-header .container-fluid                            { padding: 0 !important; }
 header.main-header .navbar-header                              { margin-left: 0 !important; }
-.main-header .navbar .navbar-toggle:is(:focus, :hover)         { margin-top: 5px; }
-.main-header .customheaderlink a.imagelink                     { padding:14px; }
-.main-header .g3w-languages                                    { margin-top: 9px; margin-left: 10px; margin-right: -7px; }
+.main-header .nav-lang                                         { margin-top: 9px; margin-left: 10px; margin-right: -7px; }
 .sidebar-aside-toggle                                          { position: absolute; left: 350px; top: 50px; color: #fff !important; padding: 11.6px; background-color: rgba(0, 0, 0, 0.65); }
 .is-iframe .sidebar-aside-toggle                               { top: 0; }
 .sidebar-aside-toggle:before,
@@ -475,10 +473,9 @@ header.main-header .navbar-header                              { margin-left: 0 
 .sidebar-collapse .sidebar-aside-toggle:before                 { content: "\f101"; }
 .title-box                                                     { line-height: 50px; margin-left: 10px; }
 .title-box .title                                              { font-size: 2em; font-weight: bold; color: white }
-.navbar .navbar-toggle                                         { outline: 1; }
-.navbar .navbar-toggle:is(:focus, :hover)                      { outline: #fff 1px solid; background-color: transparent; }
+.navbar .navbar-toggle                                         { outline: 1; margin-top: 5px; outline: #fff 1px solid; }
 .navbar .navbar-collapse                                       { border-color: transparent; background-color: var(--skin-color); }
-.g3w-languages .select2-selection__rendered                    { color: var(--skin-color) !important; }
+.nav-lang .select2-selection__rendered                         { color: var(--skin-color) !important; }
 
 @media (max-width: 767px) {
   .main-header .navbar-right a                            { color: inherit; background: transparent; }

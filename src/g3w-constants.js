@@ -356,7 +356,7 @@ export const FONT_AWESOME_ICONS = {
   /**@since 3.10.0 */
   'external-link':  "fa fa-external-link-alt",
   /** @since 3.11.0 */
-  'pointer':        'fa fa-hand-pointer',
+  pointer:          'fa fa-hand-pointer',
   /** @since 3.11.0 */
   camera:           'fas fa-camera-retro',
   /** @since 3.11.0 */
@@ -365,6 +365,8 @@ export const FONT_AWESOME_ICONS = {
   tint:             'fa fa-tint',
   /** @since 3.11.0 */
   sort:             'fa fa-sort',
+  /** @since 3.11.0 */
+  copyright:        'fa fa-copyright',
 };
 
 /**

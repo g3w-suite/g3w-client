@@ -404,62 +404,6 @@ $.ajaxSetup({
         // update CONFIG
         Object.assign(CONFIG, {
           sidebar: [
-            /**
-             * ORIGINAL SOURCE: src/components/g3w-metadata.js@v3.10.2
-             */
-            new (function() {
-              const comp = new Component({
-                id:          'metadata',
-                collapsible: false,
-                icon:        GUI.getFontClass('file'),
-                iconColor:   '#fff',
-                title: 'sdk.metadata.title',
-                service: Object.assign(new G3WObject, {
-                  state: {
-                    name:   ApplicationState.project.getState().title,
-                    groups: Object.entries({
-                      general: [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url' ],
-                      spatial: [ 'crs', 'extent' ],
-                      layers:  [ 'layers' ],
-                    }).reduce((g, [name, fields]) => {
-                      g[name] = fields.reduce((f, field) => {
-                        const project = ApplicationState.project.getState();
-                        const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-                        if (value) {
-                          f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
-                        }
-                        return f;
-                      }, {});
-                      return g;
-                    }, {}),
-                  },
-                  content: null,
-                  show: false,
-                }),
-                vueComponentObject: { template: '<div></div>' },
-              });
-
-              // show metadata
-              comp._setOpen = b => {
-                const service = comp.getService();
-                service.show = b;
-                if (b) {
-                  service.content        = new Component({
-                    service,
-                    internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({ state: service.state })
-                  });
-                  // service.content.layout = noop;
-                  GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
-                  service.show = true;
-                } else {
-                  GUI.closeContent()
-                }
-              };
-
-              GUI.on('closecontent', () => comp.getService().state.open = false);
-
-              return comp;
-            }),
 
             /**
              * ORIGINAL SOURCE: src/components/g3w-spatialbookmarks.js@v3.10.2

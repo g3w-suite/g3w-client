@@ -176,6 +176,9 @@ export default {
               general: 'GENERAL',
               spatial: 'SPATIAL'
             }
+          },
+          credits: {
+            title: 'Credits',
           }
         }
       },

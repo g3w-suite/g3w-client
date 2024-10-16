@@ -809,7 +809,7 @@
 
       async showMetadata(layerId){
         this.closeMenu();
-        GUI.getComponent('metadata').click({ open: true });
+        $('#modal-metadata').modal('show');
         if (layerId) {
           setTimeout(() => {
             document.querySelector('#project-catalog [href="#metadata_layers"]').click();
