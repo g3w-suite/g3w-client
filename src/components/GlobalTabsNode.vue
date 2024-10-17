@@ -188,10 +188,10 @@
       isRelationChildLayerNotEditable(relation) {
         // HANDLE N:M RELATION AS 1:N RELATION
         const projectRelation = ApplicationState.project.getRelationById(relation.name);
-        const relationLayerId = projectRelation.referencingLayer;
-        const relationLayer   = ApplicationState.project.getLayerById(relationLayerId);
+        const relationLayer   = ApplicationState.project.getLayerById(projectRelation.referencingLayer);
         // check if is editable. In the case of nmRelation layer need to be table to be editable
-        return !relationLayer.isEditable();
+        //Need to check if layer exists. Sometime can happen that layer is not in the list based on user capabilities
+        return !(relationLayer && relationLayer.isEditable());
       },
       /**
        *
