@@ -109,16 +109,16 @@
                   <i
                     @click.stop            = "showWmsLayersPanel(wms.url)"
                     v-t-tooltip:top.create = "'connect_to_wms'"
-                    :class                 = "'wms-icon-action ' + $fa('eye')"
-                    style                  = "color: var(--skin-color); padding: 3px; margin: 2px;"
+                    :class                 = "$fa('eye')"
+                    style                  = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"
                   ></i>
 
                   <!-- DELETE WMS -->
                   <i
                     @click.stop            = "deleteWmsUrl(wms.id)"
                     v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'"
-                    :class                 = "'wms-icon-action ' + $fa('trash')"
-                    style                  = "color: red; padding: 3px; margin: 2px;"
+                    :class                 = "$fa('trash')"
+                    style                  = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"
                   ></i>
 
                 </div>
@@ -1109,11 +1109,6 @@ export default {
   #add_custom_url_wms_input::placeholder {
     font-size: 85%;
     opacity: .5;
-  }
-  .wms-icon-action {
-    font-weight: bold;
-    font-size: 1.3em;
-    cursor: pointer;
   }
   .g3w-wms-panel-title {
     font-size: 1.2em;
