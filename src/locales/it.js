@@ -502,11 +502,11 @@ export default {
             position: "Posizione su Mappa",
             name: "Nome",
             projections: 'Sistema di riferimento',
-            layers: 'Layers'
+            layers: 'Livelli'
           }
         },
         add_wms_layer: "Aggiungi livello WMS",
-        delete_wms_url: "Elimina WMS url",
+        delete_wms_url: "Rimuovi",
         layer_id_already_added: "Questo Layer WMS è già stato aggiunto",
         url_already_added: "URL/Nome WMS già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
@@ -573,7 +573,7 @@ export default {
         show_metadata: "Metadati",
         styles: "Stile",
         vector_color_menu:"Colore",
-        layer_opacity: "Trasparenza",
+        layer_opacity: "Opacità",
         filters: "Filtri",
         download: 'Esporta come',
         ogc_services: 'Servizi OGC',
@@ -599,12 +599,18 @@ export default {
     /**@since 3.11.0 */
     choose_type: 'Scegli un tipo',
     /**@since 3.11.0 */
-    remote_wms_url: 'URL remoto (WMS)',
+    remote_wms_url: 'WMS (URL)',
     /**@since 3.11.0 */
     local_file: 'File locale',
     /**@since 3.11.0 */
     embed_map: 'Incorpora mappa',
     /** @since 3.11.0 */
-    homepage: 'Pagina iniziale'
+    homepage: 'Pagina iniziale',
+    /** @since 3.11.0 */
+    wms_server: 'Server WMS',
+    /** @since 3.11.0 */
+    connect_to_wms: 'Connetti',
+    /** @since 3.11.0 */
+    disconnect_from_wms: 'Disconnetti',
   },
 };

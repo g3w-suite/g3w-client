@@ -505,7 +505,7 @@ export default {
           }
         },
         add_wms_layer: "Add WMS layer",
-        delete_wms_url: "Delete WMS url",
+        delete_wms_url: "Remove",
         layer_id_already_added: "WMS Layer already added",
         url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
@@ -599,12 +599,18 @@ export default {
     /** @since 3.11.0 */
     choose_type: 'Choose type',
     /**@since 3.11.0 */
-    remote_wms_url: 'Remote URL (WMS)',
+    remote_wms_url: 'WMS (URL)',
     /**@since 3.11.0 */
     local_file: 'Local file',
     /**@since 3.11.0 */
     embed_map: 'Embed map',
     /** @since 3.11.0 */
-    homepage: 'Home'
+    homepage: 'Home',
+    /** @since 3.11.0 */
+    wms_server: 'WMS Server',
+    /** @since 3.11.0 */
+    connect_to_wms: 'Connect',
+    /** @since 3.11.0 */
+    disconnect_from_wms: 'Disconnect',
   },
 };
