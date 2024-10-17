@@ -265,7 +265,7 @@
                 v-if  = "powered_by"
                 style = "display: flex;justify-content: center;gap: 20px;"
               >
-                <a :href="docs_url" rel="nofollow">📖 Docs</a>
+                <a :href="docs_url" rel="nofollow" target="_blank">📖 Docs</a>
                 <a href="mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
                 </div>
 
