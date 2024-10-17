@@ -310,8 +310,6 @@ $.ajaxSetup({
     {
       width:          initConfig.layout.rightpanel.width  || 50, // ie. width == 50%
       height:         initConfig.layout.rightpanel.height || 50, // ie. height == 50%
-      width_default:  initConfig.layout.rightpanel.width  || 50,
-      height_default: initConfig.layout.rightpanel.height || 50,
       width_100:      false,
       height_100:     false,
     }
