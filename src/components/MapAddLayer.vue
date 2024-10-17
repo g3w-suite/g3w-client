@@ -46,60 +46,55 @@
 
           <template v-if="'wms' === layer_type">
 
+            <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
-
-              <!-- WMS URL -->
-              <div class = "form-group">
-                <label for = "add_custom_url_wms_input" title = "required">URL</label>
-                <a
-                  :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
-                  target = "_blank"
-                  style  = "float: right;"
-                  title  = "Docs"
-                >
-                  <i :class = "$fa('external-link')"></i>
-                </a>
-                <input
-                  id           = "add_custom_url_wms_input"
-                  v-model.trim = "url"
-                  class        = "form-control"
-                  placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
-                  type         = "url"
-                  list         = "wms_urls"
-                  required
-                />
-                <datalist id="wms_urls">
-                  <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
-                </datalist>
-              </div>
-
-              <!-- WMS NAME -->
-              <div v-if="url && !wms_panel" class = "form-group">
-                <label for = "add_custom_name_url_wms_input" title = "required">
-                  <span v-t = "'sidebar.wms.panel.label.name'"></span>
-                  <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
-                </label>
-                <input
-                  id           = "add_custom_name_url_wms_input"
-                  v-model.trim = "id"
-                  class        = "form-control"
-                  required
-                />
-              </div>
-
-              <!-- SUBMIT BUTTON -->
-              <button
-                v-if                = "!wms_panel"
-                v-disabled          = "!(id || '').trim() || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
-                @click.prevent.stop = "addwmsurl"
-                class               = "btn btn-block btn-success"
-              ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
-
+              <label for = "add_custom_url_wms_input" title = "required">URL</label>
+              <a
+                :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
+                target = "_blank"
+                style  = "float: right;"
+                title  = "Docs"
+              >
+                <i :class = "$fa('external-link')"></i>
+              </a>
+              <input
+                id           = "add_custom_url_wms_input"
+                v-model.trim = "url"
+                class        = "form-control"
+                placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
+                type         = "url"
+                list         = "wms_urls"
+                required
+              />
+              <datalist id="wms_urls">
+                <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
+              </datalist>
             </div>
 
-            <div v-if="!wms_panel" class="form-group">
+            <!-- WMS NAME -->
+            <div v-if="url && !wms_panel" class = "form-group" v-disabled="wms_panel">
+              <label for = "add_custom_name_url_wms_input" title = "required">
+                <span v-t = "'sidebar.wms.panel.label.name'"></span>
+                <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
+              </label>
+              <input
+                id           = "add_custom_name_url_wms_input"
+                v-model.trim = "id"
+                class        = "form-control"
+                required
+              />
+            </div>
 
-              <!-- LIST OF WMS LAYERS (STORED ON LOCAL STORAGE) -->
+            <!-- SUBMIT BUTTON -->
+            <button
+              v-if                = "!wms_panel"
+              v-disabled          = "wms_panel || !(id || '').trim() || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
+              @click.prevent.stop = "addwmsurl"
+              class               = "btn btn-block btn-success form-group"
+            ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
+
+            <!-- LIST OF WMS LAYERS (STORED ON LOCAL STORAGE) -->
+            <div v-if="!wms_panel" class="form-group">
               <div
                 v-for = "wms in wms_urls"
                 :key  = "wms.id"
@@ -132,7 +127,6 @@
                 <small>{{ wms.url }}</small>
 
               </div>
-
             </div>
 
             <div v-if="wms_panel" v-disabled = "loading">
