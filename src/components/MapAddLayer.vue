@@ -46,13 +46,11 @@
 
           <template v-if="'wms' === layer_type">
 
-            <div v-if="!wms_panel">
+            <div class = "form-group" v-disabled="wms_panel">
 
               <!-- WMS URL -->
               <div class = "form-group">
-                <label for = "add_custom_url_wms_input" title = "required">
-                  URL <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
-                </label>
+                <label for = "add_custom_url_wms_input" title = "required">URL</label>
                 <a
                   :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
                   target = "_blank"
@@ -62,39 +60,48 @@
                   <i :class = "$fa('external-link')"></i>
                 </a>
                 <input
-                  id      = "add_custom_url_wms_input"
-                  v-model = "url"
-                  class   = "form-control"
-                  style   = "width: 100%; color:#000000;"
-                  placeholder="http://example.org/?&service=WMS&request=GetCapabilities"
+                  id           = "add_custom_url_wms_input"
+                  v-model.trim = "url"
+                  class        = "form-control"
+                  placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
+                  type         = "url"
+                  list         = "wms_urls"
                 />
+                <datalist id="wms_urls">
+                  <option v-for = "wms in adminwmsurls" :key  = "wms.url" :value="wms.url">{{ wms.id }}</option>
+                  <option v-for = "wms in localwmsurls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
+                </datalist>
               </div>
 
               <!-- WMS NAME -->
-              <div class = "form-group">
+              <div v-if="url && !wms_panel" class = "form-group">
                 <label for = "add_custom_name_url_wms_input" title = "required">
                   <span v-t = "'sidebar.wms.panel.label.name'"></span>
                   <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
                 </label>
                 <input
-                  id      = "add_custom_name_url_wms_input"
-                  v-model = "id"
-                  class   = "form-control"
-                  style   = "width: 100%; color:#000000;">
+                  id           = "add_custom_name_url_wms_input"
+                  v-model.trim = "id"
+                  class        = "form-control"
+                />
               </div>
 
               <!-- SUBMIT BUTTON -->
               <button
+                v-if                = "!wms_panel"
                 v-disabled          = "!inputswmsurlvalid"
-                style               = "width: 100%;"
                 @click.prevent.stop = "addwmsurl"
-                class               = "btn btn-block skin-background-color"
-              ><b :class = "$fa('plus-square')"></b></button>
+                class               = "btn btn-block btn-success"
+              ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
+
+            </div>
+
+            <div v-if="!wms_panel" class="form-group">
 
               <!-- LIST OF WMS LAYERS (STORED ON SERVER) -->
               <div
-                v-for = "({ id }) in adminwmsurls"
-                :key  = "wmsurl"
+                v-for = "wms in adminwmsurls"
+                :key  = "wms.url"
                 style = "
                   display: flex;
                   justify-content: space-between;
@@ -105,39 +112,40 @@
               >
 
                 <!-- WMS ID -->
-                <span style = "flex-grow: 1;">{{ id }}</span>
+                <span style = "flex-grow: 1;">{{ wms.id }}</span>
 
                 <!-- ADD NEW WMS LAYER -->
                 <b
-                  @click.stop = "showWmsLayersPanel(id)"
-                  style       = "color: var(--skin-color); padding: 5px; font-size: 1.3em;"
-                  :class      = "$fa('plus-square')"
+                  @click.stop            = "showWmsLayersPanel(wms.id)"
+                  style                  = "color: var(--skin-color); padding: 5px; font-size: 1.3em;"
+                  v-t-tooltip:top.create = "'connect_to_wms'"
+                  :class                 = "$fa('eye')"
                 ></b>
 
               </div>
 
               <!-- LIST OF WMS LAYERS (STORED ON LOCAL STORAGE) -->
               <div
-                v-for = "({id, url}) in localwmsurls"
-                :key  = "id"
+                v-for = "wms in localwmsurls"
+                :key  = "wms.id"
                 style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;"
               >
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
 
                   <!-- WMS NAME -->
-                  <b style = "flex-grow: 1;">{{ id }}</b>
+                  <b style = "flex-grow: 1;">{{ wms.id }}</b>
 
                   <!-- ADD NEW WMS LAYER -->
                   <i
-                    @click.stop            = "showWmsLayersPanel(url)"
-                    v-t-tooltip:top.create = "'sidebar.wms.add_wms_layer'"
-                    :class                 = "'wms-icon-action ' + $fa('plus-square')"
+                    @click.stop            = "showWmsLayersPanel(wms.url)"
+                    v-t-tooltip:top.create = "'connect_to_wms'"
+                    :class                 = "'wms-icon-action ' + $fa('eye')"
                     style                  = "color: var(--skin-color); padding: 3px; margin: 2px;"
                   ></i>
 
                   <!-- DELETE WMS -->
                   <i
-                    @click.stop            = "deleteWmsUrl(id)"
+                    @click.stop            = "deleteWmsUrl(wms.id)"
                     v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'"
                     :class                 = "'wms-icon-action ' + $fa('trash')"
                     style                  = "color: red; padding: 3px; margin: 2px;"
@@ -146,15 +154,23 @@
                 </div>
 
                 <!-- WMS URL -->
-                <small>{{ url }}</small>
+                <small>{{ wms.url }}</small>
 
               </div>
 
             </div>
 
-            <div v-else-if="wms_panel" v-disabled = "loading">
+            <div v-if="wms_panel" v-disabled = "loading">
 
-              <h3 class = "skin-color g3w-wms-panel-title">{{title}}</h3>
+              <button
+                type                   = "button"
+                class                  = "close"
+                style                  = "float: right; padding: 5px 10px; margin-top: -5px;outline: 1px solid; color: red; opacity: 1;"
+                @click                 = "clearPanel"
+                v-t-tooltip:left.create = "'disconnect_from_wms'"
+              >&times;</button>
+
+              <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
 
               <!-- LAYER INFO -->
               <fieldset v-if="abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
@@ -670,15 +686,10 @@ export default {
     },
 
     /**
-     * Add new WMS url
-     * 
-     * @param { Object } wms
-     * @param { string } wms.id
-     * @param { string } wms.url
-     * 
-     * @returns {*}
+     * @returns { Promise<void> }
      */
-      async addNewUrl(wms) {
+    async addwmsurl() {
+      this.loading           = true;
       const found  = this.localwmsurls.find(l => l.url == wms.url || l.id == wms.id);
       const status = { error: false, added: !!found };
       // when url is not yet added
@@ -700,17 +711,8 @@ export default {
           status.error = true;
         }
       }
-      return status;
-    },
-
-    /**
-     * @returns { Promise<void> }
-     */
-    async addwmsurl() {
-      this.loading           = true;
-      const { error, added } = await this.addNewUrl({ url: this.url, id: this.id });
-      this.status.error      = error;
-      this.status.added      = added;
+      this.status.error      = status.error;
+      this.status.added      = status.added;
       this.loading           = false;
     },
 
@@ -1022,6 +1024,7 @@ export default {
         const name = layers[layers.length -1];
         this.projections = this.projections.filter(p => this.layerProjections[name].crss.includes(p));
       }
+
     },
 
     /**
@@ -1038,6 +1041,12 @@ export default {
     layer_type(type) {
       if ('file' == type) {
         this.clearPanel();
+      }
+    },
+
+    wms_panel(enabled) {
+      if(enabled) {
+        this.name = this.wms_config.title + ' ' + getUniqueDomId();
       }
     }
 
