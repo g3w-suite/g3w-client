@@ -13,7 +13,7 @@
     <div class = "modal-dialog" style="min-width: 80vw;">
       <div class = "modal-content">
 
-        <div id = "g3w-change-map-menu" class="modal-body" style="height: 80vh;">
+        <div id class="modal-body" style="height: 80vh;">
 
           <!-- CHILD NODE -->
           <div
@@ -85,6 +85,15 @@
             v-t   = "`no_other_${current}`">
           </h3>
 
+        </div>
+
+        <div class = "modal-footer" style="position: relative; background: #fff;">
+          <button
+            v-t          = "'close'"
+            type         = "button"
+            class        = "btn btn-default"
+            data-dismiss = "modal"
+          ></button>
         </div>
 
       </div>
@@ -363,8 +372,8 @@ export default {
     grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
     grid-gap: 1em;
     overflow-y: auto;
-
   }
+
   .menu-item {
     margin-bottom: 20px;
     margin-top:20px;
