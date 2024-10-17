@@ -69,8 +69,7 @@
                   required
                 />
                 <datalist id="wms_urls">
-                  <option v-for = "wms in adminwmsurls" :key  = "wms.url" :value="wms.url">{{ wms.id }}</option>
-                  <option v-for = "wms in localwmsurls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
+                  <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
                 </datalist>
               </div>
 
@@ -100,35 +99,9 @@
 
             <div v-if="!wms_panel" class="form-group">
 
-              <!-- LIST OF WMS LAYERS (STORED ON SERVER) -->
-              <div
-                v-for = "wms in adminwmsurls"
-                :key  = "wms.url"
-                style = "
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  border-bottom: 1px solid #ccc;
-                  padding-bottom: 3px;
-                "
-              >
-
-                <!-- WMS ID -->
-                <span style = "flex-grow: 1;">{{ wms.id }}</span>
-
-                <!-- ADD NEW WMS LAYER -->
-                <b
-                  @click.stop            = "showWmsLayersPanel(wms.id)"
-                  style                  = "color: var(--skin-color); padding: 5px; font-size: 1.3em;"
-                  v-t-tooltip:top.create = "'connect_to_wms'"
-                  :class                 = "$fa('eye')"
-                ></b>
-
-              </div>
-
               <!-- LIST OF WMS LAYERS (STORED ON LOCAL STORAGE) -->
               <div
-                v-for = "wms in localwmsurls"
+                v-for = "wms in wms_urls"
                 :key  = "wms.id"
                 style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;"
               >
@@ -365,8 +338,8 @@
           </div>
 
           <!-- ERROR NOTICE -->
-          <div v-if      = "status.error" class = "g3w-add-wms-url-message g3w-wmsurl-error">{{ $t('server_error') }}</div>
-          <div v-else-if = "status.added" class = "g3w-add-wms-url-message g3w-wmsurl-already-added">&#x26A0;&#xFE0F; {{ $t('sidebar.wms.url_already_added') }}</div>
+          <div v-if      = "error" class = "g3w-add-wms-url-message g3w-wmsurl-error">{{ $t('server_error') }}</div>
+          <div v-else-if = "added" class = "g3w-add-wms-url-message g3w-wmsurl-already-added">&#x26A0;&#xFE0F; {{ $t('sidebar.wms.url_already_added') }}</div>
 
           <button
             v-t          = "'close'"
@@ -431,14 +404,11 @@ export default {
     return {
       layer_type:         undefined,
       wms_panel:          false,
-      adminwmsurls:       this.$options.wmsurls || ApplicationState.project.wmsurls || [],
-      localwmsurls:       [], // array of object {id, url}
+      wms_urls:           [], // array of object {id, url}
       url:                null,
       id:                 null,
-      status:             { error: false, added: false, },
       vectorLayer:        null,
       options:            EPSG,
-      error_message:      '',
       position:           'top', // layer position on map
       persistent:         false,
       loading:            false, // loading reactive status
@@ -486,6 +456,8 @@ export default {
       projections:    [],         // projections
       epsg:           null,       // choose epsg project
       added:          false,      // added layer (Boolean)
+      error:          false,
+      error_message:  '',
     }
   },
 
@@ -675,8 +647,8 @@ export default {
      */
     async addwmsurl() {
       this.loading           = true;
-      const found  = this.localwmsurls.find(l => l.url == wms.url || l.id == wms.id);
-      const status = { error: false, added: !!found };
+      const found  = this.wms_urls.find(l => l.url == wms.url || l.id == wms.id);
+      let error = false;
       // when url is not yet added
       if (!found) {
         try {
@@ -686,19 +658,19 @@ export default {
             throw 'invalid response';
           }
           const data = this.getLocalWMSData();
-          this.localwmsurls.push(wms);
-          data.urls = this.localwmsurls;
+          this.wms_urls.push(wms);
+          data.urls = this.wms_urls;
           this.updateLocalWMSData(data);
           response.wmsurl = wms.url;
           this._showWmsLayersPanel(response);
         } catch(e) {
           console.warn(e);
-          status.error = true;
+          error = true;
         }
       }
-      this.status.error      = status.error;
-      this.status.added      = status.added;
-      this.loading           = false;
+      this.error   = error;
+      this.added   = !!found;
+      this.loading = false;
     },
 
     /**
@@ -707,9 +679,9 @@ export default {
      * @param id
      */
     deleteWmsUrl(id) {
-      this.localwmsurls       = this.localwmsurls.filter(l => id !== l.id);
-      const data              = this.getLocalWMSData();
-      data.urls               = this.localwmsurls;
+      this.wms_urls = this.wms_urls.filter(l => id !== l.id);
+      const data    = this.getLocalWMSData();
+      data.urls     = this.wms_urls;
       this.updateLocalWMSData(data);
     },
 
@@ -911,11 +883,10 @@ export default {
         }
       } catch(e) {
         console.warn(e);
-      } finally {
-        this.status.error = error;
-        this.status.added = added;
-        this.loading      = false;
-      }
+      } 
+      this.error = error;
+      this.added = added;
+      this.loading      = false;
     },
 
     /**
@@ -1082,7 +1053,7 @@ export default {
       Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
     });
 
-    this.localwmsurls = data.urls;
+    this.wms_urls = data.urls;
   },
 
   beforeDestroy() {
