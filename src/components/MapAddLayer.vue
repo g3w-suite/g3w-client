@@ -66,6 +66,7 @@
                   placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
                   type         = "url"
                   list         = "wms_urls"
+                  required
                 />
                 <datalist id="wms_urls">
                   <option v-for = "wms in adminwmsurls" :key  = "wms.url" :value="wms.url">{{ wms.id }}</option>
@@ -83,13 +84,14 @@
                   id           = "add_custom_name_url_wms_input"
                   v-model.trim = "id"
                   class        = "form-control"
+                  required
                 />
               </div>
 
               <!-- SUBMIT BUTTON -->
               <button
                 v-if                = "!wms_panel"
-                v-disabled          = "!inputswmsurlvalid"
+                v-disabled          = "!(id || '').trim() || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
                 @click.prevent.stop = "addwmsurl"
                 class               = "btn btn-block btn-success"
               ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
@@ -505,23 +507,6 @@ export default {
      */
     add() {
       return this.layer.data || this.csv.valid;
-    },
-
-    /**
-     * @returns {false|*|boolean}
-     */
-    inputswmsurlvalid() {
-      return (
-        (
-          this.url !== null &&
-          this.url.trim() &&
-          this.url && this.url.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g) // whether is a valid url
-        ) &&
-        (
-          this.id !== null &&
-          this.id.trim()
-        )
-      )
     },
 
   },
