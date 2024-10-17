@@ -472,12 +472,9 @@ export default {
     cancel: "Abbrechen",
     update: "Aktualisieren",
     close: "Schließen",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Diese Meldung nicht mehr anzeigen",
     enlange_reduce: "Vergrößern / Verkleinern",
-    reset_default: "Standardgröße",
     add: "Hinzufügen",
     exitnosave: "Beenden ohne Speichern",
     annul: "Abbrechen",

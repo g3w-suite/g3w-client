@@ -735,7 +735,7 @@ export default new (class GUI extends G3WObject {
   /**
    * Toggle set full screen modal
    */
-  showFullModal({element = "#modal-full-screen", show = true} = {}) {
+  showFullModal({element = "#modal-fullscreen", show = true} = {}) {
     $(element).modal(show ? 'show' : 'hide')
   }
 
@@ -846,14 +846,6 @@ export default new (class GUI extends G3WObject {
     const state = ApplicationState.viewport;
     const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
     rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    this._layoutComponents();
-  }
-
-  resetToDefaultContentPercentage() {
-    const state = ApplicationState.viewport;
-    const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
-    rightpanel[`${state.split === 'h' ? 'width' : 'height'}`]     = rightpanel[`${state.split === 'h' ? 'width' : 'height'}_default`];
-    rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
   }
 

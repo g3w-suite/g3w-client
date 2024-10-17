@@ -412,8 +412,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
   .sidebar-open .content-wrapper        { transform: translate(300px,0); }
 }
 @media (min-width: 768px) {
-  .container-fluid  > .navbar-collapse,
-  .container-fluid > .navbar-header,
   .container > .navbar-collapse,
   .container > .navbar-header           { margin-right: 0; margin-left: -15px; }
 }

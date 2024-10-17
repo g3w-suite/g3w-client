@@ -478,12 +478,9 @@ export default {
     cancel: "Peruuta",
     update: "Päivittää",
     close: "Sulje",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Älä näytä viestiä uudelleen",
     enlange_reduce: "Suurenna / Pienennä",
-    reset_default: "Oletuskoko",
     add: "Lisää",
     exitnosave: "Poistu tallentamatta",
     annul: "Peruuta",

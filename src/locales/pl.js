@@ -466,7 +466,6 @@ export default {
     close: "Zamknąć",
     dont_show_again: "Nie pokazuj ponownie",
     enlange_reduce: "Powiększ / zmniejsz",
-    reset_default: "Rozmiar domyślny",
     add: "Dodać",
     exitnosave: "Wyjdź bez zapisu",
     annul: "Anulować",

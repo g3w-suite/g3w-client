@@ -27,203 +27,200 @@
         role  = "navigation"
       >
 
-        <div class="container-fluid">
+        <div class="navbar-header">
 
-          <div class="navbar-header">
-
-            <!-- LOGO -->
-            <a
-              v-if    = "logo_url"
-              :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
-              :target = "appconfig.header_logo_link ? '_blank' : ''"
-              style   = "padding: 4px; display: inline-block; height: 50px;"
-            >
-              <img style="height: 100%;" alt = "" :src = "logo_url" />
-            </a>
-
-            <!-- ELLIPSIS BUTTON (MAIN MENU) -->
-            <button
-              ref         = 'navbar_toggle'
-              type        = "button"
-              class       = "navbar-toggle"
-              data-toggle = "collapse"
-              data-target = "#main-navbar"
-              style       = "font-size: 1.3em;"
-            >
-              <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
-            </button>
-
-          </div>
-
-          <!-- TODO: add description -->
-          <div
-            ref   = "mainnavbar"
-            id    = "main-navbar"
-            class = "collapse navbar-collapse"
-            style = "overflow: hidden; margin: 0;"
+          <!-- LOGO -->
+          <a
+            v-if    = "logo_url"
+            :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
+            :target = "appconfig.header_logo_link ? '_blank' : ''"
+            style   = "padding: 4px; display: inline-block; height: 50px;"
           >
+            <img style="height: 100%;" alt = "" :src = "logo_url" />
+          </a>
 
-            <hgroup class  = "project_title">
-              <p class = "h2">{{ main_title }}</p>
-              <h1>{{ project_title }}</h1>
-            </hgroup>
-
-            <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px; text-align: center;">
-
-              <!-- CUSTOM LINKS -->
-              <li
-                v-for  = "item in custom_links"
-                :key   = "item.id"
-                :style = "{ order: item.position }"
-                :class = "`nav-${item.id}`"
-              >
-                <a
-                  :href          = "item.url || '#'"
-                  @click         = "oncCustomItemClick($event, item)"
-                  :target        = "item.target"
-                  data-placement = "bottom"
-                  data-toggle    = "tooltip"
-                  data-container = "body"
-                  v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
-                >
-                  <i v-if   = "item.icon" :class = "item.icon"></i>
-                  <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
-                </a>
-              </li>
-
-              <!-- ACCOUNT -->
-              <li
-                class = "nav-user dropdown"
-              >
-                <a
-                  href        = "#"
-                  class       = "dropdown-toggle"
-                  data-toggle = "dropdown"
-                >
-                  <i :class = "$fa('user')"></i>
-                  <span v-if = "user">{{ user.username }}</span>
-                  <span v-else v-t = "'sign_in'"></span>
-                  <i class="triangle"></i>
-                </a>
-
-                <ul class = "dropdown-menu">
-                  <!-- USER NAME -->
-                  <li v-if = "user" class = "user-header">
-                    👋
-                    <span v-if="!user.first_name && !user.last_name">{{ user.username }}</span>
-                    <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
-                  </li>
-
-                  <li class = "user-footer">
-                    
-                    <!-- LOGIN URL -->
-                    <a
-                      v-if         = "!user"
-                      :src         = "login_url"
-                      :data-toggle = "has_iframe_login ? 'modal'        : undefined"
-                      :data-target = "has_iframe_login ? '#modal-login' : undefined"
-                      class        = "nav-login btn btn-default btn-flat skin-color"
-                    >
-                      <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
-                    </a>
-
-                    <!-- ADMIN URL -->
-                    <a
-                      v-if  = "user && user.admin_url"
-                      :href = "user.admin_url"
-                      class = "nav-admin btn btn-default btn-flat skin-color"
-                    >
-                      <b>Admin</b><i :class="$fa('tool')"></i>
-                    </a>
-
-                    <!-- HOME URL -->
-                    <a
-                      v-if  = "urls.frontendurl"
-                      :href = "urls.frontendurl"
-                      class = "nav-home btn btn-default btn-flat skin-color"
-                    >
-                      <b v-t="'homepage'"></b><i :class="$fa('home')"></i>
-                    </a>
-
-                    <!-- LOGOUT URL -->
-                    <a
-                      v-if  = "user && user.logout_url"
-                      :href = "user.logout_url"
-                      class = "nav-logout btn btn-default btn-flat skin-color"
-                    >
-                      <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
-                    </a>
-
-                    <!-- SHARE URL -->
-                    <a
-                      href   = "#"
-                      @click = "showEmbedModal"
-                      class  = "nav-embedmap btn btn-default btn-flat skin-color"
-                    >
-                      <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
-                    </a>
-
-                    <!-- CHANGE MAP -->
-                    <a
-                      v-if   = "hasRelatedMaps"
-                      href   = "#"
-                      @click = "openChangeMapMenu"
-                      class  = "nav-changemap btn btn-default btn-flat"
-                    >
-                      <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
-                    </a>
-
-                    <!-- ADD LAYER -->
-                    <a
-                      v-if   = "'legend' !== activeTab"
-                      href   = "#"
-                      @click = "showaddLayerModal"
-                      class  = "nav-addlayer btn btn-default btn-flat"
-                    >
-                      <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
-                    </a>
-
-                    <!-- SIDEBAR MENU -->
-                    <a
-                      href   = "#"
-                      @click = "toggleSidebar"
-                      class  = "nav-sidebar btn btn-default btn-flat"
-                    >
-                      <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
-                    </a>
-                    
-                  </li>
-                </ul>
-              </li>
-
-              <!-- LANGUAGE SWITCHER -->
-              <li v-if = "languages" class="nav-lang">
-                <select
-                  v-select2          = "'language'"
-                  class              = "form-control"
-                  :templateSelection = "templateResultLanguages"
-                  :templateResult    = "templateResultLanguages"
-                  :dropdownAutoWidth = "true"
-                  :dropdownParent    = "dropdownParent"
-                  v-model            = "language"
-                  style              = "cursor:pointer; width: 130px;"
-                >
-                  <option
-                    v-for     = "lang in languages"
-                    :key      = "lang[0]"
-                    :value    = "lang[0]"
-                    :selected = "lang[0] === language && 'selected'"
-                  >
-                    {{ lang[1] }}
-                  </option>
-                </select>
-              </li>
-
-            </ul>
-
-          </div>
+          <!-- ELLIPSIS BUTTON (MAIN MENU) -->
+          <button
+            ref         = 'navbar_toggle'
+            type        = "button"
+            class       = "navbar-toggle"
+            data-toggle = "collapse"
+            data-target = "#main-navbar"
+            style       = "font-size: 1.3em;"
+          >
+            <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
+          </button>
 
         </div>
+
+        <!-- TODO: add description -->
+        <div
+          ref   = "mainnavbar"
+          id    = "main-navbar"
+          class = "collapse navbar-collapse"
+          style = "overflow: hidden; margin: 0;"
+        >
+
+          <hgroup class  = "project_title">
+            <p class = "h2">{{ main_title }}</p>
+            <h1>{{ project_title }}</h1>
+          </hgroup>
+
+          <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px; text-align: center;">
+
+            <!-- CUSTOM LINKS -->
+            <li
+              v-for  = "item in custom_links"
+              :key   = "item.id"
+              :style = "{ order: item.position }"
+              :class = "`nav-${item.id}`"
+            >
+              <a
+                :href          = "item.url || '#'"
+                @click         = "oncCustomItemClick($event, item)"
+                :target        = "item.target"
+                data-placement = "bottom"
+                data-toggle    = "tooltip"
+                data-container = "body"
+                v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
+              >
+                <i v-if   = "item.icon" :class = "item.icon"></i>
+                <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
+              </a>
+            </li>
+
+            <!-- ACCOUNT -->
+            <li
+              class = "nav-user dropdown"
+            >
+              <a
+                href        = "#"
+                class       = "dropdown-toggle"
+                data-toggle = "dropdown"
+              >
+                <i :class = "$fa('user')"></i>
+                <span v-if = "user">{{ user.username }}</span>
+                <span v-else v-t = "'sign_in'"></span>
+                <i class="triangle"></i>
+              </a>
+
+              <ul class = "dropdown-menu">
+                <!-- USER NAME -->
+                <li v-if = "user" class = "user-header">
+                  👋
+                  <span v-if="!user.first_name && !user.last_name">{{ user.username }}</span>
+                  <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
+                </li>
+
+                <li class = "user-footer">
+                  
+                  <!-- LOGIN URL -->
+                  <a
+                    v-if         = "!user"
+                    :src         = "login_url"
+                    :data-toggle = "has_iframe_login ? 'modal'        : undefined"
+                    :data-target = "has_iframe_login ? '#modal-login' : undefined"
+                    class        = "nav-login btn btn-default btn-flat skin-color"
+                  >
+                    <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
+                  </a>
+
+                  <!-- ADMIN URL -->
+                  <a
+                    v-if  = "user && user.admin_url"
+                    :href = "user.admin_url"
+                    class = "nav-admin btn btn-default btn-flat skin-color"
+                  >
+                    <b>Admin</b><i :class="$fa('tool')"></i>
+                  </a>
+
+                  <!-- HOME URL -->
+                  <a
+                    v-if  = "urls.frontendurl"
+                    :href = "urls.frontendurl"
+                    class = "nav-home btn btn-default btn-flat skin-color"
+                  >
+                    <b v-t="'homepage'"></b><i :class="$fa('home')"></i>
+                  </a>
+
+                  <!-- LOGOUT URL -->
+                  <a
+                    v-if  = "user && user.logout_url"
+                    :href = "user.logout_url"
+                    class = "nav-logout btn btn-default btn-flat skin-color"
+                  >
+                    <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
+                  </a>
+
+                  <!-- SHARE URL -->
+                  <a
+                    href   = "#"
+                    @click = "showEmbedModal"
+                    class  = "nav-embedmap btn btn-default btn-flat skin-color"
+                  >
+                    <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
+                  </a>
+
+                  <!-- CHANGE MAP -->
+                  <a
+                    v-if   = "hasRelatedMaps"
+                    href   = "#"
+                    @click = "openChangeMapMenu"
+                    class  = "nav-changemap btn btn-default btn-flat"
+                  >
+                    <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
+                  </a>
+
+                  <!-- ADD LAYER -->
+                  <a
+                    v-if   = "'legend' !== activeTab"
+                    href   = "#"
+                    @click = "showaddLayerModal"
+                    class  = "nav-addlayer btn btn-default btn-flat"
+                  >
+                    <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
+                  </a>
+
+                  <!-- SIDEBAR MENU -->
+                  <a
+                    href   = "#"
+                    @click = "toggleSidebar"
+                    class  = "nav-sidebar btn btn-default btn-flat"
+                  >
+                    <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
+                  </a>
+                  
+                </li>
+              </ul>
+            </li>
+
+            <!-- LANGUAGE SWITCHER -->
+            <li v-if = "languages" class="nav-lang">
+              <select
+                v-select2          = "'language'"
+                class              = "form-control"
+                :templateSelection = "templateResultLanguages"
+                :templateResult    = "templateResultLanguages"
+                :dropdownAutoWidth = "true"
+                :dropdownParent    = "dropdownParent"
+                v-model            = "language"
+                style              = "cursor:pointer; width: 130px;"
+              >
+                <option
+                  v-for     = "lang in languages"
+                  :key      = "lang[0]"
+                  :value    = "lang[0]"
+                  :selected = "lang[0] === language && 'selected'"
+                >
+                  {{ lang[1] }}
+                </option>
+              </select>
+            </li>
+
+          </ul>
+
+        </div>
+
       </nav>
     </header>
 
@@ -499,12 +496,6 @@
                 class                     = "action-button skin-color-dark"
                 @click                    = "resizeFull"
               ></i>
-              <i
-                :class                    = "$fa('resize-default')"
-                v-t-tooltip:left.create   = "'reset_default'"
-                class                     = "action-button skin-color-dark"
-                @click                    = "resizeDefault"
-              ></i>
             </div>
             <span
               v-if = "state.content.closable && state.content.aside"
@@ -523,55 +514,59 @@
 
     <catalog-context-menu />
 
-    <!-- MODAL (FULL SCREEN) -->
-    <div
-      class           = "modal fade modal-fullscreen force-fullscreen"
-      id              = "modal-full-screen"
-      tabindex        = "-1"
-      role            = "dialog"
-      data-backdrop   = "static"
-      data-keyboard   = "false"
-      aria-labelledby = "modal-full-screen"
-      aria-hidden     = "true"
-    ></div>
+    <Teleport to="body">
+      <!-- MODAL (FULL SCREEN) -->
+      <div
+        class           = "modal fade modal-fullscreen"
+        id              = "modal-fullscreen"
+        tabindex        = "-1"
+        role            = "dialog"
+        data-backdrop   = "static"
+        data-keyboard   = "false"
+        aria-labelledby = "modal-fullscreen"
+        aria-hidden     = "true"
+      ></div>
 
-    <!-- MODAL LOGIN -->
-    <div
-      v-if     = "!user && has_iframe_login"
-      id       = "modal-login"
-      class    = "modal fade"
-      tabindex = "-1"
-      role     = "document"
-    >
-      <div class = "modal-dialog" style = "height: 60%; width: 60%;">
-        <div class = "modal-content" style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
-          <button
-            type         = "button"
-            class        = "close"
-            data-dismiss = "modal"
-            style        = "position: absolute;inset: 0 0 auto auto;padding: 10px 15px;"
-          >&times;</button>
-          <span style="grid-area: iframe;">Loading..</span>
-          <iframe
-            loading = "lazy"
-            style   = "border: 0; width: 100%; height: 100%; grid-area: iframe;"
-            :src    = "login_url"
-            @load   = "onIframeLoaded"
-            ref     = "login_iframe"
-          ></iframe>
+      <!-- MODAL LOGIN -->
+      <div
+        v-if     = "!user && has_iframe_login"
+        id       = "modal-login"
+        class    = "modal fade"
+        tabindex = "-1"
+        role     = "document"
+      >
+        <div class = "modal-dialog" style = "height: 60%; width: 60%;">
+          <div class = "modal-content" style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
+            <button
+              type         = "button"
+              class        = "close"
+              data-dismiss = "modal"
+              style        = "position: absolute;inset: 0 0 auto auto;padding: 10px 15px;"
+            >&times;</button>
+            <span style="grid-area: iframe;">Loading..</span>
+            <iframe
+              loading = "lazy"
+              style   = "border: 0; width: 100%; height: 100%; grid-area: iframe;"
+              :src    = "login_url"
+              @load   = "onIframeLoaded"
+              ref     = "login_iframe"
+            ></iframe>
+          </div>
         </div>
       </div>
-    </div>
 
-    <map-add-layer />
-    <change-map />
-    <metadata-project />
+      <map-add-layer />
+      <change-map />
+      <metadata-project />
+
+    </Teleport>
 
   </div>
 </template>
 
 <script>
-import CookieLaw                 from 'vue-cookie-law';
+import CookieLaw          from 'vue-cookie-law';
+import Teleport           from 'vue2-teleport';
 
 import {
   LOCAL_ITEM_IDS,
@@ -630,7 +625,8 @@ export default {
     CatalogContextMenu,
     MapAddLayer,
     ChangeMap,
-    MetadataProject
+    MetadataProject,
+    Teleport,
   },
 
   computed: {
@@ -988,11 +984,6 @@ export default {
 
     resizeFull() {
       GUI.toggleFullViewContent();
-      GUI.emit('resize');
-    },
-
-    resizeDefault() {
-      GUI.resetToDefaultContentPercentage();
       GUI.emit('resize');
     },
 

@@ -29,8 +29,6 @@ import GUI                         from 'services/gui';
 
 // components
 import App                         from 'components/App.vue';
-import ImageComponent              from 'components/GlobalImage.vue';
-import GalleryImagesComponent      from 'components/GlobalGallery.vue';
 import BarLoader                   from 'components/GlobalBarLoader.vue';
 import Progressbar                 from 'components/GlobalProgressBar.vue';
 import HelpDiv                     from 'components/GlobalHelpDiv.vue';
@@ -64,8 +62,6 @@ const { addI18n, t, tPlugin } = require('g3w-i18n');
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
  */
-Vue.component(ImageComponent.name, ImageComponent);
-Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
 Vue.component(BarLoader.name, BarLoader);
 Vue.component(Progressbar.name, Progressbar);
 Vue.component(HelpDiv.name, HelpDiv);

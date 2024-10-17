@@ -36,7 +36,8 @@
     "vue": "2.6.12",
     "vue-color": "^2.8.1",
     "vue-cookie": "^1.1.4",
-    "vue-cookie-law": "^1.13.3"
+    "vue-cookie-law": "^1.13.3",
+    "vue2-teleport": "^1.1.4"
   },
   "overrides": {
     "graceful-fs": "^4.2.10"

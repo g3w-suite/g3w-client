@@ -486,12 +486,9 @@ export default {
     cancel: "Cancel",
     update: "Update",
     close: "Close",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Don't show again",
     enlange_reduce: "Enlarge / Reduce",
-    reset_default: "Default size",
     add: "Add",
     exitnosave: "Exit without save",
     annul: "Cancel",

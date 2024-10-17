@@ -13,17 +13,17 @@
     <div class = "modal-dialog" style="min-width: 80vw;">
       <div class = "modal-content">
 
-        <div id = "project-catalog" class="modal-body" style="min-height: 65vh; max-height: 80vh;">
+        <!-- METADATA TABS -->
+        <ul role = "tablist" class = "modal-header nav nav-tabs">
+          <li v-for="tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
+            <a data-toggle="tab" :href="'#metadata_' + tab" :class="'metadata-item-tab '+ tab">
+              <i class="action-button" :class="$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden="true"></i>
+              <b v-t = "'sdk.metadata.groups.'+ tab +'.title'"></b>
+            </a>
+          </li>
+        </ul>
 
-          <!-- METADATA TABS -->
-          <ul role = "tablist" class = "nav nav-tabs metadata-nav-bar">
-            <li v-for="tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
-              <a data-toggle="tab" :href="'#metadata_' + tab" :class="'metadata-item-tab '+ tab">
-                <i class="action-button" :class="$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden="true"></i>
-                <b v-t = "'sdk.metadata.groups.'+ tab +'.title'"></b>
-              </a>
-            </li>
-          </ul>
+        <div id = "project-catalog" class="modal-body" style="min-height: 65vh; max-height: 70vh;">
 
           <div class = "tab-content">
 
@@ -370,31 +370,29 @@
     background: transparent;
   }
 
-  .metadata-nav-bar {
+  .modal-header.nav {
     display: flex;
+    gap: 1px;
     justify-content: space-between;
   }
 
-  .metadata-nav-bar li {
+  .modal-header.nav li {
     background-color: #e4e4e4;
-    border-radius: 3px;
-    padding: 0;
     width: 100%;
-    margin:1px;
   }
 
-  .metadata-nav-bar li.active {
+  .modal-header.nav li.active {
     background-color: #FFF;
   }
 
-  .metadata-nav-bar li.active a.metadata-item-tab {
+  .modal-header.nav li.active a.metadata-item-tab {
     border-bottom-color: #222d32 !important;
     border-bottom-width: 4px;
     background-color: transparent !important;
     color: #2c3b41 !important;
   }
 
-  .metadata-nav-bar li a.metadata-item-tab {
+  .modal-header.nav li a.metadata-item-tab {
     height: 100%;
     margin:0;
     font-size: 1.1em;
@@ -404,11 +402,11 @@
     border-bottom: 4px solid #e2e2e2;
   }
 
-  .metadata-nav-bar li a {
+  .modal-header.nav li a {
     text-align: center;
   }
 
-  .metadata-nav-bar li a i {
+  .modal-header.nav li a i {
     margin-right: 5px;
   }
 
@@ -552,7 +550,7 @@
     background: var(--skin-color);
   }
 
-  .metadata-nav-bar .action-button:hover {
+  .modal-header.nav .action-button:hover {
     background-color: transparent;
   }
 

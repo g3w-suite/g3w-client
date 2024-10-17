@@ -478,12 +478,9 @@ export default {
     cancel: "Anulează",
     update: "Actualizați",
     close: "Închide",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Nu mai afișa mesajul",
     enlange_reduce: "Mărește / Micșorează",
-    reset_default: "Mărimea implicită",
     add: "Adaugă",
     exitnosave: "Ieșire fără salvare",
     annul: "Anulează",

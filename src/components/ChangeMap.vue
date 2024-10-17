@@ -87,15 +87,6 @@
 
         </div>
 
-        <div class = "modal-footer" style="position: relative; background: #fff;">
-          <button
-            v-t          = "'close'"
-            type         = "button"
-            class        = "btn btn-default"
-            data-dismiss = "modal"
-          ></button>
-        </div>
-
       </div>
     </div>
   </div>
