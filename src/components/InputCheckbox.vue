@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import { widgetMixins }   from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 const Input              = require('gui/inputs/input');
@@ -31,15 +30,37 @@ export default {
   /** @since 3.8.6 */
   name:'input-checkbox',
 
-  mixins: [Input, widgetMixins],
+  mixins: [Input],
+
   data() {
     return {
-      value: null,
-      label: null,
-      id:    getUniqueDomId() // new id
+      value:   null,
+      label:   null,
+      id:      getUniqueDomId(), // new id
+      /** @since 3.11.0 */
+      changed: false,
     }
   },
+
+  watch: {
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/widget.js@3.10.4
+     * 
+     * @since 3.11.0
+     */
+    'state.value'(value) {
+      if (this.changed) {
+        this.changed = false
+      } else {
+        this.stateValueChanged(value);
+      }
+    },
+
+  },
+
   methods: {
+
     /**
      * @see https://github.com/g3w-suite/g3w-admin/issues/958
      * 
@@ -48,22 +69,45 @@ export default {
     getValuesItem(checked = false) {
       return (this.service.state.input.options.values.find(v => !!checked === v.checked) || {});
     },
+
+    /**
+     * ORIGINAL SOURCE: src/mixins/widget.js@3.10.4
+     *
+     * @since 3.11.0
+     */
+    convertValueToChecked() {
+      if ([null, undefined].includes(this.service.state.value)) {
+        return false;
+      }
+      let option = this.service.state.input.options.values.find(v => this.service.state.value == v.value);
+      if (undefined === option) {
+        option = this.service.state.input.options.values.find(v => false === v.checked);
+        this.service.state.value = option.value;
+      }
+      return option.checked;
+    },
+
     changeCheckBox() {
       const { value, label } = this.getValuesItem(this.value);
       this.label             = label;
       this.state.value       = value;
-      this.widgetChanged();
+      this.changed = true;
+      this.change();
     },
+
     stateValueChanged() {
-      this.value             = this.service.convertValueToChecked();
+      this.value             = this.convertValueToChecked();
       const { value, label } = this.getValuesItem(this.value);
       this.label             = label;
       this.state.value       = value;
-    }
+    },
+
   },
+
   mounted() {
     //Need to set label and value
     this.stateValueChanged();
-  }
+  },
+
 };
 </script>

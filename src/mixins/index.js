@@ -10,7 +10,6 @@ import resizeMixin       from 'mixins/resize';
 import selectMixin       from 'mixins/select';
 import select2Mixin      from 'mixins/select2';
 import formInputsMixins  from 'mixins/form-inputs';
-import widgetMixins      from 'mixins/widget';
 import baseInputMixin    from 'mixins/base-input';
 
 const mixins = {

@@ -6,14 +6,4 @@ module.exports = class CheckBoxService extends Service {
     };
     super(opts);
   }
-
-  convertValueToChecked() {
-    if ([null, undefined].includes(this.state.value)) { return false }
-    let option = this.state.input.options.values.find(v => this.state.value == v.value);
-    if (undefined === option) {
-      option = this.state.input.options.values.find(v => false === v.checked);
-      this.state.value = option.value;
-    }
-    return option.checked;
-  };
 }
