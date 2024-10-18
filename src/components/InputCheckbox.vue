@@ -40,15 +40,23 @@ export default {
     }
   },
   methods: {
+    /**
+     * @see https://github.com/g3w-suite/g3w-admin/issues/958
+     * 
+     * @since 3.11.0
+     */
+    getValuesItem(checked = false) {
+      return (this.service.state.input.options.values.find(v => !!checked === v.checked) || {});
+    },
     changeCheckBox() {
-      const { value, label } = this.service.getValuesItem(this.value);
+      const { value, label } = this.getValuesItem(this.value);
       this.label             = label;
       this.state.value       = value;
       this.widgetChanged();
     },
     stateValueChanged() {
       this.value             = this.service.convertValueToChecked();
-      const { value, label } = this.service.getValuesItem(this.value);
+      const { value, label } = this.getValuesItem(this.value);
       this.label             = label;
       this.state.value       = value;
     }
