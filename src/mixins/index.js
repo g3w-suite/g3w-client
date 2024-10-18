@@ -21,7 +21,6 @@ const mixins = {
   selectMixin,
   select2Mixin,
   formInputsMixins,
-  widgetMixins,
   baseInputMixin,
 };
 export { fieldsMixin };
@@ -31,7 +30,6 @@ export { resizeMixin };
 export { selectMixin };
 export { select2Mixin };
 export { formInputsMixins };
-export { widgetMixins };
 export { baseInputMixin };
 export { autocompleteMixin };
 
