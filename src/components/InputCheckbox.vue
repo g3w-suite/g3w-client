@@ -5,7 +5,7 @@
 
 <template>
   <baseinput :state = "state">
-    <div v-disabled = "!editable" style = "height: 20px; margin-top:8px;" slot="body">
+    <div v-disabled = "!editable" style = "height: 20px; margin-top:8px;" slot = "body">
       <input
         @change   = "changeCheckBox"
         :tabIndex = "tabIndex"
@@ -40,21 +40,17 @@ export default {
     }
   },
   methods: {
-    setLabel() {
-      // convert label
-      this.label = this.service.convertCheckedToValue(this.value);
-    },
-    setValue() {
-      this.value = this.service.convertValueToChecked();
-    },
     changeCheckBox() {
-      // convert label
-      this.setLabel();
+      const { value, label } = this.service.getValuesItem(this.value);
+      this.label             = label;
+      this.state.value       = value;
       this.widgetChanged();
     },
     stateValueChanged() {
-      this.setValue();
-      this.setLabel();
+      this.value             = this.service.convertValueToChecked();
+      const { value, label } = this.service.getValuesItem(this.value);
+      this.label             = label;
+      this.state.value       = value;
     }
   },
   mounted() {
