@@ -10,11 +10,6 @@
     v-disabled = "app.gui.app.disabled"
   >
 
-    <!-- COOKIE BANNER -->
-    <cookie-law theme = "dark-lime" :buttonText = "cookie_law_buttonText">
-      <div slot="message" v-t="'cookie_law.message'"></div>
-    </cookie-law>
-
     <header
       v-if  = "!isIframe"
       class = "main-header"
@@ -25,40 +20,37 @@
         ref   = "navbar"
         class = "navbar"
         role  = "navigation"
+        style = "display: flex;justify-content: start;"
       >
 
-        <div class="navbar-header">
+        <!-- LOGO -->
+        <a
+          v-if    = "logo_url"
+          :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
+          :target = "appconfig.header_logo_link ? '_blank' : ''"
+          style   = "padding: 4px; display: inline-block; height: 50px;"
+        >
+          <img style="height: 100%;" alt = "" :src = "logo_url" />
+        </a>
 
-          <!-- LOGO -->
-          <a
-            v-if    = "logo_url"
-            :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
-            :target = "appconfig.header_logo_link ? '_blank' : ''"
-            style   = "padding: 4px; display: inline-block; height: 50px;"
-          >
-            <img style="height: 100%;" alt = "" :src = "logo_url" />
-          </a>
+        <!-- TOGGLE BUTTON (mobile menu) -->
+        <button
+          ref         = 'navbar_toggle'
+          type        = "button"
+          class       = "navbar-toggle"
+          data-toggle = "collapse"
+          data-target = "#main-navbar"
+          style       = "font-size: 1.3em; position: absolute; z-index: 101; right: 0; padding: 7px;"
+        >
+          <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
+        </button>
 
-          <!-- ELLIPSIS BUTTON (MAIN MENU) -->
-          <button
-            ref         = 'navbar_toggle'
-            type        = "button"
-            class       = "navbar-toggle"
-            data-toggle = "collapse"
-            data-target = "#main-navbar"
-            style       = "font-size: 1.3em;"
-          >
-            <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
-          </button>
-
-        </div>
-
-        <!-- TODO: add description -->
+        <!-- HEADER LINKS -->
         <div
           ref   = "mainnavbar"
           id    = "main-navbar"
           class = "collapse navbar-collapse"
-          style = "overflow: hidden; margin: 0;"
+          style = "overflow: hidden; margin: 0; width: 100%; max-height: 50px;"
         >
 
           <hgroup class  = "project_title">
@@ -224,8 +216,7 @@
       </nav>
     </header>
 
-    <!-- ORIGINAL SOURCE: src/components/Sidebar.vue@v3.10.1 -->
-    <!-- Left side column. contains the logo and sidebar -->
+    <!-- SIDEBAR MENU -->
     <aside>
       <div
         class  = "main-sidebar"
@@ -314,7 +305,8 @@
       </ul>
 
       </div>
-      <!-- TOGGLE BUTTON (desktop only) -->
+
+      <!-- TOGGLE BUTTON (sidebar menu) -->
       <a
         href               = "#"
         class              = "sidebar-aside-toggle"
@@ -328,11 +320,10 @@
 
     </aside>
 
-    <!-- ORIGINAL SOURCE: src/components/Viewport.vue@v3.10.1 -->
-    <!-- Content Wrapper. Contains page content -->
+    <!-- MAIN (content) -->
     <div
       class  = "content-wrapper"
-      :style = "{paddingTop: isIframe ? 0 : null}"
+      :style = "{ paddingTop: isIframe ? 0 : null }"
     >
       <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
         <user-message
@@ -513,6 +504,11 @@
     </div>
 
     <catalog-context-menu />
+
+    <!-- COOKIE BANNER -->
+    <cookie-law theme = "dark-lime" :buttonText = "cookie_law_buttonText">
+      <div slot="message" v-t="'cookie_law.message'"></div>
+    </cookie-law>
 
     <Teleport to="body">
       <!-- MODAL (FULL SCREEN) -->
@@ -1104,7 +1100,7 @@ export default {
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
-      $(".main-sidebar")    .css('height', $(window).height() - $(".navbar-header").height());
+      $(".main-sidebar")    .css('height', $(window).height() - $("header .navbar").height());
       $('.g3w-sidebarpanel').css('height', $(window).height() - $("#main-navbar").height());
     };
 
@@ -1216,6 +1212,7 @@ export default {
 
   @media (max-width: 767px) {
     .navbar-nav                           { flex-direction: column; }
+    .user-footer .btn-default             { padding: 10px; }
     .user-footer                          { background-color: transparent; border: none; }
     .nav-user > ul                        { display: block; position: static; float:none; border: none; background-color: transparent; }
     .nav-user .btn.skin-color             { color: #fff !important; }

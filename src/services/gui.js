@@ -33,7 +33,7 @@ function setViewSizes() {
   const width = main_sidebar.length && main_sidebar[0].getBoundingClientRect().width;
   const sideBarSpace   = width + offset;
   const viewportWidth = $('#app')[0].getBoundingClientRect().width - sideBarSpace;
-  const viewportHeight = $(document).innerHeight() - $('.navbar-header').innerHeight();
+  const viewportHeight = $(document).innerHeight() - $('header .navbar').innerHeight();
   // assign all width and height of the view to primary view (map)
   let primaryWidth;
   let primaryHeight;
