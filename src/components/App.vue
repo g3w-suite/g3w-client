@@ -10,216 +10,195 @@
     v-disabled = "app.gui.app.disabled"
   >
 
-    <header
+    <!-- NAVBAR TOP (MAIN MENU) -->
+    <nav
       v-if  = "!isIframe"
-      class = "main-header"
+      ref   = "navbar"
+      class = "main-header navbar no-print"
+      role  = "navigation"
+      style = "display: flex;justify-content: start; height: 50px;"
     >
 
-      <!-- NAVBAR TOP (MAIN MENU) -->
-      <nav
-        ref   = "navbar"
-        class = "navbar"
-        role  = "navigation"
-        style = "display: flex;justify-content: start;"
+      <!-- LOGO -->
+      <a
+        v-if    = "logo_url"
+        :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
+        :target = "appconfig.header_logo_link ? '_blank' : ''"
+        style   = "padding: 4px; display: inline-block; height: 50px;"
       >
+        <img style="height: 100%;" alt = "" :src = "logo_url" />
+      </a>
 
-        <!-- LOGO -->
-        <a
-          v-if    = "logo_url"
-          :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
-          :target = "appconfig.header_logo_link ? '_blank' : ''"
-          style   = "padding: 4px; display: inline-block; height: 50px;"
+      <input id="menu-toggler" ref="menu-toggler" type="checkbox" autocomplete="off" hidden="">
+
+      <label for="menu-toggler" class="navbar-toggler" hidden="">
+        <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
+      </label>
+
+      <hgroup class  = "project_title">
+        <p class = "h2">{{ main_title }}</p>
+        <h1>{{ project_title }}</h1>
+      </hgroup>
+
+      <ul class="nav-links" style = "display: flex; text-align: center;  white-space: nowrap; list-style: none; padding: 0; margin: 0;">
+
+        <!-- CUSTOM LINKS -->
+        <li
+          v-for  = "item in custom_links"
+          :key   = "item.id"
+          :style = "{ order: item.position }"
+          :class = "`nav-${item.id}`"
         >
-          <img style="height: 100%;" alt = "" :src = "logo_url" />
-        </a>
+          <a
+            :href          = "item.url || '#'"
+            @click         = "oncCustomItemClick($event, item)"
+            :target        = "item.target"
+            data-placement = "bottom"
+            data-toggle    = "tooltip"
+            data-container = "body"
+            v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
+          >
+            <i v-if   = "item.icon" :class = "item.icon"></i>
+            <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
+          </a>
+        </li>
 
-        <!-- TOGGLE BUTTON (mobile menu) -->
-        <button
-          ref         = 'navbar_toggle'
-          type        = "button"
-          class       = "navbar-toggle"
-          data-toggle = "collapse"
-          data-target = "#main-navbar"
-          style       = "font-size: 1.3em; position: absolute; z-index: 101; right: 0; padding: 7px;"
+        <!-- ACCOUNT -->
+        <li
+          class = "nav-user dropdown"
         >
-          <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
-        </button>
+          <a
+            href        = "#"
+            class       = "dropdown-toggle"
+            data-toggle = "dropdown"
+          >
+            <i :class = "$fa('user')"></i>
+            <span v-if = "user">{{ user.username }}</span>
+            <span v-else v-t = "'sign_in'"></span>
+            <i class="triangle"></i>
+          </a>
 
-        <!-- HEADER LINKS -->
-        <div
-          ref   = "mainnavbar"
-          id    = "main-navbar"
-          class = "collapse navbar-collapse"
-          style = "overflow: hidden; margin: 0; width: 100%; max-height: 50px;"
-        >
+          <ul class = "dropdown-menu">
+            <!-- USER NAME -->
+            <li v-if = "user" class = "user-header">
+              👋
+              <span v-if="!user.first_name && !user.last_name">{{ user.username }}</span>
+              <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
+            </li>
 
-          <hgroup class  = "project_title">
-            <p class = "h2">{{ main_title }}</p>
-            <h1>{{ project_title }}</h1>
-          </hgroup>
-
-          <ul class = "nav navbar-nav navbar-right" style = "display: flex; padding-right: 10px; text-align: center;">
-
-            <!-- CUSTOM LINKS -->
-            <li
-              v-for  = "item in custom_links"
-              :key   = "item.id"
-              :style = "{ order: item.position }"
-              :class = "`nav-${item.id}`"
-            >
+            <li class = "user-footer">
+              
+              <!-- LOGIN URL -->
               <a
-                :href          = "item.url || '#'"
-                @click         = "oncCustomItemClick($event, item)"
-                :target        = "item.target"
-                data-placement = "bottom"
-                data-toggle    = "tooltip"
-                data-container = "body"
-                v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
+                v-if         = "!user"
+                :src         = "login_url"
+                :data-toggle = "has_iframe_login ? 'modal'        : undefined"
+                :data-target = "has_iframe_login ? '#modal-login' : undefined"
+                class        = "nav-login btn btn-default btn-flat skin-color"
               >
-                <i v-if   = "item.icon" :class = "item.icon"></i>
-                <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
+                <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
               </a>
-            </li>
 
-            <!-- ACCOUNT -->
-            <li
-              class = "nav-user dropdown"
-            >
+              <!-- ADMIN URL -->
               <a
-                href        = "#"
-                class       = "dropdown-toggle"
-                data-toggle = "dropdown"
+                v-if  = "user && user.admin_url"
+                :href = "user.admin_url"
+                class = "nav-admin btn btn-default btn-flat skin-color"
               >
-                <i :class = "$fa('user')"></i>
-                <span v-if = "user">{{ user.username }}</span>
-                <span v-else v-t = "'sign_in'"></span>
-                <i class="triangle"></i>
+                <b>Admin</b><i :class="$fa('tool')"></i>
               </a>
 
-              <ul class = "dropdown-menu">
-                <!-- USER NAME -->
-                <li v-if = "user" class = "user-header">
-                  👋
-                  <span v-if="!user.first_name && !user.last_name">{{ user.username }}</span>
-                  <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
-                </li>
-
-                <li class = "user-footer">
-                  
-                  <!-- LOGIN URL -->
-                  <a
-                    v-if         = "!user"
-                    :src         = "login_url"
-                    :data-toggle = "has_iframe_login ? 'modal'        : undefined"
-                    :data-target = "has_iframe_login ? '#modal-login' : undefined"
-                    class        = "nav-login btn btn-default btn-flat skin-color"
-                  >
-                    <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
-                  </a>
-
-                  <!-- ADMIN URL -->
-                  <a
-                    v-if  = "user && user.admin_url"
-                    :href = "user.admin_url"
-                    class = "nav-admin btn btn-default btn-flat skin-color"
-                  >
-                    <b>Admin</b><i :class="$fa('tool')"></i>
-                  </a>
-
-                  <!-- HOME URL -->
-                  <a
-                    v-if  = "urls.frontendurl"
-                    :href = "urls.frontendurl"
-                    class = "nav-home btn btn-default btn-flat skin-color"
-                  >
-                    <b v-t="'homepage'"></b><i :class="$fa('home')"></i>
-                  </a>
-
-                  <!-- LOGOUT URL -->
-                  <a
-                    v-if  = "user && user.logout_url"
-                    :href = "user.logout_url"
-                    class = "nav-logout btn btn-default btn-flat skin-color"
-                  >
-                    <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
-                  </a>
-
-                  <!-- SHARE URL -->
-                  <a
-                    href   = "#"
-                    @click = "showEmbedModal"
-                    class  = "nav-embedmap btn btn-default btn-flat skin-color"
-                  >
-                    <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
-                  </a>
-
-                  <!-- CHANGE MAP -->
-                  <a
-                    v-if   = "hasRelatedMaps"
-                    href   = "#"
-                    @click = "openChangeMapMenu"
-                    class  = "nav-changemap btn btn-default btn-flat"
-                  >
-                    <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
-                  </a>
-
-                  <!-- ADD LAYER -->
-                  <a
-                    v-if   = "'legend' !== activeTab"
-                    href   = "#"
-                    @click = "showaddLayerModal"
-                    class  = "nav-addlayer btn btn-default btn-flat"
-                  >
-                    <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
-                  </a>
-
-                  <!-- SIDEBAR MENU -->
-                  <a
-                    href   = "#"
-                    @click = "toggleSidebar"
-                    class  = "nav-sidebar btn btn-default btn-flat"
-                  >
-                    <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
-                  </a>
-                  
-                </li>
-              </ul>
-            </li>
-
-            <!-- LANGUAGE SWITCHER -->
-            <li v-if = "languages" class="nav-lang">
-              <select
-                v-select2          = "'language'"
-                class              = "form-control"
-                :templateSelection = "templateResultLanguages"
-                :templateResult    = "templateResultLanguages"
-                :dropdownAutoWidth = "true"
-                :dropdownParent    = "dropdownParent"
-                v-model            = "language"
-                style              = "cursor:pointer; width: 130px;"
+              <!-- HOME URL -->
+              <a
+                v-if  = "urls.frontendurl"
+                :href = "urls.frontendurl"
+                class = "nav-home btn btn-default btn-flat skin-color"
               >
-                <option
-                  v-for     = "lang in languages"
-                  :key      = "lang[0]"
-                  :value    = "lang[0]"
-                  :selected = "lang[0] === language && 'selected'"
-                >
-                  {{ lang[1] }}
-                </option>
-              </select>
-            </li>
+                <b v-t="'homepage'"></b><i :class="$fa('home')"></i>
+              </a>
 
+              <!-- LOGOUT URL -->
+              <a
+                v-if  = "user && user.logout_url"
+                :href = "user.logout_url"
+                class = "nav-logout btn btn-default btn-flat skin-color"
+              >
+                <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
+              </a>
+
+              <!-- SHARE URL -->
+              <a
+                href   = "#"
+                @click = "showEmbedModal"
+                class  = "nav-embedmap btn btn-default btn-flat skin-color"
+              >
+                <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
+              </a>
+
+              <!-- CHANGE MAP -->
+              <a
+                v-if   = "hasRelatedMaps"
+                href   = "#"
+                @click = "openChangeMapMenu"
+                class  = "nav-changemap btn btn-default btn-flat"
+              >
+                <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
+              </a>
+
+              <!-- ADD LAYER -->
+              <a
+                v-if   = "'legend' !== activeTab"
+                href   = "#"
+                @click = "showaddLayerModal"
+                class  = "nav-addlayer btn btn-default btn-flat"
+              >
+                <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
+              </a>
+
+              <!-- SIDEBAR MENU -->
+              <a
+                href   = "#"
+                @click = "toggleSidebar"
+                class  = "nav-sidebar btn btn-default btn-flat"
+              >
+                <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
+              </a>
+              
+            </li>
           </ul>
+        </li>
 
-        </div>
+        <!-- LANGUAGE SWITCHER -->
+        <li v-if = "languages" class="nav-lang">
+          <select
+            v-select2          = "'language'"
+            class              = "form-control"
+            :templateSelection = "templateResultLanguages"
+            :templateResult    = "templateResultLanguages"
+            :dropdownAutoWidth = "true"
+            :dropdownParent    = "dropdownParent"
+            v-model            = "language"
+            style              = "cursor:pointer; width: 130px;"
+          >
+            <option
+              v-for     = "lang in languages"
+              :key      = "lang[0]"
+              :value    = "lang[0]"
+              :selected = "lang[0] === language && 'selected'"
+            >
+              {{ lang[1] }}
+            </option>
+          </select>
+        </li>
 
-      </nav>
-    </header>
+      </ul>
+
+    </nav>
 
     <!-- SIDEBAR MENU -->
     <aside>
       <div
-        class  = "main-sidebar"
+        class  = "main-sidebar no-print"
         :class = "{ iframe: iframe, 'g3w-disabled': disabled }"
       >
         <!-- SIDEBAR CONTENT -->
@@ -935,7 +914,7 @@ export default {
      * @since 3.11.0
      */
     showaddLayerModal() {
-      $('#main-navbar').collapse('hide');
+      this.$refs['menu-toggler'].checked = false;
       $('#modal-addlayer').modal('show');
     },
 
@@ -943,7 +922,7 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu() {
-      $('#main-navbar').collapse('hide');
+      this.$refs['menu-toggler'].checked = false;
       $('#modal-changemap').modal('show');
     },
 
@@ -986,7 +965,7 @@ export default {
     moveFnc(e) {
       e.preventDefault();
       const size         = 'h' === this.state.split ? 'width' : 'height';
-      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('#main-navbar').height();
+      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('header .navbar').height();
       const viewPortSize = $(this.$el)[size]();
       let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
       const { content, map } = VIEWPORT.resize;
@@ -1024,7 +1003,7 @@ export default {
      * @since 3.11.0
      */
     toggleSidebar() {
-      $('#main-navbar').collapse('hide');
+      this.$refs['menu-toggler'].checked = false;
       GUI.toggleSidebar();
     },
 
@@ -1101,7 +1080,7 @@ export default {
     // Fixes the layout height in case min-height fails.
     const resize = function() {
       $(".main-sidebar")    .css('height', $(window).height() - $("header .navbar").height());
-      $('.g3w-sidebarpanel').css('height', $(window).height() - $("#main-navbar").height());
+      $('.g3w-sidebarpanel').css('height', $(window).height() - $("header .navbar").height());
     };
 
     resize();
@@ -1153,7 +1132,7 @@ export default {
 </style>
 
 <style scoped>
-  .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; }
+  .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
   .project_title > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
   .project_title .h2 { font-size: 1.6em; }
   .project_title h1  { font-size: 1.3em; }
@@ -1206,19 +1185,26 @@ export default {
   .nav-user .triangle                   { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
   .nav-user.open .triangle              { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
 
+  #menu-toggler                         { display:none }
+  .navbar-toggler                       { color: #fff; margin: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; }
+
   @media (min-width: 767px) {
     .user-footer :is(.nav-sidebar, .nav-addlayer).btn-default { display: none; }
   }
 
   @media (max-width: 767px) {
-    .navbar-nav                           { flex-direction: column; }
-    .user-footer .btn-default             { padding: 10px; }
-    .user-footer                          { background-color: transparent; border: none; }
-    .nav-user > ul                        { display: block; position: static; float:none; border: none; background-color: transparent; }
-    .nav-user .btn.skin-color             { color: #fff !important; }
+    .navbar-toggler                     { display: block; cursor: pointer; user-select: none;}
+    #menu-toggler:checked ~ hgroup      { position: fixed; top: 0; background: var(--skin-color); }
+    #menu-toggler:checked ~ ul          { position: fixed; inset: 50px 0 0 0; background: var(--skin-color); z-index: 100; flex-direction: column; border-top: 1px solid #fff;}
+    #menu-toggler:not(:checked)~*:not(.navbar-toggler),
     .nav-user > .dropdown-toggle,
-    .user-header                          { display: none; }
-    .nav-user > .dropdown-menu            { border: none; }
+    .user-header                        { display: none !important; }
+    .navbar-nav                         { flex-direction: column; }
+    .user-footer .btn-default           { padding: 10px; }
+    .user-footer                        { background-color: transparent; border: none; }
+    .nav-user > ul                      { display: block; position: static; float:none; border: none; background-color: transparent; }
+    .nav-user .btn                      { color: #fff !important; }
+    .nav-user > .dropdown-menu          { border: none; }
   }
 
 </style>
