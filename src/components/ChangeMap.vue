@@ -13,7 +13,7 @@
     <div class = "modal-dialog" style="min-width: 80vw;">
       <div class = "modal-content">
 
-        <div id class="modal-body" style="height: 80vh;">
+        <div class="modal-body" style="height: 80vh;">
 
           <!-- CHILD NODE -->
           <div
