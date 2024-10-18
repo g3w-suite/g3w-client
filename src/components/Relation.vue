@@ -366,7 +366,7 @@
           $(".content").height()
           - this.tableHeaderHeight
           - $('.content_breadcrumb')                       .outerHeight()
-          - $('header .navbar')                            .outerHeight()
+          - $('.navbar')                                   .outerHeight()
           - $('.close-panel-block')                        .outerHeight()
           - $(this.$refs['relation-header'])               .outerHeight()
           - $('.dataTables_filter').last()                 .outerHeight()

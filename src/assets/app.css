@@ -577,7 +577,6 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
   .sidebar-collapse .main-sidebar                 { width: 0 !important; }
   .sidebar-mini.sidebar-collapse .content-wrapper { margin-left: 35px; }
   .sidebar-mini.sidebar-collapse .main-sidebar    { width: 35px !important; }
-  .sidebar-collapse .main-header .logo            { width: 50px; }
 }
 
 /* .sidebar-mini.sidebar-collapse .main-sidebar .menu-open                                 { position: fixed; top: 51px; left: 35px; height: calc(100vh - 52px); width: 310px; } */

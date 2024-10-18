@@ -14,7 +14,7 @@
     <nav
       v-if  = "!isIframe"
       ref   = "navbar"
-      class = "main-header navbar no-print"
+      class = "navbar no-print"
       role  = "navigation"
       style = "display: flex;justify-content: start; height: 50px;"
     >
@@ -965,7 +965,7 @@ export default {
     moveFnc(e) {
       e.preventDefault();
       const size         = 'h' === this.state.split ? 'width' : 'height';
-      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('header .navbar').height();
+      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('.navbar').height();
       const viewPortSize = $(this.$el)[size]();
       let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
       const { content, map } = VIEWPORT.resize;
@@ -1079,8 +1079,8 @@ export default {
 
     // Fixes the layout height in case min-height fails.
     const resize = function() {
-      $(".main-sidebar")    .css('height', $(window).height() - $("header .navbar").height());
-      $('.g3w-sidebarpanel').css('height', $(window).height() - $("header .navbar").height());
+      $(".main-sidebar")    .css('height', $(window).height() - $(".navbar").height());
+      $('.g3w-sidebarpanel').css('height', $(window).height() - $(".navbar").height());
     };
 
     resize();
