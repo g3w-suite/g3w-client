@@ -161,7 +161,7 @@
               v-model = "layer.opacity"
               min    = "0"
               max    = "1"
-              step   = "0.1"
+              step   = "0.01"
               list   = "opacity-markers"
             >
             <datalist id="opacity-markers" style="  display: flex; justify-content: space-between;">
