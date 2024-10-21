@@ -26,13 +26,7 @@ const SERVICES = {
 function setViewSizes() {
   const state = ApplicationState.viewport;
 
-  const primaryView   = state.primaryView;
-  const secondaryView = 'map' === state.primaryView ? 'content' : 'map';
-  const main_sidebar  = $(".main-sidebar");
-  const offset         = main_sidebar.length && main_sidebar.offset().left;
-  const width = main_sidebar.length && main_sidebar[0].getBoundingClientRect().width;
-  const sideBarSpace   = width + offset;
-  const viewportWidth = $('#app')[0].getBoundingClientRect().width - sideBarSpace;
+  const viewportWidth  = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
   const viewportHeight = $(document).innerHeight() - $('.navbar').innerHeight();
   // assign all width and height of the view to primary view (map)
   let primaryWidth;
@@ -54,10 +48,10 @@ function setViewSizes() {
     primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
     primaryHeight   = viewportHeight - secondaryHeight;
   }
-  state[primaryView].sizes.width    = primaryWidth;
-  state[primaryView].sizes.height   = primaryHeight;
-  state[secondaryView].sizes.width  = secondaryWidth;
-  state[secondaryView].sizes.height = secondaryHeight;
+  state[state.primaryView]                              .sizes.width  = primaryWidth;
+  state[state.primaryView]                              .sizes.height = primaryHeight;
+  state['map' === state.primaryView ? 'content' : 'map'].sizes.width  = secondaryWidth;
+  state['map' === state.primaryView ? 'content' : 'map'].sizes.height = secondaryHeight;
 }
 
 /**
