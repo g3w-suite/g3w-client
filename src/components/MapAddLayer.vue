@@ -239,25 +239,26 @@
 
             <!-- CSV FILE (parsing options) -->
             <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
-              <bar-loader :loading = "csv.loading"/>
+              <bar-loader :loading = "csv_loading"/>
               <div class = "select_field">
 
                 <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
-                <select id = "g3w-select-separator" class = "form-control" v-model = "csv.separator">
-                  <option v-for = "sep in csv.separators" :key = "sep" :value = "sep">{{ sep }}</option>
+                <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator">
+                  <option>,</option>
+                  <option>;</option>
                 </select>
 
-                <div :class="'select_field ' + (!csv.headers || 0 === csv.headers.length ? 'g3w-disabled' : '')">
+                <div :class="'select_field ' + (!csv_headers || !csv_headers.length ? 'g3w-disabled' : '')">
                   <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
-                  <select id = "g3w-select-x-field" class = "form-control" v-model = "csv.x">
-                    <option v-for = "h in csv.headers" :key = "h" :value = "h">{{ header }}</option>
+                  <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x">
+                    <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
                   </select>
                 </div>
 
-                <div :class="'select_field ' + (!csv.headers || 0 === csv.headers.length ? 'g3w-disabled' : '')">
+                <div :class="'select_field ' + (!csv_headers || !csv_headers.length ? 'g3w-disabled' : '')">
                   <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
-                  <select id = "g3w-select-y-field" class = "form-control" v-model = "csv.y">
-                    <option v-for = "h in csv.headers" :key = "h" :value = "h">{{ h }}</option>
+                  <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y">
+                    <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
                   </select>
                 </div>
 
@@ -328,28 +329,25 @@ export default {
   data() {
 
     return {
-      layer_type:         undefined,
-      wms_panel:          false,
-      wms_urls:           [], // array of object {id, url}
-      wms_layers:         [], // Selected layers
-      url:                null,
-      id:                 null,
-      vectorLayer:        null,
-      map_crs:            ApplicationState.project.getProjection().getCode(),
-      position:           'top', // layer position on map
-      persistent:         false,
-      loading:            false, // loading reactive status
-      fields:             [],
-      field:              null,
-      csv: {
-        valid:       false,
-        loading:     false,
-        headers:     [],
-        x:           null,
-        y:           null,
-        separators : [',', ';'],
-        separator:   ',',
-      },
+      layer_type:      undefined,
+      wms_panel:       false,
+      wms_urls:        [], // array of object {id, url}
+      wms_layers:      [], // Selected layers
+      url:             null,
+      id:              null,
+      vectorLayer:     null,
+      map_crs:         ApplicationState.project.getProjection().getCode(),
+      position:        'top', // layer position on map
+      persistent:      false,
+      loading:         false, // loading reactive status
+      fields:          [],
+      field:           null,
+      csv_x:           null,
+      csv_y:           null,
+      csv_headers:     [],
+      csv_separator:   ',',
+      csv_loading:     false,
+      csv_valid:       false,
       layer: {
         name:   null,
         type:   null,
@@ -394,7 +392,7 @@ export default {
      * @FIXME add description
      */
     add() {
-      return this.layer.data || this.csv.valid;
+      return this.layer.data || this.csv_valid;
     },
 
   },
@@ -441,29 +439,29 @@ export default {
             input_file.val(null);
             const [headers, ...values] = evt.target.result.split(/\r\n|\n/).filter(row => row);
             const handle_csv_headers = separator => {
-              this.csv.loading = true;
+              this.csv_loading = true;
               const csv_headers = headers.split(separator);
               const len = csv_headers.length;
-              this.csv.headers = len > 1 ? csv_headers      : [];
+              this.csv_headers = len > 1 ? csv_headers      : [];
               this.csv.fields  = len > 1 ? csv_headers      : [];
-              this.csv.x       = len > 1 ? csv_headers[0]   : this.csv.x;
-              this.csv.y       = len > 1 ? csv_headers[1]   : this.csv.y;
+              this.csv_x       = len > 1 ? csv_headers[0]   : this.csv_x;
+              this.csv_y       = len > 1 ? csv_headers[1]   : this.csv_y;
               this.vectorLayer = len > 1 ? this.vectorLayer : null;
-              this.csv.valid   = len > 1;
+              this.csv_valid   = len > 1;
               if (len <= 1) {
                 this.fields.splice(0);
               }
-              this.csv.loading = false;
+              this.csv_loading = false;
               return len > 1 ? {
                 headers: csv_headers,
                 separator,
-                x: this.csv.x,
-                y: this.csv.y,
+                x: this.csv_x,
+                y: this.csv_y,
                 values
               } : null;
             };
-            this.$watch('csv.separator', s => this.layer.data = handle_csv_headers(s))
-            return resolve(handle_csv_headers(this.csv.separator));
+            this.$watch('csv_separator', s => this.layer.data = handle_csv_headers(s))
+            return resolve(handle_csv_headers(this.csv_separator));
           }
 
           // OTHER FORMATS
@@ -542,7 +540,7 @@ export default {
         }
       }
 
-      if ('file' === this.layer_type && (this.layer.data || this.csv.valid)) {
+      if ('file' === this.layer_type && (this.layer.data || this.csv_valid)) {
         // register EPSG
         try {
           await Projections.registerProjection(this.layer.crs);
@@ -586,7 +584,7 @@ export default {
       this.vectorLayer   = null;
       this.fields        = [];
       this.field         = null;
-      this.csv.valid     = false;
+      this.csv_valid     = false;
     },
 
     clearPanel() {
@@ -830,11 +828,11 @@ export default {
 
   watch: {
 
-    'csv.x'(value) {
+    csv_x(value) {
       if (![undefined, null].includes(value)) { this.layer.data.x = value }
     },
 
-    'csv.y'(value) {
+    csv_y(value) {
       if (![undefined, null].includes(value)) { this.layer.data.y = value }
     },
 
