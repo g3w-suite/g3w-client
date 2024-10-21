@@ -49,7 +49,7 @@
 
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
-              <label for = "add_custom_url_wms_input" title = "required">URL</label>
+              <label for = "add_custom_url_wms_input" title = "required" v-t="'URL'"></label>
               <a
                 :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
                 target = "_blank"
@@ -73,7 +73,7 @@
             </div>
 
             <!-- WMS NAME -->
-            <div v-if="url && !wms_panel" class = "form-group" v-disabled="wms_panel">
+            <div v-if="url && !wms_panel" class = "form-group" v-disabled="wms_panel || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
@@ -150,7 +150,7 @@
 
               <!-- LAYERS NAME   -->
               <label for = "g3w-wms-layers" v-t = "'sidebar.wms.panel.label.layers'"></label>
-              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'selectedlayers'">
+              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_layers'">
                 <option v-for = "layer in layers" :key = "layer.name" :value = "layer.name">{{ layer.title }}</option>
               </select>
 
@@ -173,10 +173,6 @@
               <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
               <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
 
-              <div v-if  = "added" class = "g3w-wms-external-panel-layer-added-message"
-                v-t   = "'sidebar.wms.layer_id_already_added'">
-              </div>
-
             </div>
 
           </template>
@@ -187,7 +183,7 @@
             <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer.type)">
               <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer.crs">
-                <option v-for = "option in options" :value = "option">{{option}}</option>
+                <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
               </select>
             </div>
 
@@ -195,7 +191,7 @@
             <div class = "form-group">
               <label for="position-layer" v-t = "'layer_position.message'"></label>
               <select class = "form-control" id = "position-layer" v-model = "position">
-                <option :value = "'top'" v-t = "'layer_position.top'"></option>
+                <option :value = "'top'"    v-t = "'layer_position.top'"></option>
                 <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
               </select>
             </div>
@@ -222,7 +218,6 @@
               <input
                 ref     = "input_file"
                 type    = "file"
-                title   = " "
                 @change = "onChangeFile($event)"
                 accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
               />
@@ -231,14 +226,8 @@
                 v-if  = "layer.name"
                 class = "skin-color"
                 style = "font-weight: bold">{{ layer.name }}</h4>
-              <div>
-                <i
-                  :class      = "g3wtemplate.getFontClass('cloud-upload')"
-                  class       = "fa-5x"
-                  aria-hidden = "true">
-                </i>
-              </div>
-              <p style = "font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
+              <i :class      = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
+              <span>[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
             </form>
 
             <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
@@ -303,10 +292,7 @@
               class  = "select_field"
               :class = "{ 'g3w-disabled': !fields || 0 === fields.length }"
             >
-              <label
-                v-t = "'mapcontrols.add_layer_control.select_field_to_show'"
-                for = "g3w-select-field-layer">
-              </label>
+              <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
               <select
                 class   = "form-control"
                 id      = "g3w-select-field-layer"
@@ -327,15 +313,12 @@
         <!-- MODAL FOOTER -->
         <div class = "modal-footer">
 
+          <!-- ERROR NOTICE -->
           <div
             v-if  = "error_message"
             style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
             v-t   = "error_message">
           </div>
-
-          <!-- ERROR NOTICE -->
-          <div v-if      = "error" class = "g3w-add-wms-url-message g3w-wmsurl-error">{{ $t('server_error') }}</div>
-          <div v-else-if = "added" class = "g3w-add-wms-url-message g3w-wmsurl-already-added">&#x26A0;&#xFE0F; {{ $t('sidebar.wms.url_already_added') }}</div>
 
           <button
             v-t          = "'close'"
@@ -344,13 +327,13 @@
             data-dismiss = "modal"
           ></button>
 
-          <!-- SUBMIT BUTTON -->  
+          <!-- SUBMIT BUTTON -->
           <button
             v-t         = "'add'"
             type        = "button"
             class       = "btn btn-success"
             @click.stop = "addLayer"
-            v-disabled  = "'wms' === layer_type ? 0 === selectedlayers.length : !add"
+            v-disabled  = "'wms' === layer_type ? !wms_layers.length : !add"
           ></button>
 
           </div>
@@ -363,7 +346,6 @@
 <script>
 import { Chrome as ChromeComponent } from 'vue-color';
 
-import { EPSG }                      from 'g3w-constants';
 import ApplicationState              from 'store/application';
 import Projections                   from 'store/projections';
 import GUI                           from 'services/gui';
@@ -378,21 +360,15 @@ export default {
 
   data() {
 
-    const crs = ApplicationState.project.getProjection().getCode();
-
-    // add map crs if not present
-    if (!EPSG.includes(crs)) {
-      EPSG.unshift(crs)
-    }
-
     return {
       layer_type:         undefined,
       wms_panel:          false,
       wms_urls:           [], // array of object {id, url}
+      wms_layers:         [], // Selected layers
       url:                null,
       id:                 null,
       vectorLayer:        null,
-      options:            EPSG,
+      map_crs:            ApplicationState.project.getProjection().getCode(),
       position:           'top', // layer position on map
       persistent:         false,
       loading:            false, // loading reactive status
@@ -423,16 +399,14 @@ export default {
         id:       null,
         external: true,
       },
-      name:           undefined,  // name of saved layer
-      title:          null,       // title of layer
-      methods:        [],         // @since 3.9.0
-      layers:         [],         // Array of layers
-      selectedlayers: [],         // Selected layers
-      projections:    [],         // projections
-      epsg:           null,       // choose epsg project
-      added:          false,      // added layer (Boolean)
-      error:          false,
-      error_message:  '',
+      name:          undefined,  // name of saved layer
+      title:         null,       // title of layer
+      methods:       [],         // @since 3.9.0
+      layers:        [],         // Array of layers
+      projections:   [],         // projections
+      epsg:          null,       // choose epsg project
+      added:         false,      // added layer (Boolean)
+      error_message: '',
     }
   },
 
@@ -563,7 +537,7 @@ export default {
         try {
           // check if WMS already added (by name)
           const data  = this.getLocalWMSData();
-          const found = this.wms_panel && (data.wms[this.url] || []).some(wms => wms.layers.length === this.selectedlayers.length && this.selectedlayers.every(l => wms.layers.includes(l)));
+          const found = this.wms_panel && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l)));
 
           if (found) {
             this.showWmsLayersPanel(this.url)
@@ -572,7 +546,7 @@ export default {
           const config = {
             url:      this.url,
             name,
-            layers:   this.selectedlayers,
+            layers:   this.wms_layers,
             epsg:     this.epsg,
             position: this.position,
             visible:  true,
@@ -649,8 +623,9 @@ export default {
     },
 
     clearPanel() {
-      this.wms_panel     = false;
-      this.selectedlayers = [];
+      this.error_message  = '';
+      this.wms_panel      = false;
+      this.wms_layers     = [];
       this.name           = null;
       this.loading        = false;
     },
@@ -662,7 +637,6 @@ export default {
       this.loading = true;
       const wms    = { url: this.url, id: this.id };
       const found  = this.wms_urls.find(l => l.url == this.url || l.id == wms.id);
-      let error    = false;
       // when url is not yet added
       if (found) {
         this.showWmsLayersPanel(this.url)
@@ -681,10 +655,9 @@ export default {
           this._showWmsLayersPanel(response);
         } catch(e) {
           console.warn(e);
-          error = true;
+          this.error_message = e;
         }
       }
-      this.error   = error;
       this.loading = false;
     },
 
@@ -812,19 +785,18 @@ export default {
      * @returns { Promise<void> }
      */
     async showWmsLayersPanel(url) {
-      let error = false;
       try {
         this.loading = true;
         const d = await this.getWMSLayers(url);
-        error = !d.result;
-        if (!error) {
-          d.wmsurl = url;
-          this._showWmsLayersPanel(d);
+        if (!d.result) {
+          throw $t('server_error');
         }
+        d.wmsurl = url;
+        this._showWmsLayersPanel(d);
       } catch(e) {
+        this.error_message = e;
         console.warn(e);
       } 
-      this.error   = error;
       this.loading = false;
     },
 
@@ -908,7 +880,7 @@ export default {
     /**
      * Handle selected layers change  
      */
-    selectedlayers(layers = []) {
+    wms_layers(layers = []) {
       if (0 === layers.length) {        // Reset epsg and projections to initial values
         this.epsg        = null;
         this.projections = [];
@@ -938,11 +910,17 @@ export default {
       }
     },
 
-    wms_panel(enabled) {
-      if (enabled) {
+    url() {
+      if (this.url && !this.wms_panel && this.wms_urls.some(l => l.url == this.url)) {
+        this.id = this.wms_urls.find(l => l.url == this.url).id
+      }
+    },
+
+    wms_panel() {
+      if (this.wms_panel) {
         this.name = this.wms_config.title + ' ' + getUniqueDomId();
       }
-    }
+    },
 
   },
 
@@ -1012,43 +990,20 @@ export default {
     margin: 10px 0 10px 0px;
     position: relative;
     border: 2px dashed #97A1A8;
-  }
-
-  #addcustomlayer p,
-  #addcustomlayer h4 {
+    display: flex;
+    flex-direction:
+    column;
     text-align: center;
-    line-height: 30px;
-    color: #97A1A8;
-    font-family: Arial;
+    gap: 8px;
+    padding: 20px 0;
+    opacity: .8;
   }
-
-  #addcustomlayer div {
-    text-align: center;
-    line-height: 30px;
-    color: #97A1A8;
-  }
-
-  #addcustomlayer input{
+  #addcustomlayer input {
     position: absolute;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
     outline: none;
     opacity: 0;
     cursor: pointer;
-  }
-  .g3w-add-wms-url-message{
-    font-weight: bold;
-    color: #000000;
-  }
-  .g3w-wmsurl-error {
-    background-color: red;
-  }
-  .g3w-wmsurl-already-added {
-    color: inherit;
-    font-weight: normal;
-    display: inline-block;
+    inset: 0;
   }
   #add_custom_url_wms_input::placeholder {
     font-size: 85%;
@@ -1058,14 +1013,5 @@ export default {
     font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 10px;
-  }
-  button.wms-add-layer-button {
-    width: 100%;
-    margin-top: 10px;
-  }
-  .g3w-wms-external-panel-layer-added-message {
-    font-weight: bold;
-    color: red;
-    margin: 5px 0;
   }
 </style>
