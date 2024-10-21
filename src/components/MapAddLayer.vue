@@ -48,17 +48,19 @@
 
           <template v-if = "'wms' === layer_type">
 
+            <!-- DOCS -->
+            <a
+              :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
+              target = "_blank"
+              style  = "float: right;"
+              title  = "Docs"
+            >
+              <i :class = "$fa('external-link')"></i>
+            </a>
+
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
               <label for = "add_custom_url_wms_input">URL</label>
-              <a
-                :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
-                target = "_blank"
-                style  = "float: right;"
-                title  = "Docs"
-              >
-                <i :class = "$fa('external-link')"></i>
-              </a>
               <input
                 id           = "add_custom_url_wms_input"
                 v-model.trim = "url"
@@ -248,14 +250,14 @@
                   <option>;</option>
                 </select>
 
-                <div :class="'select_field ' + (!csv_headers || !csv_headers.length ? 'g3w-disabled' : '')">
+                <div :class="'select_field ' + (!(csv_headers || []).length ? 'g3w-disabled' : '')">
                   <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
                   <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x">
                     <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
                   </select>
                 </div>
 
-                <div :class="'select_field ' + (!csv_headers || !csv_headers.length ? 'g3w-disabled' : '')">
+                <div :class="'select_field ' + (!(csv_headers || []).length ? 'g3w-disabled' : '')">
                   <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
                   <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y">
                     <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
