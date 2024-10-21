@@ -31,6 +31,7 @@
         <!-- MODAL BODY -->
         <div class = "modal-body">
 
+          <!-- LAYER TYPE -->
           <div class="form-group">
             <label v-t="'layer_type'"></label>
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
@@ -92,17 +93,19 @@
 
           <template v-if = "'wms' === layer_type && !wms_panel">
 
+            <!-- DOCS -->
+            <a
+              :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
+              target = "_blank"
+              style  = "float: right;"
+              title  = "Docs"
+            >
+              <i :class = "$fa('external-link')"></i>
+            </a>
+
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
               <label for = "add_custom_url_wms_input">URL</label>
-              <a
-                :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
-                target = "_blank"
-                style  = "float: right;"
-                title  = "Docs"
-              >
-                <i :class = "$fa('external-link')"></i>
-              </a>
               <input
                 id           = "add_custom_url_wms_input"
                 v-model.trim = "url"
@@ -219,6 +222,7 @@
               style   ="width:100%; margin:auto"
             />
 
+            <!-- FILE UPLOAD -->
             <form id = "addcustomlayer">
               <input
                 ref     = "input_file"
@@ -235,79 +239,40 @@
               <span>[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
             </form>
 
+            <!-- CSV FILE (parsing options) -->
             <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
-              <bar-loader :loading = "csv.loading"/>
+              <bar-loader :loading = "csv_loading"/>
               <div class = "select_field">
-                <label
-                  v-t = "'mapcontrols.add_layer_control.select_csv_separator'"
-                  for = "g3w-select-field-layer">
-                </label>
-                <select
-                  id      = "g3w-select-separator"
-                  class   = "form-control"
-                  v-model = "csv.separator"
-                  >
-                    <option
-                      v-for  = "separator in csv.separators"
-                      :key   = "separator"
-                      :value = "separator">{{ separator }}</option>
+
+                <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
+                <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator">
+                  <option>,</option>
+                  <option>;</option>
+                </select>
+
+                <div :class="'select_field ' + (!(csv_headers || []).length ? 'g3w-disabled' : '')">
+                  <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
+                  <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x">
+                    <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
                   </select>
-                  <div
-                    class="select_field"
-                    :class="{'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
-                  >
-                    <label
-                      for = "g3w-select-x-field"
-                      v-t = "'mapcontrols.add_layer_control.select_csv_x_field'">
-                    </label>
-                    <select
-                      class   = "form-control"
-                      id      = "g3w-select-x-field"
-                      v-model = "csv.x"
-                    >
-                      <option
-                        v-for  = "header in csv.headers"
-                        :key   = "header"
-                        :value = "header">{{ header }}</option>
-                    </select>
-                  </div>
-                  <div
-                    class  = "select_field"
-                    :class = "{ 'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
-                  >
-                    <label
-                      v-t = "'mapcontrols.add_layer_control.select_csv_y_field'"
-                      for = "g3w-select-y-field">
-                    </label>
-                    <select
-                      class   = "form-control"
-                      id      = "g3w-select-y-field"
-                      v-model = "csv.y"
-                    >
-                    <option
-                      v-for  = "header in csv.headers"
-                      :key   = "header"
-                      :value = "header">{{ header }}</option>
-                    </select>
-                  </div>
+                </div>
+
+                <div :class="'select_field ' + (!(csv_headers || []).length ? 'g3w-disabled' : '')">
+                  <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
+                  <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y">
+                    <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
+                  </select>
+                </div>
+
               </div>
             </div>
 
-            <div
-              class  = "select_field"
-              :class = "{ 'g3w-disabled': !fields || 0 === fields.length }"
-            >
+            <!-- LAYER LABEL (visible field) -->
+            <div :class = "'select_field ' + (!fields || 0 === fields.length ? 'g3w-disabled' : '')">
               <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
-              <select
-                class   = "form-control"
-                id      = "g3w-select-field-layer"
-                v-model = "field"
-              >
+              <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
                 <option :value = "null">---</option>
-                <option
-                  v-for  = "field in fields"
-                  :key   = "field"
-                  :value = "field">{{ field }}</option>
+                <option v-for = "f in fields" :key = "f" :value = "f">{{ f }}</option>
               </select>
             </div>
 
@@ -366,28 +331,25 @@ export default {
   data() {
 
     return {
-      layer_type:         undefined,
-      wms_panel:          false,
-      wms_urls:           [], // array of object {id, url}
-      wms_layers:         [], // Selected layers
-      url:                null,
-      id:                 null,
-      vectorLayer:        null,
-      map_crs:            ApplicationState.project.getProjection().getCode(),
-      position:           'top', // layer position on map
-      persistent:         false,
-      loading:            false, // loading reactive status
-      fields:             [],
-      field:              null,
-      csv: {
-        valid:       false,
-        loading:     false,
-        headers:     [],
-        x:           null,
-        y:           null,
-        separators : [',', ';'],
-        separator:   ',',
-      },
+      layer_type:      undefined,
+      wms_panel:       false,
+      wms_urls:        [], // array of object {id, url}
+      wms_layers:      [], // Selected layers
+      url:             null,
+      id:              null,
+      vectorLayer:     null,
+      map_crs:         ApplicationState.project.getProjection().getCode(),
+      position:        'top', // layer position on map
+      persistent:      false,
+      loading:         false, // loading reactive status
+      fields:          [],
+      field:           null,
+      csv_x:           null,
+      csv_y:           null,
+      csv_headers:     [],
+      csv_separator:   ',',
+      csv_loading:     false,
+      csv_valid:       false,
       layer: {
         name:   null,
         type:   null,
@@ -432,7 +394,7 @@ export default {
      * @FIXME add description
      */
     add() {
-      return this.layer.data || this.csv.valid;
+      return this.layer.data || this.csv_valid;
     },
 
   },
@@ -479,29 +441,29 @@ export default {
             input_file.val(null);
             const [headers, ...values] = evt.target.result.split(/\r\n|\n/).filter(row => row);
             const handle_csv_headers = separator => {
-              this.csv.loading = true;
+              this.csv_loading = true;
               const csv_headers = headers.split(separator);
               const len = csv_headers.length;
-              this.csv.headers = len > 1 ? csv_headers      : [];
+              this.csv_headers = len > 1 ? csv_headers      : [];
               this.csv.fields  = len > 1 ? csv_headers      : [];
-              this.csv.x       = len > 1 ? csv_headers[0]   : this.csv.x;
-              this.csv.y       = len > 1 ? csv_headers[1]   : this.csv.y;
+              this.csv_x       = len > 1 ? csv_headers[0]   : this.csv_x;
+              this.csv_y       = len > 1 ? csv_headers[1]   : this.csv_y;
               this.vectorLayer = len > 1 ? this.vectorLayer : null;
-              this.csv.valid   = len > 1;
+              this.csv_valid   = len > 1;
               if (len <= 1) {
                 this.fields.splice(0);
               }
-              this.csv.loading = false;
+              this.csv_loading = false;
               return len > 1 ? {
                 headers: csv_headers,
                 separator,
-                x: this.csv.x,
-                y: this.csv.y,
+                x: this.csv_x,
+                y: this.csv_y,
                 values
               } : null;
             };
-            this.$watch('csv.separator', s => this.layer.data = handle_csv_headers(s))
-            return resolve(handle_csv_headers(this.csv.separator));
+            this.$watch('csv_separator', s => this.layer.data = handle_csv_headers(s))
+            return resolve(handle_csv_headers(this.csv_separator));
           }
 
           // OTHER FORMATS
@@ -580,7 +542,7 @@ export default {
         }
       }
 
-      if ('file' === this.layer_type && (this.layer.data || this.csv.valid)) {
+      if ('file' === this.layer_type && (this.layer.data || this.csv_valid)) {
         // register EPSG
         try {
           await Projections.registerProjection(this.layer.crs);
@@ -624,7 +586,7 @@ export default {
       this.vectorLayer   = null;
       this.fields        = [];
       this.field         = null;
-      this.csv.valid     = false;
+      this.csv_valid     = false;
     },
 
     clearPanel() {
@@ -868,11 +830,11 @@ export default {
 
   watch: {
 
-    'csv.x'(value) {
+    csv_x(value) {
       if (![undefined, null].includes(value)) { this.layer.data.x = value }
     },
 
-    'csv.y'(value) {
+    csv_y(value) {
       if (![undefined, null].includes(value)) { this.layer.data.y = value }
     },
 
@@ -939,6 +901,8 @@ export default {
     $('#modal-addlayer').modal('hide');
     $('#modal-addlayer').on('hide.bs.modal',  () => {
       this.layer_type = undefined;
+      this.url        = null;
+      this.id         = null;
       this.clearFile();
       this.clearPanel();
     });
