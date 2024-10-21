@@ -92,7 +92,7 @@
         </div>
         <table
           ref   = "relationtable"
-          class = "hover relationtable table table-striped row-border"
+          class = "hover relationtable table table-striped row-border compact nowrap"
         >
           <thead>
             <tr style = "height: 0! important;">
