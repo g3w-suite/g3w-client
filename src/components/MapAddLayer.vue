@@ -150,7 +150,7 @@
 
               <!-- LAYERS NAME   -->
               <label for = "g3w-wms-layers" v-t = "'sidebar.wms.panel.label.layers'"></label>
-              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'selectedlayers'">
+              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_layers'">
                 <option v-for = "layer in layers" :key = "layer.name" :value = "layer.name">{{ layer.title }}</option>
               </select>
 
@@ -172,10 +172,6 @@
               <!-- NAME OF LAYER TO SAVE -->
               <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
               <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
-
-              <div v-if  = "added" class = "g3w-wms-external-panel-layer-added-message"
-                v-t   = "'sidebar.wms.layer_id_already_added'">
-              </div>
 
             </div>
 
@@ -303,10 +299,7 @@
               class  = "select_field"
               :class = "{ 'g3w-disabled': !fields || 0 === fields.length }"
             >
-              <label
-                v-t = "'mapcontrols.add_layer_control.select_field_to_show'"
-                for = "g3w-select-field-layer">
-              </label>
+              <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
               <select
                 class   = "form-control"
                 id      = "g3w-select-field-layer"
@@ -327,15 +320,12 @@
         <!-- MODAL FOOTER -->
         <div class = "modal-footer">
 
+          <!-- ERROR NOTICE -->
           <div
             v-if  = "error_message"
             style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
             v-t   = "error_message">
           </div>
-
-          <!-- ERROR NOTICE -->
-          <div v-if      = "error" class = "g3w-add-wms-url-message g3w-wmsurl-error">{{ $t('server_error') }}</div>
-          <div v-else-if = "added" class = "g3w-add-wms-url-message g3w-wmsurl-already-added">&#x26A0;&#xFE0F; {{ $t('sidebar.wms.url_already_added') }}</div>
 
           <button
             v-t          = "'close'"
@@ -344,13 +334,13 @@
             data-dismiss = "modal"
           ></button>
 
-          <!-- SUBMIT BUTTON -->  
+          <!-- SUBMIT BUTTON -->
           <button
             v-t         = "'add'"
             type        = "button"
             class       = "btn btn-success"
             @click.stop = "addLayer"
-            v-disabled  = "'wms' === layer_type ? 0 === selectedlayers.length : !add"
+            v-disabled  = "'wms' === layer_type ? !wms_layers.length : !add"
           ></button>
 
           </div>
@@ -389,6 +379,7 @@ export default {
       layer_type:         undefined,
       wms_panel:          false,
       wms_urls:           [], // array of object {id, url}
+      wms_layers:         [], // Selected layers
       url:                null,
       id:                 null,
       vectorLayer:        null,
@@ -423,16 +414,14 @@ export default {
         id:       null,
         external: true,
       },
-      name:           undefined,  // name of saved layer
-      title:          null,       // title of layer
-      methods:        [],         // @since 3.9.0
-      layers:         [],         // Array of layers
-      selectedlayers: [],         // Selected layers
-      projections:    [],         // projections
-      epsg:           null,       // choose epsg project
-      added:          false,      // added layer (Boolean)
-      error:          false,
-      error_message:  '',
+      name:          undefined,  // name of saved layer
+      title:         null,       // title of layer
+      methods:       [],         // @since 3.9.0
+      layers:        [],         // Array of layers
+      projections:   [],         // projections
+      epsg:          null,       // choose epsg project
+      added:         false,      // added layer (Boolean)
+      error_message: '',
     }
   },
 
@@ -563,7 +552,7 @@ export default {
         try {
           // check if WMS already added (by name)
           const data  = this.getLocalWMSData();
-          const found = this.wms_panel && (data.wms[this.url] || []).some(wms => wms.layers.length === this.selectedlayers.length && this.selectedlayers.every(l => wms.layers.includes(l)));
+          const found = this.wms_panel && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l)));
 
           if (found) {
             this.showWmsLayersPanel(this.url)
@@ -572,7 +561,7 @@ export default {
           const config = {
             url:      this.url,
             name,
-            layers:   this.selectedlayers,
+            layers:   this.wms_layers,
             epsg:     this.epsg,
             position: this.position,
             visible:  true,
@@ -649,8 +638,9 @@ export default {
     },
 
     clearPanel() {
-      this.wms_panel     = false;
-      this.selectedlayers = [];
+      this.error_message  = '';
+      this.wms_panel      = false;
+      this.wms_layers     = [];
       this.name           = null;
       this.loading        = false;
     },
@@ -662,7 +652,6 @@ export default {
       this.loading = true;
       const wms    = { url: this.url, id: this.id };
       const found  = this.wms_urls.find(l => l.url == this.url || l.id == wms.id);
-      let error    = false;
       // when url is not yet added
       if (found) {
         this.showWmsLayersPanel(this.url)
@@ -681,10 +670,9 @@ export default {
           this._showWmsLayersPanel(response);
         } catch(e) {
           console.warn(e);
-          error = true;
+          this.error_message = e;
         }
       }
-      this.error   = error;
       this.loading = false;
     },
 
@@ -812,19 +800,18 @@ export default {
      * @returns { Promise<void> }
      */
     async showWmsLayersPanel(url) {
-      let error = false;
       try {
         this.loading = true;
         const d = await this.getWMSLayers(url);
-        error = !d.result;
-        if (!error) {
-          d.wmsurl = url;
-          this._showWmsLayersPanel(d);
+        if (!d.result) {
+          throw $t('server_error');
         }
+        d.wmsurl = url;
+        this._showWmsLayersPanel(d);
       } catch(e) {
+        this.error_message = e;
         console.warn(e);
       } 
-      this.error   = error;
       this.loading = false;
     },
 
@@ -908,7 +895,7 @@ export default {
     /**
      * Handle selected layers change  
      */
-    selectedlayers(layers = []) {
+    wms_layers(layers = []) {
       if (0 === layers.length) {        // Reset epsg and projections to initial values
         this.epsg        = null;
         this.projections = [];
