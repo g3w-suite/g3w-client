@@ -510,30 +510,33 @@
       if ('select_autocomplete' === this.state.input.type) {
         //get dependency layer id if set
         const dependencyLayerId = this.state.input.options.layer_id;
-        try {
-          const dependencyLayer = GUI.getService('map')
-            .getProjectLayer(dependencyLayerId)
-            .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
-          // in case layer is on project, check if is non an alphanumeric layer
-          this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
-          if (this.showPickLayer) {
-            const {
-              key,
-              value,
-              layer_id
-            } = this.state.input.options;
+        if (dependencyLayerId) {
+          try {
+            const dependencyLayer = GUI.getService('map')
+              .getProjectLayer(dependencyLayerId)
+              .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
+            // in case layer is on project, check if is non an alphanumeric layer
+            this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
+            if (this.showPickLayer) {
+              const {
+                key,
+                value,
+                layer_id
+              } = this.state.input.options;
 
-            //create pick layer service
-            this.pickLayerInputService = new PickLayerInputService({
-              layer_id,
-              fields :    [value, key], //fields are key, and values
-              //need to check if dependency layer is on editing,
-              // so we can pick vector map layer, otherwise wms request is done
-              pick_type : dependencyLayer.isStarted && dependencyLayer.isStarted() ? 'map' : null
-            });
-          }
+              //create pick layer service
+              this.pickLayerInputService = new PickLayerInputService({
+                layer_id,
+                fields :    [value, key], //fields are key, and values
+                //need to check if dependency layer is on editing,
+                // so we can pick vector map layer, otherwise wms request is done
+                pick_type : dependencyLayer.isStarted && dependencyLayer.isStarted() ? 'map' : null
+              });
+            }
 
-        } catch(e) { console.warn(e); }
+          } catch(e) { console.warn(e); }
+        }
+
       }
     },
 

@@ -208,6 +208,8 @@
                 this.unwatch.push(
                   this.$watch(() => field.value,
                     async () => {
+                      //need to wait that form set new value of change field to feature
+                      await this.$nextTick();
                       await this.setVisibility(tab);
                     })
                 )
