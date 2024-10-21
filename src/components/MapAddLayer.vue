@@ -49,7 +49,7 @@
 
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
-              <label for = "add_custom_url_wms_input" title = "required">URL</label>
+              <label for = "add_custom_url_wms_input" title = "required" v-t="'URL'"></label>
               <a
                 :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
                 target = "_blank"
@@ -183,7 +183,7 @@
             <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer.type)">
               <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer.crs">
-                <option v-for = "option in options" :value = "option">{{option}}</option>
+                <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
               </select>
             </div>
 
@@ -191,7 +191,7 @@
             <div class = "form-group">
               <label for="position-layer" v-t = "'layer_position.message'"></label>
               <select class = "form-control" id = "position-layer" v-model = "position">
-                <option :value = "'top'" v-t = "'layer_position.top'"></option>
+                <option :value = "'top'"    v-t = "'layer_position.top'"></option>
                 <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
               </select>
             </div>
@@ -218,7 +218,6 @@
               <input
                 ref     = "input_file"
                 type    = "file"
-                title   = " "
                 @change = "onChangeFile($event)"
                 accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
               />
@@ -227,14 +226,8 @@
                 v-if  = "layer.name"
                 class = "skin-color"
                 style = "font-weight: bold">{{ layer.name }}</h4>
-              <div>
-                <i
-                  :class      = "g3wtemplate.getFontClass('cloud-upload')"
-                  class       = "fa-5x"
-                  aria-hidden = "true">
-                </i>
-              </div>
-              <p style = "font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
+              <i :class      = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
+              <span>[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
             </form>
 
             <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
@@ -353,7 +346,6 @@
 <script>
 import { Chrome as ChromeComponent } from 'vue-color';
 
-import { EPSG }                      from 'g3w-constants';
 import ApplicationState              from 'store/application';
 import Projections                   from 'store/projections';
 import GUI                           from 'services/gui';
@@ -368,13 +360,6 @@ export default {
 
   data() {
 
-    const crs = ApplicationState.project.getProjection().getCode();
-
-    // add map crs if not present
-    if (!EPSG.includes(crs)) {
-      EPSG.unshift(crs)
-    }
-
     return {
       layer_type:         undefined,
       wms_panel:          false,
@@ -383,7 +368,7 @@ export default {
       url:                null,
       id:                 null,
       vectorLayer:        null,
-      options:            EPSG,
+      map_crs:            ApplicationState.project.getProjection().getCode(),
       position:           'top', // layer position on map
       persistent:         false,
       loading:            false, // loading reactive status
@@ -999,43 +984,20 @@ export default {
     margin: 10px 0 10px 0px;
     position: relative;
     border: 2px dashed #97A1A8;
-  }
-
-  #addcustomlayer p,
-  #addcustomlayer h4 {
+    display: flex;
+    flex-direction:
+    column;
     text-align: center;
-    line-height: 30px;
-    color: #97A1A8;
-    font-family: Arial;
+    gap: 8px;
+    padding: 20px 0;
+    opacity: .8;
   }
-
-  #addcustomlayer div {
-    text-align: center;
-    line-height: 30px;
-    color: #97A1A8;
-  }
-
-  #addcustomlayer input{
+  #addcustomlayer input {
     position: absolute;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
     outline: none;
     opacity: 0;
     cursor: pointer;
-  }
-  .g3w-add-wms-url-message{
-    font-weight: bold;
-    color: #000000;
-  }
-  .g3w-wmsurl-error {
-    background-color: red;
-  }
-  .g3w-wmsurl-already-added {
-    color: inherit;
-    font-weight: normal;
-    display: inline-block;
+    inset: 0;
   }
   #add_custom_url_wms_input::placeholder {
     font-size: 85%;
@@ -1045,14 +1007,5 @@ export default {
     font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 10px;
-  }
-  button.wms-add-layer-button {
-    width: 100%;
-    margin-top: 10px;
-  }
-  .g3w-wms-external-panel-layer-added-message {
-    font-weight: bold;
-    color: red;
-    margin: 5px 0;
   }
 </style>

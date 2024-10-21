@@ -32,23 +32,6 @@ export const DEFAULT_EDITING_CAPABILITIES = [
 ];
 
 /**
- * @type {string[]}
- */
-export const EPSG = [
-  "EPSG:3003",
-  "EPSG:3004",
-  "EPSG:3045",
-  "EPSG:3857",
-  "EPSG:4326",
-  "EPSG:6708",
-  "EPSG:23032",
-  "EPSG:23033",
-  "EPSG:25833",
-  "EPSG:32632",
-  "EPSG:32633",
-];
-
-/**
  * fid name field referred to fid feature
  * 
  * @type {string}
