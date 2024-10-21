@@ -181,7 +181,7 @@
 
           </template>
 
-          <template v-else-if="'file' === layer_type">
+          <template v-if="'file' === layer_type">
 
             <!-- LAYER PROJECTION -->
             <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer.type)">
@@ -933,7 +933,7 @@ export default {
     },
 
     layer_type(type) {
-      if ('file' == type) {
+      if ('file' === type) {
         this.clearPanel();
       }
     },
