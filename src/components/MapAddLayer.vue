@@ -24,7 +24,8 @@
           <h4
             style = "font-weight: bold"
             v-t   = "'mapcontrols.add_layer_control.header'"
-            class = "modal-title"></h4>
+            class = "modal-title"
+          ></h4>
         </div>
 
         <!-- MODAL BODY -->
@@ -89,7 +90,7 @@
             <button
               v-if                = "!wms_panel"
               v-disabled          = "wms_panel || !(id || '').trim() || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
-              @click.prevent.stop = "addwmsurl"
+              @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success form-group"
             ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
 
@@ -142,9 +143,9 @@
               <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
 
               <!-- LAYER INFO -->
-              <fieldset v-if="abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
+              <fieldset v-if="wms_config.abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
                 <legend style="width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: #222d32;font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
-                <span v-t = "abstract"></span>
+                <span v-t = "wms_config.abstract"></span>
               </fieldset>
 
               <!-- LAYERS NAME   -->
@@ -223,7 +224,8 @@
                 type    = "file"
                 title   = " "
                 @change = "onChangeFile($event)"
-                :accept = "accepted_extension">
+                accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
+              />
               <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
               <h4
                 v-if  = "layer.name"
@@ -342,23 +344,13 @@
             data-dismiss = "modal"
           ></button>
 
-          <!-- SUBMIT BUTTON -->
+          <!-- SUBMIT BUTTON -->  
           <button
-            v-if        = "'wms' === layer_type && wms_panel"
-            v-t         = "'add'"
-            type        = "button"
-            class       = "btn btn-success"
-            @click.stop = "addWMSlayer({ url, position, epsg, layers: selectedlayers, name: name && name.trim() || undefined })"
-            v-disabled  = "0 === selectedlayers.length"
-          ></button>
-  
-          <button
-            v-if        = "'file' === layer_type"
             v-t         = "'add'"
             type        = "button"
             class       = "btn btn-success"
             @click.stop = "addLayer"
-            :disabled   = "!add"
+            v-disabled  = "'wms' === layer_type ? 0 === selectedlayers.length : !add"
           ></button>
 
           </div>
@@ -378,8 +370,6 @@ import GUI                           from 'services/gui';
 import DataRouterService             from 'services/data';
 import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile';
 import { getUniqueDomId }            from 'utils/getUniqueDomId';
-
-const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 
 export default {
 
@@ -408,7 +398,6 @@ export default {
       loading:            false, // loading reactive status
       fields:             [],
       field:              null,
-      accepted_extension: SUPPORTED_FORMAT.map(f => `.${f}`).join(','),
       csv: {
         valid:       false,
         loading:     false,
@@ -424,14 +413,9 @@ export default {
         crs:    null,
         mapCrs: null,
         color: {
-          hex: '#194d33',
-          rgba: {
-            r: 25,
-            g: 77,
-            b: 51,
-            a: 1,
-          },
-          a: 1
+          hex:  '#194d33',
+          rgba: { r: 25, g: 77, b: 51, a: 1, },
+          a:    1,
         },
         data:     null,
         visible:  true,
@@ -441,9 +425,6 @@ export default {
       },
       name:           undefined,  // name of saved layer
       title:          null,       // title of layer
-      abstract:       null,       // abstract
-      map_formats:    [],         // map formats
-      info_formats:   [],         // info formats
       methods:        [],         // @since 3.9.0
       layers:         [],         // Array of layers
       selectedlayers: [],         // Selected layers
@@ -489,7 +470,7 @@ export default {
       let type         = name.split('.').at(-1).toLowerCase();
       const input_file = $(this.$refs.input_file);
 
-      if (!SUPPORTED_FORMAT.includes(type)) {
+      if (!input_file.attr('accept').split(',').includes(`.${type}`)) {
         this.error_message = 'sdk.errors.unsupported_format';
         return;
       }
@@ -574,40 +555,78 @@ export default {
     },
 
     async addLayer() {
-
-      // skip when ..
-      if (!(this.layer.data || this.csv.valid)) {
-        return;
-      }
-
-      // register EPSG
-      try {
-        await Projections.registerProjection(this.layer.crs);
-      } catch(e) {
-        this.error_message = `sdk.errors.${e}`;
-        console.warn(e);
-        return;
-      }
-
       this.loading = true;
 
-      try {
-        this.vectorLayer = await createVectorLayerFromFile(this.layer);
-        await GUI.getService('map').addExternalLayer(this.vectorLayer, {
-          crs:      this.layer.crs,
-          type:     this.layer.type,
-          position: this.position,
-          color:    this.layer.color,
-          field:    this.field,
-          persistent: !!this.persistent,
-        });
-        $(this.$refs.modal_addlayer).modal('hide');
-        this.clearFile();
-      } catch(e) {
-        this.error_message = 'sdk.errors.add_external_layer';
+      if ('wms' === this.layer_type) {
+        const name = (this.name || `wms_${getUniqueDomId()}`).trim();
+
+        try {
+          // check if WMS already added (by name)
+          const data  = this.getLocalWMSData();
+          const found = this.wms_panel && (data.wms[this.url] || []).some(wms => wms.layers.length === this.selectedlayers.length && this.selectedlayers.every(l => wms.layers.includes(l)));
+
+          if (found) {
+            this.showWmsLayersPanel(this.url)
+          }
+
+          const config = {
+            url:      this.url,
+            name,
+            layers:   this.selectedlayers,
+            epsg:     this.epsg,
+            position: this.position,
+            visible:  true,
+            opacity:  1,
+          };
+
+          data.wms[this.url] = data.wms[this.url] || [];
+          data.wms[this.url].push(config);
+
+          this.updateLocalWMSData(data);
+
+          try {
+            await this._addExternalWMSLayer(config);
+          } catch(e) {
+            console.warn(e);
+            GUI.getService('map').removeExternalLayer(name);
+            this.deleteWms(name);
+            setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'sidebar.wms.layer_add_error' }) });
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+        if (this.wms_panel) {
+          this.clearPanel();
+          $('#modal-addlayer').modal('hide');
+        }
       }
 
-      this.loading = false
+      if ('file' === this.layer_type && (this.layer.data || this.csv.valid)) {
+        // register EPSG
+        try {
+          await Projections.registerProjection(this.layer.crs);
+        } catch(e) {
+          this.error_message = `sdk.errors.${e}`;
+          console.warn(e);
+          return;
+        }
+        try {
+          this.vectorLayer = await createVectorLayerFromFile(this.layer);
+          await GUI.getService('map').addExternalLayer(this.vectorLayer, {
+            crs:      this.layer.crs,
+            type:     this.layer.type,
+            position: this.position,
+            color:    this.layer.color,
+            field:    this.field,
+            persistent: !!this.persistent,
+          });
+          $(this.$refs.modal_addlayer).modal('hide');
+          this.clearFile();
+        } catch(e) {
+          this.error_message = 'sdk.errors.add_external_layer';
+        }
+      }
+      this.loading = false;
     },
 
     /**
@@ -639,14 +658,17 @@ export default {
     /**
      * @returns { Promise<void> }
      */
-    async addwmsurl() {
-      this.loading           = true;
-      const found  = this.wms_urls.find(l => l.url == wms.url || l.id == wms.id);
-      let error = false;
+    async addWmsURL() {
+      this.loading = true;
+      const wms    = { url: this.url, id: this.id };
+      const found  = this.wms_urls.find(l => l.url == this.url || l.id == wms.id);
+      let error    = false;
       // when url is not yet added
-      if (!found) {
+      if (found) {
+        this.showWmsLayersPanel(this.url)
+      } else {
         try {
-          const response = await this.getWMSLayers(wms.url);
+          const response = await this.getWMSLayers(this.url);
           // skip on invalid response
           if (!response.result) {
             throw 'invalid response';
@@ -663,7 +685,6 @@ export default {
         }
       }
       this.error   = error;
-      this.added   = !!found;
       this.loading = false;
     },
 
@@ -718,74 +739,6 @@ export default {
     },
 
     /**
-     * Check if a layer is already added to map
-     * 
-     * @param { Object } wms
-     * @param { string } wms.url
-     * @param { string } wms.name
-     * @param { string } wms.epsg
-     * @param { string} wms.position
-     * @param wms.opacity
-     * @param wms.layers
-     * @param {Boolean } wms.visible
-     * 
-     * @returns { Promise<void> }
-     */
-    async addWMSlayer({
-      url,
-      name    = `wms_${getUniqueDomId()}`,
-      layers  = [],
-      epsg,
-      position,
-      visible = true,
-      opacity = 1,
-    } = {}) {
-
-      try {
-        // check if WMS already added (by name)
-        const data = this.getLocalWMSData();
-
-        if (this.wms_panel) {
-          const wms = data.wms[this.url];
-          this.added = wms && wms.some(w => w.layers.length === this.selectedlayers.length
-            ? this.selectedlayers.every(l => w.layers.includes(l))
-            : undefined
-          );
-          if (this.added) {
-            console.warn('WMS Layer already added');
-            return;
-          }
-          this.loading = true;
-        }
-
-        const config = { url, name, layers, epsg, position, visible, opacity };
-
-        if (undefined === data.wms[url]) {
-          data.wms[url] = [config];
-        } else {
-          data.wms[url].push(config);
-        }
-
-        this.updateLocalWMSData(data);
-
-        try {
-          await this._addExternalWMSLayer(config);
-        } catch(e) {
-          console.warn(e);
-          GUI.getService('map').removeExternalLayer(name);
-          this.deleteWms(name);
-          setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'sidebar.wms.layer_add_error' }) });
-        }
-      } catch(e) {
-        console.warn(e);
-      }
-      if (this.wms_panel) {
-        this.clearPanel();
-        $('#modal-addlayer').modal('hide');
-      }
-    },
-
-    /**
      * Get data of wms url from server
      * 
      * @param { string } url
@@ -799,10 +752,8 @@ export default {
       return {
         result:       false,
         layers:       [],
-        info_formats: [], // @deprecated since 3.9.0 (inside methods)
         abstract:     null,
         methods:      [], // @since 3.9.0
-        map_formats:  [], // @deprecated since 3.9.0 (inside methods)
         title:        null
       };
     },
@@ -822,7 +773,6 @@ export default {
       const {
         layers,
         title,
-        abstract,
         methods, // @since 3.9.0
         wmsurl,
       } = this.wms_config;
@@ -837,9 +787,6 @@ export default {
 
       /** Title of wms */
       this.title = title;
-      
-      /** Abstract of wms */
-      this.abstract = abstract;
 
       /** Store for each layer name projection info */
       this.layerProjections = {};
@@ -866,7 +813,6 @@ export default {
      */
     async showWmsLayersPanel(url) {
       let error = false;
-      let added = false;
       try {
         this.loading = true;
         const d = await this.getWMSLayers(url);
@@ -878,9 +824,8 @@ export default {
       } catch(e) {
         console.warn(e);
       } 
-      this.error = error;
-      this.added = added;
-      this.loading      = false;
+      this.error   = error;
+      this.loading = false;
     },
 
     /**
@@ -964,15 +909,14 @@ export default {
      * Handle selected layers change  
      */
     selectedlayers(layers = []) {
-      if (0 === layers.length) {             // Reset epsg and projections to initial values
+      if (0 === layers.length) {        // Reset epsg and projections to initial values
         this.epsg        = null;
         this.projections = [];
       } else if (1 === layers.length) { // take first layer selected supported crss
-        this.epsg        = this.layerProjections[layers[0]].crss[0];
-        this.projections = this.layerProjections[layers[0]].crss;
+        this.epsg        = this.layerProjections[layers.at(-1)].crss[0];
+        this.projections = this.layerProjections[layers.at(-1)].crss;
       } else {                          // get projections by name
-        const name = layers[layers.length -1];
-        this.projections = this.projections.filter(p => this.layerProjections[name].crss.includes(p));
+        this.projections = this.projections.filter(p => this.layerProjections[layers.at(-1)].crss.includes(p));
       }
 
     },
@@ -995,7 +939,7 @@ export default {
     },
 
     wms_panel(enabled) {
-      if(enabled) {
+      if (enabled) {
         this.name = this.wms_config.title + ' ' + getUniqueDomId();
       }
     }
