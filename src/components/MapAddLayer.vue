@@ -93,13 +93,14 @@
             <!-- SUBMIT BUTTON -->
             <button
               v-if                = "!wms_panel"
-              v-disabled          = "wms_panel || !(id || '').trim() || wms_urls.some(l => l.id == id) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
+              v-disabled          = "wms_panel || !(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
-              class               = "btn btn-block btn-success form-group"
+              class               = "btn btn-block btn-success"
             ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
 
             <!-- LIST OF WMS LAYERS (STORED ON LOCAL STORAGE) -->
             <div v-if="!wms_panel" class="form-group">
+              <hr>
               <div
                 v-for = "wms in wms_urls"
                 :key  = "wms.id"
