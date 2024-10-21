@@ -35,7 +35,7 @@
             <label v-t="'layer_type'"></label>
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
               <option disabled :value="undefined" v-t="'choose_type'"></option>
-              <option value="wms" v-t="'remote_wms_url'"></option>
+              <option value="wms"  v-t="'remote_wms_url'"></option>
               <option value="file" v-t="'local_file'"></option>
             </select>
           </div>
@@ -67,6 +67,7 @@
                 list         = "wms_urls"
                 required
               />
+              <small>Inserisci qui l'indirizzo del server o avvia una ricerca tra le connessioni salvate</small>
               <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>
@@ -84,12 +85,15 @@
                 class        = "form-control"
                 required
               />
+              <p v-if = "wms_urls.some(l => l.id === id) && wms_urls.every(l => l.url !== url)" style="color: red; margin: 10px 0;">
+                ⚠️ <b v-t = "'sidebar.wms.layer_id_already_added'"></b>
+              </p>
             </div>
 
             <!-- SUBMIT BUTTON -->
             <button
               v-if                = "!wms_panel"
-              v-disabled          = "wms_panel || !(id || '').trim() || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
+              v-disabled          = "wms_panel || !(id || '').trim() || wms_urls.some(l => l.id == id) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success form-group"
             ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
@@ -741,31 +745,25 @@ export default {
      * @returns { WmsLayersPanel }
      */
     _showWmsLayersPanel(config = {}) {
-      this.wms_panel = true;
+      this.wms_panel  = true;
       this.wms_config = config;
-      const {
-        layers,
-        title,
-        methods, // @since 3.9.0
-        wmsurl,
-      } = this.wms_config;
 
       /** URL of wms */
       try {
-        this.url = methods.GetMap.urls.find(u => 'Get' === u.type).url;
+        this.url = this.wms_config.methods.GetMap.urls.find(u => 'Get' === u.type).url;
       } catch(e) {
         console.warn(e);
-        this.url = wmsurl;
+        this.url = this.wms_config.wmsurl;
       }
 
       /** Title of wms */
-      this.title = title;
+      this.title = this.wms_config.title;
 
       /** Store for each layer name projection info */
       this.layerProjections = {};
 
       /* try to check if projection */
-      layers
+      this.wms_config.layers
         .forEach(({ name, crss, title }) => {
           this.layerProjections[name] = {
             title,
@@ -774,7 +772,7 @@ export default {
         });
 
       /** Layers of wms */
-      this.layers = layers;
+      this.layers = this.wms_config.layers;
     },
 
     /**
