@@ -31,6 +31,7 @@
         <!-- MODAL BODY -->
         <div class = "modal-body">
 
+          <!-- LAYER TYPE -->
           <div class="form-group">
             <label v-t="'layer_type'"></label>
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
@@ -219,6 +220,7 @@
               style   ="width:100%; margin:auto"
             />
 
+            <!-- FILE UPLOAD -->
             <form id = "addcustomlayer">
               <input
                 ref     = "input_file"
@@ -235,79 +237,39 @@
               <span>[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
             </form>
 
+            <!-- CSV FILE (parsing options) -->
             <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
               <bar-loader :loading = "csv.loading"/>
               <div class = "select_field">
-                <label
-                  v-t = "'mapcontrols.add_layer_control.select_csv_separator'"
-                  for = "g3w-select-field-layer">
-                </label>
-                <select
-                  id      = "g3w-select-separator"
-                  class   = "form-control"
-                  v-model = "csv.separator"
-                  >
-                    <option
-                      v-for  = "separator in csv.separators"
-                      :key   = "separator"
-                      :value = "separator">{{ separator }}</option>
+
+                <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
+                <select id = "g3w-select-separator" class = "form-control" v-model = "csv.separator">
+                  <option v-for = "sep in csv.separators" :key = "sep" :value = "sep">{{ sep }}</option>
+                </select>
+
+                <div :class="'select_field ' + (!csv.headers || 0 === csv.headers.length ? 'g3w-disabled' : '')">
+                  <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
+                  <select id = "g3w-select-x-field" class = "form-control" v-model = "csv.x">
+                    <option v-for = "h in csv.headers" :key = "h" :value = "h">{{ header }}</option>
                   </select>
-                  <div
-                    class="select_field"
-                    :class="{'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
-                  >
-                    <label
-                      for = "g3w-select-x-field"
-                      v-t = "'mapcontrols.add_layer_control.select_csv_x_field'">
-                    </label>
-                    <select
-                      class   = "form-control"
-                      id      = "g3w-select-x-field"
-                      v-model = "csv.x"
-                    >
-                      <option
-                        v-for  = "header in csv.headers"
-                        :key   = "header"
-                        :value = "header">{{ header }}</option>
-                    </select>
-                  </div>
-                  <div
-                    class  = "select_field"
-                    :class = "{ 'g3w-disabled': !csv.headers || 0 === csv.headers.length }"
-                  >
-                    <label
-                      v-t = "'mapcontrols.add_layer_control.select_csv_y_field'"
-                      for = "g3w-select-y-field">
-                    </label>
-                    <select
-                      class   = "form-control"
-                      id      = "g3w-select-y-field"
-                      v-model = "csv.y"
-                    >
-                    <option
-                      v-for  = "header in csv.headers"
-                      :key   = "header"
-                      :value = "header">{{ header }}</option>
-                    </select>
-                  </div>
+                </div>
+
+                <div :class="'select_field ' + (!csv.headers || 0 === csv.headers.length ? 'g3w-disabled' : '')">
+                  <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
+                  <select id = "g3w-select-y-field" class = "form-control" v-model = "csv.y">
+                    <option v-for = "h in csv.headers" :key = "h" :value = "h">{{ h }}</option>
+                  </select>
+                </div>
+
               </div>
             </div>
 
-            <div
-              class  = "select_field"
-              :class = "{ 'g3w-disabled': !fields || 0 === fields.length }"
-            >
+            <!-- LAYER LABEL (visible field) -->
+            <div :class = "'select_field ' + (!fields || 0 === fields.length ? 'g3w-disabled' : '')">
               <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
-              <select
-                class   = "form-control"
-                id      = "g3w-select-field-layer"
-                v-model = "field"
-              >
+              <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
                 <option :value = "null">---</option>
-                <option
-                  v-for  = "field in fields"
-                  :key   = "field"
-                  :value = "field">{{ field }}</option>
+                <option v-for = "f in fields" :key = "f" :value = "f">{{ f }}</option>
               </select>
             </div>
 
