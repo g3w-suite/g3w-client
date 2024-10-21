@@ -67,7 +67,7 @@
                 list         = "wms_urls"
                 required
               />
-              <small>Inserisci qui l'indirizzo del server o avvia una ricerca tra le connessioni salvate</small>
+              <small v-t="'add_new_wms_url_help'"></small>
               <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>

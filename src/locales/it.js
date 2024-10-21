@@ -613,6 +613,6 @@ export default {
     /** @since 3.11.0 */
     disconnect_from_wms: 'Disconnetti',
     /** @since 3.11.0 */
-    add_new_wms_url_help: 'Inserisci qui l\'indirizzo del server o inizia a digitare per ricercare tra le connessioni salvate',
+    add_new_wms_url_help: 'Cerca tra le connessioni salvate o aggiungi un nuovo server',
   },
 };
