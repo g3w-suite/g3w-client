@@ -506,7 +506,7 @@ export default {
         },
         add_wms_layer: "Add WMS layer",
         delete_wms_url: "Remove",
-        layer_id_already_added: "WMS Layer already added",
+        layer_id_already_added: "A WMS connection with this name already exists",
         url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
@@ -612,5 +612,7 @@ export default {
     connect_to_wms: 'Connect',
     /** @since 3.11.0 */
     disconnect_from_wms: 'Disconnect',
+    /** @since 3.11.0 */
+    add_new_wms_url_help: 'Search through saved connections or add a new server',
   },
 };
