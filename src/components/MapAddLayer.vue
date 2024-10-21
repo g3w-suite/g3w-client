@@ -45,11 +45,11 @@
           <!-- LOADING INDICATOR -->
           <bar-loader :loading = "loading"/>
 
-          <template v-if="'wms' === layer_type">
+          <template v-if = "'wms' === layer_type">
 
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
-              <label for = "add_custom_url_wms_input" title = "required" v-t="'URL'"></label>
+              <label>URL</label>
               <a
                 :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
                 target = "_blank"
@@ -130,7 +130,7 @@
               </div>
             </div>
 
-            <div v-if="wms_panel" v-disabled = "loading">
+            <div v-if = "wms_panel" v-disabled = "loading">
 
               <button
                 type                   = "button"
@@ -177,7 +177,7 @@
 
           </template>
 
-          <template v-if="'file' === layer_type">
+          <template v-else-if = "'file' === layer_type">
 
             <!-- LAYER PROJECTION -->
             <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer.type)">
