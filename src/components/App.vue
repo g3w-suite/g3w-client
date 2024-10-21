@@ -1194,7 +1194,7 @@ export default {
 
   @media (max-width: 767px) {
     .navbar-toggler                     { display: block; cursor: pointer; user-select: none;}
-    #menu-toggler:checked ~ hgroup      { position: fixed; top: 0; background: var(--skin-color); }
+    #menu-toggler:checked ~ hgroup      { position: fixed; top: 0; background: var(--skin-color); padding-left: 8px; }
     #menu-toggler:checked ~ ul          { position: fixed; inset: 50px 0 0 0; background: var(--skin-color); z-index: 100; flex-direction: column; border-top: 1px solid #fff;}
     #menu-toggler:not(:checked)~*:not(.navbar-toggler),
     .nav-user > .dropdown-toggle,
