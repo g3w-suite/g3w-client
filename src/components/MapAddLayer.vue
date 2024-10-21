@@ -49,7 +49,7 @@
 
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
-              <label>URL</label>
+              <label for = "add_custom_url_wms_input" title = "required" v-t="'URL'"></label>
               <a
                 :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
                 target = "_blank"
@@ -67,7 +67,7 @@
                 list         = "wms_urls"
                 required
               />
-              <small v-t="'add_new_wms_url_help'"></small>
+              <small v-if="!wms_panel" v-t="'add_new_wms_url_help'"></small>
               <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>
