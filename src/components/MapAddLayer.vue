@@ -73,7 +73,7 @@
             </div>
 
             <!-- WMS NAME -->
-            <div v-if="url && !wms_panel" class = "form-group" v-disabled="wms_panel">
+            <div v-if="url && !wms_panel" class = "form-group" v-disabled="wms_panel || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
@@ -910,11 +910,17 @@ export default {
       }
     },
 
-    wms_panel(enabled) {
-      if (enabled) {
+    url() {
+      if (this.url && !this.wms_panel && this.wms_urls.some(l => l.url == this.url)) {
+        this.id = this.wms_urls.find(l => l.url == this.url).id
+      }
+    },
+
+    wms_panel() {
+      if (this.wms_panel) {
         this.name = this.wms_config.title + ' ' + getUniqueDomId();
       }
-    }
+    },
 
   },
 
