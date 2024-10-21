@@ -49,7 +49,7 @@
 
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_panel">
-              <label>URL</label>
+              <label for = "add_custom_url_wms_input">URL</label>
               <a
                 :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
                 target = "_blank"
@@ -903,7 +903,13 @@ export default {
         : this.layers.filter(({ name }) => this.layerProjections[name].crss.includes(this.epsg))
     },
 
-    layer_type(type) {
+    async layer_type(type, oldtype) {
+      if (type && oldtype) {
+        this.layer_type = undefined;
+        await this.$nextTick();
+        this.layer_type = type;
+      }
+
       if ('file' === type) {
         this.clearPanel();
       }
