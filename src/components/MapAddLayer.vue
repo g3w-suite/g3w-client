@@ -445,7 +445,7 @@ export default {
               const csv_headers = headers.split(separator);
               const len = csv_headers.length;
               this.csv_headers = len > 1 ? csv_headers      : [];
-              this.csv.fields  = len > 1 ? csv_headers      : [];
+              this.fields      = len > 1 ? csv_headers      : [];
               this.csv_x       = len > 1 ? csv_headers[0]   : this.csv_x;
               this.csv_y       = len > 1 ? csv_headers[1]   : this.csv_y;
               this.vectorLayer = len > 1 ? this.vectorLayer : null;
