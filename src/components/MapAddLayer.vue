@@ -549,7 +549,6 @@ export default {
           return;
         }
         try {
-          this.vectorLayer = await createVectorLayerFromFile(this.layer);
           await GUI.getService('map').addExternalLayer(this.vectorLayer, {
             crs:      this.layer.crs,
             type:     this.layer.type,
