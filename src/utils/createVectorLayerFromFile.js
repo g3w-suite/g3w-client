@@ -87,15 +87,16 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
 
 }
 
+/**
+ * @TODO handle multiple network links
+ * 
+ * Get last kml file (when doc.kml file has a reference to kml inside another folder)
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
+ */
 async function _createKMZLayer(name, crs, mapCrs, style, data) {
   const zip = new JSZip();
   zip.load(await data.arrayBuffer(data));
-  /**
-   * @TODO handle multiple network links
-   * 
-   * https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
-   */
-  // get the last kml file (when doc.kml file has a reference to kml inside another folder)
   return _createVectorLayer(name, crs, mapCrs, style, zip.file(/.kml$/i).at(-1).asText(), new ol.format.KML({ extractStyles: false }), "EPSG:4326");
 }
 
