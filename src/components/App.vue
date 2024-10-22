@@ -1180,7 +1180,7 @@ export default {
   .user-footer                          { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
   .user-footer .btn-default             { color: rgba(0,0,0,.75); border-color: currentColor; display: flex; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
   .user-footer .btn-default:not(:hover) { background-color: transparent; }
-  .nav-user > .dropdown-menu            { padding: 1px 0 0 0; border: 1px solid rgba(0,0,0,.5); border-radius: 0; }
+  .nav-user > .dropdown-menu            { padding: 1px 0 0 0; border: 1px solid #aaaaaa; border-top-width: 0; border-radius: 0; margin-top: 0 }
 
   .nav-user .triangle                   { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
   .nav-user.open .triangle              { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
