@@ -443,7 +443,7 @@ export default {
             const handle_csv_headers = separator => {
               this.csv_loading = true;
               const csv_headers = headers.split(separator);
-              const len = csv_headers.length;
+              const len        = csv_headers.length;
               this.csv_headers = len > 1 ? csv_headers      : [];
               this.fields      = len > 1 ? csv_headers      : [];
               this.csv_x       = len > 1 ? csv_headers[0]   : this.csv_x;
@@ -483,14 +483,11 @@ export default {
 
       try {
         this.vectorLayer = await createVectorLayerFromFile(this.layer);
+        this.fields = this.vectorLayer.get('_fields');
         await this.$nextTick();
       } catch(e) {
         console.warn(e);
         this.error_message = 'sdk.errors.add_external_layer';
-      }
-      
-      if (this.vectorLayer) {
-        this.fields = this.vectorLayer.get('_fields');
       }
 
     },
