@@ -377,6 +377,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Fälten utesluter varandra.",
           input_validation_error: "Obligatoriskt fält eller fel datatyp.",
+          input_validation_error_type: "Fel datatyp.",
           input_validation_min_field: "Värdet ska vara större eller lika stort som värdet i fältet.",
           input_validation_max_field: "Värdet ska vara mindre eller lika stort som värdet i fältet.",
           input_validation_exclude_values: "Värdet ska vara unikt.",

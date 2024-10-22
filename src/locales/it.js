@@ -389,6 +389,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
           input_validation_error: "Campo obbligatorio o tipo valore non corretto",
+          input_validation_error_type: "Tipo valore non corretto",
           input_validation_min_field: "Valore deve essere magiore uguale a quello del camp ",
           input_validation_max_field: "Valore deve essere minore uguale a quello del campo ",
           input_validation_exclude_values: "Campo deve contenere un valore diverso",

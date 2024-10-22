@@ -372,6 +372,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Pole wzajemnie wykluczające się z",
           input_validation_error: "Obowiązkowe pole lub niewłaściwy typ danych",
+          input_validation_error_type: "Niewłaściwy typ danych",
           input_validation_min_field: "Wartość musi być większa/równa wartości pola",
           input_validation_max_field: "Wartość musi być mniej/równa wartości pola",
           input_validation_exclude_values: "Wartość musi być wyjątkowa",

@@ -371,6 +371,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Feld schließt sich gegenseitig aus mit ",
           input_validation_error: "Obligatorisches Feld oder falscher Datentyp",
+          input_validation_error_type: "Falscher Datentyp",
           input_validation_min_field: "Der Wert muss größer/gleich sein als der Feldwert  ",
           input_validation_max_field: "Der Wert muss kleiner/gleich sein als der Feldwert ",
           input_validation_exclude_values: "Wert muss einmalig sein",

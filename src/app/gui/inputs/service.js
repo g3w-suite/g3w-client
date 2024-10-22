@@ -251,7 +251,9 @@ module.exports = class Service {
       }
       this.state.validate.message = this.state.info || message;
     } else {
-      this.state.validate.message = this.state.info;
+      //@since 3.11.0
+      // in case of state.validate.valid false and not required need to show a right message (info or type)
+      this.state.validate.message = this.state.info || `${t("sdk.form.inputs.input_validation_error_type")} ( ${t("sdk.form.inputs." + this.state.type)} )`;
     }
   };
   /**
