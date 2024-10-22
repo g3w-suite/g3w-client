@@ -290,6 +290,16 @@
             v-t   = "error_message">
           </div>
 
+          <select
+            v-if      = "parse_errors"
+            v-select2 = "parse_errors[0].value"
+            class     = "skin-color"
+            :search   = "false"
+            style     = "width:100%"
+          >
+            <option v-for="({ value, row }) in parse_errors" :key="row" :value="value">[{{ row }}] {{ value }}</option>
+          </select>
+
           <button
             v-t          = "'close'"
             type         = "button"
@@ -316,12 +326,12 @@
 <script>
 import { Chrome as ChromeComponent } from 'vue-color';
 
-import ApplicationState              from 'store/application';
-import Projections                   from 'store/projections';
-import GUI                           from 'services/gui';
-import DataRouterService             from 'services/data';
-import { createVectorLayerFromFile } from 'utils/createVectorLayerFromFile';
-import { getUniqueDomId }            from 'utils/getUniqueDomId';
+import { GEOMETRY_FIELDS } from 'g3w-constants';
+import ApplicationState    from 'store/application';
+import Projections         from 'store/projections';
+import GUI                 from 'services/gui';
+import DataRouterService   from 'services/data';
+import { getUniqueDomId }  from 'utils/getUniqueDomId';
 
 export default {
 
@@ -354,7 +364,6 @@ export default {
         name:   null,
         type:   null,
         crs:    null,
-        mapCrs: null,
         color: {
           hex:  '#194d33',
           rgba: { r: 25, g: 77, b: 51, a: 1, },
@@ -374,6 +383,7 @@ export default {
       epsg:          null,       // choose epsg project
       added:         false,      // added layer (Boolean)
       error_message: '',
+      parse_errors: undefined,
     }
   },
 
@@ -417,8 +427,8 @@ export default {
       }
 
       this.error_message = '';
+      this.parse_errors = undefined;
 
-      this.layer.mapCrs = GUI.getService('map').getEpsg();
       this.layer.name   = name;
       this.layer.title  = name;
       this.layer.id     = name;
@@ -439,7 +449,7 @@ export default {
           // CSV file
           if ('csv' === this.layer.type) {
             input_file.val(null);
-            const [headers, ...values] = evt.target.result.split(/\r\n|\n/).filter(row => row);
+            const [headers, ...values] = evt.target.result.split(/\r\n|\n/).filter(Boolean);
             const handle_csv_headers = separator => {
               this.csv_loading = true;
               const csv_headers = headers.split(separator);
@@ -482,9 +492,81 @@ export default {
       (this.fields || []).splice(0); // reset fields
 
       try {
-        this.vectorLayer = await createVectorLayerFromFile(this.layer);
-        this.fields = this.vectorLayer.get('_fields');
+        const errors = [];
+        const epsg   = ['zip', 'kml', 'kmz'].includes(this.layer.type) ? 'EPSG:4326' : this.layer.crs;
+        let features = [];
+        let data     = this.layer.data || {};
+
+        // SHAPE FILE
+        if ('zip' === this.layer.type) {
+          data = JSON.stringify(await shp(await data.arrayBuffer(data))); // un-zip folder data 
+        }
+
+        // KMZ FILE
+        if ('kmz' === this.layer.type) {
+          const zip = new JSZip();
+          zip.load(await data.arrayBuffer(data));
+          data = zip.file(/.kml$/i).at(-1).asText(); // get last kml file within folder
+        }
+
+        // CSV FILE
+        if ('csv' === this.layer.type) {
+          data.values.forEach((row, i) => {
+            const props = {};
+            const cols = row.split(data.separator);
+            if (cols.length !== data.headers.length) {
+              return errors.push({ row: i + 1, value: data.values[i] });
+            }
+            const coords = [];
+            cols.forEach((value, i) => {
+              if (data.headers[i] === data.x) { coords[0] = 1 * value; }
+              if (data.headers[i] === data.y) { coords[1] = 1 * value; }
+              props[data.headers[i]] = value;
+            });
+            // check if all coordinates are right
+            if (coords.every(d => !Number.isNaN(d))) {
+              const feat = new ol.Feature((new ol.geom.Point(coords)).transform(this.layer.crs, GUI.getService('map').getEpsg()));
+              feat.setId(i); // incremental id
+              feat.setProperties(props);
+              features.push(feat);
+            }
+          });
+        }
+
+        if ('csv' !== this.layer.type) {
+          features = ({
+            'gpx'    : new ol.format.GPX(),
+            'gml'    : new ol.format.WMSGetFeatureInfo(),
+            'geojson': new ol.format.GeoJSON(),
+            'zip'    : new ol.format.GeoJSON(),
+            'kml'    : new ol.format.KML({ extractStyles: false }),
+            'kmz'    : new ol.format.KML({ extractStyles: false }),
+          })[this.layer.type].readFeatures(data, { dataProjection: epsg, featureProjection: GUI.getService('map').getEpsg() || epsg });
+        }
+
+        // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
+        if (['kml', 'kmz'].includes(this.layer.type)) {
+          features.forEach(f => f.unset('styleUrl'));
+        }
+
+        if (errors.length) {
+          this.parse_errors = errors;
+        }
+
+        if (features.length) {
+          this.vectorLayer = new ol.layer.Vector({
+            source: new ol.source.Vector({ features }),
+            name:  this.layer.name,
+            id:    getUniqueDomId(),
+            style: this.layer.style
+          });
+        }
+
         await this.$nextTick();
+
+        if (this.vectorLayer) {
+          this.fields = 'csv' === this.layer.type ? data.headers : Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0);
+        }
       } catch(e) {
         console.warn(e);
         this.error_message = 'sdk.errors.add_external_layer';
@@ -571,6 +653,7 @@ export default {
      */
     clearFile() {
       this.error_message = '';
+      this.parse_errors  = undefined;
       this.loading       = false;
       this.layer.name    = null;
       this.layer.title   = null;
