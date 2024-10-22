@@ -1,66 +1,77 @@
 import { GEOMETRY_FIELDS } from 'g3w-constants';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 
-function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {
-  epsg = undefined === epsg ? crs : epsg;
+/**
+ * @param { Object } file
+ * @param { string } file.name
+ * @param file.type
+ * @param file.crs
+ * @param file.mapCrs
+ * @param file.data
+ * @param file.style
+ * 
+ * @returns { Promise } layer
+ */
+export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data, style } = {}) {
+  const errors   = [];
+  const epsg     = ['zip', 'kml', 'kmz'].includes(type) ? 'EPSG:4326' : crs;
+  const features = [];
 
-  const features = format.readFeatures(data, { dataProjection: epsg, featureProjection: mapCrs || epsg });
+  // SHAPE FILE
+  if ('zip' === type) {
+    data = JSON.stringify(await shp(await data.arrayBuffer(data))); // un-zip folder data 
+  }
 
-  // skip when no features
-  if (0 === features.length) {
-    return;
+  // KMZ FILE
+  if ('kmz' === type) {
+    const zip = new JSZip();
+    zip.load(await data.arrayBuffer(data));
+    data = zip.file(/.kml$/i).at(-1).asText(); // get last kml file within folder
+  }
+
+  // CSV FILE
+  if ('csv' === type) {
+    data.values.forEach((row, i) => {
+      const props = {};
+      const cols = row.split(data.separator);
+      if (cols.length === data.headers.length)  {
+        const coords = [];
+        cols.forEach((value, i) => {
+          if (data.headers[i] === data.x) { coords[0] = 1 * value; }
+          if (data.headers[i] === data.y) { coords[1] = 1 * value; }
+          props[data.headers[i]] = value;
+        });
+        // check if all coordinates are right
+        if (coords.every(d => !Number.isNaN(d))) {
+          const geom = new ol.geom.Point(coords);
+          if (crs !== mapCrs) {
+            geom.transform(crs, mapCrs);
+          }
+          const feat = new ol.Feature(geom);
+          feat.setId(i); // incremental id
+          feat.setProperties(props);
+          features.push(feat);
+        }
+      } else {
+        errors.push({ row: i + 1, value: data.values[i] });
+      }
+    });
+  }
+
+  if ('csv' !== type) {
+    features = ({
+      'gpx'    : new ol.format.GPX(),
+      'gml'    : new ol.format.WMSGetFeatureInfo(),
+      'geojson': new ol.format.GeoJSON(),
+      'zip'    : new ol.format.GeoJSON(),
+      'kml'    : new ol.format.KML({ extractStyles: false }),
+      'kmz'    : new ol.format.KML({ extractStyles: false }),
+    })[type].readFeatures(data, { dataProjection: epsg, featureProjection: mapCrs || epsg });
   }
 
   // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
-  if (format instanceof ol.format.KML) {
+  if (['kml', 'kmz'].includes(type)) {
     features.forEach(f => f.unset('styleUrl'));
-  }
-
-  return new ol.layer.Vector({
-    source: new ol.source.Vector({ features }),
-    name,
-    _fields: Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0),
-    id:      getUniqueDomId(),
-    style
-  });
-}
-
-function _createCSVLayer(name, crs, mapCrs, style, data) {
-  const features  = [];
-  const errors = [];
-
-  data.values.forEach((row, i) => {
-    const props = {};
-    const cols = row.split(data.separator);
-    if (cols.length === data.headers.length)  {
-      const coords = [];
-      cols.forEach((value, i) => {
-        if (data.headers[i] === data.x) {
-          coords[0] = 1 * value;
-        }
-        if (data.headers[i] === data.y) {
-          coords[1] = 1 * value;
-        }
-        props[data.headers[i]] = value;
-      });
-      // check if all coordinates are right
-      if (coords.every(d => !Number.isNaN(d))) {
-        const geometry = new ol.geom.Point(coords);
-        if (crs !== mapCrs) {
-          geometry.transform(crs, mapCrs);
-        }
-        const feat = new ol.Feature(geometry);
-        feat.setId(i); // incremental id
-        feat.setProperties(props);
-        features.push(feat);
-      }
-    } else {
-      errors.push({ row: i + 1, value: data.values[i] });
-    }
-  });
-
-  if (0 === features.length) {
-    return Promise.reject();
   }
 
   if (errors.length) {
@@ -77,49 +88,15 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
     });
   }
 
-  return new ol.layer.Vector({
-    source: new ol.source.Vector({ features }),
-    name,
-    _fields: data.headers,
-    id:      getUniqueDomId(),
-    style,
-  });
-
-}
-
-/**
- * @TODO handle multiple network links
- * 
- * Get last kml file (when doc.kml file has a reference to kml inside another folder)
- * 
- * @see https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
- */
-async function _createKMZLayer(name, crs, mapCrs, style, data) {
-  const zip = new JSZip();
-  zip.load(await data.arrayBuffer(data));
-  return _createVectorLayer(name, crs, mapCrs, style, zip.file(/.kml$/i).at(-1).asText(), new ol.format.KML({ extractStyles: false }), "EPSG:4326");
-}
-
-/**
- * @param { Object } file
- * @param { string } file.name
- * @param file.type
- * @param file.crs
- * @param file.mapCrs
- * @param file.data
- * @param file.style
- * 
- * @returns { Promise } layer
- */
-export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data, style } = {}) {
-  switch (type) {
-    case 'gpx'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GPX());
-    case 'gml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.WMSGetFeatureInfo());
-    case 'geojson': return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GeoJSON());
-    case 'zip'    : return _createVectorLayer(name, crs, mapCrs, style, JSON.stringify(await shp(await data.arrayBuffer(data))), new ol.format.GeoJSON({}), "EPSG:4326");
-    case 'kml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.KML({ extractStyles: false }), "EPSG:4326");
-    case 'kmz'    : return _createKMZLayer(name, crs, mapCrs, style, data);
-    case 'csv'    : return _createCSVLayer(name, crs, mapCrs, style, data);
+  if (features.length) {
+    return new ol.layer.Vector({
+      source: new ol.source.Vector({ features }),
+      name,
+      _fields: 'csv' === type ? data.headers : Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0),
+      id:      getUniqueDomId(),
+      style
+    });
   }
-  console.warn('invalid file type', type);
+
+  return Promise.reject();
 }
