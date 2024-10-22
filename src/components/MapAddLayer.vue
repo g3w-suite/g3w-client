@@ -77,7 +77,7 @@
             </div>
 
             <!-- WMS NAME -->
-            <div v-if="url && !wms_panel" class = "form-group" v-disabled="wms_panel || wms_urls.some(l => l.url == url)">
+            <div v-if="url && !wms_panel && !loading" class = "form-group" v-disabled="wms_panel || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
