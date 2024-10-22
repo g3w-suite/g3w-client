@@ -34,26 +34,25 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
     data.values.forEach((row, i) => {
       const props = {};
       const cols = row.split(data.separator);
-      if (cols.length === data.headers.length)  {
-        const coords = [];
-        cols.forEach((value, i) => {
-          if (data.headers[i] === data.x) { coords[0] = 1 * value; }
-          if (data.headers[i] === data.y) { coords[1] = 1 * value; }
-          props[data.headers[i]] = value;
-        });
-        // check if all coordinates are right
-        if (coords.every(d => !Number.isNaN(d))) {
-          const geom = new ol.geom.Point(coords);
-          if (crs !== mapCrs) {
-            geom.transform(crs, mapCrs);
-          }
-          const feat = new ol.Feature(geom);
-          feat.setId(i); // incremental id
-          feat.setProperties(props);
-          features.push(feat);
+      if (cols.length !== data.headers.length) {
+        return errors.push({ row: i + 1, value: data.values[i] });
+      }
+      const coords = [];
+      cols.forEach((value, i) => {
+        if (data.headers[i] === data.x) { coords[0] = 1 * value; }
+        if (data.headers[i] === data.y) { coords[1] = 1 * value; }
+        props[data.headers[i]] = value;
+      });
+      // check if all coordinates are right
+      if (coords.every(d => !Number.isNaN(d))) {
+        const geom = new ol.geom.Point(coords);
+        if (crs !== mapCrs) {
+          geom.transform(crs, mapCrs);
         }
-      } else {
-        errors.push({ row: i + 1, value: data.values[i] });
+        const feat = new ol.Feature(geom);
+        feat.setId(i); // incremental id
+        feat.setProperties(props);
+        features.push(feat);
       }
     });
   }
@@ -80,7 +79,10 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
       message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
       hooks: {
         footer: {
-          template: `<select v-select2="errors[0].value" class="skin-color" :search="false" style="width:100%"><option v-for="e in errors" :key="e.row" :value="e.value">[{{ e.row}}] {{e.value}}</option></select>`,
+          template: /* html */
+          `<select v-select2="errors[0].value" class="skin-color" :search="false" style="width:100%">
+            <option v-for="e in errors" :key="e.row" :value="e.value">[{{ e.row}}] {{e.value}}</option>
+          </select>`,
           data: () => ({ errors }),
         }
       },
