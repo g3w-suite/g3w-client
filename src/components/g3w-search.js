@@ -177,7 +177,7 @@ async function doSearch({
         formatter: 1,
         feature_count,
         raw:        false, // in order to get a raw response
-        autofilter: state.autofilter //Boolean autofilter by server
+        autofilter: show && state.autofilter //Boolean autofilter by server
       },
       outputs: show && { title: state.title }
     });
@@ -217,7 +217,8 @@ async function doSearch({
             })),
           }),
           formatter: 1,
-          feature_count
+          feature_count,
+          autofilter: state.autofilter //Boolean autofilter by server
         },
         outputs: {
           title: state.title
