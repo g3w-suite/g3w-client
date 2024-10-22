@@ -1,5 +1,5 @@
 import { GEOMETRY_FIELDS } from 'g3w-constants';
-import { getUniqueDomId }  from "./getUniqueDomId";
+import { getUniqueDomId }  from 'utils/getUniqueDomId';
 
 function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {
   epsg = undefined === epsg ? crs : epsg;
@@ -26,67 +26,51 @@ function _createVectorLayer(name, crs, mapCrs, style, data, format, epsg) {
 }
 
 function _createCSVLayer(name, crs, mapCrs, style, data) {
-  const {
-    headers,
-    separator,
-    values,
-    x,
-    y,
-  } = data;
-
   const features  = [];
-  const errorrows = [];
+  const errors = [];
 
-  values
-    .forEach((row, index) => {
-      const properties = {};
-      const rowvalues = row.split(separator);
-      if (rowvalues.length === headers.length)  {
-        const coordinates = [];
-        rowvalues.forEach((value, index) => {
-          const field = headers[index];
-          if (field === x) {
-            coordinates[0] = 1 * value;
-          }
-          if (field === y) {
-            coordinates[1] = 1 * value;
-          }
-          properties[field] = value;
-        });
-        // check if all coordinates are right
-        if (undefined === coordinates.find(value => Number.isNaN(value))) {
-          const geometry = new ol.geom.Point(coordinates);
-          if (crs !== mapCrs) {
-            geometry.transform(crs, mapCrs);
-          }
-          const feature = new ol.Feature(geometry);
-          feature.setId(index); // incremental id
-          feature.setProperties(properties);
-          features.push(feature);
+  data.values.forEach((row, i) => {
+    const props = {};
+    const cols = row.split(data.separator);
+    if (cols.length === data.headers.length)  {
+      const coords = [];
+      cols.forEach((value, i) => {
+        if (data.headers[i] === data.x) {
+          coords[0] = 1 * value;
         }
-      } else {
-        errorrows.push({ row: index + 1, value: values[index] });
+        if (data.headers[i] === data.y) {
+          coords[1] = 1 * value;
+        }
+        props[data.headers[i]] = value;
+      });
+      // check if all coordinates are right
+      if (coords.every(d => !Number.isNaN(d))) {
+        const geometry = new ol.geom.Point(coords);
+        if (crs !== mapCrs) {
+          geometry.transform(crs, mapCrs);
+        }
+        const feat = new ol.Feature(geometry);
+        feat.setId(i); // incremental id
+        feat.setProperties(props);
+        features.push(feat);
       }
-    });
+    } else {
+      errors.push({ row: i + 1, value: data.values[i] });
+    }
+  });
 
   if (0 === features.length) {
     return Promise.reject();
   }
 
-  if (errorrows.length) {
+  if (errors.length) {
     GUI.showUserMessage({
       type: 'warning',
       message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
       hooks: {
         footer: {
-          template: `<select v-select2="errorrows[0].value" class="skin-color" :search="false" style="width:100%">
-              <option v-for="errorrow in errorrows" :key="errorrow.row" :value="errorrow.value">[{{ errorrow.row}}] {{errorrow.value}}</option>
-          </select>`,
-          data() {
-            return {
-              errorrows,
-            };
-          }
+          template: `<select v-select2="errors[0].value" class="skin-color" :search="false" style="width:100%"><option v-for="e in errors" :key="e.row" :value="e.value">[{{ e.row}}] {{e.value}}</option></select>`,
+          data: () => ({ errors }),
         }
       },
       autoclose: false,
@@ -96,7 +80,7 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
   return new ol.layer.Vector({
     source: new ol.source.Vector({ features }),
     name,
-    _fields: headers,
+    _fields: data.headers,
     id:      getUniqueDomId(),
     style,
   });
@@ -104,43 +88,15 @@ function _createCSVLayer(name, crs, mapCrs, style, data) {
 }
 
 async function _createKMZLayer(name, crs, mapCrs, style, data) {
-  try {
-    return await new Promise(async (resolve, reject) => {
-      const zip = new JSZip();
-      zip.load(await data.arrayBuffer(data));
-      const kmlFiles = zip.file(/.kml$/i);
-      /**
-       * @TODO handle multiple network links
-       * 
-       * https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
-       */
-      // get the last kml file (when doc.kml file has a reference to kml inside another folder)
-      const kmlFile = kmlFiles[kmlFiles.length - 1];
-      if (kmlFile) {
-        resolve(_createVectorLayer(name, crs, mapCrs, style, kmlFile.asText(), new ol.format.KML({ extractStyles: false }), "EPSG:4326"));
-      } else {
-        reject();
-      }
-    });
-  } catch(e) {
-    console.warn(e);
-    return Promise.reject(e);
-  }
-}
-
-async function _createZIPLayer(name, crs, mapCrs, style, data) {
-  try {
-    return await new Promise(async (resolve, reject) => {
-      shp(await data.arrayBuffer(data))
-        .then(geojson => {
-          resolve(_createVectorLayer(name, crs, mapCrs, style, JSON.stringify(geojson), new ol.format.GeoJSON({}), "EPSG:4326"));
-        })
-        .catch(e => {console.warn(e); reject(e); })
-    });
-  } catch(e) {
-    console.warn(e);
-    return Promise.reject(e);
-  }
+  const zip = new JSZip();
+  zip.load(await data.arrayBuffer(data));
+  /**
+   * @TODO handle multiple network links
+   * 
+   * https://github.com/g3w-suite/g3w-client/pull/430/files#r1232092732
+   */
+  // get the last kml file (when doc.kml file has a reference to kml inside another folder)
+  return _createVectorLayer(name, crs, mapCrs, style, zip.file(/.kml$/i).at(-1).asText(), new ol.format.KML({ extractStyles: false }), "EPSG:4326");
 }
 
 /**
@@ -154,22 +110,15 @@ async function _createZIPLayer(name, crs, mapCrs, style, data) {
  * 
  * @returns { Promise } layer
  */
-export async function createVectorLayerFromFile({
-  name,
-  type,
-  crs,
-  mapCrs,
-  data,
-  style
-} = {}) {
+export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data, style } = {}) {
   switch (type) {
     case 'gpx'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GPX());
     case 'gml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.WMSGetFeatureInfo());
     case 'geojson': return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.GeoJSON());
-    case 'kml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.KML({ extractStyles: false }),  "EPSG:4326");
-    case 'csv'    : return _createCSVLayer(name, crs, mapCrs, style, data);
+    case 'zip'    : return _createVectorLayer(name, crs, mapCrs, style, JSON.stringify(await shp(await data.arrayBuffer(data))), new ol.format.GeoJSON({}), "EPSG:4326");
+    case 'kml'    : return _createVectorLayer(name, crs, mapCrs, style, data, new ol.format.KML({ extractStyles: false }), "EPSG:4326");
     case 'kmz'    : return _createKMZLayer(name, crs, mapCrs, style, data);
-    case 'zip'    : return _createZIPLayer(name, crs, mapCrs, style, data);
+    case 'csv'    : return _createCSVLayer(name, crs, mapCrs, style, data);
   }
   console.warn('invalid file type', type);
 }

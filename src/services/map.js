@@ -8,7 +8,6 @@ import G3WObject                            from 'g3w-object';
 import ApplicationState                     from 'store/application';
 import PluginsRegistry                      from 'store/plugins';
 import Projections                          from "store/projections";
-import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
 import { isPointGeometryType }              from 'utils/isPointGeometryType';
 import { isLineGeometryType }               from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }            from 'utils/isPolygonGeometryType';
@@ -2314,12 +2313,7 @@ class MapService extends G3WObject {
     const layer = ({
       'vector': vectorLayer,
       'wms':    externalLayer,
-    })[type] || await createVectorLayerFromFile({
-      name: externalLayer.name,
-      type,
-      crs:  externalLayer.crs,
-      data: externalLayer.data,
-    });
+    })[type];
 
     // skip if is not a valid layer
     if (!layer) {
