@@ -13,9 +13,9 @@ import { getUniqueDomId }  from 'utils/getUniqueDomId';
  * @returns { Promise } layer
  */
 export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data, style } = {}) {
-  const errors   = [];
-  const epsg     = ['zip', 'kml', 'kmz'].includes(type) ? 'EPSG:4326' : crs;
-  const features = [];
+  const errors = [];
+  const epsg   = ['zip', 'kml', 'kmz'].includes(type) ? 'EPSG:4326' : crs;
+  let features = [];
 
   // SHAPE FILE
   if ('zip' === type) {
@@ -45,11 +45,7 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
       });
       // check if all coordinates are right
       if (coords.every(d => !Number.isNaN(d))) {
-        const geom = new ol.geom.Point(coords);
-        if (crs !== mapCrs) {
-          geom.transform(crs, mapCrs);
-        }
-        const feat = new ol.Feature(geom);
+        const feat = new ol.Feature((new ol.geom.Point(coords)).transform(crs, mapCrs));
         feat.setId(i); // incremental id
         feat.setProperties(props);
         features.push(feat);
