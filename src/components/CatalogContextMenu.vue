@@ -729,7 +729,7 @@
        * @since 3.11.0
        */
        canEdit(layer) {
-        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() : g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing');
+        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing.visible: g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing');
       },
 
       /**
