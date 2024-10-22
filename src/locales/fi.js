@@ -377,6 +377,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Kenttä toisensa poissulkeva.",
           input_validation_error: "Pakollinen kenttä tai väärä tietotyyppi.",
+          input_validation_error_type: "Väärä tietotyyppi.",
           input_validation_min_field: "Arvon tulee olla suurempi tai yhtäsuuri kuin kentän arvo.",
           input_validation_max_field: "Arvon tulee olla pienempi tai yhtäsuuri kuin kentän arvo.",
           input_validation_exclude_values: "Arvon tulee olla uniikki.",

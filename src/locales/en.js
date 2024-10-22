@@ -391,6 +391,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Field mutually exclusive with ",
           input_validation_error: "Mandatory Field or wrong data type",
+          input_validation_error_type: "Wrong data type",
           input_validation_min_field: "Value has to be more/equal to field value  ",
           input_validation_max_field: "Value has to be less/equal to field value ",
           input_validation_exclude_values: "Value has to be unique",
