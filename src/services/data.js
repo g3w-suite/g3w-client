@@ -232,6 +232,7 @@ export default {
    * @param options.feature_count
    * @param options.formatter
    * @param options.ordering
+   * @param options.autofilter //@since 3.11.0
    * 
    * @returns { Promise<{ data: [], query: { type: 'search', search: * }, type: 'api' | 'ows' }> }
    */
@@ -243,6 +244,7 @@ export default {
     feature_count,
     formatter: 1,
     ordering,
+    autofilter: false,
   }) {
     const { layer, ...params } = options;
     params.filter              = [].concat(params.filter); // check if filter is array
