@@ -46,52 +46,7 @@
           <!-- LOADING INDICATOR -->
           <bar-loader :loading = "loading"/>
 
-          <div v-if = "wms_panel" v-disabled = "loading">
-
-            <button
-              type                   = "button"
-              class                  = "close"
-              style                  = "float: right; padding: 5px 10px; margin-top: -5px;outline: 1px solid; color: red; opacity: 1;"
-              @click                 = "clearPanel"
-              v-t-tooltip:left.create = "'disconnect_from_wms'"
-            >&times;</button>
-
-            <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
-
-            <!-- LAYER INFO -->
-            <fieldset v-if="wms_config.abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
-              <legend style="width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: #222d32;font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
-              <span v-t = "wms_config.abstract"></span>
-            </fieldset>
-
-            <!-- LAYERS NAME   -->
-            <label for = "g3w-wms-layers" v-t = "'sidebar.wms.panel.label.layers'"></label>
-            <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_layers'">
-              <option v-for = "layer in layers" :key = "layer.name" :value = "layer.name">{{ layer.title }}</option>
-            </select>
-
-            <!-- EPSG PROJECTIONS   -->
-            <label for = "g3w-wms-projections" v-t = "'sidebar.wms.panel.label.projections'"></label>
-            <select id = "g3w-wms-projections" v-select2 = "'epsg'">
-              <option v-for = "proj in projections" :key = "proj" :value = "proj">{{ proj }}</option>
-            </select>
-
-            <!-- LAYER POSITION -->
-            <div class = "form-group">
-              <label for = "position-layer" v-t = "'layer_position.message'"></label>
-              <select id = "position-layer" class = "form-control" v-model = "position">
-                <option :value = "'top'"    v-t = "'layer_position.top'"></option>
-                <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
-              </select>
-            </div>
-
-            <!-- NAME OF LAYER TO SAVE -->
-            <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
-            <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
-
-          </div>
-
-          <template v-if = "'wms' === layer_type && !wms_panel">
+          <template v-if = "'wms' === layer_type">
 
             <!-- DOCS -->
             <a
@@ -115,8 +70,8 @@
                 list         = "wms_urls"
                 required
               />
-              <small v-if = "!wms_panel" v-t="'add_new_wms_url_help'"></small>
-              <datalist id = "wms_urls">
+              <small v-if="!wms_panel" v-t="'add_new_wms_url_help'"></small>
+              <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>
             </div>
@@ -181,6 +136,51 @@
                 <small>{{ wms.url }}</small>
 
               </div>
+            </div>
+
+            <div v-if = "wms_panel" v-disabled = "loading">
+
+              <button
+                type                   = "button"
+                class                  = "close"
+                style                  = "float: right; padding: 5px 10px; margin-top: -5px;outline: 1px solid; color: red; opacity: 1;"
+                @click                 = "clearPanel"
+                v-t-tooltip:left.create = "'disconnect_from_wms'"
+              >&times;</button>
+
+              <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
+
+              <!-- LAYER INFO -->
+              <fieldset v-if="wms_config.abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
+                <legend style="width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: #222d32;font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
+                <span v-t = "wms_config.abstract"></span>
+              </fieldset>
+
+              <!-- LAYERS NAME   -->
+              <label for = "g3w-wms-layers" v-t = "'sidebar.wms.panel.label.layers'"></label>
+              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_layers'">
+                <option v-for = "layer in layers" :key = "layer.name" :value = "layer.name">{{ layer.title }}</option>
+              </select>
+
+              <!-- EPSG PROJECTIONS   -->
+              <label for = "g3w-wms-projections" v-t = "'sidebar.wms.panel.label.projections'"></label>
+              <select id = "g3w-wms-projections" v-select2 = "'epsg'">
+                <option v-for = "proj in projections" :key = "proj" :value = "proj">{{ proj }}</option>
+              </select>
+
+              <!-- LAYER POSITION -->
+              <div class = "form-group">
+                <label for = "position-layer" v-t = "'layer_position.message'"></label>
+                <select id = "position-layer" class = "form-control" v-model = "position">
+                  <option :value = "'top'"    v-t = "'layer_position.top'"></option>
+                  <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
+                </select>
+              </div>
+
+              <!-- NAME OF LAYER TO SAVE -->
+              <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
+              <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
+
             </div>
 
           </template>
