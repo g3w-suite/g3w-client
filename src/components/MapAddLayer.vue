@@ -96,7 +96,7 @@
             <!-- SUBMIT BUTTON -->
             <button
               v-if                = "!wms_panel"
-              v-disabled          = "wms_panel || !(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
+              v-disabled          = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success"
             ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
@@ -185,7 +185,7 @@
 
           </template>
 
-          <template v-else-if = "'file' === layer_type">
+          <template v-if = "'file' === layer_type">
 
             <!-- LAYER PROJECTION -->
             <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer.type)">
