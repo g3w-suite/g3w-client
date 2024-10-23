@@ -535,7 +535,7 @@ export default {
       add_layer_control: {
         header: "Aggiungi livello",
         select_projection: "Sistema di riferimento",
-        select_field_to_show: "Campo da visualizzare sulla mappa",
+        select_field_to_show: "valore mostrato sulla mappa",
         select_csv_separator: "Seleziona il separatore",
         select_csv_x_field: "Seleziona il campo X",
         select_csv_y_field: "Seleziona il campo Y",
@@ -615,5 +615,7 @@ export default {
     disconnect_from_wms: 'Disconnetti',
     /** @since 3.11.0 */
     add_new_wms_url_help: 'Cerca tra le connessioni salvate o aggiungi un nuovo server',
+    /** @since 3.11.0 */
+    label: "Etichetta",
   },
 };

@@ -534,7 +534,7 @@ export default {
       add_layer_control: {
         header: "Add Layer",
         select_projection: "Projection",
-        select_field_to_show: "Field to show on map",
+        select_field_to_show: "field shown on map",
         select_csv_separator: "Select delimiter",
         select_csv_x_field: "Select X field",
         select_csv_y_field: "Select Y field",
@@ -615,5 +615,7 @@ export default {
     disconnect_from_wms: 'Disconnect',
     /** @since 3.11.0 */
     add_new_wms_url_help: 'Search through saved connections or add a new server',
+    /** @since 3.11.0 */
+    label: "Label",
   },
 };

@@ -185,7 +185,7 @@
                 <b v-else-if = "layer_name">{{ layer_name }}</b>
               </h4>
               <i v-if="!layer_data" :class = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
-              <span v-if="!layer_data">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
+              <span v-if="!layer_data" style="font-family: Monospace;">.gml, .geojson, .kml, .kmz, .gpx, .csv, .zip (shapefile)</span>
             </form>
 
             <!-- LAYER PROJECTION -->
@@ -245,11 +245,12 @@
 
             <!-- LAYER LABEL (visible field) -->
             <div v-if="(fields || []).length" class="form-group">
-              <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
+              <label v-t = "'label'" for = "g3w-select-field-layer"></label>
               <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
                 <option :value = "null">---</option>
                 <option v-for = "f in fields" :key = "f" :value = "f">{{ f }}</option>
               </select>
+              <small v-t = "'mapcontrols.add_layer_control.select_field_to_show'"></small>
             </div>
 
             <!-- LAYER COLOR  -->
