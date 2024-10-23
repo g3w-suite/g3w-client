@@ -296,7 +296,7 @@
 
   export default {
 
-    name: "metadata-project",
+    name: "modal-metadata",
 
     data() {
       const project = ApplicationState.project.getState();

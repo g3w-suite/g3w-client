@@ -502,37 +502,10 @@
         aria-hidden     = "true"
       ></div>
 
-      <!-- MODAL LOGIN -->
-      <div
-        v-if     = "!user && has_iframe_login"
-        id       = "modal-login"
-        class    = "modal fade"
-        tabindex = "-1"
-        role     = "document"
-      >
-        <div class = "modal-dialog" style = "height: 60%; width: 60%;">
-          <div class = "modal-content" style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
-            <button
-              type         = "button"
-              class        = "close"
-              data-dismiss = "modal"
-              style        = "position: absolute;inset: 0 0 auto auto;padding: 10px 15px;"
-            >&times;</button>
-            <span style="grid-area: iframe;">Loading..</span>
-            <iframe
-              loading = "lazy"
-              style   = "border: 0; width: 100%; height: 100%; grid-area: iframe;"
-              :src    = "login_url"
-              @load   = "onIframeLoaded"
-              ref     = "login_iframe"
-            ></iframe>
-          </div>
-        </div>
-      </div>
-
-      <map-add-layer />
-      <change-map />
-      <metadata-project />
+      <modal-login v-if = "!user && has_iframe_login" />
+      <modal-addlayer />
+      <modal-changemap />
+      <modal-metadata />
 
     </Teleport>
 
@@ -558,10 +531,10 @@ import { sameOrigin }     from 'utils/sameOrigin';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
-import MapAddLayer        from 'components/MapAddLayer.vue';
-import ChangeMap          from 'components/ChangeMap.vue';
-import MetadataProject    from 'components/MetadataProject.vue';
-
+import ModalLogin         from 'components/ModalLogin.vue';
+import ModalAddlayer      from 'components/ModalAddLayer.vue';
+import ModalChangemap     from 'components/ModalChangeMap.vue';
+import ModalMetadata      from 'components/ModalMetadata.vue';
 
 const { t }               = require('g3w-i18n');
 
@@ -598,9 +571,10 @@ export default {
     CookieLaw,
     userMessage,
     CatalogContextMenu,
-    MapAddLayer,
-    ChangeMap,
-    MetadataProject,
+    ModalLogin,
+    ModalAddlayer,
+    ModalChangemap,
+    ModalMetadata,
     Teleport,
   },
 
@@ -761,16 +735,6 @@ export default {
   },
 
   methods: {
-
-    /**
-     * @since v3.11
-     */
-    onIframeLoaded(e) {
-      const iframe = this.$refs.login_iframe.contentWindow.g3wsdk && this.$refs.login_iframe.contentWindow.g3wsdk.core.ApplicationState;
-      if (iframe && iframe.user && iframe.user.logout_url) {
-        window.location.reload();
-      }
-    },
 
     /**
      * Language switcher item template (select2)

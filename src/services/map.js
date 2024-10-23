@@ -2203,7 +2203,7 @@ class MapService extends G3WObject {
         features: []
       };
 
-      if (options.color && options.field) {
+      if (options.color) {
         vectorLayer.setStyle(Object.assign(
           feat => {
             options.color = options.color.rgba ? 'rgba(' + [options.color.rgba.r, options.color.rgba.g, options.color.rgba.b, options.color.rgba.a].join() + ')' : options.color;

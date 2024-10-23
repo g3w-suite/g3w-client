@@ -126,7 +126,7 @@ async function get_group(id) {
 export default {
 
   /** @since 3.11.0 */
-  name: 'change-map',
+  name: 'modal-changemap',
 
   data() {
     return {

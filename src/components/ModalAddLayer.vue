@@ -1,6 +1,6 @@
 <!--
   @file
-  @since v3.7
+  @since 3.11.0
 -->
 
 <template>
@@ -59,7 +59,7 @@
             </a>
 
             <!-- WMS URL -->
-            <div class = "form-group" v-disabled="wms_panel">
+            <div class = "form-group" v-disabled="wms_config">
               <label for = "add_custom_url_wms_input">URL</label>
               <input
                 id           = "add_custom_url_wms_input"
@@ -70,14 +70,14 @@
                 list         = "wms_urls"
                 required
               />
-              <small v-if="!wms_panel" v-t="'add_new_wms_url_help'"></small>
+              <small v-if="!wms_config" v-t="'add_new_wms_url_help'"></small>
               <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>
             </div>
 
             <!-- WMS NAME -->
-            <div v-if="url && !wms_panel && !loading" class = "form-group" v-disabled="wms_panel || wms_urls.some(l => l.url == url)">
+            <div v-if="url && !wms_config && !loading" class = "form-group" v-disabled="wms_config || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
@@ -95,50 +95,26 @@
 
             <!-- SUBMIT BUTTON -->
             <button
-              v-if                = "!wms_panel"
+              v-if                = "!wms_config"
               v-disabled          = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success"
             ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
 
-            <!-- LIST OF WMS LAYERS (STORED ON LOCAL STORAGE) -->
-            <div v-if="!wms_panel" class="form-group">
+            <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
+            <div v-if="!wms_config" class="form-group">
               <hr>
-              <div
-                v-for = "wms in wms_urls"
-                :key  = "wms.id"
-                style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;"
-              >
+              <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
-
-                  <!-- WMS NAME -->
                   <b style = "flex-grow: 1;">{{ wms.id }}</b>
-
-                  <!-- ADD NEW WMS LAYER -->
-                  <i
-                    @click.stop            = "showWmsLayersPanel(wms.url)"
-                    v-t-tooltip:top.create = "'connect_to_wms'"
-                    :class                 = "$fa('eye')"
-                    style                  = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"
-                  ></i>
-
-                  <!-- DELETE WMS -->
-                  <i
-                    @click.stop            = "deleteWmsUrl(wms.id)"
-                    v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'"
-                    :class                 = "$fa('trash')"
-                    style                  = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"
-                  ></i>
-
+                  <i @click.stop = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'connect_to_wms'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <i @click.stop = "deleteWmsUrl(wms.id)" v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
                 </div>
-
-                <!-- WMS URL -->
                 <small>{{ wms.url }}</small>
-
               </div>
             </div>
 
-            <div v-if = "wms_panel" v-disabled = "loading">
+            <div v-if = "wms_config" v-disabled = "loading">
 
               <button
                 type                   = "button"
@@ -165,7 +141,7 @@
               <!-- EPSG PROJECTIONS   -->
               <label for = "g3w-wms-projections" v-t = "'sidebar.wms.panel.label.projections'"></label>
               <select id = "g3w-wms-projections" v-select2 = "'epsg'">
-                <option v-for = "proj in projections" :key = "proj" :value = "proj">{{ proj }}</option>
+                <option v-for = "p in projections">{{ p }}</option>
               </select>
 
               <!-- LAYER POSITION -->
@@ -187,41 +163,6 @@
 
           <template v-if = "'file' === layer_type">
 
-            <!-- LAYER PROJECTION -->
-            <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer_format)">
-              <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
-              <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
-                <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
-              </select>
-            </div>
-
-            <!-- LAYER POSITION -->
-            <div class = "form-group">
-              <label for="position-layer" v-t = "'layer_position.message'"></label>
-              <select class = "form-control" id = "position-layer" v-model = "position">
-                <option :value = "'top'"    v-t = "'layer_position.top'"></option>
-                <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
-              </select>
-            </div>
-
-            <!-- PERSISTENT LAYER  -->
-            <div class = "form-group">
-              <label for="persistent-layer" v-t = "'mapcontrols.add_layer_control.persistent_data'"></label>
-              <select class = "form-control" id = "persistent-layer" v-model = "persistent">
-                <option :value = "false" v-t = "'no'"></option>
-                <option :value = "true" v-t = "'yes'"></option>
-              </select>
-              <small v-t = "'mapcontrols.add_layer_control.persistent_help'"></small>
-            </div>
-
-            <!-- LAYER COLOR  -->
-            <p v-t = "'mapcontrols.add_layer_control.select_color'" style = "font-weight: 700;"></p>
-            <chrome-picker
-              v-model = "layer_color"
-              @input  = "onChangeColor"
-              style   ="width:100%; margin:auto"
-            />
-
             <!-- FILE UPLOAD -->
             <form id = "addcustomlayer">
               <input
@@ -230,14 +171,40 @@
                 @change = "onChangeFile($event)"
                 accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
               />
-              <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
-              <h4
-                v-if  = "layer_name"
-                class = "skin-color"
-                style = "font-weight: bold">{{ layer_name }}</h4>
-              <i :class      = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
-              <span>[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
+              <h4 class = "skin-color">
+                <b v-if="!layer_data" v-t="'mapcontrols.add_layer_control.drag_layer'"></b>
+                <b v-else-if = "layer_name">{{ layer_name }}</b>
+              </h4>
+              <i v-if="!layer_data" :class = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
+              <span v-if="!layer_data">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
             </form>
+
+            <!-- LAYER PROJECTION -->
+            <div v-if="layer_data" class = "form-group" v-disabled = "['kmz', 'zip'].includes(layer_format)">
+              <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
+              <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
+                <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
+              </select>
+            </div>
+
+            <!-- LAYER POSITION -->
+            <div v-if="layer_data" class = "form-group">
+              <label for="position-layer" v-t = "'layer_position.message'"></label>
+              <select class = "form-control" id = "position-layer" v-model = "position">
+                <option :value = "'top'"    v-t = "'layer_position.top'"></option>
+                <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
+              </select>
+            </div>
+
+            <!-- PERSISTENT LAYER  -->
+            <div v-if="layer_data" class = "form-group">
+              <label for="persistent-layer" v-t = "'mapcontrols.add_layer_control.persistent_data'"></label>
+              <select class = "form-control" id = "persistent-layer" v-model = "persistent">
+                <option :value = "false" v-t = "'no'"></option>
+                <option :value = "true" v-t = "'yes'"></option>
+              </select>
+              <small v-t = "'mapcontrols.add_layer_control.persistent_help'"></small>
+            </div>
 
             <div v-if = "parse_errors" class="form-group">
               <label for="csv_parse_errors">⚠️ Parse errors:</label>
@@ -268,12 +235,22 @@
             </div>
 
             <!-- LAYER LABEL (visible field) -->
-            <div v-if="!fields || !fields.length" class="form-group">
+            <div v-if="(fields || []).length" class="form-group">
               <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
               <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
                 <option :value = "null">---</option>
                 <option v-for = "f in fields" :key = "f" :value = "f">{{ f }}</option>
               </select>
+            </div>
+
+            <!-- LAYER COLOR  -->
+            <div v-if="layer_data">
+              <p v-t = "'mapcontrols.add_layer_control.select_color'" style = "font-weight: 700;"></p>
+              <chrome-picker
+                v-model = "layer_color"
+                @input  = "onChangeColor"
+                style   ="width:100%;"
+              />
             </div>
 
           </template>
@@ -326,7 +303,7 @@ import { XHR }             from 'utils/XHR';
 export default {
 
   /** @since 3.8.6 */
-  name: 'map-add-layer',
+  name: 'modal-addlayer',
 
   data() {
 
@@ -340,7 +317,7 @@ export default {
         rgba: { r: 25, g: 77, b: 51, a: 1, },
         a:    1,
       },
-      wms_panel:       false,
+      wms_config:      null,
       wms_urls:        [], // array of object {id, url}
       wms_layers:      [], // Selected layers
       url:             null,
@@ -430,14 +407,8 @@ export default {
     },
 
     url() {
-      if (this.url && !this.wms_panel && this.wms_urls.some(l => l.url == this.url)) {
+      if (this.url && !this.wms_config && this.wms_urls.some(l => l.url == this.url)) {
         this.id = this.wms_urls.find(l => l.url == this.url).id
-      }
-    },
-
-    wms_panel() {
-      if (this.wms_panel) {
-        this.name = this.wms_config.title + ' ' + getUniqueDomId();
       }
     },
 
@@ -555,9 +526,8 @@ export default {
         if (features.length) {
           this.olLayer = new ol.layer.Vector({
             source: new ol.source.Vector({ features }),
-            name:  this.layer_name,
-            id:    getUniqueDomId(),
-            style: this.layer.style
+            name:   this.layer_name,
+            id:     getUniqueDomId(),
           });
         }
 
@@ -607,10 +577,10 @@ export default {
         try {
           // check if WMS already added (by name)
           const data  = this.getLocalWMSData();
-          const found = this.wms_panel && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l)));
+          const found = this.wms_config && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l)));
 
           if (found) {
-            this.showWmsLayersPanel(this.url)
+            await this.fetchWMS(this.url);
           }
 
           const config = {
@@ -633,13 +603,13 @@ export default {
           } catch(e) {
             console.warn(e);
             GUI.getService('map').removeExternalLayer(name);
-            this.deleteWms(name);
+            this.deleteWMS(name);
             setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'sidebar.wms.layer_add_error' }) });
           }
         } catch(e) {
           console.warn(e);
         }
-        if (this.wms_panel) {
+        if (this.wms_config) {
           this.clearPanel();
           $('#modal-addlayer').modal('hide');
         }
@@ -656,11 +626,11 @@ export default {
         }
         try {
           await GUI.getService('map').addExternalLayer(this.olLayer, {
-            crs:      this.layer_crs,
-            type:     this.layer_format,
-            position: this.position,
-            color:    this.layer_color,
-            field:    this.field,
+            crs:        this.layer_crs,
+            type:       this.layer_format,
+            position:   this.position,
+            color:      this.layer_color,
+            field:      this.field,
             persistent: !!this.persistent,
           });
           $(this.$refs.modal_addlayer).modal('hide');
@@ -692,7 +662,7 @@ export default {
 
     clearPanel() {
       this.error_message  = '';
-      this.wms_panel      = false;
+      this.wms_config      = null;
       this.wms_layers     = [];
       this.name           = null;
       this.loading        = false;
@@ -707,18 +677,13 @@ export default {
       const found  = this.wms_urls.find(l => l.url == this.url || l.id == wms.id);
       // when url is not yet added
       if (found) {
-        this.showWmsLayersPanel(this.url)
+        await this.fetchWMS(this.url);
       } else {
-        try {
-          await this._showWmsLayersPanel();
-          const data = this.getLocalWMSData();
-          this.wms_urls.push(wms);
-          data.urls = this.wms_urls;
-          this.updateLocalWMSData(data);
-        } catch(e) {
-          console.warn(e);
-          this.error_message = e;
-        }
+        await this.fetchWMS();
+        const data = this.getLocalWMSData();
+        this.wms_urls.push(wms);
+        data.urls = this.wms_urls;
+        this.updateLocalWMSData(data);
       }
       this.loading = false;
     },
@@ -782,65 +747,51 @@ export default {
      * 
      * @returns { WmsLayersPanel }
      */
-    async _showWmsLayersPanel(url) {
-      const config = await XHR.post({
-        url:         `${window.initConfig.interfaceowsurl}`,
-        contentType: 'application/json',
-        data:        JSON.stringify({ url: url || this.url, service: "wms" })
-      });
-
-      // skip on invalid response
-      if (!config.result) {
-        throw 'invalid response';
-      }
-
-      config.wmsurl = url || this.url;
-
-      this.wms_panel  = true;
-      this.wms_config = config;
-
-      /** URL of wms */
+    async fetchWMS(url) {
+      this.loading = true;
       try {
-        this.url = this.wms_config.methods.GetMap.urls.find(u => 'Get' === u.type).url;
-      } catch(e) {
-        console.warn(e);
-        this.url = this.wms_config.wmsurl;
-      }
+        this.loading = false;
+        const config = await XHR.post({
+          url:         `${window.initConfig.interfaceowsurl}`,
+          contentType: 'application/json',
+          data:        JSON.stringify({ url: url || this.url, service: "wms" })
+        });
 
-      /** Title of wms */
-      this.title = this.wms_config.title;
+        // skip on invalid response
+        if (!config.result) {
+          throw 'invalid response';
+        }
 
-      /** Store for each layer name projection info */
-      this.wms_projections = {};
+        config.wmsurl = url || this.url;
 
-      /* try to check if projection */
-      this.wms_config.layers
-        .forEach(({ name, crss, title }) => {
-          this.wms_projections[name] = {
+        /** URL of wms */
+        if (config.methods && config.methods.GetMap) {
+          this.url = (config.methods.GetMap.urls || []).find(u => 'Get' === u.type).url;
+        } else {
+          this.url = config.wmsurl;
+        }
+
+        /** Title of wms */
+        this.title = config.title;
+        this.name  = config.title + ' ' + getUniqueDomId();
+
+        /** Store for each layer name projection info */
+        this.wms_projections = config.layers.reduce((projections, { name, crss, title }) => {
+          projections[name] = {
             title,
             crss: crss.map(crs => { Projections.get(crs); return `EPSG:${crs.epsg}`; }).sort(),
           };
-        });
+          return projections;
+        }, {});
 
-      /** Layers of wms */
-      this.layers = this.wms_config.layers;
-    },
+        /** Layers of wms */
+        this.layers = config.layers;
 
-    /**
-     * Load WMS Data from server and show WMS Layers Panel
-     * 
-     * @param url
-     * 
-     * @returns { Promise<void> }
-     */
-    async showWmsLayersPanel(url) {
-      try {
-        this.loading = true;
-        await this._showWmsLayersPanel(url);
+        this.wms_config = config;
       } catch(e) {
         this.error_message = e;
         console.warn(e);
-      } 
+      }
       this.loading = false;
     },
 
@@ -849,7 +800,7 @@ export default {
      * 
      * @param name
      */
-    deleteWms(name) {
+    deleteWMS(name) {
       const data = this.getLocalWMSData();
       Object.keys(data.wms).find(url => {
         const i = data.wms[url].findIndex(w => w.name == name);
@@ -931,9 +882,9 @@ export default {
 
     await map.isReady();
 
-    this.deleteWms = this.deleteWms.bind(this);
+    this.deleteWMS = this.deleteWMS.bind(this);
 
-    map.on('remove-external-layer', this.deleteWms);
+    map.on('remove-external-layer', this.deleteWMS);
 
     let data = this.getLocalWMSData();
 
@@ -963,7 +914,7 @@ export default {
     $('#modal-addlayer').modal('hide')
     $('#modal-addlayer').remove();
 
-    GUI.getService('map').off('remove-external-layer', this.deleteWms);
+    GUI.getService('map').off('remove-external-layer', this.deleteWMS);
     this.$data = null;
   },
 
