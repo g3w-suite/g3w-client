@@ -240,12 +240,8 @@ async function doSearch({
     (result.data || []).forEach(({ layer, filtertoken }) => {
       //if returned filtertoken, filter is apply on layer
       if (filtertoken) {
-        //TODO need to check a best way to
-        Promise.resolve().then(() => {
-          layer.state.filter.active = true;
-          layer.setFilterToken(filtertoken);
-          layer.update();
-        })
+        layer.state.filter.active = true;
+        layer.setFilterToken(filtertoken);
       }
     })
   }
