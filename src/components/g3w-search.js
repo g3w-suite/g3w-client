@@ -236,12 +236,16 @@ async function doSearch({
 
   //In the case of autofilter, need to get filtertokern attribute from server response data and set to each layer
   if (1 === state.autofilter && result) {
+
     (result.data || []).forEach(({ layer, filtertoken }) => {
       //if returned filtertoken, filter is apply on layer
       if (filtertoken) {
-        layer.state.filter.active = true;
-        layer.setFilterToken(filtertoken);
-        layer.update()
+        //TODO need to check a best way to
+        Promise.resolve().then(() => {
+          layer.state.filter.active = true;
+          layer.setFilterToken(filtertoken);
+          layer.update();
+        })
       }
     })
   }
