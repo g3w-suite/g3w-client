@@ -136,12 +136,14 @@
 
         </div>
         <!-- @since 3.11.0 -->
-        <input
-          id        = "g3w-search-filter"
-          class     = "magic-checkbox"
-          v-model   = "autofilter"
-          type      = "checkbox"/>
-          <label for = "g3w-search-filter">Autofilter</label>
+        <div class = "form-group">
+          <input
+            id        = "g3w-search-filter"
+            class     = "magic-checkbox"
+            v-model   = "autofilter"
+            type      = "checkbox"/>
+            <label for = "g3w-search-filter" v-t = "'sdk.search.autofilter'"></label>
+        </div>
 
         <!-- SEARCH BUTTON -->
         <div class = "form-group">

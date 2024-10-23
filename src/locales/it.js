@@ -63,7 +63,8 @@ export default {
             pre: "Digita almeno",
             post: "caratteri"
           }
-        }
+        },
+        autofilter: "Filtro sui risultati"
       },
       print: {
         no_layers: 'Nessun Layer visibile',
