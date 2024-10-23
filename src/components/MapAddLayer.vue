@@ -239,36 +239,36 @@
               <span>[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</span>
             </form>
 
+            <div v-if = "parse_errors" class="form-group">
+              <label for="csv_parse_errors">⚠️ Parse errors:</label>
+              <select id="csv_parse_errors" class="form-control" style="background-color: gold;font-family: Monospace;">
+                <option v-for="({ value, row }) in parse_errors">[{{ row }}] {{ value }}</option>
+              </select>
+            </div>
+
             <!-- CSV FILE (parsing options) -->
-            <div v-if = "csv_extension" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
+            <div v-if = "'csv' === layer_format" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
               <bar-loader :loading = "csv_loading"/>
-              <div class = "select_field">
 
-                <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
-                <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator">
-                  <option>,</option>
-                  <option>;</option>
-                </select>
+              <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
+              <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator">
+                <option>,</option>
+                <option>;</option>
+              </select>
 
-                <div :class="'select_field ' + (!(csv_headers || []).length ? 'g3w-disabled' : '')">
-                  <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
-                  <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x">
-                    <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
-                  </select>
-                </div>
+              <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
+              <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(csv_headers || []).length">
+                <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
+              </select>
 
-                <div :class="'select_field ' + (!(csv_headers || []).length ? 'g3w-disabled' : '')">
-                  <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
-                  <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y">
-                    <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
-                  </select>
-                </div>
-
-              </div>
+              <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
+              <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(csv_headers || []).length">
+                <option v-for = "h in csv_headers" :key = "h" :value = "h">{{ h }}</option>
+              </select>
             </div>
 
             <!-- LAYER LABEL (visible field) -->
-            <div :class = "'select_field ' + (!fields || 0 === fields.length ? 'g3w-disabled' : '')">
+            <div v-if="!fields || !fields.length" class="form-group">
               <label v-t = "'mapcontrols.add_layer_control.select_field_to_show'" for = "g3w-select-field-layer"></label>
               <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
                 <option :value = "null">---</option>
@@ -290,16 +290,6 @@
             v-t   = "error_message">
           </div>
 
-          <select
-            v-if      = "parse_errors"
-            v-select2 = "parse_errors[0].value"
-            class     = "skin-color"
-            :search   = "false"
-            style     = "width:100%"
-          >
-            <option v-for="({ value, row }) in parse_errors" :key="row" :value="value">[{{ row }}] {{ value }}</option>
-          </select>
-
           <button
             v-t          = "'close'"
             type         = "button"
@@ -313,7 +303,7 @@
             type        = "button"
             class       = "btn btn-success"
             @click.stop = "addLayer"
-            v-disabled  = "'wms' === layer_type ? !wms_layers.length : !add"
+            v-disabled  = "'wms' === layer_type ? !wms_layers.length : (!layer_data && !csv_valid)"
           ></button>
 
           </div>
@@ -330,8 +320,8 @@ import { GEOMETRY_FIELDS } from 'g3w-constants';
 import ApplicationState    from 'store/application';
 import Projections         from 'store/projections';
 import GUI                 from 'services/gui';
-import DataRouterService   from 'services/data';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
+import { XHR }             from 'utils/XHR';
 
 export default {
 
@@ -342,12 +332,20 @@ export default {
 
     return {
       layer_type:      undefined,
+      layer_format:    null,
+      layer_name:      null,
+      layer_crs:       ApplicationState.project.getProjection().getCode(),
+      layer_color: {
+        hex:  '#194d33',
+        rgba: { r: 25, g: 77, b: 51, a: 1, },
+        a:    1,
+      },
       wms_panel:       false,
       wms_urls:        [], // array of object {id, url}
       wms_layers:      [], // Selected layers
       url:             null,
       id:              null,
-      vectorLayer:     null,
+      olLayer:         null,
       map_crs:         ApplicationState.project.getProjection().getCode(),
       position:        'top', // layer position on map
       persistent:      false,
@@ -360,24 +358,13 @@ export default {
       csv_separator:   ',',
       csv_loading:     false,
       csv_valid:       false,
-      layer_color: {
-        hex:  '#194d33',
-        rgba: { r: 25, g: 77, b: 51, a: 1, },
-        a:    1,
-      },
-      layer_format:  null,
-      layer_name:    null,
-      layer_crs:     ApplicationState.project.getProjection().getCode(),
-      layer_id:      null,
-      name:          undefined,  // name of saved layer
-      title:         null,       // title of layer
-      methods:       [],         // @since 3.9.0
-      layers:        [],         // Array of layers
-      projections:   [],         // projections
-      epsg:          null,       // choose epsg project
-      added:         false,      // added layer (Boolean)
-      error_message: '',
-      parse_errors: undefined,
+      name:            undefined,  // name of saved layer
+      title:           null,       // title of layer
+      layers:          [],         // Array of layers
+      projections:     [],         // projections
+      epsg:            null,       // choose epsg project
+      error_message:   '',
+      parse_errors:    undefined,
     }
   },
 
@@ -385,32 +372,24 @@ export default {
     'chrome-picker': ChromeComponent,
   },
 
-  computed: {
-
-    /**
-     * @returns {boolean} check whether current uploaded file has CSV extension
-     */
-    csv_extension() {
-      return 'csv' === this.layer_format;
-    },
-
-    /**
-     * @FIXME add description
-     */
-    add() {
-      return this.layer_data || this.csv_valid;
-    },
-
-  },
-
   watch: {
 
-    csv_x(value) {
-      if (![undefined, null].includes(value)) { this.layer_data.x = value }
+    async csv_x(value) {
+      if (![undefined, null].includes(value)) {
+        this.layer_data.x = value;
+      }
     },
 
-    csv_y(value) {
-      if (![undefined, null].includes(value)) { this.layer_data.y = value }
+    async csv_y(value) {
+      if (![undefined, null].includes(value)) {
+        this.layer_data.y = value
+      }
+    },
+
+    async csv_separator(sep) {
+      if (sep) {
+        this.layer_data = this.parse_csv(sep);
+      }
     },
 
     /**
@@ -421,12 +400,11 @@ export default {
         this.epsg        = null;
         this.projections = [];
       } else if (1 === layers.length) { // take first layer selected supported crss
-        this.epsg        = this.layerProjections[layers.at(-1)].crss[0];
-        this.projections = this.layerProjections[layers.at(-1)].crss;
+        this.epsg        = this.wms_projections[layers.at(-1)].crss[0];
+        this.projections = this.wms_projections[layers.at(-1)].crss;
       } else {                          // get projections by name
-        this.projections = this.projections.filter(p => this.layerProjections[layers.at(-1)].crss.includes(p));
+        this.projections = this.projections.filter(p => this.wms_projections[layers.at(-1)].crss.includes(p));
       }
-
     },
 
     /**
@@ -437,7 +415,7 @@ export default {
       // Get layers that has current selected epsg projection
       this.layers = (null === this.epsg)
         ? this.wms_config.layers
-        : this.layers.filter(({ name }) => this.layerProjections[name].crss.includes(this.epsg))
+        : this.layers.filter(({ name }) => this.wms_projections[name].crss.includes(this.epsg))
     },
 
     async layer_type(type, oldtype) {
@@ -446,7 +424,6 @@ export default {
         await this.$nextTick();
         this.layer_type = type;
       }
-
       if ('file' === type) {
         this.clearPanel();
       }
@@ -464,7 +441,7 @@ export default {
       }
     },
 
-    },
+  },
 
   methods: {
 
@@ -472,78 +449,43 @@ export default {
       this.layer_color = val;
     },
 
-    async onChangeFile(evt) {
-      const reader     = new FileReader();
-      const name       = evt.target.files[0].name;
-      let type         = name.split('.').at(-1).toLowerCase();
-      const input_file = $(this.$refs.input_file);
-
-      if (!input_file.attr('accept').split(',').includes(`.${type}`)) {
+    async onChangeFile(input) {
+      // skip invalid formats
+      if (!this.$refs.input_file.accept.split(',').includes(`.${input.target.files[0].name.split('.').at(-1).toLowerCase()}`)) {
         this.error_message = 'sdk.errors.unsupported_format';
         return;
       }
 
       this.error_message = '';
-      this.parse_errors = undefined;
+      this.parse_errors  = undefined;
+      this.layer_name    = input.target.files[0].name;
+      this.layer_format  = input.target.files[0].name.split('.').at(-1).toLowerCase();
 
-      this.layer_name   = name;
-      this.layer_id     = name;
-      this.layer_format   = type;
-      this.layer_data   = await (new Promise((resolve) => {
-
+      this.layer_data    = await (new Promise((resolve) => {
         // ZIP / KMZ file
         if ( ['zip', 'kmz'].includes(this.layer_format)) {
-          //force crs
           this.layer_crs = 'EPSG:4326';
-          const data = evt.target.files[0];
-          input_file.val(null);
+          const data = input.target.files[0];
+          input.target.value = null;
           return resolve(data);
         }
-
-        reader.onload = evt => {
-
-          // CSV file
+        // CSV file and other formats
+        const reader = new FileReader();
+        reader.onload = data => {
+          data = data.target.result;
           if ('csv' === this.layer_format) {
-            input_file.val(null);
-            const [headers, ...values] = evt.target.result.split(/\r\n|\n/).filter(Boolean);
-            const handle_csv_headers = separator => {
-              this.csv_loading = true;
-              const csv_headers = headers.split(separator);
-              const len        = csv_headers.length;
-              this.csv_headers = len > 1 ? csv_headers      : [];
-              this.fields      = len > 1 ? csv_headers      : [];
-              this.csv_x       = len > 1 ? csv_headers[0]   : this.csv_x;
-              this.csv_y       = len > 1 ? csv_headers[1]   : this.csv_y;
-              this.vectorLayer = len > 1 ? this.vectorLayer : null;
-              this.csv_valid   = len > 1;
-              if (len <= 1) {
-                this.fields.splice(0);
-              }
-              this.csv_loading = false;
-              return len > 1 ? {
-                headers: csv_headers,
-                separator,
-                x: this.csv_x,
-                y: this.csv_y,
-                values
-              } : null;
-            };
-            this.$watch('csv_separator', s => this.layer_data = handle_csv_headers(s))
-            return resolve(handle_csv_headers(this.csv_separator));
+            data = this.parse_csv(this.csv_separator, data);
           }
-
-          // OTHER FORMATS
-          const data = evt.target.result;
-          input_file.val(null);
+          input.target.value = null;
           resolve(data);
         };
-        reader.readAsText(evt.target.files[0]);
+        reader.readAsText(input.target.files[0]);
       }));
 
       // skip when ..
-      if ('csv' === this.layer_format) {
-        return;
-      }
+      // if ('csv' === this.layer_format) {
+      //   return;
+      // }
 
       (this.fields || []).splice(0); // reset fields
 
@@ -570,6 +512,7 @@ export default {
           data.values.forEach((row, i) => {
             const props = {};
             const cols = row.split(data.separator);
+            console.log(cols, data.headers);
             if (cols.length !== data.headers.length) {
               return errors.push({ row: i + 1, value: data.values[i] });
             }
@@ -610,7 +553,7 @@ export default {
         }
 
         if (features.length) {
-          this.vectorLayer = new ol.layer.Vector({
+          this.olLayer = new ol.layer.Vector({
             source: new ol.source.Vector({ features }),
             name:  this.layer_name,
             id:    getUniqueDomId(),
@@ -620,7 +563,7 @@ export default {
 
         await this.$nextTick();
 
-        if (this.vectorLayer) {
+        if (this.olLayer) {
           this.fields = 'csv' === this.layer_format ? data.headers : Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0);
         }
       } catch(e) {
@@ -628,6 +571,31 @@ export default {
         this.error_message = 'sdk.errors.add_external_layer';
       }
 
+    },
+
+    parse_csv(separator, file) {
+      this.csv_loading = true;
+      this.csv_file    = file || this.csv_file || '';
+      const [headers, ...values] = this.csv_file.split(/\r\n|\n/).filter(Boolean);
+      const csv_headers          = headers.split(separator);
+      const len                  = csv_headers.length;
+      this.csv_headers = len > 1 ? csv_headers      : [];
+      this.fields      = len > 1 ? csv_headers      : [];
+      this.csv_x       = len > 1 ? csv_headers[0]   : this.csv_x;
+      this.csv_y       = len > 1 ? csv_headers[1]   : this.csv_y;
+      this.olLayer     = len > 1 ? this.olLayer     : null;
+      this.csv_valid   = len > 1;
+      if (len <= 1) {
+        this.fields.splice(0);
+      }
+      this.csv_loading = false;
+      return len > 1 ? {
+        headers: csv_headers,
+        separator,
+        x: this.csv_x,
+        y: this.csv_y,
+        values,
+      } : null;
     },
 
     async addLayer() {
@@ -687,7 +655,7 @@ export default {
           return;
         }
         try {
-          await GUI.getService('map').addExternalLayer(this.vectorLayer, {
+          await GUI.getService('map').addExternalLayer(this.olLayer, {
             crs:      this.layer_crs,
             type:     this.layer_format,
             position: this.position,
@@ -712,12 +680,11 @@ export default {
       this.parse_errors  = undefined;
       this.loading       = false;
       this.layer_name    = null;
-      this.layer_id      = null;
       this.layer_format  = null;
       this.layer_crs     = GUI.getService('map').getCrs();
       this.layer_color   = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
       this.layer_data    = null;
-      this.vectorLayer   = null;
+      this.olLayer       = null;
       this.fields        = [];
       this.field         = null;
       this.csv_valid     = false;
@@ -743,17 +710,11 @@ export default {
         this.showWmsLayersPanel(this.url)
       } else {
         try {
-          const response = await this.getWMSLayers(this.url);
-          // skip on invalid response
-          if (!response.result) {
-            throw 'invalid response';
-          }
+          await this._showWmsLayersPanel();
           const data = this.getLocalWMSData();
           this.wms_urls.push(wms);
           data.urls = this.wms_urls;
           this.updateLocalWMSData(data);
-          response.wmsurl = wms.url;
-          this._showWmsLayersPanel(response);
         } catch(e) {
           console.warn(e);
           this.error_message = e;
@@ -813,26 +774,6 @@ export default {
     },
 
     /**
-     * Get data of wms url from server
-     * 
-     * @param { string } url
-     */
-    async getWMSLayers(url) {
-      try {
-        return await DataRouterService.getData('ows:wmsCapabilities', { inputs: { url }, outputs: false });
-      } catch(e) {
-        console.warn(e);
-      }
-      return {
-        result:       false,
-        layers:       [],
-        abstract:     null,
-        methods:      [], // @since 3.9.0
-        title:        null
-      };
-    },
-
-    /**
      * ORIGINAL SOURCE: src/app/gui/wms/vue/panel/wmslayerspanel.js@3.8.15
      * 
      * show add wms layers to wms panel
@@ -841,7 +782,20 @@ export default {
      * 
      * @returns { WmsLayersPanel }
      */
-    _showWmsLayersPanel(config = {}) {
+    async _showWmsLayersPanel(url) {
+      const config = await XHR.post({
+        url:         `${window.initConfig.interfaceowsurl}`,
+        contentType: 'application/json',
+        data:        JSON.stringify({ url: url || this.url, service: "wms" })
+      });
+
+      // skip on invalid response
+      if (!config.result) {
+        throw 'invalid response';
+      }
+
+      config.wmsurl = url || this.url;
+
       this.wms_panel  = true;
       this.wms_config = config;
 
@@ -857,12 +811,12 @@ export default {
       this.title = this.wms_config.title;
 
       /** Store for each layer name projection info */
-      this.layerProjections = {};
+      this.wms_projections = {};
 
       /* try to check if projection */
       this.wms_config.layers
         .forEach(({ name, crss, title }) => {
-          this.layerProjections[name] = {
+          this.wms_projections[name] = {
             title,
             crss: crss.map(crs => { Projections.get(crs); return `EPSG:${crs.epsg}`; }).sort(),
           };
@@ -882,12 +836,7 @@ export default {
     async showWmsLayersPanel(url) {
       try {
         this.loading = true;
-        const d = await this.getWMSLayers(url);
-        if (!d.result) {
-          throw $t('server_error');
-        }
-        d.wmsurl = url;
-        this._showWmsLayersPanel(d);
+        await this._showWmsLayersPanel(url);
       } catch(e) {
         this.error_message = e;
         console.warn(e);

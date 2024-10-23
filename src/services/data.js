@@ -405,23 +405,6 @@ export default {
   'proxy:data'(params = {}) {},
 
   /**
-   * @param params
-   * 
-   * @returns {Promise<{data: string, response: *}>}
-   */
-  async 'ows:wmsCapabilities'({url} ={}) {
-    try {
-      return await XHR.post({
-        url:         `${window.initConfig.interfaceowsurl}`,
-        contentType: 'application/json',
-        data:        JSON.stringify({ url, service: "wms" })
-      });
-    } catch(e) {
-      console.warn(e);
-    }
-  },
-
-  /**
    * used by the following plugins: "archiweb"
    * 
    * @param layers 
