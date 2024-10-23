@@ -1871,9 +1871,10 @@ class Layer extends G3WObject {
           data: ResponseParser.get('application/json')({
             layers:      [provider._layer],
             response:    response.vector.data,
+            filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
             projections: provider._projections,
           })
-        };
+        }
       }
 
     } catch(e) {

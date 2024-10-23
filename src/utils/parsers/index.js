@@ -126,8 +126,9 @@ export const ResponseParser = {
           projections,
           layers = [],
           wms = true,
+          filtertoken, //@since 3.11.0
         } = {}) {
-          const layersFeatures = layers.map(layer => ({ layer, features: [] }));
+          const layersFeatures = layers.map(layer => ({ layer, features: [], filtertoken }));
           const layersId       = layers.map(l => wms ? l.getWMSLayerName() : l.getWFSLayerName());
           // features
           (

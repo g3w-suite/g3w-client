@@ -71,7 +71,7 @@ export function SearchPanel(opts = {}, show = false) {
       /** keep a reference to initial search options (you shouldn't mutate them..) */
       options:   d.input.options,
     })),
-    autofilter:           false, //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
+    autofilter:           0, //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
   };
 
   // create search form structure 
@@ -177,7 +177,7 @@ async function doSearch({
         formatter: 1,
         feature_count,
         raw:        false, // in order to get a raw response
-        autofilter: show && state.autofilter //Boolean autofilter by server
+        autofilter: Number(show && state.autofilter), //0/1 autofilter by server,
       },
       outputs: show && { title: state.title }
     });
@@ -232,5 +232,19 @@ async function doSearch({
 
   state.searching = false;
 
-  return parsed ? parsed : data;
+  const result = parsed ? parsed : data;
+
+  //In the case of autofilter, need to get filtertokern attribute from server response data and set to each layer
+  if (1 === state.autofilter && result) {
+    (result.data || []).forEach(({ layer, filtertoken }) => {
+      //if returned filtertoken, filter is apply on layer
+      if (filtertoken) {
+        layer.state.filter.active = true;
+        layer.setFilterToken(filtertoken);
+        layer.update()
+      }
+    })
+  }
+
+  return result;
 }

@@ -139,7 +139,7 @@
         <input
           id        = "g3w-search-filter"
           class     = "magic-checkbox"
-          v-model   = "state.autofilter"
+          v-model   = "autofilter"
           type      = "checkbox"/>
           <label for = "g3w-search-filter">Autofilter</label>
 
@@ -188,8 +188,9 @@
 
     data() {
       return {
-       state:    this.$options.service.state,
-       allvalue: SEARCH_ALLVALUE,
+       state:      this.$options.service.state,
+       autofilter: false, //@since 3.11.0
+       allvalue:   SEARCH_ALLVALUE,
       }
     },
 
@@ -470,6 +471,12 @@
         SELECTS.splice(0);
       }
 
+    },
+    watch: {
+      //@since 3.11.0 Set state auto filter to a search result
+      autofilter(bool = false) {
+        this.state.autofilter = Number(bool); //0/1 instead true false
+      }
     },
 
     async mounted() {
