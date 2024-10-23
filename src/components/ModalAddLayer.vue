@@ -163,8 +163,17 @@
 
           <template v-if = "'file' === layer_type">
 
+            <button
+              v-if                   = "layer_data"
+              type                   = "button"
+              class                  = "close"
+              style                  = "float: right; padding: 5px 10px; margin: 5px 0 0 8px;outline: 1px solid; color: red; opacity: 1;"
+              @click                 = "clearFile"
+              v-t-tooltip:left.create = "'sidebar.wms.delete_wms_url'"
+            >&times;</button>
+
             <!-- FILE UPLOAD -->
-            <form id = "addcustomlayer">
+            <form id = "addcustomlayer" :style="{ padding: layer_data ? '0' : '20px 0' }">
               <input
                 ref     = "input_file"
                 type    = "file"
@@ -931,7 +940,6 @@ export default {
     column;
     text-align: center;
     gap: 8px;
-    padding: 20px 0;
     opacity: .8;
   }
   #addcustomlayer input {
