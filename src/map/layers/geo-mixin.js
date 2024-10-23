@@ -253,7 +253,7 @@ export default BaseClass => class extends BaseClass {
    * Set selection layer on a map not visible
    */
   hideOlSelectionFeatures() {
-    GUI.getService('map').toggleSelection(false);
+    GUI.getService('map').toggleSelection(false, this.state.id);
   }
   
   /**
@@ -277,7 +277,7 @@ export default BaseClass => class extends BaseClass {
         }
       });
     // Ensures visibility of selection layer on a map
-    GUI.getService('map').toggleSelection(Object.values(this.olSelectionFeatures).some(f => f.selected));
+    GUI.getService('map').toggleSelection(Object.values(this.olSelectionFeatures).some(f => f.selected), this.state.id);
   }
   
   /**
