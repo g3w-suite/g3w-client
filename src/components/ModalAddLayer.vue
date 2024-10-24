@@ -455,10 +455,12 @@ export default {
           this.csv_loading           = true;
           const [headers, ...values] = (await input.files[0].text()).split(/\r\n|\n/).filter(Boolean);
           this.fields                = headers.split(this.csv_separator);
-          const x                    = this.fields.find(f => f.toLowerCase() == (this.csv_x || '').toLowerCase());
-          const y                    = this.fields.find(f => f.toLowerCase() == (this.csv_y || '').toLowerCase());
-          this.csv_x                 = this.csv_x || x || this.fields[0];
-          this.csv_y                 = this.csv_y || y || this.fields[1];
+          const X    = ['x', 'lng', 'longitude', 'longitudine'];
+          const Y    = ['y', 'lat', 'latitude', 'latitudine'];
+          const x    = this.fields.find(f => X.includes(f.toLowerCase()));
+          const y    = this.fields.find(f => Y.includes(f.toLowerCase()));
+          this.csv_x = this.csv_x || x || this.fields[0]; // auto suggest "csv_x" field
+          this.csv_y = this.csv_y || y || this.fields[1]; // auto suggest "csv_y" field
           data = this.fields.length > 1 ? values : null;
           data.forEach((row, i) => {
             const cols = row.split(this.csv_separator);
