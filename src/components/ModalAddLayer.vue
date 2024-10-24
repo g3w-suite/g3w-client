@@ -189,7 +189,7 @@
             </form>
 
             <!-- CSV FILE (parsing options) -->
-            <div v-if = "'csv' === file_type" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
+            <div v-if = "'csv' === file_type" class = "form-group" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
               <bar-loader :loading = "csv_loading"/>
 
               <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
