@@ -437,40 +437,28 @@ export default {
         return;
       }
 
-      this.error_message = '';
-      this.parse_errors  = undefined;
-      this.layer_name    = input.target.files[0].name;
-      this.layer_format  = input.target.files[0].name.split('.').at(-1).toLowerCase();
-
-      this.layer_data    = await (new Promise((resolve) => {
-        // ZIP / KMZ file
-        if ( ['zip', 'kmz'].includes(this.layer_format)) {
-          this.layer_crs = 'EPSG:4326';
-          const data = input.target.files[0];
-          input.target.value = null;
-          return resolve(data);
-        }
-        // CSV file and other formats
-        const reader = new FileReader();
-        reader.onload = data => {
-          data = data.target.result;
-          if ('csv' === this.layer_format) {
-            data = this.parse_csv(this.csv_separator, data);
-          }
-          input.target.value = null;
-          resolve(data);
-        };
-        reader.readAsText(input.target.files[0]);
-      }));
-
-      // skip when ..
-      // if ('csv' === this.layer_format) {
-      //   return;
-      // }
-
-      (this.fields || []).splice(0); // reset fields
-
       try {
+
+        this.error_message = '';
+        this.parse_errors  = undefined;
+        this.layer_name    = input.target.files[0].name;
+        this.layer_format  = input.target.files[0].name.split('.').at(-1).toLowerCase();
+
+        if ( ['zip', 'kmz'].includes(this.layer_format)) { // ZIP / KMZ file
+          this.layer_data = input.target.files[0];
+          this.layer_crs  = 'EPSG:4326';
+        } else if ('csv' === this.layer_format) {          // CSV file
+          this.layer_data = this.parse_csv(this.csv_separator, await input.target.files[0].text());
+        } else {                                           // other file types
+          this.layer_data = await input.target.files[0].text();
+        }
+
+        // skip when ..
+        // if ('csv' === this.layer_format) {
+        //   return;
+        // }
+
+        (this.fields || []).splice(0); // reset fields
         const errors = [];
         const epsg   = ['zip', 'kml', 'kmz'].includes(this.layer_format) ? 'EPSG:4326' : this.layer_crs;
         let features = [];
@@ -550,7 +538,6 @@ export default {
         console.warn(e);
         this.error_message = 'sdk.errors.add_external_layer';
       }
-
     },
 
     parse_csv(separator, file) {
@@ -637,7 +624,6 @@ export default {
         try {
           await GUI.getService('map').addExternalLayer(this.olLayer, {
             crs:        this.layer_crs,
-            type:       this.layer_format,
             position:   this.position,
             color:      this.layer_color,
             field:      this.field,
