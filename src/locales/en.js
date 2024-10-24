@@ -63,8 +63,10 @@ export default {
             pre: "Please enter",
             post: "or more characters"
           }
-        }
-      },
+        },
+        autofilter: "Filter results"
+
+},
       print: {
         no_layers: 'No Layer to print',
         template: "Template",

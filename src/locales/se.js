@@ -63,7 +63,8 @@ export default {
             pre: "Mata in",
             post: "eller flera tecken"
           }
-        }
+        },
+        autofilter: "Filtrera resultaten"
       },
       print: {
         no_layers: 'Inga nivåer att skriva ut',

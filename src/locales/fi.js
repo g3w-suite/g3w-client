@@ -63,7 +63,8 @@ export default {
             pre: "Syötä",
             post: "tai useampi merkki"
           }
-        }
+        },
+        autofilter: "Suodata tulokset"
       },
       print: {
         no_layers: 'Ei tulostettavia tasoja',

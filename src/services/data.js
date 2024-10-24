@@ -232,6 +232,7 @@ export default {
    * @param options.feature_count
    * @param options.formatter
    * @param options.ordering
+   * @param options.autofilter //@since 3.11.0
    * 
    * @returns { Promise<{ data: [], query: { type: 'search', search: * }, type: 'api' | 'ows' }> }
    */
@@ -243,6 +244,7 @@ export default {
     feature_count,
     formatter: 1,
     ordering,
+    autofilter: 0,
   }) {
     const { layer, ...params } = options;
     params.filter              = [].concat(params.filter); // check if filter is array
@@ -253,12 +255,13 @@ export default {
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
-          if (options.raw)                                        { return { data: value }; }
+          if (params.raw)                                        { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
         }),
       query: {
-        type:   'search',
-        search: options.filter,
+        type:       'search',
+        search:     params.filter,
+        autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
       },
       type: 'api',
     };

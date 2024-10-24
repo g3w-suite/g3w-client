@@ -250,11 +250,6 @@ class MapService extends G3WObject {
 
       selectionLayer: new ol.layer.Vector({
         source: new ol.source.Vector(),
-        style: feat => [createSelectedStyle({
-          geometryType: feat.getGeometry().getType(),
-          color:        this.defaultsLayers._style.selectionLayer.color,
-          fill:         true
-        })]
       }),
 
     };
@@ -1946,8 +1941,22 @@ class MapService extends G3WObject {
   /**
    * @since 3.11.0
    */
-  toggleSelection(visible = true) {
-    this.defaultsLayers.selectionLayer.setVisible(visible);
+  toggleSelection(visible = true, layerId) {
+    //take in account that of layer id is specified, need to set only
+    // features related to layer visible or not
+    if (layerId) {
+      this.defaultsLayers
+        .selectionLayer.getSource()
+        .getFeatures()
+        .filter(f => layerId === f.__layerId)
+        .forEach(f => f.setStyle(visible ? createSelectedStyle({
+          geometryType: f.getGeometry().getType(),
+          color:        this.defaultsLayers._style.selectionLayer.color,
+          fill:         true
+        }): new ol.style.Style(null)))
+    } else {
+      this.defaultsLayers.selectionLayer.setVisible(visible);
+    }
   }
 
   /**

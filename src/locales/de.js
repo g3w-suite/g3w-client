@@ -63,7 +63,8 @@ export default {
             pre: "Bitte",
             post: "oder mehrere Zeichen eingeben"
           }
-        }
+        },
+        autofilter: "Filtern Sie die Ergebnisse"
       },
       print: {
         no_layers: 'Kein Layer zu drucken',
