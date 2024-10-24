@@ -662,8 +662,8 @@ export default new (class QueryResultsService extends G3WObject {
           layer.features.splice(index, 1);
           if (action) {
             delete action.state.toggled[index];
-            //need to reset toggled state
-            layer.features.forEach((f,i) => action.state.toggled[i] = f.selection.selected );
+            //need to reset toggled state in reactive mode
+            action.state.toggled = Vue.observable(layer.features.reduce((a,f,i) => { a[i] = f.selection.selected; return a }, {}));
           }
         } else {                                                              // add feature
           layer.features.push(feat);
@@ -1790,15 +1790,15 @@ export default new (class QueryResultsService extends G3WObject {
       force: undefined
     };
 
-    //In case, click on select icon button on layer feature
-    if (!layerSelection) {
-      _action.state.toggled[index] = !_action.state.toggled[index];
-      feature.selection.selected   = _action.state.toggled[index];
-    } else {
+    if (layerSelection) {
       layer.features.forEach((f, i) => {
         _action.state.toggled[i] = !toggled;
         f.selection.selected     = _action.state.toggled[i];
       });
+    } else {
+      console.log('qui')
+      _action.state.toggled[index] = !_action.state.toggled[index];
+      feature.selection.selected   = _action.state.toggled[index];
     }
 
     /**
