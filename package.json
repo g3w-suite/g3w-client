@@ -33,7 +33,7 @@
     "lodash.clonedeep": "^4.5.0",
     "shp-write": "^0.3.2",
     "util-deprecate": "^1.0.2",
-    "vue": "2.6.12",
+    "vue": "3.0.0",
     "vue-color": "^2.8.1",
     "vue-cookie": "^1.1.4",
     "vue-cookie-law": "^1.13.3"
