@@ -46,7 +46,7 @@
           <!-- LOADING INDICATOR -->
           <bar-loader :loading = "loading"/>
 
-          <template v-if = "'wms' === layer_type">
+          <div v-if = "'wms' === layer_type" class = "form-group">
 
             <!-- DOCS -->
             <a
@@ -159,9 +159,9 @@
 
             </div>
 
-          </template>
+          </div>
 
-          <template v-if = "'file' === layer_type">
+          <div v-if = "'file' === layer_type" class = "form-group">
 
             <button
               v-if                   = "layer_data"
@@ -177,7 +177,7 @@
               <input
                 ref     = "input_file"
                 type    = "file"
-                @change = "onChangeFile"
+                @change = "parseFile"
                 accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
               />
               <h4 class = "skin-color">
@@ -193,19 +193,26 @@
               <bar-loader :loading = "csv_loading"/>
 
               <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
-              <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator" @change="onChangeFile">
+              <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator" @change="parseFile">
                 <option>,</option>
                 <option>;</option>
               </select>
 
               <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
-              <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(fields || []).length" @change="onChangeFile">
+              <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(fields || []).length" @change="parseFile">
                 <option v-for = "h in fields">{{ h }}</option>
               </select>
 
               <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
-              <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(fields || []).length" @change="onChangeFile">
+              <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(fields || []).length" @change="parseFile">
                 <option v-for = "h in fields">{{ h }}</option>
+              </select>
+            </div>
+
+            <div v-if = "parse_errors.length" class="form-group">
+              <label for="csv_parse_errors">⚠️ Parse errors:</label>
+              <select id="csv_parse_errors" class="form-control" style="background-color: gold;font-family: Monospace;">
+                <option v-for="({ value, row }) in parse_errors">[{{ row }}] {{ value }}</option>
               </select>
             </div>
 
@@ -236,13 +243,6 @@
               <small v-t = "'mapcontrols.add_layer_control.persistent_help'"></small>
             </div>
 
-            <div v-if = "parse_errors.length" class="form-group">
-              <label for="csv_parse_errors">⚠️ Parse errors:</label>
-              <select id="csv_parse_errors" class="form-control" style="background-color: gold;font-family: Monospace;">
-                <option v-for="({ value, row }) in parse_errors">[{{ row }}] {{ value }}</option>
-              </select>
-            </div>
-
             <!-- LAYER LABEL (visible field) -->
             <div v-if="(fields || []).length" class="form-group">
               <label v-t = "'label'" for = "g3w-select-field-layer"></label>
@@ -263,7 +263,7 @@
               />
             </div>
 
-          </template>
+          </div>
 
         </div>
 
@@ -277,6 +277,7 @@
             v-t   = "error_message">
           </div>
 
+          <!-- CLOSE BUTTON -->
           <button
             v-t          = "'close'"
             type         = "button"
@@ -309,6 +310,15 @@ import Projections         from 'store/projections';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
+import ol from 'assets/vendors/ol/js/ol';
+
+const { RasterLayer } = require('map/layers/imagelayer');
+
+Object
+  .entries({
+    RasterLayer,
+  })
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 export default {
 
@@ -413,7 +423,7 @@ export default {
       this.layer_color = val;
     },
 
-    async onChangeFile() {
+    async parseFile() {
       const input = this.$refs.input_file;
 
       // skip invalid formats
@@ -467,11 +477,7 @@ export default {
             if (cols.length !== this.fields.length) {
               return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
-            const coords = cols.reduce((coords, value, i) => {
-              if (this.fields[i] === this.csv_x) coords[0] = Number(value);
-              if (this.fields[i] === this.csv_y) coords[1] = Number(value);
-              return coords;
-            }, []);
+            const coords = this.fields.flatMap((field, i) => (field === this.csv_x || field === this.csv_y) ? Number(cols[i]) : []);
             // check if all coordinates are right
             if (!coords.some(d => Number.isNaN(d))) {
               const feat = new ol.Feature({
@@ -680,19 +686,13 @@ export default {
       opacity,
       visible  = true
     } = {}) {
-      const map             = GUI.getService('map');
-      const { RasterLayer } = require('map/layers/imagelayer');
-      const projection      = ol.proj.get(epsg);
-
-      const promise = new Promise((res, rej) => {
-        const wmslayer = new RasterLayer({ id: name || getUniqueDomId(), layers, projection, url });
+      return new Promise((res, rej) => {
+        const wmslayer = new RasterLayer({ id: name || getUniqueDomId(), layers, projection: ol.proj.get(epsg), url });
         const olLayer  = wmslayer.getOLLayer();
         olLayer.getSource().once('imageloadend', res);
         olLayer.getSource().once('imageloaderror', rej);
-        map.addExternalLayer(wmslayer, { position, opacity, visible });
+        GUI.getService('map').addExternalLayer(wmslayer, { position, opacity, visible });
       });
-    
-      return promise;
     },
 
     /**
@@ -820,8 +820,6 @@ export default {
   },
 
   async mounted() {
-    await this.$nextTick();
-
     $('#modal-addlayer').modal('hide');
     $('#modal-addlayer').on('hide.bs.modal',  () => {
       this.layer_type = undefined;
@@ -831,17 +829,14 @@ export default {
       this.unloadWMS();
     });
 
-    // Load WMS urls from local storage
-
     await GUI.isReady();
-
-    const map = GUI.getService('map');
-
-    await map.isReady();
+    await GUI.getService('map').isReady();
 
     this.deleteWMS = this.deleteWMS.bind(this);
 
-    map.on('remove-external-layer', this.deleteWMS);
+    GUI.getService('map').on('remove-external-layer', this.deleteWMS);
+
+    // Load WMS urls from local storage
 
     let data = this.getLocalWMSData();
 
@@ -854,6 +849,7 @@ export default {
     }
 
     setTimeout(() => {
+      const map = GUI.getService('map');
       map.on('change-layer-position-map', ({ id: name, position } = {}) => this.changeLayerData(name, { key: 'position', value: position }));
       map.on('change-layer-opacity',      ({ id: name, opacity } = {})  => this.changeLayerData(name, { key: 'opacity',  value: opacity }));
       map.on('change-layer-visibility',   ({ id: name, visible } = {})  => this.changeLayerData(name, { key: 'visible',  value: visible }));
