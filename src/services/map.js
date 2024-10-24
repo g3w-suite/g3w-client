@@ -2308,7 +2308,7 @@ class MapService extends G3WObject {
       GUI.notify.warning("layer_is_added", false);
     }
 
-    const type  = externalLayer._type || externalLayer.type;
+    const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();
 
     const layer = ({
       'vector': vectorLayer,
@@ -2317,7 +2317,8 @@ class MapService extends G3WObject {
 
     // skip if is not a valid layer
     if (!layer) {
-      return Promise.reject();
+      console.warn('layer type: ', type, externalLayer)
+      return Promise.reject('not a valid layer');
     }
 
     const features = ('vector' === type && layer.getSource().getFeatures()) || [];
