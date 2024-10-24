@@ -277,7 +277,8 @@ export default BaseClass => class extends BaseClass {
         }
       });
     // Ensures visibility of selection layer on a map
-    GUI.getService('map').toggleSelection(Object.values(this.olSelectionFeatures).some(f => f.selected), this.state.id);
+    // in case of layer filter active, always not visible
+    GUI.getService('map').toggleSelection(!this.state.filter.active && Object.values(this.olSelectionFeatures).some(f => f.selected), this.state.id);
   }
   
   /**

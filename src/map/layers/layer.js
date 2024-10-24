@@ -1456,8 +1456,7 @@ class Layer extends G3WObject {
 
     if (this.isGeoLayer()) {
       // whether fid is excluded from selection
-      const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
-      this.setOlSelectionFeatureByFid(fid, is_excluded  ? 'remove' : 'add');
+      this.setOlSelectionFeatureByFid(fid, selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid)  ? 'remove' : 'add');
     }
 
     /** If there is a filterActive */
