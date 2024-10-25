@@ -64,7 +64,7 @@ export default {
             post: "caratteri"
           }
         },
-        autofilter: "Filtro sui risultati"
+        autofilter: "Filtra gli elementi visibili in mappa"
       },
       print: {
         no_layers: 'Nessun Layer visibile',
