@@ -15,9 +15,12 @@
       v-for       = "search in state.searches"
       class       = "menu-item"
       @click.stop = "showPanel(search)"
-    >{{ search.name }}</li>
+    >
+      <i :class = "g3wtemplate.getFontClass('empty-circle')"></i>
+      <span>{{ search.name }}</span>
+    </li>
 
-    <li v-for = "searchtool in state.tools" style="list-style-type: none;">
+    <li v-for = "searchtool in state.tools">
       <g3w-tool :tool = "searchtool" />
     </li>
 
@@ -179,20 +182,11 @@ export default {
 
 <style scoped>
 li.menu-item {
-  padding: 7px 20px 7px 10px;
+  padding-right: 20px !important;
+}
+li.menu-item span {
+  display: inline-flex;
   white-space: pre-wrap;
-  margin-bottom: 8px;
-  font-size: 1.1em;
-  position: relative;
-}
-li.menu-item:after {
-  content: '▷';
-  position: absolute;
-  right: 10px;
-  opacity: .25;
-}
-li.menu-item:hover:after {
-  opacity: 1;
 }
 .search-action {
   text-shadow: 0 2px 5px rgba(0,0,0,.3);
