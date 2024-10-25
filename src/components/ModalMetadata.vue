@@ -267,7 +267,12 @@
               >
                 <a :href="docs_url" rel="nofollow" target="_blank">📖 Docs</a>
                 <a href="mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
-                </div>
+                <a href="https://github.com/g3w-suite">🐞 Report a bug</a>
+              </div>
+
+              <hr>
+
+              <pre v-if="powered_by && g3wsdk_info" @click="copy_g3wsdk_info" style="cursor: pointer;" title="click to copy">{{ g3wsdk_info }}</pre>
 
             </div>
         
@@ -291,7 +296,8 @@
 
 <script>
 
-  import ApplicationState from 'store/application';
+  import ApplicationState   from 'store/application';
+  import ApplicationService from 'services/application';
   import { XHR }          from 'utils/XHR';
 
   export default {
@@ -321,6 +327,7 @@
           }, {});
           return g;
         }, {}),
+        g3wsdk_info: '',
       };
     },
 
@@ -339,6 +346,16 @@
         return value;
       },
 
+      copy_g3wsdk_info(e) {
+        const range = document.createRange();
+        range.selectNode(e.target);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        alert('Copied to clipboard!');
+      },
+
     },
 
     async created() {
@@ -350,7 +367,30 @@
           console.warn(e);
         }
       }
-    }
+    },
+
+    mounted() {
+      $('#modal-metadata').on('show.bs.modal', async () => {
+      await Promise
+        .allSettled([
+          new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+          new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
+        ]);
+
+        /** @since 3.8.0 */
+        const platform = window.platform || {};
+
+        this.g3wsdk_info = `
+[g3wsdk.info]\n
+- g3w-admin: __${initConfig.version}__
+- g3w-client: __${process.env.g3w_client_rev}__
+${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
+- browser: __${platform.name} ${platform.version}__
+- operating system: __${platform.os.toString()}__
+`.trim();
+      });
+
+    },
 
   }
 </script>
