@@ -394,11 +394,6 @@ export default {
     },
 
     async layer_type(type, oldtype) {
-      // if (type && oldtype) {
-      //   this.layer_type = undefined;
-      //   await this.$nextTick();
-      //   this.layer_type = type;
-      // }
       if ('file' === oldtype) {
         this.unloadFile();
       }
@@ -427,6 +422,12 @@ export default {
       // skip invalid formats
       if (!input.accept.split(',').includes(`.${input.files[0].name.split('.').at(-1).toLowerCase()}`)) {
         this.error_message = 'sdk.errors.unsupported_format';
+        return;
+      }
+
+      // skip invalid names
+      if (GUI.getService('map').getLayerByName(input.files[0].name)) {
+        this.error_message = 'layer_is_added';
         return;
       }
 
