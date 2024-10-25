@@ -224,7 +224,7 @@
             </div>
 
             <!-- LAYER PROJECTION -->
-            <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(file_type)">
+            <div v-if="!layer_data" class = "form-group" v-disabled = "['kmz', 'zip'].includes(file_type)">
               <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
                 <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
@@ -501,8 +501,8 @@ export default {
             const cols = row.split(this.csv_wkt ? `"${this.csv_separator}` : this.csv_separator);
             const X = Number(cols[x]);
             const Y = Number(cols[y]);
-            // check if all coordinates are right
-            if (cols.length !== this.fields.length || (!this.csv_wkt && (Number.isNaN(X) || Number.isNaN(Y)))) {
+            // check if coordinates are right
+            if (!this.csv_wkt && (Number.isNaN(X) || Number.isNaN(Y))) {
               return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
             // convert to WKT string
