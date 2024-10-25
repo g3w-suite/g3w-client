@@ -256,9 +256,9 @@
                 id    = "address-credits"
                 style = "line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center; gap: 2px;"
               >
-                <span><b :class = "$fa('marker')" style = "color: #95ad36;" aria-hidden="true"></b> Montecatini Terme - Italy</span>
-                <span><i :class = "$fa('mobile')" style = "color: #95ad36"  aria-hidden="true"></i> <a href = "tel:+393938534336"    style = "color:#000">+39 393 8534336</a></span>
-                <span><i :class = "$fa('mail')"   style = "color: #95ad36"  aria-hidden="true"></i> <a href = "mailto:info@gis3w.it" style = "color:#000">info@gis3w.it</a></span>
+                <span>📍 Montecatini Terme - Italy</span>
+                <span><a href = "tel:+393938534336" style = "color:#000">📱 +39 393 8534336</a></span>
+                <span><a href = "mailto:info@gis3w.it" style = "color:#000">✉️ info@gis3w.it</a></span>
               </address>
 
               <div
