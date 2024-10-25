@@ -299,7 +299,7 @@ const Providers = {
         J:                    'map' === tolerance.unit ? undefined : Math.floor((bbox[3] - coordinates[1]) / resolution), // y
         WIDTH:                size[0],
         HEIGHT:               size[1],
-        STYLES:               '',
+        STYLES:               (layers || []).map(l => l.getStyle()).join(','),
         BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
         // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
         LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
