@@ -172,14 +172,6 @@
               v-t-tooltip:left.create = "'sidebar.wms.delete_wms_url'"
             >&times;</button>
 
-            <!-- LAYER PROJECTION -->
-            <div v-if = "!layer_data" class = "form-group" v-disabled = "['kmz', 'zip'].includes(file_type)">
-              <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
-              <select class = "form-control" id = "projection-layer" v-model = "layer_crs" @change="onChangeProjection">
-                <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
-              </select>
-            </div>
-
             <!-- FILE UPLOAD -->
             <form id = "addcustomlayer" :style="{ padding: layer_data ? '0' : '20px 0' }">
               <input
@@ -195,6 +187,14 @@
               <i v-if="!layer_data" :class = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
               <span v-if="!layer_data" style="font-family: Monospace;">.gml, .geojson, .kml, .kmz, .gpx, .csv, .zip (shapefile)</span>
             </form>
+
+            <!-- LAYER PROJECTION -->
+            <div class = "form-group" v-disabled = "['kmz', 'zip'].includes(file_type)">
+              <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
+              <select class = "form-control" id = "projection-layer" v-model = "layer_crs" @change="onChangeProjection">
+                <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
+              </select>
+            </div>
 
             <!-- CSV FILE (parsing options) -->
             <div v-if = "'csv' === file_type" class = "form-group" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
@@ -238,7 +238,6 @@
                 <option v-for="({ value, row }) in parse_errors">[{{ row }}] {{ value }}</option>
               </select>
             </div>
-
 
             <!-- LAYER POSITION -->
             <div v-if="layer_data" class = "form-group">
@@ -476,6 +475,8 @@ export default {
           data = JSON.stringify(await shp(await input.files[0].arrayBuffer(input.files[0]))); // un-zip folder data 
         }
 
+        const coords = [];
+
         // CSV file
         if ('csv' === this.file_type) {
           this.csv_loading           = true;
@@ -485,7 +486,6 @@ export default {
           this.fields                = headers.split(this.csv_separator).filter(h => h); //need to filer null header case header1,
           //set wkt field
           this.csv_wkt               = this.fields.find(f => 'wkt' === f.toLowerCase());
-          const coords               = [];
           const properties           = {};
           //in the case of no wkt field and fields are more than one (possible choice of x, y fields - POINT geometry)
           if (!this.csv_wkt && this.fields.length > 1) {
@@ -497,51 +497,48 @@ export default {
             data = values;
             data.forEach((row, i) => {
               const cols   = row.split(this.csv_separator);
-              const XY     = ({ x: undefined, y: undefined });
+              let X, Y;
               if (cols.length !== this.fields.length) {
                 return this.parse_errors.push({ row: i + 1, value: data[i] });
               }
               this.fields.forEach((d, i) => {
-                if (XY && d === this.csv_x)             { XY.x = Number(cols[i]); }
-                if (XY && d === this.csv_y)             { XY.y = Number(cols[i]); }
+                if (X && d === this.csv_x) { X = Number(cols[i]); }
+                if (Y && d === this.csv_y) { X = Number(cols[i]); }
               });
               // check if all coordinates are right
-              if (XY && (Number.isNaN(XY.x) || Number.isNaN(XY.y))) {
+              if (X && Y && (Number.isNaN(X) || Number.isNaN(Y))) {
                 return this.parse_errors.push({ row: i + 1, value: data[i] });
               }
               // convert to WKT string
-              coords.push(`POINT (${XY.x} ${XY.y})`);
+              coords.push(`POINT (${X} ${Y})`);
               cols.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, properties))
             });
-
           }
-          //find header with wkt
-          if (this.csv_wkt) {
-            data = values;
-            data.forEach(row => coords.push( (1 === this.fields.length ? row : row.split(`"${this.csv_separator}`)[this.fields.findIndex(f => f === this.csv_wkt)]).replace(/"/g, '') ));
-          }
+        }
 
-          if (coords.length > 0) {
-            coords.forEach((coord, id) => {
-              const feat = new ol.Feature({
-                geometry: (new ol.format.WKT()).readGeometry(coord, {
-                  dataProjection:    this.layer_crs,
-                  featureProjection: GUI.getService('map').getEpsg()
-                }),
-                ...properties
-              });
-              feat.setId(id);
-              features.push(feat);
-            })
+        //find header with wkt
+        if ('csv' === this.file_type && this.csv_wkt) {
+          data = values;
+          data.forEach(row => coords.push( (1 === this.fields.length ? row : row.split(`"${this.csv_separator}`)[this.fields.findIndex(f => f === this.csv_wkt)]).replace(/"/g, '') ));
+        }
 
-          }
+        if ('csv' === this.file_type) {
+          (coords || []).forEach((coord, id) => {
+            const feat = new ol.Feature({
+              geometry: (new ol.format.WKT()).readGeometry(coord, {
+                dataProjection:    this.layer_crs,
+                featureProjection: GUI.getService('map').getEpsg()
+              }),
+              ...properties
+            });
+            feat.setId(id);
+            features.push(feat);
+          })
+        }
 
-          //In the case of one field and not csv_wkt field, set fields to []
-          if (1 === this.fields.length && !this.csv_wkt) {
-            this.fields = [];
-          }
-
-          this.csv_loading = false;
+        //In the case of one field and not csv_wkt field, set fields to []
+        if ('csv' === this.file_type && 1 === this.fields.length && !this.csv_wkt) {
+          this.fields = [];
         }
 
         // other files
@@ -566,6 +563,8 @@ export default {
             featureProjection: GUI.getService('map').getEpsg() || epsg
           });
         }
+
+        this.csv_loading = false;
 
         // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
         if (['kml', 'kmz'].includes(this.file_type)) {
