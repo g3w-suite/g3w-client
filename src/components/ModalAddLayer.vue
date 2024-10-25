@@ -518,7 +518,7 @@ export default {
           //find header with wkt
           if (this.csv_wkt) {
             data = values;
-            data.forEach(row => coords.push( 1 === this.fields.length ? row : row.split(`"${this.csv_separator}`)[this.fields.findIndex(f => f === this.csv_wkt)].replace('"','')));
+            data.forEach(row => coords.push( 1 === this.fields.length ? row.replace(/"/g, '') : row.split(`"${this.csv_separator}`)[this.fields.findIndex(f => f === this.csv_wkt)].replace('"','')));
           }
 
           if (coords.length > 0) {
