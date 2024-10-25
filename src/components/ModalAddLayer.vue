@@ -483,40 +483,30 @@ export default {
         // CSV file
         if ('csv' === this.file_type) {
           this.csv_loading = true;
+
           data             = (await input.files[0].text()).split(/\r\n|\n/).filter(Boolean);
-          const headers    = data.shift(); // X, Y headers
           const X          = ['x', 'lng', 'longitude', 'longitudine'];
           const Y          = ['y', 'lat', 'latitude', 'latitudine'];
-          this.fields      = headers.split(this.csv_separator).filter(h => h); //need to filer null header case header1,
-          this.csv_wkt     = this.fields.find(f => 'wkt' === f.toLowerCase()); // auto suggest "wkt" field
-          const x          = !this.csv_wkt && this.fields.find(f => X.includes(f.toLowerCase()));
-          const y          = !this.csv_wkt && this.fields.find(f => Y.includes(f.toLowerCase()));
-          this.csv_x       = this.csv_wkt || this.csv_x || x || this.fields[0]; // auto suggest "csv_x" field
-          this.csv_y       = this.csv_wkt || this.csv_y || y || this.fields[1]; // auto suggest "csv_y" field
+          this.fields      = data.shift().split(this.csv_separator).filter(h => h); // filter null header
+          this.csv_wkt     = this.csv_wkt || this.fields.find(f => 'wkt' === f.toLowerCase()); // auto suggest "wkt" field
+          this.csv_x       = this.csv_wkt || this.csv_x || this.fields.find(f => X.includes(f.toLowerCase())) || this.fields[0]; // auto suggest "csv_x" field
+          this.csv_y       = this.csv_wkt || this.csv_y || this.fields.find(f => Y.includes(f.toLowerCase())) || this.fields[1]; // auto suggest "csv_y" field
+          const wkt        = this.fields.findIndex(f => f === this.csv_wkt);
+          const x          = this.fields.findIndex(f => f === this.csv_x);
+          const y          = this.fields.findIndex(f => f === this.csv_y);
           const coords     = [];
           const properties = {};
 
-          // data = values;
           data.forEach((row, i) => {
-            if (this.csv_wkt) {
-              coords.push( (1 === this.fields.length ? row : row.split(`"${this.csv_separator}`)[this.fields.findIndex(f => f === this.csv_wkt)]).replace(/"/g, '') );
-              return;
-            }
-            const cols = row.split(this.csv_separator);
-            let X, Y;
-            if (cols.length !== this.fields.length) {
-              return this.parse_errors.push({ row: i + 1, value: data[i] });
-            }
-            this.fields.forEach((d, i) => {
-              if (X && d === this.csv_x) { X = Number(cols[i]); }
-              if (Y && d === this.csv_y) { Y = Number(cols[i]); }
-            });
+            const cols = row.split(this.csv_wkt ? `"${this.csv_separator}` : this.csv_separator);
+            const X = Number(cols[x]);
+            const Y = Number(cols[y]);
             // check if all coordinates are right
-            if (X && Y && (Number.isNaN(X) || Number.isNaN(Y))) {
+            if (cols.length !== this.fields.length || (!this.csv_wkt && (Number.isNaN(X) || Number.isNaN(Y)))) {
               return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
             // convert to WKT string
-            coords.push(`POINT (${X} ${Y})`);
+            coords.push(this.csv_wkt ? cols[wkt].replace(/"/g, '') : `POINT (${X} ${Y})`);
             cols.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, properties))
           });
 
