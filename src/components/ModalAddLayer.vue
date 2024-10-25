@@ -310,9 +310,7 @@ import Projections         from 'store/projections';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
-import ol from 'assets/vendors/ol/js/ol';
-
-const { RasterLayer } = require('map/layers/imagelayer');
+import { RasterLayer }     from 'map/layers/imagelayer';
 
 Object
   .entries({
@@ -496,6 +494,8 @@ export default {
           data = await input.files[0].text() || {};
         }
 
+        this.layer_data = data;
+
         // parse features
         if ('csv' !== this.file_type) {
           features = ({
@@ -506,7 +506,7 @@ export default {
             'kml'    : new ol.format.KML({ extractStyles: false }),
             'kmz'    : new ol.format.KML({ extractStyles: false }),
           })[this.file_type].readFeatures(data, {
-            dataProjection: epsg,
+            dataProjection:    epsg,
             featureProjection: GUI.getService('map').getEpsg() || epsg
           });
         }
@@ -516,7 +516,7 @@ export default {
           features.forEach(f => f.unset('styleUrl'));
         }
 
-        if (features.length) {
+        if (features.length > 0) {
           this.olLayer = new ol.layer.Vector({
             source: new ol.source.Vector({ features }),
             name:   this.layer_name,
@@ -524,8 +524,6 @@ export default {
           });
           this.fields = 'csv' === this.file_type ? this.fields : Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0);
         }
-
-        this.layer_data = data;
 
       } catch(e) {
         console.warn(e);
@@ -608,19 +606,21 @@ export default {
     },
 
     unloadFile() {
-      this.error_message = '';
-      this.parse_errors  = [];
-      this.loading       = false;
-      this.layer_name    = null;
-      this.file_type     = null;
-      this.layer_crs     = GUI.getService('map').getCrs();
-      this.layer_color   = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
-      this.layer_data    = null;
-      this.olLayer       = null;
-      this.fields        = [];
-      this.field         = null;
-      this.csv_x         = null;
-      this.csv_y         = null;
+      this.error_message           = '';
+      this.parse_errors            = [];
+      this.loading                 = false;
+      this.layer_name              = null;
+      this.file_type               = null;
+      this.layer_crs               = GUI.getService('map').getCrs();
+      this.layer_color             = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
+      this.layer_data              = null;
+      this.olLayer                 = null;
+      this.fields                  = [];
+      this.field                   = null;
+      this.csv_x                   = null;
+      this.csv_y                   = null;
+      //reset input file value to null to accept new file
+      this.$refs.input_file. value = null;
     },
 
     unloadWMS() {
