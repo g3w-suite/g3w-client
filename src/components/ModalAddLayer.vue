@@ -466,26 +466,39 @@ export default {
           this.fields                = headers.split(this.csv_separator);
           const X    = ['x', 'lng', 'longitude', 'longitudine'];
           const Y    = ['y', 'lat', 'latitude', 'latitudine'];
-          const x    = this.fields.find(f => X.includes(f.toLowerCase()));
-          const y    = this.fields.find(f => Y.includes(f.toLowerCase()));
+          const WKT  = this.fields.find(f => 'wkt' === f.toLowerCase());
+          const x    = WKT || this.fields.find(f => X.includes(f.toLowerCase()));
+          const y    = WKT || this.fields.find(f => Y.includes(f.toLowerCase()));
           this.csv_x = this.csv_x || x || this.fields[0]; // auto suggest "csv_x" field
           this.csv_y = this.csv_y || y || this.fields[1]; // auto suggest "csv_y" field
           data = this.fields.length > 1 ? values : null;
           data.forEach((row, i) => {
-            const cols = row.split(this.csv_separator);
+            const cols   = row.split(this.csv_separator);
+            const XY     = !WKT && ({ x: undefined, y: undefined });
+            let coords;
             if (cols.length !== this.fields.length) {
               return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
-            const coords = this.fields.flatMap((field, i) => (field === this.csv_x || field === this.csv_y) ? Number(cols[i]) : []);
+            this.fields.forEach((d, i) => {
+              if (XY && d === this.csv_x) { XY.x = Number(cols[i]); }
+              if (XY && d === this.csv_y) { XY.y = Number(cols[i]); }
+              if (WKT && d === WKT)       { XY.x = XY.y = cols[i]; }
+            });
             // check if all coordinates are right
-            if (!coords.some(d => Number.isNaN(d))) {
-              const feat = new ol.Feature({
-                geometry: (new ol.geom.Point(coords)).transform(this.layer_crs, GUI.getService('map').getEpsg()),
-                ...cols.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, {}))
-              });
-              feat.setId(i); // incremental id
-              features.push(feat);
+            if (XY && (Number.isNaN(XY.x) || Number.isNaN(XY.y))) {
+              return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
+            // convert to WKT string
+            coords = WKT ? XY.x : `POINT (${XY.x} ${XY.y})`;
+            const feat = new ol.Feature({
+              geometry: (new ol.format.WKT()).readGeometry(coords, {
+                dataProjection:    this.layer_crs,
+                featureProjection: GUI.getService('map').getEpsg()
+              }), //(new ol.geom.Point(coords)).transform(this.layer_crs, GUI.getService('map').getEpsg()),
+              ...cols.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, {}))
+            });
+            feat.setId(i); // incremental id
+            features.push(feat);
           });
           this.csv_loading = false;
         }
@@ -506,6 +519,7 @@ export default {
             'zip'    : new ol.format.GeoJSON(),
             'kml'    : new ol.format.KML({ extractStyles: false }),
             'kmz'    : new ol.format.KML({ extractStyles: false }),
+            // 'csv'    : new ol.format.WKT(),
           })[this.file_type].readFeatures(data, {
             dataProjection:    epsg,
             featureProjection: GUI.getService('map').getEpsg() || epsg
