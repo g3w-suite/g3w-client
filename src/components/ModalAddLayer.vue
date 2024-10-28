@@ -217,7 +217,7 @@
                 </select>
               </template>
 
-              <div v-if = "0 === fields.length">Nessun campo valido</div>
+              <div v-if = "0 === fields.length" v-t="'no_csv_fields'"></div>
 
               <small v-if="olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t="'sdk.querybuilder.messages.number_of_features'"></span> {{ feature_count }}</small>
 
@@ -453,6 +453,11 @@ export default {
     },
 
     async layer_type(type, oldtype) {
+      if (type && oldtype) {
+        this.layer_type = undefined;
+        await this.$nextTick();
+        this.layer_type = type;
+      }
       if ('file' === oldtype) {
         this.unloadFile();
       }
@@ -701,7 +706,9 @@ export default {
       this.csv_y                   = null;
       this.csv_wkt                 = null;
       //reset input file value to null to accept new file
-      this.$refs.input_file. value = null;
+      if (this.$refs.input_file) {
+        this.$refs.input_file.value = null;
+      }
     },
 
     unloadWMS() {
