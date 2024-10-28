@@ -544,8 +544,7 @@ export default {
             }
             // convert to WKT string
             coords.push(this.csv_wkt ? row[wkt] : `POINT (${X} ${Y})`);
-            // TODO: double check
-            row.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, properties))
+            row.reduce((props, value, i) => { props[this.fields[i]] = value; return props; }, properties);
           });
 
           (coords || []).filter(Boolean).forEach((coord, id) => {
