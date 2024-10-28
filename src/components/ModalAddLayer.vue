@@ -353,8 +353,12 @@ function _CSVToArray(text, separator = ',') {
   let matches = null;
 
   while (matches = pattern.exec(text)) {
+    //exclude new line value
+    if (matches[0] === '\r\n') {
+      break;
+    }
     // add an empty row to our data array
-    if (matches[1].length && (matches[1] != separator)
+    if (matches[1].length && (matches[1] !== separator)
     ) {
       data.push([]);
     }
@@ -559,8 +563,6 @@ export default {
               console.warn(e);
             }
           });
-
-          this.fields = data.shift(); // filter null header
 
           this.csv_loading = false;
         }
