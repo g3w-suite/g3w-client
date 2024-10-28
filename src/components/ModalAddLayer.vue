@@ -332,6 +332,40 @@ Object
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
+  
+/**
+ * ORIGINAL SOURCE: https://gist.github.com/luishdez/644215
+ * 
+ * Parse a delimited string into an array of arrays.
+ */
+function _CSVToArray(text, separator = ',') {
+  // Create a regular expression to parse the CSV values.
+  const pattern = new RegExp(
+    (
+      "(\\" + separator + "|\\r?\\n|\\r|^)" + // Delimiters.
+      "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +     // Quoted fields.
+      "([^\"\\" + separator + "\\r\\n]*))"    // Standard fields.
+    ),
+    "gi"
+  );
+
+  const data = [[]];
+  let matches = null;
+
+  while (matches = pattern.exec(text)) {
+    // add an empty row to our data array
+    if (matches[1].length && (matches[1] != separator)
+    ) {
+      data.push([]);
+    }
+    // captured value (quoted or unquoted).
+    data.at(-1).push(matches[2] ? matches[2].replace(new RegExp("\"\"", "g"), "\"") : matches[3]);
+  }
+
+  // parsed data
+  return (data);
+}
+
 export default {
 
   /** @since 3.11.0 */
@@ -484,10 +518,10 @@ export default {
         if ('csv' === this.file_type) {
           this.csv_loading = true;
 
-          data             = (await input.files[0].text()).split(/\r\n|\n/).filter(Boolean);
+          data             = _CSVToArray(await input.files[0].text(), this.csv_separator);
           const X          = ['x', 'lng', 'longitude', 'longitudine'];
           const Y          = ['y', 'lat', 'latitude', 'latitudine'];
-          this.fields      = data.shift().split(this.csv_separator).filter(h => h); // filter null header
+          this.fields      = data.shift(); // filter null header
           this.csv_wkt     = this.csv_wkt || this.fields.find(f => 'wkt' === f.toLowerCase()); // auto suggest "wkt" field
           this.csv_x       = this.csv_wkt || this.csv_x || this.fields.find(f => X.includes(f.toLowerCase())) || this.fields[0]; // auto suggest "csv_x" field
           this.csv_y       = this.csv_wkt || this.csv_y || this.fields.find(f => Y.includes(f.toLowerCase())) || this.fields[1]; // auto suggest "csv_y" field
@@ -498,16 +532,16 @@ export default {
           const properties = {};
 
           data.forEach((row, i) => {
-            const cols = row.split(this.csv_wkt ? `"${this.csv_separator}` : this.csv_separator);
-            const X = Number(cols[x]);
-            const Y = Number(cols[y]);
+            const X = Number(row[x]);
+            const Y = Number(row[y]);
             // check if coordinates are right
             if (!this.csv_wkt && (Number.isNaN(X) || Number.isNaN(Y))) {
               return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
             // convert to WKT string
-            coords.push(this.csv_wkt ? cols[wkt].replace(/"/g, '') : `POINT (${X} ${Y})`);
-            cols.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, properties))
+            coords.push(this.csv_wkt ? row[wkt] : `POINT (${X} ${Y})`);
+            // TODO: double check
+            row.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, properties))
           });
 
           (coords || []).forEach((coord, id) => {
