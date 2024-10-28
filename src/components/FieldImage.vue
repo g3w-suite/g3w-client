@@ -5,7 +5,7 @@
 
 <template>
   <field :state = "state">
-    <div slot = "field" style = "text-align: left">
+    <div slot = "field" style = "text-align: left; display: inline-block;">
       <img
         v-for       = "(img, i) in images"
         class       = "img-responsive"
