@@ -532,10 +532,6 @@ export default {
           this.csv_wkt = this.csv_wkt || this.fields[wkt];                               // auto suggest "wkt" field
           this.csv_x   = this.csv_wkt || this.csv_x || this.fields[x] || this.fields[0]; // auto suggest "csv_x" field
           this.csv_y   = this.csv_wkt || this.csv_y || this.fields[y] || this.fields[1]; // auto suggest "csv_y" field
-
-          const coords     = [];
-          const properties = {};
-
           data.forEach((row, i) => {
             const X = Number(row[x]);
             const Y = Number(row[y]);
@@ -543,24 +539,18 @@ export default {
             if (!this.csv_wkt && (Number.isNaN(X) || Number.isNaN(Y))) {
               return this.parse_errors.push({ row: i + 1, value: data[i] });
             }
-            // convert to WKT string
-            coords.push(this.csv_wkt ? row[wkt] : `POINT (${X} ${Y})`);
-            row.reduce((props, value, i) => { props[this.fields[i]] = value; return props; }, properties);
-          });
-
-          (coords || []).filter(Boolean).forEach((coord, id) => {
             try {
               const feat = new ol.Feature({
-                geometry: (new ol.format.WKT()).readGeometry(coord, {
+                geometry: (new ol.format.WKT()).readGeometry(this.csv_wkt ? row[wkt] : `POINT (${X} ${Y})`, {
                   dataProjection:    this.layer_crs,
                   featureProjection: GUI.getService('map').getEpsg()
                 }),
-                ...properties
+                ...(row.reduce((props, value, i) => { props[this.fields[i]] = value; return props; }, {}))
               });
-              feat.setId(id);
+              feat.setId(i);
               features.push(feat);
             } catch (e) {
-              console.warn(e);
+                console.warn(e);
             }
           });
 
