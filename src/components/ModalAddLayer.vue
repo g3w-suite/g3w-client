@@ -342,9 +342,9 @@ function _CSVToArray(text, separator = ',') {
   // Create a regular expression to parse the CSV values.
   const pattern = new RegExp(
     (
-      "(\\" + separator + "|\\r?\\n|\\r|^)" + // Delimiters.
-      "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +     // Quoted fields.
-      "([^\"\\" + separator + "\\r\\n]*))"    // Standard fields.
+      '(' + separator + '|\r?\n|\r|^)' + // Delimiters.
+      '(?:"([^"]*(?:""[^"]*)*)"|' +      // Quoted fields.
+      '([^"' + separator + "\r\n]*))"    // Standard fields.
     ),
     "gi"
   );
@@ -359,11 +359,11 @@ function _CSVToArray(text, separator = ',') {
       data.push([]);
     }
     // captured value (quoted or unquoted).
-    data.at(-1).push(matches[2] ? matches[2].replace(new RegExp("\"\"", "g"), "\"") : matches[3]);
+    data.at(-1).push(matches[2] ? matches[2].replace(new RegExp('""', 'g'), '"') : matches[3]);
   }
 
   // parsed data
-  return (data);
+  return data;
 }
 
 export default {
@@ -521,7 +521,7 @@ export default {
           data             = _CSVToArray(await input.files[0].text(), this.csv_separator);
           const X          = ['x', 'lng', 'longitude', 'longitudine'];
           const Y          = ['y', 'lat', 'latitude', 'latitudine'];
-          this.fields      = data.shift(); // filter null header
+          this.fields      = data.shift();
           this.csv_wkt     = this.csv_wkt || this.fields.find(f => 'wkt' === f.toLowerCase()); // auto suggest "wkt" field
           this.csv_x       = this.csv_wkt || this.csv_x || this.fields.find(f => X.includes(f.toLowerCase())) || this.fields[0]; // auto suggest "csv_x" field
           this.csv_y       = this.csv_wkt || this.csv_y || this.fields.find(f => Y.includes(f.toLowerCase())) || this.fields[1]; // auto suggest "csv_y" field
@@ -544,17 +544,23 @@ export default {
             row.reduce((props, value, i) => Object.assign(props, { [this.fields[i]]: value }, properties))
           });
 
-          (coords || []).forEach((coord, id) => {
-            const feat = new ol.Feature({
-              geometry: (new ol.format.WKT()).readGeometry(coord, {
-                dataProjection:    this.layer_crs,
-                featureProjection: GUI.getService('map').getEpsg()
-              }),
-              ...properties
-            });
-            feat.setId(id);
-            features.push(feat);
+          (coords || []).filter(Boolean).forEach((coord, id) => {
+            try {
+              const feat = new ol.Feature({
+                geometry: (new ol.format.WKT()).readGeometry(coord, {
+                  dataProjection:    this.layer_crs,
+                  featureProjection: GUI.getService('map').getEpsg()
+                }),
+                ...properties
+              });
+              feat.setId(id);
+              features.push(feat);
+            } catch (e) {
+              console.warn(e);
+            }
           });
+
+          this.fields = data.shift(); // filter null header
 
           this.csv_loading = false;
         }
