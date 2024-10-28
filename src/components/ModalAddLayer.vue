@@ -213,7 +213,7 @@
               <template v-if = "csv_wkt">
                 <label for = "g3w-select-wkt-field">WKT</label>
                 <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_wkt">
-                  <option>{{ csv_wkt }}</option>
+                  <option v-for = "h in fields">{{ h }}</option>
                 </select>
               </template>
 
@@ -353,7 +353,7 @@ function _CSVToArray(text, separator = ',') {
   let matches = null;
 
   while (matches = pattern.exec(text)) {
-    //exclude new line value
+    // exclude new line value
     if (matches[0] === '\r\n') {
       break;
     }
@@ -522,16 +522,17 @@ export default {
         if ('csv' === this.file_type) {
           this.csv_loading = true;
 
-          data             = _CSVToArray(await input.files[0].text(), this.csv_separator);
-          const X          = ['x', 'lng', 'longitude', 'longitudine'];
-          const Y          = ['y', 'lat', 'latitude', 'latitudine'];
-          this.fields      = data.shift();
-          this.csv_wkt     = this.csv_wkt || this.fields.find(f => 'wkt' === f.toLowerCase()); // auto suggest "wkt" field
-          this.csv_x       = this.csv_wkt || this.csv_x || this.fields.find(f => X.includes(f.toLowerCase())) || this.fields[0]; // auto suggest "csv_x" field
-          this.csv_y       = this.csv_wkt || this.csv_y || this.fields.find(f => Y.includes(f.toLowerCase())) || this.fields[1]; // auto suggest "csv_y" field
-          const wkt        = this.fields.findIndex(f => f === this.csv_wkt);
-          const x          = this.fields.findIndex(f => f === this.csv_x);
-          const y          = this.fields.findIndex(f => f === this.csv_y);
+          data         = _CSVToArray(await input.files[0].text(), this.csv_separator);
+          const X      = ['x', 'lng', 'longitude', 'longitudine'];
+          const Y      = ['y', 'lat', 'latitude', 'latitudine'];
+          this.fields  = data.shift();
+          const wkt    = this.fields.findIndex(f => 'wkt' === f.toLowerCase());
+          const x      = this.fields.findIndex(f => X.includes(f.toLowerCase()));
+          const y      = this.fields.findIndex(f => Y.includes(f.toLowerCase()));
+          this.csv_wkt = this.csv_wkt || this.fields[wkt];                               // auto suggest "wkt" field
+          this.csv_x   = this.csv_wkt || this.csv_x || this.fields[x] || this.fields[0]; // auto suggest "csv_x" field
+          this.csv_y   = this.csv_wkt || this.csv_y || this.fields[y] || this.fields[1]; // auto suggest "csv_y" field
+
           const coords     = [];
           const properties = {};
 
