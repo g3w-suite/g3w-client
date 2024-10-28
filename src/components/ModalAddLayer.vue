@@ -59,7 +59,7 @@
             </a>
 
             <!-- WMS URL -->
-            <div class = "form-group" v-disabled="wms_config">
+            <fieldset class = "form-group" :disabled="wms_config">
               <label for = "add_custom_url_wms_input">URL</label>
               <input
                 id           = "add_custom_url_wms_input"
@@ -74,10 +74,10 @@
               <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>
-            </div>
+            </fieldset>
 
             <!-- WMS NAME -->
-            <div v-if="url && !wms_config && !loading" class = "form-group" v-disabled="wms_config || wms_urls.some(l => l.url == url)">
+            <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
@@ -91,12 +91,12 @@
               <p v-if = "wms_urls.some(l => l.id === id) && wms_urls.every(l => l.url !== url)" style="color: red; margin: 10px 0;">
                 ⚠️ <b v-t = "'sidebar.wms.layer_id_already_added'"></b>
               </p>
-            </div>
+            </fieldset>
 
             <!-- SUBMIT BUTTON -->
             <button
               v-if                = "!wms_config"
-              v-disabled          = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
+              :disabled           = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success"
             ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
@@ -114,12 +114,12 @@
               </div>
             </div>
 
-            <div v-if = "wms_config" v-disabled = "loading">
+            <fieldset v-if = "wms_config" :disabled = "loading">
 
               <button
                 type                   = "button"
                 class                  = "close"
-                style                  = "float: right; padding: 5px 10px; margin-top: -5px;outline: 1px solid; color: red; opacity: 1;"
+                style                  = "float: right; padding: 5px 10px; margin-top: 15px; outline: 1px solid; color: red; opacity: 1;"
                 @click                 = "unloadWMS"
                 v-t-tooltip:left.create = "'disconnect_from_wms'"
               >&times;</button>
@@ -157,7 +157,7 @@
               <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
               <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
 
-            </div>
+            </fieldset>
 
           </div>
 
@@ -222,6 +222,16 @@
               <small v-if="olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t="'sdk.querybuilder.messages.number_of_features'"></span> {{ feature_count }}</small>
 
             </div>
+
+            <!-- DOCS -->
+            <a
+              :href  = "`https://epsg.io/${(layer_crs || '').toLowerCase().replace('epsg:', '')}`"
+              target = "_blank"
+              style  = "float: right;"
+              title  = "Docs"
+            >
+              <i :class = "$fa('external-link')"></i>
+            </a>
 
             <!-- LAYER PROJECTION -->
             <fieldset class = "form-group" :disabled = "layer_data || ['kmz', 'zip'].includes(file_type)">
@@ -305,7 +315,7 @@
             type        = "button"
             class       = "btn btn-success"
             @click.stop = "addLayer"
-            v-disabled  = "'wms' === layer_type ? !wms_layers.length : !layer_data"
+            :disabled  = "'wms' === layer_type ? !wms_layers.length : !layer_data"
           ></button>
 
           </div>
