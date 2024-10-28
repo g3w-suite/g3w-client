@@ -64,7 +64,7 @@ export default {
             post: "or more characters"
           }
         },
-        autofilter: "Filter visible elements on map"
+        autofilter: "Filter results"
 
 },
       print: {
