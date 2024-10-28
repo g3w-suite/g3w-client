@@ -224,12 +224,12 @@
             </div>
 
             <!-- LAYER PROJECTION -->
-            <div class = "form-group" v-disabled = "layer_data || ['kmz', 'zip'].includes(file_type)">
+            <fieldset class = "form-group" :disabled = "layer_data || ['kmz', 'zip'].includes(file_type)">
               <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
                 <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
               </select>
-            </div>
+            </fieldset>
 
             <div v-if = "parse_errors.length" class="form-group">
               <label for="csv_parse_errors">⚠️ Parse errors:</label>
