@@ -341,7 +341,49 @@ If you are looking for an alternative workflow, also try to take a look at [git 
 
 <details>
 
-<summary>4. How can I translate this project?</summary>
+<summary>4. How can I add a custom item to main menu?</summary>
+
+Example, adding a custom link to "change map" modal:
+
+![image](https://github.com/user-attachments/assets/a1fd6d45-fb34-48bd-847c-c6d6f6a36057)
+
+You can achieve this through the following python setting:
+
+```py
+# g3w-suite-docker/config/g3w-suite/settings_docker.py
+
+G3W_CLIENT_HEADER_CUSTOM_LINKS = [{
+  "i18n":   True,
+  "icon":   "fas fa-sync-alt",
+  "title":  "changemap",
+  "type":   "modal",
+  "target": "#modal-changemap"
+}]
+```
+
+which is roughly equivalent to:
+
+```js
+// path/to/your/custom.js
+
+g3wsdk.core.ApplicationService.once('initconfig', () => {
+  initConfig.header_custom_links = [{
+    "i18n":   true,
+    "icon":   "fas fa-sync-alt",
+    "title":  "changemap",
+    "type":   "modal",
+    "target": "#modal-changemap"
+  }];
+});
+```
+
+For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.io/en/v3.9.x/settings.html#g3w-client-header-custom-links)
+
+</details>
+
+<details>
+
+<summary>5. How can I translate this project?</summary>
 
 Depending on your current project version, you can edit one of the following files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):
 
