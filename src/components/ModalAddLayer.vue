@@ -61,21 +61,12 @@
             <!-- WMS URL -->
             <fieldset class = "form-group" :disabled="wms_config">
               <label for = "add_custom_url_wms_input">URL</label>
-              <select
+              <input
                 id                 = "add_custom_url_wms_input"
-                v-select2          = "'url'"
+                v-model.trim       = "url"
                 class              = "form-control"
-                :clear             = "true"
-                :createTag         = "true"
-                :dropdownParent    = "true"
-                :templateSelection = "templateUrls"
-                :templateResult    = "templateUrls"
                 :placeholder       = "'http://example.org/?&service=WMS&request=GetCapabilities'"
-              >
-                <option></option>
-                <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url"> {{ wms.url }}</option>
-              </select>
-
+              />
             </fieldset>
             <!-- WMS NAME -->
             <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
@@ -105,7 +96,7 @@
             <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
             <div v-if="!wms_config" class="form-group">
               <hr>
-              <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
+              <div v-for = "wms in wms_urls.filter(wu => wu.show)" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
                   <b style = "flex-grow: 1;">{{ wms.id }}</b>
                   <i @click.stop = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'connect_to_wms'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
@@ -482,7 +473,21 @@ export default {
 
     url() {
       if (this.url && !this.wms_config) {
-        this.id = (this.wms_urls.find(l => l.url === this.url) || { id: null }).id;
+        this.wms_urls.forEach(l => {
+          if (l.url === this.url) {
+            this.id = l.id;
+            l.show = true;
+          } else {
+            l.show = false;
+          }
+        });
+        //in case of no find url
+        if (this.wms_urls.every(l => !l.show)) {
+          this.id = null;
+        }
+      } else {
+        this.wms_urls.forEach(l => l.show = true);
+        this.id = null;
       }
     },
 
@@ -740,7 +745,7 @@ export default {
      */
     async addWmsURL() {
       this.loading = true;
-      const wms    = { url: this.url, id: this.id };
+      const wms    = { url: this.url, id: this.id, show: true };
       const found  = this.wms_urls.find(l => l.url === this.url);
       try {
         const response = await this.fetchWMS(this.url);
@@ -964,8 +969,8 @@ export default {
       // load eventually data
       Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
     });
-
-    this.wms_urls = data.urls;
+    //add show to filter wmsl urls
+    this.wms_urls = data.urls.map(i => ({...i, show: true}));
   },
 
   beforeDestroy() {
