@@ -19,7 +19,7 @@ window.g3wsdk.info();
 // dev layers
 g3wsdk.core.ApplicationService.once('initconfig', () => {
 
-  const pid = initConfig.id;
+  const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
 
   // DBTM Multiscala
   const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
