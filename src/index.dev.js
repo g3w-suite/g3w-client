@@ -58,6 +58,17 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   });
 });
 
+// custom header link
+g3wsdk.core.ApplicationService.once('initconfig', () => {
+  initConfig.header_custom_links = [{
+    "i18n":   true,
+    "icon":   "fas fa-sync-alt",
+    "title":  "changemap",
+    "type":   "modal",
+    "target": "#modal-changemap"
+  }];
+});
+
 // run app (index.prod.js)
 require('./index.prod');
 
