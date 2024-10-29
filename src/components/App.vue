@@ -878,7 +878,9 @@ export default {
      * @since 3.11.0
      */
     showaddLayerModal() {
-      this.$refs['menu-toggler'].checked = false;
+      if (this.$refs['menu-toggler']) {
+        this.$refs['menu-toggler'].checked = false;
+      }
       $('#modal-addlayer').modal('show');
     },
 
@@ -886,7 +888,9 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu() {
-      this.$refs['menu-toggler'].checked = false;
+      if (this.$refs['menu-toggler']) {
+        this.$refs['menu-toggler'].checked = false;
+      }
       $('#modal-changemap').modal('show');
     },
 
@@ -967,7 +971,9 @@ export default {
      * @since 3.11.0
      */
     toggleSidebar() {
-      this.$refs['menu-toggler'].checked = false;
+      if (this.$refs['menu-toggler']) {
+        this.$refs['menu-toggler'].checked = false;
+      }
       GUI.toggleSidebar();
     },
 

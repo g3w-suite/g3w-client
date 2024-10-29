@@ -468,15 +468,11 @@ div.info_help_text .info_help_text_button { text-align: center; font-size: .7em;
 @media (max-width: 767px) {
   .nav-links a                               { color: inherit; background: transparent; }
   .nav-links > li                            { color: inherit; border: 0; }
-  /* .navbar                                    { position: relative; }
-  .navbar                                    { width: 100%; float: none; }
-  .navbar                                    { margin: 0; } */
-
   .navbar .dropdown-menu li.divider          { background-color: rgba(255, 255, 255, 0.1); }
   .navbar .dropdown-menu li a                { color: #fff; }
   .navbar .dropdown-menu li a:hover          { background: var(--skin-d5); }
-  .navbar .dropdown.user .dropdown-menu              { width: 100%; }
-  .sidebar-aside-toggle                                   { left: 300px; }
+  .navbar .dropdown.user .dropdown-menu      { width: 100%; }
+  .sidebar-aside-toggle                      { left: 300px; }
 }
 
 @media(min-width: 768px) {
