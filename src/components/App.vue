@@ -59,7 +59,7 @@
             v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
           >
             <i v-if   = "item.icon" :class = "item.icon"></i>
-            <img v-if = "item.img" style = "max-height: 20px" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
+            <img v-if = "item.img" height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
           </a>
         </li>
 

@@ -78,7 +78,14 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
     "title":  "Report a bug",
     "url":    "https://github.com/g3w-suite",
     "target": "_blank",
-  },];
+  }, {
+    "i18n":    false,
+    "title":   'Forecast',
+    "img":     'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>',
+    "content": '<iframe src="https://www.3bmeteo.com/moduli_esterni/italia_7_giorni/ffffff/fc9b2a/5e5e5e/ffffff/it" style="width: 100%;min-height: 655px;border: none;"></iframe>',
+    "type":    'modal'
+  },
+];
 });
 
 // run app (index.prod.js)
