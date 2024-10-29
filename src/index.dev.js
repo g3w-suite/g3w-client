@@ -74,7 +74,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
     "target": "#modal-changemap",
   }, {
     "i18n":   false,
-    "icon":   "fas fa-bug",
+    "text":   "<i class='fas fa-bug'></i> <span hidden>Create a new issue</span>",
     "title":  "Report a bug",
     "url":    "https://github.com/g3w-suite",
     "target": "_blank",
