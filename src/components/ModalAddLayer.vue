@@ -3,17 +3,17 @@
   @since 3.11.0
 -->
 
-<template xmlns="http://www.w3.org/1999/html">
+<template>
   <!-- Modal -->
-  <fieldset
+  <div
     class    = "modal fade"
     id       = "modal-addlayer"
     ref      = "modal_addlayer"
     role     = "dialog"
     tabindex = "-1"
   >
-    <fieldset class = "modal-dialog">
-      <fieldset class = "modal-content">
+    <div class = "modal-dialog">
+      <div class = "modal-content">
 
         <!-- MODAL HEADER -->
         <div class = "modal-header">
@@ -29,7 +29,7 @@
         </div>
 
         <!-- MODAL BODY -->
-        <fieldset class = "modal-body">
+        <div class = "modal-body">
 
           <!-- LAYER TYPE -->
           <div class="form-group">
@@ -46,7 +46,7 @@
           <!-- LOADING INDICATOR -->
           <bar-loader :loading = "loading"/>
 
-          <fieldset v-if = "'wms' === layer_type" class = "form-group">
+          <div v-if = "'wms' === layer_type" class = "form-group">
 
             <!-- DOCS -->
             <a
@@ -62,12 +62,20 @@
             <fieldset class = "form-group" :disabled="wms_config">
               <label for = "add_custom_url_wms_input">URL</label>
               <input
-                id                 = "add_custom_url_wms_input"
-                v-model.trim       = "url"
-                class              = "form-control"
-                :placeholder       = "'http://example.org/?&service=WMS&request=GetCapabilities'"
+                id           = "add_custom_url_wms_input"
+                v-model.trim = "url"
+                class        = "form-control"
+                placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
+                type         = "url"
+                list         = "wms_urls"
+                required
               />
+              <small v-if="!wms_config" v-t="'add_new_wms_url_help'"></small>
+              <datalist id="wms_urls">
+                <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
+              </datalist>
             </fieldset>
+
             <!-- WMS NAME -->
             <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
@@ -96,13 +104,13 @@
             <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
             <div v-if="!wms_config" class="form-group">
               <hr>
-              <div v-for = "wms in wms_urls.filter(wu => wu.show)" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
+              <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
-                  <b style = "flex-grow: 1;">{{ wms.id }}</b>
-                  <i @click.stop = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'connect_to_wms'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
-                  <i @click.stop = "deleteWmsUrl(wms.id)" v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <b @click = "fetchWMS(wms.url)"    :title = "$t('connect_to_wms')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
+                  <i @click = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'connect_to_wms'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <i @click = "deleteWmsUrl(wms.id)" v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
                 </div>
-                <small>{{ wms.url }}</small>
+                <small @click = "fetchWMS(wms.url)" :title = "$t('connect_to_wms')" style="cursor: pointer;">{{ wms.url }}</small>
               </div>
             </div>
 
@@ -151,7 +159,7 @@
 
             </fieldset>
 
-          </fieldset>
+          </div>
 
           <div v-if = "'file' === layer_type" class = "form-group">
 
@@ -281,7 +289,7 @@
 
           </div>
 
-        </fieldset>
+        </div>
 
         <!-- MODAL FOOTER -->
         <div class = "modal-footer">
@@ -312,12 +320,9 @@
 
           </div>
 
-      </fieldset>
-
-    </fieldset>
-
-  </fieldset>
-
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -472,42 +477,15 @@ export default {
     },
 
     url() {
-      if (this.url && !this.wms_config) {
-        this.wms_urls.forEach(l => {
-          if (l.url === this.url) {
-            this.id = l.id;
-            l.show = true;
-          } else {
-            l.show = false;
-          }
-        });
-        //in case of no find url
-        if (this.wms_urls.every(l => !l.show)) {
-          this.id = null;
-        }
-      } else {
-        this.wms_urls.forEach(l => l.show = true);
-        this.id = null;
+      if (this.url && !this.wms_config && this.wms_urls.some(l => l.url == this.url)) {
+        this.id = this.wms_urls.find(l => l.url == this.url).id
       }
     },
 
   },
 
   methods: {
-    /**
-     * Language switcher item template (select2)
-     *
-     * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
-     */
-    templateUrls(state) {
-      if (!state.id) { return state.text }
-      return $(/*html*/`
-        <div style="display:flex; flex-direction: column;">
-          <span >${state.id}</span>
-          <span style = "font-weight: bold">${(this.wms_urls.find(({ url }) => url === state.id) || { id: '' }).id}</span>
-        </span>`
-      );
-    },
+
     onChangeColor(val) {
       this.layer_color = val;
     },
@@ -758,7 +736,6 @@ export default {
       } catch(e) {
         console.warn(e);
       }
-
       this.loading = false;
     },
 
@@ -969,8 +946,8 @@ export default {
       // load eventually data
       Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
     });
-    //add show to filter wmsl urls
-    this.wms_urls = data.urls.map(i => ({...i, show: true}));
+
+    this.wms_urls = data.urls;
   },
 
   beforeDestroy() {
