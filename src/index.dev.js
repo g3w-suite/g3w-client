@@ -62,11 +62,23 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
 g3wsdk.core.ApplicationService.once('initconfig', () => {
   initConfig.header_custom_links = [{
     "i18n":   true,
-    "icon":   "fas fa-sync-alt",
+    "icon":   "fas fa-plus",
+    "title":  "mapcontrols.add_layer_control.header",
+    "type":   "modal",
+    "target": "#modal-addlayer",
+  }, {
+    "i18n":   true,
+    "icon":   "fas fa-window-maximize",
     "title":  "changemap",
     "type":   "modal",
-    "target": "#modal-changemap"
-  }];
+    "target": "#modal-changemap",
+  }, {
+    "i18n":   false,
+    "icon":   "fas fa-bug",
+    "title":  "Report a bug",
+    "url":    "https://github.com/g3w-suite",
+    "target": "_blank",
+  },];
 });
 
 // run app (index.prod.js)
