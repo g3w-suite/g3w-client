@@ -61,23 +61,24 @@
             <!-- WMS URL -->
             <div class = "form-group" v-disabled="wms_config">
               <label for = "add_custom_url_wms_input">URL</label>
-              <input
-                id           = "add_custom_url_wms_input"
-                v-model.trim = "url"
-                class        = "form-control"
-                placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
-                type         = "url"
-                list         = "wms_urls"
-                required
-              />
-              <small v-if="!wms_config" v-t="'add_new_wms_url_help'"></small>
-              <datalist id="wms_urls">
-                <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
-              </datalist>
-            </div>
+              <select
+                id                 = "add_custom_url_wms_input"
+                v-select2          = "'url'"
+                class              = "form-control"
+                :clear             = "true"
+                :createTag         = "true"
+                :dropdownParent    = "true"
+                :templateSelection = "templateUrls"
+                :templateResult    = "templateUrls"
+                :placeholder       = "'http://example.org/?&service=WMS&request=GetCapabilities'"
+              >
+                <option></option>
+                <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url"> {{ wms.url }}</option>
+              </select>
 
+            </div>
             <!-- WMS NAME -->
-            <div v-if="url && !wms_config && !loading" class = "form-group" v-disabled="wms_config || wms_urls.some(l => l.url == url)">
+            <div v-if="url && !wms_config && !loading" class = "form-group">
               <label for = "add_custom_name_url_wms_input" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
@@ -87,8 +88,9 @@
                 v-model.trim = "id"
                 class        = "form-control"
                 required
+                :disabled    = "wms_config || wms_urls.some(l => l.url == url)"
               />
-              <p v-if = "wms_urls.some(l => l.id === id) && wms_urls.every(l => l.url !== url)" style="color: red; margin: 10px 0;">
+              <p v-if = "null !== id && wms_urls.some(l => l.id === id) && wms_urls.every(l => l.url !== url)" style = "color: red; margin: 10px 0;">
                 ⚠️ <b v-t = "'sidebar.wms.layer_id_already_added'"></b>
               </p>
             </div>
@@ -287,7 +289,7 @@
           <!-- ERROR NOTICE -->
           <div
             v-if  = "error_message"
-            style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center"
+            style = "font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center; margin-bottom: 5px;"
             v-t   = "error_message">
           </div>
 
@@ -467,15 +469,28 @@ export default {
     },
 
     url() {
-      if (this.url && !this.wms_config && this.wms_urls.some(l => l.url == this.url)) {
-        this.id = this.wms_urls.find(l => l.url == this.url).id
+      if (this.url && !this.wms_config) {
+        this.id = (this.wms_urls.find(l => l.url === this.url) || { id: null }).id;
       }
     },
 
   },
 
   methods: {
-
+    /**
+     * Language switcher item template (select2)
+     *
+     * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
+     */
+    templateUrls(state) {
+      if (!state.id) { return state.text }
+      return $(/*html*/`
+        <div style="display:flex; flex-direction: column;">
+          <span >${state.id}</span>
+          <span style = "font-weight: bold">${(this.wms_urls.find(({ url }) => url === state.id) || { id: '' }).id}</span>
+        </span>`
+      );
+    },
     onChangeColor(val) {
       this.layer_color = val;
     },
@@ -714,17 +729,19 @@ export default {
     async addWmsURL() {
       this.loading = true;
       const wms    = { url: this.url, id: this.id };
-      const found  = this.wms_urls.find(l => l.url == this.url || l.id == wms.id);
-      // when url is not yet added
-      if (found) {
-        await this.fetchWMS(this.url);
-      } else {
-        await this.fetchWMS();
-        const data = this.getLocalWMSData();
-        this.wms_urls.push(wms);
-        data.urls = this.wms_urls;
-        this.updateLocalWMSData(data);
+      const found  = this.wms_urls.find(l => l.url === this.url);
+      try {
+        const response = await this.fetchWMS(this.url);
+        if (!found && response) {
+          const data = this.getLocalWMSData();
+          this.wms_urls.push(wms);
+          data.urls = this.wms_urls;
+          this.updateLocalWMSData(data);
+        }
+      } catch(e) {
+        console.warn(e);
       }
+
       this.loading = false;
     },
 
@@ -821,7 +838,8 @@ export default {
         /** Layers of wms */
         this.layers = config.layers;
 
-        this.wms_config = config;
+        this.wms_config    = config;
+        this.error_message = null;
       } catch(e) {
         console.warn(e);
         this.error_message = e;

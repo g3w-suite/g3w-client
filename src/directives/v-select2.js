@@ -24,7 +24,12 @@ export default {
       /** @since 3.11.0 */
       dropdownAutoWidth = false,
       /** @since 3.11.0 whether to create dropdown to immediate parent of "<select>" element */
-      dropdownParent = false
+      dropdownParent = false,
+      //@since 3.11.0 Placeholder *//
+      placeholder,
+      /** @since 3.11.0*/
+      clear = false,
+
     } = vnode.data.attrs || {};
     const isArray = binding.value
       && Array.isArray(vnode.context[binding.value]) // check if is an array
@@ -41,6 +46,8 @@ export default {
           templateResult,
           templateSelection,
           minimumResultsForSearch: search ? undefined : -1,
+          placeholder,
+          allowClear: clear,
           createTag(params) {
             const value = params.term.trim();
             return value ? {
