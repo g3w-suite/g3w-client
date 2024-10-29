@@ -3,17 +3,17 @@
   @since 3.11.0
 -->
 
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <!-- Modal -->
-  <div
+  <fieldset
     class    = "modal fade"
     id       = "modal-addlayer"
     ref      = "modal_addlayer"
     role     = "dialog"
     tabindex = "-1"
   >
-    <div class = "modal-dialog">
-      <div class = "modal-content">
+    <fieldset class = "modal-dialog">
+      <fieldset class = "modal-content">
 
         <!-- MODAL HEADER -->
         <div class = "modal-header">
@@ -29,7 +29,7 @@
         </div>
 
         <!-- MODAL BODY -->
-        <div class = "modal-body">
+        <fieldset class = "modal-body">
 
           <!-- LAYER TYPE -->
           <div class="form-group">
@@ -46,7 +46,7 @@
           <!-- LOADING INDICATOR -->
           <bar-loader :loading = "loading"/>
 
-          <div v-if = "'wms' === layer_type" class = "form-group">
+          <fieldset v-if = "'wms' === layer_type" class = "form-group">
 
             <!-- DOCS -->
             <a
@@ -76,7 +76,7 @@
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url"> {{ wms.url }}</option>
               </select>
 
-            </div>
+            </fieldset>
             <!-- WMS NAME -->
             <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
               <label for = "add_custom_name_url_wms_input" title = "required">
@@ -160,7 +160,7 @@
 
             </fieldset>
 
-          </div>
+          </fieldset>
 
           <div v-if = "'file' === layer_type" class = "form-group">
 
@@ -290,7 +290,7 @@
 
           </div>
 
-        </div>
+        </fieldset>
 
         <!-- MODAL FOOTER -->
         <div class = "modal-footer">
@@ -321,9 +321,12 @@
 
           </div>
 
-      </div>
-    </div>
-  </div>
+      </fieldset>
+
+    </fieldset>
+
+  </fieldset>
+
 </template>
 
 <script>
