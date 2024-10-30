@@ -12,8 +12,8 @@
 
       <a href = "#" class = "g3w-map-theme-anchor">
         <section @click.stop = "toggle">
-          <i :class = "g3wtemplate.getFontClass(collapsed ? 'caret-down' : 'caret-up')" style = "padding: 3px;"></i>
-          <i :class = "g3wtemplate.getFontClass(collapsed ? 'eye-close' : 'eye')"       style = "padding: 0 0 0 4px;"></i>
+          <i :class = "$fa(collapsed ? 'caret-down' : 'caret-up')" style = "padding: 3px;"></i>
+          <i :class = "$fa(collapsed ? 'eye-close' : 'eye')"       style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
             v-if  = "active_theme"
@@ -40,7 +40,7 @@
           <span
             v-t-tooltip:left.create = "'close'"
             @click.stop             = "show_form = false"
-            :class                  = "g3wtemplate.getFontClass('close')"
+            :class                  = "$fa('close')"
             class                   = "sidebar-button sidebar-button-icon"
             style                   = "padding: 2px; margin: 2px;"
           ></span>
@@ -114,7 +114,7 @@
                 <span
                   v-t-tooltip:left.create = "'add'"
                   @click.stop             = "show_form = !show_form"
-                  :class                  = "g3wtemplate.getFontClass('plus')"
+                  :class                  = "$fa('plus')"
                   class                   = "action sidebar-button sidebar-button-icon"
                   style                   = "margin-left: auto; padding: 5px;"
                 >
@@ -151,7 +151,7 @@
                    v-disabled             = "active_theme !== map_theme.theme"
                  >
                   <i
-                    :class = "g3wtemplate.getFontClass('save')"
+                    :class = "$fa('save')"
                     class  = "skin-color"></i>
 
                  </span>
@@ -164,7 +164,7 @@
                     v-t-tooltip:top.create = "'cancel'"
                   >
                     <i
-                      :class = "g3wtemplate.getFontClass('trash')"
+                      :class = "$fa('trash')"
                       style  = "color: red;">
                     </i>
                   </span>

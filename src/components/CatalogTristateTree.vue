@@ -11,13 +11,14 @@
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
     :style="{
-      marginLeft: !isGroup ? '5px' : '0'
+      marginLeft: !isGroup ? '5px' : '0',
+      position: 'relative',
     }"
     :class                    = "{
-      selected: !isGroup || !isTable ? layerstree.selected : false,
+      selected:         !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
-      disabled: isInGrey,
-      group: isGroup
+      disabled:         isInGrey,
+      group:            isGroup
     }"
   >
     <!-- GROUP LAYER -->
@@ -115,7 +116,7 @@
 
       <span
         :class           = "{
-          highlightlayer: isHighLight,
+          highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
         class            = "skin-tooltip-top g3w-long-text"
@@ -211,7 +212,6 @@
           :root                      = "false"
           :legendConfig              = "legend"
           :legendplace               = "legendplace"
-          :highlightlayers           = "highlightlayers"
           :parentFolder              = "isGroup"
           :layerstree                = "_layerstree"
           :storeid                   = "storeid"
@@ -221,6 +221,14 @@
 
       </span>
     </ul>
+
+    <a
+      v-if                    = "!isGroup"
+      :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
+      @click.prevent.stop     = "showContextMenu"
+      href                    = "#"
+      v-t-tooltip:left.create = "'catalog_items.helptext'"
+    ></a>
 
   </li>
 
@@ -255,7 +263,6 @@ export default {
     'storeid',
     'legend',
     'legendplace',
-    'highlightlayers',
     'parent_mutually_exclusive',
     'parentFolder',
     'externallayers',
@@ -328,22 +335,8 @@ export default {
     },
 
     isHighLight() {
-      return (
-        // project layer
-        (
-          this.highlightlayers &&
-          !this.isGroup &&
-          getCatalogLayerById(this.layerstree.id).getTocHighlightable() &&
-          this.layerstree.visible
-        ) ||
-        // external layer
-          (
-          this.layerstree.external &&
-          this.layerstree.visible &&
-          "vector" /* <-- what the heck? */ && this.layerstree._type &&
-          true === this.layerstree.tochighlightable
-        )
-      );
+      const layer = getCatalogLayerById(this.layerstree.id) || this.layerstree;
+      return layer && ApplicationState.highlightlayers && layer.isVisible() && layer.getTocHighlightable();
     },
 
     isInGrey() {
@@ -390,7 +383,6 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      const map = GUI.getService('map');
 
       if (!group.checked) {
         group.nodes.forEach(n => {
@@ -573,24 +565,12 @@ export default {
     /**
      * @param evt
      * 
-     * @fires VM~hide-layer-context-menu
-     * @fires VM~hide-project-context-menu
-     * @fires VM~show-layer-context-menu
-     * @fires VM~show-project-context-menu
+     * @fires VM~context-menu
      * 
      * @since 3.10.0
      */
     showContextMenu(evt) {
-      if (
-        !this.isGroup &&
-        (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
-      ) {
-        VM.$emit('hide-project-context-menu');
-        VM.$emit('show-layer-context-menu', this.layerstree, evt);
-      } else if (this.isGroup && true === this.layerstree.root) {
-        VM.$emit('hide-layer-context-menu');
-        VM.$emit('show-project-context-menu', evt);
-      }
+      VM.$emit('context-menu', evt, this.layerstree);
     },
 
   },
@@ -609,7 +589,7 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    $('span.scalevisibility').tooltip();
+    $('span.scalevisibility, a.toggle-context-menu').tooltip();
   }
 
 };

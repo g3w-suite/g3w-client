@@ -378,6 +378,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Kenttä toisensa poissulkeva.",
           input_validation_error: "Pakollinen kenttä tai väärä tietotyyppi.",
+          input_validation_error_type: "Väärä tietotyyppi.",
           input_validation_min_field: "Arvon tulee olla suurempi tai yhtäsuuri kuin kentän arvo.",
           input_validation_max_field: "Arvon tulee olla pienempi tai yhtäsuuri kuin kentän arvo.",
           input_validation_exclude_values: "Arvon tulee olla uniikki.",
@@ -479,12 +480,9 @@ export default {
     cancel: "Peruuta",
     update: "Päivittää",
     close: "Sulje",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Älä näytä viestiä uudelleen",
     enlange_reduce: "Suurenna / Pienennä",
-    reset_default: "Oletuskoko",
     add: "Lisää",
     exitnosave: "Poistu tallentamatta",
     annul: "Peruuta",

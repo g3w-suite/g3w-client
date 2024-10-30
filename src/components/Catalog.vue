@@ -62,7 +62,7 @@
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
-          v-if   = "'tab' === state.legend.place && showlegend"
+          v-if   = "'tab' === legend_position && showlegend"
           role   = "presentation"
           :class = "{ active: ('legend' === activeTab) }"
         >
@@ -91,8 +91,6 @@
           :class = "{ active: ('layers' === activeTab) }"
         >
 
-          <helpdiv message = "catalog_items.helptext" />
-
           <!-- TOOLBAR -->
           <div
             id    = "g3w-catalog-toc-layers-toolbar"
@@ -115,12 +113,11 @@
             <catalog-tristate-tree
               v-for                      = "tree in root.tree"
               :key                       = "tree.id"
-              :highlightlayers           = "state.highlightlayers"
               :layerstree                = "tree"
               class                      = "item"
               :parentFolder              = "false"
               :root                      = "true"
-              :legendplace               = "state.legend.place"
+              :legendplace               = "legend_position"
               :parent_mutually_exclusive = "false"
               :storeid                   = "root.storeid"
             />
@@ -224,7 +221,7 @@
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
         <div
-          v-if   = "'tab' === state.legend.place"
+          v-if   = "'tab' === legend_position"
           v-for  = "tree in state.layerstrees"
           :key   = "tree.id"
           role   = "tabpanel"
@@ -253,6 +250,37 @@
 
       </div>
 
+    </div>
+
+    <div
+      v-if="hasRelatedMaps || 'legend' !== activeTab"
+      style  = "
+        position: sticky;
+        bottom: 0;
+        background-color: #222d32;
+        display: flex;
+        text-align: center;
+        line-height: 48px;
+        color: #fff;
+        border-top: 2px solid var(--skin-color);
+        margin-top: 12px;
+        justify-content: space-around;
+      "
+    >
+      <a
+        v-if   = "'legend' !== activeTab"
+        href   = "#"
+        @click = "showaddLayerModal"
+      >
+        <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
+      </a>
+      <a
+        v-if   = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
+        href   = "#"
+        @click = "openChangeMapMenu"
+      >
+        <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
+      </a>
     </div>
 
   </div>
@@ -289,6 +317,8 @@ export default {
   data() {
     return {
       state:            this.$options.service.state || {},
+      legend_position:  ApplicationState.project.state.legend_position || 'tab',
+      iframe:           ApplicationState.iframe,
       showlegend:       false,
       currentBaseLayer: null,
       activeTab:        'layers',
@@ -327,6 +357,15 @@ export default {
       );
     },
 
+    /**
+     * @returns {boolean} whether it should list any related projects or maps.
+     *
+     * @since 3.8.0
+     */
+     hasRelatedMaps() {
+      return window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length > 1;
+    },
+
   },
 
   methods: {
@@ -347,7 +386,7 @@ export default {
      */
     getLegendSrc(change = false) {
       // skip if not active
-      if ('tab' !== this.state.legend.place) { return }
+      if ('tab' !== this.legend_position) { return }
 
       this.state.layerstrees.forEach(t => {
         let layers = this._traverseVisibleLayers(t.tree);
@@ -402,7 +441,7 @@ export default {
         const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
         const catalogLayer = getCatalogLayerById(layer.id);
 
-        const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
+        const url          = catalogLayer ? catalogLayer.getLegendUrl((window.initConfig.layout || {}).legend, {
           all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
@@ -687,7 +726,6 @@ export default {
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
-      
       layerstree.filter.active = await ApplicationState.catalog[storeid].getLayerById(layerstree.id).toggleFilterToken();
     },
 
@@ -712,6 +750,21 @@ export default {
     onTreeNodeSelected(node) {
       GUI.getService('map').selectLayer(node.id);
     },
+
+    /**
+     * @since 3.11.0
+     */
+    showaddLayerModal() {
+      $('#modal-addlayer').modal('show');
+    },
+
+    /**
+     * @since 3.11.0
+     */
+    openChangeMapMenu() {
+      $('#modal-changemap').modal('show');
+    },
+    
 
   },
 
@@ -739,9 +792,13 @@ export default {
       immediate: false
     },
 
-    activeTab(tab) {
-      if ('legend' === tab) {
+    activeTab(activeTab, oldTab) {
+      if ('legend' === activeTab) {
         this.getLegendSrc(true);
+      }
+      if (this.$el) {
+        this.$el.parentElement.classList.remove(`tab-${oldTab}`);
+        this.$el.parentElement.classList.add(`tab-${activeTab}`);
       }
     },
 
@@ -897,7 +954,7 @@ export default {
     font-weight: bold;
   }
   .catalog ul {
-    line-height: 1.5em;
+    line-height: 1.75em;
     list-style-type: none;
   }
   .catalog .list-group-item {
@@ -915,6 +972,7 @@ export default {
     width: 80%;
     display: inline-flex;
     justify-content: space-between;
+    user-select: none;
   }
   .catalog .tree-item div.tree-node-title.disabled,
   .catalog #legend div div.tree-node-title.disabled {
@@ -1083,8 +1141,22 @@ export default {
   #catalog #layers .sidebar-menu > li > a {
     border: 0;
   }
+
   #catalog > a {
     display: none !important;
+  }
+
+  #catalog .tree-item > .toggle-context-menu {
+    opacity: 0;
+    position: absolute;
+    inset: 0 4px auto auto;
+    color: #fff;
+    padding: 4px 8px;
+    border: 1px solid;
+    border-radius: 3px;
+  }
+  #catalog .tree-item:not(.group):hover > .toggle-context-menu {
+    opacity: 1;
   }
 </style>
 

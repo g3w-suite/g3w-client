@@ -4,6 +4,7 @@
  * @param file.content
  * @param { string } file.url
  * @param { string } file.mime_type
+ * @param  file.signal
  */
 export async function downloadFile({
   filename,
@@ -13,6 +14,7 @@ export async function downloadFile({
   method = 'GET', // @since v3.10.0
   data,           //@since v3.10.0
   mime_type = 'text/plain',
+  signal,
 } = {}) {
 
   let blob = content && new Blob([content], { type: mime_type });
@@ -21,7 +23,8 @@ export async function downloadFile({
     type: mime_type,
     headers,
     body: data,
-    method
+    method,
+    signal,
   }) || {};
 
   if (!content && (400 === d.status || 500 === d.status)) {

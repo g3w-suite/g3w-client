@@ -7,7 +7,7 @@ import localforage                          from 'localforage';
 import G3WObject                            from 'g3w-object';
 import ApplicationState                     from 'store/application';
 import PluginsRegistry                      from 'store/plugins';
-import { createVectorLayerFromFile }        from 'utils/createVectorLayerFromFile';
+import Projections                          from "store/projections";
 import { isPointGeometryType }              from 'utils/isPointGeometryType';
 import { isLineGeometryType }               from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }            from 'utils/isPolygonGeometryType';
@@ -38,15 +38,11 @@ import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 
-const MAP_SETTINGS = {
-  ZOOM:            { maxScale: 1000, },
-  ANIMATION:       { duration: 2000, },
-};
-
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
 const MAP = {
+  maxZoom:            1000,
   controls:           {},
   offlineids:         [],
   selectedLayer:      null,
@@ -162,28 +158,22 @@ CONTROLS['querybypolygon']     = CONTROLS['queryby'];
 
 class MapService extends G3WObject {
 
-  constructor(options = {}) {
+  constructor() {
 
     super();
 
     this.state = {
-      mapUnits:              'm',
-      bbox:                  [],
-      hidemaps:              [],
-      resolution:            null,
-      center:                null,
-      loading:               false,
-      hidden:                true,
-      scale:                  0,
-      mapcontrolsalignement: 'rv',
-      mapcontrolDOM:         null,
-      mapcontrolready:       false,
-      mapControl:            { disabled: false },
-      map_info:              { info: null, style: null },
-      mapunits:              ['metric']
+      mapUnits:   'm',
+      bbox:       [],
+      hidemaps:   [],
+      resolution: null,
+      center:     null,
+      loading:    false,
+      hidden:     true,
+      scale:      0,
+      map_info:   { info: null, style: null },
+      mapunits:   ['metric']
     };
-
-    this.id = 'MapService';
 
     /**
      * internal promise. Resolved when view is set
@@ -194,13 +184,11 @@ class MapService extends G3WObject {
 
     this.viewer = null;
 
-    this.target = options.target || 'map';
+    this.target = 'map';
 
     this.layersCount = 0; // useful to set Zindex to layer order on map
 
-    this.maps_container = options.maps_container || 'g3w-maps';
-
-    this.project = options.project || ApplicationState.project;
+    this.project = ApplicationState.project;
 
     this._controls = [];
 
@@ -265,7 +253,7 @@ class MapService extends G3WObject {
       listener: null,
     };
 
-    this.config = options.config || window.initConfig;
+    this.config = window.initConfig;
 
     this._howManyAreLoading = 0;
 
@@ -275,25 +263,15 @@ class MapService extends G3WObject {
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
     this.onExtraParamsSet    = this.onExtraParamsSet.bind(this);
-    this.onSetCurrentProject = this.onSetCurrentProject.bind(this);
     this.updateMapLayers     = this.updateMapLayers.bind(this);
 
     this._keyEvents = {
       ol:           [],
-      g3wobject:    [],
       stores:       [], // layers stores
-      base:         this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
       unwatches:    [],
     };
 
-    // on after setting a current project
-    if (!options.project) {
-      this._keyEvents.g3wobject.push({
-        who:     g3wsdk.core.project.ProjectsRegistry,
-        setter: 'setCurrentProject',
-        key:     g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', this.onSetCurrentProject)
-      });
-    }
+    this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
 
     this.debounces =  {
       setupCustomMapParamsToLegendUrl: {
@@ -473,10 +451,7 @@ class MapService extends G3WObject {
                                 project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false })
                                   .reduce((group, l) => {
                                     const id = l.getMultiLayerId();
-                                    //initialize group[id] layer
-                                    if (undefined === group[id]) {
-                                      group[id] = [];
-                                    }
+                                    group[id] = group[id] || [];
                                     group[id].push(l);
                                     return group;
                                   }, {}) || []
@@ -501,7 +476,7 @@ class MapService extends G3WObject {
                           }
                         });
                       });
-                      observer.observe(document.querySelector('.ol-custom-overviewmap'), {attributes: true});
+                      observer.observe(document.querySelector('.ol-custom-overviewmap'), { attributes: true });
                     })
                     .catch(e => console.warn(e))
                 }
@@ -596,20 +571,18 @@ class MapService extends G3WObject {
           this.viewer.destroy();
         }
 
-        const olView = this._calculateViewOptions({
-          width,
-          height,
-          project: this.project,
-          map_extent: search.get('map_extent'), /** @since 3.10.0 */
-        });
-
         const olMap = new ol.Map({
           controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
           interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
           ol3Logo:             false,
-          view:                new ol.View(olView),
           keyboardEventTarget: document,
           target:              this.target,
+          view:                new ol.View(this._calculateViewOptions({
+            width,
+            height,
+            project: this.project,
+            map_extent: search.get('map_extent'), /** @since 3.10.0 */
+          })),
         });
 
         this.viewer = {
@@ -705,9 +678,9 @@ class MapService extends G3WObject {
         }
 
         // update max scale
-        MAP_SETTINGS.ZOOM.maxScale = Math.min(
+        MAP.maxZoom = Math.min(
           getScaleFromResolution(this.getMap().getView().getResolutionForExtent(this.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
-          MAP_SETTINGS.ZOOM.maxScale
+          MAP.maxZoom
         );
 
         this.state.size     = this.viewer.map.getSize();
@@ -771,7 +744,6 @@ class MapService extends G3WObject {
     };
 
     this.on('extraParamsSet', this.onExtraParamsSet);
-
   }
 
   /**
@@ -780,52 +752,6 @@ class MapService extends G3WObject {
   onExtraParamsSet(extraParams, update) {
     if (update) {
       this.getMapLayers().forEach(l => l.update(this.state, extraParams));
-    }
-  }
-
-  /**
-   * @since 3.11.0
-   */
-  onSetCurrentProject(project) {
-    this.removeLayers();
-    // remove listeners
-    if (this._keyEvents.base) {
-      this.project.un('setBaseLayer', this._keyEvents.base);
-    }
-    // check if reload a same project
-    const reload = this.project.getId() === project.getId();
-    this.project = project;
-    const changeProjectCallBack = () => {
-
-      // reset view
-      const [width, height] = this.viewer.map.getSize();
-      const extent = this.project.state.extent;
-      const maxxRes = ol.extent.getWidth(extent) / width;
-      const minyRes = ol.extent.getHeight(extent) / height;
-      const maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
-      const view = new ol.View({
-        extent,
-        projection: this.viewer.map.getView().getProjection(),
-        center:     this.viewer.map.getView().getCenter(),
-        resolution: this.viewer.map.getView().getResolution(),
-        maxResolution
-      });
-      // update max scale
-      MAP_SETTINGS.ZOOM.maxScale = Math.min(
-        getScaleFromResolution(this.getMap().getView().getResolutionForExtent(this.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
-        MAP_SETTINGS.ZOOM.maxScale
-      );
-      this.viewer.map.setView(view);
-
-      this._setupAllLayers();
-      this.setUpMapOlEvents();
-      this.setupCustomMapParamsToLegendUrl();
-    };
-    if (reload || ApplicationState.iframe) {
-      changeProjectCallBack();
-    }
-    if (!reload) {
-      this.getMap().once('change:size', changeProjectCallBack);
     }
   }
 
@@ -907,14 +833,8 @@ class MapService extends G3WObject {
    */
   clear() {
     this.removeListener('extraParamsSet', this.onExtraParamsSet);
-    ['ol', 'g3wobject'].forEach(type => {
-      switch(type) {
-        case 'ol':           this._keyEvents[type].forEach(key => ol.Observable.unByKey(key)); break;
-        case 'g3wobject':    this._keyEvents[type].forEach(({ who, setter, key }) => who.un(setter, key)); break;
-        case 'eventemitter': this._keyEvents[type].forEach(({ event, listener }) => this.removeListener(event, listener)); break;
-      }
-      this._keyEvents[type].splice(0);
-    });
+    this._keyEvents.ol.forEach(key => ol.Observable.unByKey(key));
+    this._keyEvents.ol.splice(0);
     MAP.layers.getLayersStores().forEach(this._removeEventsKeysToLayersStore.bind(this))
   }
 
@@ -971,7 +891,7 @@ class MapService extends G3WObject {
         const canvas = $(
           map
             ? map.getViewport()
-            : $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0]
+            : $('#g3w-maps .g3w-map').last().children('.ol-viewport')[0]
         ).children('canvas')[0];
         if (navigator.msSaveBlob) { resolve(canvas.msToBlob()) }
         else { canvas.toBlob(blob => resolve(blob)) }
@@ -1129,6 +1049,7 @@ class MapService extends G3WObject {
   }
 
   showAddLayerModal() {
+    $('#modal-addlayer').modal('show');
     this.emit('addexternallayer');
   }
 
@@ -1223,21 +1144,21 @@ class MapService extends G3WObject {
    *
    * @returns {string}
    */
-  addMapExtentUrlParameterToUrl(url, epsg) {
+  async addMapExtentUrlParameterToUrl(url, epsg) {
     url = new URL(url);
+    const changed = undefined !== epsg && epsg !== this.getEpsg();
+    if (changed) {
+      await Projections.registerProjection(epsg);
+    }
     url.searchParams.set(
       'map_extent',
       (
-        undefined !== epsg && epsg !== this.getEpsg()
+        changed
           ? ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg)
           : this.getMapExtent()
       ).toString()
     )
     return url.toString()
-  }
-
-  setMapControlsContainer(mapControlDom) {
-    this.state.mapcontrolDOM = mapControlDom;
   }
 
   getMapControlByType(type) {
@@ -1256,7 +1177,6 @@ class MapService extends G3WObject {
    * @param visible
    */
   addControl(id, type, control, addToMapControls = true, visible = true) {
-    this.state.mapcontrolready = false;
     this.viewer.map.addControl(control);
 
     control.on('toggled', e => this.emit('mapcontrol:toggled', e));
@@ -1301,8 +1221,6 @@ class MapService extends G3WObject {
     if (false === control.offline && control.getEnable()) {
       control.setEnable(ApplicationState.online);
     }
-
-    this.state.mapcontrolready = true;
   }
 
   showControls(types) {
@@ -1878,7 +1796,7 @@ class MapService extends G3WObject {
     else {
       const curr = map.getView().getResolution();
       // max resolution of the map
-      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(MAP_SETTINGS.ZOOM.maxScale, this.getMapUnits()));
+      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(MAP.maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
@@ -1971,7 +1889,7 @@ class MapService extends G3WObject {
    * @returns { Promise<any> }
    */
   async highlightGeometry(geometryObj, options = {}) {
-    const duration  = options.duration || MAP_SETTINGS.ANIMATION.duration;
+    const duration  = options.duration || 2000;
     const hlayer    = this.defaultsLayers.highlightLayer;
     const hide      = 'function' === typeof options.hide      ? options.hide      : null;
     const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
@@ -2294,7 +2212,7 @@ class MapService extends G3WObject {
         features: []
       };
 
-      if (options.color && options.field) {
+      if (options.color) {
         vectorLayer.setStyle(Object.assign(
           feat => {
             options.color = options.color.rgba ? 'rgba(' + [options.color.rgba.r, options.color.rgba.g, options.color.rgba.b, options.color.rgba.a].join() + ')' : options.color;
@@ -2399,21 +2317,17 @@ class MapService extends G3WObject {
       GUI.notify.warning("layer_is_added", false);
     }
 
-    const type  = externalLayer._type || externalLayer.type;
+    const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();
 
     const layer = ({
       'vector': vectorLayer,
       'wms':    externalLayer,
-    })[type] || await createVectorLayerFromFile({
-      name: externalLayer.name,
-      type,
-      crs:  externalLayer.crs,
-      data: externalLayer.data,
-    });
+    })[type];
 
     // skip if is not a valid layer
     if (!layer) {
-      return Promise.reject();
+      console.warn('layer type: ', type, externalLayer)
+      return Promise.reject('not a valid layer');
     }
 
     const features = ('vector' === type && layer.getSource().getFeatures()) || [];

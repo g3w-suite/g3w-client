@@ -37,7 +37,7 @@
           v-if                = "category.ruleKey"
           @click.stop.prevent = "showHideLayerCategory(index)"
           style               = "padding-right: 3px;"
-          :class              = "g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"
+          :class              = "$fa(category.checked ? 'check': 'uncheck')"
         ></span>
 
         <img

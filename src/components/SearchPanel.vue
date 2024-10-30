@@ -109,7 +109,7 @@
             <div :ref = "'date_' + input.id" class = "input-group date">
               <input :id = "input.id" type = 'text' class = "form-control" />
               <span class = "input-group-addon skin-color">
-                <span :class = "g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
+                <span :class = "$fa(input.options.format.time ? 'time': 'calendar')"></span>
               </span>
             </div>
           </div>
@@ -117,14 +117,19 @@
           <sub>{{ input.options.description }}</sub>
 
           <!-- DEBUG INFO -->
-          <sub v-if = "is_staff">
-            <br v-if = "input.options.description">
-            <span class = "skin-color">{{ input.type }}</span> | <span class = "skin-color">{{ input.widget_type }}</span>
-            <template v-if = "input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
-            <template v-if = "input.options.layer_id"><br><span class = "skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
-            <template v-if = "input.dependance"><br><span class = "skin-color">depends_on:</span> "{{ input.dependance }}"</template>
-            <template v-if = "input.dependance"><br><span class = "skin-color">strict:</span> {{ input.dependance_strict }}</template>
-          </sub>
+          <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
+            <summary style="text-align: center;">
+              <code style="border: 1px solid currentColor;color: var(--skin-color);background-color: transparent;">🐞 <b>DEBUG</b></code>
+            </summary>
+            <sub >
+              <br v-if = "input.options.description">
+              <span class = "skin-color">{{ input.type }}</span> | <span class = "skin-color">{{ input.widget_type }}</span>
+              <template v-if = "input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
+              <template v-if = "input.options.layer_id"><br><span class = "skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
+              <template v-if = "input.dependance"><br><span class = "skin-color">depends_on:</span> "{{ input.dependance }}"</template>
+              <template v-if = "input.dependance"><br><span class = "skin-color">strict:</span> {{ input.dependance_strict }}</template>
+            </sub>
+          </details>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
           <div

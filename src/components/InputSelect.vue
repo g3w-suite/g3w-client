@@ -137,17 +137,8 @@
           } else {
             this.picked = true;
             const values = await this.pickLayerInputService.pick();
-            //check if autocomplete
-            if (this.autocomplete) {
-              this.state.input.options.values.splice(0, this.state.input.options.values.length, {
-                key:   values[this.state.input.options.value],
-                value: values[this.state.input.options.key]
-              });
-              await this.$nextTick();
-            }
 
-            const { key: field } = this.state.input.options;
-            let value = values[field];
+            let value = values[this.state.input.options.key];
 
             //check if is multiple and get value in not in current values
             if (this.multiple) {
@@ -157,7 +148,17 @@
 
             // Check if the value is change (Use comparison operator, NOT STRICT, because value and this.state.value can be different type Number, String)
             if (value != this.state.value) {
-              //set new value to this.state.value
+              if (this.autocomplete) {
+                //in the case of no multipe values, need to reset values
+                if (!this.multiple) { this.state.input.options.values.splice(0) }
+                this.state.input.options.values.push({
+                  key:    values[this.state.input.options.value]    ,
+                  value:  values[this.state.input.options.key]
+                });
+              }
+              //need to sort values
+              this.service.sortValues();
+                //set new value to this.state.value
               await this.changeSelect(value);
               //trigger change value on select2
               this.select2.val(this.multiple ? this.getMultiValues() : value).trigger('change');
@@ -183,16 +184,15 @@
        * return <Array> values
        */
       getMultiValues() {
-
         return [undefined, null, ''].includes(this.state.value)
           ? [] //return empty array values
           : Array.from(
-              new Set(
-                `${this.state.value}`
-                  .replace(/^{|}$/g, '')  // Remove both open and close curly braces
-                  .replace(/"/g, "") //remove ""
-                  .split(','))
-            ).filter(v => this.state.input.options.values.map(({ value }) => `${value}`).includes(`${v}`));
+            new Set(
+              `${this.state.value}`
+                .replace(/^{|}$/g, '')  // Remove both open and close curly braces
+                .replace(/"/g, "") //remove ""
+                .split(','))
+          ).filter(v => this.autocomplete || (this.state.input.options.values.map(({ value }) => `${value}`).includes(`${v}`)));
       },
       /**
        * Method to handle select2 event
@@ -206,6 +206,10 @@
           if (this.multiple) {
             //get array of values
             const values = this.getMultiValues().filter(v => v != value);
+            //filter already added value, for example, by picked
+            if (this.autocomplete) {
+              this.state.input.options.values = this.state.input.options.values.filter(v => value != v.value);
+            }
             this.changeSelect(0 === values.length ? null : `{${values.join()}}`);
           }
 
@@ -506,30 +510,33 @@
       if ('select_autocomplete' === this.state.input.type) {
         //get dependency layer id if set
         const dependencyLayerId = this.state.input.options.layer_id;
-        try {
-          const dependencyLayer = GUI.getService('map')
-            .getProjectLayer(dependencyLayerId)
-            .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
-          // in case layer is on project, check if is non an alphanumeric layer
-          this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
-          if (this.showPickLayer) {
-            const {
-              key,
-              value,
-              layer_id
-            } = this.state.input.options;
+        if (dependencyLayerId) {
+          try {
+            const dependencyLayer = GUI.getService('map')
+              .getProjectLayer(dependencyLayerId)
+              .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
+            // in case layer is on project, check if is non an alphanumeric layer
+            this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
+            if (this.showPickLayer) {
+              const {
+                key,
+                value,
+                layer_id
+              } = this.state.input.options;
 
-            //create pick layer service
-            this.pickLayerInputService = new PickLayerInputService({
-              layer_id,
-              fields :    [value, key], //fields are key, and values
-              //need to check if dependency layer is on editing,
-              // so we can pick vector map layer, otherwise wms request is done
-              pick_type : dependencyLayer.isStarted && dependencyLayer.isStarted() ? 'map' : null
-            });
-          }
+              //create pick layer service
+              this.pickLayerInputService = new PickLayerInputService({
+                layer_id,
+                fields :    [value, key], //fields are key, and values
+                //need to check if dependency layer is on editing,
+                // so we can pick vector map layer, otherwise wms request is done
+                pick_type : dependencyLayer.isStarted && dependencyLayer.isStarted() ? 'map' : null
+              });
+            }
 
-        } catch(e) { console.warn(e); }
+          } catch(e) { console.warn(e); }
+        }
+
       }
     },
 
@@ -553,8 +560,11 @@
               const search = params.data.term;
               // hide a previous result if present
               $('.select2-results__option.loading-results').siblings().hide();
-              this.resetValues();
-              this.service.getData({ search })
+              this.service.getData({
+                key:   this.state.input.options.value,
+                value: this.state.input.options.key,
+                search
+              })
                 .then(values => success(values))
                 .catch(e => { console.warn(e); failure(e); })
             },
@@ -572,9 +582,8 @@
         if (this.state.value) {
           //need to reset values otherwise can be repeated;
           this.state.input.options.values.splice(0);
-
           await this.service.getKeyByValue({
-            search: this.state.value
+            search: this.multiple ? this.getMultiValues(): this.state.value
           });
         }
       } else {

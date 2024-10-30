@@ -26,8 +26,8 @@ export default {
       not_supported_format: "Formato non supportato"
     },
     layer_position: {
-      top: 'IN CIMA',
-      bottom: 'IN FONDO',
+      top: 'in cima',
+      bottom: 'in fondo',
       message: "Posizione"
     },
     sdk: {
@@ -390,6 +390,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
           input_validation_error: "Campo obbligatorio o tipo valore non corretto",
+          input_validation_error_type: "Tipo valore non corretto",
           input_validation_min_field: "Valore deve essere magiore uguale a quello del camp ",
           input_validation_max_field: "Valore deve essere minore uguale a quello del campo ",
           input_validation_exclude_values: "Campo deve contenere un valore diverso",
@@ -432,13 +433,7 @@ export default {
           },
           download: {
             unknow: "Scarica",
-            shp: 'Scarica Shapefile',
-            gpx: 'Scarica GPX',
-            gpkg: 'Scarica GPKG',
-            csv: 'Scarica CSV',
-            xls: 'Scarica XLS',
-            geotiff: "Scarica GEOTIFF",
-            geotiff_map_extent: "Scarica GEOTIFF(estensione vista corrente)"
+            geotiff_map_extent: "GeoTiff (vista attuale)"
           }
         }
       },
@@ -463,7 +458,7 @@ export default {
     no: "No",
     back:"Indietro",
     backto: "Torna a ",
-    changemap: "Cambia Mappa",
+    changemap: "Cambia mappa",
     change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
@@ -494,12 +489,9 @@ export default {
     cancel: "Cancella",
     update: "Aggiorna",
     close: "Chiudi",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Non mostrare più",
     enlange_reduce: "Allarga / Riduci",
-    reset_default: "Dimensione predefinita",
     add: "Aggiungi",
     exitnosave: "Esci senza salvare",
     annul: "Annulla",
@@ -512,12 +504,12 @@ export default {
             position: "Posizione su Mappa",
             name: "Nome",
             projections: 'Sistema di riferimento',
-            layers: 'Layers'
+            layers: 'Livelli'
           }
         },
         add_wms_layer: "Aggiungi livello WMS",
-        delete_wms_url: "Elimina WMS url",
-        layer_id_already_added: "Questo Layer WMS è già stato aggiunto",
+        delete_wms_url: "Rimuovi",
+        layer_id_already_added: "Esiste già una connessione WMS con questo nome",
         url_already_added: "URL/Nome WMS già aggiunto",
         layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
       }
@@ -544,12 +536,12 @@ export default {
       add_layer_control: {
         header: "Aggiungi livello",
         select_projection: "Sistema di riferimento",
-        select_field_to_show: "Campo da visualizzare sulla mappa",
-        select_csv_separator: "Seleziona il separatore",
-        select_csv_x_field: "Seleziona il campo X",
-        select_csv_y_field: "Seleziona il campo Y",
+        select_field_to_show: "valore mostrato sulla mappa",
+        select_csv_separator: "Separatore",
+        select_csv_x_field: "Campo X",
+        select_csv_y_field: "Campo Y",
         select_color: "Colore",
-        drag_layer: "Aggiungi il file in questa area",
+        drag_layer: "Aggiungi qui il tuo file",
         persistent_data: "Persistenza",
         persistent_help: "salva il livello nella memoria del browser",
       },
@@ -576,15 +568,18 @@ export default {
       }
     },
     catalog_items: {
-      helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
+      helptext: "Apri menu",
       contextmenu: {
-        zoomtolayer: "Zoom sul Layer",
+        zoomtolayer: "Zoom sul livello",
         open_attribute_table: "Apri tabella attributi",
         show_metadata: "Metadati",
-        styles: "Stili",
-        vector_color_menu:"Setta/Cambia Colore",
-        layer_opacity: "Trasparenza",
+        styles: "Stile",
+        vector_color_menu:"Colore",
+        layer_opacity: "Opacità",
         filters: "Filtri",
+        download: 'Esporta come',
+        ogc_services: 'Servizi OGC',
+        edit: "Modifica dati",
       }
     },
     dataTable: {
@@ -597,5 +592,33 @@ export default {
     },
     /**@since 3.10.0 */
     no_geometry: 'Questo elemento non ha geometria',
+    /**@since 3.11.0 */
+    query_filter: 'Filtra per:',
+    /**@since 3.11.0 */
+    sidebar_menu: 'Menu laterale',
+    /**@since 3.11.0 */
+    layer_type: 'Tipologia livello',
+    /**@since 3.11.0 */
+    choose_type: 'Scegli un tipo',
+    /**@since 3.11.0 */
+    remote_wms_url: 'WMS (URL)',
+    /**@since 3.11.0 */
+    local_file: 'File locale',
+    /**@since 3.11.0 */
+    embed_map: 'Incorpora mappa',
+    /** @since 3.11.0 */
+    homepage: 'Pagina iniziale',
+    /** @since 3.11.0 */
+    wms_server: 'Server WMS',
+    /** @since 3.11.0 */
+    connect_to_wms: 'Connetti',
+    /** @since 3.11.0 */
+    disconnect_from_wms: 'Disconnetti',
+    /** @since 3.11.0 */
+    add_new_wms_url_help: 'Cerca tra le connessioni salvate o aggiungi un nuovo server',
+    /** @since 3.11.0 */
+    label: "Etichetta",
+    /** @since 3.11.0 */
+    no_csv_field: 'Nessun campo valido',
   },
 };

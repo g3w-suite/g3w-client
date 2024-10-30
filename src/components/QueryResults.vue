@@ -5,7 +5,7 @@
 
 <template>
   <div id = "search-results" class = "queryresults-wrapper">
-    <div
+      <div
       v-if  = "info.message"
       class = "skin-color"
       style = "font-weight: bold; margin-bottom: 3px; font-size: 1.1em;"
@@ -468,6 +468,16 @@
       </template>
 
     </div>
+
+    <!-- TODO: SHOW SELECTED LAYER -->
+    <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
+      <label style="margin-top: 5px;">{{ $t('query_filter') }}</label>
+      <select style="flex: 1;">
+        <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
+        <option :selected="!selectedLayer">{{ $t('sdk.mapcontrols.queryby.all') }}</option>
+      </select>
+    </div>
+
   </div>
 </template>
 
@@ -480,6 +490,7 @@
   import { toRawType }               from 'utils/toRawType';
   import { throttle }                from 'utils/throttle';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
+  import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
   import GUI                         from 'services/gui';
 
   const MAX_SUBSET_LENGTH           = 3;
@@ -573,7 +584,15 @@
 
         return { icon: null, message: null };
 
-      }
+      },
+
+      queryableLayers() {
+        return getMapLayersByFilter({ QUERYABLE: true });
+      },
+
+      selectedLayer() {
+        return GUI.getService('map').getSelectedLayer();
+      },
 
     },
     methods: {
@@ -871,9 +890,6 @@
       this.zoomToLayerFeaturesExtent = throttle(layer => {
         this.$options.service.zoomToLayerFeaturesExtent(layer);
       })
-    },
-    beforeDestroy() {
-      this.state.zoomToResult = true;
     },
     destroyed() {
       this.$options.service.clear();

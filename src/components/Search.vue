@@ -16,7 +16,7 @@
       class       = "menu-item"
       @click.stop = "showPanel(search)"
     >
-      <i :class = "g3wtemplate.getFontClass('empty-circle')"></i>
+      <i :class = "$fa('empty-circle')"></i>
       <span>{{ search.name }}</span>
     </li>
 
@@ -34,7 +34,7 @@
         <div class = "search-tools">
           <span
             class          = "search-action skin-tooltip-bottom"
-            :class         = "g3wtemplate.getFontClass('trash')"
+            :class         = "$fa('trash')"
             data-placement = "bottom"
             data-toggle    = "tooltip"
             data-container = "body"
@@ -46,7 +46,7 @@
           <div>
             <span
             class          = "search-action skin-tooltip-bottom"
-            :class         = "g3wtemplate.getFontClass('run')"
+            :class         = "$fa('run')"
             data-placement = "bottom"
             data-toggle    = "tooltip"
             data-container = "body"

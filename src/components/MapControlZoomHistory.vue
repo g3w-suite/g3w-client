@@ -13,7 +13,7 @@
         type                = "button"
         v-disabled          = "0 === history.index"
       >
-        <i :class="g3wtemplate.getFontClass('reply')"></i>
+        <i :class="$fa('reply')"></i>
       </button>
     </div>
 
@@ -24,7 +24,7 @@
         type                = "button"
         v-disabled          = "hasEmptyHistory"
       >
-        <i :class = "g3wtemplate.getFontClass('share')"></i>
+        <i :class = "$fa('share')"></i>
       </button>
     </div>
 

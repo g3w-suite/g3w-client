@@ -644,7 +644,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isWMS() {
-    return ImageLayer.WMSServerTypes.includes(this.config.servertype);
+    return ["QGIS", "Mapserver", "Geoserver", "OGC"].includes(this.config.servertype);
   }
 
   isLayerProjectionASMapProjection() {
@@ -660,7 +660,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isArcgisMapserver() {
-    return this.isExternalWMS() && Layer.SourceTypes.ARCGISMAPSERVER === this.config.source.type;
+    return this.isExternalWMS() && "arcgismapserver" === this.config.source.type;
   }
 
   _getBaseLayerName() {
@@ -806,7 +806,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   getQueryUrl() {
     const url       = super.getQueryUrl();
     const is_qgis = (
-      Layer.ServerTypes.QGIS === this.getServerType()
+      "QGIS" === this.getServerType()
       && this.isExternalWMS()
       && this.isLayerProjectionASMapProjection()
     );
@@ -982,7 +982,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       return new RasterLayer({ ...options, extent, url, cache_provider, type: 'XYZ' }, {}, method);
     }
 
-    if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {
+    if (this.isExternalWMS() && source && "arcgismapserver" === source.type) {
       return new RasterLayer({ ...options, ...source }, extraParams)
     }
 
@@ -999,7 +999,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       }, extraParams, method);
     }
 
-    if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
+    if (this.isExternalWMS() && source && "wmst" === source.type) {
       return new RasterLayer({...options, url, cache_provider, type: 'WMTS', }, extraParams, method);
     }
 
@@ -1098,13 +1098,6 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
 }
-
-ImageLayer.WMSServerTypes = [
-  Layer.ServerTypes.QGIS,
-  Layer.ServerTypes.Mapserver,
-  Layer.ServerTypes.Geoserver,
-  Layer.ServerTypes.OGC,
-];
 
 export {
   ImageLayer,

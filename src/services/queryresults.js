@@ -261,7 +261,7 @@ export default new (class QueryResultsService extends G3WObject {
               filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
               selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
               title:                  (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
-              atlas:                  this.getAtlasByLayerId(id),
+              atlas:                  this._atlas.filter(a => a.atlas.qgs_layer_id === id),
               rawdata:                rawdata  || null,
               error:                  error    || '',
               toc:                    external || layer.state.toc, //@since v3.10.0
@@ -397,12 +397,8 @@ export default new (class QueryResultsService extends G3WObject {
      * Set reactive state
      */
     this.state = {
-      logged: undefined !== ApplicationState.user.id,
 
-      /**
-       * @FIXME add description
-       */
-      zoomToResult: true,
+      logged: undefined !== ApplicationState.user.id,
 
       /**
        * @FIXME add description
@@ -538,18 +534,6 @@ export default new (class QueryResultsService extends G3WObject {
         ? { text:   new ol.style.Text({ fill: new ol.style.Stroke({ color: 'black' }), text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 }) }
         : { stroke: new ol.style.Stroke({ color: 'black' }) }
       )
-    });
-
-    /**
-     * @deprecated since 3.8
-     * It used to register a change project from Change map button
-     */
-    g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', project => {
-      this._project = project;
-      this._setRelations(project);
-      this._atlas = project.getPrint().filter(p => p.atlas) || [];
-      this.state.download_data = false;
-      this.plotLayerIds = [];
     });
 
     /**
@@ -830,7 +814,7 @@ export default new (class QueryResultsService extends G3WObject {
         },
 
         // print (atlas)
-        this.getAtlasByLayerId(layer.id).length && {
+        this._atlas.filter(a => a.atlas.qgs_layer_id === layer.id).length && {
           id:       'printatlas',
           download: true,
           class:    GUI.getFontClass('print'),
@@ -1283,13 +1267,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @param layerId
-   */
-  getAtlasByLayerId(layerId) {
-    return this._atlas.filter(a => a.atlas.qgs_layer_id === layerId);
-  }
-
-  /**
    * @FIXME add description
    *
    * @param querytitle
@@ -1458,7 +1435,7 @@ export default new (class QueryResultsService extends G3WObject {
    */
   printAtlas(layer, feature) {
     const features   = feature ? [feature] : layer.features;
-    const atlasLayer = this.getAtlasByLayerId(layer.id);
+    const atlasLayer = this._atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
 
     /** @FIXME add description */
     if (atlasLayer.length <= 1) {

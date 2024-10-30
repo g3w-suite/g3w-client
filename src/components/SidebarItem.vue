@@ -49,7 +49,7 @@
       </div>
       <i
         v-if   = "collapsible"
-        :class = "g3wtemplate.getFontClass('angle-left')"
+        :class = "$fa('angle-left')"
         class  ="pull-right">
       </i>
     </a>

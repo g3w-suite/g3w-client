@@ -16,7 +16,7 @@
         <span
           v-t-tooltip:left.create  = "'close'"
           @click.stop              = "showaddform = false"
-          :class                   = "g3wtemplate.getFontClass('close')"
+          :class                   = "$fa('close')"
           class                    = "sidebar-button sidebar-button-icon"
           style                    = "padding: 5px; margin: 3px;"
         ></span>
@@ -51,7 +51,7 @@
           style  = "float: right;"
           title  = "QGIS Docs"
         >
-          <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+          <i :class = "$fa('external-link')"></i>
         </a>
       </div>
 
@@ -63,7 +63,7 @@
             @click.stop = "bookmark.expanded = !bookmark.expanded"
           >
             <span
-              :class = "g3wtemplate.getFontClass(bookmark.expanded ? 'caret-down' : 'caret-right')"
+              :class = "$fa(bookmark.expanded ? 'caret-down' : 'caret-right')"
               style  = "margin-right: 5px;">
             </span>
             <span>{{ bookmark.name }}</span>
@@ -74,7 +74,7 @@
               class       = "spatial-bookmark"
             >
               <div>
-                <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+                <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
                 <span class = "g3w-long-text">{{ node.name }}</span>
               </div>
             </li>
@@ -85,7 +85,7 @@
           class       = "spatial-bookmark"
         >
           <div>
-            <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+            <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
             <span class = "g3w-long-text">{{ bookmark.name }}</span>
           </div>
         </li>
@@ -102,7 +102,7 @@
           @click.stop             = "showAddForm"
           style                   = "padding: 5px; cursor: pointer;"
           class                   = "sidebar-button sidebar-button-icon"
-          :class                  = "g3wtemplate.getFontClass('plus')"
+          :class                  = "$fa('plus')"
         ></span>
       </div>
 
@@ -112,7 +112,7 @@
         class       = "spatial-bookmark"
       >
         <div>
-          <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+          <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
           <span class = "g3w-long-text">{{bookmark.name}}</span>
         </div>
         <span
@@ -120,7 +120,7 @@
           class       = "sidebar-button sidebar-button-icon"
           style       = "color: red; margin: 5px; cursor: pointer"
         >
-          <i :class = "g3wtemplate.getFontClass('trash')"></i>
+          <i :class = "$fa('trash')"></i>
         </span>
       </li>
     </template>

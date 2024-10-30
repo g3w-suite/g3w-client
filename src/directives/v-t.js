@@ -44,7 +44,7 @@ export default {
    */
   componentUpdated(el, binding) {
     if (el.__currentBinding.value !== binding.value) {
-      //reset currentBinding to get last value;
+      // reset currentBinding to get last value;
       el.__currentBinding = binding;
       handleInnerHTML({ el })
     }

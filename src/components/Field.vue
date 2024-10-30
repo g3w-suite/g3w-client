@@ -46,5 +46,6 @@ export default {
 
   .field_value {
     padding-left: 0 !important;
+    text-align: right;
   }
 </style>

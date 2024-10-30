@@ -169,8 +169,6 @@ export class Plugin extends G3WObject {
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%
       height:         50, // ie. height == 50%
-      width_default:  50,
-      height_default: 50,
       width_100:      false,
       height_100:     false,
     };
@@ -180,8 +178,6 @@ export class Plugin extends G3WObject {
       {
         width:          config.rightpanel.width  || default_config.width,
         height:         config.rightpanel.height || default_config.width,
-        width_default:  config.rightpanel.width  || default_config.width,
-        height_default: config.rightpanel.height || default_config.width,
         width_100:      false,
         height_100:     false,
       }

@@ -378,6 +378,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Câmp ce se exclude mutual cu ",
           input_validation_error: "Câmp mandatoriu sau tip de date greșit",
+          input_validation_error_type: "Tip de date greșit",
           input_validation_min_field: "Valoarea trebuie să fie mai mare/egală cu valoare câmpului ",
           input_validation_max_field: "Valoarea trebuie să fie mai mică/egală cu valoare câmpului ",
           input_validation_exclude_values: "Valoarea trebuie să fie unică",
@@ -479,12 +480,9 @@ export default {
     cancel: "Anulează",
     update: "Actualizați",
     close: "Închide",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Nu mai afișa mesajul",
     enlange_reduce: "Mărește / Micșorează",
-    reset_default: "Mărimea implicită",
     add: "Adaugă",
     exitnosave: "Ieșire fără salvare",
     annul: "Anulează",

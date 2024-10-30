@@ -29,18 +29,11 @@ import GUI                         from 'services/gui';
 
 // components
 import App                         from 'components/App.vue';
-import ImageComponent              from 'components/GlobalImage.vue';
-import GalleryImagesComponent      from 'components/GlobalGallery.vue';
-import GeospatialComponet          from 'components/GlobalGeo.vue';
-import Skeleton                    from 'components/GlobalSkeleton.vue';
 import BarLoader                   from 'components/GlobalBarLoader.vue';
 import Progressbar                 from 'components/GlobalProgressBar.vue';
 import HelpDiv                     from 'components/GlobalHelpDiv.vue';
-import Resize                      from 'components/GlobalResize.vue'
-import LayerPositions              from 'components/GlobalLayerPositions.vue';
 import DateTime                    from 'components/GlobalDateTime.vue';
 import Range                       from 'components/GlobalRange.vue';
-import ResizeIcon                  from 'components/GlobalResizeIcon.vue';
 import Tabs                        from 'components/GlobalTabs.vue';
 import Divider                     from 'components/GlobalDivider.vue';
 
@@ -54,7 +47,6 @@ import vTTitle                     from 'directives/v-t-title';
 import vT                          from "directives/v-t";
 import vTPlugin                    from 'directives/v-t-plugin';
 import vDownload                   from 'directives/v-download';
-import vClickOutside               from 'directives/v-click-outside';
 
 // utils
 import { noop }                    from 'utils/noop';
@@ -70,18 +62,11 @@ const { addI18n, t, tPlugin } = require('g3w-i18n');
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
  */
-Vue.component(ImageComponent.name, ImageComponent);
-Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
-Vue.component(GeospatialComponet.name, GeospatialComponet);
 Vue.component(BarLoader.name, BarLoader);
 Vue.component(Progressbar.name, Progressbar);
-Vue.component(Skeleton.name, Skeleton);
 Vue.component(HelpDiv.name, HelpDiv);
-Vue.component(Resize.name, Resize);
-Vue.component(LayerPositions.name, LayerPositions);
 Vue.component(DateTime.name, DateTime);
 Vue.component(Range.name, Range);
-Vue.component(ResizeIcon.name, ResizeIcon);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
 
@@ -107,7 +92,6 @@ Vue.directive('t-title', vTTitle);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
 Vue.directive("download", vDownload);
-Vue.directive("click-outside", vClickOutside);
 
 /**
  * Install global plugins
@@ -123,6 +107,8 @@ Vue.use(window.VueCookie);
  */
 Vue.use({
   install(Vue) {
+    /** @since 3.11.0 */
+    Vue.prototype.$t = t;
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
       font: FONT_AWESOME_ICONS,
@@ -134,9 +120,11 @@ Vue.use({
         return added;
       },
       getFontClass(type) {
-        return undefined === this.font[type] ? '' : this.font[type];
+        return this.font[type] || '';
       }
     };
+    /** @since 3.11.0 */
+    Vue.prototype.$fa = Vue.prototype.g3wtemplate.getFontClass.bind(Vue.prototype.g3wtemplate);
     // include isMobile() method within all Vue instances
     Vue.mixin({
       methods: {
@@ -235,9 +223,6 @@ Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendo
  * create application configuration
  */
 Object.assign(initConfig, {
-  logo_img:            initConfig.header_logo_img,
-  logo_link:           initConfig.header_logo_link,
-  terms_of_use_text:   initConfig.header_terms_of_use_text,
   urls: Object.assign(initConfig.urls || {}, {
     ows:             'ows',
     api:             'api',
@@ -251,7 +236,7 @@ Object.assign(initConfig, {
     vectorurl:       initConfig.vectorurl,
     proxyurl:        initConfig.proxyurl,
     rasterurl:       initConfig.rasterurl,
-    interfaceowsurl: initConfig.interfaceowsur,
+    interfaceowsurl: initConfig.interfaceowsurl,
   }),
   layout:  initConfig.layout || {},
   plugins: initConfig.plugins || {},
@@ -325,8 +310,6 @@ $.ajaxSetup({
     {
       width:          initConfig.layout.rightpanel.width  || 50, // ie. width == 50%
       height:         initConfig.layout.rightpanel.height || 50, // ie. height == 50%
-      width_default:  initConfig.layout.rightpanel.width  || 50,
-      height_default: initConfig.layout.rightpanel.height || 50,
       width_100:      false,
       height_100:     false,
     }
@@ -415,82 +398,6 @@ $.ajaxSetup({
         // update CONFIG
         Object.assign(CONFIG, {
           sidebar: [
-            /**
-             * ORIGINAL SOURCE: src/components/g3w-metadata.js@v3.10.2
-             */
-            new (function() {
-
-              // build project group metadata
-              const project = ApplicationState.project.getState();
-
-              const comp = new Component({
-                id:          'metadata',
-                collapsible: false,
-                icon:        GUI.getFontClass('file'),
-                iconColor:   '#fff',
-                title: 'sdk.metadata.title',
-                service: Object.assign(new G3WObject, {
-                  state: {
-                    name: project.title,
-                    groups: Object.entries({
-                      general: [
-                        'title',
-                        'name',
-                        'description',
-                        'abstract',
-                        'keywords',
-                        'fees',
-                        'accessconstraints',
-                        'contactinformation',
-                        'wms_url',
-                      ],
-                      spatial: [
-                        'crs',
-                        'extent',
-                      ],
-                      layers: [
-                        'layers',
-                      ],
-                    }).reduce((g, [name, fields]) => {
-                      g[name] = fields.reduce((f, field) => {
-                        const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-                        if (value) {
-                          f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
-                        }
-                        return f;
-                      }, {});
-                      return g;
-                    }, {}),
-                  },
-                  content: null,
-                  show: false,
-                }),
-                vueComponentObject: { template: '<div></div>' },
-              });
-
-              // show metadata
-              comp._setOpen = b => {
-                const service = comp.getService();
-                service.show = b;
-                if (b) {
-                  service.content        = new Component({
-                    service,
-                    internalComponent: new (Vue.extend(require('components/MetadataProject.vue')))({
-                      state: service.state
-                    })
-                  });
-                  service.content.layout = noop;
-                  GUI.setContent({ content: service.content, title: 'sdk.metadata.title', perc: 100 });
-                  service.show = true;
-                } else {
-                  GUI.closeContent()
-                }
-              };
-
-              GUI.on('closecontent', () => comp.getService().state.open = false);
-
-              return comp;
-            }),
 
             /**
              * ORIGINAL SOURCE: src/components/g3w-spatialbookmarks.js@v3.10.2
@@ -654,7 +561,7 @@ $.ajaxSetup({
                 }))(),
               });
             
-              comp._setOpen = (b=false) => {
+              comp._setOpen = (b = false) => {
                 comp.internalComponent.state.open = b;
                 if (b) {
                   GUI.closeContent();
@@ -665,47 +572,20 @@ $.ajaxSetup({
             }),
 
             /**
-             * ORIGINAL SOURCE: src/components/g3w-wms.js@v3.10.2 
-             */
-            Object.assign(new Component({
-              id:                'wms',
-              icon:              GUI.getFontClass('layers'),
-              title:             'sidebar.wms.add_wms_layer',
-              service:           {},
-              internalComponent: new (Vue.extend(require('components/WMS.vue')))(),
-            }), {
-              _setOpen(b = false) {
-                this.getInternalComponent().state.open = b;
-                if (b) {
-                  GUI.closeContent();
-                }
-              }
-            }),
-
-            /**
              * ORIGINAL SOURCE: src/components/g3w-catalog.js@v3.10.2 
              */
             new (function() {
 
-              const opts = {
-                id:          'catalog',
-                icon:        GUI.getFontClass('map'),
-                iconColor:   '#019A4C',
-                config:      { legend: { config: (window.initConfig.layout || {}).legend } },
-              };
-
               const state = {
-                highlightlayers: false,
-                external: {  // external layers
-                  wms:    [],   // added by wms sidebar component
-                  vector: [] // added to map controls for the moment
+                external: {   // external layers
+                  wms:    [], // added by wms sidebar component
+                  vector: []  // added to map controls for the moment
                 },
                 layerstrees:  Object.values(ApplicationState.catalog).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
                 layersgroups: [],
-                legend:       Object.assign(opts.config.legend || {}, { place: ApplicationState.project.state.legend_position || 'tab' }),
               };
             
-              const service = opts.service || new G3WObject({
+              const service = new G3WObject({
                 setters: {
                   /**
                    * @param {{ layer: unknown, type: 'vector' }}
@@ -746,7 +626,9 @@ $.ajaxSetup({
               service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
 
               const comp = new Component({
-                ...opts,
+                id:                 'catalog',
+                icon:               GUI.getFontClass('map'),
+                iconColor:          '#019A4C',
                 title:              'catalog',
                 resizable:          true,
                 vueComponentObject: require('components/Catalog.vue'),
@@ -755,31 +637,17 @@ $.ajaxSetup({
             
               return comp;
             }),
+
           ],
 
           /**
            * ORIGINAL SOURCE: src/components/g3w-queryresults.js@v3.10.2 
            */
-          queryresults: new (function() {
-            const comp = new Component({
-              id:                 'queryresults',
-              title:              'Query Results',
-              service:            require('services/queryresults').default,
-              vueComponentObject: require('components/QueryResults.vue'),
-            });
-
-            comp.getElement = () => comp.internalComponent ? comp.internalComponent.$el : undefined;
-            comp.unmount    = () => { comp.getService().closeComponent(); return Component.prototype.unmount.call(comp) };
-            comp.layout     = noop;
-
-            comp.getService().onafter('setLayersData', async () => {
-              if (!comp.internalComponent) {
-                comp.setInternalComponent();
-              }
-              await comp.internalComponent.$nextTick();
-            });
-
-            return comp;
+          queryresults: new Component({
+            id:                 'queryresults',
+            title:              'Query Results',
+            service:            require('services/queryresults').default,
+            vueComponentObject: require('components/QueryResults.vue'),
           }),
 
           /**
@@ -788,7 +656,7 @@ $.ajaxSetup({
           map: new Component({
             id:                 'map',
             title:              'Map Component',
-            service:            new (require('services/map').default).MapService({ id: 'map' }),
+            service:            new (require('services/map').default).MapService(),
             vueComponentObject: require('components/Map.vue'),
           }),
 
@@ -831,7 +699,7 @@ $.ajaxSetup({
         // setup Font, Css class methods
         $(document).localize();
 
-        CONFIG.map.mount('#g3w-view-map', true);
+        CONFIG.map    .mount('#g3w-view-map', true);
         CONFIG.content.mount('#g3w-view-content', true);
 
         GUI.addComponent(CONFIG.map);

@@ -155,7 +155,7 @@
             :href  = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
             target = "_blank"
             title  = "QGIS Docs">
-          <i :class = "g3wtemplate.getFontClass('external-link')"></i> Edit in QGIS
+          <i :class = "$fa('external-link')"></i> Edit in QGIS
         </a></b>
       </div>
 

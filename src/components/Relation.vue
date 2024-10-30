@@ -23,7 +23,7 @@
           v-if                     = "showrelationslist"
           v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
           class                    = "action-button-icon action-button back-button"
-          :class                   = "g3wtemplate.getFontClass('exit')"
+          :class                   = "$fa('exit')"
           @click.stop              = "back">
         </span>
 
@@ -43,7 +43,7 @@
           v-download
           class                   = "action-button-icon action-button"
           :class                  = "[
-            g3wtemplate.getFontClass('download'),
+            $fa('download'),
             { 'toggled-white': downloadButton.toggled },
           ]"
           @click.stop             = "downloadButton.handler"
@@ -55,7 +55,7 @@
           v-if                      = "showChartButton"
           class                     = "action-button-icon action-button"
           :class                    = "[
-            g3wtemplate.getFontClass('chart'),
+            $fa('chart'),
             chart ? 'toggled-white' : '',
           ]"
           @click.stop               = "showChart"
@@ -92,7 +92,7 @@
         </div>
         <table
           ref   = "relationtable"
-          class = "hover relationtable table table-striped row-border"
+          class = "hover relationtable table table-striped row-border compact nowrap"
         >
           <thead>
             <tr style = "height: 0! important;">
@@ -124,21 +124,21 @@
                 @click.stop              = "zoomToGeometry(table.features[index].geometry)"
                 class                    = "action-button row-form skin-color"
                 v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
-                :class                   = "g3wtemplate.getFontClass('marker')"
+                :class                   = "$fa('marker')"
               ></span>
               <span
                 v-if                     = "table.formStructure"
                 @click.stop              = "showFormStructureRow({ layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
                 v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 class                    = "action-button row-form skin-color"
-                :class                   = "g3wtemplate.getFontClass('table')"
+                :class                   = "$fa('table')"
               ></span>
               <span
                 v-if                     = "isEditable"
                 @click.stop              = "editFeature(index)"
                 class                    = "action-button row-form skin-color"
                 v-t-tooltip:right.create = "'Edit'"
-                :class                   = "g3wtemplate.getFontClass('pencil')"
+                :class                   = "$fa('pencil')"
               ></span>
             </td>
             <td v-for = "value in row">
@@ -152,13 +152,17 @@
 
       </div>
 
-      <g3w-resize
-        :show    = "chart"
-        :moveFnc = "moveFnc"
-        :where   = "'content'"
-        class    = "skin-border-color lighten"
-        style    = "border-style: solid; border-width: 0 1px 0 1px"
-      />
+      <div
+        v-show          = "chart"
+        class           = "skin-border-color lighten"
+        style           = "border-style: solid; border-width: 0 1px 0 1px"
+        :style          = "{
+          minWidth:        '5px',
+          backgroundColor: '#dddddd',
+          cursor:          'col-resize',
+        }"
+        @mousedown.stop = "resizeStart"
+      ></div>
 
       <div
         v-show   = "chart"
@@ -362,7 +366,7 @@
           $(".content").height()
           - this.tableHeaderHeight
           - $('.content_breadcrumb')                       .outerHeight()
-          - $('.navbar-header')                            .outerHeight()
+          - $('.navbar')                                   .outerHeight()
           - $('.close-panel-block')                        .outerHeight()
           - $(this.$refs['relation-header'])               .outerHeight()
           - $('.dataTables_filter').last()                 .outerHeight()
@@ -492,6 +496,21 @@
        */
       is(type, value) {
         return this.fieldIs(type, value);
+      },
+
+      wrapMoveFnc(e) {
+        this.moveFnc(e);
+      },
+
+      resizeStart() {
+        document.getElementById('g3w-view-content').addEventListener('mousemove', this.wrapMoveFnc);
+        document.getElementById('g3w-view-content').addEventListener('mouseup', this.resizeStop, { once: true });
+      },
+
+      async resizeStop() {
+        document.getElementById('g3w-view-content').removeEventListener('mousemove', this.wrapMoveFnc);
+        await this.$nextTick();
+        GUI.emit('resize');
       },
 
       /**

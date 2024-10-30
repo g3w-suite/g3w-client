@@ -26,14 +26,8 @@ const SERVICES = {
 function setViewSizes() {
   const state = ApplicationState.viewport;
 
-  const primaryView   = state.primaryView;
-  const secondaryView = 'map' === state.primaryView ? 'content' : 'map';
-  const main_sidebar  = $(".main-sidebar");
-  const offset         = main_sidebar.length && main_sidebar.offset().left;
-  const width = main_sidebar.length && main_sidebar[0].getBoundingClientRect().width;
-  const sideBarSpace   = width + offset;
-  const viewportWidth = $('#app')[0].getBoundingClientRect().width - sideBarSpace;
-  const viewportHeight = $(document).innerHeight() - $('.navbar-header').innerHeight();
+  const viewportWidth  = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
+  const viewportHeight = $(document).innerHeight() - $('.navbar').innerHeight();
   // assign all width and height of the view to primary view (map)
   let primaryWidth;
   let primaryHeight;
@@ -54,10 +48,10 @@ function setViewSizes() {
     primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
     primaryHeight   = viewportHeight - secondaryHeight;
   }
-  state[primaryView].sizes.width    = primaryWidth;
-  state[primaryView].sizes.height   = primaryHeight;
-  state[secondaryView].sizes.width  = secondaryWidth;
-  state[secondaryView].sizes.height = secondaryHeight;
+  state[state.primaryView]                              .sizes.width  = primaryWidth;
+  state[state.primaryView]                              .sizes.height = primaryHeight;
+  state['map' === state.primaryView ? 'content' : 'map'].sizes.width  = secondaryWidth;
+  state['map' === state.primaryView ? 'content' : 'map'].sizes.height = secondaryHeight;
 }
 
 /**
@@ -735,7 +729,7 @@ export default new (class GUI extends G3WObject {
   /**
    * Toggle set full screen modal
    */
-  showFullModal({element = "#full-screen-modal", show = true} = {}) {
+  showFullModal({element = "#modal-fullscreen", show = true} = {}) {
     $(element).modal(show ? 'show' : 'hide')
   }
 
@@ -809,7 +803,7 @@ export default new (class GUI extends G3WObject {
             thumbnail:   p.thumbnail,
             gid:         p.gid,
             cbk:         opts.cbk || ((o = {}) => $promisify(async () => {
-              const url = GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
+              const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
               try { history.replaceState(null, null, url); }
               catch (e) { console.warn(e); } location.replace(url);}
             )),
@@ -846,14 +840,6 @@ export default new (class GUI extends G3WObject {
     const state = ApplicationState.viewport;
     const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
     rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    this._layoutComponents();
-  }
-
-  resetToDefaultContentPercentage() {
-    const state = ApplicationState.viewport;
-    const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
-    rightpanel[`${state.split === 'h' ? 'width' : 'height'}`]     = rightpanel[`${state.split === 'h' ? 'width' : 'height'}_default`];
-    rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
   }
 

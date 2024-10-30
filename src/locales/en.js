@@ -26,9 +26,9 @@ export default {
       not_supported_format: "Not supported format"
     },
     layer_position: {
-      top: 'TOP',
-      bottom: 'BOTTOM',
-      message: "Position relative to layers on TOC"
+      top: 'top',
+      bottom: 'bottom',
+      message: "Position"
     },
     sdk: {
       atlas: {
@@ -77,7 +77,7 @@ export default {
         download_image: "Download Image",
         fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
         fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-        help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
+        help: "Exported layers are defined by the administrator"
       },
       querybuilder: {
         title: 'Advanced search',
@@ -178,6 +178,9 @@ export default {
               general: 'GENERAL',
               spatial: 'SPATIAL'
             }
+          },
+          credits: {
+            title: 'Credits',
           }
         }
       },
@@ -390,6 +393,7 @@ export default {
           },
           input_validation_mutually_exclusive: "Field mutually exclusive with ",
           input_validation_error: "Mandatory Field or wrong data type",
+          input_validation_error_type: "Wrong data type",
           input_validation_min_field: "Value has to be more/equal to field value  ",
           input_validation_max_field: "Value has to be less/equal to field value ",
           input_validation_exclude_values: "Value has to be unique",
@@ -432,13 +436,7 @@ export default {
           },
           download: {
             unknow: 'Download',
-            shp: 'Download Shapefile',
-            gpx: 'Download GPX',
-            gpkg: 'Download GPKG',
-            csv: 'Download CSV',
-            xls: 'Download XLS',
-            geotiff: "Download GEOTIFF",
-            geotiff_map_extent: "Download GEOTIFF(current view extent)"
+            geotiff_map_extent: "GeoTiff (current view)"
           }
         }
       },
@@ -460,7 +458,7 @@ export default {
     no: "No",
     back: "Back",
     backto: "Back to ",
-    changemap: "Change Map",
+    changemap: "Change map",
     change_session: "Change Session",
     component: "Generic Component",
     search: "Search",
@@ -491,12 +489,9 @@ export default {
     cancel: "Cancel",
     update: "Update",
     close: "Close",
-    /**
-     * @since 3.8.0
-     */
+    /** @since 3.8.0 */
     dont_show_again: "Don't show again",
     enlange_reduce: "Enlarge / Reduce",
-    reset_default: "Default size",
     add: "Add",
     exitnosave: "Exit without save",
     annul: "Cancel",
@@ -513,8 +508,8 @@ export default {
           }
         },
         add_wms_layer: "Add WMS layer",
-        delete_wms_url: "Delete WMS url",
-        layer_id_already_added: "WMS Layer already added",
+        delete_wms_url: "Remove",
+        layer_id_already_added: "A WMS connection with this name already exists",
         url_already_added: "WMS URL/Name already added",
         layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
       }
@@ -540,13 +535,13 @@ export default {
       },
       add_layer_control: {
         header: "Add Layer",
-        select_projection: "Select layer projection",
-        select_field_to_show: "Select Field to show on map",
-        select_csv_separator: "Select delimiter",
-        select_csv_x_field: "Select X field",
-        select_csv_y_field: "Select Y field",
-        select_color: "Select Layer Color",
-        drag_layer: "Drag and drop layer here",
+        select_projection: "Projection",
+        select_field_to_show: "field shown on map",
+        select_csv_separator: "Delimiter",
+        select_csv_x_field: "X field",
+        select_csv_y_field: "Y field",
+        select_color: "Layer Color",
+        drag_layer: "Add your file here",
         persistent_data: "Persistent data",
         persistent_help: "save layer into browser storage",
       },
@@ -573,15 +568,18 @@ export default {
       }
     },
     catalog_items: {
-      helptext: "Right-click on individual layer to access additional features",
+      helptext: "Open menu",
       contextmenu: {
         zoomtolayer: "Zoom to Layer",
         open_attribute_table: "Open Attribute Table",
         show_metadata: "Metadata",
-        styles: 'Styles',
-        vector_color_menu:"Set/Change Color",
+        styles: 'Style',
+        vector_color_menu:"Color",
         layer_opacity: "Opacity",
         filters: "Filters",
+        download: 'Save as',
+        ogc_services: 'OGC Services',
+        edit: "Edit Layer",
       }
     },
     dataTable: {
@@ -595,5 +593,33 @@ export default {
     },
     /**@since 3.10.0 */
     no_geometry: 'This item has no geometry',
+    /**@since 3.11.0 */
+    query_filter: 'Filter by:',
+    /**@since 3.11.0 */
+    sidebar_menu: 'Sidebar menu',
+    /**@since 3.11.0 */
+    layer_type: 'Layer type',
+    /** @since 3.11.0 */
+    choose_type: 'Choose type',
+    /**@since 3.11.0 */
+    remote_wms_url: 'WMS (URL)',
+    /**@since 3.11.0 */
+    local_file: 'Local file',
+    /**@since 3.11.0 */
+    embed_map: 'Embed map',
+    /** @since 3.11.0 */
+    homepage: 'Home',
+    /** @since 3.11.0 */
+    wms_server: 'WMS Server',
+    /** @since 3.11.0 */
+    connect_to_wms: 'Connect',
+    /** @since 3.11.0 */
+    disconnect_from_wms: 'Disconnect',
+    /** @since 3.11.0 */
+    add_new_wms_url_help: 'Search through saved connections or add a new server',
+    /** @since 3.11.0 */
+    label: "Label",
+    /** @since 3.11.0 */
+    no_csv_field: 'No valid fields',
   },
 };

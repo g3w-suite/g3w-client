@@ -34,7 +34,7 @@
       :current-tooltip         = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
     >
       <bar-loader :loading = "tool.loading"/>
-      <i :class = "g3wtemplate.getFontClass(tool.icon || 'caret-right')"></i>
+      <i :class = "$fa(tool.icon || 'caret-right')"></i>
       <span class="tool-label" v-if = "tool.html" >
       <i :class = "tool.html.icon"></i>
       {{ tool.html.text || tool.name}}
@@ -48,7 +48,7 @@
         class       = "tool_type"
         :style      = "{ color: ({ alert: 'red', info: 'blue', warning: 'orange'})[tool.state.type] }"
       >
-        <i :class = "g3wtemplate.getFontClass(tool.state.type)"></i>
+        <i :class = "$fa(tool.state.type)"></i>
       </span>
 
     </div>

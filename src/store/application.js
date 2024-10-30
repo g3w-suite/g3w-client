@@ -249,6 +249,9 @@ const STATE = Vue.observable({
   /** @since 3.11.0 */
   catalog: {},
 
+  /** @since 3.11.0 */
+  highlightlayers: false,
+
 });
 
 export default STATE;

@@ -45,7 +45,7 @@
         title           = "Submit search"
       >
         <i
-          :class      = "g3wtemplate.getFontClass('search')"
+          :class      = "$fa('search')"
           style       = "color: #fff"
           aria-hidden = "true"
         ></i>
@@ -61,7 +61,7 @@
         title           = "Clear markers selection"
       >
         <i
-          :class      = "g3wtemplate.getFontClass('trash')"
+          :class      = "$fa('trash')"
           aria-hidden = "true"
         ></i>
       </button>
@@ -76,7 +76,7 @@
         title         = "Toggle markers visibility"
       >
         <i
-        :class      = "g3wtemplate.getFontClass(is_layer_visible ? 'eye-close': 'eye')"
+        :class      = "$fa(is_layer_visible ? 'eye-close': 'eye')"
         aria-hidden = "true"
         ></i>
       </button>
@@ -130,7 +130,7 @@
         <template v-else>
           <span
             style       = "color: #000; padding: 5px;"
-            :class      = "g3wtemplate.getFontClass(item.__selected ? 'check' : 'uncheck')">
+            :class      = "$fa(item.__selected ? 'check' : 'uncheck')">
           </span>
           <i
             v-if        = "'road' === item.__icon"
@@ -880,7 +880,7 @@ export default {
     position: relative;
     display: flex;
     justify-content: flex-end;
-    height: 40px;
+    height: 41px;
     background-color: #fff;
     overflow: hidden;
     border-radius: 2px;
@@ -946,8 +946,7 @@ export default {
     box-sizing: border-box;
     position: absolute;
     max-width: 300px;
-    height: 4.375em;
-    top: 7px;
+    top: 3px;
     left: 45px;
     width: 50%;
     height: 6px;
