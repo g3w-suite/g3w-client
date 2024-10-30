@@ -105,6 +105,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
 
     // $('#modal-addlayer').modal('show');
 
+    const map = GUI.getService('map');
     const q = document.querySelector.bind(document);
     const setOption = async (el, value) => {
       el = '#modal-addlayer ' + el;
@@ -113,10 +114,10 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
       q(el).dispatchEvent(new Event('change'));
     }
     const setFile = async (file, epsg) => {
-      if (GUI.getService('map').getLayerByName(file.name)) {
-        return console.assert(!GUI.getService('map').getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+      if (map.getLayerByName(file.name)) {
+        return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
       }
-      setTimeout(() => console.assert(GUI.getService('map').getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+      setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
       await setOption('#add-layer-type', 'file');
       await setOption('#projection-layer', epsg);
       await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
@@ -128,10 +129,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
       await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
       q('.modal-footer .btn.btn-success').click();
 
-      window.addEventListener("beforeunload", () => {
-        console.log('reloading');
-        GUI.getService('map').removeExternalLayer(file.name);
-      });
+      window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
     }
 
     await setFile(
@@ -140,7 +138,7 @@ A,11.2470052,43.7914696
 B,11.2472371,43.7912777
 C,11.2474811,43.7910709`],
       'points-xy.csv',
-      { type: 'text/plain', lastModified: new Date() }),
+      { type: 'text/plain' }),
       'EPSG:4326'
     );
 
@@ -152,9 +150,22 @@ A,"POINT (11.2470052 43.7914696)"
 B,"POINT (11.2472371 43.7912777)"
 C,"POINT (11.2474811 43.7910709)"`],
       'points-wkt.csv',
-      { type: 'text/plain', lastModified: new Date() }),
+      { type: 'text/plain' }),
       'EPSG:4326'
     );
+
+    await waitFor(async () => 'piazza-leopoldo.kml' in (await localforage.getItem('externalLayers')), 1000);
+
+    const externalLayers = await localforage.getItem('externalLayers');
+    const shpwrite = require('shp-write');
+
+    await setFile(
+      new File([shpwrite.zip(JSON.parse(externalLayers['piazza-leopoldo.kml'].features))],
+      'shapefile.zip',
+      { type: 'application/x-zip-compressed' }),
+      'EPSG:4326'
+    );
+
   });
 
 // run app (index.prod.js)
