@@ -57,6 +57,7 @@ export async function prompt({
     })
   )
     .then(callback)
+    .catch(e => console.warn(e))
     .finally(() => {
       vueInput.$destroy();
       vueInput = null;

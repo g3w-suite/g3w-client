@@ -1456,8 +1456,7 @@ class Layer extends G3WObject {
 
     if (this.isGeoLayer()) {
       // whether fid is excluded from selection
-      const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
-      this.setOlSelectionFeatureByFid(fid, is_excluded  ? 'remove' : 'add');
+      this.setOlSelectionFeatureByFid(fid, selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid)  ? 'remove' : 'add');
     }
 
     /** If there is a filterActive */
@@ -1767,6 +1766,7 @@ class Layer extends G3WObject {
    * @param options.unique
    * @param options.queryUrl
    * @param options.ordering
+   * @param options.autofilter //@since 3.11.0
    * @param { Object }        params - OWS search params
    * 
    * @returns { Promise }
@@ -1798,6 +1798,7 @@ class Layer extends G3WObject {
                 suggest:   options.suggest,
                 /** @since 3.9.0 */
                 formatter: undefined !== options.formatter ? options.formatter : 1,
+                autofilter: options.autofilter,
               })
             );
           } catch(e) {
@@ -1834,6 +1835,7 @@ class Layer extends G3WObject {
     formatter = 1,
     queryUrl,
     ordering,
+    autofilter, //@since 3.11.0
   } = {}) {
     const provider        = this.getProvider('data');
     provider._projections = provider._projections || { map: null, layer: null };
@@ -1845,7 +1847,8 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: ApplicationState.tokens.filtertoken
+      filtertoken: ApplicationState.tokens.filtertoken,
+      autofilter,
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
@@ -1867,9 +1870,10 @@ class Layer extends G3WObject {
           data: ResponseParser.get('application/json')({
             layers:      [provider._layer],
             response:    response.vector.data,
+            filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
             projections: provider._projections,
           })
-        };
+        }
       }
 
     } catch(e) {

@@ -63,7 +63,8 @@ export default {
             pre: "Tapez au moins",
             post: "caractères"
           }
-        }
+        },
+        autofilter: "Filtrer les résultats"
       },
       print: {
         no_layers: 'Aucune layer visible',
