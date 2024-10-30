@@ -3,6 +3,7 @@
  * @since v3.8
  */
 import localforage from 'localforage';
+import { waitFor } from 'utils/waitFor';
 
 // include backward compatibilies
 import './deprecated';
@@ -16,7 +17,7 @@ import './g3w-globals';
 // print some debug info
 window.g3wsdk.info();
 
-// dev layers
+// dev layers: "DBTM" and "piazza-leopoldo.kml" 
 g3wsdk.core.ApplicationService.once('initconfig', () => {
 
   const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
@@ -58,35 +59,103 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   });
 });
 
-// custom header link
+// custom header links
 g3wsdk.core.ApplicationService.once('initconfig', () => {
-  initConfig.header_custom_links = [{
-    "i18n":   true,
-    "icon":   "fas fa-plus",
-    "title":  "mapcontrols.add_layer_control.header",
-    "type":   "modal",
-    "target": "#modal-addlayer",
-  }, {
-    "i18n":   true,
-    "icon":   "fas fa-window-maximize",
-    "title":  "changemap",
-    "type":   "modal",
-    "target": "#modal-changemap",
-  }, {
-    "i18n":   false,
-    "text":   "<i class='fas fa-bug'></i> <span hidden>Create a new issue</span>",
-    "title":  "Report a bug",
-    "url":    "https://github.com/g3w-suite",
-    "target": "_blank",
-  }, {
-    "i18n":    false,
-    "title":   'Forecast',
-    "img":     'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>',
-    "content": '<iframe src="https://www.3bmeteo.com/moduli_esterni/italia_7_giorni/ffffff/fc9b2a/5e5e5e/ffffff/it" style="width: 100%;min-height: 655px;border: none;"></iframe>',
-    "type":    'modal'
-  },
-];
+  initConfig.header_custom_links = [
+    // modal button (icon + i18n)
+    {
+      "i18n":   true,
+      "icon":   "fas fa-plus",
+      "title":  "mapcontrols.add_layer_control.header",
+      "type":   "modal",
+      "target": "#modal-addlayer",
+    },
+    // modal button (icon + i18n)
+    {
+      "i18n":   true,
+      "icon":   "fas fa-window-maximize",
+      "title":  "changemap",
+      "type":   "modal",
+      "target": "#modal-changemap",
+    },
+    // external link (with visible text)
+    {
+      "i18n":   false,
+      "text":   "<i class='fas fa-bug'></i> <span hidden>Create a new issue</span>",
+      "title":  "Report a bug",
+      "url":    "https://github.com/g3w-suite",
+      "target": "_blank",
+    },
+    // custom content (image + modal)
+    {
+      "i18n":    false,
+      "title":   'Forecast',
+      "img":     'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>',
+      "content": '<iframe src="https://www.3bmeteo.com/moduli_esterni/italia_7_giorni/ffffff/fc9b2a/5e5e5e/ffffff/it" style="width: 100%;min-height: 655px;border: none;"></iframe>',
+      "type":    'modal'
+    }
+  ];
 });
+
+  // dev layers: "points-xy.csv" and "points-wkt.csv"
+  g3wsdk.gui.GUI.once('ready', async () => {
+
+    await waitFor(() => GUI.getService('map'), 1000);
+    await GUI.getService('map').isReady();
+
+    // $('#modal-addlayer').modal('show');
+
+    const q = document.querySelector.bind(document);
+    const setOption = async (el, value) => {
+      el = '#modal-addlayer ' + el;
+      await waitFor(() => q(el), 1000);
+      q(el).value = value;
+      q(el).dispatchEvent(new Event('change'));
+    }
+    const setFile = async (file, epsg) => {
+      if (GUI.getService('map').getLayerByName(file.name)) {
+        return console.assert(!GUI.getService('map').getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+      }
+      setTimeout(() => console.assert(GUI.getService('map').getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+      await setOption('#add-layer-type', 'file');
+      await setOption('#projection-layer', epsg);
+      await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
+      const data = new DataTransfer();
+      q('#addcustomlayer input[type="file"]').files = data.files;
+      data.items.add(file);
+      q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
+
+      await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+      q('.modal-footer .btn.btn-success').click();
+
+      window.addEventListener("beforeunload", () => {
+        console.log('reloading');
+        GUI.getService('map').removeExternalLayer(file.name);
+      });
+    }
+
+    await setFile(
+      new File([`X,Y
+11.2445931097684,43.7937158627536
+11.2468381296458,43.7938434048401
+11.2461937257921,43.7932582094963`],
+      'points-xy.csv',
+      { type: 'text/plain', lastModified: new Date() }),
+      'EPSG:4326'
+    );
+
+    // $('#modal-addlayer').modal('show');
+
+    await setFile(
+      new File([`WKT,
+"POINT (11.2445931097684 43.7937158627536)"
+"POINT (11.2468381296458 43.7938434048401)"
+"POINT (11.2461937257921 43.7932582094963)"`],
+      'points-wkt.csv',
+      { type: 'text/plain', lastModified: new Date() }),
+      'EPSG:4326'
+    );
+  });
 
 // run app (index.prod.js)
 require('./index.prod');
