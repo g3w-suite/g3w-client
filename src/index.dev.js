@@ -122,8 +122,8 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
       await setOption('#projection-layer', epsg);
       await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
       const data = new DataTransfer();
-      q('#addcustomlayer input[type="file"]').files = data.files;
       data.items.add(file);
+      q('#addcustomlayer input[type="file"]').files = data.files;
       q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
 
       await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
