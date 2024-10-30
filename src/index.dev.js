@@ -138,7 +138,7 @@ A,11.2470052,43.7914696
 B,11.2472371,43.7912777
 C,11.2474811,43.7910709`],
       'points-xy.csv',
-      { type: 'text/plain', lastModified: new Date() }),
+      { type: 'text/plain' }),
       'EPSG:4326'
     );
 
@@ -150,9 +150,22 @@ A,"POINT (11.2470052 43.7914696)"
 B,"POINT (11.2472371 43.7912777)"
 C,"POINT (11.2474811 43.7910709)"`],
       'points-wkt.csv',
-      { type: 'text/plain', lastModified: new Date() }),
+      { type: 'text/plain' }),
       'EPSG:4326'
     );
+
+    await waitFor(async () => 'piazza-leopoldo.kml' in (await localforage.getItem('externalLayers')), 1000);
+
+    const externalLayers = await localforage.getItem('externalLayers');
+    const shpwrite = require('shp-write');
+
+    await setFile(
+      new File([shpwrite.zip(JSON.parse(externalLayers['piazza-leopoldo.kml'].features))],
+      'shapefile.zip',
+      { type: 'application/x-zip-compressed' }),
+      'EPSG:4326'
+    );
+
   });
 
 // run app (index.prod.js)
