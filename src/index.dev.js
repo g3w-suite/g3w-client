@@ -135,10 +135,10 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
     }
 
     await setFile(
-      new File([`X,Y
-11.2445931097684,43.7937158627536
-11.2468381296458,43.7938434048401
-11.2461937257921,43.7932582094963`],
+      new File([`Name,X,Y,
+A,11.2470052,43.7914696
+B,11.2472371,43.7912777
+C,11.2474811,43.7910709`],
       'points-xy.csv',
       { type: 'text/plain', lastModified: new Date() }),
       'EPSG:4326'
@@ -147,10 +147,10 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
     // $('#modal-addlayer').modal('show');
 
     await setFile(
-      new File([`WKT,
-"POINT (11.2445931097684 43.7937158627536)"
-"POINT (11.2468381296458 43.7938434048401)"
-"POINT (11.2461937257921 43.7932582094963)"`],
+      new File([`Name,WKT,
+A,"POINT (11.2470052 43.7914696)"
+B,"POINT (11.2472371 43.7912777)"
+C,"POINT (11.2474811 43.7910709)"`],
       'points-wkt.csv',
       { type: 'text/plain', lastModified: new Date() }),
       'EPSG:4326'
