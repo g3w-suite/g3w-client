@@ -1798,7 +1798,10 @@ class Layer extends G3WObject {
                 suggest:   options.suggest,
                 /** @since 3.9.0 */
                 formatter: undefined !== options.formatter ? options.formatter : 1,
+                /** @since 3.11.0 */
                 autofilter: options.autofilter,
+                page:       options.page,
+                page_size:  options.page_size,
               })
             );
           } catch(e) {
@@ -1836,6 +1839,8 @@ class Layer extends G3WObject {
     queryUrl,
     ordering,
     autofilter, //@since 3.11.0
+    page,  //@since 3.11.0
+    page_size, //@since 3.11.0
   } = {}) {
     const provider        = this.getProvider('data');
     provider._projections = provider._projections || { map: null, layer: null };
@@ -1849,6 +1854,8 @@ class Layer extends G3WObject {
       ffield,
       filtertoken: ApplicationState.tokens.filtertoken,
       autofilter,
+      page,
+      page_size,
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
@@ -1872,7 +1879,8 @@ class Layer extends G3WObject {
             response:    response.vector.data,
             filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
             projections: provider._projections,
-          })
+          }),
+          count: response.vector.count, //@since v3.11.0 take in account feature count (all). It use for pagination purpose
         }
       }
 

@@ -68,6 +68,7 @@ export default new (class QueryResultsService extends G3WObject {
        * @param { boolean }                            options.add                            - whether is a new query request (add/remove query request)
        */
       setQueryResponse(queryResponse, options = { add: false }) {
+        console.log(queryResponse)
 
         // set mandatory queryResponse fields
         if (!queryResponse.data)           queryResponse.data           = [];
@@ -579,6 +580,14 @@ export default new (class QueryResultsService extends G3WObject {
 
   }
 
+  /**
+   * @since 3.11.0
+   * Load pagination data
+   * @param index
+   */
+  loadPaginationData(index) {
+    console.log(index)
+  }
 
   /**
    * used by the following plugins: "qplotly"

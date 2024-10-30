@@ -245,23 +245,32 @@ export default {
     formatter: 1,
     ordering,
     autofilter: 0,
+    //@since 3.11.0 pagination
+    page,
+    page_size,
   }) {
     const { layer, ...params } = options;
     params.filter              = [].concat(params.filter); // check if filter is array
-    
+    //@since 3.11.0 count features returned by
+    const counts = [];
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
-          if (params.raw)                                        { return { data: value }; }
+          if ( params.page_size)  { counts.push(value.count) }
+          if (params.raw)                                         { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
         }),
       query: {
         type:       'search',
         search:     params.filter,
         autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
+        //@since 3.11.0 pagination
+        page:       params.page && counts.map(() => params.page),
+        page_size:  params.page_size,
+        counts
       },
       type: 'api',
     };

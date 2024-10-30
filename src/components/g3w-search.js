@@ -164,6 +164,8 @@ async function doSearch({
   state.searching = true;
 
   let data, parsed;
+  //For pagination purpose
+  const page_size = 5;
 
   try {
     data = await DataRouterService.getData('search:features', {
@@ -178,6 +180,8 @@ async function doSearch({
         feature_count,
         raw:        false, // in order to get a raw response
         autofilter: Number(show && state.autofilter), //0/1 autofilter by server,
+        page: 1,
+        page_size,
       },
       outputs: show && { title: state.title }
     });
@@ -218,7 +222,9 @@ async function doSearch({
           }),
           formatter: 1,
           feature_count,
-          autofilter: state.autofilter //Boolean autofilter by server
+          autofilter: state.autofilter, //Boolean autofilter by server
+          page: 1,
+          page_size,
         },
         outputs: {
           title: state.title

@@ -26,7 +26,7 @@
         >
           <li
             v-show = "showLayer(layer)"
-            v-for = "layer in state.layers"
+            v-for = "(layer, index) in state.layers"
           >
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
@@ -189,6 +189,17 @@
                   </i>
                 </button>
               </div>
+
+              <!-- PAGINATION LOAD BUTTON -->
+              <button
+                v-if        = "showPagination(index)"
+                class       = "btn skin-background-color"
+                style       = "font-weight: bold; width: 98%;"
+                @click.stop = "loadData(index)"
+              >
+                <i style = "color: #FFFFFF;" :class="g3wtemplate.font['ellips-h']"></i>
+              </button>
+
               <template v-if = "state.layeractiontool[layer.id].component">
                 <div
                   class  = "g3w-layer-action-tools with-border"
@@ -846,6 +857,27 @@
         box.querySelector(".btn-collapser").classList.toggle('fa-plus', !collapsed);
         box.querySelector(".btn-collapser").classList.add('fa-minus', collapsed);
       },
+
+      /**
+       * @since v3.11.0
+       * Check if we need to show load pagination data button
+       * @param index
+       * @return Boolean
+       */
+      showPagination(index) {
+        return (
+          this.state.query.page_size //check if pagination is set
+          && this.state.layers[index].features.length < this.state.query.counts[index] //features is less than total feature of query
+        );
+      },
+
+      /**
+       * @since v3.11.0
+       * @param index
+       */
+      loadPadinationData(index) {
+        this.$options.service.loadPaginationData(index);
+      }
 
     },
 
