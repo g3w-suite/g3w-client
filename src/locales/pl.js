@@ -63,7 +63,8 @@ export default {
             pre: "Podaj",
             post: "lub więcej znaków"
           }
-        }
+        },
+        autofilter: "Filtruj wyniki"
       },
       print: {
         no_layers: "Brak warstwy do wydrukowania",

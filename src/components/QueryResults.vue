@@ -669,8 +669,14 @@
         getCatalogLayerById(layer.id).saveFilter();
       },
 
-      addRemoveFilter(layer) {
-        getCatalogLayerById(layer.id).toggleFilterToken();
+      async addRemoveFilter(layer) {
+        await getCatalogLayerById(layer.id).toggleFilterToken();
+        //@since 3.11.0 In case of set active filter, remove all features not selected
+        if (layer.filter.active) {
+           layer.features
+            .filter(f => !f.selection.selected)
+            .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
+        }
       },
 
       getContainerFromFeatureLayer({ layer, index } = {}) {

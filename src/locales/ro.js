@@ -63,7 +63,8 @@ export default {
             pre: "Te rog introdu",
             post: "sau mai multe caractere"
           }
-        }
+        },
+        autofilter: "Filtrați rezultatele"
       },
       print: {
         no_layers: 'Nu avem straturi de print',
