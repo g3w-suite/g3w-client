@@ -1098,7 +1098,7 @@ class Layer extends G3WObject {
       }
       this.setFilter(false);
       this.state.filter.current = filter;
-      this.setFilterToken(response.data);
+      this.setFilterToken(response.data.filtertoken);
     } catch(e) {
       console.warn(e);
     }
