@@ -165,7 +165,7 @@ async function doSearch({
 
   let data, parsed;
   //For pagination purpose
-  const page_size = 5;
+  const page_size = 3;
 
   try {
     data = await DataRouterService.getData('search:features', {

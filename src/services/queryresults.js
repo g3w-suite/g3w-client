@@ -67,16 +67,20 @@ export default new (class QueryResultsService extends G3WObject {
        * @param { Object }                             options
        * @param { boolean }                            options.add                            - whether is a new query request (add/remove query request)
        */
-      setQueryResponse(queryResponse, options = { add: false }) {
-        console.log(queryResponse)
-
+      setQueryResponse(queryResponse, options = { add: false, update: false }) {
         // set mandatory queryResponse fields
         if (!queryResponse.data)           queryResponse.data           = [];
         if (!queryResponse.query)          queryResponse.query          = { external: { add: false, filter: { SELECTED: false } } };
         if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: { SELECTED: false }};
 
+
+        if (false === options.add && !!options.update) {
+          // in case of new request results reset the query otherwise maintain the previous request
+          this.state.query      = queryResponse.query;
+          this.state.type       = queryResponse.type;
+        }
         // whether add response to current results using addLayerFeaturesToResultsAction
-        if (false === options.add) {
+        if (false === options.add && !options.update) {
           // in case of new request results reset the query otherwise maintain the previous request
           this.clearState();
           this.state.query      = queryResponse.query;
@@ -268,7 +272,6 @@ export default new (class QueryResultsService extends G3WObject {
               toc:                    external || layer.state.toc, //@since v3.10.0
             };
           });
-
         this.setLayersData(layers, options);
 
       },
@@ -279,15 +282,15 @@ export default new (class QueryResultsService extends G3WObject {
        * @param layers
        * @param options
        */
-      setLayersData(layers = [], options = { add: false }) {
+      setLayersData(layers = [], options = { add: false, update: false }) {
         if (false === options.add) {
           // sort layers as Catalog project layers.
           //external layer always on bottom
           layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
         }
         // get features from added pick layer in case of a new request query
-        layers.forEach(l => options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l));
-        this.setActionsForLayers(layers, { add: options.add });
+        layers.forEach(l => options.add || options.update ? this.updateLayerResultFeatures(l, options.update) : this.state.layers.push(l));
+        this.setActionsForLayers(layers, { add: options.add, update: options.update });
         this.state.changed = true;
       },
 
@@ -584,16 +587,15 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.11.0
    * Load pagination data
    * @param index
+   * @param page
+   * @param query
    */
-  async loadPaginationData(index) {
+  async loadPaginationData(index, page, query) {
     const { layers = [], method, params } = this.state.query.pagination.getData;
-    this.state.query.pagination.page[index] = this.state.query.pagination.page[index] + 1;
-    const data = await layers[index][method]({ ...params[index], page: this.state.query.pagination.page[index] })
+    const data = await layers[index][method]({ ...params[index], page });
     try {
-      this.setQueryResponse(
-          data,
-          { add: true }
-      );
+      this.setQueryResponse({ ...data, query }, { add: false, update: true });
+      this.state.query.pagination.current[index] = page;
     } catch(e) {
       console.warn(e);
     }
@@ -641,10 +643,11 @@ export default new (class QueryResultsService extends G3WObject {
    * current `state.layers` results.
    *
    * @param responseLayer layer structure coming from request
+   * @param replace    @since 3.11.0 mean replace current state layer features
    *
    * @since 3.8.0
    */
-  updateLayerResultFeatures(responseLayer) {
+  updateLayerResultFeatures(responseLayer, replace = false) {
     const layer            = this.state.layers.find(l => l.id === responseLayer.id);                // get layer from current `state.layers` showed on a result
     const responseFeatures = responseLayer.features || [];                                            // extract features from responseLayer object
     const external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
@@ -653,6 +656,7 @@ export default new (class QueryResultsService extends G3WObject {
       const features_ids = layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
+      if (replace) { layer.features.splice(0) }
       responseFeatures.forEach((feat, index) => {
         const feature_id = this._getFeatureId(feat, external);
         // If true, remove the feature because is already loaded
@@ -722,8 +726,8 @@ export default new (class QueryResultsService extends G3WObject {
    * @param layers
    * @param options
    */
-  setActionsForLayers(layers, options = { add: false }) {
-    if (options.add) {
+  setActionsForLayers(layers, options = { add: false, update: false }) {
+    if (options.add || options.update) {
       return;
     }
 
