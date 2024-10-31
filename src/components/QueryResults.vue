@@ -447,7 +447,7 @@
                 <component :is = "component" :layer = "layer"/>
               </div>
               <!-- PAGINATION -->
-              <section v-if = "showPagination(index)" style = "padding: 10px; display: flex; justify-content: space-between; align-items: baseline;" v-disabled = "layer.filter.active" >
+              <section v-if = "showPagination(index)" style = "padding: 10px; display: flex; justify-content: space-between; align-items: baseline;" v-disabled = "layer.loading || layer.filter.active" >
                 <!-- PAGINATION LOAD BUTTON -->
                 <template v-if = "state.query.pagination.pages[index] > 3">
                   <button
