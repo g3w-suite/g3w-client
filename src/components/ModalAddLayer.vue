@@ -726,8 +726,8 @@ export default {
       const wms    = { url: this.url, id: this.id, show: true };
       const found  = this.wms_urls.find(l => l.url === this.url);
       try {
-        const response = await this.fetchWMS(this.url);
-        if (!found && response) {
+        await this.fetchWMS(this.url);
+        if (!found) {
           const data = this.getLocalWMSData();
           this.wms_urls.push(wms);
           data.urls = this.wms_urls;
