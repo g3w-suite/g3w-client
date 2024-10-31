@@ -158,7 +158,7 @@ function set_version(pluginName) {
  * @since 3.10.0
  */
 function is_prod_branch(branchName) {
-  return production || ['dev', 'main', 'master'].includes(branchName) || /^v\d+\.\d+\.x$/.test(branchName);
+  return ['dev', 'main', 'master'].includes(branchName) || /^v\d+\.\d+\.x$/.test(branchName);
 }
 
 setNODE_ENV();
