@@ -585,8 +585,18 @@ export default new (class QueryResultsService extends G3WObject {
    * Load pagination data
    * @param index
    */
-  loadPaginationData(index) {
-    console.log(index)
+  async loadPaginationData(index) {
+    const { layers = [], method, params } = this.state.query.pagination.getData;
+    this.state.query.pagination.page[index] = this.state.query.pagination.page[index] + 1;
+    const data = await layers[index][method]({ ...params[index], page: this.state.query.pagination.page[index] })
+    try {
+      this.setQueryResponse(
+          data,
+          { add: true }
+      );
+    } catch(e) {
+      console.warn(e);
+    }
   }
 
   /**
@@ -665,7 +675,6 @@ export default new (class QueryResultsService extends G3WObject {
       });
       // toggle layer feature box
       (layer.features || []).forEach(f => {
-        console.log(f)
         const collapsed = (layer.features || []).length > 1;
         const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, f)];
         if (box) {

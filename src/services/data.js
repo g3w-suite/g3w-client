@@ -253,6 +253,7 @@ export default {
     params.filter              = [].concat(params.filter); // check if filter is array
     //@since 3.11.0 count features returned by
     const counts = [];
+    console.log(layer)
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
@@ -268,9 +269,16 @@ export default {
         search:     params.filter,
         autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
         //@since 3.11.0 pagination
-        page:       params.page && counts.map(() => params.page),
-        page_size:  params.page_size,
-        counts
+        pagination: params.page_size && {
+          page:       params.page && counts.map(() => params.page),
+          page_size:  params.page_size,
+          counts,
+          getData: {
+            params: params.filter.map(filter => ({ ...params, filter })),
+            method: 'searchFeatures',
+            layers: layer
+          }
+        },
       },
       type: 'api',
     };

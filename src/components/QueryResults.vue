@@ -189,16 +189,19 @@
                   </i>
                 </button>
               </div>
-
-              <!-- PAGINATION LOAD BUTTON -->
-              <button
-                v-if        = "showPagination(index)"
-                class       = "btn skin-background-color"
-                style       = "font-weight: bold; width: 98%;"
-                @click.stop = "loadData(index)"
-              >
-                <i style = "color: #FFFFFF;" :class="g3wtemplate.font['ellips-h']"></i>
-              </button>
+              <!-- PAGINATION -->
+              <section v-if = "showPagination(index)" style = "margin: 5px;">
+                <!-- PAGINATION LOAD BUTTON -->
+                <button
+                  class                   = "btn skin-background-color"
+                  style                   = "color: #FFFFFF; font-weight: bold; width: 100%; display: flex; justify-content: space-between"
+                  v-t-tooltip:left.create = "'Load data'"
+                  @click.stop             = "loadPaginationData(index)"
+                >
+                    <span>{{ layer.features.length }} ... {{ state.query.pagination.counts[index] }}</span>
+                    <i  :class="g3wtemplate.font['ellips-h']"></i>
+                </button>
+              </section>
 
               <template v-if = "state.layeractiontool[layer.id].component">
                 <div
@@ -866,8 +869,8 @@
        */
       showPagination(index) {
         return (
-          this.state.query.page_size //check if pagination is set
-          && this.state.layers[index].features.length < this.state.query.counts[index] //features is less than total feature of query
+          this.state.query.pagination //check if pagination is set
+          && this.state.layers[index].features.length < this.state.query.pagination.counts[index] //features is less than total feature of query
         );
       },
 
@@ -875,8 +878,14 @@
        * @since v3.11.0
        * @param index
        */
-      loadPadinationData(index) {
-        this.$options.service.loadPaginationData(index);
+      async loadPaginationData(index) {
+        this.state.layers[index].loading = true;
+        try {
+          await this.$options.service.loadPaginationData(index);
+        } catch(e) {
+          console.warn(e);
+        }
+        this.state.layers[index].loading = false;
       }
 
     },
