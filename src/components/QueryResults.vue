@@ -31,11 +31,11 @@
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class      = "box-header with-border"
-                :class     = "{'mobile': isMobile()}"
-                @mouseover = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout  = "highLightLayerFeatures(layer, { highlight: false })"
-                @click     = "collapseSidebar"
+                class       = "box-header with-border"
+                :class      = "{'mobile': isMobile()}"
+                @mouseover  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout   = "highLightLayerFeatures(layer, { highlight: false })"
+                @click.stop = "collapseSidebar"
               >
                 <div
                   class  = "box-title query-layer-title"
@@ -447,21 +447,21 @@
                 <component :is = "component" :layer = "layer"/>
               </div>
               <!-- PAGINATION -->
-              <section v-if = "showPagination(index)" style = "padding: 10px; display: flex; justify-content: space-between; align-items: baseline">
+              <section v-if = "showPagination(index)" style = "padding: 10px; display: flex; justify-content: space-between; align-items: baseline;" v-disabled = "layer.filter.active" >
                 <!-- PAGINATION LOAD BUTTON -->
                 <template v-if = "state.query.pagination.pages[index] > 3">
                   <button
-                            class = "btn skin-border-color"
-                            :disabled = "1 === state.query.pagination.current[index]"
-                            @click.stop = "loadPaginationData(index, state.query.pagination.current[index] - 1)"
+                    class = "btn skin-border-color"
+                    :disabled = "1 === state.query.pagination.current[index]"
+                    @click.stop = "loadPaginationData(index, state.query.pagination.current[index] - 1)"
                     >
-                        <i  :class="g3wtemplate.font['arrow-left']"></i>
+                      <i :class="g3wtemplate.font['arrow-left']"></i>
                     </button>
                   <button
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
-                    style                   = "font-weight: bold;"
-                    @click.stop             = "loadPaginationData(index, 1)"
+                    class       = "btn skin-border-color"
+                    :class      = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
+                    style       = "font-weight: bold;"
+                    @click.stop = "loadPaginationData(index, 1)"
                   >{{ 1 }}
                   </button>
                   <span v-if = "state.query.pagination.current[index] > 2 " style="font-weight: bold; align-self: baseline">...</span>
@@ -473,35 +473,34 @@
                         ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
                         : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
                       )"
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
-                    style                   = "font-weight: bold;"
-                    @click.stop             = "loadPaginationData(index, page)"
+                    class       = "btn skin-border-color"
+                    :class      = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
+                    style       = "font-weight: bold;"
+                    @click.stop = "loadPaginationData(index, page)"
                   >{{ page }}
                   </button>
                   <span v-if = "state.query.pagination.current[index] < state.query.pagination.pages[index] - 2" style="font-weight: bold; align-self: baseline">...</span>
                   <button
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'skin-background-color': state.query.pagination.pages[index] === state.query.pagination.current[index]  }"
-                    style                   = "font-weight: bold;"
-                    @click.stop             = "loadPaginationData(index, state.query.pagination.pages[index])"
+                    class       = "btn skin-border-color"
+                    :class      = "{ 'skin-background-color': state.query.pagination.pages[index] === state.query.pagination.current[index]  }"
+                    style       = "font-weight: bold;"
+                    @click.stop = "loadPaginationData(index, state.query.pagination.pages[index])"
                   >{{ state.query.pagination.pages[index] }}
                   </button>
                   <button
                     :disabled = "state.query.pagination.pages[index] === state.query.pagination.current[index]"
                     class = "btn skin-border-color"
                     @click.stop = "loadPaginationData(index, state.query.pagination.current[index] + 1)"
-                  >
-                    <i :class="g3wtemplate.font['arrow-right']"></i>
+                  ><i :class="g3wtemplate.font['arrow-right']"></i>
                   </button>
                 </template>
                 <template v-else>
                   <button
                     v-for= "page in Array.from(Array(state.query.pagination.pages[index]).keys()).map(i => i + 1)"
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'toggled': page === state.query.pagination.current[index]  }"
-                    style                   = "font-weight: bold;"
-                    @click.stop             = "loadPaginationData(index, page)"
+                    class       = "btn skin-border-color"
+                    :class      = "{ 'toggled': page === state.query.pagination.current[index]  }"
+                    style       = "font-weight: bold;"
+                    @click.stop = "loadPaginationData(index, page)"
                   >{{ page }}
                   </button>
                 </template>
@@ -752,9 +751,9 @@
         await getCatalogLayerById(layer.id).toggleFilterToken();
         //@since 3.11.0 In case of set active filter, remove all features not selected
         if (layer.filter.active) {
-           layer.features
-            .filter(f => !f.selection.selected)
-            .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
+         layer.features
+          .filter(f => !f.selection.selected)
+          .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
         }
       },
 
