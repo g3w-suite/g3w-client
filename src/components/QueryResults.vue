@@ -190,16 +190,15 @@
                 </button>
               </div>
               <!-- PAGINATION -->
-              <section v-if = "showPagination(index)" style = "margin: 5px;">
+              <section v-if = "showPagination(index)" style = "margin: 5px">
                 <!-- PAGINATION LOAD BUTTON -->
                 <button
-                  class                   = "btn skin-background-color"
-                  style                   = "color: #FFFFFF; font-weight: bold; width: 100%; display: flex; justify-content: space-between"
+                  class                   = "btn skin-border-color"
+                  style                   = "font-weight: bold; width: 98%; display: flex; justify-content: center; font-size: 1.2em;"
                   v-t-tooltip:left.create = "'Load data'"
                   @click.stop             = "loadPaginationData(index)"
                 >
-                    <span>{{ layer.features.length }} ... {{ state.query.pagination.counts[index] }}</span>
-                    <i  :class="g3wtemplate.font['ellips-h']"></i>
+                  <span>{{ layer.features.length }}   ...   {{ state.query.pagination.counts[index] }}</span>
                 </button>
               </section>
 
