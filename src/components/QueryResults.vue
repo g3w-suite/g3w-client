@@ -189,68 +189,6 @@
                   </i>
                 </button>
               </div>
-              <!-- PAGINATION -->
-              <section v-if = "showPagination(index)" style = "margin: 5px; display: flex; justify-content: space-between; align-items: baseline">
-                <!-- PAGINATION LOAD BUTTON -->
-                <template v-if = "state.query.pagination.pages[index] > 3">
-                  <button
-                    class = "btn skin-border-color"
-                    :disabled = "1 === state.query.pagination.current[index]"
-                    @click.stop = "loadPaginationData(index, state.query.pagination.current[index] - 1)"
-                  >
-                    <i  :class="g3wtemplate.font['arrow-left']"></i>
-                  </button>
-                  <button
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
-                    style                   = "font-weight: bold; max-width: 50px; font-size: 1.2em;"
-                    @click.stop             = "loadPaginationData(index, 1)"
-                  >{{ 1 }}
-                  </button>
-                  <span v-if = "state.query.pagination.current[index] > 2 " style="font-weight: bold; font-size: 1.2em; align-self: baseline">...</span>
-                  <button
-                    v-for= "page in (
-                      (state.query.pagination.current[index] < 3)
-                        ? [2, 3]
-                        : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
-                        ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
-                        : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
-                      )"
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
-                    style                   = "font-weight: bold; max-width: 50px; font-size: 1.2em;"
-                    @click.stop             = "loadPaginationData(index, page)"
-                  >{{ page }}
-                  </button>
-                  <span v-if = "state.query.pagination.current[index] < state.query.pagination.pages[index] - 2" style="font-weight: bold; font-size: 1.2em; align-self: baseline">...</span>
-                  <button
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'skin-background-color': state.query.pagination.pages[index] === state.query.pagination.current[index]  }"
-                    style                   = "font-weight: bold; max-width: 50px; font-size: 1.2em;"
-                    @click.stop             = "loadPaginationData(index, state.query.pagination.pages[index])"
-                  >{{ state.query.pagination.pages[index] }}
-                  </button>
-                  <button
-                    :disabled = "state.query.pagination.pages[index] === state.query.pagination.current[index]"
-                    class = "btn skin-border-color"
-                    @click.stop = "loadPaginationData(index, state.query.pagination.current[index] + 1)"
-                  >
-                    <i :class="g3wtemplate.font['arrow-right']"></i>
-                  </button>
-                </template>
-                <template v-else>
-                  <button
-                    v-for= "page in Array.from(Array(state.query.pagination.pages[index]).keys()).map(i => i + 1)"
-                    class                   = "btn skin-border-color"
-                    :class                  = "{ 'toggled': page === state.query.pagination.current[index]  }"
-                    style                   = "font-weight: bold; width: 100%; font-size: 1.2em;"
-                    @click.stop             = "loadPaginationData(index, page)"
-                  >{{ page }}
-                  </button>
-                </template>
-
-              </section>
-
               <template v-if = "state.layeractiontool[layer.id].component">
                 <div
                   class  = "g3w-layer-action-tools with-border"
@@ -508,6 +446,66 @@
                 :class = "{'mobile': isMobile()}" >
                 <component :is = "component" :layer = "layer"/>
               </div>
+              <!-- PAGINATION -->
+              <section v-if = "showPagination(index)" style = "padding: 10px; display: flex; justify-content: space-between; align-items: baseline">
+                <!-- PAGINATION LOAD BUTTON -->
+                <template v-if = "state.query.pagination.pages[index] > 3">
+                  <button
+                            class = "btn skin-border-color"
+                            :disabled = "1 === state.query.pagination.current[index]"
+                            @click.stop = "loadPaginationData(index, state.query.pagination.current[index] - 1)"
+                    >
+                        <i  :class="g3wtemplate.font['arrow-left']"></i>
+                    </button>
+                  <button
+                    class                   = "btn skin-border-color"
+                    :class                  = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
+                    style                   = "font-weight: bold;"
+                    @click.stop             = "loadPaginationData(index, 1)"
+                  >{{ 1 }}
+                  </button>
+                  <span v-if = "state.query.pagination.current[index] > 2 " style="font-weight: bold; align-self: baseline">...</span>
+                  <button
+                    v-for= "page in (
+                      (state.query.pagination.current[index] < 3)
+                        ? [2, 3]
+                        : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
+                        ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
+                        : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
+                      )"
+                    class                   = "btn skin-border-color"
+                    :class                  = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
+                    style                   = "font-weight: bold;"
+                    @click.stop             = "loadPaginationData(index, page)"
+                  >{{ page }}
+                  </button>
+                  <span v-if = "state.query.pagination.current[index] < state.query.pagination.pages[index] - 2" style="font-weight: bold; align-self: baseline">...</span>
+                  <button
+                    class                   = "btn skin-border-color"
+                    :class                  = "{ 'skin-background-color': state.query.pagination.pages[index] === state.query.pagination.current[index]  }"
+                    style                   = "font-weight: bold;"
+                    @click.stop             = "loadPaginationData(index, state.query.pagination.pages[index])"
+                  >{{ state.query.pagination.pages[index] }}
+                  </button>
+                  <button
+                    :disabled = "state.query.pagination.pages[index] === state.query.pagination.current[index]"
+                    class = "btn skin-border-color"
+                    @click.stop = "loadPaginationData(index, state.query.pagination.current[index] + 1)"
+                  >
+                    <i :class="g3wtemplate.font['arrow-right']"></i>
+                  </button>
+                </template>
+                <template v-else>
+                  <button
+                    v-for= "page in Array.from(Array(state.query.pagination.pages[index]).keys()).map(i => i + 1)"
+                    class                   = "btn skin-border-color"
+                    :class                  = "{ 'toggled': page === state.query.pagination.current[index]  }"
+                    style                   = "font-weight: bold;"
+                    @click.stop             = "loadPaginationData(index, page)"
+                  >{{ page }}
+                  </button>
+                </template>
+              </section>
             </div>
           </li>
           <li v-for = "component in state.components">
