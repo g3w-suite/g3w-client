@@ -133,7 +133,7 @@
               </fieldset>
 
               <!-- LAYERS NAME   -->
-              <label for = "g3w-wms-layers" v-t = "'sidebar.wms.panel.label.layers'"></label>
+              <label for = "g3w-wms-layers"><span v-t = "'sidebar.wms.panel.label.layers'"></span></label>
               <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_layers'">
                 <option v-for = "l in layers" :key = "l.name" :value = "l.name">{{ l.title }}</option>
               </select>
