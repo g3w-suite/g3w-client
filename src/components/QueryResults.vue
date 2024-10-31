@@ -200,9 +200,22 @@
                   >
                     <i  :class="g3wtemplate.font['arrow-left']"></i>
                   </button>
-                  <span v-if = "state.query.pagination.current[index] > state.query.pagination.pages[index] - 3" style="font-weight: bold; font-size: 1.2em; align-self: baseline">...</span>
                   <button
-                    v-for= "page in state.query.pagination.current[index] < state.query.pagination.pages[index] - 2 ? [state.query.pagination.current[index], state.query.pagination.current[index]+1] : [state.query.pagination.pages[index] - 2 , state.query.pagination.pages[index] - 1 ]"
+                    class                   = "btn skin-border-color"
+                    :class                  = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
+                    style                   = "font-weight: bold; max-width: 50px; font-size: 1.2em;"
+                    @click.stop             = "loadPaginationData(index, 1)"
+                  >{{ 1 }}
+                  </button>
+                  <span v-if = "state.query.pagination.current[index] > 2 " style="font-weight: bold; font-size: 1.2em; align-self: baseline">...</span>
+                  <button
+                    v-for= "page in (
+                      (state.query.pagination.current[index] < 3)
+                        ? [2, 3]
+                        : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
+                        ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
+                        : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
+                      )"
                     class                   = "btn skin-border-color"
                     :class                  = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
                     style                   = "font-weight: bold; max-width: 50px; font-size: 1.2em;"
@@ -216,7 +229,7 @@
                     style                   = "font-weight: bold; max-width: 50px; font-size: 1.2em;"
                     @click.stop             = "loadPaginationData(index, state.query.pagination.pages[index])"
                   >{{ state.query.pagination.pages[index] }}
-                    </button>
+                  </button>
                   <button
                     :disabled = "state.query.pagination.pages[index] === state.query.pagination.current[index]"
                     class = "btn skin-border-color"
