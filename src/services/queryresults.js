@@ -656,7 +656,10 @@ export default new (class QueryResultsService extends G3WObject {
       const features_ids = layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
-      if (replace) { layer.features.splice(0) }
+      if (replace) {
+        layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
+        layer.features.splice(0);
+      }
       responseFeatures.forEach((feat, index) => {
         const feature_id = this._getFeatureId(feat, external);
         // If true, remove the feature because is already loaded
@@ -675,7 +678,6 @@ export default new (class QueryResultsService extends G3WObject {
         } else {                                                              // add feature
           layer.features.push(feat);
         }
-        setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]);
       });
       // toggle layer feature box
       (layer.features || []).forEach(f => {
