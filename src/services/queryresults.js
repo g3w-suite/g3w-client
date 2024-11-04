@@ -591,11 +591,19 @@ export default new (class QueryResultsService extends G3WObject {
    * @param query
    */
   async loadPaginationData(index, page, query) {
+    //get config from getData object set by pagination method
     const { layers = [], method, params } = this.state.query.pagination.getData;
+    //get layer pagination data
     const data = await layers[index][method]({ ...params[index], page });
     try {
+      //set response data
       this.setQueryResponse({ ...data, query }, { add: false, update: true });
+      //set the current page
       this.state.query.pagination.current[index] = page;
+      //in the case of layer with geometry, zoom to features
+      if (this.state.layers[index]) {
+        this.zoomToLayerFeaturesExtent(this.state.layers[index]);
+      }
     } catch(e) {
       console.warn(e);
     }
@@ -670,6 +678,7 @@ export default new (class QueryResultsService extends G3WObject {
           }
           //filter feature
           layer.features.splice(index, 1);
+          delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
           if (action) {
             delete action.state.toggled[index];
             //need to reset toggled state in reactive mode
