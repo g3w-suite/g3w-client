@@ -132,16 +132,10 @@
                 {{ wms_config.abstract }}
               </fieldset>
 
-              <!-- NAME OF LAYER TO SAVE -->
-              <div class = "form-group">
-                <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
-                <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
-              </div>
-
               <!-- LAYERS NAME -->
               <div class = "form-group">
                 <label for = "g3w-wms-layers"><span v-t = "'sidebar.wms.panel.label.layers'"></span></label>
-                <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'select2_layers'" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
+                <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
                   <option v-for = "(l, i) in layers" :value = "i">{{ l.title }}</option>
                 </select>
               </div>
@@ -161,6 +155,12 @@
                   <option :value = "'top'"    v-t = "'layer_position.top'"></option>
                   <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
                 </select>
+              </div>
+
+              <!-- NAME OF LAYER TO SAVE -->
+              <div class = "form-group">
+                <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
+                <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
               </div>
 
             </fieldset>
@@ -404,10 +404,10 @@ export default {
         a:    1,
       },
       wms_config:       null,
-      wms_urls:         [], // array of object {id, url}
-      wms_projection:   null,       // choose epsg project
-      select2_layers:   [],
-      wms_layers:       [], // Selected layers
+      wms_urls:         [],   // array of object {id, url}
+      wms_projection:   null, // choose epsg project
+      wms_styles:       [],   // selected layers styles
+      wms_layers:       [],   // selected layers
       url:              null,
       id:               null,
       olLayer:          null,
@@ -446,10 +446,11 @@ export default {
     /**
      * Handle selected layers change  
      */
-    select2_layers(select2_layers = []) {
-      const layers      = (this.wms_config.layers || []).filter((l,i) => select2_layers.includes(i.toString()));
-      const last        = (this.wms_config.layers || []).findLastIndex(l => l == layers.at(-1));
-      const projections = (this.wms_config.layers || []).map(({ crss }) => crss.map(crs => `EPSG:${crs.epsg}`).sort())[last];
+     wms_styles(wms_styles = []) {
+      const config      = this.wms_config || {};
+      const layers      = (config.layers || []).filter((l,i) => wms_styles.includes(i.toString()));
+      const last        = (config.layers || []).findLastIndex(l => l == layers.at(-1));
+      const projections = (config.layers || []).map(({ crss }) => crss.map(crs => `EPSG:${crs.epsg}`).sort())[last];
 
       if (0 === layers.length) {        // Reset epsg and projections to initial values
         this.wms_projection = null;
@@ -461,6 +462,16 @@ export default {
         this.projections = this.projections.filter(p => projections.includes(p));
       }
 
+      if (layers.length) {
+        let i = 0;
+        const styles = ` (${layers.map(l => l.title).join(' + ')})`;
+        let suffix = styles;
+        while(GUI.getService('map').getLayerByName(config.title + suffix)) {
+          suffix = ` ${styles} (${ ++i })`;
+        }
+        this.name = config.title + suffix;
+      }
+
       this.wms_layers = layers;
     },
 
@@ -469,11 +480,12 @@ export default {
      */
     async wms_projection() {
       await this.$nextTick();
-      const projections = (this.wms_config.layers || []).map(({ crss }) => crss.map(crs => `EPSG:${crs.epsg}`).sort());
+      const config      = this.wms_config || {};
+      const projections = (config.layers || []).map(({ crss }) => crss.map(crs => `EPSG:${crs.epsg}`).sort());
       // Get layers that have current selected epsg projection
       this.layers = (null === this.wms_projection)
-        ? this.wms_config.layers
-        : this.wms_config.layers.filter((l,i) => projections[i].includes(this.wms_projection))
+        ? config.layers
+        : config.layers.filter((l,i) => projections[i].includes(this.wms_projection))
     },
 
     async layer_type(type, oldtype) {
@@ -639,8 +651,6 @@ export default {
           // check if WMS already added (by name)
           const data  = this.getLocalWMSData();
 
-          console.log(data, this);
-
           const found = this.wms_config && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l.name)));
 
           if (found) {
@@ -728,11 +738,12 @@ export default {
     },
 
     unloadWMS() {
-      this.error_message  = '';
+      this.error_message   = '';
       this.wms_config      = null;
-      this.wms_layers     = [];
-      this.name           = null;
-      this.loading        = false;
+      this.wms_layers      = [];
+      this.wms_styles      = [];
+      this.name            = null;
+      this.loading         = false;
     },
 
     /**
