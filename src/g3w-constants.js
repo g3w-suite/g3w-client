@@ -350,6 +350,9 @@ export const FONT_AWESOME_ICONS = {
   sort:             'fa fa-sort',
   /** @since 3.11.0 */
   copyright:        'fa fa-copyright',
+  /** @since 3.11.0 **/
+  "forward":        'fas fa-angle-double-right',
+  "backward":       'fas fa-angle-double-left'
 };
 
 /**
