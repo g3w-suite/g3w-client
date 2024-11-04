@@ -617,6 +617,8 @@ export default {
     /** @since 3.11.0 */
     add_new_wms_url_help: 'Cerca tra le connessioni salvate o aggiungi un nuovo server',
     /** @since 3.11.0 */
+    saved_connections: 'Connessioni salvate:',
+    /** @since 3.11.0 */
     label: "Etichetta",
     /** @since 3.11.0 */
     no_csv_field: 'Nessun campo valido',

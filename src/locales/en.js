@@ -618,6 +618,8 @@ export default {
     /** @since 3.11.0 */
     add_new_wms_url_help: 'Search through saved connections or add a new server',
     /** @since 3.11.0 */
+    saved_connections: 'Saved connections:',
+    /** @since 3.11.0 */
     label: "Label",
     /** @since 3.11.0 */
     no_csv_field: 'No valid fields',
