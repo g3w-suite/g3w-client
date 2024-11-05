@@ -416,7 +416,7 @@ export default {
           _layers.push(layer);
         }
         if (null !== layer.nodes && undefined !== layer.nodes) {
-          _layers = _layers.concat(this._traverseVisibleLayers(layer.nodes, _layers));
+          this._traverseVisibleLayers(layer.nodes, _layers);
         }
       }
       return _layers;
