@@ -1003,7 +1003,7 @@ class Layer extends G3WObject {
    * 
    * @fires unselectionall
    */
-  async setSelection(bool=false) {
+  async setSelection(bool = false) {
     this.state.selection.active = bool;
 
     // skip when selection is active
