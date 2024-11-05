@@ -198,7 +198,7 @@ const browserify_plugin = (pluginName, watch = true) => {
   .on('log', (info) => watch && !production && gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info));
 
   // remove source map file
-  del([`${src}/plugin.js.map`]);
+  del([`${src}/plugin.js.map`], {force: true});
 
   const rebundle = () => {
     const version = get_version(pluginName);
