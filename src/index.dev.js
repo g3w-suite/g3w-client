@@ -111,6 +111,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
       el = '#modal-addlayer ' + el;
       await waitFor(() => q(el), 1000);
       q(el).value = value;
+      q(el).dispatchEvent(new Event('input'));
       q(el).dispatchEvent(new Event('change'));
     }
     const setFile = async (file, epsg) => {
@@ -131,6 +132,26 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
 
       window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
     }
+    const setWms = async (wms) => {
+      setTimeout(async () => {
+        await setOption('#add-layer-type', 'wms');
+        await setOption('#add_wms_url', wms.url);
+        await setOption('#add_wms_name', wms.id);
+        await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
+        q('.modal-content .btn.btn-success').click();
+        await waitFor(() => q('#g3w-wms-layers'), 5000);
+        $('#g3w-wms-layers').select2('open');
+        $('#select2-g3w-wms-layers-results li:nth-child(1)').trigger('mouseup');
+        await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+        await setOption('#position-layer', 'bottom');
+        await setOption('#g3w-wms-visible', false);
+        await setOption('#g3w-wms-opacity', 0.85);
+        const wms_name = q('#g3w-wms-layer-name').value;
+        await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+        q('.modal-footer .btn.btn-success').click();
+        window.addEventListener("beforeunload", () => { map.getLayerByName(wms_name) && map.removeExternalLayer(wms_name); });
+    });
+    };
 
     await setFile(
       new File([`Name,X,Y,
@@ -169,6 +190,11 @@ C,"POINT (11.2474811 43.7910709)"`],
     //   { type: 'application/x-zip-compressed' }),
     //   'EPSG:4326'
     // );
+
+    await setWms({
+      id: 'ORTOFOTO',
+      url: 'https://www502.regione.toscana.it/wmsraster/com.rt.wms.RTmap/wms?map=wmsofc&map_resolution=91&language=ita&'
+    });
 
   });
 

@@ -60,9 +60,9 @@
 
             <!-- WMS URL -->
             <fieldset class = "form-group" :disabled="wms_config">
-              <label for = "add_custom_url_wms_input">URL</label>
+              <label for = "add_wms_url">URL</label>
               <input
-                id           = "add_custom_url_wms_input"
+                id           = "add_wms_url"
                 v-model.trim = "url"
                 class        = "form-control"
                 placeholder  = "http://example.org/?&service=WMS&request=GetCapabilities"
@@ -78,12 +78,12 @@
 
             <!-- WMS NAME -->
             <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
-              <label for = "add_custom_name_url_wms_input" title = "required">
+              <label for = "add_wms_name" title = "required">
                 <span v-t = "'sidebar.wms.panel.label.name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
               </label>
               <input
-                id           = "add_custom_name_url_wms_input"
+                id           = "add_wms_name"
                 v-model.trim = "id"
                 class        = "form-control"
                 required
@@ -99,11 +99,12 @@
               :disabled           = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success"
-            ><b :class = "$fa('plus-square')"></b> <span v-t="'connect_to_wms'"></span></button>
+            ><i :class = "$fa('plus-square')"></i> <span v-t="'connect_to_wms'"></span></button>
 
             <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
             <div v-if="!wms_config" class="form-group">
               <hr>
+              <p v-if="wms_urls.length" style="text-align: center; font-weight: bold;" v-t="'saved_connections'"></p>
               <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
                   <b @click = "fetchWMS(wms.url)"    :title = "$t('connect_to_wms')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
@@ -155,6 +156,33 @@
                   <option :value = "'top'"    v-t = "'layer_position.top'"></option>
                   <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
                 </select>
+              </div>
+
+              <!-- LAYER VISIBILITY -->
+              <select id = "g3w-wms-visible" v-model = "wms_visible" hidden>
+                <option :value="false"></option>
+                <option :value="true"></option>
+              </select>
+
+              <!-- LAYER OPACITY -->
+              <div class = "form-group">
+                <label for = "g3w-wms-opacity" v-t = "'catalog_items.contextmenu.layer_opacity'"></label>
+                <input
+                  id      = "g3w-wms-opacity"
+                  type    = "range"
+                  v-model = "wms_opacity"
+                  min     = "0"
+                  max     = "1"
+                  step    = "0.01"
+                  list    = "wms-opacity-markers"
+                >
+                <datalist id="wms-opacity-markers" style="  display: flex; justify-content: space-between;">
+                  <option value="0">0</option>
+                  <option value="0.25">0.25</option>
+                  <option value="0.50">0.50</option>
+                  <option value="0.75">0.75</option>
+                  <option value="1">1</option>
+                </datalist>
               </div>
 
               <!-- NAME OF LAYER TO SAVE -->
@@ -408,6 +436,8 @@ export default {
       wms_projection:   null, // choose epsg project
       wms_styles:       [],   // selected layers styles
       wms_layers:       [],   // selected layers
+      wms_visible:      true,
+      wms_opacity:      1,
       url:              null,
       id:               null,
       olLayer:          null,
@@ -657,14 +687,16 @@ export default {
             await this.fetchWMS(this.url);
           }
 
+          console.log(this.wms_visible);
+
           const config = {
             url:      this.url,
             name,
             layers:   this.wms_layers.map(l => l.name),
             epsg:     this.wms_projection,
             position: this.position,
-            visible:  true,
-            opacity:  1,
+            visible:  this.wms_visible,
+            opacity:  +this.wms_opacity,
           };
 
           data.wms[this.url] = data.wms[this.url] || [];
@@ -738,12 +770,18 @@ export default {
     },
 
     unloadWMS() {
+      let url              = this.url;
+      this.url             = '';
       this.error_message   = '';
       this.wms_config      = null;
       this.wms_layers      = [];
+      this.wms_opacity     = 1;
+      this.wms_visible     = true;
       this.wms_styles      = [];
       this.name            = null;
       this.loading         = false;
+      // HOTFIX: for wms name not showed when unloading server connection
+      setTimeout(() => this.url = url);
     },
 
     /**
@@ -823,7 +861,6 @@ export default {
     async fetchWMS(url) {
       this.loading = true;
       try {
-        this.loading = false;
         const config = await XHR.post({
           url:         `${window.initConfig.interfaceowsurl}`,
           contentType: 'application/json',
@@ -876,17 +913,16 @@ export default {
      */
     deleteWMS(name) {
       const data = this.getLocalWMSData();
-      Object.keys(data.wms).find(url => {
+      Object.keys(data.wms || {}).forEach(url => {
         const i = data.wms[url].findIndex(w => w.name == name);
-        /** @TODO add description */
-        if (-1 !== i) {
+        // remove WMS entry
+        if (i >= 0) {
           data.wms[url].splice(i, 1);
         }
-        /** @TODO add description */
-        if (-1 !== i && 0 == data.wms[url].length) {
+        // remove empty groups
+        if (!data.wms[url].length) {
           delete data.wms[url];
         }
-        return true;
       });
       this.updateLocalWMSData(data);
     },
@@ -959,8 +995,6 @@ export default {
     $('#modal-addlayer').modal('hide');
     $('#modal-addlayer').on('hide.bs.modal',  () => {
       this.layer_type = undefined;
-      this.url        = null;
-      this.id         = null;
       this.unloadFile();
       this.unloadWMS();
     });
@@ -1029,7 +1063,7 @@ export default {
     cursor: pointer;
     inset: 0;
   }
-  #add_custom_url_wms_input::placeholder {
+  #add_wms_url::placeholder {
     font-size: 85%;
     opacity: .5;
   }
