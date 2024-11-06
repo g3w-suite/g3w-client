@@ -416,6 +416,13 @@ export const SELECTION = {
   EXCLUDE: '__EXCLUDE__'
 };
 
+/**
+ * @since 3.11.0
+ * Page length for pagination
+ * @type {number[]}
+ */
+export const PAGELENGTHS = [5, 25, 50, 100];
+
 export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
@@ -434,4 +441,5 @@ export default {
   SPATIAL_METHODS,
   TIMEOUT,
   VIEWPORT,
+  PAGELENGTHS,
 };
