@@ -462,7 +462,9 @@
 
                 </section>
                 <section v-if ="!layer.loading" id = "pagination-buttons">
-                  <span style = "font-size: 1em;">{{ layer.features.length }} - {{ state.query.pagination.counts[index] }}</span>
+                  <span style = "font-size: 1em;">
+                    {{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }}
+                  </span>
                   <!-- BACKWARD BUTTON -->
                   <button
                     v-if        =  "state.query.pagination.counts[index] > layer.features.length"
@@ -948,6 +950,15 @@
           console.warn(e);
         }
         this.state.layers[index].loading = false;
+      },
+      /**
+       * @since 3.11.0
+       * get current pagination size
+        * @param index
+       * @return {*}
+       */
+      getCurrentPagSize(index) {
+        return this.state.query.pagination.getData.params[index].page_size;
       }
 
     },
