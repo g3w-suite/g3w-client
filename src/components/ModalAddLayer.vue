@@ -687,8 +687,6 @@ export default {
             await this.fetchWMS(this.url);
           }
 
-          console.log(this.wms_visible);
-
           const config = {
             url:      this.url,
             name,
@@ -846,6 +844,10 @@ export default {
         olLayer.getSource().once('imageloadend', res);
         olLayer.getSource().once('imageloaderror', rej);
         GUI.getService('map').addExternalLayer(wmslayer, { position, opacity, visible });
+        // HOTFIX: for hidden wms layers
+        if (!this.wms_visible || !this.wms_opacity) {
+          setTimeout(res, 1000);
+        }
       });
     },
 

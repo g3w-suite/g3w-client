@@ -457,7 +457,7 @@
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
 
   const { t }                        = require('g3w-i18n');
-  const shpwrite                     = require('shp-write');
+  const shpwrite                     = require('@mapbox/shp-write');
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
@@ -781,10 +781,11 @@
           });
         }
         const name = layer.name.split(`.${layer.type}`)[0];
-        shpwrite.download(
+        const blob = await shpwrite.zip(
           // GeoJSONFile
           (new ol.format.GeoJSON()).writeFeaturesObject(features, { featureProjection: 'EPSG:4326' }),
           {
+            outputType: "blob",
             folder:         name,
             types: {
               point:        name,
@@ -795,8 +796,10 @@
               polyline:     name,
               multiline:    name,
             }
-          }
-        );
+        });
+
+        saveAs(blob, name);
+
         await this.$nextTick();
         ApplicationState.download = false;
         this.closeMenu();

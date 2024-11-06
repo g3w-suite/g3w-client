@@ -17,48 +17,6 @@ import './g3w-globals';
 // print some debug info
 window.g3wsdk.info();
 
-// dev layers: "DBTM" and "piazza-leopoldo.kml" 
-g3wsdk.core.ApplicationService.once('initconfig', () => {
-
-  const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
-
-  // DBTM Multiscala
-  const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
-  const wms = JSON.parse(localStorage.getItem('externalwms') || '{}');
-  wms[pid]  = wms[pid] || { urls: [], wms: {} };
-  wms[pid]  = {
-    urls: wms[pid].urls.length ? wms[pid].urls : [{ url, id: "DBTM" }],
-    wms: Object.keys(wms[pid].wms).length ? wms[pid].wms : { [url]: [{
-      url,
-      "name":     "DBTM",
-      "layers":   [ "DBTM_DataBaseTopograficoMultiscala" ],
-      "epsg":     "EPSG:25832",
-      "position": "bottom",
-      "visible":  false,
-      "opacity":  1
-    }]}
-  };
-  localStorage.setItem('externalwms', JSON.stringify(wms));
-
-  // Piazza Leopoldo
-  localforage.getItem('externalLayers').then(externalLayers => {
-    externalLayers  = externalLayers || {};
-    externalLayers["piazza-leopoldo.kml"] = externalLayers["piazza-leopoldo.kml"] || {
-      "features": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1252005.710667936,5433256.404732778,0],[1251977.6609369165,5433254.067255179,0],[1251945.5206201253,5433223.680046592,0],[1251947.8580977095,5433192.124099195,0],[1251992.2701718165,5433153.555719045,0],[1252019.7355334398,5433136.609006568,0],[1252068.822562715,5433129.596573813,0],[1252109.14405105,5433141.86833112,0],[1252124.9220247425,5433158.815043615,0],[1252123.1689165544,5433194.461576776,0],[1252103.8847264862,5433224.8487853855,0],[1252054.213327815,5433247.639191819,0],[1252005.710667936,5433256.404732778,0]]]},\"properties\":{\"name\":\"Piazza Leopoldo\"},\"id\":0}]}",
-      "options": {
-          "crs":      "EPSG:3857",
-          "type":     "kml",
-          "position": "top",
-          "color":    { "rgba": { "r": 255, "g": 0, "b": 0, "a": 1 } },
-          "field":    "name",
-          "opacity":  1,
-          "visible":  true
-      }
-    };
-    localforage.setItem('externalLayers', externalLayers);
-  });
-});
-
 // custom header links
 g3wsdk.core.ApplicationService.once('initconfig', () => {
   initConfig.header_custom_links = [
@@ -97,106 +55,169 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   ];
 });
 
-  // dev layers: "points-xy.csv" and "points-wkt.csv"
-  g3wsdk.gui.GUI.once('ready', async () => {
+// dev layers (from local storage)
+g3wsdk.core.ApplicationService.once('initconfig', () => {
 
-    await waitFor(() => GUI.getService('map'), 1000);
-    await GUI.getService('map').isReady();
+  const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
 
-    // $('#modal-addlayer').modal('show');
+  // DBTM Multiscala
+  const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
+  const wms = JSON.parse(localStorage.getItem('externalwms') || '{}');
+  wms[pid]  = wms[pid] || { urls: [], wms: {} };
+  wms[pid]  = {
+    urls: wms[pid].urls.length ? wms[pid].urls : [{ url, id: "DBTM" }],
+    wms: Object.keys(wms[pid].wms).length ? wms[pid].wms : { [url]: [{
+      url,
+      "name":     "DBTM",
+      "layers":   [ "DBTM_DataBaseTopograficoMultiscala" ],
+      "epsg":     "EPSG:25832",
+      "position": "bottom",
+      "visible":  false,
+      "opacity":  1
+    }]}
+  };
+  localStorage.setItem('externalwms', JSON.stringify(wms));
 
-    const map = GUI.getService('map');
-    const q = document.querySelector.bind(document);
-    const setOption = async (el, value) => {
-      el = '#modal-addlayer ' + el;
-      await waitFor(() => q(el), 1000);
-      q(el).value = value;
-      q(el).dispatchEvent(new Event('input'));
-      q(el).dispatchEvent(new Event('change'));
-    }
-    const setFile = async (file, epsg) => {
-      if (map.getLayerByName(file.name)) {
-        return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+  // piazza-leopoldo.kml
+  localforage.getItem('externalLayers').then(externalLayers => {
+    externalLayers  = externalLayers || {};
+    externalLayers["piazza-leopoldo.kml"] = externalLayers["piazza-leopoldo.kml"] || {
+      "features": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1252005.710667936,5433256.404732778,0],[1251977.6609369165,5433254.067255179,0],[1251945.5206201253,5433223.680046592,0],[1251947.8580977095,5433192.124099195,0],[1251992.2701718165,5433153.555719045,0],[1252019.7355334398,5433136.609006568,0],[1252068.822562715,5433129.596573813,0],[1252109.14405105,5433141.86833112,0],[1252124.9220247425,5433158.815043615,0],[1252123.1689165544,5433194.461576776,0],[1252103.8847264862,5433224.8487853855,0],[1252054.213327815,5433247.639191819,0],[1252005.710667936,5433256.404732778,0]]]},\"properties\":{\"name\":\"Piazza Leopoldo\"},\"id\":0}]}",
+      "options": {
+          "crs":      "EPSG:3857",
+          "type":     "kml",
+          "position": "top",
+          "color":    { "rgba": { "r": 255, "g": 0, "b": 0, "a": 1 } },
+          "field":    "name",
+          "opacity":  1,
+          "visible":  true
       }
-      setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
-      await setOption('#add-layer-type', 'file');
-      await setOption('#projection-layer', epsg);
-      await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
-      const data = new DataTransfer();
-      data.items.add(file);
-      q('#addcustomlayer input[type="file"]').files = data.files;
-      q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
-
-      await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
-      q('.modal-footer .btn.btn-success').click();
-
-      window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
-    }
-    const setWms = async (wms) => {
-      setTimeout(async () => {
-        await setOption('#add-layer-type', 'wms');
-        await setOption('#add_wms_url', wms.url);
-        await setOption('#add_wms_name', wms.id);
-        await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
-        q('.modal-content .btn.btn-success').click();
-        await waitFor(() => q('#g3w-wms-layers'), 5000);
-        $('#g3w-wms-layers').select2('open');
-        $('#select2-g3w-wms-layers-results li:nth-child(1)').trigger('mouseup');
-        await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
-        await setOption('#position-layer', 'bottom');
-        await setOption('#g3w-wms-visible', false);
-        await setOption('#g3w-wms-opacity', 0.85);
-        const wms_name = q('#g3w-wms-layer-name').value;
-        await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
-        q('.modal-footer .btn.btn-success').click();
-        window.addEventListener("beforeunload", () => { map.getLayerByName(wms_name) && map.removeExternalLayer(wms_name); });
-    });
     };
+    localforage.setItem('externalLayers', externalLayers);
+  });
+});
 
-    await setFile(
-      new File([`Name,X,Y,
+// dev layers (modal-addlayer)
+g3wsdk.gui.GUI.once('ready', async () => {
+
+  await waitFor(() => GUI.getService('map'), 1000);
+  await GUI.getService('map').isReady();
+
+  // $('#modal-addlayer').modal('show');
+
+  const map = GUI.getService('map');
+  const q = document.querySelector.bind(document);
+
+  // set modal options
+  const setOption = async (el, value) => {
+    el = '#modal-addlayer ' + el;
+    await waitFor(() => q(el), 1000);
+    q(el).value = value;
+    q(el).dispatchEvent(new Event('input'));
+    q(el).dispatchEvent(new Event('change'));
+  }
+
+  // add file layer
+  const setFile = async (file, epsg) => {
+    await waitFor(() => !q('#add-layer-type').value, 5000);
+    if (map.getLayerByName(file.name)) {
+      return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+    }
+    setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+    await setOption('#add-layer-type', 'file');
+    await setOption('#projection-layer', epsg);
+    await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
+    const data = new DataTransfer();
+    data.items.add(file);
+    q('#addcustomlayer input[type="file"]').files = data.files;
+    q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
+
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    q('.modal-footer .btn.btn-success').click();
+
+    window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
+  }
+
+  // add wms layer
+  const setWms = async (wms) => {
+    await waitFor(() => !q('#add-layer-type').value, 5000);
+    await setOption('#add-layer-type', 'wms');
+    await setOption('#add_wms_url', wms.url);
+    await setOption('#add_wms_name', wms.id);
+    await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
+    q('.modal-content .btn.btn-success').click();
+    await waitFor(() => q('#g3w-wms-layers'), 5000);
+    $('#g3w-wms-layers').select2('open');
+    $('#select2-g3w-wms-layers-results li:nth-child(1)').trigger('mouseup');
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    await setOption('#position-layer', 'bottom');
+    await setOption('#g3w-wms-visible', false);
+    await setOption('#g3w-wms-opacity', 0.85);
+    const wms_name = q('#g3w-wms-layer-name').value;
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    q('.modal-footer .btn.btn-success').click();
+    window.addEventListener("beforeunload", () => { map.getLayerByName(wms_name) && map.removeExternalLayer(wms_name); });
+  };
+
+  // export layer to zip
+  const zipFile = async name => {
+    await waitFor(async () => name in (await localforage.getItem('externalLayers')), 1000);
+    const externalLayers = await localforage.getItem('externalLayers');
+    const shpwrite       = require('@mapbox/shp-write');
+    const blob           = await shpwrite.zip(
+      JSON.parse(externalLayers[name].features),
+      {
+        outputType:    "blob",
+        folder:         name,
+        types: {
+          point:        name,
+          mulipoint:    name,
+          polygon:      name,
+          multipolygon: name,
+          line:         name,
+          polyline:     name,
+          multiline:    name,
+        },
+      }
+    );
+    return new File([blob], name.replace('.kml', '.zip'), { type: 'application/zip' });
+  };
+
+  // points-xy.csv
+  await setFile(
+    new File([`Name,X,Y,
 A,11.2470052,43.7914696
 B,11.2472371,43.7912777
 C,11.2474811,43.7910709`],
-      'points-xy.csv',
-      { type: 'text/plain' }),
-      'EPSG:4326'
-    );
+    'points-xy.csv',
+    { type: 'text/plain' }),
+    'EPSG:4326'
+  );
 
-    // $('#modal-addlayer').modal('show');
-
-    await setFile(
-      new File([`Name,WKT,
+  // points-wkt.csv
+  await setFile(
+    new File([`Name,WKT,
 A,"POINT (11.2470052 43.7914696)"
 B,"POINT (11.2472371 43.7912777)"
 C,"POINT (11.2474811 43.7910709)"`],
-      'points-wkt.csv',
-      { type: 'text/plain' }),
-      'EPSG:4326'
-    );
+    'points-wkt.csv',
+    { type: 'text/plain' }),
+    'EPSG:4326'
+  );
 
-    /**
-     * @TODO
-     */
+  // piazza-leopoldo.zip
+  await setFile(
+    await zipFile('piazza-leopoldo.kml'),
+    'EPSG:4326'
+  );
 
-    // await waitFor(async () => 'piazza-leopoldo.kml' in (await localforage.getItem('externalLayers')), 1000);
-
-    // const externalLayers = await localforage.getItem('externalLayers');
-    // const shpwrite = require('shp-write');
-
-    // await setFile(
-    //   new File([shpwrite.zip(JSON.parse(externalLayers['piazza-leopoldo.kml'].features))],
-    //   'shapefile.zip',
-    //   { type: 'application/x-zip-compressed' }),
-    //   'EPSG:4326'
-    // );
-
-    await setWms({
-      id: 'ORTOFOTO',
-      url: 'https://www502.regione.toscana.it/wmsraster/com.rt.wms.RTmap/wms?map=wmsofc&map_resolution=91&language=ita&'
-    });
-
+  // ORTOFOTO
+  await setWms({
+    id: 'ORTOFOTO',
+    url: 'https://www502.regione.toscana.it/wmsraster/com.rt.wms.RTmap/wms?map=wmsofc&map_resolution=91&language=ita&'
   });
+
+});
 
 // run app (index.prod.js)
 require('./index.prod');
