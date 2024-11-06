@@ -449,7 +449,7 @@
               </div>
               <!-- PAGINATION -->
               <section
-                v-if       = "state.query.pagination"
+                v-if       = "state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading || (!state.query.autofilter && layer.filter.active)"
               >
