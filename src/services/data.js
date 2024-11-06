@@ -247,19 +247,25 @@ export default {
     autofilter: 0,
     //@since 3.11.0 pagination
     page,
-    page_size,
+    page_sizes,
   }) {
     const { layer, ...params } = options;
-    params.filter              = [].concat(params.filter); // check if filter is array
+    params.filter              = [].concat(params.filter); // check if filter is an array
+    params.page_size           = (params.page_sizes || [])[0]; //get page size
     //@since 3.11.0 count features returned by
-    const counts = [];
+    const counts     = [];
+    const page_sizes = []; //set pages based on count feature returned by server
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
-          if ( params.page_size)  { counts.push(value.count) }
+          if (params.page_sizes)  {
+            const max = params.page_sizes[params.page_sizes.length - 1];
+            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p <= value.count), value.count]);
+            counts.push(value.count);
+          }
           if (params.raw)                                         { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
         }),
@@ -269,9 +275,9 @@ export default {
         autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
         //@since 3.11.0 pagination
         pagination: params.page_size && {
-          pages:      params.page && counts.map(count => Math.round(count / params.page_size)), //set number of
-          current:    params.page && counts.map(() => params.page),
-          page_size:  params.page_size,
+          pages:       params.page && counts.map(count => Math.round(count / params.page_size)), //set number of pages
+          current:     params.page && counts.map(() => params.page), //current page
+          page_sizes,
           counts,
           getData: {
             params: params.filter.map(filter => ({ ...params, filter })),

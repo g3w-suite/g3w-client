@@ -148,7 +148,10 @@
 </template>
 
 <script>
-import { SELECTION }               from 'g3w-constants';
+import {
+  SELECTION,
+  PAGELENGTHS
+}                                  from 'g3w-constants';
 import Component                   from 'g3w-component';
 import ApplicationState            from 'store/application';
 import Field                       from 'components/FieldG3W.vue';
@@ -162,10 +165,6 @@ import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 const { t }                        = require('g3w-i18n');
-
-
-//Supported page lengths
-const PAGELENGTHS = [10, 25, 50, 100];
 
 function _createFeatureForSelection(f) {
   return {

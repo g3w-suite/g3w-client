@@ -2158,7 +2158,7 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Return extanla layers added to map
+   * Return external layers added to map
    * @returns {[]|*[]|T[]}
    */
   getExternalLayers() {
@@ -2374,13 +2374,13 @@ class MapService extends G3WObject {
     this._layers.external.push(layer);
 
     if ('vector' === type) {
-      this._layers.external_vector.push(externalLayer);
+      this._layers.external_vector.push(layer);
     }
 
     // register and dispatch layer add event
     if ('wms' === type) {
-      this._layers.external_wms.push(externalLayer);
-      this.registerMapLayerListeners(externalLayer, false);
+      this._layers.external_wms.push(layer);
+      this.registerMapLayerListeners(layer, false);
     }
 
     if (vectorLayer && false !== options.persistent) {

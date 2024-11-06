@@ -482,7 +482,7 @@
     watch: {
       //@since 3.11.0 Set state auto filter to a search result
       autofilter(bool = false) {
-        this.state.autofilter = Number(bool); //0/1 instead true false
+        this.state.autofilter.value = Number(bool); //0/1 instead true false
       }
     },
 

@@ -3,7 +3,10 @@
  * @since 3.10.0
  */
 
-import { SEARCH_ALLVALUE }            from 'g3w-constants';
+import {
+  SEARCH_ALLVALUE,
+  PAGELENGTHS
+}                                     from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
 import Panel                          from 'g3w-panel';
 import ApplicationState               from 'store/application'
@@ -71,7 +74,8 @@ export function SearchPanel(opts = {}, show = false) {
       /** keep a reference to initial search options (you shouldn't mutate them..) */
       options:   d.input.options,
     })),
-    autofilter:           0, //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
+    //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
+    autofilter:           { value: 0, filtertoken: null }, //value 0 no set, 1 set: filtertoken is related to filter tocken
   };
 
   // create search form structure 
@@ -165,9 +169,19 @@ async function doSearch({
 
   let data, parsed;
   //For pagination purpose
-  const page_size = 3;
+  const page_sizes = PAGELENGTHS;
 
   try {
+    //in the case of autofilter filtertoken set
+    if (state.autofilter.filtertoken) {
+      await Promise.allSettled(state.search_layers.map(l => {
+        l.clearSelectionFids();
+        return l.setSelection(false);
+      }));
+
+      state.autofilter.filtertoken = null;
+    }
+
     data = await DataRouterService.getData('search:features', {
       inputs: {
         layer:     state.search_layers,
@@ -179,9 +193,9 @@ async function doSearch({
         formatter: 1,
         feature_count,
         raw:        false, // in order to get a raw response
-        autofilter: Number(show && state.autofilter), //0/1 autofilter by server,
+        autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
         page: 1,
-        page_size,
+        page_sizes,
       },
       outputs: show && { title: state.title }
     });
@@ -222,7 +236,7 @@ async function doSearch({
           }),
           formatter: 1,
           feature_count,
-          autofilter: state.autofilter, //Boolean autofilter by server
+          autofilter: state.autofilter.value, //0/1 autofilter by server
           page: 1,
           page_size,
         },
@@ -241,13 +255,15 @@ async function doSearch({
   const result = parsed ? parsed : data;
 
   //In the case of autofilter, need to get filtertokern attribute from server response data and set to each layer
-  if (1 === state.autofilter && result) {
+  if (1 === state.autofilter.value && result) {
 
     (result.data || []).forEach(({ layer, filtertoken }) => {
       //if returned filtertoken, filter is apply on layer
       if (filtertoken) {
         layer.state.filter.active = true;
         layer.setFilterToken(filtertoken);
+        //set autofilter filter token
+        state.autofilter.filtertoken = filtertoken;
       }
     })
   }

@@ -588,20 +588,44 @@ export default new (class QueryResultsService extends G3WObject {
    * Load pagination data
    * @param index
    * @param page
+   * @param page_size
    * @param query
    */
-  async loadPaginationData(index, page, query) {
+  async loadPaginationData(index, page, page_size, query) {
+    if (page_size) {
+      this.state.query.pagination.getData.params[index].page_size = page_size;
+      this.state.query.pagination.pages[index]                    = Math.round(this.state.query.pagination.counts[index] / page_size);
+    } //set page size
     //get config from getData object set by pagination method
     const { layers = [], method, params } = this.state.query.pagination.getData;
+    const layer = layers[index];
+    //In the case of autofilter need to delete set filtertoken
+    if (this.state.query.autofilter) {
+      await layer.deleteFilterToken();
+      layer.hideOlSelectionFeatures();
+    }
     //get layer pagination data
-    const data = await layers[index][method]({ ...params[index], page });
+    const data = await layer[method]({ ...params[index], page });
+    if (this.state.query.autofilter) {
+      await layer.setFilterToken(data.data[0].filtertoken);
+      layer.state.filter.active    = true;
+      layer.state.selection.active = true;
+    }
     try {
       //set response data
       this.setQueryResponse({ ...data, query }, { add: false, update: true });
       //set the current page
       this.state.query.pagination.current[index] = page;
+      if (this.state.query.autofilter) {
+        //get selection action
+        const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
+        this.state.layers[index].features.forEach((_, i) => {
+          action.state.toggled[i] = true;
+        })
+      }
+
       //in the case of layer with geometry, zoom to features
-      if (this.state.layers[index]) {
+      if (this.state.layers[index].hasgeometry) {
         this.zoomToLayerFeaturesExtent(this.state.layers[index]);
       }
     } catch(e) {
@@ -661,7 +685,7 @@ export default new (class QueryResultsService extends G3WObject {
     const external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
     const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
     if (has_features) {
-      const features_ids = layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
+      const features_ids = replace ? [] : layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
       if (replace) {
@@ -1806,7 +1830,6 @@ export default new (class QueryResultsService extends G3WObject {
         f.selection.selected     = _action.state.toggled[i];
       });
     } else {
-      console.log('qui')
       _action.state.toggled[index] = !_action.state.toggled[index];
       feature.selection.selected   = _action.state.toggled[index];
     }
