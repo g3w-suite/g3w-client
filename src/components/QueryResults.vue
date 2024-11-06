@@ -462,7 +462,7 @@
 
                 </section>
                 <section v-if ="!layer.loading" id = "pagination-buttons">
-                  <span style = "font-size: 1.2em;">[{{state.query.pagination.counts[index]}}]</span>
+                  <span style = "font-size: 1em;">{{ layer.features.length }} - {{ state.query.pagination.counts[index] }}</span>
                   <!-- BACKWARD BUTTON -->
                   <button
                     v-if        =  "state.query.pagination.counts[index] > layer.features.length"
@@ -1012,6 +1012,7 @@
   justify-content: space-between;
   align-items: baseline;
   margin-top: 15px;
+  flex-wrap: wrap;
 }
 #g3w-queryresults-pagination button, #g3w-queryresults-pagination span {
   background-color: transparent;
