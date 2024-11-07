@@ -13,7 +13,11 @@
       class = "g3w-map hidemap"
     ></div>
 
-    <div :id = "target" class = "g3w-map">
+    <div :id = "target" class = "g3w-map" @drop.prevent="onDrop" @dragenter.prevent="onDrop" @dragleave.prevent="onDrop" @dragover.prevent>
+
+      <div class="drop-area" hidden>
+        Upload Files
+      </div>
 
       <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
       <div
@@ -132,6 +136,7 @@
 <script>
 import ApplicationState from 'store/application';
 import { copyUrl }      from 'utils/copyUrl';
+import { waitFor }      from 'utils/waitFor';
 
 export default {
 
@@ -169,6 +174,40 @@ export default {
   },
 
   methods: {
+
+    /**
+     * @since 3.11.0
+     */
+    onDrop(e) {
+      document.querySelector('.drop-area').toggleAttribute('hidden', 'dragenter' !== e.type);
+      if (e.dataTransfer.files && 'drop' === e.type) {
+        const map = GUI.getService('map');
+        const q = document.querySelector.bind(document);
+        // set modal options
+        const setOption = async (el, value) => {
+          el = '#modal-addlayer ' + el;
+          await waitFor(() => q(el), 1000);
+          q(el).value = value;
+          q(el).dispatchEvent(new Event('input'));
+          q(el).dispatchEvent(new Event('change'));
+        }
+        const setFile = async (file) => {
+          await waitFor(() => !q('#add-layer-type').value, 5000);
+          if (map.getLayerByName(file.name)) {
+            return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+          }
+          setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+          await setOption('#add-layer-type', 'file');
+          await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
+          const data = new DataTransfer();
+          data.items.add(file);
+          q('#addcustomlayer input[type="file"]').files = data.files;
+          q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
+          $('#modal-addlayer').modal('show');
+        }
+        setFile(e.dataTransfer.files[0]);
+      }
+    },
 
     showHideControls() {
       this.service.getMapControls().forEach(c => "scaleline" !== c.type && c.control.showHide());
@@ -301,5 +340,32 @@ export default {
 }
 #map_footer_right {
   flex-shrink: 0;
+}
+
+.drop-area:not([hidden]) {
+  display: flex;
+}
+
+.drop-area {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  font-size: 4em;
+  position: absolute;
+  z-index: 100;
+  background-color: #222d32;
+  pointer-events: none;
+}
+
+.drop-area::before {
+  border: 5px dashed #fff;
+  content: "";
+  bottom: 60px;
+  left: 60px;
+  position: absolute;
+  right: 60px;
+  top: 60px;
 }
 </style>
