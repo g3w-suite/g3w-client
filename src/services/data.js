@@ -262,8 +262,11 @@ export default {
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
           if (params.page_sizes)  {
-            const max = params.page_sizes[params.page_sizes.length - 1];
+            //get max number of elements per page
+            const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
+            //Check if count (total number of elements of search is more o less than max)
             page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p <= value.count), value.count]);
+            //add a count element on counts array
             counts.push(value.count);
           }
           if (params.raw)                                         { return { data: value }; }
@@ -271,14 +274,15 @@ export default {
         }),
       query: {
         type:       'search',
-        search:     params.filter,
+        search:     params.filter, //filter search (array of filter)
         autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
         //@since 3.11.0 pagination
         pagination: params.page_size && {
           pages:       params.page && counts.map(count => Math.round(count / params.page_size)), //set number of pages
           current:     params.page && counts.map(() => params.page), //current page
-          page_sizes,
+          page_sizes,  //Array contains a number of features that want get with pagination
           counts,
+          //Object contains info for do another request by another part of code
           getData: {
             params: params.filter.map(filter => ({ ...params, filter })),
             method: 'searchFeatures',
