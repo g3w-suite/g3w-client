@@ -2159,10 +2159,11 @@ class MapService extends G3WObject {
 
   /**
    * Return external layers added to map
+   * @param {String} type 'vector' or 'wms' @since 3.11.0
    * @returns {[]|*[]|T[]}
    */
-  getExternalLayers() {
-    return this._layers.external;
+  getExternalLayers(type) {
+    return undefined === type ? this._layers.external : this._layers.external.filter(l => type === l._type);
   }
 
   /**
