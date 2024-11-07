@@ -131,10 +131,8 @@ g3wsdk.gui.GUI.once('ready', async () => {
     data.items.add(file);
     q('#addcustomlayer input[type="file"]').files = data.files;
     q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
-
     await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
     q('.modal-footer .btn.btn-success').click();
-
     window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
   }
 

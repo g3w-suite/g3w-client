@@ -10,143 +10,144 @@
       <form
         v-if  = "state.print.length"
         class = "g3w-search-form form-horizonal"
+        style = "border-radius: 0 0 3px 3px; padding: 10px;"
       >
 
-        <div class = "box-body">
+        <bar-loader :loading = "state.loading" />
 
-          <transition :duration = "500" name = "fade">
-            <bar-loader :loading = "state.loading" />
-          </transition>
+        <fieldset style="border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: rgb(56, 66, 70); color: rgb(255, 255, 255); user-select:none">
+          <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; text-align: center; margin: 0px -14px; user-select: none;">i</legend>
+          <details>
+            <summary style="cursor: pointer;display: flex;justify-content: space-between;width: 100%;" v-t-tooltip:right.create = "'show_more'">
+              <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'sdk.print.help'"></span>
+              <i class="far fa-eye"></i>
+            </summary>
+            <hr style="margin: 10px 0;border-style: dotted;">
+            <div style="white-space: wrap; line-height: 25px;" v-t-html="'sdk.print.help_details'"></div>
+          </details>
+        </fieldset>
 
-          <helpdiv message = 'sdk.print.help' />
+        <!-- PRINT TEMPLATE -->
+        <label for = "templates" v-t = "'sdk.print.template'"></label>
+        <select
+          id             = "templates"
+          class          = "form-control"
+          v-select2      = "'state.template'"
+          :select2_value = "state.template"
+          :style         = "{ marginBottom: this.state.atlas && '10px' }"
+          @change        = "changeTemplate"
+        >
+          <option v-for = "print in state.print" :value = "print.name">{{ print.name }}</option>
+        </select>
 
-          <!-- PRINT TEMPLATE -->
-          <label for = "templates" v-t = "'sdk.print.template'"></label>
+        <template v-if = "!state.atlas">
+
+          <!-- PRINT SCALE -->
+          <label for = "scale" v-t = "'sdk.print.scale'"></label>
           <select
-            id             = "templates"
+            id             = "scale"
             class          = "form-control"
-            v-select2      = "'state.template'"
-            :select2_value = "state.template"
-            :style         = "{ marginBottom: this.state.atlas && '10px' }"
-            @change        = "changeTemplate"
+            v-disabled     = "!has_maps"
+            v-select2      = "'state.scale'"
+            :select2_value = "state.scale"
+            :createTag     = "true"
+            @change        = "changeScale"
+            ref            = "scales"
           >
-            <option v-for = "print in state.print" :value = "print.name">{{ print.name }}</option>
+            <option v-for = "scale in state.scales" :value = "scale.value">{{ scale.label }}</option>
           </select>
 
-          <template v-if = "!state.atlas">
+          <!-- PRINT DPI -->
+          <label for = "dpi">dpi</label>
+          <select
+            id             = "dpi"
+            class          = "form-control"
+            v-select2      = "'state.dpi'"
+            :select2_value = "state.dpi"
+            @change        = "changeDpi"
+            :createTag     = "true"
+            ref            = "dpi"
+          >
+            <option v-for = "dpi in state.dpis">{{ dpi }}</option>
+          </select>
 
-            <!-- PRINT SCALE -->
-            <label for = "scale" v-t = "'sdk.print.scale'"></label>
-            <select
-              id             = "scale"
-              class          = "form-control"
-              v-disabled     = "!has_maps"
-              v-select2      = "'state.scale'"
-              :select2_value = "state.scale"
-              :createTag     = "true"
-              @change        = "changeScale"
-              ref            = "scales"
-            >
-              <option v-for = "scale in state.scales" :value = "scale.value">{{ scale.label }}</option>
-            </select>
+          <!-- PRINT ROTATION -->
+          <label for = "rotation" v-t = "'sdk.print.rotation'"></label>
+          <input
+            id         = "rotation"
+            class      = "form-control"
+            v-disabled = "!has_maps"
+            min        = "-360"
+            max        = "360"
+            @input     = "changeRotation"
+            v-model    = "state.rotation"
+            type       = "number"
+          />
 
-            <!-- PRINT DPI -->
-            <label for = "dpi">dpi</label>
-            <select
-              id             = "dpi"
-              class          = "form-control"
-              v-select2      = "'state.dpi'"
-              :select2_value = "state.dpi"
-              @change        = "changeDpi"
-              :createTag     = "true"
-              ref            = "dpi"
-            >
-              <option v-for = "dpi in state.dpis">{{ dpi }}</option>
-            </select>
+          <!-- PRINT FORMAT -->
+          <label for = "format" v-t = "'sdk.print.format'"></label>
+          <select
+            id             = "format"
+            class          = "form-control"
+            v-select2      = "'state.format'"
+            :select2_value = "state.format"
+          >
+            <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
+          </select>
 
-            <!-- PRINT ROTATION -->
-            <label for = "rotation" v-t = "'sdk.print.rotation'"></label>
-            <input
-              id         = "rotation"
-              class      = "form-control"
-              v-disabled = "!has_maps"
-              min        = "-360"
-              max        = "360"
-              @input     = "changeRotation"
-              v-model    = "state.rotation"
-              type       = "number"
-            />
+        </template>
 
-            <!-- PRINT FORMAT -->
-            <label for = "format" v-t = "'sdk.print.format'"></label>
-            <select
-              id             = "format"
-              class          = "form-control"
-              v-select2      = "'state.format'"
-              :select2_value = "state.format"
-            >
-              <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
-            </select>
-
+        <!-- PRINT ATLAS -->
+        <div
+          v-if  = "state.atlas"
+          class = "form-group"
+          style = "width: 100%;"
+          ref   = "print_atlas"
+        >
+          <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
+          <template v-if = "has_autocomplete">
+            <label  for = "print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
+            <select id = "print_atlas_autocomplete" :name = "state.atlas.field_name" class = "form-control"></select>
           </template>
-
-          <!-- PRINT ATLAS -->
-          <div
-            v-if  = "state.atlas"
-            class = "form-group"
-            style = "width: 100%;"
-            ref   = "print_atlas"
-          >
-            <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
-            <template v-if = "has_autocomplete">
-              <label  for = "print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
-              <select id = "print_atlas_autocomplete" :name = "state.atlas.field_name" class = "form-control"></select>
-            </template>
-            <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
-            <template v-else>
-              <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
-              <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
-              <div id = "fid-print-atals-instruction">
-                <div id = "fids_intruction"      v-t = "'sdk.print.fids_instruction'"></div>
-                <div id = "fids_examples_values" v-t = "'sdk.print.fids_example'"></div>
-              </div>
-            </template>
-          </div>
-
-          <div
-            v-if  = "state.labels && state.labels.length > 0"
-            class = "print-labels-content"
-          >
-            <span class = "skin-color" v-t = "'sdk.print.labels'"></span>
-            <div class = "labels-input-content">
-              <span
-                v-for = "label in state.labels"
-                :key  = "label.id"
-              >
-                <label :for = "`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
-                <input
-                  :id     = "`g3w_label_id_input_${label.id}`"
-                  class   = "form-control"
-                  v-model = "label.text"
-                />
-              </span>
+          <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
+          <template v-else>
+            <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
+            <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
+            <div id = "fid-print-atals-instruction">
+              <div id = "fids_intruction"      v-t = "'sdk.print.fids_instruction'"></div>
+              <div id = "fids_examples_values" v-t = "'sdk.print.fids_example'"></div>
             </div>
+          </template>
+        </div>
+
+        <div
+          v-if  = "state.labels && state.labels.length > 0"
+          class = "print-labels-content"
+        >
+          <b class = "skin-color" v-t = "'sdk.print.labels'"></b>
+          <div class = "labels-input-content">
+            <span
+              v-for = "label in state.labels"
+              :key  = "label.id"
+            >
+              <label :for = "`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
+              <input
+                :id     = "`g3w_label_id_input_${label.id}`"
+                class   = "form-control"
+                v-model = "label.text"
+              />
+            </span>
           </div>
-
         </div>
 
-        <div class = "box-footer">
-          <span>
-            <button
-              id                  = "printbutton"
-              class               = "sidebar-button-run btn"
-              v-disabled          = "disabled"
-              v-download
-              v-t                 = "'create_print'"
-              @click.stop.prevent = "print"
-            ></button>
-          </span>
-        </div>
+        <button
+          id                  = "printbutton"
+          class               = "sidebar-button-run btn"
+          v-disabled          = "disabled"
+          v-download
+          v-t                 = "'create_print'"
+          @click.stop.prevent = "print"
+        ></button>
 
       </form>
 
@@ -489,7 +490,6 @@ export default {
           const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
           const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
           const url       = store.getWmsUrl();
-          const mime_type = ({ pdf: 'application/pdf', jpg: 'image/jpeg', svg: 'image/svg' })[this.state.format] || this.state.format;
           const params    = layers.length && new URLSearchParams({
             SERVICE:       'WMS',
             VERSION:       '1.3.0',
@@ -844,15 +844,17 @@ export default {
 #print.treeview-menu .select2.select2-container {
   display: block;
 }
+details[open] .fa-eye {
+  display: none;
+}
 </style>
 
 <style scoped>
 .print-labels-content {
-  margin-top: 5px;
+  margin: 15px 0;
   color: white;
 }
 .print-labels-content > span.skin-color {
-  font-weight: bold;
   font-size: 1.1em;
   display: block;
   border-bottom: 2px solid #fff;
@@ -865,13 +867,11 @@ export default {
 label {
   color: #fff;
 }
-.box-footer {
-  background-color: transparent;
-}
 #printbutton {
   width:100%;
   font-weight: bold;
   background-color: var(--skin-color);
+  margin: 15px 0;
 }
 #fid-print-atals-instruction {
   margin-top: 5px;
@@ -883,5 +883,8 @@ label {
 #fids_examples_values {
   margin-top: 3px;
   font-weight: bold;
+}
+.g3w-search-form > label:not(:nth-child(1)) {
+  margin-top: 15px;
 }
 </style>

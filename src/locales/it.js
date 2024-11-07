@@ -76,7 +76,13 @@ export default {
         download_image: "Scarica Immagine",
         fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
         fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
-        help: "I livelli esportati sono definiti dall'amministratore"
+        help: "I livelli esportati sono definiti dall'amministratore",
+        help_details: `<p>Se non vedi qualche livello nel file di stampa:</p>
+          <ol style="padding-left: 25px">
+            <li>prova ancora usando un template diverso</li>
+            <li>prova a cambiare il livello di zoom</li>
+            <li>controlla l'origine (es. server WMS esterno)</li>
+          </ol>`,
       },
       querybuilder: {
         title: 'Ricerca avanzata',
@@ -622,5 +628,7 @@ export default {
     label: "Etichetta",
     /** @since 3.11.0 */
     no_csv_field: 'Nessun campo valido',
+    /** @since 3.11.0 */
+    show_more: 'Mostra di più',
   },
 };
