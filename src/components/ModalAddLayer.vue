@@ -268,7 +268,7 @@
             </a>
 
             <!-- LAYER PROJECTION -->
-            <fieldset class = "form-group" :disabled = "layer_data || ['kmz', 'zip'].includes(file_type)">
+            <fieldset class = "form-group" :disabled = "layer_data || ['kml','kmz'].includes(file_type)">
               <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
                 <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
@@ -569,7 +569,7 @@ export default {
         this.file_type     = input.files[0].name.split('.').at(-1).toLowerCase();
         this.layer_data    = null;
 
-        const epsg   = ['zip', 'kml', 'kmz'].includes(this.file_type) ? 'EPSG:4326' : this.layer_crs;
+        const epsg   = ['kml','kmz'].includes(this.file_type) ? 'EPSG:4326' : this.layer_crs;
         let features = [];
         let data;
 
@@ -585,8 +585,7 @@ export default {
 
         // SHAPE FILE
         if ('zip' === this.file_type) {
-          this.layer_crs  = 'EPSG:4326';
-          data = JSON.stringify(await shp(await input.files[0].arrayBuffer(input.files[0]))); // un-zip folder data 
+          data = JSON.stringify(await shp(await input.files[0].arrayBuffer(input.files[0]))); // un-zip folder data
         }
 
         // CSV file

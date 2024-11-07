@@ -206,7 +206,7 @@ C,"POINT (11.2474811 43.7910709)"`],
   // piazza-leopoldo.zip
   await setFile(
     await zipFile('piazza-leopoldo.kml'),
-    'EPSG:4326'
+    'EPSG:3857'
   );
 
   // ORTOFOTO
