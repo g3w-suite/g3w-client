@@ -2374,13 +2374,13 @@ class MapService extends G3WObject {
     this._layers.external.push(layer);
 
     if ('vector' === type) {
-      this._layers.external_vector.push(layer);
+      this._layers.external_vector.push(externalLayer);
     }
 
     // register and dispatch layer add event
     if ('wms' === type) {
-      this._layers.external_wms.push(layer);
-      this.registerMapLayerListeners(layer, false);
+      this._layers.external_wms.push(externalLayer);
+      this.registerMapLayerListeners(externalLayer, false);
     }
 
     if (vectorLayer && false !== options.persistent) {
