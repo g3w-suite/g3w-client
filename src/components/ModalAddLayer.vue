@@ -571,7 +571,6 @@ export default {
         this.file_type     = input.files[0].name.split('.').at(-1).toLowerCase();
         this.layer_data    = null;
 
-        const epsg   = ['kml','kmz'].includes(this.file_type) ? 'EPSG:4326' : this.layer_crs;
         let features = [];
         let data;
 
@@ -579,7 +578,6 @@ export default {
 
         // KMZ file
         if ('kmz' === this.file_type) { 
-          this.layer_crs  = 'EPSG:4326';
           const zip = new JSZip();
           zip.load(await input.files[0].arrayBuffer(input.files[0]));
           data = zip.file(/.kml$/i).at(-1).asText(); // get last kml file within folder
@@ -587,7 +585,18 @@ export default {
 
         // SHAPE FILE
         if ('zip' === this.file_type) {
-          data = JSON.stringify(await shp(await input.files[0].arrayBuffer(input.files[0]))); // un-zip folder data
+          const zip = await input.files[0].arrayBuffer();
+          const out = {}; // un-zip folder data
+          const unzipped = await JSZip.loadAsync(input.files[0]);
+          for(f in unzipped.files) {
+            if (/.+\.(shp|dbf|json|prj|cpg)$/i.test(f)) {
+              const ext = (f.split('.').at(-1) || '').toLowerCase();
+              out[ext] = await unzipped.files[f].async(['shp', 'dbf'].includes(ext) ?  'arraybuffer': 'text');
+            }
+          }
+          console.log(zip, out);
+          data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
+          console.log(data);
         }
 
         // CSV file
@@ -634,6 +643,7 @@ export default {
           data = await input.files[0].text() || {};
         }
 
+        this.layer_crs  = ['kml','kmz'].includes(this.file_type) ? 'EPSG:4326' : this.layer_crs;
         this.layer_data = data;
 
         // parse features
@@ -647,8 +657,8 @@ export default {
             'kmz'    : new ol.format.KML({ extractStyles: false }),
             // 'csv'    : new ol.format.WKT(),
           })[this.file_type].readFeatures(data, {
-            dataProjection:    epsg,
-            featureProjection: GUI.getService('map').getEpsg() || epsg
+            dataProjection:    this.layer_crs,
+            featureProjection: GUI.getService('map').getEpsg() || this.layer_crs
           });
         }
 

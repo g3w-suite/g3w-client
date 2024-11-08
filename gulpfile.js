@@ -68,7 +68,13 @@ function setNODE_ENV() {
 }
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => !['vue', 'shpjs', 'jszip', 'file-saver'].includes(dep));
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => ![
+  'file-saver',
+  'jszip',
+  'proj4',
+  'shpjs',
+  'vue',
+].includes(dep));
 
 // Built-in client plugins
 const default_plugins = [
@@ -275,7 +281,6 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
       `${g3w.assetsFolder}/vendors/script/script${ext}.js`,
       `${g3w.assetsFolder}/vendors/x2js/xml2json.g3w.min.js`,
-      `${g3w.assetsFolder}/vendors/proj4js/proj4${production ? '' : '-src'}.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
       `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
       `${g3w.assetsFolder}/vendors/jsts/jsts.min.js`,
