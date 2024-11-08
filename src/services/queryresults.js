@@ -928,7 +928,6 @@ export default new (class QueryResultsService extends G3WObject {
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
           class:    GUI.getFontClass('success'),
-          disabled: !!(this.state.query.pagination && this.state.query.pagination.counts[index] > layer.features.length), // in case of pagination, disabled @since 3.11.0
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
           state:    Vue.observable({
             toggled:  layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
