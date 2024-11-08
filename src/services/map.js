@@ -1474,12 +1474,6 @@ class MapService extends G3WObject {
 
   }
 
-  setDefaultLayerStyle(type, style = {}) {
-    if (type && this.defaultsLayers[type]) {
-      this.defaultsLayers._style[type] = style;
-    }
-  }
-
   removeLayers() {
     Object.keys(this._layers.base).forEach(id => this.viewer.map.removeLayer(this._layers.base[id].getOLLayer()))
     this.getMapLayers().forEach(l => { this.unregisterMapLayerListeners(l); this.viewer.map.removeLayer(l.getOLLayer()); });
@@ -1845,7 +1839,7 @@ class MapService extends G3WObject {
   * */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
-      this.setDefaultLayerStyle('selectionLayer', { color: opts.color });
+      this.defaultsLayers._style.selectionLayer = { color: opts.color };
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
@@ -1897,7 +1891,7 @@ class MapService extends G3WObject {
     let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
     this.clearHighlightGeometry();
-    this.setDefaultLayerStyle('highlightLayer', { color: options.color });
+    this.defaultsLayers._style.highlightLayer = { color: options.color };
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
