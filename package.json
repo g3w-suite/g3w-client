@@ -29,9 +29,12 @@
   "license": "MPL-2.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
+    "@mapbox/shp-write": "^0.4.3",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "lodash.clonedeep": "^4.5.0",
-    "@mapbox/shp-write": "^0.4.3",
+    "shpjs": "^6.1.0",
     "util-deprecate": "^1.0.2",
     "vue": "2.6.12",
     "vue-color": "^2.8.1",

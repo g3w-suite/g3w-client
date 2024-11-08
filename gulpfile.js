@@ -68,7 +68,7 @@ function setNODE_ENV() {
 }
 
 // Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => 'vue' !== dep);
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => !['vue', 'shpjs', 'jszip', 'file-saver'].includes(dep));
 
 // Built-in client plugins
 const default_plugins = [
@@ -275,14 +275,11 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
       `${g3w.assetsFolder}/vendors/script/script${ext}.js`,
       `${g3w.assetsFolder}/vendors/x2js/xml2json.g3w.min.js`,
-      `${g3w.assetsFolder}/vendors/proj4js/proj4${production ? '-src' : ''}.js`,
+      `${g3w.assetsFolder}/vendors/proj4js/proj4${production ? '' : '-src'}.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
       `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
       `${g3w.assetsFolder}/vendors/jsts/jsts.min.js`,
       `${g3w.assetsFolder}/vendors/datatables/datatables${ext}.js`,
-      `${g3w.assetsFolder}/vendors/shp2geojson/shp.min.js`,
-      `${g3w.assetsFolder}/vendors/jszip/jszip.min.js`,
-      `${g3w.assetsFolder}/vendors/filesaver/FileSaver.min.js`,
       `${g3w.assetsFolder}/vendors/select2/js/select2.full${ext}.js`,
       `${g3w.assetsFolder}/vendors/select2/js/i18n/it.js`,
       `${g3w.assetsFolder}/vendors/d3/js/d3.min.js`,

@@ -4,6 +4,22 @@
  */
 
 import * as VueColor from 'vue-color';
+import shp           from 'shpjs/dist/shp';
+import JSZip         from 'jszip/dist/jszip.min';
+import saveAs        from 'file-saver/dist/FileSaver';
+
+Object.assign(globalThis, {
+  /** @deprecated since v3.8. Will be removed in v4.x. Use ESM imports from 'vue-color' instead */
+  VueColor,
+  /** @deprecated since v3.8. Will be removed in v4.x. Use require('vue-cookie') instead of window.VueCookie */
+  VueCookie: require('vue-cookie'),
+  /** @deprecated since 3.11.0 */
+  JSZip,
+  /** @deprecated since 3.11.0 */
+  shp,
+  /** @deprecated since 3.11.0 */
+  saveAs,
+});
 
 const initConfig = window.initConfig;
 
@@ -41,13 +57,3 @@ initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEn
 
 // gid of panoramic map project
 initConfig.overviewproject = initConfig.overviewproject ? initConfig.overviewproject.gid : null;
-
-/**
- * @deprecated since v3.8. Will be removed in v4.x. Use ESM imports from 'vue-color' instead
- */
-window.VueColor = VueColor;
-
-/**
- * @deprecated since v3.8. Will be removed in v4.x. Use require('vue-cookie') instead of window.VueCookie
- */
-window.VueCookie = require('vue-cookie');

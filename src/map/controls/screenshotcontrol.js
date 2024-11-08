@@ -2,6 +2,7 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/screenshotcontrol.js@v3.10.2
  * @since 3.11.0
  */
+import saveAs                   from 'file-saver/dist/FileSaver';
 
 import ApplicationState         from 'store/application';
 import GUI                      from 'services/gui';
@@ -83,13 +84,13 @@ export class ScreenshotControl extends InteractionControl {
             const blobImage = await map.createMapImage();
 
             if ('screenshot' === this.type) {                   // PNG
-              window.saveAs(blobImage, `map_${Date.now()}.png`);
+              saveAs(blobImage, `map_${Date.now()}.png`);
             } else {                                            // GeoTIFF
               const body = new FormData();
               body.append('image',               blobImage);
               body.append('csrfmiddlewaretoken', map.getCookie('csrftoken'));
               body.append('bbox',                map.getMapBBOX().toString());
-              window.saveAs(
+              saveAs(
                 await (await fetch(
                   `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
                   { method: 'POST', body }

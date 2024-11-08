@@ -1,3 +1,6 @@
+import JSZip               from 'jszip/dist/jszip.min';
+import shp                 from 'shpjs/dist/shp';
+
 import { GEOMETRY_FIELDS } from 'g3w-constants';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 

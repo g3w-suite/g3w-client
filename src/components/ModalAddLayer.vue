@@ -361,6 +361,8 @@
 
 <script>
 import { Chrome as ChromeComponent } from 'vue-color';
+import JSZip                         from 'jszip/dist/jszip.min';
+import shp                           from 'shpjs/dist/shp';
 
 import { GEOMETRY_FIELDS } from 'g3w-constants';
 import ApplicationState    from 'store/application';

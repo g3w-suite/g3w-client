@@ -449,6 +449,7 @@
 
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
+  import saveAs                        from 'file-saver/dist/FileSaver';
 
   import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application';
@@ -798,7 +799,7 @@
             }
         });
 
-        saveAs(blob, name);
+        saveAs(blob, name + '.zip');
 
         await this.$nextTick();
         ApplicationState.download = false;

@@ -87,6 +87,8 @@ import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 
+const deprecate                   = require('util-deprecate');
+
 const i18n                        = require('g3w-i18n');
 const { Plugin }                  = require('./g3w-plugin');
 const { PluginService }           = require('./g3w-plugin');
@@ -123,7 +125,7 @@ const g3wsdk = {
       noop,
     },
     geoutils: {
-      createVectorLayerFromFile,
+      createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
