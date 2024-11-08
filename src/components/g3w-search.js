@@ -26,6 +26,7 @@ import * as vueSearchComp             from 'components/SearchPanel.vue';
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchservice.js@v3.9.3
  */
 export function SearchPanel(opts = {}, show = false) {
+  console.log(opts)
   const state = {
     loading:              {}, // store loading state of each input and each dependency
     searching:            false, //Boolean. If true, search request from server is starts. False no search
@@ -76,6 +77,7 @@ export function SearchPanel(opts = {}, show = false) {
     })),
     //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
     autofilter:           { value: 0, filtertoken: null }, //value 0 no set, 1 set: filtertoken is related to filter tocken
+    paginate:             !!opts.options.paginate //@since 3.11.0 paginate or not
   };
 
   // create search form structure 
@@ -194,8 +196,7 @@ async function doSearch({
         feature_count,
         raw:        false, // in order to get a raw response
         autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
-        page: 1,
-        page_sizes,
+        ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
@@ -237,8 +238,7 @@ async function doSearch({
           formatter: 1,
           feature_count,
           autofilter: state.autofilter.value, //0/1 autofilter by server
-          page: 1,
-          page_size,
+          ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
         },
         outputs: {
           title: state.title
