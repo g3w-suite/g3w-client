@@ -51,7 +51,7 @@
         :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
         data-placement     = "right"
-        @click.stop        = "layer.toggleFilterToken()"
+        @click.stop        = "toggleFilterToken(layer)"
       ></div>
 
     </div>
@@ -239,6 +239,19 @@ export default {
   },
 
   methods: {
+
+    /**
+     * @since v3.11.0
+     * @param layer
+     */
+    toggleFilterToken(layer) {
+      //in the case of autofilter with pagination need to get features to set selection
+      if (layer.state.filter.active && !layer.selectionFids.has('__ALL__')) {
+        this.state.selectAll = false;
+        this.selectAllRows();
+      }
+      layer.toggleFilterToken();
+    },
 
     /**
      * @param feature

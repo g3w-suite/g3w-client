@@ -599,11 +599,6 @@ export default new (class QueryResultsService extends G3WObject {
     //get config from getData object set by pagination method
     const { layers = [], method, params } = this.state.query.pagination.getData;
     const layer = layers[index];
-    //In the case of autofilter need to delete set filtertoken
-    if (this.state.query.autofilter) {
-      await layer.deleteFilterToken();
-      layer.hideOlSelectionFeatures();
-    }
     //get layer pagination data
     const data = await layer[method]({ ...params[index], page });
     if (this.state.query.autofilter) {
@@ -770,8 +765,8 @@ export default new (class QueryResultsService extends G3WObject {
     this.unlistenerlayeractionevents = [];
 
     // loop results
-    layers.forEach(layer => {
-
+    layers.forEach((layer, index) => {
+      const state = this.state;
       // eventually set layer action tool and need to be reactive
       this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
@@ -913,22 +908,33 @@ export default new (class QueryResultsService extends G3WObject {
           }
         },
 
-        // remove feature
+        // remove feature not in case of pagination @since 3.11.0
         ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
           id:        'removefeaturefromresult',
           mouseover: true,
           class:     GUI.getFontClass('minus-square'),
           style:     { color: 'red' },
+          // in case of pagination, disabled @since 3.11.0
+          state:     Vue.observable({ disabled: !!(state.query.pagination && state.query.pagination.counts[index] > layer.features.length)}),
           hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-          cbk:       this.removeFeatureLayerFromResult.bind(this)
+          cbk:       this.removeFeatureLayerFromResult.bind(this),
+          change({ features }) {
+            this.state.disabled = !!(state.query.pagination && state.query.pagination.counts[index] > features.length);
+          },
+
         },
 
         // select feature
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
           class:    GUI.getFontClass('success'),
+          disabled: !!(this.state.query.pagination && this.state.query.pagination.counts[index] > layer.features.length), // in case of pagination, disabled @since 3.11.0
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
+          state:    Vue.observable({
+            toggled:  layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
+            // in case of pagination, disabled @since 3.11.0
+            disabled: !!(state.query.pagination && state.query.pagination.counts[index] > layer.features.length)
+          }),
           // check feature selection
           init:     ({ feature, index, action } = {}) => {
             if (layer.external && undefined !== layer.selection.active) { // external layer
@@ -959,7 +965,10 @@ export default new (class QueryResultsService extends G3WObject {
             }
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
-          change({ features }) { features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false)) },
+          change({ features }) {
+            this.state.disabled = !!(state.query.pagination && state.query.pagination.counts[index] > features.length);
+            features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
+          },
           cbk: throttle(this.addToSelection.bind(this))
         },
 
