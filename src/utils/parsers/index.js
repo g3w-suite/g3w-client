@@ -203,6 +203,7 @@ export const ResponseParser = {
           wms = true,
           id =  false,
         } = {}) {
+
           // convert XML response to string
           if (response && 'string' !== typeof response && !(response instanceof String)) {
             response = new XMLSerializer().serializeToString(response);
@@ -234,9 +235,195 @@ export const ResponseParser = {
             response = response.replace(new RegExp(String.fromCharCode(0), 'g'), '0');
           }
 
-          // convert XML string response to JSON
-          const x2js = new X2JS();
-          const json = x2js.xml_str2json(response); // json response
+          /**
+           * convert XML string response to JSON
+           * 
+           * Based on: https://github.com/abdolence/x2js/tree/v1.2.0
+           */
+          const x2js = new (class {
+
+            getNodeName(node) {
+              return node.localName || node.baseName || node.nodeName;
+            }
+
+            escapeXmlChars(str) {
+              return "string" == typeof str
+                ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;")
+                : str;
+            }
+
+            startTag(json, element, attrs, closed) {
+              let res = "<" + (null != json && null != json.__prefix ? json.__prefix + ":" : "") + element;
+              for (let i = 0; i < (attrs || []).length; i++) {
+                json[attrs[i]] = this.escapeXmlChars(json[attrs[i]]);
+                res += ` ${ attrs[i].substr(1) }='${ json[attrs[i]] }'`;
+              }
+              return res += closed ? "/>" : ">"
+            }
+          
+            endTag(json, tagName) {
+              return "</" + (null != json.__prefix ? json.__prefix + ":" : "") + tagName + ">"
+            }
+
+            jsonXmlSpecialElem(json, field) {
+              return !!(0 == field.toString().indexOf('_') || 0 == field.toString().indexOf("__") || json[field] instanceof Function)
+            }
+          
+            jsonXmlElemCount(json) {
+              let i = 0;
+              if (json instanceof Object)
+                for (let k in json) this.jsonXmlSpecialElem(json, k) || i++;
+              return i
+            }
+
+            parseJSONAttrs(json) {
+              const n = [];
+              if (json instanceof Object) {
+                for (let k in json) {
+                  if (-1 == k.toString().indexOf("__") && 0 == k.toString().indexOf('_')) {
+                    n.push(k);
+                  }
+                }
+              }
+              return n
+            }
+          
+            parseJSONText(json) {
+              let res = "";
+              if (json instanceof Object && null != json.__cdata) {
+                res += "<![CDATA[" + json.__cdata + "]]>";
+              }
+              if (json instanceof Object && null != json.__text) {
+                res += this.escapeXmlChars(json.__text);
+              }
+              if (!(json instanceof Object) && null != json) {
+                res += this.escapeXmlChars(json);
+              }
+              return res;
+            }
+
+            parse(node, path) {
+              // ROOT node
+              if (node.nodeType == Node.DOCUMENT_NODE) {
+                let res = {};
+                for (let i = 0; i < node.childNodes.length; i++) {
+                  let child = node.childNodes.item(i);
+                  if (child.nodeType == Node.ELEMENT_NODE) {
+                    res[this.getNodeName(child)] = this.parse(child, this.getNodeName(child))
+                  }
+                }
+                return res;
+              }
+
+              // HTML node
+              if (node.nodeType == Node.ELEMENT_NODE) {
+                let res = { __cnt: 0 };
+                for (let i = 0; i < node.childNodes.length; i++) {
+                  let child = node.childNodes.item(i);
+                  if (child.nodeType == Node.COMMENT_NODE) {
+                    continue;
+                  }
+                  res.__cnt++;
+                  if (null == res[this.getNodeName(child)]) {
+                    res[this.getNodeName(child)] = this.parse(child, path + "." + this.getNodeName(child));
+                  } else {
+                    (res[this.getNodeName(child)] instanceof Array || (res[this.getNodeName(child)] = [res[this.getNodeName(child)]]));
+                    res[this.getNodeName(child)][res[this.getNodeName(child)].length] = this.parse(child, path + "." + this.getNodeName(child));
+                  }
+                }
+                for (let i = 0; i < node.attributes.length; i++) {
+                  res.__cnt++;
+                  res['_' + node.attributes.item(i).name] = node.attributes.item(i).value;
+                }
+                if (![null,''].includes(node.prefix)) {
+                  res.__cnt++;
+                  res.__prefix = node.prefix;
+                }
+                if ("#text" in res) {
+                  res.__text = res["#text"] instanceof Array ? res["#text"].join("\n") : res["#text"];
+                  res.__text = res.__text.trim();
+                  delete res["#text"];
+                }
+                if ("#cdata-section" in res) {
+                  res.__cdata = res["#cdata-section"];
+                  delete res["#cdata-section"];
+                }
+                if (0 == res.__cnt) {
+                  res = "";
+                }
+                if (!res.__text) {
+                  delete res.__text;
+                }
+                if (res.__text) {
+                  res.toString = () => (null != res.__text ? res.__text : "") + (null != res.__cdata ? res.__cdata : "");
+                }
+                delete res.__cnt;
+                return res;
+              }
+
+              // TEXT node
+              if (node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) {
+                return node.nodeValue;
+              }
+            }
+          
+            parseJSON(json, path) {
+              let res = "";
+              if (this.jsonXmlElemCount(json) > 0) {
+                for (let k in json) {
+
+                  if (-1 === ["_fid", "__prefix"].indexOf(k) && !k.match(/xmlns:|xsi:/) && this.jsonXmlSpecialElem(json, k)) {
+                    const i = k.replace(/^_+/, "");
+                    json[i] = json[k];
+                    k = i
+                  }
+
+                  if (this.jsonXmlSpecialElem(json, k)) {
+                    continue;
+                  }
+
+                  let attrs = this.parseJSONAttrs(json[k]);
+                  
+                  if ([null, undefined].includes(json[k]) || (json[k] instanceof Array && 0 == json[k].length)) {
+                    res += this.startTag(json[k], k, attrs, true);
+                  }
+
+                  else if (json[k] instanceof Array && json[k].length > 0) {
+                    res += json[k].map(d => (this.startTag(d, k, this.parseJSONAttrs(d), false) + this.parseJSON(d, "" === path ? k : path + "." + k) + this.endTag(d, k))).join('');
+                  }
+                  
+                  else if (json[k] instanceof Date) {
+                    res += this.startTag(json[k], k, attrs, false) + json[k].toISOString() + this.endTag(json[k], k);
+                  }
+
+                  else if (json[k] instanceof Object) {
+                    if (attrs.length && -1 !== attrs.indexOf("_fid")) {
+                      attrs = ["_fid"];
+                    }
+                    const o = this.jsonXmlElemCount(json[k]);
+                    if (o > 0 || null != json[k].__text || null != json[k].__cdata) {
+                      res += this.startTag(json[k], k, attrs, false) + this.parseJSON(json[k], "" === path ? k : path + "." + k) + this.endTag(json[k], k);
+                    } else {
+                      res += startTag(json[k], k, attrs, true);
+                    }
+                  }
+
+                  else {
+                    res += this.startTag(json[k], k, attrs, false) + this.parseJSONText(json[k]) + this.endTag(json[k], k);
+                  }
+                }
+              }
+              return res += this.parseJSONText(json)
+            }
+          });
+          
+          let json;
+
+          try {
+            json = x2js.parse((new DOMParser).parseFromString(response, "text/xml"));
+          } catch (e) {
+            console.warn(e);
+          }
 
           // in the case of parser return null
           if (!json) {
@@ -264,7 +451,7 @@ export const ResponseParser = {
           const parsed = []; //Array contains item object ({layer, features})
           const originalFeatureMember = [].concat(json.FeatureCollection.featureMember);
           //Loop on each layer
-          layers.forEach((layer, i/*, originalFeatureMember*/) => {
+          layers.forEach((layer, i) => {
             const name = id ? layer.getId() : `layer${i}`; // layer name
 
             json.FeatureCollection.featureMember = originalFeatureMember
@@ -298,8 +485,8 @@ export const ResponseParser = {
 
               }).flat();
             // parse layer feature collection
-            const xml            = x2js.json2xml_str(json); // layer Feature Collection XML
-            const olfeatures     = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
+            const xml        = x2js.parseJSON(json, ''); // layer Feature Collection XML
+            const olfeatures = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
 
             //Check if you need to re-project features because layers are in different projection of the map
             const is_reprojected = (

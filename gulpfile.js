@@ -280,7 +280,6 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
       `${g3w.assetsFolder}/vendors/script/script${ext}.js`,
-      `${g3w.assetsFolder}/vendors/x2js/xml2json.g3w.min.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
       `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
       `${g3w.assetsFolder}/vendors/jsts/jsts.min.js`,
