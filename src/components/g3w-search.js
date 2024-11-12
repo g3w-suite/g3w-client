@@ -26,7 +26,6 @@ import * as vueSearchComp             from 'components/SearchPanel.vue';
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchservice.js@v3.9.3
  */
 export function SearchPanel(opts = {}, show = false) {
-  console.log(opts)
   const state = {
     loading:              {}, // store loading state of each input and each dependency
     searching:            false, //Boolean. If true, search request from server is starts. False no search
