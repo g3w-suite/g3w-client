@@ -70,8 +70,10 @@ function setNODE_ENV() {
 // Retrieve project dependencies ("g3w-client")
 const dependencies = Object.keys(packageJSON.dependencies).filter(dep => ![
   'file-saver',
+  'ismobilejs',
   'jszip',
   'proj4',
+  'scriptjs',
   'shpjs',
   'vue',
 ].includes(dep));
@@ -262,7 +264,6 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/bootbox/bootbox.min.js`,
       `${g3w.assetsFolder}/vendors/lodash/lodash${ext}.js`,
       `${g3w.assetsFolder}/vendors/eventemitter/EventEmitter${ext}.js`,
-      `${g3w.assetsFolder}/vendors/history/jquery.history.js`,
       `${g3w.assetsFolder}/vendors/moment/moment.js`,
       `${g3w.assetsFolder}/vendors/moment/moment-with-locales.js`,
       `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js`,
@@ -270,11 +271,9 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/bootstrap-treeview/js/bootstrap-treeview.js`,
       `${g3w.assetsFolder}/vendors/vue/vue${ext}.js`,
       `${g3w.assetsFolder}/vendors/jquery-file-upload/jquery.fileupload.js`,
-      `${g3w.assetsFolder}/vendors/ismobile/ismobile.min.js`,
       `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next${ext}.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
-      `${g3w.assetsFolder}/vendors/script/script${ext}.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
       `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
       `${g3w.assetsFolder}/vendors/jsts/jsts.min.js`,
@@ -283,7 +282,6 @@ gulp.task('concatenate:vendor_js', function() {
       `${g3w.assetsFolder}/vendors/select2/js/i18n/it.js`,
       `${g3w.assetsFolder}/vendors/d3/js/d3.min.js`,
       `${g3w.assetsFolder}/vendors/c3/js/c3.min.js`,
-      `${g3w.assetsFolder}/vendors/wps/js/wps-js-all.min.js`,
       `${g3w.assetsFolder}/vendors/quill/js/quill.min.js`
       ]),
       browserify(
@@ -479,7 +477,6 @@ gulp.task('concatenate:vendor_css', function() {
     `${g3w.assetsFolder}/vendors/icheck/skins/all.css`,
     `${g3w.assetsFolder}/vendors/magic-check/magic-check.min.css`,
     `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css`,
-    `${g3w.assetsFolder}/vendors/hint/hint.min.css`,
     `${g3w.assetsFolder}/vendors/ol/css/ol.css`,
     `${g3w.assetsFolder}/vendors/select2/css/select2.min.css`,
     `${g3w.assetsFolder}/vendors/c3/css/c3.min.css`,

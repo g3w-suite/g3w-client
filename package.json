@@ -31,10 +31,12 @@
   "dependencies": {
     "@mapbox/shp-write": "^0.4.3",
     "file-saver": "^2.0.5",
+    "ismobilejs": "^1.1.1",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "lodash.clonedeep": "^4.5.0",
     "proj4": "^2.14.0",
+    "scriptjs": "^2.5.9",
     "shpjs": "^6.1.0",
     "util-deprecate": "^1.0.2",
     "vue": "2.6.12",

@@ -8,6 +8,8 @@ import shp           from 'shpjs/dist/shp';
 import JSZip         from 'jszip/dist/jszip.min';
 import saveAs        from 'file-saver/dist/FileSaver';
 import proj4         from 'proj4/dist/proj4-src';
+import $script       from 'scriptjs/dist/script';
+import isMobile      from 'ismobilejs';
 
 Object.assign(globalThis, {
   /** @deprecated since v3.8. Will be removed in v4.x. Use ESM imports from 'vue-color' instead */
@@ -15,7 +17,11 @@ Object.assign(globalThis, {
   /** @deprecated since v3.8. Will be removed in v4.x. Use require('vue-cookie') instead of window.VueCookie */
   VueCookie: require('vue-cookie'),
   /** @deprecated since 3.11.0 */
+  isMobile: isMobile(),
+  /** @deprecated since 3.11.0 */
   JSZip,
+  /** @deprecated since 3.11.0 */
+  $script,
   /** @deprecated since 3.11.0 */
   shp,
   /** @deprecated since 3.11.0 */
