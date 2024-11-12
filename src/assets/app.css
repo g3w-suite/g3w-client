@@ -916,7 +916,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_body .editbtn.enabled:hover                             { background-color: #ddd; }
 .g3wform_body .editbtn.enabled.toggled                           { background-color: #ddd; }
 .g3wform_body .form-group                                        { margin-bottom: 5px; }
-.g3wform_body .bootstrap-filestyle > input.form-control          { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g3wform_body .form_editing_relation_input                       { position: relative; font-size: 1.2em; font-weight: bold; width: 100%; padding: 10px; }
 .g3wform_body .preview                                           { width: 100%; margin-top: 10px; display:flex; align-items: center; }
 .g3wform_body .preview .filename                                 { overflow: hidden; margin: 15px; font-weight: bold; }
@@ -964,7 +963,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 }
 .g3wform_body form .box-primary                                         { border-top-color: var(--skin-color); }
 .g3wform_body .form-control:focus                                       { border-color: var(--skin-color); }
-.g3wform_body .bootstrap-filestyle label.btn-primary                    { border-color: var(--skin-color); background-color: var(--skin-color); }
 .g3wform_body .relation-editbtn                                         { border: 2px solid var(--skin-color); }
 .bootstrap-datetimepicker-widget .datepicker .active                    { background-color: var(--skin-color); }
 
@@ -972,7 +970,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_header .title.one                                              { color: var(--skin-d20); }
 .g3wform_header .title.tabs:hover                                       { border-bottom: 4px solid var(--skin-l40); }
 .g3wform_header .item_selected                                          { color: var(--skin-d20); border-bottom: 3px solid var(--skin-color) !important; }
-.g3wform_body .bootstrap-filestyle label.btn-primary:hover              { background-color: var(--skin-d20); }
 
 /**************************************************************************************
  * 10. Contents
