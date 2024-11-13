@@ -249,17 +249,17 @@ gulp.task('vendor:js', function() {
       `./node_modules/jquery-ui-package/jquery-ui.js`,
       `./node_modules/bootstrap/dist/js/bootstrap.js`,
       `./node_modules/bootbox/bootbox.js`,
-      `${g3w.assetsFolder}/vendors/lodash/lodash.js`,
+      `./node_modules/lodash/lodash.js`,
       `./node_modules/moment/min/moment.min.js`,
       `./node_modules/moment/min/moment-with-locales.js`,
       `./node_modules/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js`,
       `./node_modules/blueimp-file-upload/js/jquery.fileupload.js`,
-      `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next.js`,
+      `./node_modules/jquery-i18next/jquery-i18next.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
       `./node_modules/ol-rotate-feature/dist/bundle.js`,
-      `${g3w.assetsFolder}/vendors/datatables/datatables.js`,
+      `./node_modules/datatables.net/js/jquery.dataTables.js`,
       `./node_modules/select2/dist/js/select2.full.js`,
       `./node_modules/select2/dist/js/i18n/it.js`,
       `./node_modules/quill/dist/quill.js`
@@ -375,7 +375,7 @@ gulp.task('cursors', function () {
  * Deploy datatables images (src/assets/vendors/datatables)
  */
 gulp.task('datatable-images', function () {
-  return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
+  return gulp.src(`./node_modules/datatables.net-dt/images/*`)
     .pipe(flatten())
     .pipe(gulp.dest(`${outputFolder}/static/client/images/`));
 });
@@ -434,9 +434,9 @@ gulp.task('vendor:css', function() {
   return gulp.src([
     `./node_modules/bootstrap/dist/css/bootstrap.css`,
     `./node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css`,
-    `${g3w.assetsFolder}/vendors/ol/css/ol.css`,
+    `./node_modules/ol/ol.css`,
     `./node_modules/select2/dist/css/select2.css`,
-    `${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css`,
+    `./node_modules/datatables.net-dt/css/jquery.dataTables.css`,
     `./node_modules/@fortawesome/fontawesome-free/css/all.css`,
     `./node_modules/quill/dist/quill.snow.css`
   ])
