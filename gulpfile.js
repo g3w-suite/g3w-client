@@ -257,7 +257,7 @@ gulp.task('vendor:js', function() {
       `./node_modules/jquery-i18next/jquery-i18next.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
-      `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
+      `${g3w.assetsFolder}/vendors/ol/ol.js`,
       `./node_modules/ol-rotate-feature/dist/bundle.js`,
       `./node_modules/datatables.net/js/jquery.dataTables.js`,
       `./node_modules/select2/dist/js/select2.full.js`,
