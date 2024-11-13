@@ -119,11 +119,10 @@
                     <!--        END DOWNLOAD        -->
                   </template>
                   <span
-                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type )"
+                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type && !state.query.pagination)"
                     @click.stop             = "addLayerFeaturesToResults(layer)"
                     class                   = "action-button"
                     :class                  = "{'toggled': layer.addfeaturesresults.active}"
-                    v-disabled              = "disabledForPagination(layer, index)"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_features_to_results.hint'"
                   >
                     <span
@@ -136,12 +135,17 @@
                       layer.toc &&
                       layer.id !== '__g3w_marker' &&
                       layer.features.length > 1 &&
-                      (layer.external || (layer.source && layer.source.type !== 'wms'))
+                      (layer.external
+                        || (
+                            layer.source
+                            && layer.source.type !== 'wms'
+                            && (layer.selection.active || showInPagination(layer, index))
+                           )
+                      )
                     "
                     @click.stop             = "addToSelection(layer)"
                     class                   = "action-button skin-tooltip-left"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
-                    v-disabled              = "disabledForPagination(layer, index)"
                     :class                  = "{'toggled': layer.selection.active}"
                   >
                     <span
@@ -150,12 +154,11 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active">
+                  <template v-if = "!layer.external && layer.selection.active && (showInPagination(layer, index))">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
                       :class                  = "{'toggled': layer.filter.active}"
-                      v-disabled              = "disabledForPagination(layer, index)"
                       v-t-tooltip:left.create = "'layer_selection_filter.tools.filter'"
                     >
                       <span
@@ -215,7 +218,7 @@
               <section
                 v-if       = "state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
-                v-disabled = "layer.loading || (!state.query.autofilter && layer.filter.active)"
+                v-disabled = "layer.loading"
               >
                 <!-- PAGINATION LOAD BUTTONS -->
                 <section id = "pagination-pages" style = "margin-left: 10px;">
@@ -677,13 +680,12 @@
     methods: {
       /**
        * @since 3.11.0
-       * Return true if we need a disabled element when pagination is set
+       * Return true if we need a show element when pagination is set
        * @param layer
-       * @param index
        * @return {boolean}
        */
-      disabledForPagination(layer, index) {
-        return !!(this.state.query.pagination && this.state.query.pagination.counts[index] > layer.features.length) && !layer.selection.active;
+      showInPagination(layer) {
+        return !layer.filter.pagination;
       },
 
       /**
@@ -785,6 +787,7 @@
           .filter(f => !f.selection.selected)
           .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
         }
+
       },
 
       getContainerFromFeatureLayer({ layer, index } = {}) {
@@ -1007,7 +1010,7 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool) {
+        if (bool && !this.state.query.pagination) {
           GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }

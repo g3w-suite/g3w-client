@@ -335,12 +335,12 @@ export default {
     },
 
     async inverseSelection() {
-        //need to get all features
-        if (!this.getAll) { await this.getFeatures() }
-        this.state.features.forEach(f => f.selected = !f.selected);
-        this.layer.invertSelectionFids();
-        //set selectAll checkbox
-        this.checkSelectAll();
+      //need to get all features
+      if (!this.getAll) { await this.getFeatures() }
+      this.state.features.forEach(f => f.selected = !f.selected);
+      this.layer.invertSelectionFids();
+      //set selectAll checkbox
+      this.checkSelectAll();
     },
 
     /**
@@ -565,7 +565,7 @@ export default {
             }
             return {
               id:         f.id,
-              selected:   this.layer.hasSelectionFid(f.id),
+              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id), //@since 3.11.0 in case of filter token from pagination
               attributes: f.attributes || f.properties,
               geometry:   this.layer.isGeoLayer() && f.geometry || undefined
             };

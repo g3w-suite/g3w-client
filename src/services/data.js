@@ -261,11 +261,22 @@ export default {
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
+          //@since 3.11.0 In case autofilter set
+          if (1 === params.autofilter) {
+            (value.data || [])
+              .forEach(({ layer, filtertoken }) => {
+                //in the case of filtertoken response attribute set, need to set it to layer
+                if (filtertoken) {
+                  layer.state.selection.active = layer.state.filter.active = true;
+                  layer.setFilterToken(filtertoken); }
+              })
+          }
+
           if (params.page_sizes)  {
             //get max number of elements per page
             const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
             //Check if count (total number of elements of search is more o less than max)
-            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p <= value.count), value.count]);
+            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             //add a count element on counts array
             counts.push(value.count);
           }

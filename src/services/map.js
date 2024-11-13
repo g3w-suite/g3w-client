@@ -1839,9 +1839,9 @@ class MapService extends G3WObject {
   /*
   * geometries = array of geometries
   * action: add, clear, remove :
-  *   - add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+  *   - add: feature/features to selectionLayer. If selectionLayer doesn't exist, create a new vector layer.
   *   - clear: remove selectionLayer
-  *   - remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
+  *   - remove: remove feature from selection layer. If no more feature is in selectionLayer, it will be removed
   * */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
@@ -1849,7 +1849,15 @@ class MapService extends G3WObject {
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
-      case 'add':    source.addFeature(opts.feature); break;
+      case 'add':
+        //In case of add need to set selection style
+        opts.feature.setStyle(createSelectedStyle({
+          geometryType: opts.feature.getGeometry().getType(),
+          color:        this.defaultsLayers._style.selectionLayer.color,
+          fill:         true
+        }));
+        source.addFeature(opts.feature);
+        break;
       case 'remove': source.removeFeature(opts.feature); break;
       case 'update': source.getFeatureById(opts.feature.getId()).setGeometry(opts.feature.getGeometry()); break;
       case 'clear':  source.clear(); break;

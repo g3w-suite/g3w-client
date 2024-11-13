@@ -180,7 +180,7 @@ async function doSearch({
         return l.setSelection(false);
       }));
 
-      state.autofilter.filtertoken = null;
+      state.autofilter.filtertoken = undefined;
     }
 
     data = await DataRouterService.getData('search:features', {
@@ -200,8 +200,8 @@ async function doSearch({
       outputs: show && { title: state.title }
     });
 
-    // auto zoom to query
-    if (show && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
+    // auto zoom to query (not pagination)
+    if (show && !state.paginate && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
@@ -253,14 +253,11 @@ async function doSearch({
 
   const result = parsed ? parsed : data;
 
-  //In the case of autofilter, need to get filtertokern attribute from server response data and set to each layer
+  //In the case of autofilter, need to get filtertoken attribute from server response data and set to each layer
   if (1 === state.autofilter.value && result) {
-
-    (result.data || []).forEach(({ layer, filtertoken }) => {
+    (result.data || []).forEach(({ filtertoken }) => {
       //if returned filtertoken, filter is apply on layer
       if (filtertoken) {
-        layer.state.filter.active = true;
-        layer.setFilterToken(filtertoken);
         //set autofilter filter token
         state.autofilter.filtertoken = filtertoken;
       }

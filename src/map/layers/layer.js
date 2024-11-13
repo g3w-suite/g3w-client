@@ -692,9 +692,11 @@ class Layer extends G3WObject {
       selection:          { active: false },
       /** Reactive filter attribute */
       filter: {
-        active:  false,
+        active:     false,
         /** @since 3.9.0 whether filter is set from a previously saved filter */
-        current: null,
+        current:    null,
+        /** @since v3.11.0 **/
+        pagination: false,
       },
       /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
       filters:            config.filters || [],
@@ -1053,7 +1055,7 @@ class Layer extends G3WObject {
    * @param {boolean} bool
    */
   setFilter(bool = false) {
-    this.state.filter.active = bool;
+    this.state.filter.active     = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
       this.hideOlSelectionFeatures();
     }
@@ -1243,7 +1245,7 @@ class Layer extends G3WObject {
    * 
    * @since 3.9.0
    */
-  setFilterToken(filtertoken = null) {
+  setFilterToken(filtertoken = undefined) {
     ApplicationState.tokens.filtertoken = filtertoken;
     this.emit('filtertokenchange', { layerId: this.getId() });
   }
