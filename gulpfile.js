@@ -243,29 +243,28 @@ gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
 /**
  * Move vendor javascript files
  */
-gulp.task('move:vendor_js', function() {
+gulp.task('vendor:js', function() {
   return gulp.src([
-      `${g3w.assetsFolder}/vendors/jquery/jquery-2.2.1.min.js`,
-      `${g3w.assetsFolder}/vendors/jquery-ui/jquery-ui.js`,
-      `${g3w.assetsFolder}/vendors/bootstrap/js/bootstrap.js`,
-      `${g3w.assetsFolder}/vendors/bootbox/bootbox.min.js`,
+      `./node_modules/jquery/dist/jquery.js`,
+      `./node_modules/jquery-ui-package/jquery-ui.js`,
+      `./node_modules/bootstrap/dist/js/bootstrap.js`,
+      `./node_modules/bootbox/bootbox.js`,
       `${g3w.assetsFolder}/vendors/lodash/lodash.js`,
-      `${g3w.assetsFolder}/vendors/moment/moment.js`,
-      `${g3w.assetsFolder}/vendors/moment/moment-with-locales.js`,
-      `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js`,
-      `${g3w.assetsFolder}/vendors/icheck/icheck.js`,
-      `${g3w.assetsFolder}/vendors/bootstrap-treeview/js/bootstrap-treeview.js`,
-      `${g3w.assetsFolder}/vendors/jquery-file-upload/jquery.fileupload.js`,
+      `./node_modules/moment/min/moment.min.js`,
+      `./node_modules/moment/min/moment-with-locales.js`,
+      `./node_modules/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js`,
+      `./node_modules/blueimp-file-upload/js/jquery.fileupload.js`,
       `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
-      `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
+      `./node_modules/ol-rotate-feature/dist/bundle.js`,
       `${g3w.assetsFolder}/vendors/datatables/datatables.js`,
-      `${g3w.assetsFolder}/vendors/select2/js/select2.full.js`,
-      `${g3w.assetsFolder}/vendors/select2/js/i18n/it.js`,
-      `${g3w.assetsFolder}/vendors/quill/js/quill.min.js`
-      ], { base: `${g3w.assetsFolder}/vendors/` })
+      `./node_modules/select2/dist/js/select2.full.js`,
+      `./node_modules/select2/dist/js/i18n/it.js`,
+      `./node_modules/quill/dist/quill.js`
+      ], /*{ base: `${g3w.assetsFolder}/vendors/` }*/)
+    .pipe(gulpif(production, uglify()))
     .pipe(gulp.dest(`${outputFolder}/static/client/vendors/`));
 });
 
@@ -351,6 +350,7 @@ gulp.task('browserify:app', function() {
  */
 gulp.task('images', function () {
   return gulp.src([
+    `./node_modules/jquery-ui-package/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
     `!${g3w.pluginsFolder}/**/node_modules/**/`,
@@ -386,8 +386,8 @@ gulp.task('datatable-images', function () {
  gulp.task('fonts', function () {
   return gulp.src([
     `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-    `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
-    `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
+    `./node_modules/bootstrap/dist/fonts/**/*.{eot,ttf,woff,woff2}`,
+    `./node_modules/@fortawesome/fontawesome-free/webfonts//**/*.{eot,ttf,woff,woff2}`,
     `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
     `!${g3w.pluginsFolder}/**/node_modules/**`,
     '!./src/**/node_modules/**/'
@@ -410,9 +410,8 @@ gulp.task('geocoding-providers', function () {
  */
 gulp.task('css', ['fonts'], function() {
   return gulp.src(`${g3w.assetsFolder}/app.css`)
-    //.pipe(gulpif(production, cleanCSS({ keepSpecialComments: 0 }), replace(/\w+fonts/g, 'fonts')))
     .pipe(replace(/\w+fonts/g, 'fonts'))         // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
-    .pipe(cleanCSS({ keepSpecialComments: 0 }))
+    // .pipe(cleanCSS({ keepSpecialComments: 0 }))
     .pipe(rename('app.min.css'))
     .pipe(gulp.dest(`${outputFolder}/static/client/css/`))
 });
@@ -431,17 +430,15 @@ gulp.task('custom-less', function () {
 /**
  * Concatenate vendor css files
  */
-gulp.task('concatenate:vendor_css', function() {
+gulp.task('vendor:css', function() {
   return gulp.src([
-    `${g3w.assetsFolder}/vendors/bootstrap/css/bootstrap.min.css`,
-    `${g3w.assetsFolder}/vendors/bootstrap-treeview/css/bootstrap-treeview.min.css`,
-    `${g3w.assetsFolder}/vendors/icheck/skins/all.css`,
-    `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css`,
+    `./node_modules/bootstrap/dist/css/bootstrap.css`,
+    `./node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css`,
     `${g3w.assetsFolder}/vendors/ol/css/ol.css`,
-    `${g3w.assetsFolder}/vendors/select2/css/select2.min.css`,
+    `./node_modules/select2/dist/css/select2.css`,
     `${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css`,
-    `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/css/all.min.css`,
-    `${g3w.assetsFolder}/vendors/quill/css/quill.snow.min.css`
+    `./node_modules/@fortawesome/fontawesome-free/css/all.css`,
+    `./node_modules/quill/dist/quill.snow.css`
   ])
     .pipe(concat('vendor.min.css'))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
@@ -538,7 +535,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? runSequence(['browserify:app', 'move:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'css', 'datatable-images', 'html'], done)
+   ? runSequence(['browserify:app', 'vendor:js', 'vendor:css', 'fonts', 'cursors', 'images', 'css', 'datatable-images', 'html'], done)
    : done;
 });
 
