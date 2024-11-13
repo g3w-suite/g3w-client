@@ -4,6 +4,7 @@
  * @since 3.11.0
  */
 import { normalizeEpsg } from 'utils/normalizeEpsg';
+import proj4             from 'proj4/dist/proj4-src';
 
 /**
  * ORIGINAL SOURCE: src/app/g3w-ol/projection/projection.js@v3.10.1

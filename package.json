@@ -32,6 +32,7 @@
     "@mapbox/shp-write": "^0.4.3",
     "file-saver": "^2.0.5",
     "ismobilejs": "^1.1.1",
+    "jsts": "^2.11.3",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "lodash.clonedeep": "^4.5.0",
@@ -43,7 +44,8 @@
     "vue-color": "^2.8.1",
     "vue-cookie": "^1.1.4",
     "vue-cookie-law": "^1.13.3",
-    "vue2-teleport": "^1.1.4"
+    "vue2-teleport": "^1.1.4",
+    "wolfy87-eventemitter": "^5.2.9"
   },
   "overrides": {
     "graceful-fs": "^4.2.10"
