@@ -114,7 +114,7 @@ export default {
   } = {}) {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
-    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
+    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
 
     try {
       return {
