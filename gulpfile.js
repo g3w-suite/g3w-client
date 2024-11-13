@@ -67,19 +67,6 @@ function setNODE_ENV() {
   console.log(`[G3W-CLIENT] loaded plugins: {\n  ${dev_plugins.map(pluginName => (GREEN__ + pluginName + __RESET + ': '+ get_version(pluginName))).join('\n  ')}\n}\n`);
 }
 
-// Retrieve project dependencies ("g3w-client")
-const dependencies = Object.keys(packageJSON.dependencies).filter(dep => ![
-  'file-saver',
-  'ismobilejs',
-  'jszip',
-  'jsts',
-  'proj4',
-  'scriptjs',
-  'shpjs',
-  'vue',
-  'wolfy87-eventemitter',
-].includes(dep));
-
 // Built-in client plugins
 const default_plugins = [
   'editing',
@@ -254,54 +241,32 @@ gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(`
 gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
 
 /**
- * Concatenate and browserify vendor javascript files
+ * Move vendor javascript files
  */
-gulp.task('concatenate:vendor_js', function() {
-  const ext = production ? '.min' : '';
-  return merge(
-    gulp.src([
+gulp.task('move:vendor_js', function() {
+  return gulp.src([
       `${g3w.assetsFolder}/vendors/jquery/jquery-2.2.1.min.js`,
-      `${g3w.assetsFolder}/vendors/jquery-ui/jquery-ui${ext}.js`,
-      `${g3w.assetsFolder}/vendors/bootstrap/js/bootstrap${ext}.js`,
+      `${g3w.assetsFolder}/vendors/jquery-ui/jquery-ui.js`,
+      `${g3w.assetsFolder}/vendors/bootstrap/js/bootstrap.js`,
       `${g3w.assetsFolder}/vendors/bootbox/bootbox.min.js`,
-      `${g3w.assetsFolder}/vendors/lodash/lodash${ext}.js`,
+      `${g3w.assetsFolder}/vendors/lodash/lodash.js`,
       `${g3w.assetsFolder}/vendors/moment/moment.js`,
       `${g3w.assetsFolder}/vendors/moment/moment-with-locales.js`,
       `${g3w.assetsFolder}/vendors/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js`,
-      `${g3w.assetsFolder}/vendors/icheck/icheck${ext}.js`,
+      `${g3w.assetsFolder}/vendors/icheck/icheck.js`,
       `${g3w.assetsFolder}/vendors/bootstrap-treeview/js/bootstrap-treeview.js`,
       `${g3w.assetsFolder}/vendors/jquery-file-upload/jquery.fileupload.js`,
-      `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next${ext}.js`,
+      `${g3w.assetsFolder}/vendors/jquery-i18next/jquery-i18next.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
       `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
       `${g3w.assetsFolder}/vendors/ol/js/ol.js`,
       `${g3w.assetsFolder}/vendors/ol-rotate-feature/bundle.min.js`,
-      `${g3w.assetsFolder}/vendors/datatables/datatables${ext}.js`,
-      `${g3w.assetsFolder}/vendors/select2/js/select2.full${ext}.js`,
+      `${g3w.assetsFolder}/vendors/datatables/datatables.js`,
+      `${g3w.assetsFolder}/vendors/select2/js/select2.full.js`,
       `${g3w.assetsFolder}/vendors/select2/js/i18n/it.js`,
       `${g3w.assetsFolder}/vendors/quill/js/quill.min.js`
-      ]),
-      browserify(
-        /* Uncomment the following in next ESM release (v4.x) */
-        // {
-        //  plugin: [
-        //    esmify
-        //  ],
-        //  transform: [
-        //    vueify,
-        //    [ babelify, { ignore: [/\/node_modules\//], /* global: true, sourceMaps: true, babelrc: true */ } ]
-        //    [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
-        //    imgurify
-        // ]}
-        )
-        .require(dependencies)
-        .bundle()
-        .pipe(source('vendor.node_modules.min.js'))
-        .pipe(buffer())
-        .pipe(gulpif(production, uglify()))
-    )
-    .pipe(concat('vendor.min.js'))
-    .pipe(gulp.dest(`${outputFolder}/static/client/js/`));
+      ], { base: `${g3w.assetsFolder}/vendors/` })
+    .pipe(gulp.dest(`${outputFolder}/static/client/vendors/`));
 });
 
 
@@ -350,7 +315,6 @@ gulp.task('browserify:app', function() {
     ],
     ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
   })
-  .external(dependencies)                                       // exclude external npm dependencies
   .on('update', ()  => !production && rebundle())
   .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
 
@@ -574,7 +538,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? runSequence(['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'css', 'datatable-images', 'html'], done)
+   ? runSequence(['browserify:app', 'move:vendor_js', 'concatenate:vendor_css', 'fonts', 'cursors', 'images', 'css', 'datatable-images', 'html'], done)
    : done;
 });
 
