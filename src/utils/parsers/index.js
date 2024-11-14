@@ -404,7 +404,7 @@ export const ResponseParser = {
                     if (o > 0 || null != json[k].__text || null != json[k].__cdata) {
                       res += this.startTag(json[k], k, attrs, false) + this.parseJSON(json[k], "" === path ? k : path + "." + k) + this.endTag(json[k], k);
                     } else {
-                      res += startTag(json[k], k, attrs, true);
+                      res += this.startTag(json[k], k, attrs, true);
                     }
                   }
 
