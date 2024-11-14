@@ -75,44 +75,46 @@ export function SearchPanel(opts = {}, show = false) {
       options:   d.input.options,
     })),
     //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
-    autofilter:           { value: 0, filtertoken: null }, //value 0 no set, 1 set: filtertoken is related to filter tocken
+    autofilter:           { value: 0 }, //value 0 no set, 1
     paginate:             !!opts.options.paginate //@since 3.11.0 paginate or not
   };
 
-  // create search form structure 
-  state.mounted = (async function(state) {
+  const setInputs = async () => {
 
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
-  
+
       const input            = state.forminputs[i];
       const has_autocomplete = 'autocompletefield' === input.type;
-  
+
       // set key-values for select
       input.values = [
         ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
         ...(input.dependance_strict || has_autocomplete
-            ? input.values
-            : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
-          )
+                ? input.values
+                : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
+        )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-  
+
       // there is a dependence
       if (input.dependance) {
         state.loading[input.dependance] = false;
         input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
       }
-  
+
       // save a copy of original values
       input._values = [...input.values];
-  
+
       input.loading = false;
     }
-  
-  })(state);
+
+  }
+  // create search form structure 
+  state.mounted = setInputs();
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,
     doSearch,
+    setInputs,
     run: debounce((...args) => {
       const [w, h] = GUI.getService('map').getMap().getSize();
       const hide   = GUI.isMobile() && (0 === w || 0 === h);
@@ -173,16 +175,6 @@ async function doSearch({
   const page_sizes = PAGELENGTHS;
 
   try {
-    //in the case of autofilter filtertoken set
-    if (state.autofilter.filtertoken) {
-      await Promise.allSettled(state.search_layers.map(l => {
-        l.clearSelectionFids();
-        return l.setSelection(false);
-      }));
-
-      state.autofilter.filtertoken = undefined;
-    }
-
     data = await DataRouterService.getData('search:features', {
       inputs: {
         layer:     state.search_layers,
@@ -251,18 +243,5 @@ async function doSearch({
 
   state.searching = false;
 
-  const result = parsed ? parsed : data;
-
-  //In the case of autofilter, need to get filtertoken attribute from server response data and set to each layer
-  if (1 === state.autofilter.value && result) {
-    (result.data || []).forEach(({ filtertoken }) => {
-      //if returned filtertoken, filter is apply on layer
-      if (filtertoken) {
-        //set autofilter filter token
-        state.autofilter.filtertoken = filtertoken;
-      }
-    })
-  }
-
-  return result;
+  return parsed ? parsed : data;
 }

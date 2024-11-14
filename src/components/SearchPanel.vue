@@ -6,11 +6,21 @@
 <template>
   <div
     class      = "g3w-search-panel form-group"
-    v-disabled = "state.searching"
+    v-disabled = "state.searching || loading || reload"
   >
 
     <h4><b>{{ state.title }}</b></h4>
-
+    <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
+      <helpdiv message="sdk.search.help_filter"/>
+      <button
+        v-t-tooltip:left.create = "'layer_selection_filter.tools.nofilter'"
+        @click.stop             = "clearFilters"
+        class                   = "btn skin-border-color"
+        style                   = "background-color: transparent; margin: 5px 0"
+      >
+        <i class = "skin-color" :class="$fa('clear')"></i>
+      </button>
+    </section>
     <!-- SEARCH TOOLS -->
     <slot name = "tools"></slot>
 
@@ -198,6 +208,7 @@
        state:      this.$options.service.state,
        autofilter: false, //@since 3.11.0
        allvalue:   SEARCH_ALLVALUE,
+       reload:     false,
       }
     },
 
@@ -211,10 +222,33 @@
         return window.initConfig.user.is_staff;
       },
 
+      /**
+       * @since 3.11.0 loading inputs data
+       * Disabled search form during loading input data
+       * @return {*}
+       */
+      loading() {
+        return this.state.forminputs.reduce((bool, i) => bool || i.loading, false);
+      },
+
+      filterlayers() {
+        return (ApplicationState.tokens.filtertoken && this.state.search_layers.filter(l => l.getFilterToken()) || []);
+      }
     },
 
     methods: {
-
+      /**
+      * @since 3.11.0
+      */
+      clearFilters() {
+        this.filterlayers.forEach(l => {
+          if (this.state.paginate) {
+            l.clearSelectionFids()
+          } else {
+            l.toggleFilterToken();
+          }
+        })
+      },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
       },
@@ -457,8 +491,18 @@
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => ApplicationState.language, () => {
+        const unwatch = this.$watch(() => [ApplicationState.tokens.filtertoken, ApplicationState.language], async (v, o) => {
           unwatch();
+          //in case of filtertoken change
+          if (v[0] !== o[0]) {
+            this.reload = true;
+            try {
+              await this.$options.service.setInputs()
+            } catch(e) {
+             console.warn(e);
+            }
+            this.reload = false;
+          }
           this.clearSelect2();
           this.initSelect2Field(input);
         });
