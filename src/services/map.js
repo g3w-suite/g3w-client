@@ -1535,7 +1535,7 @@ class MapService extends G3WObject {
    * @param layer
    * @param options
    */
-  updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
+  updateMapLayer(layer, options = { force: false, layerId }, { showSpinner = true } = {}) {
     // if force to add g3w_time parameter to force request of map layer from server
     if (options.force) {
       options.g3w_time = Date.now();
@@ -1571,7 +1571,8 @@ class MapService extends G3WObject {
     if (projectLayer) {
       (Array.isArray(layer.layers) ? layer.layers : []).forEach(l => {
         l.onbefore('change',      () => this.updateMapLayer(layer, { force: true }));
-        l.on('filtertokenchange', () => this.updateMapLayer(layer, { force: true }))
+        //pass layerId to change only layer @since 3.11.0
+        l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(layer, { force: true, layerId })  })
       });
     }
   }

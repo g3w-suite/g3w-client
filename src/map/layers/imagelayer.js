@@ -244,7 +244,7 @@ class RasterLayer extends G3WObject {
       return;
     }
     
-    const layers = this.layers.filter(l => l.isVisible()) || [];
+    const layers = this.layers.filter(l => l.isVisible() && params.layerId ? params.layerId === l.getId() : true ) || [];
 
     // skip when ..
     if (layers.length <= 0) {
