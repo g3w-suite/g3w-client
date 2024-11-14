@@ -40,7 +40,7 @@ export default {
         .select2({
           tags:             createTag,
           width:            '100%',
-          dropdownCssClass: 'skin-color',
+          // dropdownCssClass: 'skin-color',
           dropdownAutoWidth,
           dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
           templateResult,
