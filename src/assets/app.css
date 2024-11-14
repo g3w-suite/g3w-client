@@ -1,3 +1,11 @@
+@import url("../../node_modules/bootstrap/dist/css/bootstrap.css");
+@import url("../../node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css");
+@import url("../../node_modules/ol/ol.css");
+@import url("../../node_modules/select2/dist/css/select2.css");
+@import url("../../node_modules/datatables.net-dt/css/jquery.dataTables.css");
+@import url("../../node_modules/@fortawesome/fontawesome-free/css/all.css");
+@import url("../../node_modules/quill/dist/quill.snow.css");
+
 /**************************************************************************************
  * 0. Fonts
  * 1. Loading spinners
@@ -83,35 +91,33 @@ html, body                   { height: 100%; width: 100%; }
 *:focus                      { outline: none; }
 
 table.dataTable > tbody > tr.child ul.dtr-details > li { border-bottom: 0 !important; }
+table.dataTable th.sorting::after,
+table.dataTable th.sorting::before { font-family: Monospace; }
+
+table.dataTable th.sorting_asc::after,
+table.dataTable th.sorting_desc::before { display: none; }
+table.dataTable th.sorting_asc::before,
+table.dataTable th.sorting_desc::after  { color:#7a80dd; opacity: 1; }
 
 /**************************************************************************************
  * 0. Fonts
  **************************************************************************************/
-@font-face {
-  font-family: 'icomoon';
-  src:
-    url('../fonts/iconmoon.ttf?fcb3cj') format('truetype'),
-    url('../fonts/iconmoon.woff?fcb3cj') format('woff'), 
-    url('../fonts/iconmoon.svg?fcb3cj#icomoon') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-300.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-300italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: italic; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-regular.woff2')   format('woff2'); font-family: 'Source Sans Pro'; font-weight: 400; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-600.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-600italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: italic; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-700.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-700italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: italic; }
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-400-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-400-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-400-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-400-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-700-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-700-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-700-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-700-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
+@font-face { src: url('./fonts/iconmoon.woff?fcb3cj')                      format('woff');  font-family: 'icomoon';         font-weight: 300; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-300.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-300italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: italic; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-regular.woff2')   format('woff2'); font-family: 'Source Sans Pro'; font-weight: 400; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-600.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-600italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: italic; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-700.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-700italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: italic; }
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-400-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-400-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-400-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-400-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-700-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-700-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-700-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-700-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
 
 /**************************************************************************************
  * 1. Loading Spinners
@@ -668,9 +674,9 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
  * 7. Map Controls
  **************************************************************************************/
 .ol-viewport.ol-pointer                                                { cursor: pointer; }
-.ol-viewport.ol-zoom-in                                                { cursor: url('../cursors/mZoomIn.svg'), zoom-in }
-.ol-viewport.ol-help                                                   { cursor: url('../cursors/mIdentify.svg'), help }
-.ol-viewport.ol-streetview                                             { cursor: url('../cursors/mCapturePoint.svg'), pointer }
+.ol-viewport.ol-zoom-in                                                { cursor: url('./cursors/mZoomIn.svg'), zoom-in }
+.ol-viewport.ol-help                                                   { cursor: url('./cursors/mIdentify.svg'), help }
+.ol-viewport.ol-streetview                                             { cursor: url('./cursors/mCapturePoint.svg'), pointer }
 .ol-viewport.ol-crosshair                                              { cursor: crosshair; }
 .ol-viewport.ol-grabbing                                               { cursor: grabbing; }
 .ol-viewport.ol-grab                                                   { cursor: grab; }
@@ -686,18 +692,18 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
   .ol-querybydrawpolygon,
   .ol-measure
 )                                 button                               { position: relative; font-size: 0; }
-.ol-control                       button.ol-zoom-in::before            { background: url(../images/mActionZoomIn.svg)              no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control                       button.ol-zoom-out::before           { background: url(../images/mActionZoomOut.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-zoombox            button::before                       { background: url(../images/mActionZoomToArea.svg)          no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-zoom-extent        button::before                       { background: url(../images/mActionZoomFullExtent.svg)      no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-query              button::before                       { background: url(../images/mActionIdentify.svg)            no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybbox          button::before                       { background: url(../images/mActionIdentifyByRectangle.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybypolygon     button::before                       { background: url(../images/mActionIdentifyByFreehand.svg)  no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybydrawpolygon button::before                       { background: url(../images/mActionIdentifyByPolygon.svg)   no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybycircle      button::before                       { background: url(../images/mActionIdentifyByRadius.svg)    no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-measure            button::before                       { background: url(../images/mActionMeasure.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control                       button.ol-zoom-in::before            { background: url(./images/mActionZoomIn.svg)              no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control                       button.ol-zoom-out::before           { background: url(./images/mActionZoomOut.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-zoombox            button::before                       { background: url(./images/mActionZoomToArea.svg)          no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-zoom-extent        button::before                       { background: url(./images/mActionZoomFullExtent.svg)      no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-query              button::before                       { background: url(./images/mActionIdentify.svg)            no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybbox          button::before                       { background: url(./images/mActionIdentifyByRectangle.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybypolygon     button::before                       { background: url(./images/mActionIdentifyByFreehand.svg)  no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybydrawpolygon button::before                       { background: url(./images/mActionIdentifyByPolygon.svg)   no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybycircle      button::before                       { background: url(./images/mActionIdentifyByRadius.svg)    no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-measure            button::before                       { background: url(./images/mActionMeasure.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
 .ol-control.ol-streetview         button                               { color: #fdbf2d; text-shadow: 0 1px 0 #505050, 0 -1px 0 #505050, 1px 0 0 #505050, -1px 0px 0 #505050; }
-.ol-control.ol-rotate             button .ol-compass                   { background: url(../images/compass.svg)                    no-repeat 50% center; display: block; width: 100%; height: 100%; transform: rotate(30deg); font-size: 0; }
+.ol-control.ol-rotate             button .ol-compass                   { background: url(./images/compass.svg)                    no-repeat 50% center; display: block; width: 100%; height: 100%; transform: rotate(30deg); font-size: 0; }
 
 .ol-control, .ol-custom-overviewmap                                    { background-color: transparent; border-radius: 0; padding: 0; }
 :is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 1px solid rgba(0,0,0,0.5); background-clip: padding-box; box-shadow: none !important; border-radius: 3px; }
