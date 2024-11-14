@@ -290,7 +290,7 @@ export default new (class QueryResultsService extends G3WObject {
         // get features from added pick layer in case of a new request query
         layers.forEach((l, index) => {
           //@since 3.11.0 check if a result comes from pagination
-          l.filter.pagination = this.state.query.pagination ? this.state.query.pagination.counts[index] > l.features.length : l.filter.pagination;
+          l.filter.pagination = !!(this.state.query.pagination && this.state.query.pagination.counts[index] > l.features.length) ;
           options.add || options.update ? this.updateLayerResultFeatures(l, options.update) : this.state.layers.push(l)
         });
         this.setActionsForLayers(layers, { add: options.add, update: options.update });
@@ -622,7 +622,7 @@ export default new (class QueryResultsService extends G3WObject {
       const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
       this.state.layers[index].features.forEach((f, i) => {
         if (bool && !f.selection.selected && layer.isGeoLayer() && f.geometry) {
-          const fid = f.attributes[G3W_FID]; //only for project layer (not external)
+          const fid = this._getFeatureId(f, this.state.layers[index].external);
           (layer.addOlSelectionFeature({ id: fid, feature:f })).selected = true;
           layer.includeSelectionFid(fid, false);
         }
@@ -635,7 +635,7 @@ export default new (class QueryResultsService extends G3WObject {
       this.state.layers[index].filter.pagination = this.state.layers[index].features.length < this.state.query.pagination.counts[index];
       //in the case of layer with geometry, zoom to features
       if (this.state.layers[index].hasgeometry) {
-        this.zoomToLayerFeaturesExtent(this.state.layers[index]);
+        this.highLightLayerFeatures(this.state.layers[index]);
       }
     } catch(e) {
       console.warn(e);
@@ -779,7 +779,7 @@ export default new (class QueryResultsService extends G3WObject {
     this.unlistenerlayeractionevents = [];
 
     // loop results
-    layers.forEach((layer, index) => {
+    layers.forEach(layer => {
       const state = this.state;
       // eventually set layer action tool and need to be reactive
       this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
@@ -954,7 +954,14 @@ export default new (class QueryResultsService extends G3WObject {
               action.state.toggled[index] = feature.selection.selected;
             } else if (feature && undefined !== layer.selection.active) { // project layer
               const pLayer               = getCatalogLayerById(layer.id);
-              const is_selected_feature  = feature ? pLayer.hasSelectionFid(this._getFeatureId(feature, layer.external)) : false;
+              const fid                  = this._getFeatureId(feature, layer.external);
+              let is_selected_feature  = feature ? pLayer.hasSelectionFid() : false;
+              //force to add selection feature in case of no pagination and selection is due an autofilter search
+              if (!this.state.query.pagination && pLayer.state.filter.active && !is_selected_feature) {
+                is_selected_feature = true;
+                (pLayer.addOlSelectionFeature({ id: fid, feature })).selected = true;
+                pLayer.includeSelectionFid(fid, false);
+              }
               feature.selection.selected = is_selected_feature;
               action.state.toggled[index] = (
                 //need to check if set active filter and no saved filter is set
@@ -1749,7 +1756,7 @@ export default new (class QueryResultsService extends G3WObject {
    */
   clearHighlightGeometry(layer) {
     GUI.getService('map').clearHighlightGeometry();
-    if (this.isOneLayerResult()) {
+    if (!this.state.query.pagination && this.isOneLayerResult()) {
       GUI.getService('map').highlightFeatures(layer.features, { duration: Infinity });
     }
   }
@@ -1846,7 +1853,7 @@ export default new (class QueryResultsService extends G3WObject {
     }
 
     //In case of pagination and toggled selection layer
-    if (this.state.query.pagination && toggled && layerSelection) {
+    if (toggled && layerSelection) {
       _layer.clearSelectionFids();
       return;
     }

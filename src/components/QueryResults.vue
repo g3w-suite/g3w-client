@@ -31,11 +31,11 @@
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class       = "box-header with-border"
-                :class      = "{'mobile': isMobile()}"
-                @mouseover  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout   = "highLightLayerFeatures(layer, { highlight: false })"
-                @click.stop = "collapseSidebar"
+                class            = "box-header with-border"
+                :class           = "{'mobile': isMobile()}"
+                @mouseover.stop  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout        = "highLightLayerFeatures(layer, { highlight: false })"
+                @click.stop      = "collapseSidebar"
               >
                 <div
                   class  = "box-title query-layer-title"
@@ -52,10 +52,16 @@
                     ></span>
                   </span>
                   {{ layer.title }}
-                  <span
-                    v-show = "!layer.rawdata"
-                    class  = "query-layer-feature-count">({{ layer.features.length }})
-                  </span>
+                  <template v-show = "!layer.rawdata">
+                    <span v-if = "state.query.pagination"
+                      class  = "query-layer-feature-count"
+                    >({{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }})
+                    </span>
+                    <span v-else
+                      class  = "query-layer-feature-count"
+                    >({{ layer.features.length }})
+                    </span>
+                  </template>
                 </div>
                 <div
                   class       = "box-features-action"
@@ -154,7 +160,7 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active && (showInPagination(layer, index))">
+                  <template v-if = "!layer.external && layer.selection.active && showInPagination(layer, index)">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
@@ -227,9 +233,6 @@
                   </select>
                 </section>
                 <section v-if ="!layer.loading" id = "pagination-buttons">
-                  <span style = "font-size: 1em;">
-                    {{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }}
-                  </span>
                   <!-- BACKWARD BUTTON -->
                   <button
                     v-if        =  "state.query.pagination.counts[index] > layer.features.length"
@@ -763,11 +766,11 @@
       showLayerDownloadFormats(layer) {
         this.$options.service.showLayerDownloadFormats(layer)
       },
-      saveLayerResult(layer, type="csv") {
+      saveLayerResult(layer, type = "csv") {
         this.$options.service.downloadFeatures(type, layer, layer.features);
       },
       hasLayerOneFeature(layer) {
-        return layer.features.length === 1;
+        return 1 === layer.features.length;
       },
 
       /**
@@ -787,7 +790,6 @@
           .filter(f => !f.selection.selected)
           .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
         }
-
       },
 
       getContainerFromFeatureLayer({ layer, index } = {}) {
