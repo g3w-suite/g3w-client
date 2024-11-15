@@ -5,7 +5,7 @@
 
 <template>
    <span
-     v-if                      = "show && (action.state || { show: show }).show"
+     v-if                      = "show && (undefined === (action.state || {}).show ? show : action.state.show)"
      @contextmenu.prevent.stop = ""
      @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
      v-download                = "action.download"
