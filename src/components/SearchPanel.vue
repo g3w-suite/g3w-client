@@ -491,18 +491,8 @@
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => [ApplicationState.tokens.filtertoken, ApplicationState.language], async (v, o) => {
+        const unwatch = this.$watch(() => ApplicationState.language,  () => {
           unwatch();
-          //in case of filtertoken change
-          if (v[0] !== o[0]) {
-            this.reload = true;
-            try {
-              await this.$options.service.setInputs()
-            } catch(e) {
-             console.warn(e);
-            }
-            this.reload = false;
-          }
           this.clearSelect2();
           this.initSelect2Field(input);
         });
@@ -520,6 +510,29 @@
         })
         // reset SELECTS to an empty array
         SELECTS.splice(0);
+      },
+
+      /**
+       * Reload select2Inputs
+        * @return {Promise<void>}
+       */
+      async reloadSelect2Inputs() {
+        this.reload = true;
+
+        try {
+          await this.$options.service.setInputs();
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.clearSelect2();
+        try {
+          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)))
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.reload = false;
       }
 
     },
@@ -528,6 +541,13 @@
       autofilter(bool = false) {
         this.state.autofilter.value = Number(bool); //0/1 instead true false
       }
+    },
+
+    async created() {
+      //Listen change filtertoken on layer
+      //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
+      //because when create a new filter with new rules, the filtertoken string doesn't change
+      this.state.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
     },
 
     async mounted() {
@@ -541,6 +561,7 @@
     },
 
     beforeDestroy() {
+      this.state.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs))
       this.clearSelect2();
     }
 
