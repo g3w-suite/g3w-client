@@ -377,14 +377,15 @@ gulp.task('browserify:app', function() {
 /**
  * Compile Open Layers
  */
-gulp.task('build:ol', function() {
-  return esbuild.build({
+gulp.task('build:ol', function(done) {
+  esbuild.build({
       entryPoints: ['src/g3w-ol.js'],
       bundle:      true,
       minify:      production,
       sourcemap:   true,
       outfile:    `${outputFolder}/static/client/vendors/ol.js`,
   });
+  done();
 });
 
 /**

@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @since 3.11.0
+ */
+
 import * as ol              from 'ol';
 import * as array           from 'ol/array';
 import * as color           from 'ol/color';
@@ -31,7 +36,7 @@ import * as xml             from 'ol/xml';
 /**
  * Based on OpenLayers v5.3.0
  */
-globalThis.ol = Object.assign(ol, {
+globalThis.ol = Object.assign({}, ol, {
   array,
   color,
   control,
@@ -40,13 +45,13 @@ globalThis.ol = Object.assign(ol, {
   events: { condition },
   extent,
   featureloader,
-  format: Object.assign(format, { filter }),
-  geom:   Object.assign(geom,   { Polygon: Object.assign(geom.Polygon, Polygon) }),
+  format: Object.assign({}, format, { filter }),
+  geom:   Object.assign({}, geom,   { Polygon: Object.assign(geom.Polygon, Polygon) }),
   has,
   interaction,
   layer,
   loadingstrategy,
-  proj:   Object.assign(proj,   { proj4, projections, Units, }),
+  proj:   Object.assign({}, proj,   { proj4, projections, Units, }),
   render,
   size,
   source,
