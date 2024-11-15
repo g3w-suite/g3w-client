@@ -8,7 +8,7 @@
     class      = "g3w-search-panel form-group"
     v-disabled = "state.searching || loading || reload"
   >
-
+    <bar-loader :loading = "state.searching || loading || reload"/>
     <h4><b>{{ state.title }}</b></h4>
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
       <helpdiv message="sdk.search.help_filter"/>
