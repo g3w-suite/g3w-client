@@ -67,12 +67,17 @@
     },
     async created() {
       if (this.action.init) {
-        this.action.init({layer: this.layer, feature: this.feature, index:this.featureIndex, action:this.action});
+        this.action.init({ layer: this.layer, feature: this.feature, index: this.featureIndex, action: this.action });
       }
       if (typeof this.action.condition === 'function') {
         const show = this.action.condition({ layer: this.layer, feature: this.feature });
         this.show = show instanceof Promise ? await show: show;
       }
     },
+    beforeDestroy() {
+      if (typeof this.action.clear === 'function') {
+        this.action.clear({ layer: this.layer, feature: this.feature });
+      }
+    }
   }
 </script>

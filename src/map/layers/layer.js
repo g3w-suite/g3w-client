@@ -1056,6 +1056,8 @@ class Layer extends G3WObject {
    */
   setFilter(bool = false) {
     this.state.filter.active     = bool;
+    //@since 3.11.0 need to reset pagination filter when bool is false
+    this.state.filter.pagination = bool && this.state.filter.pagination;
     if (this.isGeoLayer() && this.state.filter.active) {
       this.hideOlSelectionFeatures();
     }
