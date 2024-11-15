@@ -517,7 +517,12 @@
         * @return {Promise<void>}
        */
       async reloadSelect2Inputs() {
+        //Already reload from another layer
+        if (this.reload) { return }
+
         this.reload = true;
+        //wait to be sure that another layer is call to reload
+        await this.$nextTick();
 
         try {
           await this.$options.service.setInputs();
