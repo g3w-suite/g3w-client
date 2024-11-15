@@ -1247,6 +1247,7 @@ class Layer extends G3WObject {
    */
   setFilterToken(filtertoken = undefined) {
     ApplicationState.tokens.filtertoken = filtertoken;
+    this.setFilter(!!filtertoken);
     this.emit('filtertokenchange', { layerId: this.getId() });
   }
 
