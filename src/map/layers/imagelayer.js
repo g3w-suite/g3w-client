@@ -458,24 +458,6 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('TMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        return new ol.layer.Tile({
-          // extent: opts.extent,
-          visible: false,
-          source: new ol.source.TileArcGISRest({
-            url:          undefined === this.config.url ? null : this.config.url,
-            projection:   this.getProjectionFromCrs(this.config.crs),
-            attributions: this.config.attributions,
-            // crossOrigin:  opts.crossOrigin,
-          }),
-        });
-      };
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
     if ('WMTS' === this._BASE_LAYER) {
       this._makeOlLayer = () => {
         // use this config to get params
