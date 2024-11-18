@@ -144,7 +144,7 @@
               <!-- EPSG PROJECTIONS -->
               <div class = "form-group">
                 <label for = "g3w-wms-projections" v-t = "'sidebar.wms.panel.label.projections'"></label>
-                <select id = "g3w-wms-projections" v-select2 = "'wms_projection'">
+                <select id = "g3w-wms-projections" class = "form-control" v-model = "wms_projection">
                   <option v-for = "p in projections">{{ p }}</option>
                 </select>
               </div>
