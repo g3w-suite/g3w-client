@@ -380,7 +380,7 @@ const Providers = {
         SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
         FILTER:       'all' !== filter.type ? `(${(
           new ol.format.WFS().writeGetFeature({
-            featureTypes: [layers[0]],
+            featureTypes: [''], //v3.11.0 @TODO need to check https://openlayers.org/en/v5.3.0/apidoc/module-ol_format_WFS-WFS.html#writeGetFeature
             filter:       ({
               'bbox':       () => ol.format.filter.bbox('the_geom', filter.value),
               'geometry':   () => ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
