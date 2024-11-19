@@ -382,10 +382,10 @@ const Providers = {
           new ol.format.WFS().writeGetFeature({
             featureTypes: [layers[0]],
             filter:       ({
-              'bbox':       ol.format.filter.bbox('the_geom', filter.value),
-              'geometry':   ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
-              'expression': null,
-            })[filter.type],
+              'bbox':       () => ol.format.filter.bbox('the_geom', filter.value),
+              'geometry':   () => ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
+              'expression': () => null,
+            })[filter.type](),
           })
         ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
       });
