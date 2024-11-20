@@ -4,12 +4,17 @@
  */
 import localforage from 'localforage';
 import { waitFor } from 'utils/waitFor';
+import shpwrite    from '@mapbox/shp-write';
+
 
 // include backward compatibilies
 import './deprecated';
 
 // expose global variables
-import './g3w-globals';
+import 'g3w-globals';
+
+// run app (index.prod.js)
+import 'index.prod';
 
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
@@ -161,7 +166,6 @@ g3wsdk.gui.GUI.once('ready', async () => {
   const zipFile = async name => {
     await waitFor(async () => name in (await localforage.getItem('externalLayers')), 1000);
     const externalLayers = await localforage.getItem('externalLayers');
-    const shpwrite       = require('@mapbox/shp-write');
     const blob           = await shpwrite.zip(
       JSON.parse(externalLayers[name].features),
       {
@@ -216,9 +220,6 @@ C,"POINT (11.2474811 43.7910709)"`],
   });
 
 });
-
-// run app (index.prod.js)
-require('./index.prod');
 
 // custom map control: "Open in iframe"
 g3wsdk.gui.GUI.once('ready', () => {
