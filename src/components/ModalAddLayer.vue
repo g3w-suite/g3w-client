@@ -746,6 +746,7 @@ export default {
             color:      this.layer_color,
             field:      this.field,
             persistent: !!this.persistent,
+            type:       this.file_type,
           });
           $(this.$refs.modal_addlayer).modal('hide');
           this.unloadFile();
