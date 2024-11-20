@@ -201,7 +201,6 @@ export const ResponseParser = {
           projections,
           layers,
           wms = true,
-          id =  false,
         } = {}) {
 
           // convert XML response to string
@@ -250,7 +249,7 @@ export const ResponseParser = {
               let feats = [];
 
               // get layers by name (eg. "qgs:layer0")
-              const qgs = [...cloned.querySelectorAll(`FeatureCollection > featureMember > ${ id ? layer.getId() : ('layer' + i) }`)];
+              const qgs = [...cloned.querySelectorAll(`FeatureCollection > featureMember > layer${i}`)];
 
               // set "g3w_fid" attribute from `fid="<layer_name_or_id.fid>"`
               qgs.forEach(feat => {
