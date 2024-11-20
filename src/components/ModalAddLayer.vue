@@ -658,8 +658,12 @@ export default {
             // 'csv'    : new ol.format.WKT(),
           })[this.file_type].readFeatures(data, {
             dataProjection:    this.layer_crs,
-            featureProjection: GUI.getService('map').getEpsg() || this.layer_crs
+            featureProjection: GUI.getService('map').getEpsg() || this.layer_crs,
           });
+          //@since 3.11.0 shp function create always features in 4326 coordinates
+          if ('zip' === this.file_type && this.layer_crs !== 'EPSG:4326') {
+              features.forEach(f => f.getGeometry().transform('EPSG:4326', this.layer_crs));
+            }
         }
 
         // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)

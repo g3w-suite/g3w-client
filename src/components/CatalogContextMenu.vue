@@ -774,19 +774,13 @@
       async downloadExternalShapefile(layer) {
         ApplicationState.download = true;
         let features = GUI.getService('map').getLayerByName(layer.name).getSource().getFeatures();
-        if ('EPSG:4326' !== layer.crs) {
-          features = features.map(f => {
-            const feat = f.clone();
-            feat.getGeometry().transform(layer.crs, 'EPSG:4326');
-            return feat;
-          });
-        }
         const name = layer.name.split(`.${layer.type}`)[0];
         const blob = await shpwrite.zip(
           // GeoJSONFile
-          (new ol.format.GeoJSON()).writeFeaturesObject(features, { featureProjection: 'EPSG:4326' }),
+          (new ol.format.GeoJSON()).writeFeaturesObject(features, { dataProjection: layer.crs, featureProjection: GUI.getService('map').getEpsg() || layer.crs }),
           {
-            outputType: "blob",
+            outputType:     "blob",
+            prj:            layer.crs,
             folder:         name,
             types: {
               point:        name,
