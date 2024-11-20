@@ -21,7 +21,7 @@ export async function prompt({
   };
 
   let vueInput = new Vue({
-    template:`
+    template: /* html */ `
       <div>
         <label :for="id">${ label }</label>
         <input
