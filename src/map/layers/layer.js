@@ -26,9 +26,7 @@ import { get_legend_params }     from 'utils/get_legend_params';
 import { createRelationsUrl }    from 'utils/createRelationsUrl';
 
 import { Feature }               from 'map/layers/feature';
-
-const { t }                      = require('g3w-i18n');
-
+import { t }                     from 'g3w-i18n';
 
 const is_defined = d => undefined !== d;
 const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)

@@ -13,6 +13,11 @@ import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 
+import ProjectsMenu              from 'components/ProjectsMenu.vue';
+import SidebarItem               from 'components/SidebarItem.vue';
+import { FormComponent }         from 'components/g3w-form';
+
+
 /** store legacy frontend components */
 const COMPONENTS = {};
 
@@ -249,7 +254,7 @@ export default new (class GUI extends G3WObject {
       if ('sidebar' === placeholder) {
         if (!isMobile.any || false !== component.mobile) {
           ApplicationState.sidebar.components.push(component);
-          (new (Vue.extend(require('components/SidebarItem.vue')))({ component, opts: options })).$mount();
+          (new (Vue.extend(SidebarItem))({ component, opts: options })).$mount();
         }
         register = true;
       } else if (SERVICES[placeholder]) {
@@ -487,7 +492,6 @@ export default new (class GUI extends G3WObject {
   }
 
   showForm(options = {}) {
-    const { FormComponent } = require('components/g3w-form');
     // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     this.setContent({
@@ -794,7 +798,7 @@ export default new (class GUI extends G3WObject {
       ...opts,
       id: 'projectsmenu',
       title: opts.title || 'menu',
-      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue')))({
+      internalComponent: new (Vue.extend(ProjectsMenu))({
         host: opts.host,
         state: {
           menuitems: (opts.projects || getListableProjects()).map(p => ({

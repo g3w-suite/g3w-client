@@ -186,8 +186,7 @@ import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
 import ApplicationState   from 'store/application';
 import { XHR }            from 'utils/XHR';
-
-const { t } = require('g3w-i18n');
+import { t }              from 'g3w-i18n';
 
 /**
  * Attributes to send to server of layerstrees object

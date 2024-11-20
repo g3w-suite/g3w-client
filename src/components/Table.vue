@@ -163,8 +163,7 @@ import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-
-const { t }                        = require('g3w-i18n');
+import { t }                       from 'g3w-i18n';
 
 function _createFeatureForSelection(f) {
   return {

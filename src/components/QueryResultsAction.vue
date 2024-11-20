@@ -22,7 +22,7 @@
 </template>
 
 <script>
-  const { t } = require('g3w-i18n');
+  import { t } from 'g3w-i18n';
 
   export default {
     name: "action",

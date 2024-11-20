@@ -86,19 +86,16 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
-
-const i18n                        = require('g3w-i18n');
-const { Plugin }                  = require('./g3w-plugin');
-const { PluginService }           = require('./g3w-plugin');
+import i18n                                        from 'g3w-i18n';
+import { Plugin, PluginService }                   from 'g3w-plugin';
+import { MapLayersStoresRegistry }                 from 'services/map';
+import { SearchPanel }                             from 'components/g3w-search';
+import { FormComponent, FormService }              from 'components/g3w-form';
 
 /**
  * GUI modules
  */
-const { MapLayersStoresRegistry } = require('services/map').default;
 const FieldsService               = require('gui/fields/fieldsservice');
-const { SearchPanel }             = require('components/g3w-search');
-const { FormComponent }           = require('components/g3w-form');
-const { FormService }             = require('components/g3w-form');
 const Fields                      = require('gui/fields/fields');
 
 const g3wsdk = {

@@ -9,8 +9,9 @@ import { $promisify } from 'utils/promisify';
 import GUI            from 'services/gui';
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
-const deprecate  = require('util-deprecate');
+import _cloneDeep     from 'lodash.clonedeep';
+import deprecate      from 'util-deprecate';
+
 const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 function merge(destination, source) {

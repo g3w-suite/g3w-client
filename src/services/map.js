@@ -37,6 +37,7 @@ import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
+import { RasterLayer}                       from "map/layers/imagelayer";
 
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
@@ -456,7 +457,6 @@ class MapService extends G3WObject {
                                     return group;
                                   }, {}) || []
                               ).map(([id, layers]) => {
-                                const { RasterLayer } = require('map/layers/imagelayer');
                                 const mapLayer = new RasterLayer({
                                   url:   project.state.WMSUrl,
                                   id:    `overview_layer_${id}`,
@@ -2465,9 +2465,11 @@ ApplicationService.onbefore('offline', () => MAP.offlineids.forEach(c => { c.ena
 /** @since 3.8.0 */
 ApplicationService.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
 
+export const MapLayersStoresRegistry = MAP.layers;
+
 export default {
 
   MapService,
 
-  MapLayersStoresRegistry: MAP.layers,
+  MapLayersStoresRegistry,
 };

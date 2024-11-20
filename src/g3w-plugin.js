@@ -9,11 +9,10 @@ import ApplicationState   from 'store/application';
 import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
-
-const { addI18nPlugin } = require('g3w-i18n');
+import { addI18nPlugin }  from 'g3w-i18n';
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
+import _cloneDeep         from 'lodash.clonedeep';
 
 const TIMEOUT = 10000;
 

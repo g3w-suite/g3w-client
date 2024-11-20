@@ -16,6 +16,7 @@ import DataRouterService                        from 'services/data';
 
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
+import RelationsPage                            from "components/RelationsPage.vue";
 
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { intersects }                           from 'utils/intersects';
@@ -29,8 +30,7 @@ import { getCatalogLayerById }                  from 'utils/getCatalogLayerById'
 
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
-
-const { t } = require('g3w-i18n');
+import { t }                                    from 'g3w-i18n';
 
 function _setRelationField(node) {
   if (node.nodes) {
@@ -837,7 +837,7 @@ export default new (class QueryResultsService extends G3WObject {
             GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+                internalComponent: new (Vue.extend(RelationsPage))({
                   relations:        action.relations,
                   chartRelationIds: action.chartRelationIds,
                   feature,
@@ -1797,7 +1797,7 @@ export default new (class QueryResultsService extends G3WObject {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
-        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+        internalComponent: new (Vue.extend(RelationsPage))({
           currentview:      'relation',
           relations:        [projectRelation],
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],

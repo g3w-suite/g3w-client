@@ -192,8 +192,7 @@ import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
 import { getCatalogLayers }             from 'utils/getCatalogLayers';
-
-const { t } = require('g3w-i18n');
+import { t }                            from 'g3w-i18n';
 
 /**
  * Provider definitions.
