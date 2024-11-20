@@ -13,9 +13,6 @@ import './deprecated';
 // expose global variables
 import 'g3w-globals';
 
-// run app (index.prod.js)
-import 'index.prod';
-
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
 
@@ -171,6 +168,7 @@ g3wsdk.gui.GUI.once('ready', async () => {
       {
         outputType:    "blob",
         folder:         name,
+        prj:            externalLayers[name].options.crs,
         types: {
           point:        name,
           mulipoint:    name,
@@ -251,5 +249,8 @@ g3wsdk.gui.GUI.once('ready', () => {
   });
 });
 
-window.GUI         = g3wsdk.gui.GUI,
+// run app (index.prod.js)
+require('./index.prod');
+
+window.GUI         = g3wsdk.gui.GUI;
 window.localforage = localforage;
