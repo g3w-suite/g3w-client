@@ -844,9 +844,6 @@ export default {
 #print.treeview-menu .select2.select2-container {
   display: block;
 }
-details[open] .fa-eye {
-  display: none;
-}
 </style>
 
 <style scoped>
@@ -886,5 +883,11 @@ label {
 }
 .g3w-search-form > label:not(:nth-child(1)) {
   margin-top: 15px;
+}
+details[open] .fa-eye {
+  display: none;
+}
+details[open] summary > span {
+  overflow: visible !important;
 }
 </style>
