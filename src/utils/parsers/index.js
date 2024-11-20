@@ -223,311 +223,125 @@ export const ResponseParser = {
           // fields starting with an invalid key
           const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)|qgs:(\w+):(\w+)/g)).filter((_, i) => 0 === i % 2);
 
-          // add match numeric value (integer or float)
+          // numeric value (integer or float)
           if (invalids) {
-            response = invalids.reduce((acc, find) => {
-              return acc.replace(new RegExp(find[0], 'g'), `qgs:${NUMERIC_FIELD}${find[1]}${find[2]}`);
-            }, response);
+            response = invalids.reduce((acc, find) => acc.replace(new RegExp(find[0], 'g'), `qgs:${NUMERIC_FIELD}${find[1]}${find[2]}`), response);
           }
 
-          // PATCH id strange char
+          // HOTFIX: null characther ("\u0000")
           if (response) {
             response = response.replace(new RegExp(String.fromCharCode(0), 'g'), '0');
           }
 
-          /**
-           * convert XML string response to JSON
-           * 
-           * Based on: https://github.com/abdolence/x2js/tree/v1.2.0
-           */
-          const x2js = new (class {
-
-            getNodeName(node) {
-              return node.localName || node.baseName || node.nodeName;
-            }
-
-            escapeXmlChars(str) {
-              return "string" == typeof str
-                ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;")
-                : str;
-            }
-
-            startTag(json, element, attrs, closed) {
-              let res = "<" + (null != json && null != json.__prefix ? json.__prefix + ":" : "") + element;
-              for (let i = 0; i < (attrs || []).length; i++) {
-                json[attrs[i]] = this.escapeXmlChars(json[attrs[i]]);
-                res += ` ${ attrs[i].substr(1) }='${ json[attrs[i]] }'`;
-              }
-              return res += closed ? "/>" : ">"
-            }
-          
-            endTag(json, tagName) {
-              return "</" + (null != json.__prefix ? json.__prefix + ":" : "") + tagName + ">"
-            }
-
-            jsonXmlSpecialElem(json, field) {
-              return !!(0 == field.toString().indexOf('_') || 0 == field.toString().indexOf("__") || json[field] instanceof Function)
-            }
-          
-            jsonXmlElemCount(json) {
-              let i = 0;
-              if (json instanceof Object)
-                for (let k in json) this.jsonXmlSpecialElem(json, k) || i++;
-              return i
-            }
-
-            parseJSONAttrs(json) {
-              const n = [];
-              if (json instanceof Object) {
-                for (let k in json) {
-                  if (-1 == k.toString().indexOf("__") && 0 == k.toString().indexOf('_')) {
-                    n.push(k);
-                  }
-                }
-              }
-              return n
-            }
-          
-            parseJSONText(json) {
-              let res = "";
-              if (json instanceof Object && null != json.__cdata) {
-                res += "<![CDATA[" + json.__cdata + "]]>";
-              }
-              if (json instanceof Object && null != json.__text) {
-                res += this.escapeXmlChars(json.__text);
-              }
-              if (!(json instanceof Object) && null != json) {
-                res += this.escapeXmlChars(json);
-              }
-              return res;
-            }
-
-            parse(node, path) {
-              // ROOT node
-              if (node.nodeType == Node.DOCUMENT_NODE) {
-                let res = {};
-                for (let i = 0; i < node.childNodes.length; i++) {
-                  let child = node.childNodes.item(i);
-                  if (child.nodeType == Node.ELEMENT_NODE) {
-                    res[this.getNodeName(child)] = this.parse(child, this.getNodeName(child))
-                  }
-                }
-                return res;
-              }
-
-              // HTML node
-              if (node.nodeType == Node.ELEMENT_NODE) {
-                let res = { __cnt: 0 };
-                for (let i = 0; i < node.childNodes.length; i++) {
-                  let child = node.childNodes.item(i);
-                  if (child.nodeType == Node.COMMENT_NODE) {
-                    continue;
-                  }
-                  res.__cnt++;
-                  if (null == res[this.getNodeName(child)]) {
-                    res[this.getNodeName(child)] = this.parse(child, path + "." + this.getNodeName(child));
-                  } else {
-                    (res[this.getNodeName(child)] instanceof Array || (res[this.getNodeName(child)] = [res[this.getNodeName(child)]]));
-                    res[this.getNodeName(child)][res[this.getNodeName(child)].length] = this.parse(child, path + "." + this.getNodeName(child));
-                  }
-                }
-                for (let i = 0; i < node.attributes.length; i++) {
-                  res.__cnt++;
-                  res['_' + node.attributes.item(i).name] = node.attributes.item(i).value;
-                }
-                if (![null,''].includes(node.prefix)) {
-                  res.__cnt++;
-                  res.__prefix = node.prefix;
-                }
-                if ("#text" in res) {
-                  res.__text = res["#text"] instanceof Array ? res["#text"].join("\n") : res["#text"];
-                  res.__text = res.__text.trim();
-                  delete res["#text"];
-                }
-                if ("#cdata-section" in res) {
-                  res.__cdata = res["#cdata-section"];
-                  delete res["#cdata-section"];
-                }
-                if (0 == res.__cnt) {
-                  res = "";
-                }
-                if (!res.__text) {
-                  delete res.__text;
-                }
-                if (res.__text) {
-                  res.toString = () => (null != res.__text ? res.__text : "") + (null != res.__cdata ? res.__cdata : "");
-                }
-                delete res.__cnt;
-                return res;
-              }
-
-              // TEXT node
-              if (node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) {
-                return node.nodeValue;
-              }
-            }
-          
-            parseJSON(json, path) {
-              let res = "";
-              if (this.jsonXmlElemCount(json) > 0) {
-                for (let k in json) {
-
-                  if (-1 === ["_fid", "__prefix"].indexOf(k) && !k.match(/xmlns:|xsi:/) && this.jsonXmlSpecialElem(json, k)) {
-                    const i = k.replace(/^_+/, "");
-                    json[i] = json[k];
-                    k = i
-                  }
-
-                  if (this.jsonXmlSpecialElem(json, k)) {
-                    continue;
-                  }
-
-                  let attrs = this.parseJSONAttrs(json[k]);
-                  
-                  if ([null, undefined].includes(json[k]) || (json[k] instanceof Array && 0 == json[k].length)) {
-                    res += this.startTag(json[k], k, attrs, true);
-                  }
-
-                  else if (json[k] instanceof Array && json[k].length > 0) {
-                    res += json[k].map(d => (this.startTag(d, k, this.parseJSONAttrs(d), false) + this.parseJSON(d, "" === path ? k : path + "." + k) + this.endTag(d, k))).join('');
-                  }
-                  
-                  else if (json[k] instanceof Date) {
-                    res += this.startTag(json[k], k, attrs, false) + json[k].toISOString() + this.endTag(json[k], k);
-                  }
-
-                  else if (json[k] instanceof Object) {
-                    if (attrs.length && -1 !== attrs.indexOf("_fid")) {
-                      attrs = ["_fid"];
-                    }
-                    const o = this.jsonXmlElemCount(json[k]);
-                    if (o > 0 || null != json[k].__text || null != json[k].__cdata) {
-                      res += this.startTag(json[k], k, attrs, false) + this.parseJSON(json[k], "" === path ? k : path + "." + k) + this.endTag(json[k], k);
-                    } else {
-                      res += this.startTag(json[k], k, attrs, true);
-                    }
-                  }
-
-                  else {
-                    res += this.startTag(json[k], k, attrs, false) + this.parseJSONText(json[k]) + this.endTag(json[k], k);
-                  }
-                }
-              }
-              return res += this.parseJSONText(json)
-            }
-          });
-          
-          let json;
+          const parsed = []; //Array contains item object ({layer, features})
+          let xml;
 
           try {
-            json = x2js.parse((new DOMParser).parseFromString(response, "text/xml"));
+            xml = (new DOMParser).parseFromString(response, "text/xml");
+
+            // skip when response has no features
+            if (!xml.querySelector('FeatureCollection > featureMember')) {
+              throw 'no features in response';
+            }
+
+            layers.forEach((layer, i) => {
+
+              const cloned = xml.cloneNode(true);
+              let feats = [];
+
+              // get layers by name (eg. "qgs:layer0")
+              const qgs = [...cloned.querySelectorAll(`FeatureCollection > featureMember > ${ id ? layer.getId() : ('layer' + i) }`)];
+
+              // set "g3w_fid" attribute from `fid="<layer_name_or_id.fid>"`
+              qgs.forEach(feat => {
+                const fid = (feat.getAttribute('fid') || '.').split('.')[1];
+                if (fid) {
+                  const g3w_fid = cloned.createElement('gml:' + G3W_FID);
+                  feat.setAttribute('fid', fid);
+                  g3w_fid.textContent = fid;
+                  feat.appendChild(g3w_fid);
+                }
+                feats.push(feat.parentNode);
+              });
+
+              console.log(qgs);
+
+              // get multi layers wms (eg. "layer0" → "layer0_0" + "layer1_0")
+              if (qgs.length > 1) {
+                const grouped = groupBy(qgs, feat => Object.values(feat.children).map(d => d.nodeName));
+                if (Object.keys(grouped).length > 1) {
+                  Object.keys(grouped).forEach((key, i) => grouped[key].forEach((node, j) => {
+                    // see: https://andreiglingeanu.me/rename-element-tag/
+                    const renamed = cloned.createElement(`qgs:layer${i}_${j}`);
+                    [...node.attributes].map(({ name, value }) => { renamed.setAttribute(name, value); });
+                    while (node.firstChild) { renamed.appendChild(node.firstChild); }
+                    const feat = cloned.createElement('gml:featureMember');
+                    feat.appendChild(renamed);
+                    node.parentNode.insertAdjacentElement('beforebegin', feat);
+                    if (1 === node.parentNode.children.length) {
+                      node.parentNode.parentNode.removeChild(node.parentNode);
+                    } else {
+                      node.parentNode.removeChild(node);
+                    }
+                    feats.push(feat);
+                  }));
+                }
+              }
+
+              // keep only current layer features
+              cloned.querySelectorAll('FeatureCollection > featureMember').forEach(node => {
+                if (!feats.includes(node)) {
+                  node.parentNode.removeChild(node);
+                }
+              });
+
+              feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(cloned.documentElement.outerHTML);
+
+              // whether need to re-project features
+              const is_reprojected = projections.layer && projections.layer.getCode() !== projections.map.getCode() && feats.length && !!feats[0].getGeometry();
+  
+              /** @FIXME add description */
+              if (feats.length && invalids) {
+                const fields = Object.keys(feats[0].getProperties()).filter(p => -1 !== p.indexOf(NUMERIC_FIELD));
+                feats.forEach(f => {
+                  fields.forEach(_field => {
+                    const invalid = invalids.find(find => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
+                    f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
+                    f.unset(_field);
+                  })
+                });
+              }
+  
+              // transform features
+              if (is_reprojected) {
+                feats.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
+              }
+  
+              // inverted axis --> reverse features coordinates
+              if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
+                feats.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+              }
+  
+              // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
+              if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
+                feats.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
+              }
+
+              parsed.unshift({ layer, features: feats });
+
+            });
           } catch (e) {
             console.warn(e);
           }
 
-          // in the case of parser return null
-          if (!json) {
-            return [{
-              layer:    layers[0],
-              features: [],
-            }];
-          }
-
-          /** @since 3.9.1 ServiceExceptionReport is a json attribute returned by server in case of error */
-          if (json.ServiceExceptionReport && json.ServiceExceptionReport.ServiceException) {
+          /** @since 3.9.1 handle server errors */
+          if (xml.querySelector('ServiceException')) {
             GUI.showUserMessage({
               type:        'warning',
               textMessage: true,
-              message:     `${layers[0].getName()} - ${json.ServiceExceptionReport.ServiceException}`
+              message:     `${layers[0].getName()} - ${xml.querySelector('ServiceException').innerText}`
             })
           }
-
-          // skip when json response hasn't FeatureCollection array (no features)
-          if (!json.FeatureCollection || !json.FeatureCollection.featureMember) {
-            return [];
-          }
-
-          // handled responses
-          const parsed = []; //Array contains item object ({layer, features})
-          const originalFeatureMember = [].concat(json.FeatureCollection.featureMember);
-          //Loop on each layer
-          layers.forEach((layer, i) => {
-            const name = id ? layer.getId() : `layer${i}`; // layer name
-
-            json.FeatureCollection.featureMember = originalFeatureMember
-              .filter(f => f[name])
-              .map(f => {
-                const fm = f[name];
-                const prefix = f.__prefix;
-                //set fid of each feature
-                [].concat(fm).forEach(_fm => {
-                  //need to get fid number removing <layer_name_or_id.fid>
-                  _fm._fid = _fm._fid && _fm._fid.split('.')[1];
-                  _fm[G3W_FID] = {
-                    __prefix: prefix,
-                    __text:   _fm._fid
-                  }
-                })
-                //in case of wms multi layer
-                if (Array.isArray(fm)) {
-                  const grouped = groupBy(fm, f => Object.keys(f));
-                  // check if features have the same fields. If not, group the features with the same fields
-                  //check if features have different fields (multilayers)
-                  // If its is a multilayers. Each feature has different fields
-                  return Object.keys(grouped).length > 1
-                    ? Object.keys(grouped)
-                       .map((key, index) => grouped[key].map((feature, sub_index) => ({ [`layer${index}_${sub_index}`]: feature, __prefix: prefix }) )).flat()
-                    : //for Each element have to add and object contain layerName and information, and __prefix
-                    fm.map(f => ({ [name]:   f,  __prefix: prefix }) );
-                } else {
-                  return f;
-                }
-
-              }).flat();
-            // parse layer feature collection
-            const xml        = x2js.parseJSON(json, ''); // layer Feature Collection XML
-            const olfeatures = (new ol.format.WMSGetFeatureInfo()).readFeatures(xml);
-
-            //Check if you need to re-project features because layers are in different projection of the map
-            const is_reprojected = (
-              olfeatures.length > 0  //has features
-              && !!olfeatures[0].getGeometry()  // has a geometry
-              && projections.layer //has a layer projection
-              && projections.layer.getCode() !== projections.map.getCode() //the layer has the same projection of the map
-            );
-
-            /** @FIXME add description */
-            if (olfeatures.length > 0 && invalids) {
-              const fields = Object.keys(olfeatures[0].getProperties()).filter(p => -1 !== p.indexOf(NUMERIC_FIELD));
-              olfeatures.forEach(f => {
-                fields.forEach(_field => {
-                  const invalid = invalids.find(find => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
-                  f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
-                  f.unset(_field);
-                })
-              });
-            }
-
-            // transform features
-            if (is_reprojected) {
-              olfeatures.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
-            }
-
-            // inverted axis --> reverse features coordinates
-            if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
-              olfeatures.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
-            }
-
-            // Remove Z values due an incorrect addition when using
-            // ol.format.WMSGetFeatureInfo readFeatures method from XML
-            // (ex. WMS getFeatureInfo);
-            if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
-              olfeatures.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
-            }
-
-            parsed.unshift({ layer, features: olfeatures });
-
-          })
 
           return parsed;
         };
