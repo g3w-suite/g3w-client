@@ -11,7 +11,7 @@ import ApplicationService                          from 'services/application';
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
-import { addZValue }                               from 'utils/addZValue
+import { addZValue }                               from 'utils/addZValue';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
 import { removeZValue }                            from 'utils/removeZValue';
 import { getOLGeometry }                           from 'utils/getOLGeometry';
