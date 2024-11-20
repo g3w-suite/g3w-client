@@ -16,7 +16,7 @@ function add3DCoordinate(coords) {
 /**
  * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
  */
-export function addZValueToOLFeatureGeometry({
+export function addZValue({
   feature,
   geometryType,
 } = {}) {

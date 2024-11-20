@@ -11,9 +11,9 @@ import ApplicationService                          from 'services/application';
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
-import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
+import { addZValue }                               from 'utils/addZValue
 import { is3DGeometry }                            from 'utils/is3DGeometry';
-import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
+import { removeZValue }                            from 'utils/removeZValue';
 import { getOLGeometry }                           from 'utils/getOLGeometry';
 import { isMultiGeometry }                         from 'utils/isMultiGeometry';
 import { isPointGeometryType }                     from 'utils/isPointGeometryType';
@@ -137,9 +137,9 @@ const g3wsdk = {
       intersects,
       distance,
       Geometry: {
-        GeometryTypes: G3W_CONSTANT.GEOMETRY_TYPES,
-        removeZValueToOLFeatureGeometry,
-        addZValueToOLFeatureGeometry,
+        GeometryTypes:                   G3W_CONSTANT.GEOMETRY_TYPES,
+        removeZValueToOLFeatureGeometry: removeZValue,
+        addZValueToOLFeatureGeometry:    addZValue,
         getOLGeometry,
         isMultiGeometry,
         isPointGeometryType,

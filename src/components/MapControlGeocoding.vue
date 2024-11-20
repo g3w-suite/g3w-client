@@ -187,7 +187,7 @@ import PluginsRegistry                  from 'store/plugins';
 import Projections                      from 'store/projections';
 import { getUniqueDomId }               from 'utils/getUniqueDomId';
 import { flattenObject }                from 'utils/flattenObject';
-import { addZValueToOLFeatureGeometry } from 'utils/addZValueToOLFeatureGeometry';
+import { addZValue }                    from 'utils/addZValue';
 import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
@@ -673,7 +673,7 @@ export default {
         const type = getCatalogLayerById(layerId).getGeometryType();
 
         // create a new editing feature (Point/MultiPoint + safe alias for keys without `raw_` prefix)
-        const _feature = addZValueToOLFeatureGeometry({
+        const _feature = addZValue({
           geometryType: type,
           feature:      new ol.Feature({
             ...Object.entries(feature.attributes).reduce((acc, attr) => ({ ...acc, [attr[0].replace(feature.attributes.provider + '_', '').toLowerCase()]: attr[1] }), {}),

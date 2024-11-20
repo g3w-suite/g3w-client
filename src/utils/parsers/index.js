@@ -7,16 +7,16 @@
  * @since 3.9.0
  */
 
-import { G3W_FID }                         from 'g3w-constants';
-import GUI                                 from 'services/gui';
-import { groupBy }                         from 'utils/groupBy';
-import { is3DGeometry }                    from 'utils/is3DGeometry';
-import { removeZValueToOLFeatureGeometry } from 'utils/removeZValueToOLFeatureGeometry';
-import { sanitizeFidFeature }              from 'utils/sanitizeFidFeature'
-import { reverseGeometry }                 from 'utils/reverseGeometry';
-import { Feature }                         from 'map/layers/feature';
+import { G3W_FID }            from 'g3w-constants';
+import GUI                    from 'services/gui';
+import { groupBy }            from 'utils/groupBy';
+import { is3DGeometry }       from 'utils/is3DGeometry';
+import { removeZValue }       from 'utils/removeZValue';
+import { sanitizeFidFeature } from 'utils/sanitizeFidFeature'
+import { reverseGeometry }    from 'utils/reverseGeometry';
+import { Feature }            from 'map/layers/feature';
 
-const { t }                                = require('g3w-i18n');
+const { t }                   = require('g3w-i18n');
 
 Object
   .entries({
@@ -25,7 +25,7 @@ Object
     Feature,
     t,
     is3DGeometry,
-    removeZValueToOLFeatureGeometry,
+    removeZValue,
     sanitizeFidFeature,
     reverseGeometry,
   })
@@ -263,8 +263,6 @@ export const ResponseParser = {
                 feats.push(feat.parentNode);
               });
 
-              console.log(qgs);
-
               // get multi layers wms (eg. "layer0" → "layer0_0" + "layer1_0")
               if (qgs.length > 1) {
                 const grouped = groupBy(qgs, feat => Object.values(feat.children).map(d => d.nodeName));
@@ -317,13 +315,13 @@ export const ResponseParser = {
               }
   
               // inverted axis --> reverse features coordinates
-              if (is_reprojected && 'ne' === (projections.layer ? projections.layer : projections.map).getAxisOrientation().substr(0, 2)) {
+              if (is_reprojected && 'ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
                 feats.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
               }
   
               // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
               if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
-                feats.forEach(f => removeZValueToOLFeatureGeometry({ feature: f }));
+                feats.forEach(f => removeZValue({ feature: f }));
               }
 
               parsed.unshift({ layer, features: feats });
