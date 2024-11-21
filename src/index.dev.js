@@ -201,5 +201,5 @@ g3wsdk.gui.GUI.once('ready', () => {
   });
 });
 
-window.GUI         = g3wsdk.gui.GUI,
+window.GUI         = g3wsdk.gui.GUI;
 window.localforage = localforage;

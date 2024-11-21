@@ -455,7 +455,7 @@ export default new (class GUI extends G3WObject {
         });
       }
 
-      const show = !stop && 'function' === typeof output.condition ? output.condition(data) : false !== output.condition;
+      const show = !stop && 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
 
       // check if data can be shown on query result content
       if (!stop && show) {
@@ -463,7 +463,7 @@ export default new (class GUI extends G3WObject {
       }
 
       if (!stop && !show) {
-        this.pending_output = this.closeContent.bind(this);
+        this.pending_output = await this.closeContent();
       }
 
       // call after is set with data

@@ -1067,16 +1067,21 @@ class MapService extends G3WObject {
       return;
     }
 
+    const layer = this.project.getLayerById(layerId);
+
     const { data = [] } = await DataRouterService.getData('search:fids', {
       inputs: {
-        layer: this.project.getLayerById(layerId),
+        layer,
         fids:  [fid]
       },
       outputs: {
         show: {
           loading: false,
-          condition({ data = [] } = {}) {
-            return data[0] && data[0].features.length > 0;
+          async condition({ data = [] } = {}) {
+            if (layer.isEditable() && undefined === layer.config.editing) {
+              await new Promise(resolve => layer.once('set-editing-config', resolve));
+            }
+            return !!(data[0] && data[0].features.length > 0);
           }
         }
       }
@@ -1118,7 +1123,13 @@ class MapService extends G3WObject {
         },
         outputs: {
           show: {
-            loading: false
+            loading: false,
+            async condition({ data = [] } = {}) {
+              if (layer.isEditable() && undefined === layer.config.editing) {
+                await new Promise(resolve => layer.once('set-editing-config', resolve));
+              }
+              return !!(data[0] && data[0].features.length > 0);
+            }
           }
         }
       });
