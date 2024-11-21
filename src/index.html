@@ -19,24 +19,7 @@
     {{ SETTINGS.SENTRY_JS | safe }}
   {% endif %}
   <app id="app"></app>
-  <script src="{% with client_default|add:"/vendors/jquery.js" as jquery_js %}{% static jquery_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/jquery-ui.js" as jquery_ui_js %}{% static jquery_ui_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/bootstrap.js" as bootstrap_js %}{% static bootstrap_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/bootbox.js" as bootbox_js %}{% static bootbox_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/lodash.js" as lodash_js %}{% static lodash_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/moment.min.js" as moment_js %}{% static moment_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/moment-with-locales.js" as moment_locales_js %}{% static moment_locales_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/bootstrap-datetimepicker.min.js" as bootstrap_datetimepicker_js %}{% static bootstrap_datetimepicker_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/jquery.fileupload.js" as jquery_fileupload_js %}{% static jquery_fileupload_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/jquery-i18next.js" as jquery_i18next_js %}{% static jquery_i18next_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/i18next.min.js" as i18next_js %}{% static i18next_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/i18nextXHRBackend.min.js" as i18nextXHRBackend_js %}{% static i18nextXHRBackend_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/ol.js" as ol_js %}{% static ol_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/bundle.js" as ol_rotate_js %}{% static ol_rotate_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/jquery.dataTables.js" as datatables_js %}{% static datatables_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/select2.full.js" as select2_js %}{% static select2_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/it.js" as select2_i18n_js %}{% static select2_i18n_js %}{% endwith %}"></script>
-  <script src="{% with client_default|add:"/vendors/quill.js" as quill_js %}{% static quill_js %}{% endwith %}"></script>
+  <script src="{% with client_default|add:"/vendor.min.js" as vendor_js %}{% static vendor_js %}{% endwith %}"></script>
   <script>{{ group_config | safe }}</script>
   <script src="{% with client_default|add:"/app.min.js" as app_js %}{% static app_js %}{% endwith %}"></script>
   {% if SETTINGS.G3WSUITE_CUSTOM_STATIC_URL %}{% for js in SETTINGS.G3WSUITE_CUSTOM_JS %}

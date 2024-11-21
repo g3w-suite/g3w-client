@@ -268,34 +268,7 @@ gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/stat
 gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
 
 gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(`${outputFolder}/templates/client`)));
-gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
-
-/**
- * Move vendor javascript files
- */
-gulp.task('vendor:js', function() {
-  return gulp.src([
-      `./node_modules/jquery/dist/jquery.js`,
-      `./node_modules/jquery-ui-package/jquery-ui.js`,
-      `./node_modules/bootstrap/dist/js/bootstrap.js`,
-      `./node_modules/bootbox/bootbox.js`,
-      `./node_modules/lodash/lodash.js`,
-      `./node_modules/moment/min/moment.min.js`,
-      `./node_modules/moment/min/moment-with-locales.js`,
-      `./node_modules/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js`,
-      `./node_modules/blueimp-file-upload/js/jquery.fileupload.js`,
-      `./node_modules/jquery-i18next/jquery-i18next.js`,
-      `${g3w.assetsFolder}/vendors/i18next/i18next.min.js`,
-      `${g3w.assetsFolder}/vendors/i18next/i18nextXHRBackend.min.js`,
-      `./node_modules/ol-rotate-feature/dist/bundle.js`,
-      `./node_modules/datatables.net/js/jquery.dataTables.js`,
-      `./node_modules/select2/dist/js/select2.full.js`,
-      `./node_modules/select2/dist/js/i18n/it.js`,
-      `./node_modules/quill/dist/quill.js`
-      ], /*{ base: `${g3w.assetsFolder}/vendors/` }*/)
-    .pipe(gulpif(production, uglify()))
-    .pipe(gulp.dest(`${outputFolder}/static/client/vendors/`));
-});
+gulp.task('browser:reload',  cb => { if (browserSync) { browserSync.reload() } cb(); });
 
 
 /**
@@ -375,15 +348,15 @@ gulp.task('browserify:app', function() {
 });
 
 /**
- * Compile Open Layers
+ * Compile vendors
  */
-gulp.task('build:ol', function(done) {
+gulp.task('vendor:js', function(done) {
   esbuild.build({
-      entryPoints: ['src/g3w-ol.js'],
+      entryPoints: ['src/g3w-vendors.js'],
       bundle:      true,
       minify:      production,
       sourcemap:   true,
-      outfile:    `${outputFolder}/static/client/vendors/ol.js`,
+      outfile:    `${outputFolder}/static/client/vendor.min.js`,
   });
   done();
 });
@@ -474,11 +447,11 @@ gulp.task('browser-sync', function() {
     socket:    { domain: `${g3w.host}:${g3w.port}`}
   });
 
-  gulp.watch([g3w.assetsFolder + '/app.css'],         gulp.series('css',      'browser:reload'));
-  gulp.watch([g3w.assetsFolder + '/cursors/**'],      gulp.series('cursors',  'browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images',   'browser:reload'));
-  gulp.watch(['./src/index.html'],                    gulp.series('html',     'browser:reload'));
-  gulp.watch(['./src/g3w-ol.js'],                     gulp.series('build:ol', 'browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/app.css'],         gulp.series('css',       'browser:reload'));
+  gulp.watch([g3w.assetsFolder + '/cursors/**'],      gulp.series('cursors',   'browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images',    'browser:reload'));
+  gulp.watch(['./src/index.html'],                    gulp.series('html',      'browser:reload'));
+  gulp.watch(['./src/g3w-vendors.js'],                gulp.series('vendor:js', 'browser:reload'));
   gulp.watch(g3w.pluginsFolder + '/_version.js',      () => dev_plugins.forEach(p => browserify_plugin(p, false)));
 });
 
@@ -548,7 +521,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? gulp.series('browserify:app', 'build:ol', gulp.parallel('vendor:js', 'fonts', 'cursors', 'images', 'css', 'html'))(done)
+   ? gulp.series('browserify:app', 'vendor:js', gulp.parallel('fonts', 'cursors', 'images', 'css', 'html'))(done)
    : done();
 });
 

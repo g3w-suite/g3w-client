@@ -3,7 +3,6 @@
  * @since v3.8
  */
 
-import * as VueColor from 'vue-color';
 import shp           from 'shpjs/dist/shp';
 import proj4         from 'proj4/dist/proj4-src';
 import $script       from 'scriptjs/dist/script';
@@ -13,10 +12,6 @@ import Vue           from 'vue/dist/vue';
 
 Object.assign(globalThis, {
   Vue,
-  /** @deprecated since v3.8. Will be removed in v4.x. Use ESM imports from 'vue-color' instead */
-  VueColor,
-  /** @deprecated since v3.8. Will be removed in v4.x. Use require('vue-cookie') instead of window.VueCookie */
-  VueCookie: require('vue-cookie'),
   /** @deprecated since 3.11.0 */
   isMobile: isMobile(),
   /** @deprecated since 3.11.0 */

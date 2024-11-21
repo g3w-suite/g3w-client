@@ -96,7 +96,7 @@ Vue.directive("download", vDownload);
 /**
  * Install global plugins
  */
-Vue.use(window.VueCookie);
+Vue.use(require('vue-cookie'));
 
 /**
  * Vue 2 Plugin used to add global-level functionality to Vue

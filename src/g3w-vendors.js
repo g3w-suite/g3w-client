@@ -32,6 +32,7 @@ import * as sphere          from 'ol/sphere';
 import * as style           from 'ol/style';
 import * as tilegrid        from 'ol/tilegrid';
 import * as xml             from 'ol/xml';
+import RotateFeature        from 'ol-rotate-feature/dist/bundle.es';
 
 /**
  * Based on OpenLayers v5.3.0
@@ -45,13 +46,13 @@ globalThis.ol = Object.assign({}, ol, {
   events: { condition },
   extent,
   featureloader,
-  format: Object.assign({}, format, { filter }),
-  geom:   Object.assign({}, geom,   { Polygon: Object.assign(geom.Polygon, Polygon) }),
+  format:      Object.assign({}, format,      { filter }),
+  geom:        Object.assign({}, geom,        { Polygon: Object.assign(geom.Polygon, Polygon) }),
   has,
-  interaction,
+  interaction: Object.assign({}, interaction, { RotateFeature }),
   layer,
   loadingstrategy,
-  proj:   Object.assign({}, proj,   { proj4, projections, Units, }),
+  proj:        Object.assign({}, proj,        { proj4, projections, Units, }),
   render,
   size,
   source,
@@ -61,3 +62,24 @@ globalThis.ol = Object.assign({}, ol, {
   xml,
   Observable,
 });
+
+/**
+ * Based on jQuery v2.2.4
+ */
+globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
+
+require('jquery-ui-package/jquery-ui');
+require('bootstrap/dist/js/bootstrap');
+require('blueimp-file-upload/js/jquery.fileupload');
+require('datatables.net/js/jquery.dataTables');
+require('select2')(jQuery);
+require('select2/dist/js/i18n/it.js');
+
+globalThis.bootbox           = require('bootbox/bootbox');
+globalThis._                 = require('lodash/lodash');
+globalThis.moment            = require('moment/min/moment-with-locales');
+globalThis.i18next           = require('i18next');
+globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
+globalThis.jqueryI18next     = require('jquery-i18next/jquery-i18next');
+globalThis.Quill             = require('quill');
+$.fn.datetimepicker          = require('eonasdan-bootstrap-datetimepicker');
