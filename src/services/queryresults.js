@@ -1777,9 +1777,6 @@ export default new (class QueryResultsService extends G3WObject {
    */
   clearHighlightGeometry(layer) {
     GUI.getService('map').clearHighlightGeometry();
-    if (!this.state.query.pagination && this.isOneLayerResult()) {
-      GUI.getService('map').highlightFeatures(layer.features, { duration: Infinity });
-    }
   }
 
   /**

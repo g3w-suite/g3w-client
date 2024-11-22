@@ -34,7 +34,7 @@
                 class            = "box-header with-border"
                 :class           = "{'mobile': isMobile()}"
                 @mouseover.stop  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout        = "highLightLayerFeatures(layer, { highlight: false })"
+                @mouseout.stop   = "highLightLayerFeatures(layer, { highlight: false })"
                 @click.stop      = "collapseSidebar"
               >
                 <div
