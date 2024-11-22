@@ -81,5 +81,5 @@ globalThis.moment            = require('moment/min/moment-with-locales');
 globalThis.i18next           = require('i18next');
 globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
 globalThis.jqueryI18next     = require('jquery-i18next/jquery-i18next');
-globalThis.Quill             = require('quill');
+globalThis.Quill             = require('quill').default;
 $.fn.datetimepicker          = require('eonasdan-bootstrap-datetimepicker');

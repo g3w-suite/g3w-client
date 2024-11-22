@@ -862,16 +862,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .query-relations-page .relationtable td                                                    { padding: 2px 5px !important; }
 .query-relations-page .relationtable td span                                               { font-size: 1em; }
 
-.featurebox-body .node-row .field + .field,
-.featurebox-body .tabs-wrapper + .tabs-wrapper,
-.featurebox-body .node-row .field + .tabs-wrapper                          { border-left: 1px solid rgb(0,0,0,.1);  }
-.featurebox-body .node-row .tabs-wrapper                                   { border-top-right-radius: 3px; border-top-left-radius:3px; }
-.featurebox-body .node-row .tabs-wrapper                                   { border-right: 1px solid rgb(0,0,0,.1);  } 
-.featurebox-body .node-row .tabs-wrapper:last-of-type                      { border-right: none; }
-.featurebox-body .nav-tabs                                                 { border-bottom: none; }
-.featurebox-body .node-row .tabs-wrapper .tab-content:not(:last-child)     { border-bottom: 3px double rgb(0,0,0,.25); }
-.featurebox-body .node-row .tabs-wrapper.sub-group .tabs-wrapper.sub-group { border: 1px solid rgb(0,0,0,.25); }
-
 .fade-enter, .fade-leave-to                                                                                  { opacity: 0; }
 .fade-enter-active, .fade-leave-active                                                                       { transition: opacity 0.25s ease-out; }
 
@@ -992,6 +982,15 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .contents                            { padding: 0 10px; height: 100%; }
 .contents > div                      { height: 100%; }
 .contents table                      { empty-cells: show; width: 100%; background-color: #fff !important; }
+.contents .node-row > div + div,
+.contents .tabs-wrapper + .tabs-wrapper,
+.contents .node-row .field + .tabs-wrapper                          { border-left: 1px solid rgb(0,0,0,.1);  }
+.contents .node-row .tabs-wrapper                                   { border-top-right-radius: 3px; border-top-left-radius:3px; }
+.contents .node-row .tabs-wrapper                                   { border-right: 1px solid rgb(0,0,0,.1);  } 
+.contents .node-row .tabs-wrapper:last-of-type                      { border-right: none; }
+.contents .nav-tabs                                                 { border-bottom: none; }
+.contents .node-row .tabs-wrapper .tab-content:not(:last-child)     { border-bottom: 3px double rgb(0,0,0,.25); }
+.contents .node-row .tabs-wrapper.sub-group .tabs-wrapper.sub-group { border: 1px solid rgb(0,0,0,.25); }
 
 /**************************************************************************************
  * 11. Errors
