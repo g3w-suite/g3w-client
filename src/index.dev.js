@@ -154,17 +154,21 @@ C,"POINT (11.2474811 43.7910709)"`],
       'EPSG:4326'
     );
 
-    await waitFor(async () => 'piazza-leopoldo.kml' in (await localforage.getItem('externalLayers')), 1000);
+    /**
+     * @TODO
+     */
 
-    const externalLayers = await localforage.getItem('externalLayers');
-    const shpwrite = require('shp-write');
+    // await waitFor(async () => 'piazza-leopoldo.kml' in (await localforage.getItem('externalLayers')), 1000);
 
-    await setFile(
-      new File([shpwrite.zip(JSON.parse(externalLayers['piazza-leopoldo.kml'].features))],
-      'shapefile.zip',
-      { type: 'application/x-zip-compressed' }),
-      'EPSG:4326'
-    );
+    // const externalLayers = await localforage.getItem('externalLayers');
+    // const shpwrite = require('shp-write');
+
+    // await setFile(
+    //   new File([shpwrite.zip(JSON.parse(externalLayers['piazza-leopoldo.kml'].features))],
+    //   'shapefile.zip',
+    //   { type: 'application/x-zip-compressed' }),
+    //   'EPSG:4326'
+    // );
 
   });
 
