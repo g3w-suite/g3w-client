@@ -834,7 +834,7 @@ export default new (class QueryResultsService extends G3WObject {
           class:    GUI.getFontClass('relation'),
           hint:     'sdk.mapcontrols.query.actions.relations.hint',
           cbk(layer, feature, action) {
-            GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
+            GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
                 internalComponent: new (Vue.extend(RelationsPage))({
@@ -1805,10 +1805,10 @@ export default new (class QueryResultsService extends G3WObject {
       }),
       crumb: {
         title: projectRelation.name,
-        text: true,
+        text:  true,
       },
-      title: projectRelation.name,
-      text  : true,
+      title:    projectRelation.name,
+      text  :   true,
       closable: false
     })
   };
