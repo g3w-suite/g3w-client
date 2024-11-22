@@ -2016,7 +2016,6 @@ class Layer extends G3WObject {
    */
   setEditingLayer(editingLayer) {
     this._editingLayer = editingLayer;
-    this.emit('set-editing-config', editingLayer.config.editing);
   }
 
   /**

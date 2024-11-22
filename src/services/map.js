@@ -35,6 +35,7 @@ import { groupBy }                          from 'utils/groupBy';
 import { getProject }                       from 'utils/getProject';
 import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                 from 'utils/getCatalogLayers';
+import { waitFor }                          from 'utils/waitFor';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 
@@ -1078,8 +1079,8 @@ class MapService extends G3WObject {
         show: {
           loading: false,
           async condition({ data = [] } = {}) {
-            if (layer.isEditable() && undefined === layer.config.editing) {
-              await new Promise(resolve => layer.once('set-editing-config', resolve));
+            if (layer.isEditable()) {
+              await waitFor(() => undefined !== layer.config.editing);
             }
             return !!(data[0] && data[0].features.length > 0);
           }
@@ -1125,8 +1126,8 @@ class MapService extends G3WObject {
           show: {
             loading: false,
             async condition({ data = [] } = {}) {
-              if (layer.isEditable() && undefined === layer.config.editing) {
-                await new Promise(resolve => layer.once('set-editing-config', resolve));
+              if (layer.isEditable()) {
+                await waitFor(() => undefined !== layer.config.editing);
               }
               return !!(data[0] && data[0].features.length > 0);
             }
