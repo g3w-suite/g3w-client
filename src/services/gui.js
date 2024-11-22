@@ -162,13 +162,13 @@ export default new (class GUI extends G3WObject {
         // set all content parameters
         Object.assign(ApplicationState.viewport.content, {
           title:        opts.title,
-          split:        undefined !== opts.split       ? opts.split : null,
-          closable:     undefined !== opts.closable    ? opts.closable : true,
-          backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
+          split:        undefined === opts.split       ? null : opts.split,
+          closable:     undefined === opts.closable    || opts.closable,
+          backonclose:  undefined === opts.backonclose || opts.backonclose,
+          style:        undefined === opts.style ? {} : opts.style,
+          headertools:  undefined === opts.headertools ? [] : opts.headertools,
+          showgoback:   undefined === opts.showgoback  || opts.showgoback,
           contentsdata: this.getComponent('contents').contentsdata,
-          style:        undefined !== opts.style ? opts.style : {},
-          headertools:  undefined !== opts.headertools ? opts.headertools : [],
-          showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
         });
 
         // call show view (in this case content (other is map)
