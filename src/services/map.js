@@ -35,6 +35,7 @@ import { groupBy }                          from 'utils/groupBy';
 import { getProject }                       from 'utils/getProject';
 import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                 from 'utils/getCatalogLayers';
+import { waitFor }                          from 'utils/waitFor';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 import { RasterLayer}                       from "map/layers/imagelayer";
@@ -1067,16 +1068,21 @@ class MapService extends G3WObject {
       return;
     }
 
+    const layer = this.project.getLayerById(layerId);
+
     const { data = [] } = await DataRouterService.getData('search:fids', {
       inputs: {
-        layer: this.project.getLayerById(layerId),
+        layer,
         fids:  [fid]
       },
       outputs: {
         show: {
           loading: false,
-          condition({ data = [] } = {}) {
-            return data[0] && data[0].features.length > 0;
+          async condition({ data = [] } = {}) {
+            if (layer.isEditable()) {
+              await waitFor(() => undefined !== layer.config.editing);
+            }
+            return !!(data[0] && data[0].features.length > 0);
           }
         }
       }
@@ -1118,7 +1124,13 @@ class MapService extends G3WObject {
         },
         outputs: {
           show: {
-            loading: false
+            loading: false,
+            async condition({ data = [] } = {}) {
+              if (layer.isEditable()) {
+                await waitFor(() => undefined !== layer.config.editing);
+              }
+              return !!(data[0] && data[0].features.length > 0);
+            }
           }
         }
       });

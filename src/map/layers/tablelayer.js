@@ -118,7 +118,8 @@ export class TableLayer extends Layer {
 
           await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
             // add editing configurations
-            this.config.editing =  {
+
+            this.config.editing = {
               fields:       vector.fields || [],
               format:       vector.format,
               constraints,
@@ -126,8 +127,8 @@ export class TableLayer extends Layer {
               form:         { perc: null },                                                      // set editing form `perc` to null at beginning
               style:        vector.style,                                                        // get vector layer style
               geometrytype: vector.geometrytype,                                                 // whether is a vector layer,
-              visible:      (vector.editing || { visible: true }).visible,                                      //@since 3.11.0 let know if layer should be editable directly (true) or through relation layer (false)
-            }
+              visible:      (vector.editing || { visible: true }).visible,                       //@since 3.11.0 let know if layer should be editable directly (true) or through relation layer (false)
+            };
 
             if (vector.style) {                              // set vector layer color 
               this.setColor(vector.style.color);
