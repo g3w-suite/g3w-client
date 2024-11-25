@@ -89,8 +89,6 @@ globalThis.Quill             = require('quill').default;
   * Based on Bootstrap Datetime Picker v4.17.49
   * Copyright 2015-2020 Jonathan Peterson
   * Licensed under MIT (https://github.com/Eonasdan/bootstrap-datetimepicker/blob/master/LICENSE)
-  * 
-  * FIXME: $.fn.datetimepicker = require('eonasdan-bootstrap-datetimepicker');
   */
 (function ($, moment) {
   'use strict';
