@@ -352,11 +352,11 @@ gulp.task('browserify:app', function() {
  */
 gulp.task('vendor:js', function(done) {
   esbuild.build({
-      entryPoints: ['src/g3w-vendors.js'],
-      bundle:      true,
-      minify:      production,
-      sourcemap:   true,
-      outfile:    `${outputFolder}/static/client/vendor.min.js`,
+    entryPoints: ['src/g3w-vendors.js'],
+    bundle:      true,
+    minify:      production,
+    sourcemap:   true,
+    outfile:    `${outputFolder}/static/client/vendor.min.js`,
   });
   done();
 });
