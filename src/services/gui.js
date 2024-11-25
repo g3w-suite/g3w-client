@@ -886,8 +886,8 @@ export default new (class GUI extends G3WObject {
 
   // remove last content from stack
   async popContent() {
-    // skip when ..
-    if (!ApplicationState.viewport.content.contentsdata.length) {
+    // skip when no content data
+    if (0 === ApplicationState.viewport.content.contentsdata.length) {
       return Promise.reject();
     }
 
