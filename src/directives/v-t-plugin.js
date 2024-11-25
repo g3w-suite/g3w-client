@@ -5,8 +5,7 @@
 
 import ApplicationState   from 'store/application';
 import { watch, unwatch } from 'directives/utils';
-
-const { tPlugin } = require('g3w-i18n');
+import { tPlugin }        from 'g3w-i18n';
 
 const attr = 'g3w-v-t-plugin-id';
 

@@ -72,8 +72,7 @@ import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import G3WTool                     from 'components/Tool.vue';
 import * as vueComp                from 'components/QueryBuilder.vue';
-
-const { t } = require('g3w-i18n');
+import { t }                       from 'g3w-i18n';
 
 export default {
 

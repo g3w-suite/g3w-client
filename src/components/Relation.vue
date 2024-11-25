@@ -128,7 +128,7 @@
               ></span>
               <span
                 v-if                     = "table.formStructure"
-                @click.stop              = "showFormStructureRow({ layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
+                @click.stop              = "showFormStructureRow({ title: table.title, layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
                 v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 class                    = "action-button row-form skin-color"
                 :class                   = "$fa('table')"
@@ -391,7 +391,7 @@
        *
        * @returns { Promise<void> }
        */
-      async showFormStructureRow({ layerid, feature, fields, tabs } = {}) {
+      async showFormStructureRow({ title, layerid, feature, fields, tabs } = {}) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
@@ -429,6 +429,7 @@
           push:       true,
           showgoback: true,
           closable:   false,
+          title, //@since 3.11.0
         });
 
       },

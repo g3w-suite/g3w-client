@@ -38,6 +38,7 @@ import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 import { waitFor }                          from 'utils/waitFor';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
+import { RasterLayer}                       from "map/layers/imagelayer";
 
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
@@ -457,7 +458,6 @@ class MapService extends G3WObject {
                                     return group;
                                   }, {}) || []
                               ).map(([id, layers]) => {
-                                const { RasterLayer } = require('map/layers/imagelayer');
                                 const mapLayer = new RasterLayer({
                                   url:   project.state.WMSUrl,
                                   id:    `overview_layer_${id}`,
@@ -1541,7 +1541,7 @@ class MapService extends G3WObject {
    * @param layer
    * @param options
    */
-  updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
+  updateMapLayer(layer, options = { force: false, layerId }, { showSpinner = true } = {}) {
     // if force to add g3w_time parameter to force request of map layer from server
     if (options.force) {
       options.g3w_time = Date.now();
@@ -1577,7 +1577,8 @@ class MapService extends G3WObject {
     if (projectLayer) {
       (Array.isArray(layer.layers) ? layer.layers : []).forEach(l => {
         l.onbefore('change',      () => this.updateMapLayer(layer, { force: true }));
-        l.on('filtertokenchange', () => this.updateMapLayer(layer, { force: true }))
+        //pass layerId to change only layer @since 3.11.0
+        l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(layer, { force: true, layerId })  })
       });
     }
   }
@@ -1845,9 +1846,9 @@ class MapService extends G3WObject {
   /*
   * geometries = array of geometries
   * action: add, clear, remove :
-  *   - add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+  *   - add: feature/features to selectionLayer. If selectionLayer doesn't exist, create a new vector layer.
   *   - clear: remove selectionLayer
-  *   - remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
+  *   - remove: remove feature from selection layer. If no more feature is in selectionLayer, it will be removed
   * */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
@@ -1855,7 +1856,15 @@ class MapService extends G3WObject {
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
-      case 'add':    source.addFeature(opts.feature); break;
+      case 'add':
+        //In case of add need to set selection style
+        opts.feature.setStyle(createSelectedStyle({
+          geometryType: opts.feature.getGeometry().getType(),
+          color:        this.defaultsLayers._style.selectionLayer.color,
+          fill:         true
+        }));
+        source.addFeature(opts.feature);
+        break;
       case 'remove': source.removeFeature(opts.feature); break;
       case 'update': source.getFeatureById(opts.feature.getId()).setGeometry(opts.feature.getGeometry()); break;
       case 'clear':  source.clear(); break;
@@ -2164,11 +2173,12 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Return extanla layers added to map
+   * Return external layers added to map
+   * @param {String} type 'vector' or 'wms' @since 3.11.0
    * @returns {[]|*[]|T[]}
    */
-  getExternalLayers() {
-    return this._layers.external;
+  getExternalLayers(type) {
+    return undefined === type ? this._layers.external : this._layers.external.filter(l => type === l._type);
   }
 
   /**
@@ -2461,9 +2471,11 @@ ApplicationService.onbefore('offline', () => MAP.offlineids.forEach(c => { c.ena
 /** @since 3.8.0 */
 ApplicationService.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
 
+export const MapLayersStoresRegistry = MAP.layers;
+
 export default {
 
   MapService,
 
-  MapLayersStoresRegistry: MAP.layers,
+  MapLayersStoresRegistry,
 };

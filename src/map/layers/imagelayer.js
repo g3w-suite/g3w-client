@@ -244,7 +244,7 @@ class RasterLayer extends G3WObject {
       return;
     }
     
-    const layers = this.layers.filter(l => l.isVisible()) || [];
+    const layers = this.layers.filter(l => l.isVisible() && (params.layerId ? params.layerId === l.getId() : true ) ) || [];
 
     // skip when ..
     if (layers.length <= 0) {
@@ -451,24 +451,6 @@ class ImageLayer extends GeoLayerMixin(Layer) {
               extent:      projection.getExtent(),
             }) : undefined,
           })
-        });
-      };
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('TMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        return new ol.layer.Tile({
-          // extent: opts.extent,
-          visible: false,
-          source: new ol.source.TileArcGISRest({
-            url:          undefined === this.config.url ? null : this.config.url,
-            projection:   this.getProjectionFromCrs(this.config.crs),
-            attributions: this.config.attributions,
-            // crossOrigin:  opts.crossOrigin,
-          }),
         });
       };
     }

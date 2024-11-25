@@ -537,8 +537,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-
-const { t }               = require('g3w-i18n');
+import { t }              from 'g3w-i18n';
 
 export default {
 
@@ -549,14 +548,14 @@ export default {
     const custom_links = (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean)
 
     custom_links.unshift({
-      id: 'credits',
-      type: 'metadata',
+      id:     'credits',
+      type:   'metadata',
       target: '#metadata_credits',
-      icon: 'far fa-question-circle',
-      title: 'Credits'
+      icon:   'far fa-question-circle',
+      title:  'Credits',
     });
 
-    custom_links.forEach(item => !item.id && (item.id = getUniqueDomId()));
+    custom_links.forEach(l => !l.id && (l.id = getUniqueDomId()));
 
     return {
       language:              null,
@@ -642,9 +641,9 @@ export default {
     },
 
     breadcrumb() {
-        return this.state.content.contentsdata
-          .filter(c => c.options.crumb)
-          .map(c => c.options.crumb);
+      return this.state.content.contentsdata
+        .filter(c => c.options.crumb)
+        .map(c => c.options.crumb);
     },
 
     showresize() {
@@ -664,7 +663,7 @@ export default {
     showtitle() {
       if (this.state.content.contentsdata.length > 0) {
         const options = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
-        if (true === options.showtitle || false === options.showtitle) { return options.showtitle }
+        if ( [true, false].includes(options.showtitle) ) { return options.showtitle }
       }
       return true;
     },

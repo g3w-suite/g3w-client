@@ -26,9 +26,7 @@ import { get_legend_params }     from 'utils/get_legend_params';
 import { createRelationsUrl }    from 'utils/createRelationsUrl';
 
 import { Feature }               from 'map/layers/feature';
-
-const { t }                      = require('g3w-i18n');
-
+import { t }                     from 'g3w-i18n';
 
 const is_defined = d => undefined !== d;
 const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
@@ -380,12 +378,12 @@ const Providers = {
         SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
         FILTER:       'all' !== filter.type ? `(${(
           new ol.format.WFS().writeGetFeature({
-            featureTypes: [layers[0]],
+            featureTypes: [''], //v3.11.0 @TODO need to check https://openlayers.org/en/v5.3.0/apidoc/module-ol_format_WFS-WFS.html#writeGetFeature
             filter:       ({
-              'bbox':       ol.format.filter.bbox('the_geom', filter.value),
-              'geometry':   ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
-              'expression': null,
-            })[filter.type],
+              'bbox':       () => ol.format.filter.bbox('the_geom', filter.value),
+              'geometry':   () => ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
+              'expression': () => null,
+            })[filter.type](),
           })
         ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
       });
@@ -692,9 +690,11 @@ class Layer extends G3WObject {
       selection:          { active: false },
       /** Reactive filter attribute */
       filter: {
-        active:  false,
+        active:     false,
         /** @since 3.9.0 whether filter is set from a previously saved filter */
-        current: null,
+        current:    null,
+        /** @since v3.11.0 **/
+        pagination: false,
       },
       /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
       filters:            config.filters || [],
@@ -1003,7 +1003,7 @@ class Layer extends G3WObject {
    * 
    * @fires unselectionall
    */
-  async setSelection(bool=false) {
+  async setSelection(bool = false) {
     this.state.selection.active = bool;
 
     // skip when selection is active
@@ -1053,7 +1053,9 @@ class Layer extends G3WObject {
    * @param {boolean} bool
    */
   setFilter(bool = false) {
-    this.state.filter.active = bool;
+    this.state.filter.active     = bool;
+    //@since 3.11.0 need to reset pagination filter when bool is false
+    this.state.filter.pagination = bool && this.state.filter.pagination;
     if (this.isGeoLayer() && this.state.filter.active) {
       this.hideOlSelectionFeatures();
     }
@@ -1243,8 +1245,9 @@ class Layer extends G3WObject {
    * 
    * @since 3.9.0
    */
-  setFilterToken(filtertoken = null) {
+  setFilterToken(filtertoken = undefined) {
     ApplicationState.tokens.filtertoken = filtertoken;
+    this.setFilter(!!filtertoken);
     this.emit('filtertokenchange', { layerId: this.getId() });
   }
 
@@ -1798,7 +1801,10 @@ class Layer extends G3WObject {
                 suggest:   options.suggest,
                 /** @since 3.9.0 */
                 formatter: undefined !== options.formatter ? options.formatter : 1,
+                /** @since 3.11.0 */
                 autofilter: options.autofilter,
+                page:       options.page,
+                page_size:  options.page_size,
               })
             );
           } catch(e) {
@@ -1836,6 +1842,8 @@ class Layer extends G3WObject {
     queryUrl,
     ordering,
     autofilter, //@since 3.11.0
+    page,  //@since 3.11.0
+    page_size, //@since 3.11.0
   } = {}) {
     const provider        = this.getProvider('data');
     provider._projections = provider._projections || { map: null, layer: null };
@@ -1849,6 +1857,8 @@ class Layer extends G3WObject {
       ffield,
       filtertoken: ApplicationState.tokens.filtertoken,
       autofilter,
+      page,
+      page_size,
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
@@ -1872,7 +1882,8 @@ class Layer extends G3WObject {
             response:    response.vector.data,
             filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
             projections: provider._projections,
-          })
+          }),
+          count: response.vector.count, //@since v3.11.0 take in account feature count (all). It use for pagination purpose
         }
       }
 

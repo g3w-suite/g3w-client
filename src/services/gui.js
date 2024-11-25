@@ -13,6 +13,11 @@ import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 
+import ProjectsMenu              from 'components/ProjectsMenu.vue';
+import SidebarItem               from 'components/SidebarItem.vue';
+import { FormComponent }         from 'components/g3w-form';
+
+
 /** store legacy frontend components */
 const COMPONENTS = {};
 
@@ -157,13 +162,13 @@ export default new (class GUI extends G3WObject {
         // set all content parameters
         Object.assign(ApplicationState.viewport.content, {
           title:        opts.title,
-          split:        undefined !== opts.split       ? opts.split : null,
-          closable:     undefined !== opts.closable    ? opts.closable : true,
-          backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
+          split:        undefined === opts.split       ? null : opts.split,
+          closable:     undefined === opts.closable    || opts.closable,
+          backonclose:  undefined === opts.backonclose || opts.backonclose,
+          style:        undefined === opts.style ? {} : opts.style,
+          headertools:  undefined === opts.headertools ? [] : opts.headertools,
+          showgoback:   undefined === opts.showgoback  || opts.showgoback,
           contentsdata: this.getComponent('contents').contentsdata,
-          style:        undefined !== opts.style ? opts.style : {},
-          headertools:  undefined !== opts.headertools ? opts.headertools : [],
-          showgoback:   undefined !== opts.showgoback ? opts.showgoback : true,
         });
 
         // call show view (in this case content (other is map)
@@ -249,7 +254,7 @@ export default new (class GUI extends G3WObject {
       if ('sidebar' === placeholder) {
         if (!isMobile.any || false !== component.mobile) {
           ApplicationState.sidebar.components.push(component);
-          (new (Vue.extend(require('components/SidebarItem.vue')))({ component, opts: options })).$mount();
+          (new (Vue.extend(SidebarItem))({ component, opts: options })).$mount();
         }
         register = true;
       } else if (SERVICES[placeholder]) {
@@ -487,7 +492,6 @@ export default new (class GUI extends G3WObject {
   }
 
   showForm(options = {}) {
-    const { FormComponent } = require('components/g3w-form');
     // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     this.setContent({
@@ -794,7 +798,7 @@ export default new (class GUI extends G3WObject {
       ...opts,
       id: 'projectsmenu',
       title: opts.title || 'menu',
-      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue')))({
+      internalComponent: new (Vue.extend(ProjectsMenu))({
         host: opts.host,
         state: {
           menuitems: (opts.projects || getListableProjects()).map(p => ({
@@ -882,8 +886,8 @@ export default new (class GUI extends G3WObject {
 
   // remove last content from stack
   async popContent() {
-    // skip when ..
-    if (!ApplicationState.viewport.content.contentsdata.length) {
+    // skip when no content data
+    if (0 === ApplicationState.viewport.content.contentsdata.length) {
       return Promise.reject();
     }
 

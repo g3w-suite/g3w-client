@@ -64,6 +64,7 @@ export default {
             post: "or more characters"
           }
         },
+        help_filter : "Search values are limited based on the active filter. Remove the filter to search all data.",
         autofilter: "Filter results"
 
 },

@@ -350,6 +350,9 @@ export const FONT_AWESOME_ICONS = {
   sort:             'fa fa-sort',
   /** @since 3.11.0 */
   copyright:        'fa fa-copyright',
+  /** @since 3.11.0 **/
+  "forward":        'fas fa-angle-double-right',
+  "backward":       'fas fa-angle-double-left'
 };
 
 /**
@@ -413,6 +416,13 @@ export const SELECTION = {
   EXCLUDE: '__EXCLUDE__'
 };
 
+/**
+ * @since 3.11.0
+ * Page length for pagination
+ * @type {number[]}
+ */
+export const PAGELENGTHS = [10, 25, 50, 100];
+
 export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
@@ -431,4 +441,5 @@ export default {
   SPATIAL_METHODS,
   TIMEOUT,
   VIEWPORT,
+  PAGELENGTHS,
 };

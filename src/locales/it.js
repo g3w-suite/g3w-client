@@ -64,6 +64,7 @@ export default {
             post: "caratteri"
           }
         },
+        help_filter : "I valori di ricerca sono limitati sulla base del filtro attivo. Rimuovere il filtro per ricercare su tutti i dati.",
         autofilter: "Filtro sui risultati"
       },
       print: {

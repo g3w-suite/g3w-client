@@ -14,7 +14,7 @@ import { FeaturesStore }                from 'map/layers/featuresstore';
 import { Feature }                      from 'map/layers/feature';
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
+import _cloneDeep                       from 'lodash.clonedeep';
 
 /**
  * Base Layer that support editing

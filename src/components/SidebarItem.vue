@@ -125,6 +125,7 @@
         node.parentNode.classList.toggle('active', open);
 
         this.component.setOpen(open);
+
       };
     },
 

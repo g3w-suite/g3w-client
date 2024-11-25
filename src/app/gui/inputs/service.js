@@ -1,6 +1,5 @@
 import { toRawType } from 'utils/toRawType';
-
-const { t }         = require('g3w-i18n');
+import { t }         from 'g3w-i18n';
 
 const Validators = {
 

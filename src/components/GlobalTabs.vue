@@ -124,7 +124,7 @@
       },
       handleRelation: {
         type:     Function,
-        default: ({relation, layerId, feature}={}) => GUI.getService('queryresults').showRelation({relation, layerId, feature})
+        default: ({ relation, layerId, feature } = {}) => GUI.getService('queryresults').showRelation({relation, layerId, feature})
       }
     },
     data() {

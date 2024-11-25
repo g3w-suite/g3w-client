@@ -5,8 +5,8 @@
 
 <template>
   <tr
-    @mouseover = "trigger({id:'highlightgeometry'}, layer, feature, index)"
-    @mouseout  = "trigger({id:'clearHighlightGeometry'}, layer, feature, index)"
+    @mouseover.stop = "trigger({ id: 'highlightgeometry'}, layer, feature, index)"
+    @mouseout.stop  = "trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
     class      = "featurebox-header"
   >
     <actions

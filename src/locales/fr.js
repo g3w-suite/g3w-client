@@ -64,6 +64,7 @@ export default {
             post: "caractères"
           }
         },
+        help_filter : "Les valeurs de recherche sont limitées en fonction du filtre actif. Supprimez le filtre pour rechercher toutes les données.",
         autofilter: "Filtrer les résultats"
       },
       print: {

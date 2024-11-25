@@ -26,6 +26,8 @@ import Component                   from 'g3w-component';
 // services
 import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
+import { MapLayersStoresRegistry } from 'services/map';
+import IframePluginService         from 'services/iframe';
 
 // components
 import App                         from 'components/App.vue';
@@ -55,7 +57,8 @@ import { $promisify }              from 'utils/promisify';
 import { getProject }              from 'utils/getProject';
 
 
-const { addI18n, t, tPlugin } = require('g3w-i18n');
+// Internationalization
+import { addI18n, t, tPlugin }     from 'g3w-i18n';
 
 /**
  * Install global components
@@ -334,8 +337,6 @@ $.ajaxSetup({
     .then((project) => {
       clearTimeout(timeout);
 
-      const { MapLayersStoresRegistry } = require('services/map').default;
-
       Object.assign(ApplicationState.project, project);
 
       // set in first position (map and catalog)
@@ -362,7 +363,7 @@ $.ajaxSetup({
       ApplicationState.map.epsg = project.state.crs.epsg;
 
       if (ApplicationState.iframe) {
-        require('services/iframe').default.init({ project });
+        IframePluginService.init({ project })
       }
 
       // init local items

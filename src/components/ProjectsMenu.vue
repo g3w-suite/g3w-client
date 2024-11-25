@@ -31,9 +31,8 @@
 </template>
 
 <script>
-import GUI from 'services/gui';
-
-const { t } = require('g3w-i18n');
+import GUI   from 'services/gui';
+import { t } from 'g3w-i18n';
 
 export default {
 

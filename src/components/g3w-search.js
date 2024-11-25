@@ -3,7 +3,10 @@
  * @since 3.10.0
  */
 
-import { SEARCH_ALLVALUE }            from 'g3w-constants';
+import {
+  SEARCH_ALLVALUE,
+  PAGELENGTHS
+}                                     from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
 import Panel                          from 'g3w-panel';
 import ApplicationState               from 'store/application'
@@ -71,43 +74,47 @@ export function SearchPanel(opts = {}, show = false) {
       /** keep a reference to initial search options (you shouldn't mutate them..) */
       options:   d.input.options,
     })),
-    autofilter:           0, //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
+    //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
+    autofilter:           { value: 0 }, //value 0 no set, 1
+    paginate:             !!opts.options.paginate //@since 3.11.0 paginate or not
   };
 
-  // create search form structure 
-  state.mounted = (async function(state) {
+  const setInputs = async () => {
 
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
-  
+
       const input            = state.forminputs[i];
       const has_autocomplete = 'autocompletefield' === input.type;
-  
+
       // set key-values for select
       input.values = [
         ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
         ...(input.dependance_strict || has_autocomplete
-            ? input.values
-            : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
-          )
+                ? input.values
+                : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
+        )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-  
+
       // there is a dependence
       if (input.dependance) {
         state.loading[input.dependance] = false;
         input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
       }
-  
+
       // save a copy of original values
       input._values = [...input.values];
-  
+
       input.loading = false;
     }
-  
-  })(state);
+
+  }
+  // create search form structure 
+  state.mounted = setInputs();
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,
     doSearch,
+    setInputs,
     run: debounce((...args) => {
       const [w, h] = GUI.getService('map').getMap().getSize();
       const hide   = GUI.isMobile() && (0 === w || 0 === h);
@@ -164,6 +171,8 @@ async function doSearch({
   state.searching = true;
 
   let data, parsed;
+  //For pagination purpose
+  const page_sizes = PAGELENGTHS;
 
   try {
     data = await DataRouterService.getData('search:features', {
@@ -177,13 +186,14 @@ async function doSearch({
         formatter: 1,
         feature_count,
         raw:        false, // in order to get a raw response
-        autofilter: Number(show && state.autofilter), //0/1 autofilter by server,
+        autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
+        ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
 
-    // auto zoom to query
-    if (show && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
+    // auto zoom to query (not pagination)
+    if (show && !state.paginate && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
@@ -218,7 +228,8 @@ async function doSearch({
           }),
           formatter: 1,
           feature_count,
-          autofilter: state.autofilter //Boolean autofilter by server
+          autofilter: state.autofilter.value, //0/1 autofilter by server
+          ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
         },
         outputs: {
           title: state.title
@@ -232,19 +243,5 @@ async function doSearch({
 
   state.searching = false;
 
-  const result = parsed ? parsed : data;
-
-  //In the case of autofilter, need to get filtertokern attribute from server response data and set to each layer
-  if (1 === state.autofilter && result) {
-
-    (result.data || []).forEach(({ layer, filtertoken }) => {
-      //if returned filtertoken, filter is apply on layer
-      if (filtertoken) {
-        layer.state.filter.active = true;
-        layer.setFilterToken(filtertoken);
-      }
-    })
-  }
-
-  return result;
+  return parsed ? parsed : data;
 }
