@@ -64,6 +64,7 @@ export default {
             post: "oder mehrere Zeichen eingeben"
           }
         },
+        help_filter : "Suchwerte werden basierend auf dem aktiven Filter begrenzt. Entfernen Sie den Filter, um nach allen Daten zu suchen.",
         autofilter: "Filtern Sie die Ergebnisse"
       },
       print: {

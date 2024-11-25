@@ -64,6 +64,7 @@ export default {
             post: "tai useampi merkki"
           }
         },
+        help_filter : "Hakuarvot ovat rajoitettuja aktiivisen suodattimen perusteella. Poista suodatin etsiäksesi kaikista tiedoista.",
         autofilter: "Suodata tulokset"
       },
       print: {

@@ -6,11 +6,21 @@
 <template>
   <div
     class      = "g3w-search-panel form-group"
-    v-disabled = "state.searching"
+    v-disabled = "state.searching || loading || reload"
   >
-
+    <bar-loader :loading = "state.searching || loading || reload"/>
     <h4><b>{{ state.title }}</b></h4>
-
+    <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
+      <helpdiv message="sdk.search.help_filter"/>
+      <button
+        v-t-tooltip:left.create = "'layer_selection_filter.tools.nofilter'"
+        @click.stop             = "clearFilters"
+        class                   = "btn skin-border-color"
+        style                   = "background-color: transparent; margin: 5px 0"
+      >
+        <i class = "skin-color" :class="$fa('clear')"></i>
+      </button>
+    </section>
     <!-- SEARCH TOOLS -->
     <slot name = "tools"></slot>
 
@@ -183,8 +193,7 @@
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import resizeMixin                           from 'mixins/resize';
-
-  const { t } = require('g3w-i18n');
+  import { t }                                 from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];
@@ -198,6 +207,7 @@
        state:      this.$options.service.state,
        autofilter: false, //@since 3.11.0
        allvalue:   SEARCH_ALLVALUE,
+       reload:     false,
       }
     },
 
@@ -211,10 +221,33 @@
         return window.initConfig.user.is_staff;
       },
 
+      /**
+       * @since 3.11.0 loading inputs data
+       * Disabled search form during loading input data
+       * @return {*}
+       */
+      loading() {
+        return this.state.forminputs.reduce((bool, i) => bool || i.loading, false);
+      },
+
+      filterlayers() {
+        return (ApplicationState.tokens.filtertoken && this.state.search_layers.filter(l => l.getFilterToken()) || []);
+      }
     },
 
     methods: {
-
+      /**
+      * @since 3.11.0
+      */
+      clearFilters() {
+        this.filterlayers.forEach(l => {
+          if (this.state.paginate) {
+            l.clearSelectionFids()
+          } else {
+            l.toggleFilterToken();
+          }
+        })
+      },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
       },
@@ -457,7 +490,7 @@
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => ApplicationState.language, () => {
+        const unwatch = this.$watch(() => ApplicationState.language,  () => {
           unwatch();
           this.clearSelect2();
           this.initSelect2Field(input);
@@ -476,14 +509,49 @@
         })
         // reset SELECTS to an empty array
         SELECTS.splice(0);
+      },
+
+      /**
+       * Reload select2Inputs
+        * @return {Promise<void>}
+       */
+      async reloadSelect2Inputs() {
+        //Already reload from another layer
+        if (this.reload) { return }
+
+        this.reload = true;
+        //wait to be sure that another layer is call to reload
+        await this.$nextTick();
+
+        try {
+          await this.$options.service.setInputs();
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.clearSelect2();
+        try {
+          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)))
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.reload = false;
       }
 
     },
     watch: {
       //@since 3.11.0 Set state auto filter to a search result
       autofilter(bool = false) {
-        this.state.autofilter = Number(bool); //0/1 instead true false
+        this.state.autofilter.value = Number(bool); //0/1 instead true false
       }
+    },
+
+    async created() {
+      //Listen change filtertoken on layer
+      //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
+      //because when create a new filter with new rules, the filtertoken string doesn't change
+      this.state.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
     },
 
     async mounted() {
@@ -497,6 +565,7 @@
     },
 
     beforeDestroy() {
+      this.state.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs))
       this.clearSelect2();
     }
 

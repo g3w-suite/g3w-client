@@ -52,7 +52,8 @@ function _buildRelationTable(relations = [], id) {
     fields:           cols.length ? cols : null,
     formStructure:    layer.getLayerEditingFormStructure(),
     rowFormStructure: null,
-    layerId:          layer.getId()
+    layerId:          layer.getId(),
+    title:            layer.getName() || layer.getTitle(), //@since 3.11.0
   };
 }
 
@@ -200,15 +201,14 @@ export default {
         }
         this.showChartButton = !!this.chartRelationIds.find(id => relationLayerId === id);
         this.table           = _buildRelationTable(relations, relationLayerId);
-
         GUI.setCurrentContentOptions({
           title: relation.name,
-          crumb: { title: relation.name }
+          crumb: { title: relation.name, text: true }/**@since 3.11.0 text attribute */
         });
 
         await this.$nextTick();
         this.previousview = this.currentview;
-        this.currentview = 'relation';
+        this.currentview  = 'relation';
       } catch(e) { console.warn(e); }
       GUI.setLoadingContent(false);
       this.loading = true;

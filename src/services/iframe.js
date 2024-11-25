@@ -5,6 +5,7 @@
 
 import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
+import DataRouterService              from 'services/data';
 import ApplicationState               from 'store/application'
 import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
@@ -335,7 +336,6 @@ class BaseIframeService extends G3WObject {
     feature,
   }) {
     const { field, value }  = feature;
-    const DataRouterService = require('services/data').default;
     const { data = [] }     = await DataRouterService.getData('search:features', {
       inputs: {
         layer,

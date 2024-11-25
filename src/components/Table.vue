@@ -51,7 +51,7 @@
         :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
         data-placement     = "right"
-        @click.stop        = "layer.toggleFilterToken()"
+        @click.stop        = "toggleFilterToken(layer)"
       ></div>
 
     </div>
@@ -148,7 +148,10 @@
 </template>
 
 <script>
-import { SELECTION }               from 'g3w-constants';
+import {
+  SELECTION,
+  PAGELENGTHS
+}                                  from 'g3w-constants';
 import Component                   from 'g3w-component';
 import ApplicationState            from 'store/application';
 import Field                       from 'components/FieldG3W.vue';
@@ -160,12 +163,7 @@ import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-
-const { t }                        = require('g3w-i18n');
-
-
-//Supported page lengths
-const PAGELENGTHS = [10, 25, 50, 100];
+import { t }                       from 'g3w-i18n';
 
 function _createFeatureForSelection(f) {
   return {
@@ -240,6 +238,19 @@ export default {
   },
 
   methods: {
+
+    /**
+     * @since v3.11.0
+     * @param layer
+     */
+    toggleFilterToken(layer) {
+      //in the case of autofilter with pagination need to get features to set selection
+      if (layer.state.filter.active && !layer.selectionFids.has('__ALL__')) {
+        this.state.selectAll = false;
+        this.selectAllRows();
+      }
+      layer.toggleFilterToken();
+    },
 
     /**
      * @param feature
@@ -323,12 +334,12 @@ export default {
     },
 
     async inverseSelection() {
-        //need to get all features
-        if (!this.getAll) { await this.getFeatures() }
-        this.state.features.forEach(f => f.selected = !f.selected);
-        this.layer.invertSelectionFids();
-        //set selectAll checkbox
-        this.checkSelectAll();
+      //need to get all features
+      if (!this.getAll) { await this.getFeatures() }
+      this.state.features.forEach(f => f.selected = !f.selected);
+      this.layer.invertSelectionFids();
+      //set selectAll checkbox
+      this.checkSelectAll();
     },
 
     /**
@@ -553,7 +564,7 @@ export default {
             }
             return {
               id:         f.id,
-              selected:   this.layer.hasSelectionFid(f.id),
+              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id), //@since 3.11.0 in case of filter token from pagination
               attributes: f.attributes || f.properties,
               geometry:   this.layer.isGeoLayer() && f.geometry || undefined
             };

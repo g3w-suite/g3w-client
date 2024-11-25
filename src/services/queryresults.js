@@ -16,6 +16,7 @@ import DataRouterService                        from 'services/data';
 
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
+import RelationsPage                            from "components/RelationsPage.vue";
 
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { intersects }                           from 'utils/intersects';
@@ -29,8 +30,7 @@ import { getCatalogLayerById }                  from 'utils/getCatalogLayerById'
 
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
-
-const { t } = require('g3w-i18n');
+import { t }                                    from 'g3w-i18n';
 
 function _setRelationField(node) {
   if (node.nodes) {
@@ -67,15 +67,20 @@ export default new (class QueryResultsService extends G3WObject {
        * @param { Object }                             options
        * @param { boolean }                            options.add                            - whether is a new query request (add/remove query request)
        */
-      setQueryResponse(queryResponse, options = { add: false }) {
-
+      setQueryResponse(queryResponse, options = { add: false, update: false }) {
         // set mandatory queryResponse fields
         if (!queryResponse.data)           queryResponse.data           = [];
         if (!queryResponse.query)          queryResponse.query          = { external: { add: false, filter: { SELECTED: false } } };
         if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: { SELECTED: false }};
 
+
+        if (false === options.add && !!options.update) {
+          // in case of new request results reset the query otherwise maintain the previous request
+          this.state.query      = queryResponse.query;
+          this.state.type       = queryResponse.type;
+        }
         // whether add response to current results using addLayerFeaturesToResultsAction
-        if (false === options.add) {
+        if (false === options.add && !options.update) {
           // in case of new request results reset the query otherwise maintain the previous request
           this.clearState();
           this.state.query      = queryResponse.query;
@@ -207,13 +212,13 @@ export default new (class QueryResultsService extends G3WObject {
         
             if (!attributes) {
               attributes = (layerAttrs && layerAttrs.length > 0)
-                ? layerAttrs.filter(attr => attrs.indexOf(attr.name) > -1)
+                ? layerAttrs.filter(attr => attrs.includes(attr.name))
                 : attrs.map(featureAttr => ({
-                    name:  featureAttr,
-                    label: featureAttr,
-                    show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
-                    type:  'varchar'
-                  }));
+                  name:  featureAttr,
+                  label: featureAttr,
+                  show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
+                  type:  'varchar'
+                }));
             }
 
             const external   = (is_vector || is_string);
@@ -267,9 +272,7 @@ export default new (class QueryResultsService extends G3WObject {
               toc:                    external || layer.state.toc, //@since v3.10.0
             };
           });
-
         this.setLayersData(layers, options);
-
       },
 
       /**
@@ -278,15 +281,19 @@ export default new (class QueryResultsService extends G3WObject {
        * @param layers
        * @param options
        */
-      setLayersData(layers = [], options = { add: false }) {
+      setLayersData(layers = [], options = { add: false, update: false }) {
         if (false === options.add) {
           // sort layers as Catalog project layers.
           //external layer always on bottom
           layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
         }
         // get features from added pick layer in case of a new request query
-        layers.forEach(l => options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l));
-        this.setActionsForLayers(layers, { add: options.add });
+        layers.forEach((l, index) => {
+          //@since 3.11.0 check if a result comes from pagination
+          l.filter.pagination = l.filter.pagination || !!(this.state.query.pagination && this.state.query.pagination.counts[index] > l.features.length) ;
+          options.add || options.update ? this.updateLayerResultFeatures(l, options.update) : this.state.layers.push(l)
+        });
+        this.setActionsForLayers(layers, { add: options.add, update: options.update });
         this.state.changed = true;
       },
 
@@ -448,7 +455,7 @@ export default new (class QueryResultsService extends G3WObject {
       /**
        * Add action tools (for features)
        */
-      actiontools:{},
+      actiontools: {},
 
       /**
        * Current action tools contain component
@@ -579,6 +586,61 @@ export default new (class QueryResultsService extends G3WObject {
 
   }
 
+  /**
+   * @since 3.11.0
+   * Load pagination data
+   * @param index
+   * @param page
+   * @param page_size
+   * @param query
+   */
+  async loadPaginationData(index, page, page_size, query) {
+    //In the case of first autofilter request in pagination request, remove it from
+    if (this.state.query.autofilter && this.state.query.pagination) {
+      this.state.query.autofilter = false;
+      this.state.query.pagination.getData.params.forEach(p => delete p.autofilter);
+    }
+    if (page_size) {
+      this.state.query.pagination.getData.params[index].page_size = page_size;
+      this.state.query.pagination.pages[index]                    = Math.round(this.state.query.pagination.counts[index] / page_size);
+    } //set page size
+    //get config from getData object set by pagination method
+    const { layers = [], method, params } = this.state.query.pagination.getData;
+    const layer                           = layers[index];
+    //check if layer has filter
+    const has_filtertoken                 = !!layer.getFilterToken();
+    try {
+      //get layer pagination data
+      const data = await layer[method]({ ...params[index], page });
+      //set response data
+      this.setQueryResponse({ ...data, query }, { add: false, update: true });
+      //set the current page
+      this.state.query.pagination.current[index] = page;
+      //in the case of page size change
+      const bool = layer.state.selection.active || has_filtertoken ;
+      //get selection action
+      const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
+      this.state.layers[index].features.forEach((f, i) => {
+        if (bool && !f.selection.selected && layer.isGeoLayer() && f.geometry) {
+          const fid = this._getFeatureId(f, this.state.layers[index].external);
+          (layer.addOlSelectionFeature({ id: fid, feature:f })).selected = true;
+          layer.includeSelectionFid(fid, false);
+        }
+        f.selection.selected    = bool;
+        action.state.toggled[i] = bool;
+      })
+      layer.state.filter.active    = bool;
+      layer.state.selection.active = bool;
+
+      this.state.layers[index].filter.pagination = this.state.layers[index].features.length < this.state.query.pagination.counts[index];
+      //in the case of layer with geometry, zoom to features
+      if (this.state.layers[index].hasgeometry) {
+        this.highLightLayerFeatures(this.state.layers[index]);
+      }
+    } catch(e) {
+      console.warn(e);
+    }
+  }
 
   /**
    * used by the following plugins: "qplotly"
@@ -622,18 +684,23 @@ export default new (class QueryResultsService extends G3WObject {
    * current `state.layers` results.
    *
    * @param responseLayer layer structure coming from request
+   * @param replace    @since 3.11.0 mean replace current state layer features
    *
    * @since 3.8.0
    */
-  updateLayerResultFeatures(responseLayer) {
+  updateLayerResultFeatures(responseLayer, replace = false) {
     const layer            = this.state.layers.find(l => l.id === responseLayer.id);                // get layer from current `state.layers` showed on a result
     const responseFeatures = responseLayer.features || [];                                            // extract features from responseLayer object
     const external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
     const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
     if (has_features) {
-      const features_ids = layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
+      const features_ids = replace ? [] : layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
+      if (replace) {
+        layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
+        layer.features.splice(0);
+      }
       responseFeatures.forEach((feat, index) => {
         const feature_id = this._getFeatureId(feat, external);
         // If true, remove the feature because is already loaded
@@ -644,6 +711,7 @@ export default new (class QueryResultsService extends G3WObject {
           }
           //filter feature
           layer.features.splice(index, 1);
+          delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
           if (action) {
             delete action.state.toggled[index];
             //need to reset toggled state in reactive mode
@@ -652,11 +720,9 @@ export default new (class QueryResultsService extends G3WObject {
         } else {                                                              // add feature
           layer.features.push(feat);
         }
-        setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]);
       });
       // toggle layer feature box
       (layer.features || []).forEach(f => {
-        console.log(f)
         const collapsed = (layer.features || []).length > 1;
         const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, f)];
         if (box) {
@@ -704,8 +770,8 @@ export default new (class QueryResultsService extends G3WObject {
    * @param layers
    * @param options
    */
-  setActionsForLayers(layers, options = { add: false }) {
-    if (options.add) {
+  setActionsForLayers(layers, options = { add: false, update: false }) {
+    if (options.add || options.update) {
       return;
     }
 
@@ -714,7 +780,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     // loop results
     layers.forEach(layer => {
-
+      const state = this.state;
       // eventually set layer action tool and need to be reactive
       this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
@@ -768,10 +834,10 @@ export default new (class QueryResultsService extends G3WObject {
           class:    GUI.getFontClass('relation'),
           hint:     'sdk.mapcontrols.query.actions.relations.hint',
           cbk(layer, feature, action) {
-            GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
+            GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+                internalComponent: new (Vue.extend(RelationsPage))({
                   relations:        action.relations,
                   chartRelationIds: action.chartRelationIds,
                   feature,
@@ -844,7 +910,7 @@ export default new (class QueryResultsService extends G3WObject {
           id:         'downloads',
           download:   true,
           class:      GUI.getFontClass('download'),
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
+          state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
           toggleable: true,
           hint:       'Downloads',
           change({ features }) {
@@ -856,14 +922,33 @@ export default new (class QueryResultsService extends G3WObject {
           }
         },
 
-        // remove feature
+        // remove feature not in case of pagination @since 3.11.0
         ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
           id:        'removefeaturefromresult',
           mouseover: true,
           class:     GUI.getFontClass('minus-square'),
           style:     { color: 'red' },
+          // in case of pagination, disabled @since 3.11.0
+          state:     Vue.observable({ show: !state.query.pagination && !layer.filter.pagination }), //@since 3.11.0 show false in case of pagination
           hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-          cbk:       this.removeFeatureLayerFromResult.bind(this)
+          cbk:       this.removeFeatureLayerFromResult.bind(this),
+          /**
+           * @since @3.11.0
+           * Need to listen filter layer pagination change
+           */
+          init() {
+            this.unwatch = VM.$watch(() => layer.filter.pagination, bool => this.state.show = !bool );
+          },
+          /**
+           * @since @3.11.0
+           * Clear action when destroy
+           */
+          clear() {
+            this.unwatch && this.unwatch();
+          },
+          change() {
+            this.state.disabled = !state.query.pagination && !layer.filter.pagination;
+          }
         },
 
         // select feature
@@ -871,38 +956,47 @@ export default new (class QueryResultsService extends G3WObject {
           id:       'selection',
           class:    GUI.getFontClass('success'),
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
+          state:    Vue.observable({
+            toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
+            // in case of pagination, show @since 3.11.0
+            show:    !state.query.pagination && !layer.filter.pagination
+          }),
           // check feature selection
           init:     ({ feature, index, action } = {}) => {
             if (layer.external && undefined !== layer.selection.active) { // external layer
               action.state.toggled[index] = feature.selection.selected;
             } else if (feature && undefined !== layer.selection.active) { // project layer
-              const pLayer              = getCatalogLayerById(layer.id);
-              const is_selected_feature = feature ? pLayer.hasSelectionFid(this._getFeatureId(feature, layer.external)) : false;
-              feature.selection.selected = is_selected_feature;
-              //@since 3.11.0
-              // if set autofilter and feature is not selected,
-              //need to add selection of a map
-              if (this.state.query.autofilter && !is_selected_feature) {
-                this.addToSelection(layer, feature, action, index);
-                //In the case of geometry layer, need tyo hide selection layer from a map because
-                //the filter is set active
-                if (layer.hasgeometry) {
-                  pLayer.hideOlSelectionFeatures();
-                }
+              const pLayer               = getCatalogLayerById(layer.id);
+              const fid                  = this._getFeatureId(feature, layer.external);
+              let is_selected_feature  = feature ? pLayer.hasSelectionFid(fid) : false;
+              //force to add selection feature in case of no pagination and selection is due an autofilter search
+              if (!this.state.query.pagination && pLayer.state.filter.active && !is_selected_feature) {
+                is_selected_feature = true;
+                (pLayer.addOlSelectionFeature({ id: fid, feature })).selected = true;
+                pLayer.includeSelectionFid(fid, false);
               }
+              feature.selection.selected = is_selected_feature;
               action.state.toggled[index] = (
-                //set active in case of autofilter
-                this.state.query.autofilter
                 //need to check if set active filter and no saved filter is set
-                || (pLayer.state.filter.active && null == pLayer.state.filter.current)
+                (pLayer.state.filter.active && null == pLayer.state.filter.current)
                 //or if feature fid is in selected array
                 || is_selected_feature
-              )
+              );
+              action.unwatch = VM.$watch(() => layer.filter.pagination, bool => action.state.show = !bool );
             }
           },
+          /**
+           * @since @3.11.0
+           * Clear action when destroy
+           */
+          clear() {
+            this.unwatch && this.unwatch();
+          },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
-          change({ features }) { features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false)) },
+          change({ features }) {
+            this.state.show = !state.query.pagination && !layer.filter.pagination;
+            features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
+          },
           cbk: throttle(this.addToSelection.bind(this))
         },
 
@@ -1683,9 +1777,6 @@ export default new (class QueryResultsService extends G3WObject {
    */
   clearHighlightGeometry(layer) {
     GUI.getService('map').clearHighlightGeometry();
-    if (this.isOneLayerResult()) {
-      GUI.getService('map').highlightFeatures(layer.features, { duration: Infinity });
-    }
   }
 
   /**
@@ -1703,7 +1794,7 @@ export default new (class QueryResultsService extends G3WObject {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
-        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+        internalComponent: new (Vue.extend(RelationsPage))({
           currentview:      'relation',
           relations:        [projectRelation],
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
@@ -1714,10 +1805,10 @@ export default new (class QueryResultsService extends G3WObject {
       }),
       crumb: {
         title: projectRelation.name,
-        text: true,
+        text:  true,
       },
-      title: projectRelation.name,
-      text  : true,
+      title:    projectRelation.name,
+      text  :   true,
       closable: false
     })
   };
@@ -1742,6 +1833,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   addToSelection(layer, feature, action, index) {
+
     const service          = GUI.getService('queryresults');
     const map              = GUI.getService('map');
 
@@ -1767,15 +1859,21 @@ export default new (class QueryResultsService extends G3WObject {
       force: undefined
     };
 
+    //in case, switch selection for all features of a layer
     if (layerSelection) {
       layer.features.forEach((f, i) => {
         _action.state.toggled[i] = !toggled;
         f.selection.selected     = _action.state.toggled[i];
       });
-    } else {
-      console.log('qui')
+    } else { //in the case of switch selection on single feature layer
       _action.state.toggled[index] = !_action.state.toggled[index];
       feature.selection.selected   = _action.state.toggled[index];
+    }
+
+    //In case of pagination and toggled selection layer
+    if (toggled && layerSelection) {
+      _layer.clearSelectionFids();
+      return;
     }
 
     /**
@@ -1790,7 +1888,7 @@ export default new (class QueryResultsService extends G3WObject {
     
       const include = []; // fid of features to include
       const exclude = []; // fid of features to exclude
-    
+
       fids.forEach((fid, idx) => {
         const feature     = features[idx];
         const is_selected = layer.state.filter.active || layer.hasSelectionFid(fid);
@@ -1815,7 +1913,7 @@ export default new (class QueryResultsService extends G3WObject {
           exclude.push(fid);
         }
       });
-    
+
       layer.includeSelectionFids(include, false);
       layer.excludeSelectionFids(exclude, false);
 

@@ -64,6 +64,7 @@ export default {
             post: "eller flera tecken"
           }
         },
+        help_filter : "Sökvärdena är begränsade baserat på det aktiva filtret. Ta bort filtret för att söka på all data.",
         autofilter: "Filtrera resultaten"
       },
       print: {

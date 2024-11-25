@@ -108,6 +108,9 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
 
     this._mapLayer._olLayer.setStyle(olStyle);
 
+    //@since 3.11.0 to has the same compatibility with table layer
+    this._mapLayer._olLayer.getEditingSource = () => super.getEditingSource();
+
     Object.assign(this._mapLayer, {
       _olLayer:      this._mapLayer._olLayer,
       mapService:    GUI.getService('map'),

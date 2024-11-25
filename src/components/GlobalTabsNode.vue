@@ -44,7 +44,7 @@
               <div
                 v-if        = "showRelationByField"
                 v-disabled  = "isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
-                @click.stop = "handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})"
+                @click.stop = "handleRelation({ relation: getNode(row, column), feature:feature, layerId: layerid })"
                 :style      = "{cursor: showRelationByField && 'pointer'}"
               >
                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>

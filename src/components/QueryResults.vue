@@ -26,16 +26,16 @@
         >
           <li
             v-show = "showLayer(layer)"
-            v-for = "layer in state.layers"
+            v-for = "(layer, index) in state.layers"
           >
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class      = "box-header with-border"
-                :class     = "{'mobile': isMobile()}"
-                @mouseover = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout  = "highLightLayerFeatures(layer, { highlight: false })"
-                @click     = "collapseSidebar"
+                class            = "box-header with-border"
+                :class           = "{'mobile': isMobile()}"
+                @mouseover.stop  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout.stop   = "highLightLayerFeatures(layer, { highlight: false })"
+                @click.stop      = "collapseSidebar"
               >
                 <div
                   class  = "box-title query-layer-title"
@@ -52,9 +52,16 @@
                     ></span>
                   </span>
                   {{ layer.title }}
-                  <span
-                    v-show = "!layer.rawdata"
-                    class  = "query-layer-feature-count">({{ layer.features.length }})</span>
+                  <template v-show = "!layer.rawdata">
+                    <span v-if = "state.query.pagination"
+                      class  = "query-layer-feature-count"
+                    >({{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }})
+                    </span>
+                    <span v-else
+                      class  = "query-layer-feature-count"
+                    >({{ layer.features.length }})
+                    </span>
+                  </template>
                 </div>
                 <div
                   class       = "box-features-action"
@@ -118,7 +125,7 @@
                     <!--        END DOWNLOAD        -->
                   </template>
                   <span
-                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type )"
+                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type && !state.query.pagination)"
                     @click.stop             = "addLayerFeaturesToResults(layer)"
                     class                   = "action-button"
                     :class                  = "{'toggled': layer.addfeaturesresults.active}"
@@ -134,7 +141,13 @@
                       layer.toc &&
                       layer.id !== '__g3w_marker' &&
                       layer.features.length > 1 &&
-                      (layer.external || (layer.source && layer.source.type !== 'wms'))
+                      (layer.external
+                        || (
+                            layer.source
+                            && layer.source.type !== 'wms'
+                            && (layer.selection.active || showInPagination(layer, index))
+                           )
+                      )
                     "
                     @click.stop             = "addToSelection(layer)"
                     class                   = "action-button skin-tooltip-left"
@@ -147,7 +160,7 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active">
+                  <template v-if = "!layer.external && layer.selection.active && showInPagination(layer, index)">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
@@ -206,6 +219,74 @@
                 :is   = "component"
                 :layer = "layer"/>
               <!--   End custom layer component         -->
+
+              <!-- PAGINATION -->
+              <section
+                v-if       = "state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
+                id         = "g3w-queryresults-pagination"
+                v-disabled = "layer.loading"
+              >
+                <!-- PAGINATION LOAD BUTTONS -->
+                <section id = "pagination-pages" style = "margin-left: 10px;">
+                  <select class = "form-control" @change = "loadPaginationData(index, 1, Number($event.target.value))">
+                    <option v-for = "p in state.query.pagination.page_sizes[index]" :key = "p" :value = "p">{{ p }}</option>
+                  </select>
+                </section>
+                <section v-if ="!layer.loading" id = "pagination-buttons">
+                  <!-- BACKWARD BUTTON -->
+                  <button
+                    v-if        =  "state.query.pagination.counts[index] > layer.features.length"
+                    class       = "btn"
+                    :disabled   = "1 === state.query.pagination.current[index]"
+                    @click.stop = "loadPaginationData(index, state.query.pagination.current[index] - 1)"
+                  >
+                    <i :class="g3wtemplate.font['backward']"></i>
+                  </button>
+                  <!-- 1 BUTTON -->
+                  <button
+                    class       = "btn"
+                    :class      = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
+                    v-disabled  = "layer.features.length === state.query.pagination.counts[index]"
+                    @click.stop = "loadPaginationData(index, 1)"
+                  >{{ 1 }}
+                  </button>
+                <template v-if = "state.query.pagination.counts[index] > layer.features.length">
+                  <!-- ... SPAN -->
+                  <span v-if = "state.query.pagination.pages[index] > 4 && state.query.pagination.current[index] > 2 " style="font-weight: bold; align-self: baseline">...</span>
+                  <button
+                    v-for= "page in (
+                    (state.query.pagination.pages[index] < 4 || state.query.pagination.current[index] < 3)
+                      ? Array.from(Array(state.query.pagination.pages[index] - 2).keys()).slice(0, 2).map(i => i + 2)
+                      : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
+                      ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
+                      : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
+                    )"
+                    class       = "btn"
+                    :class      = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
+                    @click.stop = "loadPaginationData(index, page)"
+                    >{{ page }}
+                  </button>
+                  <!-- ... SPAN -->
+                  <span v-if = "state.query.pagination.pages[index] > 4 && (state.query.pagination.current[index] < state.query.pagination.pages[index] - 2)" style="align-self: baseline">...</span>
+                  <!-- LAST BUTTON NUMBER  -->
+                  <button
+                    v-if        = "state.query.pagination.pages[index] > 1"
+                    class       = "btn"
+                    :class      = "{ 'skin-background-color': state.query.pagination.pages[index] === state.query.pagination.current[index]  }"
+                    @click.stop = "loadPaginationData(index, state.query.pagination.pages[index])"
+                    >{{ state.query.pagination.pages[index] }}
+                  </button>
+                  <!-- FORWARD BUTTON -->
+                   <button
+                    :disabled   = "state.query.pagination.pages[index] === state.query.pagination.current[index]"
+                    class       = "btn"
+                    @click.stop = "loadPaginationData(index, state.query.pagination.current[index] + 1)"
+                    ><i :class="g3wtemplate.font['forward']"></i>
+                    </button>
+                </template>
+                </section>
+              </section>
+              <!-- END PAGINATION -->
               <div class = "box-body" :class = "{'mobile': isMobile()}">
                 <template v-if = "layer.rawdata">
                   <div
@@ -482,7 +563,10 @@
 </template>
 
 <script>
-  import { fieldsMixin }             from 'mixins';
+  import {
+    fieldsMixin,
+    Select2
+  }                                  from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
@@ -518,6 +602,7 @@
     },
     mixins: [fieldsMixin],
     components: {
+      Select2,
       TableAttributeFieldValue,
       'infoformats':         InfoFormats,
       'header-feature-body': HeaderFeatureBody,
@@ -596,6 +681,15 @@
 
     },
     methods: {
+      /**
+       * @since 3.11.0
+       * Return true if we need a show element when pagination is set
+       * @param layer
+       * @return {boolean}
+       */
+      showInPagination(layer) {
+        return !layer.filter.pagination;
+      },
 
       /**
        * @since v3.10.0
@@ -672,11 +766,11 @@
       showLayerDownloadFormats(layer) {
         this.$options.service.showLayerDownloadFormats(layer)
       },
-      saveLayerResult(layer, type="csv") {
+      saveLayerResult(layer, type = "csv") {
         this.$options.service.downloadFeatures(type, layer, layer.features);
       },
       hasLayerOneFeature(layer) {
-        return layer.features.length === 1;
+        return 1 === layer.features.length;
       },
 
       /**
@@ -692,9 +786,9 @@
         await getCatalogLayerById(layer.id).toggleFilterToken();
         //@since 3.11.0 In case of set active filter, remove all features not selected
         if (layer.filter.active) {
-           layer.features
-            .filter(f => !f.selection.selected)
-            .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
+         layer.features
+          .filter(f => !f.selection.selected)
+          .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
         }
       },
 
@@ -847,6 +941,44 @@
         box.querySelector(".btn-collapser").classList.add('fa-minus', collapsed);
       },
 
+      /**
+       * @since v3.11.0
+       * Check if we need to show load pagination data button
+       * @param index
+       * @return Boolean
+       */
+      showPagination(index) {
+        return (
+          this.state.query.pagination //check if pagination is set
+          && this.state.layers[index].features.length < this.state.query.pagination.counts[index] //features are less than the total feature of a query
+        );
+      },
+
+      /**
+       * @since v3.11.0
+       * @param index index of layer
+       * @param page page number
+       * @param page_size number of features per page
+       */
+      async loadPaginationData(index, page, page_size) {
+        this.state.layers[index].loading = true;
+        try {
+          await this.$options.service.loadPaginationData(index, page, page_size, this.state.query);
+        } catch(e) {
+          console.warn(e);
+        }
+        this.state.layers[index].loading = false;
+      },
+      /**
+       * @since 3.11.0
+       * get current pagination size
+        * @param index
+       * @return {*}
+       */
+      getCurrentPagSize(index) {
+        return this.state.query.pagination.getData.params[index].page_size;
+      }
+
     },
 
     watch: {
@@ -880,7 +1012,7 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool) {
+        if (bool && !this.state.query.pagination) {
           GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }
@@ -903,5 +1035,31 @@
 }
 .featurebox-body + tr {
   border-top: 2px groove #000;
+}
+#g3w-queryresults-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+#g3w-queryresults-pagination button, #g3w-queryresults-pagination span {
+  background-color: transparent;
+  margin: 2px;
+  font-weight: bold;
+  font-size: 0.8em;
+}
+#g3w-queryresults-pagination button, #g3w-queryresults-pagination select {
+  min-width: 0;
+}
+
+#pagination-pages  {
+  display: flex;
+  align-items: baseline;
+}
+
+#pagination-pages label {
+  margin-left: 3px;
+  font-size: 1.2em;
 }
 </style>

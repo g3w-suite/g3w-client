@@ -163,7 +163,7 @@
 
         <!-- TOGGLE FILTER  -->
         <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
+          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
@@ -336,7 +336,7 @@ export default {
 
     isHighLight() {
       const layer = getCatalogLayerById(this.layerstree.id) || this.layerstree;
-      return layer && ApplicationState.highlightlayers && layer.isVisible() && layer.getTocHighlightable();
+      return !this.isGroup && ApplicationState.highlightlayers && layer && layer.isVisible() && layer.getTocHighlightable();
     },
 
     isInGrey() {

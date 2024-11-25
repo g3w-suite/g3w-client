@@ -2,12 +2,10 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/scalecontrol.js@v3.10.2
  * @since 3.11.0
  */
-
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-
-const { t } = require('g3w-i18n');
+import { t }                      from 'g3w-i18n';
 
 export class ScaleControl extends ol.control.Control {
 

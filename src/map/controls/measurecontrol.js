@@ -2,13 +2,11 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/measuercontrol.js@v3.10.2
  * @since 3.11.0
  */
-
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
-
-const { t }                        = require('g3w-i18n');
+import { t }                       from 'g3w-i18n';
 
 export class MeasureInteraction extends ol.interaction.Draw {
 

@@ -64,6 +64,7 @@ export default {
             post: "lub więcej znaków"
           }
         },
+        help_filter : "Wartości wyszukiwania są ograniczone w zależności od aktywnego filtra. Usuń filtr, aby przeszukać wszystkie dane.",
         autofilter: "Filtruj wyniki"
       },
       print: {

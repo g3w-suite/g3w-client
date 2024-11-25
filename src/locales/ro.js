@@ -64,6 +64,7 @@ export default {
             post: "sau mai multe caractere"
           }
         },
+        help_filter : "Valorile de căutare sunt limitate în funcție de filtrul activ. Eliminați filtrul pentru a căuta toate datele.",
         autofilter: "Filtrați rezultatele"
       },
       print: {

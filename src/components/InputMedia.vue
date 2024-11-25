@@ -35,9 +35,9 @@
 <script>
   import GUI                from 'services/gui';
   import { getUniqueDomId } from 'utils/getUniqueDomId';
+  import { t }              from 'g3w-i18n';
 
   const InputMixins                 = require('gui/inputs/input');
-  const { t }                       = require('g3w-i18n');
   const { media_field: MediaField } = require('gui/fields/fields');
 
   export default {

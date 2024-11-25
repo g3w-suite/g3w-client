@@ -10,8 +10,7 @@ import { groupBy }                        from 'utils/groupBy';
 import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
 import { $promisify, promisify }          from 'utils/promisify';
-
-const { t }  = require('g3w-i18n');
+import { t }                              from 'g3w-i18n';
 
 const handleQueryPromises = async (promises = []) => {
   const responses = await Promise.allSettled(promises);
@@ -114,7 +113,7 @@ export default {
   } = {}) {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
-    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
+    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
 
     try {
       return {
@@ -245,23 +244,61 @@ export default {
     formatter: 1,
     ordering,
     autofilter: 0,
+    //@since 3.11.0 pagination
+    page,
+    page_sizes,
   }) {
     const { layer, ...params } = options;
-    params.filter              = [].concat(params.filter); // check if filter is array
-    
+    params.filter              = [].concat(params.filter); // check if filter is an array
+    params.page_size           = (params.page_sizes || [])[0]; //get page size
+    //@since 3.11.0 count features returned by
+    const counts     = [];
+    const page_sizes = []; //set pages based on count feature returned by server
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
-          if (params.raw)                                        { return { data: value }; }
+          //@since 3.11.0 In case autofilter set
+          if (1 === params.autofilter) {
+            (value.data || [])
+              .forEach(({ layer, filtertoken }) => {
+                //in the case of filtertoken response attribute set, need to set it to layer
+                if (filtertoken) {
+                  layer.state.selection.active = layer.state.filter.active = true;
+                  layer.setFilterToken(filtertoken); }
+              })
+          }
+
+          if (params.page_sizes)  {
+            //get max number of elements per page
+            const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
+            //Check if count (total number of elements of search is more o less than max)
+            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
+            //add a count element on counts array
+            counts.push(value.count);
+          }
+          if (params.raw)                                         { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
         }),
       query: {
         type:       'search',
-        search:     params.filter,
+        search:     params.filter, //filter search (array of filter)
         autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
+        //@since 3.11.0 pagination
+        pagination: params.page_size && {
+          pages:       params.page && counts.map(count => Math.round(count / params.page_size)), //set number of pages
+          current:     params.page && counts.map(() => params.page), //current page
+          page_sizes,  //Array contains a number of features that want get with pagination
+          counts,
+          //Object contains info for do another request by another part of code
+          getData: {
+            params: params.filter.map(filter => ({ ...params, filter })),
+            method: 'searchFeatures',
+            layers: layer
+          }
+        },
       },
       type: 'api',
     };
