@@ -8,7 +8,6 @@ const concat      = require('gulp-concat');
 const cssimport   = require('gulp-cssimport');
 const flatten     = require('gulp-flatten');
 const gulpif      = require('gulp-if');
-const less        = require('gulp-less');
 const merge       = require('merge-stream');
 const prompt      = require('gulp-prompt');
 const rename      = require('gulp-rename');
@@ -33,9 +32,7 @@ const esmify      = require('esmify')
 const babelify    = require('babelify');
 const browserSync = require('browser-sync');
 const browserify  = require('browserify');
-const karma       = require('karma');
 const imgurify    = require('imgurify');
-const LessGlob    = require('less-plugin-glob');
 const stringify   = require('stringify');
 const vueify      = require('vueify');
 const watchify    = require('watchify');
@@ -425,17 +422,6 @@ gulp.task('css', gulp.series('fonts', function() {
 }));
 
 /**
- * Compile less files in css (process.env.CUSTOM_LESS_FOLDER)
- */
-gulp.task('custom-less', function () {
-  const customLessFolder = path.join(g3w.assetsFolder, 'style', 'less', 'g3w-skins-custom', process.env.CUSTOM_LESS_FOLDER);
-  return gulp.src(path.join(customLessFolder, 'main.less'))
-    .pipe(concat('custom.less'))
-    .pipe(less({ plugins: [LessGlob] }))         // plugin to manage globs import es: @import path/***
-    .pipe(gulp.dest(`${customLessFolder}/css/`))
-});
-
-/**
  * Proxy development server for local G3W-ADMIN instance
  */
 gulp.task('browser-sync', function() {
@@ -572,25 +558,3 @@ gulp.task('dev', gulp.series(
   'browser-sync',
   )
 )
-
-/**
- * [TEST] Run test once and exit
- * 
- * production   = false,
- * outputFolder = g3w.admin_overrides_folder
- */
-gulp.task('test', function() {
-  return new Promise(async done => {
-    const testPath = `${__dirname}${g3w.test.path}`;
-    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
-    for (let i = 0; i < testGroupFolders.length; i++) {
-      await new Promise(resolve => {
-        new karma.Server({
-          configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
-          singleRun: true
-        }, () => { resolve() }).start();
-      });
-    }
-    done();
-  });
-});
