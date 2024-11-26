@@ -128,7 +128,7 @@
 
           <!-- DEBUG INFO -->
           <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
-            <ul style="font-size: 80%;padding-left: 15px; font-family: monospace;">
+            <ul style="font-size: 80%;padding-left: 15px; font-family: monospace; white-space: nowrap; overflow-x: auto; scrollbar-width: thin;">
               <li><b class = "skin-color">{{ input.type }}</b></li>
               <li><b class = "skin-color">{{ input.widget_type }}</b><span v-if = "input.options.value">: {<br>  key: "{{ input.options.key }}",<br>  value: "{{ input.options.value }}"<br>}</span></li>
               <li v-if = "input.options.layer_id"><b class = "skin-color">layer_id:</b> "{{ input.options.layer_id }}"</li>
