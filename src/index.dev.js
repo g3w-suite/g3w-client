@@ -6,10 +6,6 @@ import localforage from 'localforage';
 import { waitFor } from 'utils/waitFor';
 import shpwrite    from '@mapbox/shp-write';
 
-
-// include backward compatibilies
-import './deprecated';
-
 // expose global variables
 import 'g3w-globals';
 

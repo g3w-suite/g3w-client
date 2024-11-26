@@ -19,8 +19,9 @@
     {{ SETTINGS.SENTRY_JS | safe }}
   {% endif %}
   <app id="app"></app>
-  <script src="{% with client_default|add:"/vendor.min.js" as vendor_js %}{% static vendor_js %}{% endwith %}"></script>
   <script>{{ group_config | safe }}</script>
+
+  <script src="{% with client_default|add:"/vendor.min.js" as vendor_js %}{% static vendor_js %}{% endwith %}"></script>
   <script src="{% with client_default|add:"/app.min.js" as app_js %}{% static app_js %}{% endwith %}"></script>
   {% if SETTINGS.G3WSUITE_CUSTOM_STATIC_URL %}{% for js in SETTINGS.G3WSUITE_CUSTOM_JS %}
   <script src="{{ js }}"></script>

@@ -1,3 +1,5 @@
+import jsts from 'jsts/dist/jsts.min.js';
+
 /**
  * Check if `geometryToCheck` is within `geometry`
  * 

@@ -22,7 +22,7 @@ import * as layer           from 'ol/layer';
 import * as loadingstrategy from 'ol/loadingstrategy';
 import * as Observable      from 'ol/Observable';
 import * as proj            from 'ol/proj';
-import * as proj4           from 'ol/proj/proj4';
+import * as proj4ol         from 'ol/proj/proj4';
 import * as projections     from 'ol/proj/projections';
 import * as Units           from 'ol/proj/Units';
 import * as render          from 'ol/render';
@@ -33,6 +33,65 @@ import * as style           from 'ol/style';
 import * as tilegrid        from 'ol/tilegrid';
 import * as xml             from 'ol/xml';
 import RotateFeature        from 'ol-rotate-feature/dist/bundle.es';
+
+import shp                  from 'shpjs';
+import proj4                from 'proj4';
+import $script              from 'scriptjs';
+import isMobile             from 'ismobilejs';
+import Vue                  from 'vue/dist/vue';
+
+/**
+ * Shims legacy window variables
+ */
+Object.assign(globalThis, {
+  Vue,
+  /** @deprecated since 3.11.0 */
+  isMobile: isMobile(),
+  /** @deprecated since 3.11.0 */
+  $script,
+  /** @deprecated since 3.11.0 */
+  shp,
+  /** @deprecated since 3.11.0 */
+  proj4,
+});
+
+const initConfig = window.initConfig;
+
+// convert relative base URLs to absolute (eg. '/' → 'http://localhost:8080/')
+if (initConfig.baseurl) {
+  try {
+    new URL(initConfig.baseurl);
+  } catch (error) {
+    initConfig.baseurl = (new URL(initConfig.baseurl, window.location)).toString();
+  }
+}
+
+// BACKCOMP v3.x (initConfig → initConfig.group)
+initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEntries(Object.keys(initConfig).filter(key => ![
+  "i18n",
+  "staticurl",
+  "client",
+  "mediaurl",
+  "user",
+  "baseurl",
+  "vectorurl",
+  "proxyurl",
+  "rasterurl",
+  "interfaceowsurl",
+  "main_map_title",
+  'main_map_title',
+  "g3wsuite_logo_img",
+  "credits",
+  "version",
+  "group",
+  "frontendurl",
+].includes(key)).map(key => ([key, initConfig[key]]))), {
+  get(target, prop, receiver) { console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`); return Reflect.get(...arguments); }
+}));
+
+// gid of panoramic map project
+initConfig.overviewproject = initConfig.overviewproject ? initConfig.overviewproject.gid : null;
+
 
 /**
  * Based on OpenLayers v5.3.0
@@ -52,7 +111,7 @@ globalThis.ol = Object.assign({}, ol, {
   interaction: Object.assign({}, interaction, { RotateFeature }),
   layer,
   loadingstrategy,
-  proj:        Object.assign({}, proj,        { proj4, projections, Units, }),
+  proj:        Object.assign({}, proj,        { proj4: proj4ol, projections, Units, }),
   render,
   size,
   source,

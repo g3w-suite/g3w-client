@@ -9,7 +9,6 @@ import {
 import { VM }                         from 'g3w-eventbus';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
-import { MapLayersStoresRegistry }    from 'services/map';
 
 import ApplicationState               from 'store/application'
 import InteractionControl             from 'map/controls/interactioncontrol';
@@ -692,6 +691,7 @@ function _hasVisible(control) {
  * @TODO get rid of `s.getLayers` call
  */
 function _getAvailableLayers(type) {
+  const { MapLayersStoresRegistry } = require('services/map').default;
   const queryable = MapLayersStoresRegistry.getQuerableLayersStores();
   return [...new Set([
 

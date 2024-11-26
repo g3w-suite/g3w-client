@@ -1,3 +1,5 @@
+import jsts from 'jsts/dist/jsts.min.js';
+
 /**
  * Check if `geometryCheck` intersects with `geometry`
  * 

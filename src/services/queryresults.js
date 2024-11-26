@@ -16,7 +16,6 @@ import DataRouterService                        from 'services/data';
 
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import RelationsPage                            from "components/RelationsPage.vue";
 
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { intersects }                           from 'utils/intersects';
@@ -837,7 +836,7 @@ export default new (class QueryResultsService extends G3WObject {
             GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(RelationsPage))({
+                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
                   relations:        action.relations,
                   chartRelationIds: action.chartRelationIds,
                   feature,
