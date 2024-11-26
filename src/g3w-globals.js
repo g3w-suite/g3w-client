@@ -32,7 +32,6 @@ import { distance }                                from 'utils/distance';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
 import { getFilterExpression }                     from "utils/getFilterExpression";
 import { getProjectUrl }                           from 'utils/getProjectUrl';
-import { setProjectAliasUrl }                      from 'utils/setProjectAliasUrl';
 import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
 import { getProject }                              from 'utils/getProject';
@@ -164,7 +163,6 @@ const g3wsdk = {
       ProjectsRegistry: Object.assign(new G3WObject, {
         setters: { setCurrentProject(project) {} },
         getProjectUrl,
-        setProjectAliasUrl,
         getProjectConfigByGid,
         getListableProjects,
         getProject,
@@ -322,6 +320,9 @@ g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => Applicati
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
+
+/** used by the following plugins: "archiweb" */
+g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = window.initConfig.projects.find(p => alias.gid === p.gid); if (p) { p.url = `${alias.host || ''}${alias.url}` } };
 
 /**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances
