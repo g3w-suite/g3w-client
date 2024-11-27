@@ -209,7 +209,8 @@ const browserify_plugin = (pluginName, watch = true) => {
 
     return merge(
       gulp
-        .src(`./src/plugins/_version.js`),                                // NB: hardcoded file, do not use `g3w.pluginsFolder`!
+        .src(`./src/plugins/_version.js`)                                // NB: hardcoded file, do not use `g3w.pluginsFolder`!
+        .pipe(uglify()),
       bundler
         .bundle()
         .on('error', (err) => { gutil.log(err); process.exit(); })
