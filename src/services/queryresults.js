@@ -1793,7 +1793,7 @@ export default new (class QueryResultsService extends G3WObject {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
-        internalComponent: new (Vue.extend(RelationsPage))({
+        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
           currentview:      'relation',
           relations:        [projectRelation],
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
