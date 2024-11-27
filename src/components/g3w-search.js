@@ -84,17 +84,14 @@ export function SearchPanel(opts = {}, show = false) {
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
       const input            = state.forminputs[i];
-      const has_autocomplete = 'autocompletefield' === input.type;
-
       // set key-values for select
       input.values = [
         ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict || has_autocomplete
-                ? input.values
-                : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
+        ...(input.dependance_strict || 'selectfield' !== input.type
+              ? input.values
+              : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
         )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-
       // there is a dependence
       if (input.dependance) {
         state.loading[input.dependance] = false;
