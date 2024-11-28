@@ -537,6 +537,8 @@ export default {
     url() {
       if (this.url && !this.wms_config && this.wms_urls.some(l => l.url == this.url)) {
         this.id = this.wms_urls.find(l => l.url == this.url).id
+      } else if(!this.url) {
+        this.id = '';
       }
     },
 
