@@ -563,10 +563,7 @@
 </template>
 
 <script>
-  import {
-    fieldsMixin,
-    Select2
-  }                                  from 'mixins';
+  import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody           from 'components/QueryResultsHeaderFeatureBody.vue';
@@ -602,7 +599,6 @@
     },
     mixins: [fieldsMixin],
     components: {
-      Select2,
       TableAttributeFieldValue,
       'infoformats':         InfoFormats,
       'header-feature-body': HeaderFeatureBody,
