@@ -120,17 +120,11 @@ const CONTROLS = {
           console.warn('Error running spatial query: ', e)
         }
       });
-      if ('before' === setter) {
-        let key = null;
-        this.on('toggled', ({ toggled }) => {
-          if (true !== toggled) {
-            ol.Observable.unByKey(key);
-            key = null;
-          } else if (null === key && map) {
-            key = this.getInteraction().on('picked', throttle(e => this.runQuery({coordinates: e.coordinate })));
-          }
-        });
-        this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
+      this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
+      if ('after' === setter) {
+        this.getInteraction().on('picked', throttle(async evt => {
+          this.dispatchEvent({ type: 'picked', coordinates: evt.coordinate });
+        }));
       }
     }
   }),
