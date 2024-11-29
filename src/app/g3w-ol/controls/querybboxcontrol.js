@@ -1,4 +1,3 @@
-import { SPATIAL_LMETHODS } from 'app/constant';
 import GUI from 'services/gui';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';
@@ -114,6 +113,11 @@ proto.checkVisible = function() {
  */
 proto.setMap = function(map) {
 
+  this.setEventKey({
+    eventType: 'bboxend',
+    eventKey:   this.on('bboxend', this.runSpatialQuery)
+  });
+
   InteractionControl.prototype.setMap.call(this, map);
 
   this._interaction
@@ -133,12 +137,6 @@ proto.setMap = function(map) {
       }
 
     }));
-
-    this.setEventKey({
-      eventType: 'bboxend',
-      eventKey: this.on('bboxend', this.runSpatialQuery)
-    });
-
 };
 
 /**

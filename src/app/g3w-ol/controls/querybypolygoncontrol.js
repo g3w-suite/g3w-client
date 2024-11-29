@@ -94,6 +94,11 @@ proto.checkVisibile = function(layers) {
  */
 proto.setMap = function(map) {
 
+  this.setEventKey({
+    eventType: 'picked',
+    eventKey:  this.on('picked', this.getPolygonFeatureFromCoordinates)
+  });
+
   BaseQueryPolygonControl.prototype.setMap.call(this, map);
   
   this._interaction
@@ -107,11 +112,6 @@ proto.setMap = function(map) {
       }
 
     }));
-
-  this.setEventKey({
-    eventType: 'picked',
-    eventKey: this.on('picked', this.getPolygonFeatureFromCoordinates)
-  });
 
   this.setEnable(false);
 };
