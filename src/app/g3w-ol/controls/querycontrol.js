@@ -33,23 +33,20 @@ const proto = QueryControl.prototype;
  * @listens InteractionControl~toggled
  */
 proto.setMap = function(map) {
- let key = null;
-
-  this.on('toggled', ({ toggled }) => {
-    if (true !== toggled) {
-      ol.Observable.unByKey(key);
-      key = null;
-    } else if (null === key && map) {
-      key = this.getInteraction().on('picked', throttle(evt => this.runQuery({coordinates: evt.coordinate })));
-    }
-  });
 
   this.setEventKey({
     eventType: 'picked',
-    eventKey: this.on('picked', this.runQuery)
+    eventKey:   this.on('picked', this.runQuery)
   });
-
+  
   InteractionControl.prototype.setMap.call(this, map);
+
+  this._interaction
+    .on('picked', throttle(async evt => {
+      this.dispatchEvent({ type: 'picked', coordinates: evt.coordinate });
+    }));
+
+
 };
 
 /**

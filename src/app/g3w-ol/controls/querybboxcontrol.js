@@ -114,6 +114,11 @@ proto.checkVisible = function() {
  */
 proto.setMap = function(map) {
 
+  this.setEventKey({
+    eventType: 'bboxend',
+    eventKey:   this.on('bboxend', this.runSpatialQuery)
+  });
+
   InteractionControl.prototype.setMap.call(this, map);
 
   this._interaction
@@ -133,12 +138,6 @@ proto.setMap = function(map) {
       }
 
     }));
-
-    this.setEventKey({
-      eventType: 'bboxend',
-      eventKey: this.on('bboxend', this.runSpatialQuery)
-    });
-
 };
 
 /**
