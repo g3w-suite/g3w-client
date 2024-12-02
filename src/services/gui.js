@@ -484,7 +484,7 @@ export default new (class GUI extends G3WObject {
 
     this.pending_output = null;
     //set loading to false when done current request id
-    this.setLoadingContent(rid !== this.crid);
+    this.setLoadingContent(this.crid > rid && null !== this.pending_output);
   }
 
   showForm(options = {}) {
