@@ -19,7 +19,7 @@ import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
-import * as vueSearchComp             from 'components/SearchPanel.vue';
+import vueSearchComp                  from 'components/SearchPanel.vue';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchpanel.js@v3.9.3

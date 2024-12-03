@@ -4,7 +4,6 @@ const esbuild     = require('esbuild');
 // Gulp
 const gulp        = require('gulp');
 const cleanCSS    = require('gulp-clean-css');
-const concat      = require('gulp-concat');
 const cssimport   = require('gulp-cssimport');
 const flatten     = require('gulp-flatten');
 const gulpif      = require('gulp-if');
@@ -12,13 +11,6 @@ const merge       = require('merge-stream');
 const prompt      = require('gulp-prompt');
 const rename      = require('gulp-rename');
 const replace     = require('gulp-replace');
-const sourcemaps  = require('gulp-sourcemaps');
-const uglify      = require('gulp-uglify');
-const gutil       = require('gulp-util');
-
-// Gulp vinyl (virtual memory filesystem stuff)
-const buffer      = require('vinyl-buffer');
-const source      = require('vinyl-source-stream');
 
 // Node.js
 const exec        = require('child_process').exec;
@@ -26,17 +18,6 @@ const execSync    = require('child_process').execSync;
 const del         = require('del');
 const fs          = require('fs');
 const path        = require('path');
-
-///////////////////////////////////////////////////////
-const esmify      = require('esmify')
-const babelify    = require('babelify');
-const browserSync = require('browser-sync');
-const browserify  = require('browserify');
-const imgurify    = require('imgurify');
-const stringify   = require('stringify');
-const vueify      = require('vueify');
-const watchify    = require('watchify');
-///////////////////////////////////////////////////////
 
 const packageJSON = require('./package.json');
 const packageLock = require('./package-lock.json');
@@ -167,71 +148,57 @@ setNODE_ENV();
  * 
  * @since 3.10.0
  */
-const browserify_plugin = (pluginName, watch = true) => {
-  const src          = `${g3w.pluginsFolder}/${pluginName}`;              // plugin folder (git source)
+const build_plugin = (pluginName) => {
   const outputFolder = production
     ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
     : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;           // plugin folder (DEV env)
 
   console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + outputFolder);
 
-  let bundler = browserify(`./${pluginName}/index.js`, {
-    basedir:      `${g3w.pluginsFolder}`,
-    paths:        [`${g3w.pluginsFolder}`],
-    debug:        !production,
-    cache:        {},
-    packageCache: {},
-    plugin:       [
-      watch && !production ? watchify : undefined,
-      /* Uncomment the following in next ESM release (v4.x) */
-      // esmify
-    ],
-    transform: [
-      vueify,
-      [ babelify, { babelrc: true } ],
-      [ stringify, { appliesTo: { includeExtensions: ['.html'] } } ],
-    ],
-  })
-  .on('update', ()  => watch && !production && rebundle())
-  .on('log', (info) => watch && !production && gutil.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' →', info));
+  const version = get_version(pluginName);
+  const hash    = get_hash(pluginName);
+  const branch  = get_branch(pluginName);
 
-  // remove source map file
-  try {
-    del([`${outputFolder}plugin.js.map`], {force: true});
-  } catch(e) {
-    console.warn(YELLOW__ +  `[WARN] file not found: ${outputFolder}plugin.js.map}`);
+  esbuild.context({
+    entryPoints: [`${g3w.pluginsFolder}/${pluginName}/index.js`],
+    bundle:      true,
+    minify:      production,
+    sourcemap:   true,
+    outfile:    `${outputFolder}/plugin.js`,
+    define: {
+      'process.env.g3w_plugin_name':    `"${pluginName}"`,
+      'process.env.g3w_plugin_version': `"${is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`,
+      'process.env.g3w_plugin_hash':    `"${hash}"`,
+      'process.env.g3w_plugin_branch':  `"${branch}"`,
+    },
+    plugins: [
+      require('esbuild-vue')({ production }),
+      {
+        name: 'onBuildEnd',
+        setup(build) {
+          build.onEnd(result => {
+            console.log(INFO__ + `Reloading plugin:` + __RESET + ' → ' + outputFolder)
+          })
+        },
+      }
+    ],
+    banner: { js: /* js */ `
+(function() {
+  const plugins = window?.initConfig?.group?.plugins;
+  if (plugins) {
+    plugins["${pluginName}"] = Object.assign(plugins["${pluginName}"] || {},
+      {
+        version : "${is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }",
+        hash    : "${hash}",
+        branch  : "${branch}",
+      });
   }
-
-  const rebundle = () => {
-    const version = get_version(pluginName);
-    const hash    = get_hash(pluginName);
-    const branch  = get_branch(pluginName);
-
-    return merge(
-      gulp
-        .src(`./src/plugins/_version.js`)                                // NB: hardcoded file, do not use `g3w.pluginsFolder`!
-        .pipe(uglify()),
-      bundler
-        .bundle()
-        .on('error', (err) => { gutil.log(err); process.exit(); })
-        .pipe(source(`${src}/build.js`))
-        .pipe(buffer())
-        .pipe(rename('plugin.js')),
-    )
-    .pipe(concat('plugin.js'))
-    .pipe(replace('process.env.g3w_plugin_name', `"${pluginName}"`))
-    .pipe(replace('process.env.g3w_plugin_version', `"${is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`))
-    .pipe(replace('process.env.g3w_plugin_hash', `"${hash}"`))
-    .pipe(replace('process.env.g3w_plugin_branch', `"${branch}"`))
-    .pipe(gulpif(production, sourcemaps.init()))
-    .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-    .pipe(gulpif(production, sourcemaps.write('.')))
-    .pipe(gulp.dest(src))           // put plugin.js to plugin folder (git source)
-    .pipe(gulp.dest(outputFolder)) // put plugin.js to static folder (PROD | DEV env)
-    .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
-  };
-
-  return rebundle();
+})();` }
+  }).then(ctx => {
+    if (!production) {
+      ctx.watch();
+    }
+  });
 };
 
 /**
@@ -265,14 +232,10 @@ gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFol
 gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
 gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
 
-gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(`${outputFolder}/templates/client`)));
-gulp.task('browser:reload',  cb => { if (browserSync) { browserSync.reload() } cb(); });
-
-
 /**
  * Compile client application (src/app/main.js --> app.min.js)
  */
-gulp.task('browserify:app', function() {
+gulp.task('build:app', function(done) {
   /**
    * Make sure that all g3w.plugins bundles are there
    *
@@ -288,74 +251,59 @@ gulp.task('browserify:app', function() {
    */
   if (!production) {
     console.log();                                  // print an empty line
-    dev_plugins.forEach(p => browserify_plugin(p)); // build all plugins (async)
+    dev_plugins.forEach(p => build_plugin(p)); // build all plugins (async)
   }
 
-  const src = `./src/index.${production ? 'prod' : 'dev'}.js`
+  const index  = `index.${production ? 'prod' : 'dev'}.js`
 
-  console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + src + '\n');
+  console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + `src/${index}` + '\n');
 
-  let bundler = browserify(src, {
-    basedir: './',
-    paths: ['./src/', './src/app/', './src/plugins/'],
-    debug: !production,
-    cache: {},
-    packageCache: {},
-    plugin: [
-      production ? undefined : watchify,
-      /* Uncomment the following in next ESM release (v4.x) */
-      // esmify
-    ],
-    transform: [
-      vueify,
-      [ babelify, { babelrc: true, global: false, ignore: [/\/node_modules\//], } ],
-      [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
-      imgurify,
-    ],
-    ignore: (!production ? undefined : ['./src/index.dev.js' ]) // ignore dev index file (just to be safe)
-  })
-  .on('update', ()  => !production && rebundle())
-  .on('log', (info) => !production && gutil.log(GREEN__ + '[client]' + __RESET + ' → ', info));
+  const version = get_version();
+  const branch  = get_branch();
 
-  const rebundle = () => {
-    const version = get_version();
-    const branch  = get_branch();
-
-    return bundler.bundle()
-    .on('error', err => {
-      console.log('ERROR: running gulp task "browserify:app"', err);
-      this.emit('end');
-      process.exit()
-      // del([
-      //   `${outputFolder}/static/js/app.js`,
-      //   `${outputFolder}/static/css/app.css`
-      // ]).then(() => process.exit());
-    })
-    .pipe(source('build.js'))
-    .pipe(replace('process.env.g3w_client_rev', `"${ is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`))
-    .pipe(buffer())
-    .pipe(gulpif(production, sourcemaps.init()))
-    .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
-    .pipe(rename('app.min.js'))
-    .pipe(gulpif(production, sourcemaps.write('.')))
-    .pipe(gulp.dest(outputFolder + '/static/client/'))
-    .pipe(gulpif(!production, browserSync.reload({ stream: true }))); // refresh browser after changing local files (dev mode)
-  };
-
-  return rebundle();
-});
-
-/**
- * Compile vendors
- */
-gulp.task('vendor:js', function(done) {
-  esbuild.build({
-    entryPoints: ['src/g3w-vendors.js'],
+  esbuild.context({
+    entryPoints: {
+      'app.min':    `src/${index}`,
+      'vendor.min': `src/g3w-vendors.js`
+    },
     bundle:      true,
     minify:      production,
     sourcemap:   true,
-    outfile:    `${outputFolder}/static/client/vendor.min.js`,
+    outdir:    `${outputFolder}/static/client`,
+    // loader: {
+    //   '.png':  'file',
+    //   '.woff': 'file',
+    //   '.woff2': 'file',
+    //   '.eot': 'file',
+    //   '.ttf': 'file',
+    //   '.svg': 'file',
+    //   },
+    // assetNames: 'assets/[name]-[hash]',
+    define: {
+      'process.env.g3w_client_rev': `"${ is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`
+    },
+    plugins: [
+      require('esbuild-vue')({ production }),
+      {
+        name: 'onBuildEnd',
+        setup(build) {
+          build.onEnd(result => {
+            console.log(INFO__ + `Reloading plugin:` + __RESET + ' → ' + `${outputFolder}/static/client/`);
+            try {
+              fs.cpSync('./src/index.html', `${outputFolder}/templates/client/index.html`);
+            } catch (e) {
+              console.error('Failed to copy file:', e);
+            }
+          })
+        },
+      }
+    ]
+  }).then(ctx => {
+    if (!production) {
+      ctx.watch();
+    }
   });
+
   done();
 });
 
@@ -423,26 +371,6 @@ gulp.task('css', gulp.series('fonts', function() {
 }));
 
 /**
- * Proxy development server for local G3W-ADMIN instance
- */
-gulp.task('browser-sync', function() {
-  browserSync.init({
-    port:      g3w.port,
-    open:      false,
-    startPath: '/',
-    proxy:     { target: g3w.proxy.url },
-    socket:    { domain: `${g3w.host}:${g3w.port}`}
-  });
-
-  gulp.watch([g3w.assetsFolder + '/app.css'],         gulp.series('css',       'browser:reload'));
-  gulp.watch([g3w.assetsFolder + '/cursors/**'],      gulp.series('cursors',   'browser:reload'));
-  gulp.watch('./src/**/*.{png,jpg}',                  gulp.series('images',    'browser:reload'));
-  gulp.watch(['./src/index.html'],                    gulp.series('html',      'browser:reload'));
-  gulp.watch(['./src/g3w-vendors.js'],                gulp.series('vendor:js', 'browser:reload'));
-  gulp.watch(g3w.pluginsFolder + '/_version.js',      () => dev_plugins.forEach(p => browserify_plugin(p, false)));
-});
-
-/**
  * Make sure that core client plugins are there
  * 
  * [submodule "src/plugins/editing"]          <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
@@ -498,7 +426,7 @@ gulp.task('build:plugins', function(done) {
     console.warn('\n' + YELLOW__ + 'no plugins selected'+ __RESET + '\n');
   }
   if (process.env.G3W_PLUGINS) {
-    merge(process.env.G3W_PLUGINS.split(',').filter(p => p !== 'client').map(p => browserify_plugin(p, false)));
+    merge(process.env.G3W_PLUGINS.split(',').filter(p => p !== 'client').map(p => build_plugin(p)));
   }
   done();
 });
@@ -508,7 +436,7 @@ gulp.task('build:plugins', function(done) {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? gulp.series('browserify:app', 'vendor:js', gulp.parallel('fonts', 'cursors', 'images', 'css', 'html'))(done)
+   ? gulp.series('build:app', gulp.parallel('fonts', 'cursors', 'images', 'css'))(done)
    : done();
 });
 
@@ -556,6 +484,5 @@ gulp.task('dev', gulp.series(
   'clean:overrides',
   'clone:default_plugins',
   'build:client',
-  'browser-sync',
   )
 )

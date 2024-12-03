@@ -149,7 +149,6 @@
 
               <!-- ADD LAYER -->
               <a
-                v-if   = "'legend' !== activeTab"
                 href   = "#"
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
@@ -558,6 +557,7 @@ export default {
     custom_links.forEach(l => !l.id && (l.id = getUniqueDomId()));
 
     return {
+      iframe:                false,
       language:              null,
       cookie_law_buttonText: t('cookie_law.buttonText'),
       app:                   ApplicationState,

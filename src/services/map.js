@@ -1033,7 +1033,10 @@ class MapService extends G3WObject {
     toggled = false,
     options = {},
   } = {}) {
-    const control = CONTROLS[type] ? new CONTROLS[type]({ type, toggled, ...options }) : undefined;
+    let control;
+    if (CONTROLS[type]) {
+      control = CONTROLS[type].prototype ? new CONTROLS[type]({ type, toggled, ...options }) : CONTROLS[type]({ type, toggled, ...options });
+    }
     if (undefined === visible) {
       visible = (control.isVisible ? control.isVisible() : true)
     }

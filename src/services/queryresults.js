@@ -836,7 +836,7 @@ export default new (class QueryResultsService extends G3WObject {
             GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+                internalComponent: new (Vue.extend(require('components/RelationsPage.vue').default))({
                   relations:        action.relations,
                   chartRelationIds: action.chartRelationIds,
                   feature,
@@ -1793,7 +1793,7 @@ export default new (class QueryResultsService extends G3WObject {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
-        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+        internalComponent: new (Vue.extend(require('components/RelationsPage.vue').default))({
           currentview:      'relation',
           relations:        [projectRelation],
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],

@@ -3,6 +3,8 @@
  * @since v3.8
  */
 
+// import 'assets/app.css';
+
 // expose global variables
 import './g3w-globals';
 
@@ -428,7 +430,7 @@ $.ajaxSetup({
                 icon:               GUI.getFontClass('bookmark'),
                 iconColor:          '#00bcd4',
                 title:              'sdk.spatialbookmarks.title',
-                vueComponentObject: require('components/SpatialBookMarks.vue'),
+                vueComponentObject: require('components/SpatialBookMarks.vue').default,
               });
 
               GUI.on('closecontent', () => { comp.state.open = false; });
@@ -446,7 +448,7 @@ $.ajaxSetup({
               iconColor:         '#FF9B21',
               title:             'print',
               service:           {},
-              internalComponent: new (Vue.extend(require('components/Print.vue'))),
+              internalComponent: new (Vue.extend(require('components/Print.vue').default)),
             }), {
               //@since 3.11.0 use internal methods called by component setters if declared
               _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
@@ -487,7 +489,7 @@ $.ajaxSetup({
                     return new Panel({
                       title: t('sdk.querybuilder.title'),
                       show: true,
-                      vueComponentObject: require('components/QueryBuilder.vue')
+                      vueComponentObject: require('components/QueryBuilder.vue').default
                     });
                   },
                   style: {
@@ -498,7 +500,7 @@ $.ajaxSetup({
                     marginRight:  '5px'
                   }
               }],
-              vueComponentObject: require('components/Search.vue'),
+              vueComponentObject: require('components/Search.vue').default,
             }),
 
             /**
@@ -568,7 +570,7 @@ $.ajaxSetup({
                         <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
                       </li>
                     </ul>`,
-                  components: { G3wTool: require('components/Tool.vue') },
+                  components: { G3wTool: require('components/Tool.vue').default },
                   data: () => ({ state: null }),
                   watch: {
                     async 'state.toolsGroups'(g) {
@@ -651,7 +653,7 @@ $.ajaxSetup({
                 iconColor:          '#019A4C',
                 title:              'catalog',
                 resizable:          true,
-                vueComponentObject: require('components/Catalog.vue'),
+                vueComponentObject: require('components/Catalog.vue').default,
                 service,
               });
             
@@ -667,7 +669,7 @@ $.ajaxSetup({
             id:                 'queryresults',
             title:              'Query Results',
             service:            require('services/queryresults').default,
-            vueComponentObject: require('components/QueryResults.vue'),
+            vueComponentObject: require('components/QueryResults.vue').default,
           }),
 
           /**
@@ -677,7 +679,7 @@ $.ajaxSetup({
             id:                 'map',
             title:              'Map Component',
             service:            new (require('services/map').default).MapService(),
-            vueComponentObject: require('components/Map.vue'),
+            vueComponentObject: require('components/Map.vue').default,
           }),
 
           /**
@@ -707,7 +709,7 @@ $.ajaxSetup({
         CONFIG.sidebar.forEach(comp => {
           if (!isMobile.any || false !== comp.mobile) {
             ApplicationState.sidebar.components.push(comp);
-            (new (Vue.extend(require('components/SidebarItem.vue')))({ component: comp })).$mount();
+            (new (Vue.extend(require('components/SidebarItem.vue').default))({ component: comp })).$mount();
           }
         });
 

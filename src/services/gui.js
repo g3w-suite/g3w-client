@@ -250,7 +250,7 @@ export default new (class GUI extends G3WObject {
       if ('sidebar' === placeholder) {
         if (!isMobile.any || false !== component.mobile) {
           ApplicationState.sidebar.components.push(component);
-          (new (Vue.extend(require('components/SidebarItem.vue')))({ component, opts: options })).$mount();
+          (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
         }
         register = true;
       } else if (SERVICES[placeholder]) {
@@ -794,7 +794,7 @@ export default new (class GUI extends G3WObject {
       ...opts,
       id: 'projectsmenu',
       title: opts.title || 'menu',
-      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue')))({
+      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue').default))({
         host: opts.host,
         state: {
           menuitems: (opts.projects || getListableProjects()).map(p => ({

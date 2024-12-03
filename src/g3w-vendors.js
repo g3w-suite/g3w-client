@@ -38,7 +38,7 @@ import shp                  from 'shpjs';
 import proj4                from 'proj4';
 import $script              from 'scriptjs';
 import isMobile             from 'ismobilejs';
-import Vue                  from 'vue/dist/vue';
+import Vue                  from 'vue/dist/vue.js';
 
 /**
  * Shims legacy window variables
