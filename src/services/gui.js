@@ -521,9 +521,8 @@ export default new (class GUI extends G3WObject {
     // remove all content stacks
     if (!pop && !backonclose){
       this.closeContent();
+      this.setModal(false);
     }
-
-    this.setModal(false);
   }
 
   disableElement({element, disable}) {
