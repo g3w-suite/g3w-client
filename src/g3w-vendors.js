@@ -41,6 +41,19 @@ import isMobile             from 'ismobilejs';
 import Vue                  from 'vue/dist/vue.js';
 
 /**
+ * Monkey patch for: `Vue.extend(require())`
+ */
+const extendProto = Vue.extend.bind(Vue);
+Vue.extend = function(opts) {
+  const esm_to_cjs = opts.default && opts.__esModule; // interopability properties added by esbuild
+  if(esm_to_cjs) {
+    console.warn(`[G3W-CLIENT] Vue.extend(require(${opts})) is deprecated`);
+    console.trace();
+  }
+  return extendProto(esm_to_cjs ? opts.default : opts);
+};
+
+/**
  * Shims legacy window variables
  */
 Object.assign(globalThis, {
