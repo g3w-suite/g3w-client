@@ -59,6 +59,8 @@ import { getProject }              from 'utils/getProject';
 // Internationalization
 import { addI18n, t, tPlugin }     from 'g3w-i18n';
 
+alert('core');
+
 Object
   .entries({
     ApplicationState,

@@ -7,7 +7,6 @@ const cleanCSS    = require('gulp-clean-css');
 const cssimport   = require('gulp-cssimport');
 const flatten     = require('gulp-flatten');
 const gulpif      = require('gulp-if');
-const merge       = require('merge-stream');
 const prompt      = require('gulp-prompt');
 const rename      = require('gulp-rename');
 const replace     = require('gulp-replace');
@@ -148,7 +147,7 @@ setNODE_ENV();
  * 
  * @since 3.10.0
  */
-const build_plugin = (pluginName) => {
+const build_plugin = async (pluginName) => {
   const outputFolder = production
     ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
     : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;           // plugin folder (DEV env)
@@ -159,7 +158,7 @@ const build_plugin = (pluginName) => {
   const hash    = get_hash(pluginName);
   const branch  = get_branch(pluginName);
 
-  esbuild.context({
+  const ctx = await esbuild.context({
     entryPoints: [`${g3w.pluginsFolder}/${pluginName}/index.js`],
     bundle:      true,
     minify:      production,
@@ -184,6 +183,7 @@ const build_plugin = (pluginName) => {
     ],
     banner: { js: /* js */ `
 (function() {
+  alert("${pluginName}");
   const plugins = window?.initConfig?.group?.plugins;
   if (plugins) {
     plugins["${pluginName}"] = Object.assign(plugins["${pluginName}"] || {},
@@ -194,11 +194,12 @@ const build_plugin = (pluginName) => {
       });
   }
 })();` }
-  }).then(ctx => {
-    if (!production) {
-      ctx.watch();
-    }
   });
+  if (production) {
+    ctx.dispose();
+  } else {
+    ctx.watch();
+  }
 };
 
 /**
@@ -210,12 +211,11 @@ const build_plugin = (pluginName) => {
  * @see src\app\constant::APP_VERSION
  * @see src\app\version
  */
-gulp.task('version', async function(done) {
+gulp.task('version', async function() {
   await Promise.all([
     set_version(),                                  // client
     ...(dev_plugins.map(name => set_version(name))) // plugins
   ]);
-  done();
 });
 
 /**
@@ -235,7 +235,7 @@ gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`
 /**
  * Compile client application (src/app/main.js --> app.min.js)
  */
-gulp.task('build:app', function(done) {
+gulp.task('build:app', async function() {
   /**
    * Make sure that all g3w.plugins bundles are there
    *
@@ -261,7 +261,7 @@ gulp.task('build:app', function(done) {
   const version = get_version();
   const branch  = get_branch();
 
-  esbuild.context({
+  const ctx = await esbuild.context({
     entryPoints: {
       'app.min':    `src/${index}`,
       'vendor.min': `src/g3w-vendors.js`
@@ -298,13 +298,12 @@ gulp.task('build:app', function(done) {
         },
       }
     ]
-  }).then(ctx => {
-    if (!production) {
-      ctx.watch();
-    }
   });
-
-  done();
+  if (production) {
+    ctx.dispose();
+  } else {
+    ctx.watch();
+  }
 });
 
 /**
@@ -421,14 +420,13 @@ gulp.task('select-plugins', function() {
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', function(done) {
+gulp.task('build:plugins', async function() {
   if (undefined === process.env.G3W_PLUGINS) {
     console.warn('\n' + YELLOW__ + 'no plugins selected'+ __RESET + '\n');
   }
   if (process.env.G3W_PLUGINS) {
-    merge(process.env.G3W_PLUGINS.split(',').filter(p => p !== 'client').map(p => build_plugin(p)));
+    await Promise.all(process.env.G3W_PLUGINS.split(',').filter(p => p !== 'client').map(p => build_plugin(p)));
   }
-  done();
 });
 
 /**

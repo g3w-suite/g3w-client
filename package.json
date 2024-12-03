@@ -48,7 +48,6 @@
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
-    "merge-stream": "^2.0.0",
     "moment": "^2.19.1",
     "ol": "^5.3.0",
     "ol-rotate-feature": "^2.2.1",
