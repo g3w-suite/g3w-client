@@ -13,13 +13,10 @@
     "docker:down": "npm run docker down",
     "docker:config": "npm run docker config",
     "docker:logs": "npm run docker logs",
-    "test": "gulp test",
-    "cy:open": "cypress open",
+    "test": "",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
-    "postversion": "git push && git push --tags",
-    "build:plugins": "npm run build",
-    "watch:plugins": "npm run dev"
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
