@@ -84,7 +84,11 @@ export const QgsFilterToken = {
    */
   async getToken(url, params = {}) {
     try {
-      const { data = {} } = await XHR.get({url, params});
+      const { data = {} } = await XHR.post({
+        url,
+        data:        JSON.stringify(params),
+        contentType: 'application/json',
+      });
       return data.filtertoken;
     } catch(e) {
       return Promise.reject(e);
