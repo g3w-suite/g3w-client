@@ -1283,11 +1283,12 @@ class Layer extends G3WObject {
 
       const fids = Array.from(selection);
 
-      const { data = {} } = await XHR.get({
+      const { data = {} } = await XHR.post({
         url:    provider._layer.getUrl('filtertoken'),
-        params: selection.has(SELECTION.EXCLUDE)
+        contentType: 'application/json',
+        data: JSON.stringify(selection.has(SELECTION.EXCLUDE)
           ? { fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') } // exclude features from selection
-          : { fidsin: fids.join(',') }                                         // include features in selection
+          : { fidsin: fids.join(',') })                                   // include features in selection
       });
 
       this.setFilterToken(data.filtertoken);
