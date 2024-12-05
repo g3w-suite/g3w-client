@@ -3,6 +3,9 @@
  * @since 3.11.0
  */
 
+// polyfills
+import '@ungap/with-resolvers';
+
 import * as ol              from 'ol';
 import * as array           from 'ol/array';
 import * as color           from 'ol/color';

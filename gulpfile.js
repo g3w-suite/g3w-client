@@ -1,3 +1,6 @@
+// polyfills
+require('@ungap/with-resolvers');
+
 // esbuild
 const esbuild     = require('esbuild');
 
@@ -158,6 +161,8 @@ const build_plugin = async (pluginName) => {
   const hash    = get_hash(pluginName);
   const branch  = get_branch(pluginName);
 
+  const { promise, resolve } = Promise.withResolvers();
+
   const ctx = await esbuild.context({
     entryPoints: [`${g3w.pluginsFolder}/${pluginName}/index.js`],
     bundle:      true,
@@ -176,14 +181,14 @@ const build_plugin = async (pluginName) => {
         name: 'onBuildEnd',
         setup(build) {
           build.onEnd(result => {
-            console.log(INFO__ + `Reloading plugin:` + __RESET + ' → ' + outputFolder)
+            console.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' → ' + Math.round(fs.statSync(`${outputFolder}/plugin.js`).size / 1024) + 'KB')
+            resolve();
           })
         },
       }
     ],
     banner: { js: /* js */ `
 (function() {
-  alert("${pluginName}");
   const plugins = window?.initConfig?.group?.plugins;
   if (plugins) {
     plugins["${pluginName}"] = Object.assign(plugins["${pluginName}"] || {},
@@ -196,10 +201,12 @@ const build_plugin = async (pluginName) => {
 })();` }
   });
   if (production) {
+    await ctx.rebuild();
     ctx.dispose();
   } else {
     ctx.watch();
   }
+  return promise;
 };
 
 /**
@@ -221,13 +228,12 @@ gulp.task('version', async function() {
 /**
  * Set production to true
  */
- gulp.task('production', function(done) {
+gulp.task('production', function(done) {
   production = true;
   setNODE_ENV();
   done();
 });
 
-// gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true }));
 gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFolder}/templates/*`], { force: true }));
 gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
 gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
@@ -236,6 +242,12 @@ gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`
  * Compile client application (src/app/main.js --> app.min.js)
  */
 gulp.task('build:app', async function() {
+
+  const index  = `index.${production ? 'prod' : 'dev'}.js`
+
+  console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + `src/${index}` + '\n');
+  console.log(INFO__ + 'Building client:' + __RESET + ' → ' + `${outputFolder}/static/client`);
+
   /**
    * Make sure that all g3w.plugins bundles are there
    *
@@ -250,16 +262,13 @@ gulp.task('build:app', async function() {
    * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
    */
   if (!production) {
-    console.log();                                  // print an empty line
     dev_plugins.forEach(p => build_plugin(p)); // build all plugins (async)
   }
 
-  const index  = `index.${production ? 'prod' : 'dev'}.js`
-
-  console.log('\n' + INFO__ + 'App entry point:' + __RESET + ' → ' + `src/${index}` + '\n');
-
   const version = get_version();
   const branch  = get_branch();
+
+  const { promise, resolve } = Promise.withResolvers();
 
   const ctx = await esbuild.context({
     entryPoints: {
@@ -288,22 +297,25 @@ gulp.task('build:app', async function() {
         name: 'onBuildEnd',
         setup(build) {
           build.onEnd(result => {
-            console.log(INFO__ + `Reloading plugin:` + __RESET + ' → ' + `${outputFolder}/static/client/`);
+            console.log(GREEN__ + '[client]' + __RESET + ' → ' + Math.round((fs.statSync(`${outputFolder}/static/client/app.min.js`).size + fs.statSync(`${outputFolder}/static/client/vendor.min.js`).size) / 1024)+ 'KB');
             try {
               fs.cpSync('./src/index.html', `${outputFolder}/templates/client/index.html`);
             } catch (e) {
               console.error('Failed to copy file:', e);
             }
+            resolve();
           })
         },
       }
     ]
   });
   if (production) {
+    await ctx.rebuild();
     ctx.dispose();
   } else {
     ctx.watch();
   }
+  return promise;
 });
 
 /**
