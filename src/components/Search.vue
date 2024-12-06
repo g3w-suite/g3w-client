@@ -71,7 +71,7 @@ import { createFilterFromString }  from 'utils/createFilterFromString';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import G3WTool                     from 'components/Tool.vue';
-import * as vueComp                from 'components/QueryBuilder.vue';
+import vueComp                     from 'components/QueryBuilder.vue';
 import { t }                       from 'g3w-i18n';
 
 export default {

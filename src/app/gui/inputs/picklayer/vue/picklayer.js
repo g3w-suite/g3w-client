@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputPickLayer.vue';
+import vueComponentOptions from 'components/InputPickLayer.vue';
 
 const PickLayerInput = Vue.extend(vueComponentOptions);
 

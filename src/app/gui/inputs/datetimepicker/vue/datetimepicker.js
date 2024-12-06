@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputDateTimePicker.vue';
+import vueComponentOptions from 'components/InputDateTimePicker.vue';
 
 const DateTimePickerInput = Vue.extend(vueComponentOptions);
 

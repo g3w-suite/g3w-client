@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputInteger.vue';
+import vueComponentOptions from 'components/InputInteger.vue';
 
 const IntegerInput = Vue.extend(vueComponentOptions);
 
