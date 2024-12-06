@@ -109,7 +109,7 @@ const Validators = {
   },
 
   get(type, options = {}) {
-    return new (this.validators[type] || this.validators.default)(options);
+    return (this.validators[type] || this.validators.default)(options);
   }
 
 };
