@@ -163,9 +163,6 @@ Vue.use({
 
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
-// loading spinner at beginning
-$('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
-
 /** @TODO check if deprecated */
 const ACTIONS = {};
 

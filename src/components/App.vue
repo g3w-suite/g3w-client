@@ -1071,11 +1071,6 @@ export default {
 </script>
 
 <style>
-  @keyframes sk-bounce                              { 0%, 100% { transform: scale(0.0); } 50% { transform: scale(1.0); } }
-  #startingspinner                                  { position: fixed; z-index: 100000; height: 10em; width: 10em; overflow: show; margin: auto; inset: 0; }
-  #startingspinner .double-bounce1,
-  #startingspinner .double-bounce2                  { width: 100%; height: 100%; border-radius: 50%; background-color: var(--skin-color); opacity: .6; position: absolute; top: 0; left: 0; animation: sk-bounce 2.0s infinite ease-in-out; }
-  #startingspinner .double-bounce2                  { animation-delay: -1.0s; }
   .g3w-modal-project-message.Info .modal-header     { background-color: #0073b7; }
   .g3w-modal-project-message.Warning .modal-header  { background-color: #e99611; }
   .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
