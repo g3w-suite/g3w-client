@@ -5,7 +5,7 @@
       @keydown.stop = ""
       ref           = "quill_editor"
       class         = "form-control"
-      :style        = " {border: novalid ? '1px solid reed' : '1px solid #ccc'}">
+      :style        = " { border: state.validate.valid ? '1px solid #ccc' : '1px solid reed' }">
     </div>
   </baseinput>
 </template>
@@ -18,7 +18,7 @@
     /** @since 3.8.6 */
     name: "input-html",
 
-    mixins: [Input],
+    mixins: [ Input ],
     methods: {
       setupTableCustomTools() {
         /**
