@@ -10,6 +10,7 @@ const Validators = {
       this.validate = function(value) {
         return !Number.isNaN(Number(1 * value));
       }
+      return this;
     },
 
     /**
@@ -22,6 +23,7 @@ const Validators = {
         value = 1 * value;
         return !Number.isNaN(value) ? value <= Number.MAX_SAFE_INTEGER : false;
       }
+      return this;
     },
 
     integer(options = {}) {
@@ -30,6 +32,7 @@ const Validators = {
         const integer = 1 * value;
         return !Number.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
       }
+      return this;
     },
 
     checkbox(options = {}) {
@@ -37,6 +40,7 @@ const Validators = {
       this.validate = function(value) {
         return (this.options.values || []).includes(value);
       }
+      return this;
     },
 
     datetimepicker(options = {}) {
@@ -44,6 +48,7 @@ const Validators = {
       this.validate = function(value, options) {
         return moment(value, options.fielddatetimeformat, true).isValid();
       }
+      return this;
     },
 
     /**
@@ -55,6 +60,7 @@ const Validators = {
       this.validate = function(value) {
         return value && 1 === `${value}`.length;
       }
+      return this;
     },
 
     /**
@@ -64,26 +70,31 @@ const Validators = {
     varchar(options = {}) {
       this.options  = options;
       this.validate = () => true;
+      return this;
     },
 
     text(options = {}) {
       this.options  = options;
       this.validate = () => true;
+      return this;
     },
 
     string(options = {}) {
       this.options  = options;
       this.validate = () => true;
+      return this;
     },
 
     radio(options = {}) {
       this.options  = options;
       this.validate = () => true;
+      return this;
     },
 
     default(options = {}) {
       this.options  = options;
       this.validate = () => true;
+      return this;
     },
 
     range(options = {}) {
@@ -92,12 +103,13 @@ const Validators = {
         value = 1 * value;
         return value >= min && value <= max;
       }
+      return this;
     },
 
   },
 
   get(type, options = {}) {
-    return (this.validators[type] || this.validators.default)(options);
+    return new (this.validators[type] || this.validators.default)(options);
   }
 
 };
