@@ -5,51 +5,46 @@ const Validators = {
 
   validators: {
 
-    float(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
+    float: (options = {}) => ({
+      options,
+      validate(value) {
         return !Number.isNaN(Number(1 * value));
-      }
-      return this;
-    },
+      },
+    }),
 
     /**
      * @since v3.10.0
      * @param options
      */
-    bigint(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
+    bigint: (options = {}) => ({
+      options,
+      validate(value) {
         value = 1 * value;
         return !Number.isNaN(value) ? value <= Number.MAX_SAFE_INTEGER : false;
       }
-      return this;
-    },
+    }),
 
-    integer(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
+    integer: (options = {}) => ({
+      options,
+      validate(value) {
         const integer = 1 * value;
         return !Number.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
       }
-      return this;
-    },
+    }),
 
-    checkbox(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
+    checkbox: (options = {}) => ({
+      options,
+      validate(value) {
         return (this.options.values || []).includes(value);
       }
-      return this;
-    },
+    }),
 
-    datetimepicker(options = {}) {
-      this.options = options;
-      this.validate = function(value, options) {
+    datetimepicker: (options = {}) => ({
+      options,
+      validate(value, options) {
         return moment(value, options.fielddatetimeformat, true).isValid();
       }
-      return this;
-    },
+    }),
 
     /**
      * @since 3.10.0
@@ -67,44 +62,19 @@ const Validators = {
      * @since 3.10.0
      * @param options
      */
-    varchar(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-      return this;
-    },
+    varchar: (options = {}) => ({ options, validate: () => true }),
+    text:    (options = {}) => ({ options, validate: () => true }),
+    string:  (options = {}) => ({ options, validate: () => true }),
+    radio:   (options = {}) => ({ options, validate: () => true }),
+    default: (options = {}) => ({ options, validate: () => true }),
 
-    text(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-      return this;
-    },
-
-    string(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-      return this;
-    },
-
-    radio(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-      return this;
-    },
-
-    default(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-      return this;
-    },
-
-    range(options = {}) {
-      const { min, max } = options;
-      this.validate = function(value) {
+    range: (options = {}) => ({
+      options,
+      validate(value) {
         value = 1 * value;
-        return value >= min && value <= max;
+        return value >= options.min && value <= options.max;
       }
-      return this;
-    },
+    }),
 
   },
 
