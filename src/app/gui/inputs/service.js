@@ -7,9 +7,7 @@ const Validators = {
 
     float: (options = {}) => ({
       options,
-      validate(value) {
-        return !Number.isNaN(Number(1 * value));
-      },
+      validate: (value) => !Number.isNaN(Number(1 * value))
     }),
 
     /**
@@ -34,29 +32,22 @@ const Validators = {
 
     checkbox: (options = {}) => ({
       options,
-      validate(value) {
-        return (this.options.values || []).includes(value);
-      }
+      validate: (value) => (this.options.values || []).includes(value)
     }),
 
     datetimepicker: (options = {}) => ({
       options,
-      validate(value, options) {
-        return moment(value, options.fielddatetimeformat, true).isValid();
-      }
+      validate: (value, options) => moment(value, options.fielddatetimeformat, true).isValid()
     }),
 
     /**
      * @since 3.10.0
      * @param options
      */
-    char(options) {
-      this.options = options;
-      this.validate = function(value) {
-        return value && 1 === `${value}`.length;
-      }
-      return this;
-    },
+    char: (options) => ({
+      options,
+      validate: (value) => value && 1 === `${value}`.length
+    }),
 
     /**
      * @since 3.10.0
