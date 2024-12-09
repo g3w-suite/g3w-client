@@ -199,7 +199,7 @@ export class FeaturesStore extends G3WObject {
    * Add new lockid
    */
   addLockIds(lockIds) {
-    this._lockIds = _.union(this._lockIds, lockIds);
+    this._lockIds = [...new Set(this._lockIds.concat(...lockIds))]
     this._lockIds.forEach(({ featureid }) => this._loadedIds.push(featureid));
   }
 
