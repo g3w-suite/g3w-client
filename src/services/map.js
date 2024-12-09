@@ -422,16 +422,7 @@ class MapService extends G3WObject {
                 if (!isMobile.any && window.initConfig.overviewproject) {
                   getProject(window.initConfig.overviewproject)
                     .then(project => {
-                      //create a view for overview map
-                      const map = this.getMap();
                       const view = new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })); // at moment hardcoded
-                      view.on('change:center', function() {
-                        const current = view.getCenter();
-                        const center  = map.getView().constrainCenter(current);
-                        if (center[0] !== current[0] || center[1] !== current[1]) {
-                          view.setCenter(center);
-                        }
-                      });
                       this.createMapControl(type, {
                         add: false,
                           options: {
