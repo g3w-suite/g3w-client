@@ -874,11 +874,7 @@ class MapService extends G3WObject {
   createMapImage({map, background} = {}) {
     return new Promise((resolve, reject) => {
       try {
-        const canvas = $(
-          map
-            ? map.getViewport()
-            : $('#g3w-maps .g3w-map').last().children('.ol-viewport')[0]
-        ).children('canvas')[0];
+        const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
         if (navigator.msSaveBlob) { resolve(canvas.msToBlob()) }
         else { canvas.toBlob(blob => resolve(blob)) }
       } catch(e) {
