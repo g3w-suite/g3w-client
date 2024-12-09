@@ -676,7 +676,7 @@ class MapService extends G3WObject {
           $('#' + this.target).css('background-color', this.config.background_color);
         }
 
-        $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
+        $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
 
         this.viewer.map.getInteractions().forEach(int => this._watchInteraction(int));
         this.viewer.map.getInteractions().on('add', int => this._watchInteraction(int.element));
