@@ -2024,7 +2024,7 @@ class MapService extends G3WObject {
     let x_min, x_max, y_min, y_max, rotation, scale;
     this.stopDrawGreyCover();
     this._drawShadow.listener = map.on('postcompose', e => {
-      const ctx  = e.context;
+      const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
       const size = this.getMap().getSize();
       // Inner polygon must be counter-clockwise
       const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
