@@ -732,7 +732,7 @@ class MapService extends G3WObject {
         this.emit('ready');
       },
 
-      controlClick(mapcontrol, info={}) {},
+      controlClick(mapcontrol, info = {}) {},
       loadExternalLayer(layer) {}, // used in general to alert external layer is  loaded
       unloadExternalLayer(layer) {},
 
@@ -2193,12 +2193,16 @@ class MapService extends G3WObject {
    */
   async addExternalLayer(externalLayer, options = {}) {
 
+    //@since 3.11.0 Get original layer passed to method. It used for wms layer to register load/start/end/error event
+    const _layer = externalLayer;
     // extract OL layer from a G3W layer
     const olLayer = externalLayer.getOLLayer ? externalLayer.getOLLayer() : externalLayer;
+
     if (olLayer !== externalLayer) {
       olLayer.set('id',   externalLayer.getId());
       olLayer.set('name', externalLayer.getId());
     }
+
     externalLayer = olLayer;
 
     let vectorLayer;
@@ -2390,7 +2394,7 @@ class MapService extends G3WObject {
     // register and dispatch layer add event
     if ('wms' === type) {
       this._layers.external_wms.push(externalLayer);
-      this.registerMapLayerListeners(externalLayer, false);
+      this.registerMapLayerListeners(_layer, false);
     }
 
     if (vectorLayer && false !== options.persistent) {
