@@ -404,7 +404,7 @@
                 }
               },
               template: `
-                <div class="queryresults-wrapper">
+                <div class="queryresults-wrapper" style = "overflow-y: auto;">
                   <table ref="table" class="table">
                     <tbody>
                     <tr class="featurebox-body">
