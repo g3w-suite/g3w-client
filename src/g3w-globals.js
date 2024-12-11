@@ -95,6 +95,31 @@ import { FormComponent, FormService }              from 'components/g3w-form';
 const deprecate                   = require('util-deprecate');
 
 /**
+ * BACKOMP: proxy "esbuild" classes for legacy plugins (based on babel)
+ */
+function babelify(Class) {
+  return new Proxy(Class, {
+      // construct(target, args) {
+      //   if (new.target) {
+      //     console.warn('[G3W-CLIENT] class constructors must be invoked with "new"');
+      //     console.trace();
+      //     return Reflect.construct(target, args);
+      //   }
+      //   return new target(...args);
+      // },
+      apply(target, thisArg, argList) {
+        if ('Function' === target.constructor.name && target instanceof Function) {
+          console.warn('[G3W-CLIENT] class constructors must be invoked with "new"');
+          console.trace();
+          return Object.assign(thisArg, Reflect.construct(target, argList, /*thisArg.constructor*/));
+        }
+        return target.apply(thisArg, argList);
+      }
+  });
+}
+
+
+/**
  * GUI modules
  */
 const FieldsService               = require('gui/fields/fieldsservice');
@@ -107,7 +132,7 @@ const g3wsdk = {
 
   // CORE API METHODS AND OBJECTS
   core: {
-    G3WObject,
+    G3WObject: babelify(G3WObject),
     utils: {
       base,
       inherit,
@@ -179,13 +204,13 @@ const g3wsdk = {
       }
     },
     layer: {
-      LayersStore,
-      Layer,
-      TableLayer,
-      VectorLayer,
+      LayersStore:     babelify(LayersStore),
+      Layer:           babelify(Layer),
+      TableLayer:      babelify(TableLayer),
+      VectorLayer:     babelify(VectorLayer),
       features: {
-        Feature,
-        FeaturesStore,
+        Feature:       babelify(Feature),
+        FeaturesStore: babelify(FeaturesStore),
       },
     },
     interaction: {
@@ -193,9 +218,9 @@ const g3wsdk = {
       PickFeatureInteraction
     },
     plugin: {
-      Plugin,
-      PluginsRegistry,
-      PluginService
+      Plugin:          babelify(Plugin),
+      PluginsRegistry: babelify(PluginsRegistry),
+      PluginService:   babelify(PluginService)
     },
     input: {
       inputService: {
