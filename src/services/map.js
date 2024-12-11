@@ -1488,6 +1488,8 @@ class MapService extends G3WObject {
 
   //set ad increase layerIndex
   setLayerZIndex({ layer, zindex = this.layersCount+=1 }) {
+    //@since 3.11.0 For editing purpose, need to be set on top (add 1000)
+    zindex = zindex + (layer.get('__g3w_editable') ? 1000 : 0)
     layer.setZIndex(zindex);
     this.emit('set-layer-zindex', { layer, zindex });
     return zindex;

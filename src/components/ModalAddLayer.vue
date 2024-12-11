@@ -597,9 +597,7 @@ export default {
               out[ext] = await unzipped.files[f].async(['shp', 'dbf'].includes(ext) ?  'arraybuffer': 'text');
             }
           }
-          console.log(zip, out);
           data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
-          console.log(data);
         }
 
         // CSV file
