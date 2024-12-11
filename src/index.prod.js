@@ -363,7 +363,7 @@ $.ajaxSetup({
 
       MapLayersStoresRegistry.addLayersStore(store);
 
-      // BACKOMP v3.x
+      // BACKCOMP v3.x
       g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
 
       window.addEventListener('online', () => {

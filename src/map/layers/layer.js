@@ -101,7 +101,7 @@ const Providers = {
         }
 
         let filter = [].concat(opts.filter)
-          // BACKOMP v3.x
+          // BACKCOMP v3.x
           .map(f => ({
             type:  f._type || f.type,
             value: (f._filter || f.value)
