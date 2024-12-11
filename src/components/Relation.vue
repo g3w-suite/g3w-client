@@ -629,10 +629,6 @@
     margin-bottom: 5px;
     margin-right: 4px;
   }
-  .table-tools {
-    display: flex;
-    justify-content: space-between;
-  }
   .relationtable .table-tools .action-button:hover {
     background-color: transparent;
   }
