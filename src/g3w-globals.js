@@ -95,7 +95,7 @@ import { FormComponent, FormService }              from 'components/g3w-form';
 const deprecate                   = require('util-deprecate');
 
 /**
- * BACKOMP: proxy "esbuild" classes for legacy plugins (based on babel)
+ * BACKCOMP: v3.x (proxy "esbuild" classes for legacy plugins, still based on babel)
  */
 function babelify(Class) {
   return new Proxy(Class, {
@@ -318,7 +318,7 @@ ${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __
   version: G3W_CONSTANT.APP_VERSION
 };
 
-// BACKOMP v3.x
+// BACKCOMP v3.x
 g3wsdk.core.geometry                             = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
