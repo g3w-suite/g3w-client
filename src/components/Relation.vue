@@ -404,20 +404,22 @@
                 }
               },
               template: `
-                <div class="queryresults-wrapper" style = "overflow-y: auto;">
-                  <table ref="table" class="table">
-                    <tbody>
-                    <tr class="featurebox-body">
-                      <td>
-                        <tabs
-                          :layerid = "layerid"
-                          :feature = "feature"
-                          :fields  = "fields"
-                          :tabs    = "formStructure" />
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
+                <div class="queryresults-wrapper">
+                  <div class ="queryresults-container">
+                    <table ref="table" class="table">
+                      <tbody>
+                      <tr class="featurebox-body">
+                        <td>
+                          <tabs
+                            :layerid = "layerid"
+                            :feature = "feature"
+                            :fields  = "fields"
+                            :tabs    = "formStructure" />
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               `,
               async mounted() {
