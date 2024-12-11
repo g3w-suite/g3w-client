@@ -45,7 +45,7 @@ export default class Component extends G3WObject {
 
   constructor(opts = {}) {
 
-    // BACKOMP v3.x
+    // BACKCOMP v3.x
     if (opts.iconConfig) {
       opts.iconColor = opts.iconConfig.color;
       opts.icon      = opts.iconConfig.icon;
