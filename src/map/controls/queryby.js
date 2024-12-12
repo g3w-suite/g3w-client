@@ -444,7 +444,7 @@ export class QueryBy extends InteractionControl {
                   },
                   outputs: {
                     // whether to show picked coordinates on map
-                    show({data = [], query}) {
+                    show({ data = [], query }) {
                       const show = data.length === 0;
                       // set query coordinates to null in case to avoid `externalvector` added to query response
                       query.coordinates = show ? query.coordinates : null;
