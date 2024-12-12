@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "checkJs": true,
+    "target": "ES6",
+    "moduleResolution": "bundler",
     "baseUrl": "src",
     "paths": {
       "*": [
