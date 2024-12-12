@@ -29,7 +29,6 @@ import { Feature }               from 'map/layers/feature';
 import { t }                     from 'g3w-i18n';
 
 const is_defined = d => undefined !== d;
-const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 // BACKCOMP v3.x
 function createProvider(name, layer) {
@@ -268,7 +267,7 @@ const Providers = {
       const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
       const projection = this._layer.getMapProjection() || this._layer.getProjection();
-      const tolerance  = çç(opts.query_point_tolerance, QUERY_POINT_TOLERANCE);
+      const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
       const url    = layers[0].getQueryUrl();
       const method = layers[0].getOwsMethod();
@@ -285,7 +284,7 @@ const Providers = {
         QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
         filtertoken:          ApplicationState.tokens.filtertoken,
         INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
-        FEATURE_COUNT:        çç(opts.feature_count, 10),
+        FEATURE_COUNT:        opts.feature_count ?? 10,
         WITH_GEOMETRY:        true,
         DPI:                  DOTS_PER_INCH,
         FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
@@ -372,7 +371,7 @@ const Providers = {
         SERVICE:      'WFS',
         VERSION:      '1.1.0',
         REQUEST:      'GetFeature',
-        MAXFEATURES:  çç(opts.feature_count, 10),
+        MAXFEATURES:  opts.feature_count ?? 10,
         TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
         OUTPUTFORMAT: layers[0].getInfoFormat(),
         SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
