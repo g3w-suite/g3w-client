@@ -464,7 +464,7 @@ export class PluginService extends G3WObject {
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
       () => ApplicationState.gui.layout.__current,
-      layoutName => this.currentLayout = layoutName !== this.getPlugin().getName() ? layoutName : this.currentLayout
+      layoutName => this.currentLayout = layoutName !== this.name ? layoutName : this.currentLayout
     );
   }
 
@@ -475,10 +475,6 @@ export class PluginService extends G3WObject {
    */
   init(config = {}) {
     this.config = config;
-  }
-
-  setCurrentLayout() {
-    ApplicationState.gui.layout.__current = this.getPlugin().getName();
   }
 
   resetCurrentLayout() {
