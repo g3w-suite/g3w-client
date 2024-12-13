@@ -240,8 +240,6 @@ export default new (class GUI extends G3WObject {
 
     /** @since 3.11.0 */
     this.currentoutputplace = 'gui';
-    /**@since 3.11.0 Contains output id requests */
-    this.corids              = [];
   }
 
   addComponent(component, placeholder, options={}) {
@@ -399,8 +397,8 @@ export default new (class GUI extends G3WObject {
     //set current unique request id of request
     const rid = getUniqueDomId();
 
-    //add request id
-    this.corids.push(rid);
+    /** @type { String[] } cached requests (by id) */
+    const reqs = this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
 
     /** In the case of a current output result is iframe, send to IFrameRouterService.outputDataPlace*/
     if ('iframe' === this.currentoutputplace) {
@@ -426,36 +424,39 @@ export default new (class GUI extends G3WObject {
 
     try {
       // Store data promise
-      const data     = (await promise) || {};
+      const data = (await promise) || {};
 
       //Check id we can show data
-      const show     = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
+      const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
+      const last = show && rid === reqs.at(- 1);
 
-      //In case of show and is last request
-      if (show && rid === this.corids[this.corids.length - 1]) {
-        //set request output ids empty
-        this.corids.splice(0);
-        //if set before call method and wait
-        if (output.before) {
-          await output.before(data)
-        }
+      // set request output ids empty
+      if (last) {
+        reqs.splice(0);
+      }
 
-        // in case of usermessage show user message
-        if (data.usermessage) {
-          this.showUserMessage({
-            type:      data.usermessage.type,
-            message:   data.usermessage.message,
-            autoclose: data.usermessage.autoclose
-          });
-        }
+      //if set before call method and wait
+      if (last && output.before) {
+        await output.before(data)
+      }
 
-        // check if data can be shown on query result content
+      // in case of usermessage show user message
+      if (last && data.usermessage) {
+        this.showUserMessage({
+          type:      data.usermessage.type,
+          message:   data.usermessage.message,
+          autoclose: data.usermessage.autoclose
+        });
+      }
+
+      // check if data can be shown on query result content
+      if (last) {
         (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: output.add });
+      }
 
-        // call after is set with data
-        if (output.after) {
-          output.after(data)
-        }
+      // call after is set with data
+      if (last && output.after) {
+        output.after(data)
       }
     } catch(e) {
       console.warn(e);
@@ -468,7 +469,7 @@ export default new (class GUI extends G3WObject {
     }
 
     //set loading to false when no pending request
-    this.setLoadingContent(this.corids.length > 0);
+    this.setLoadingContent(reqs.length > 0);
   }
 
   showForm(options = {}) {
