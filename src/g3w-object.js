@@ -128,6 +128,7 @@ export default class G3WObject extends EventEmitter {
     this.___throttles = value;
     if (value) {
       console.warn('[G3W-CLIENT] throttles option is deprecated');
+      console.trace();
       for (const name in this.___throttles) {
         this[name] = throttle(this.___throttles[name].fnc, this.___throttles[name].delay);
       }
@@ -142,6 +143,7 @@ export default class G3WObject extends EventEmitter {
     this.___debounces = value;
     if (value) {
       console.warn('[G3W-CLIENT] debounces option is deprecated');
+      console.trace();
       for (const name in this.___debounces) {
         this[name] = debounce(this.___debounces[name].fnc, this.___debounces[name].delay);
       }

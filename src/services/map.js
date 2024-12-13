@@ -36,6 +36,7 @@ import { getProject }                       from 'utils/getProject';
 import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 import { waitFor }                          from 'utils/waitFor';
+import { debounce }                         from 'utils/debounce';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 import { RasterLayer}                       from "map/layers/imagelayer";
@@ -269,12 +270,7 @@ class MapService extends G3WObject {
 
     this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
 
-    this.debounces =  {
-      setupCustomMapParamsToLegendUrl: {
-        fnc: (...args) => { this._setupCustomMapParamsToLegendUrl(...args) },
-        delay: 1000
-      }
-    };
+    this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
 
     this.setters = {
 
@@ -1295,7 +1291,7 @@ class MapService extends G3WObject {
     })
   }
 
-  _setupCustomMapParamsToLegendUrl(bool = true) {
+  setupCustomMapParamsToLegendUrl(bool = true) {
     if (bool) {
       const map  = this.getMap();
       const size = (map && map.getSize().filter(v => v > 0)) || null;

@@ -2,6 +2,10 @@
  * Based on google closure library implementation
  */
 export function base(target) {
+
+  console.warn('[G3W-CLIENT] g3wsdk.core.utils.base is deprecated');
+  console.trace();
+
   // reference to previous function (caller)
   const caller = arguments.callee.caller;
 

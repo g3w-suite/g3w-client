@@ -102,7 +102,10 @@ initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEn
   "group",
   "frontendurl",
 ].includes(key)).map(key => ([key, initConfig[key]]))), {
-  get(target, prop, receiver) { console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`); return Reflect.get(...arguments); }
+  get(target, prop, receiver) {
+    console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`);
+    return Reflect.get(...arguments);
+  }
 }));
 
 // gid of panoramic map project
