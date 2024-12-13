@@ -48,12 +48,30 @@ import Vue                  from 'vue/dist/vue.js';
  */
 const extendProto = Vue.extend.bind(Vue);
 Vue.extend = function(opts) {
-  const esm_to_cjs = opts.default && opts.__esModule; // interopability properties added by esbuild
-  if(esm_to_cjs) {
+  const esm_to_cjs = o => o.default && o.__esModule; // interopability properties added by esbuild
+  if (esm_to_cjs(opts)) {
     console.warn(`[G3W-CLIENT] Vue.extend(require(${opts})) is deprecated`);
     console.trace();
   }
-  return extendProto(esm_to_cjs ? opts.default : opts);
+  if (opts.mixins) {
+    for (const i in opts.mixins) {
+      if (esm_to_cjs(opts.mixins[i])) {
+        console.warn(`[G3W-CLIENT] Vue.extend(require(${opts.mixins})) is deprecated`);
+        console.trace();
+        opts.mixins[i] = opts.mixins[i].default;
+      }
+    }
+  }
+  if (opts.components) {
+    for (const i in opts.components) {
+      if (esm_to_cjs(opts.components[i])) {
+        console.warn(`[G3W-CLIENT] Vue.extend(require(${opts.components})) is deprecated`);
+        console.trace();
+        opts.components[i] = opts.components[i].default;
+      }
+    }
+  }
+  return extendProto(esm_to_cjs(opts) ? opts.default : opts);
 };
 
 /**
