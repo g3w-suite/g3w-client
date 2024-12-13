@@ -398,8 +398,7 @@ export default new (class GUI extends G3WObject {
     const rid = getUniqueDomId();
 
     /** @type { String[] } cached requests (by id) */
-    const reqs = this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
-
+    this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
     /** In the case of a current output result is iframe, send to IFrameRouterService.outputDataPlace*/
     if ('iframe' === this.currentoutputplace) {
       return IFrameRouterService.outputDataPlace(promise, output);
@@ -428,11 +427,11 @@ export default new (class GUI extends G3WObject {
 
       //Check id we can show data
       const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-      const last = show && rid === reqs.at(- 1);
+      const last = show && rid === this.outputDataPlace.reqs.at(-1);
 
       // set request output ids empty
       if (last) {
-        reqs.splice(0);
+        this.outputDataPlace.reqs.splice(0);
       }
 
       //if set before call method and wait
@@ -469,7 +468,7 @@ export default new (class GUI extends G3WObject {
     }
 
     //set loading to false when no pending request
-    this.setLoadingContent(reqs.length > 0);
+    this.setLoadingContent(this.outputDataPlace.reqs.length > 0);
   }
 
   showForm(options = {}) {
