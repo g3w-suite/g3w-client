@@ -45,6 +45,8 @@ export default class Component extends G3WObject {
 
     // BACKCOMP v3.x
     if (opts.iconConfig) {
+      console.warn('[G3W-CLIENT] iconConfig is deprecated');
+      console.trace();
       opts.iconColor = opts.iconConfig.color;
       opts.icon      = opts.iconConfig.icon;
       delete opts.iconConfig;
