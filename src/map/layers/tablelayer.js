@@ -265,7 +265,7 @@ export class TableLayer extends Layer {
    * @returns jQuery Promise
    */
   unlock() {
-    return $promisify(async () => { await promisify(this._featuresstore.unlock()); });
+    return $promisify(async () => await promisify(this._featuresstore.unlock()));
   }
 
   /**

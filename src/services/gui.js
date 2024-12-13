@@ -221,15 +221,15 @@ export default new (class GUI extends G3WObject {
       }
     };
 
-    this.isready          = false;
+    this.isready           = false;
 
     //property to how a result has to be adding or close all and show new
     // false mean create new and close all open
-    this.push_content     = false;
+    this.push_content      = false;
 
     this._closeUserMessage = true;
 
-    this.dialog = bootbox;
+    this.dialog            = bootbox;
 
     this.notify = {
       warning:(message, autoclose = false) => { this.showUserMessage({ type: 'warning', message, autoclose }) },
@@ -240,7 +240,6 @@ export default new (class GUI extends G3WObject {
 
     /** @since 3.11.0 */
     this.currentoutputplace = 'gui';
-
   }
 
   addComponent(component, placeholder, options={}) {
@@ -398,6 +397,8 @@ export default new (class GUI extends G3WObject {
     //set current unique request id of request
     const rid = getUniqueDomId();
 
+    /** @type { String[] } cached requests (by id) */
+    this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
     /** In the case of a current output result is iframe, send to IFrameRouterService.outputDataPlace*/
     if ('iframe' === this.currentoutputplace) {
       return IFrameRouterService.outputDataPlace(promise, output);
@@ -415,40 +416,31 @@ export default new (class GUI extends G3WObject {
       ...(condition ? {} : output.show)
     });
 
-    // abort any previous request
-    if (this.pending_output) {
-      await this.pending_output();
-    }
-
     // if request doesn't need to add to a current query result
     if (!output.add) {
       this.showQueryResults(output.title || '');
     }
 
-    // Store data promise
-    let data = {};
-    // stop
-    let stop = false;
-
-    //set current pending out
-    this.pending_output = async () => stop = true;
-
-    //set current request id
-    this.crid = rid;
-
     try {
+      // Store data promise
+      const data = (await promise) || {};
 
-      if (!stop) {
-        data = await promise;
+      //Check id we can show data
+      const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
+      const last = show && rid === this.outputDataPlace.reqs.at(-1);
+
+      // set request output ids empty
+      if (last) {
+        this.outputDataPlace.reqs.splice(0);
       }
 
       //if set before call method and wait
-      if (!stop && output.before) {
+      if (last && output.before) {
         await output.before(data)
       }
 
       // in case of usermessage show user message
-      if (!stop && data.usermessage) {
+      if (last && data.usermessage) {
         this.showUserMessage({
           type:      data.usermessage.type,
           message:   data.usermessage.message,
@@ -456,22 +448,15 @@ export default new (class GUI extends G3WObject {
         });
       }
 
-      const show = !stop && 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-
       // check if data can be shown on query result content
-      if (!stop && show) {
+      if (last) {
         (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: output.add });
       }
 
-      if (!stop && !show) {
-        this.pending_output = await this.closeContent();
-      }
-
       // call after is set with data
-      if (!stop && output.after) {
+      if (last && output.after) {
         output.after(data)
       }
-
     } catch(e) {
       console.warn(e);
       this.showUserMessage({
@@ -482,9 +467,8 @@ export default new (class GUI extends G3WObject {
       await this.closeContent();
     }
 
-    this.pending_output = null;
-    //set loading to false when done current request id
-    this.setLoadingContent(this.crid > rid && null !== this.pending_output);
+    //set loading to false when no pending request
+    this.setLoadingContent(this.outputDataPlace.reqs.length > 0);
   }
 
   showForm(options = {}) {
