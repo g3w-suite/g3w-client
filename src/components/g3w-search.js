@@ -78,6 +78,7 @@ export function SearchPanel(opts = {}, show = false) {
     autofilter:           { value: 0 }, //value 0 no set, 1
     paginate:             !!opts.options.paginate, //@since 3.11.0 paginate or not
     return:               (opts.options || {}).return  || 'data',   //@since 3.11.0 considere type of search return. Can be another search or data
+    child:               !!opts.child, //@since 3.11.0 Need to know if search is coming from another search
   };
 
   const setInputs = async () => {
@@ -88,7 +89,7 @@ export function SearchPanel(opts = {}, show = false) {
       // set key-values for select
       input.values = [
         ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict || 'selectfield' !== input.type
+        ...(input.dependance_strict || 'selectfield' !== input.type || ('selectfield' === input.type && state.child) //@in the case of parent, values are stored
               ? input.values
               : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
         )
@@ -199,8 +200,10 @@ async function doSearch({
       if (Object.keys((data.data[0] || {}).data || {}).length > 0) {
         //need to eventually close an open result
         await GUI.closeContent();
+        const opts = (data.data[0] || {}).data;
+        opts.child = true; //set child true
         //and open a new Search panel
-        new SearchPanel((data.data[0] || {}).data, true)
+        new SearchPanel(opts, true)
       } else {
         //otherwise, mean the return of search has no values, so we can show an empty results
         GUI.outputDataPlace(Promise.resolve({ data: [] }));
