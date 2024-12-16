@@ -76,7 +76,8 @@ export function SearchPanel(opts = {}, show = false) {
     })),
     //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
     autofilter:           { value: 0 }, //value 0 no set, 1
-    paginate:             !!opts.options.paginate //@since 3.11.0 paginate or not
+    paginate:             !!opts.options.paginate, //@since 3.11.0 paginate or not
+    return:               (opts.options || {}).return  || 'data',   //@since 3.11.0 considere type of search return. Can be another search or data
   };
 
   const setInputs = async () => {
@@ -162,8 +163,10 @@ async function doSearch({
   state
 } = {}) {
 
+
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
-  show     = undefined === show     ? 'search' === state.type : show;
+  //show take in account type or return
+  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
 
   state.searching = true;
 
@@ -182,12 +185,23 @@ async function doSearch({
         queryUrl,
         formatter: 1,
         feature_count,
-        raw:        false, // in order to get a raw response
+        raw:        'search' === state.return, // in order to get a raw response
         autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
         ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
+
+    // @since 3.11.0
+    if ('search' === state.return) {
+      if (Object.keys((data.data[0] || {}).data || {}).length > 0) {
+        await GUI.closeContent();
+        new SearchPanel((data.data[0] || {}).data, true)
+      } else {
+        GUI.outputDataPlace(Promise.resolve({ data: [] }));
+        data = [];
+      }
+    }
 
     // auto zoom to query (not pagination)
     if (show && !state.paginate && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
@@ -200,7 +214,7 @@ async function doSearch({
     const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
 
     // no features on result → show an empty message
-    if (search_1n && !features.length) {
+    if (search_1n && 0 === features.length) {
       GUI.outputDataPlace(Promise.resolve({ data: [] }));
       parsed = [];
     }

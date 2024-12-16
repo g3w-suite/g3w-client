@@ -147,7 +147,7 @@
 
         </div>
         <!-- @since 3.11.0 -->
-        <div class = "form-group">
+        <div class = "form-group" v-disabled = "'data' !== state.return">
           <input
             id        = "g3w-search-filter"
             class     = "magic-checkbox"

@@ -619,7 +619,7 @@ export default new (class GUI extends G3WObject {
       $(ApplicationState.sidebar.parent).empty();
     }
     let content = data.pop();
-    content = null;
+    content     = null;
     const current = ApplicationState.sidebar.contentsdata.at(-1);
     if (current) {
       $(current.content.internalPanel.$el).show();
