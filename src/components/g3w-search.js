@@ -27,8 +27,8 @@ import * as vueSearchComp             from 'components/SearchPanel.vue';
  */
 function _getSavedSearches() {
   const ITEMS = ApplicationState.querybuilder.searches;
-  const id = ProjectsRegistry.getCurrentProject().getId();
-  ITEMS[id] = ITEMS[id] || [];
+  const id    = ProjectsRegistry.getCurrentProject().getId();
+  ITEMS[id]   = ITEMS[id] || [];
   return ITEMS[id];
 }
 
@@ -133,6 +133,8 @@ export function SearchPanel(opts = {}, show = false) {
       /** keep a reference to initial search options (you shouldn't mutate them..) */
       options:   d.input.options,
     })),
+    return:    (opts.options || {}).return  || 'data',   //@since 3.11.0 considere type of search return. Can be another search or data
+    child:     !!opts.child, //@since 3.11.0 Need to know if search is coming from another search
   };
 
   state.mounted = createInputsFormFromFilter(state);
