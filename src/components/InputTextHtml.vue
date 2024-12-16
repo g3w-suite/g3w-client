@@ -11,7 +11,8 @@
 </template>
 
 <script>
-  const Input              = require('gui/inputs/input');
+  const Input = require('gui/inputs/input');
+  const Quill = require('quill').default;
 
   export default {
 

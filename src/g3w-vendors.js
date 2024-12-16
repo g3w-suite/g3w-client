@@ -56,7 +56,7 @@ Vue.extend = function(opts) {
   if (opts.mixins) {
     for (const i in opts.mixins) {
       if (esm_to_cjs(opts.mixins[i])) {
-        console.warn(`[G3W-CLIENT] Vue.extend(require(${opts.mixins})) is deprecated`);
+        console.warn(`[G3W-CLIENT] Vue.extend({ mixins: [ require(${opts.mixins}) ] }) is deprecated`);
         console.trace();
         opts.mixins[i] = opts.mixins[i].default;
       }
@@ -65,7 +65,7 @@ Vue.extend = function(opts) {
   if (opts.components) {
     for (const i in opts.components) {
       if (esm_to_cjs(opts.components[i])) {
-        console.warn(`[G3W-CLIENT] Vue.extend(require(${opts.components})) is deprecated`);
+        console.warn(`[G3W-CLIENT] Vue.extend({ components: [ require(${opts.components}) ] }) is deprecated`);
         console.trace();
         opts.components[i] = opts.components[i].default;
       }
@@ -172,12 +172,10 @@ require('select2')(jQuery);
 require('select2/dist/js/i18n/it.js');
 
 globalThis.bootbox           = require('bootbox/bootbox');
-globalThis._                 = require('lodash/lodash');
 globalThis.moment            = require('moment/min/moment-with-locales');
 globalThis.i18next           = require('i18next');
 globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
 globalThis.jqueryI18next     = require('jquery-i18next/jquery-i18next');
-globalThis.Quill             = require('quill').default;
 
 /*!
   * HOTFIX: for invalid UMD definition
