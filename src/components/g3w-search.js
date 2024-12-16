@@ -192,12 +192,17 @@ async function doSearch({
       outputs: show && { title: state.title }
     });
 
-    // @since 3.11.0
+    // @since 3.11.0.
+    // In case of search return == 'search' options.return = 'search', it means that a new search panel needs to show
     if ('search' === state.return) {
+      // in case of return, a structure of search
       if (Object.keys((data.data[0] || {}).data || {}).length > 0) {
+        //need to eventually close an open result
         await GUI.closeContent();
+        //and open a new Search panel
         new SearchPanel((data.data[0] || {}).data, true)
       } else {
+        //otherwise, mean the return of search has no values, so we can show an empty results
         GUI.outputDataPlace(Promise.resolve({ data: [] }));
         data = [];
       }
