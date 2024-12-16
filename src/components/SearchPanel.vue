@@ -162,7 +162,6 @@
             id          = "dosearch"
             class       = "sidebar-button-run btn btn-block pull-right"
             @click.stop = "doSearch"
-            data-i18n   = "dosearch"
             v-t         = "'dosearch'"
           ></button>
         </div>

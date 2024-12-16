@@ -26,7 +26,6 @@
             aria-controls = "layers"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "tree"
             v-t           = "'data'">
           </a>
         </li>
@@ -41,7 +40,6 @@
             aria-controls = "externalwms"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "externalwms"
             v-t           = "'externalwms'">
           </a>
         </li>
@@ -56,7 +54,6 @@
             aria-controls = "baselayers"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "baselayers"
             v-t           = "'baselayers'">
           </a>
         </li>

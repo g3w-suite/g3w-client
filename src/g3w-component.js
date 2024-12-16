@@ -259,7 +259,6 @@ export default class Component extends G3WObject {
       }
 
       this.internalComponent.$nextTick(() => {
-        $(parent).localize();
         this.emit('ready');
         resolve(true);
       });

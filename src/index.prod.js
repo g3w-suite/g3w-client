@@ -57,7 +57,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { addI18n, t, tPlugin }     from 'g3w-i18n';
+import { addI18n, t, tPlugin, i18next } from 'g3w-i18n';
 
 Object
   .entries({
@@ -277,24 +277,13 @@ ApplicationState.language = initConfig.user.i18n || 'en';
 (initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
 
 i18next
-  .use(i18nextXHRBackend)
+  .use(require('i18next-xhr-backend'))
   .init({
       lng:         initConfig.user.i18n,
       ns:          'app',
       fallbackLng: 'en',
       resources:    translations
   });
-
-jqueryI18next.init(i18next, $, {
-  tName:                        't', // --> appends $.t = i18next.t
-  i18nName:                     'i18n', // --> appends $.i18n = i18next
-  handleName:                   'localize', // --> appends $(selector).localize(opts);
-  selectorAttr:                 'data-i18n', // selector for translating elements
-  targetAttr:                   'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
-  optionsAttr:                  'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
-  useOptionsAttr:               false, // see optionsAttr
-  parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
-});
 
 addI18n(ApplicationState.i18n.plugins);
 
@@ -716,7 +705,6 @@ $.ajaxSetup({
         GUI.addComponent(CONFIG.queryresults);
 
         // setup Font, Css class methods
-        $(document).localize();
 
         CONFIG.map    .mount('#g3w-view-map', true);
         CONFIG.content.mount('#g3w-view-content', true);

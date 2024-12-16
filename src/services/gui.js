@@ -203,7 +203,6 @@ export default new (class GUI extends G3WObject {
           }
           // Mount vue component
           await promisify(content.mount(contents.parent, _options.append || false));
-          $(contents.parent).localize();
           ApplicationState.contentsdata.push({ content, options: _options });
         }
 
@@ -597,7 +596,6 @@ export default new (class GUI extends G3WObject {
       }
       // Mount vue component
       await promisify(content.mount(parent, options.append || false));
-      $(parent).localize();
       data.push({ content, options });
     }
 

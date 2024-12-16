@@ -536,7 +536,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import { t }              from 'g3w-i18n';
+import { t, i18next }     from 'g3w-i18n';
 
 export default {
 
