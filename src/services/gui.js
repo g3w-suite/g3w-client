@@ -13,6 +13,8 @@ import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 
+const bootbox                    = require('bootbox/bootbox');
+
 
 /** store legacy frontend components */
 const COMPONENTS = {};

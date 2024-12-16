@@ -171,7 +171,6 @@ require('datatables.net/js/jquery.dataTables');
 require('select2')(jQuery);
 require('select2/dist/js/i18n/it.js');
 
-globalThis.bootbox           = require('bootbox/bootbox');
 globalThis.moment            = require('moment/min/moment-with-locales');
 globalThis.i18next           = require('i18next');
 globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
