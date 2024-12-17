@@ -224,7 +224,7 @@
               <div>
                 <span
                   v-if               = "panels.length > 1"
-                  @click             = "closePanel"
+                  @click.stop        = "closePanel"
                   data-placement     = "left"
                   data-toggle        = "tooltip"
                   data-container     = "body"
@@ -235,7 +235,7 @@
                   <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                 </span>
                 <span
-                  @click             = "closeAllPanels"
+                  @click.stop        = "closeAllPanels"
                   data-placement     = "left"
                   data-toggle        = "tooltip"
                   data-container     = "body"
