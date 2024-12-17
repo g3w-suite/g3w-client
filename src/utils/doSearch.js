@@ -25,7 +25,8 @@ export async function doSearch({
 } = {}) {
 
   queryUrl = undefined !== queryUrl ? queryUrl : state.queryurl;
-  show     = undefined !== show     ? show     : 'search' === state.type;
+  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
+
 
   state.searching = true;
 
