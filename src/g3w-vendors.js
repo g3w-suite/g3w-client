@@ -164,7 +164,22 @@ globalThis.ol = Object.assign({}, ol, {
  */
 globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 
-require('bootstrap/dist/js/bootstrap');
+/**
+ * Based on Bootstrap v3.3.7
+ */
+// require('bootstrap/js/transition');
+// require('bootstrap/js/alert');
+require('bootstrap/js/button');
+require('bootstrap/js/carousel');
+require('bootstrap/js/collapse');
+require('bootstrap/js/dropdown');
+require('bootstrap/js/modal');
+require('bootstrap/js/tooltip');
+// require('bootstrap/js/popover');
+// require('bootstrap/js/scrollspy');
+require('bootstrap/js/tab');
+// require('bootstrap/js/affix');
+
 require('datatables.net/js/jquery.dataTables');
 require('select2')(jQuery);
 
