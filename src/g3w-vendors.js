@@ -164,9 +164,7 @@ globalThis.ol = Object.assign({}, ol, {
  */
 globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 
-require('jquery-ui-package/jquery-ui');
 require('bootstrap/dist/js/bootstrap');
-require('blueimp-file-upload/js/jquery.fileupload');
 require('datatables.net/js/jquery.dataTables');
 require('select2')(jQuery);
 

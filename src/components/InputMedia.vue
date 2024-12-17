@@ -19,7 +19,9 @@
             :tabIndex = "tabIndex"
             :data-url = "state.input.options.uploadurl"
             :class    = "{'input-error-validation' : notvalid}"
-            type      = "file">
+            type      = "file"
+            @change   = "onChangeFile"
+          >
         </i>
       </div>
       <bar-loader :loading = "loading"/>
@@ -35,7 +37,6 @@
 <script>
   import GUI                from 'services/gui';
   import { getUniqueDomId } from 'utils/getUniqueDomId';
-  import { t }              from 'g3w-i18n';
 
   const InputMixins                 = require('gui/inputs/input');
   const { media_field: MediaField } = require('gui/fields/fields');
@@ -66,7 +67,33 @@
       clearMedia() {
         this.data.value = this.data.mime_type = this.state.value = null;
         this.change();
-      }
+      },
+      async onChangeFile(event) {
+        const body = new FormData();
+        body.append('csrfmiddlewaretoken', this.$cookie.get('csrftoken'));
+        body.append(this.state.name, event.target.files[0]);
+
+        this.loading = true;
+
+        try {
+          const response = (await (await fetch(this.state.input.options.uploadurl, {
+            method:  'POST',
+            headers: { Accept: 'application/json' },
+            body
+          })).json())[this.state.name];
+          if (response) {
+            this.data.value     = response.value;
+            this.data.mime_type = response.mime_type;
+            this.state.value    = this.data;
+            this.change();
+          }
+        } catch (e) {
+          console.warn(e);
+          GUI.notify.error(this.$t("info.server_error"));
+        }
+
+        this.loading = false;
+      },
     },
     created() {
       if (this.state.value) {
@@ -74,35 +101,5 @@
         this.data.mime_type = this.state.value.mime_type;
       }
     },
-    async mounted() {
-      const fieldName = this.state.name;
-      const formData = {
-        name:                fieldName,
-        csrfmiddlewaretoken: this.$cookie.get('csrftoken')
-      }
-
-      await this.$nextTick();
-
-      $(`#${this.mediaid}`).fileupload({
-        dataType: 'json',
-        formData,
-        start: () => this.loading = true,
-        done: (e, data) => {
-          const response = data.result[fieldName];
-          if (response) {
-            this.data.value     = response.value;
-            this.data.mime_type = response.mime_type;
-            this.state.value    = this.data;
-            this.change();
-          }
-        },
-        fail: (e) => { console.warn(e); GUI.notify.error(t("info.server_error")) },
-        always: () => this.loading = false
-      });
-
-    },
-    beforeDestroy() {
-      $(`#${this.mediaid}`).fileupload('destroy');
-    }
   };
 </script>
