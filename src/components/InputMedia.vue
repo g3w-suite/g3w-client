@@ -74,6 +74,17 @@
         this.data.mime_type = this.state.value.mime_type;
       }
     },
+    watch: {
+      'state': {
+        deep:      true,
+        immediate: false,
+        handler({ value = {} }) {
+          this.data.value     = value.value;
+          this.data.mime_type = value.mime_type;
+        }
+      }
+
+    },
     async mounted() {
       const fieldName = this.state.name;
       const formData = {
