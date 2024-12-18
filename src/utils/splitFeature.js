@@ -2,7 +2,7 @@ import { isMultiGeometry }       from 'utils/isMultiGeometry';
 import { isPolygonGeometryType } from 'utils/isPolygonGeometryType';
 import { isLineGeometryType }    from 'utils/isLineGeometryType';
 
-import 'jsts/dist/jsts.min.js';
+import jsts                      from 'jsts/dist/jsts.min.js';
 
 /**
  * @param { Object } opts
