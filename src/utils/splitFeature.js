@@ -2,7 +2,7 @@ import { isMultiGeometry }       from 'utils/isMultiGeometry';
 import { isPolygonGeometryType } from 'utils/isPolygonGeometryType';
 import { isLineGeometryType }    from 'utils/isLineGeometryType';
 
-import jsts                      from 'jsts/dist/jsts.min.js';
+import 'jsts/dist/jsts.min.js';
 
 /**
  * @param { Object } opts
@@ -28,6 +28,15 @@ export function splitFeature({
   // array of split geometries
   const splittedFeatureGeometries = [];
   const parser                    = new jsts.io.OL3Parser();
+  parser.inject(
+    ol.geom.Point,
+    ol.geom.LineString,
+    ol.geom.LinearRing,
+    ol.geom.Polygon,
+    ol.geom.MultiPoint,
+    ol.geom.MultiLineString,
+    ol.geom.MultiPolygon,
+  );
   const is_multi                  = isMultiGeometry(geometries.feature.getType());
   const is_line                   = isLineGeometryType(geometries.feature.getType());
   const is_poly                   = isPolygonGeometryType(geometries.feature.getType());
@@ -140,6 +149,15 @@ export function splitFeature({
     const jstsFromWkt             = new jsts.io.WKTReader();
     const wktFromOl               = new ol.format.WKT();
     const olFromJsts              = new jsts.io.OL3Parser();
+    olFromJsts.inject(
+      ol.geom.Point,
+      ol.geom.LineString,
+      ol.geom.LinearRing,
+      ol.geom.Polygon,
+      ol.geom.MultiPoint,
+      ol.geom.MultiLineString,
+      ol.geom.MultiPolygon,
+    );
     const splitLine               = jstsFromWkt.read(wktFromOl.writeGeometry(splitGeometry));
     let wktLineString             = wktFromOl.writeGeometry(lineGeometry);
   

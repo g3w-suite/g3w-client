@@ -1466,9 +1466,9 @@ export default new (class QueryResultsService extends G3WObject {
       vectorLayer.getSource().getFeatures().forEach(f => {
         let add;
         switch (filterConfig.spatialMethod) {
-          case 'intersects': add = intersects(geometry, f.getGeometry());                  break;
           case 'within':     add = within(geometry, f.getGeometry());                      break;
-          default:           add = geometry.intersectsExtent(f.getGeometry().getExtent()); break;
+          case 'intersects':
+          default:           add = intersects(geometry, f.getGeometry());                  break;
         }
         if (true === add) {
           features.push(f);

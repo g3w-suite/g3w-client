@@ -16,6 +16,12 @@ import * as format          from 'ol/format';
 import * as filter          from 'ol/format/filter';
 import * as geom            from 'ol/geom';
 import * as Polygon         from 'ol/geom/Polygon';
+import * as Point           from 'ol/geom/Point';
+import * as LineString      from 'ol/geom/LineString';
+import * as LinearRing      from 'ol/geom/LinearRing'
+import * as MultiPoint      from 'ol/geom/MultiPoint';
+import * as MultiLineString from 'ol/geom/MultiLineString';
+import * as MultiPolygon    from 'ol/geom/MultiLineString';
 import * as has             from 'ol/has';
 import * as interaction     from 'ol/interaction';
 import * as layer           from 'ol/layer';
@@ -106,7 +112,15 @@ globalThis.ol = Object.assign({}, ol, {
   extent,
   featureloader,
   format:      Object.assign({}, format,      { filter }),
-  geom:        Object.assign({}, geom,        { Polygon: Object.assign(geom.Polygon, Polygon) }),
+  geom:        Object.assign({}, geom, {
+                                                Point:           Object.assign(geom.Point, Point),
+                                                LineString:      Object.assign(geom.LineString, LineString),
+                                                LinearRing:      LinearRing.default,
+                                                Polygon:         Object.assign(geom.Polygon, Polygon),
+                                                MultiPoint:      Object.assign(geom.MultiPoint, MultiPoint),
+                                                MultiLineString: Object.assign(geom.MultiLineString, MultiLineString),
+                                                MultiPolygon:    Object.assign(geom.MultiPolygon, MultiPolygon)
+                                              }),
   has,
   interaction: Object.assign({}, interaction, { RotateFeature }),
   layer,
