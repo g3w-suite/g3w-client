@@ -272,8 +272,8 @@ export class QueryBy extends InteractionControl {
                 //set spatial method
                 this.control.spatialMethod = this.method;
                 this.control.toggle(true, { parent: CONTROLS['queryby'].id });
-                // show highlight class only if 'querybbox' or 'querybydrawpolygon' type control
-                this.control.layers.forEach(l => l.setTocHighlightable(['querybbox', 'querybydrawpolygon'].includes(this.type)));
+                // show highlight class only if 'querybbox' or 'querybydrawpolygon' or 'querybycircle' type control
+                this.control.layers.forEach(l => l.setTocHighlightable(['querybbox', 'querybydrawpolygon', 'querybycircle'].includes(this.type)));
                 await this.$nextTick();
                 // set queryable layers (select2)
                 this.layers.push(...this.queryable);
@@ -283,7 +283,7 @@ export class QueryBy extends InteractionControl {
                 }
                 // re-run query when changing spatial method
                 if (this.control.autorun) {
-                  CONTROLS['queryby'].runSpatialQuery(this.type);  
+                  CONTROLS['queryby'].runSpatialQuery(this.type);
                 }
               },
               templateType(state) {
@@ -478,7 +478,7 @@ export class QueryBy extends InteractionControl {
       //set same cursor class to parent queryby control
       this.cursorClass = control.cursorClass;
 
-      if (['querybbox', 'querybydrawpolygon'].includes(type)) {
+      if (['querybbox', 'querybydrawpolygon', 'querybycircle'].includes(type)) {
         ApplicationState.highlightlayers = e.target.get(e.key); // highlight layers in legend
       }
     });
@@ -600,6 +600,7 @@ export class QueryBy extends InteractionControl {
       }
 
       const selected       = GUI.getService('map').getSelectedLayer();
+      console.log(selected)
       const externalLayers = GUI.getService('map').getLegacyExternalLayers();
       const project        = ApplicationState.project;
 
@@ -612,8 +613,8 @@ export class QueryBy extends InteractionControl {
             // Catalog layers (TOC) properties that need to be satisfied
             layersFilterObject: {
               SELECTED_OR_ALL: true, // selected or all
-              FILTERABLE: true,      // see: src/app/core/layers/layer.js#L925
-              VISIBLE: true          // need to be visible
+              FILTERABLE:      true, // see: src/app/core/layers/layer.js#L925
+              VISIBLE:         true  // need to be visible
             },
             condition:     { filtrable: { ows: 'WFS' } },
             multilayers:   [].concat(project.state.querymultilayers).includes(control.name),
@@ -697,8 +698,8 @@ function _getAvailableLayers(type) {
 
     // WFS
     ...queryable
-        .flatMap(s => s.getLayers({ GEOLAYER: true, FILTERABLE: true, SELECTED_OR_ALL: true }, { filtrable: { ows: 'WFS' } }))
-        .filter(l => 'wfs' === l.getProvider('filter').getName()),
+      .flatMap(s => s.getLayers({ GEOLAYER: true, FILTERABLE: true, SELECTED_OR_ALL: true }, { filtrable: { ows: 'WFS' } }))
+      .filter(l => 'wfs' === l.getProvider('filter').getName()),
 
     // POLYGONS
     ...(GUI.getService('map').getLegacyExternalLayers() || [])
