@@ -2410,12 +2410,11 @@ class MapService extends G3WObject {
         });
       });
     }
-
-    GUI.getService('queryresults').registerVectorLayer(layer);
     GUI.getService('catalog').addExternalLayer({ layer: externalLayer, type });
-
     // invoke `onAddExternalLayer` on each map control
     if ('vector' === type) {
+      //add to query result only vector layer
+      GUI.getService('queryresults').registerVectorLayer(layer);
       this._keyEvents.unwatches[externalLayer.name] = [];
       Object.values(MAP.controls).forEach(c => c.onAddExternalLayer && c.onAddExternalLayer({ layer: externalLayer, unWatches: this._keyEvents.unwatches[externalLayer.name] }));
     }
