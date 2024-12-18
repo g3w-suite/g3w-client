@@ -2161,7 +2161,7 @@ class Layer extends G3WObject {
    *
    * @param bool
    */
-  setTocHighlightable(bool=false) {
+  setTocHighlightable(bool = false) {
     this.state.tochighlightable = bool;
   }
 
