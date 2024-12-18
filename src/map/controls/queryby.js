@@ -600,7 +600,6 @@ export class QueryBy extends InteractionControl {
       }
 
       const selected       = GUI.getService('map').getSelectedLayer();
-      console.log(selected)
       const externalLayers = GUI.getService('map').getLegacyExternalLayers();
       const project        = ApplicationState.project;
 
