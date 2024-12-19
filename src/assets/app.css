@@ -1,4 +1,4 @@
-@import url("../../node_modules/bootstrap/dist/css/bootstrap.css");
+@import url("./bootstrap-3.css");
 @import url("../../node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css");
 @import url("../../node_modules/ol/ol.css");
 @import url("../../node_modules/select2/dist/css/select2.css");
@@ -256,10 +256,12 @@ body {
 .btn-success:hover,
 .btn-success:active,
 .btn-success.hover                    { background-color: var(--skin-success-d5); }
+/*
 .btn-info                             { background-color: #00c0ef; border-color: #00acd6; }
 .btn-info:hover,
 .btn-info:active,
 .btn-info.hover                       { background-color: #00acd6; }
+*/
 .btn-danger                           { background-color: var(--skin-danger); border-color: var(--skin-danger-d5); }
 .btn-danger:hover,
 .btn-danger:active,

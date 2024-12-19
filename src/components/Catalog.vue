@@ -954,10 +954,12 @@ export default {
     line-height: 1.75em;
     list-style-type: none;
   }
+  /*
   .catalog .list-group-item {
     color: #fff;
     background-color: #2c3b41;
   }
+  */
   .catalog .tree-item.selected ul.layer-categories,
   .catalog #legend div.selected ul.layer-categories {
     background-color: #222d32;
