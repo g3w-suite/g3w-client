@@ -464,6 +464,8 @@ export default new (class GUI extends G3WObject {
         message:     errorToMessage(e),
         textMessage: true
       });
+      //@scince 3.11.0 emit error-output-data
+      this.emit('error-output-data', e);
       await this.closeContent();
     }
 

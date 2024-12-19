@@ -314,7 +314,7 @@ export class QueryBy extends InteractionControl {
               this.types.forEach(t => {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;
-                CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.types[0]);
+                CONTROLS['queryby'].element.classList.toggle(`ol-${t}`, t === this.types[0]);
                 CONTROLS[t].layers.forEach(l => l.setTocHighlightable(false));
               });
             }
@@ -584,6 +584,12 @@ export class QueryBy extends InteractionControl {
   }
 
   async runSpatialQuery(type) {
+    //@since 3.11.0 In case of error error-output-data set to true and not autorun is set
+    let error = false;
+    const setError = () => { error = true; this.toggle(); };
+
+    GUI.once('error-output-data', setError);
+
     try {
 
       const control = CONTROLS[type];
@@ -653,11 +659,15 @@ export class QueryBy extends InteractionControl {
         });
       }
 
-      control.autorun = true;
+      //set autorun to true if no error happensd
+      control.autorun = !error;
 
     } catch(e) {
       console.warn('Error running spatial query: ', e);
     }
+
+    //remove handler to error-output-data event
+    GUI.off('error-output-data', setError);
 
   }
 
