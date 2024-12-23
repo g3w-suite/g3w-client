@@ -3,6 +3,7 @@ import ProjectsRegistry           from 'store/projects';
 import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';
 import { createFilterFormInputs } from 'utils/createFilterFormInputs';
+import { SearchPanel }            from "components/g3w-search";
 
 /**
  * Perform search
@@ -24,7 +25,8 @@ export async function doSearch({
 } = {}) {
 
   queryUrl = undefined !== queryUrl ? queryUrl : state.queryurl;
-  show     = undefined !== show     ? show     : 'search' === state.type;
+  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
+
 
   state.searching = true;
 
@@ -41,10 +43,28 @@ export async function doSearch({
         queryUrl,
         formatter: 1,
         feature_count,
-        raw: false // in order to get raw response
+        raw: 'search' === state.return, // in order to get a raw response
       },
       outputs: show && { title: state.title }
     });
+
+    // Backport @since 3.11.0.
+    // In case of search return == 'search' options.return = 'search', it means that a new search panel needs to show
+    if ('search' === state.return) {
+      // in case of return, a structure of search
+      if (Object.keys((data.data[0] || {}).data || {}).length > 0) {
+        //need to eventually close an open result
+        await GUI.closeContent();
+        const opts = (data.data[0] || {}).data;
+        opts.child = true; //set child true
+        //and open a new Search panel
+        new SearchPanel(opts, true)
+      } else {
+        //otherwise, mean the return of search has no values, so we can show an empty results
+        DataRouterService.showEmptyOutputs();
+        data = [];
+      }
+    }
 
     // auto zoom to query
     if (show && ProjectsRegistry.getCurrentProject().state.autozoom_query && data && data.data && 1 === data.data.length) {

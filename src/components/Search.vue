@@ -45,14 +45,11 @@
           <span>{{ search.name }}</span>
           <div>
             <span
-            class          = "search-action skin-tooltip-bottom"
-            :class         = "g3wtemplate.getFontClass('run')"
-            data-placement = "bottom"
-            data-toggle    = "tooltip"
-            data-container = "body"
-            v-t-tooltip    = "'sdk.querybuilder.search.run'"
-            @click.stop    = "run(search)"
-            style          = "color: green;"
+            class                     = "search-action"
+            :class                    = "g3wtemplate.getFontClass('run')"
+            v-t-tooltip:bottom.create = "'sdk.querybuilder.search.run'"
+            @click.stop               = "run(search)"
+            style                     = "color: green;"
           ></span>
           </div>
         </div>
@@ -157,11 +154,6 @@ export default {
       search.qbloading = false;
     },
 
-  },
-
-  async mounted() {
-    await this.$nextTick();
-    $('.search-action').tooltip();
   },
 
 };

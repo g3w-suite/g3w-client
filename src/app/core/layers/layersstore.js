@@ -259,7 +259,8 @@ proto.setLayersTree = function(layerstree=[], name, expanded=true) {
      * @since 3.8.0
      */
     bbox: { minx, miny, maxx, maxy },
-    nodes: layerstree
+    nodes: layerstree,
+    legendurls: [], //@Backport since 3.11.0 Set reactive change legend urls on check TOC visible layers
   };
 
   if (layerstree.length) {
