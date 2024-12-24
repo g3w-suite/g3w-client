@@ -38,6 +38,7 @@ import * as sphere          from 'ol/sphere';
 import * as style           from 'ol/style';
 import * as tilegrid        from 'ol/tilegrid';
 import WMTSTileGrid         from 'ol/tilegrid/WMTS';
+import TileGrid             from 'ol/tilegrid/TileGrid';
 import * as xml             from 'ol/xml';
 import RotateFeature        from 'ol-rotate-feature/dist/bundle.es';
 
@@ -132,7 +133,7 @@ globalThis.ol = Object.assign({}, ol, {
   source,
   sphere,
   style,
-  tilegrid:    Object.assign({}, tilegrid,    { WMTS: WMTSTileGrid }),
+  tilegrid:    Object.assign({}, tilegrid,    { WMTS: WMTSTileGrid , TileGrid }),
   xml,
   Observable,
 });
