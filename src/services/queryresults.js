@@ -96,9 +96,12 @@ export default new (class QueryResultsService extends G3WObject {
           this._vectorLayers.forEach(layer => {
             const id = layer.get('id');
             // TODO: extract this into `layer.isSomething()` ?
-            if (layer.getVisible() && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)) {
+            if (
+              layer.getVisible()
+              && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)
+            ) {
               queryResponse.data[
-                '__g3w_marker' === id // keep geocoding control "marker" layer at top
+                '__g3w_marker' === id // keep geocoding control "marker" layer at the top
                 ? 'unshift'
                 : 'push'
               ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));

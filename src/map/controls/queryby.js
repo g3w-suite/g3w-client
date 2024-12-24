@@ -605,6 +605,7 @@ export class QueryBy extends InteractionControl {
         return;
       }
 
+      //Check if some layer is selected
       const selected       = GUI.getService('map').getSelectedLayer();
       const externalLayers = GUI.getService('map').getLegacyExternalLayers();
       const project        = ApplicationState.project;
@@ -646,7 +647,7 @@ export class QueryBy extends InteractionControl {
             external:        {
               add:           'querybypolygon' === type || (!selected || externalLayers.some(l => l === selected)),
               filter: {
-                SELECTED:    ['querybydrawpolygon', 'querybycircle'].includes(type) && (!selected || externalLayers.some(l => l === selected))
+                SELECTED:    ['querybydrawpolygon', 'querybycircle'].includes(type) && !!selected, //true if some layer on TOC is selected
               }
             },
             type:            (type || '').replace('queryby', '') || undefined,
