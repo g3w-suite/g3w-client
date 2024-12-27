@@ -82,9 +82,10 @@
           @click.stop.prevent    = "switchMapsCoordinateTo4326"
         >
           <span
-            class  = "skin-color-dark hide-cursor-caret-color"
-            :class = "$fa('mouse')">
-          </span>
+            class  = "skin-color-dark"
+            :class = "$fa('mouse')"
+            style  = "caret-color: rgba(0,0,0,0);"
+          ></span>
         </div>
 
         <!-- MOUSE POSITION -->

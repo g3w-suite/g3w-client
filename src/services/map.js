@@ -79,7 +79,6 @@ const CONTROLS = {
     ...opts,
     name:             'zoombox',
     tipLabel:         'Zoom to box',
-    label:            '\ue901',
     interactionClass: ol.interaction.DragBox,
     cursorClass:      'ol-crosshair',
     onSetMap({ setter, map }) {
@@ -100,7 +99,6 @@ const CONTROLS = {
     offline:          false,
     name:             "query",
     tipLabel:         "sdk.mapcontrols.query.tooltip",
-    label:            opts.label || "\uea0f",
     clickmap:         true,
     interactionClass: PickCoordinatesInteraction,
     cursorClass:      'ol-help',
@@ -132,7 +130,7 @@ const CONTROLS = {
   'queryby':            QueryBy,
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
-  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
+  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
   'measure':            MeasureControl,
   'mouseposition':      (opts = {}) => Object.assign((new ol.control.MousePosition({ ...opts, target: opts.target || 'mouse-position-control' })), { offline: true }),
   'scale':              ScaleControl,
@@ -319,7 +317,6 @@ class MapService extends G3WObject {
               case 'zoomtoextent':
                 this.createMapControl(type, {
                   options: {
-                    label: "\ue98c",
                     extent: this.project.state.initextent
                   }
                 });

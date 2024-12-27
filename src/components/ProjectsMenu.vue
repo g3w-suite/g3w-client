@@ -11,7 +11,7 @@
         v-for  = "menuitem in state.menuitems"
         :key   = "menuitem.title"
         @click = "trigger(menuitem)"
-        class  ="col-xs-12 col-sm-4 project-menu"
+        class  ="col-sm-4 project-menu"
       >
         <div class = "project-menu-item-image">
           <img :src = "logoSrc(menuitem.thumbnail)" class = "img-responsive">

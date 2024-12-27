@@ -6,13 +6,8 @@ const esbuild     = require('esbuild');
 
 // Gulp
 const gulp        = require('gulp');
-const cleanCSS    = require('gulp-clean-css');
-const cssimport   = require('gulp-cssimport');
 const flatten     = require('gulp-flatten');
-const gulpif      = require('gulp-if');
 const prompt      = require('gulp-prompt');
-const rename      = require('gulp-rename');
-const replace     = require('gulp-replace');
 
 // Node.js
 const exec        = require('child_process').exec;
@@ -279,6 +274,9 @@ gulp.task('build:app', async function() {
     minify:      production,
     sourcemap:   true,
     outdir:    `${outputFolder}/static/client`,
+    define: {
+      'process.env.g3w_client_rev': `"${ is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`
+    },
     // loader: {
     //   '.png':  'file',
     //   '.woff': 'file',
@@ -288,14 +286,22 @@ gulp.task('build:app', async function() {
     //   '.svg': 'file',
     //   },
     // assetNames: 'assets/[name]-[hash]',
-    define: {
-      'process.env.g3w_client_rev': `"${ is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`
-    },
     plugins: [
       require('esbuild-vue')({ production }),
       {
-        name: 'onBuildEnd',
+        name: 'g3w-assets',
         setup(build) {
+          build.onResolve({ filter: /\.(png|woff|woff2|eot|ttf|svg)(\?.*|#.*)?$/ }, args => {
+            args.path = args.path.replace(/\w+fonts/g, 'fonts').replace('../fonts', './fonts'); // eg. "../webfonts/fa-regular-400.woff2" --> "./fonts/fa-regular-400.woff2"
+            console.log(args.path);
+            return {
+              path: args.path,
+              // Mark all assests as external
+              external: true,
+              // Redirect all paths starting with "images/" to "./public/images/"
+              /*path.join(args.resolveDir, 'public', args.path)*/
+            }
+          });
           build.onEnd(result => {
             console.log(GREEN__ + '[client]' + __RESET + ' → ' + Math.round((fs.statSync(`${outputFolder}/static/client/app.min.js`).size + fs.statSync(`${outputFolder}/static/client/vendor.min.js`).size) / 1024)+ 'KB');
             try {
@@ -349,7 +355,6 @@ gulp.task('cursors', function () {
  gulp.task('fonts', function () {
   return gulp.src([
     `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-    `./node_modules/bootstrap/dist/fonts/**/*.{eot,ttf,woff,woff2}`,
     `./node_modules/@fortawesome/fontawesome-free/webfonts//**/*.{eot,ttf,woff,woff2}`,
     `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
     `!${g3w.pluginsFolder}/**/node_modules/**`,
@@ -367,19 +372,6 @@ gulp.task('geocoding-providers', function () {
     .pipe(flatten())
     .pipe(gulp.dest(`${outputFolder}/static/client/geocoding-providers/`));
 });
-
-/**
- * Compile client styles (src/assets/app.css --> app.min.css)
- */
-gulp.task('css', gulp.series('fonts', function() {
-  return gulp.src(`${g3w.assetsFolder}/app.css`)
-    .pipe(cssimport())
-    .pipe(replace(/\w+fonts/g, 'fonts'))         // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
-    .pipe(replace('../fonts', './fonts'))
-    .pipe(gulpif(production, cleanCSS({ keepSpecialComments: 0 })))
-    .pipe(rename('app.min.css'))
-    .pipe(gulp.dest(`${outputFolder}/static/client/`))
-}));
 
 /**
  * Make sure that core client plugins are there
@@ -446,7 +438,7 @@ gulp.task('build:plugins', async function() {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? gulp.series('build:app', gulp.parallel('fonts', 'cursors', 'images', 'css'))(done)
+   ? gulp.series('build:app', gulp.parallel('fonts', 'cursors', 'images'))(done)
    : done();
 });
 

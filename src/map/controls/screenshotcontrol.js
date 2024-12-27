@@ -31,7 +31,6 @@ export class ScreenshotControl extends InteractionControl {
     super({
       name: "maptoimage",
       tipLabel: "Screenshot",
-      label: "\ue90f",
       clickmap: true,
       enabled:  true,
       layers: [],

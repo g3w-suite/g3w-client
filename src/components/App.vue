@@ -434,12 +434,12 @@
             :style = "[state.content.style.title]"
             :class = "{'mobile': isMobile()}"
           >
-          <b id = "contenttitle">
-            <span v-t = "contentTitle.text ? null : contentTitle.title">
-              <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
-            </span>
-            <span v-t = "contentTitle.post_title"></span>
-          </b>
+            <b id = "contenttitle">
+              <span v-t = "contentTitle.text ? null : contentTitle.title">
+                <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
+              </span>
+              <span v-t = "contentTitle.post_title"></span>
+            </b>
           </div>
           <div
             class = "g3-content-header-action-tools"
@@ -1156,6 +1156,7 @@ export default {
 
   @media (min-width: 767px) {
     .user-footer :is(.nav-sidebar, .nav-addlayer).btn-default { display: none; }
+    .project_title                                            { margin-right: auto; }
   }
 
   @media (max-width: 767px) {

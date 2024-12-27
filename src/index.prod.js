@@ -3,7 +3,7 @@
  * @since v3.8
  */
 
-// import 'assets/app.css';
+import 'assets/app.css';
 
 // expose global variables
 import './g3w-globals';
