@@ -105,15 +105,14 @@ export const XHR = {
         timeout = setTimeout(() => {
           reject('Timeout');
         }, TIMEOUT);
-
         downloadFile({
           url:     'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url,
           headers: {
-            'Content-Type':                  'application/json',
             'Access-Control-Expose-Headers': 'Content-Disposition', //need to get filename from server
           },
           method:  httpMethod,
-          data:    data && JSON.stringify(data),
+          //set form data to download file @since 3.11.0 to replace $.fileDownload from 3.10.x
+          data:   'POST' === httpMethod ? Object.keys(data || {}).reduce((a, k) => { a.append(k, data[k]); return a; }, new FormData()): undefined,
           signal,
         })
         return resolve();
