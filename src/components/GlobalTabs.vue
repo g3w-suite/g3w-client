@@ -247,6 +247,20 @@
 </script>
 
 <style scoped>
+  .formquerytabs.nav-tabs > li                                { margin-right: 3px; }
+  .formquerytabs.nav-tabs > li:last-child                     { margin-right: 0; }
+  .formquerytabs.nav-tabs li:not(.active) > a                 { color: var(--skin-color); background-color: var(--skin-l48) !important; border: 1px solid var(--skin-l30); margin: 0 3px 3px 0; border-bottom: 0 !important; }
+  .formquerytabs.nav-tabs li > a                              { color: var(--skin-color); }
+  .formquerytabs.nav-tabs li a.tab_a.group-title              { padding: 0 3px 0 3px; background-color: var(--skin-l20) !important; }
+  .formquerytabs.nav-tabs li.active > a,
+  .formquerytabs.nav-tabs li.active > a:focus,
+  .formquerytabs.nav-tabs .nav-tabs > li.active > a:hover     { background-color: var(--skin-color) !important; color: #fff; }
+
+  .skin-green  .formquerytabs.nav-tabs li:not(.active) > a    { background-color: #e4ffcb !important; }
+  .skin-green  .formquerytabs.nav-tabs li a.tab_a.group-title { background-color: rgba(61, 166, 90, 0.85) !important; }
+  .skin-red    .formquerytabs.nav-tabs li:not(.active) > a    { background-color: var(--skin-danger-l40) !important; }
+  .skin-yellow .formquerytabs.nav-tabs li:not(.active) > a    { background-color: hsl(37, 87%, 99%) !important; border: 1px solid var(--skin-warning-d40); }
+
   .formquerytabs {
     overflow: hidden !important;
     display: flex;

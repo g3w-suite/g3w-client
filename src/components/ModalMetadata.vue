@@ -243,9 +243,9 @@
                 >
                   <img
                     width = "60"
-                    style = "margin-left: 5px"
+                    style = "margin-left: 5px; display: block; margin-right: auto; margin-left: auto;"
                     :src  = "`${urls.clienturl}images/logo_gis3w_156_85.png`"
-                    class = "img-responsive center-block"
+                    class = "img-responsive"
                     alt   = ""
                   />
                 </a>
