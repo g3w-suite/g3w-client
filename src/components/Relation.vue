@@ -405,19 +405,21 @@
               },
               template: `
                 <div class="queryresults-wrapper">
-                  <table ref="table" class="table">
-                    <tbody>
-                    <tr class="featurebox-body">
-                      <td>
-                        <tabs
-                          :layerid = "layerid"
-                          :feature = "feature"
-                          :fields  = "fields"
-                          :tabs    = "formStructure" />
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
+                  <div class ="queryresults-container">
+                    <table ref="table" class="table">
+                      <tbody>
+                      <tr class="featurebox-body">
+                        <td>
+                          <tabs
+                            :layerid = "layerid"
+                            :feature = "feature"
+                            :fields  = "fields"
+                            :tabs    = "formStructure" />
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               `,
               async mounted() {
@@ -626,10 +628,6 @@
     margin-left: auto;
     margin-bottom: 5px;
     margin-right: 4px;
-  }
-  .table-tools {
-    display: flex;
-    justify-content: space-between;
   }
   .relationtable .table-tools .action-button:hover {
     background-color: transparent;

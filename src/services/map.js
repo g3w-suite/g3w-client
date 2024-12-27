@@ -120,17 +120,11 @@ const CONTROLS = {
           console.warn('Error running spatial query: ', e)
         }
       });
-      if ('before' === setter) {
-        let key = null;
-        this.on('toggled', ({ toggled }) => {
-          if (true !== toggled) {
-            ol.Observable.unByKey(key);
-            key = null;
-          } else if (null === key && map) {
-            key = this.getInteraction().on('picked', throttle(e => this.runQuery({coordinates: e.coordinate })));
-          }
-        });
-        this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
+      this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
+      if ('after' === setter) {
+        this.getInteraction().on('picked', throttle(async evt => {
+          this.dispatchEvent({ type: 'picked', coordinates: evt.coordinate });
+        }));
       }
     }
   }),
@@ -738,7 +732,7 @@ class MapService extends G3WObject {
         this.emit('ready');
       },
 
-      controlClick(mapcontrol, info={}) {},
+      controlClick(mapcontrol, info = {}) {},
       loadExternalLayer(layer) {}, // used in general to alert external layer is  loaded
       unloadExternalLayer(layer) {},
 
@@ -1486,12 +1480,6 @@ class MapService extends G3WObject {
 
   }
 
-  setDefaultLayerStyle(type, style = {}) {
-    if (type && this.defaultsLayers[type]) {
-      this.defaultsLayers._style[type] = style;
-    }
-  }
-
   removeLayers() {
     Object.keys(this._layers.base).forEach(id => this.viewer.map.removeLayer(this._layers.base[id].getOLLayer()))
     this.getMapLayers().forEach(l => { this.unregisterMapLayerListeners(l); this.viewer.map.removeLayer(l.getOLLayer()); });
@@ -1510,6 +1498,8 @@ class MapService extends G3WObject {
 
   //set ad increase layerIndex
   setLayerZIndex({ layer, zindex = this.layersCount+=1 }) {
+    //@since 3.11.0 For editing purpose, need to be set on top (add 1000)
+    zindex = zindex + (layer.get('__g3w_editable') ? 1000 : 0)
     layer.setZIndex(zindex);
     this.emit('set-layer-zindex', { layer, zindex });
     return zindex;
@@ -1858,7 +1848,7 @@ class MapService extends G3WObject {
   * */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
-      this.setDefaultLayerStyle('selectionLayer', { color: opts.color });
+      this.defaultsLayers._style.selectionLayer = { color: opts.color };
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
@@ -1918,7 +1908,7 @@ class MapService extends G3WObject {
     let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
     this.clearHighlightGeometry();
-    this.setDefaultLayerStyle('highlightLayer', { color: options.color });
+    this.defaultsLayers._style.highlightLayer = { color: options.color };
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
@@ -2205,12 +2195,16 @@ class MapService extends G3WObject {
    */
   async addExternalLayer(externalLayer, options = {}) {
 
+    //@since 3.11.0 Get original layer passed to method. It used for wms layer to register load/start/end/error event
+    const _layer = externalLayer;
     // extract OL layer from a G3W layer
     const olLayer = externalLayer.getOLLayer ? externalLayer.getOLLayer() : externalLayer;
+
     if (olLayer !== externalLayer) {
       olLayer.set('id',   externalLayer.getId());
       olLayer.set('name', externalLayer.getId());
     }
+
     externalLayer = olLayer;
 
     let vectorLayer;
@@ -2402,7 +2396,7 @@ class MapService extends G3WObject {
     // register and dispatch layer add event
     if ('wms' === type) {
       this._layers.external_wms.push(externalLayer);
-      this.registerMapLayerListeners(externalLayer, false);
+      this.registerMapLayerListeners(_layer, false);
     }
 
     if (vectorLayer && false !== options.persistent) {
@@ -2416,12 +2410,11 @@ class MapService extends G3WObject {
         });
       });
     }
-
-    GUI.getService('queryresults').registerVectorLayer(layer);
     GUI.getService('catalog').addExternalLayer({ layer: externalLayer, type });
-
     // invoke `onAddExternalLayer` on each map control
     if ('vector' === type) {
+      //add to query result only vector layer
+      GUI.getService('queryresults').registerVectorLayer(layer);
       this._keyEvents.unwatches[externalLayer.name] = [];
       Object.values(MAP.controls).forEach(c => c.onAddExternalLayer && c.onAddExternalLayer({ layer: externalLayer, unWatches: this._keyEvents.unwatches[externalLayer.name] }));
     }

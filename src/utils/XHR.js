@@ -27,6 +27,42 @@ export const XHR = {
   },
 
   /**
+   * @since 3.11.0
+   * @param url
+   * @param data
+   * @param formdata
+   * @param contentType
+   * @param signal //@since 3.11.0 (e.g. const controller = new AbortController(); const signal = controller.signal; controller.abort();)
+   * @return {Promise<any|string>}
+   */
+   async put({ url, data, formdata = false, contentType, signal } = {}) {
+    if (formdata) {
+      formdata = new FormData();
+      Object.entries(data).forEach(([key, value]) => formdata.append(key, value));
+    } else if (!contentType) {
+      formdata = new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString();
+    } else {
+      formdata = 'string' === typeof data  ? data : JSON.stringify(data || {});
+    }
+
+    const response = await (await fetch(url, {
+      method:  'PUT',
+      body:    formdata,
+      headers: {
+        'Content-Type': contentType || 'application/x-www-form-urlencoded'
+      },
+      signal,
+    })).text();
+
+    // Try to parse response as JSON
+    try {
+      return JSON.parse(response);
+    } catch(e) {
+      return response;
+    }
+  },
+
+  /**
    *
    * @param url
    * @param data
@@ -69,15 +105,14 @@ export const XHR = {
         timeout = setTimeout(() => {
           reject('Timeout');
         }, TIMEOUT);
-
         downloadFile({
           url:     'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url,
           headers: {
-            'Content-Type':                  'application/json',
             'Access-Control-Expose-Headers': 'Content-Disposition', //need to get filename from server
           },
           method:  httpMethod,
-          data:    data && JSON.stringify(data),
+          //set form data to download file @since 3.11.0 to replace $.fileDownload from 3.10.x
+          data:   'POST' === httpMethod ? Object.keys(data || {}).reduce((a, k) => { a.append(k, data[k]); return a; }, new FormData()): undefined,
           signal,
         })
         return resolve();

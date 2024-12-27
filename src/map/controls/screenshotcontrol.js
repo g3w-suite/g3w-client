@@ -2,6 +2,7 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/screenshotcontrol.js@v3.10.2
  * @since 3.11.0
  */
+import saveAs                   from 'file-saver/dist/FileSaver';
 
 import ApplicationState         from 'store/application';
 import GUI                      from 'services/gui';
@@ -83,13 +84,13 @@ export class ScreenshotControl extends InteractionControl {
             const blobImage = await map.createMapImage();
 
             if ('screenshot' === this.type) {                   // PNG
-              window.saveAs(blobImage, `map_${Date.now()}.png`);
+              saveAs(blobImage, `map_${Date.now()}.png`);
             } else {                                            // GeoTIFF
               const body = new FormData();
               body.append('image',               blobImage);
               body.append('csrfmiddlewaretoken', map.getCookie('csrftoken'));
               body.append('bbox',                map.getMapBBOX().toString());
-              window.saveAs(
+              saveAs(
                 await (await fetch(
                   `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
                   { method: 'POST', body }
@@ -99,8 +100,8 @@ export class ScreenshotControl extends InteractionControl {
             }
           } catch (e) {
             GUI.showUserMessage({
-              type:    'SecurityError' === err.name ? 'warning' : 'alert',
-              message: 'SecurityError' === err.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
+              type:    'SecurityError' === e.name ? 'warning' : 'alert',
+              message: 'SecurityError' === e.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
               autoclose: false
             });
             console.warn(e);

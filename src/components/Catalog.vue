@@ -230,7 +230,7 @@
           :class = "{ active: 'legend' === activeTab }"
         >
           <div v-for = "t in tree.tree" class = "legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
-            <figure v-for = "url in t.legendurls">
+            <figure v-for = "url in t.legendurls" :key ="url.url">
               <bar-loader :loading="url.loading" />
               <img
                 v-show = "!url.loading && !url.error"

@@ -76,7 +76,9 @@ export function SearchPanel(opts = {}, show = false) {
     })),
     //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
     autofilter:           { value: 0 }, //value 0 no set, 1
-    paginate:             !!opts.options.paginate //@since 3.11.0 paginate or not
+    paginate:             !!opts.options.paginate, //@since 3.11.0 paginate or not
+    return:               (opts.options || {}).return  || 'data',   //@since 3.11.0 considere type of search return. Can be another search or data
+    child:               !!opts.child, //@since 3.11.0 Need to know if search is coming from another search
   };
 
   const setInputs = async () => {
@@ -84,17 +86,14 @@ export function SearchPanel(opts = {}, show = false) {
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
       const input            = state.forminputs[i];
-      const has_autocomplete = 'autocompletefield' === input.type;
-
       // set key-values for select
       input.values = [
         ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict || has_autocomplete
-                ? input.values
-                : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
+        ...(input.dependance_strict || 'selectfield' !== input.type || ('selectfield' === input.type && state.child) //@in the case of parent, values are stored
+              ? input.values
+              : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
         )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-
       // there is a dependence
       if (input.dependance) {
         state.loading[input.dependance] = false;
@@ -165,8 +164,10 @@ async function doSearch({
   state
 } = {}) {
 
+
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
-  show     = undefined === show     ? 'search' === state.type : show;
+  //show take in account type or return
+  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
 
   state.searching = true;
 
@@ -185,12 +186,30 @@ async function doSearch({
         queryUrl,
         formatter: 1,
         feature_count,
-        raw:        false, // in order to get a raw response
+        raw:        'search' === state.return, // in order to get a raw response
         autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
         ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
+
+    // @since 3.11.0.
+    // In case of search return == 'search' options.return = 'search', it means that a new search panel needs to show
+    if ('search' === state.return) {
+      // in case of return, a structure of search
+      if (Object.keys((data.data[0] || {}).data || {}).length > 0) {
+        //need to eventually close an open result
+        await GUI.closeContent();
+        const opts = (data.data[0] || {}).data;
+        opts.child = true; //set child true
+        //and open a new Search panel
+        new SearchPanel(opts, true)
+      } else {
+        //otherwise, mean the return of search has no values, so we can show an empty results
+        GUI.outputDataPlace(Promise.resolve({ data: [] }));
+        data = [];
+      }
+    }
 
     // auto zoom to query (not pagination)
     if (show && !state.paginate && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
@@ -203,7 +222,7 @@ async function doSearch({
     const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
 
     // no features on result → show an empty message
-    if (search_1n && !features.length) {
+    if (search_1n && 0 === features.length) {
       GUI.outputDataPlace(Promise.resolve({ data: [] }));
       parsed = [];
     }

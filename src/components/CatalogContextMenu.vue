@@ -449,6 +449,7 @@
 
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
+  import saveAs                        from 'file-saver/dist/FileSaver';
 
   import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application';
@@ -456,8 +457,8 @@
   import { downloadFile }              from 'utils/downloadFile';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import { t }                         from 'g3w-i18n';
+  import shpwrite                      from '@mapbox/shp-write';
 
-  import shpwrite                      from 'shp-write';
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
@@ -772,18 +773,13 @@
       async downloadExternalShapefile(layer) {
         ApplicationState.download = true;
         let features = GUI.getService('map').getLayerByName(layer.name).getSource().getFeatures();
-        if ('EPSG:4326' !== layer.crs) {
-          features = features.map(f => {
-            const feat = f.clone();
-            feat.getGeometry().transform(layer.crs, 'EPSG:4326');
-            return feat;
-          });
-        }
         const name = layer.name.split(`.${layer.type}`)[0];
-        shpwrite.download(
+        const blob = await shpwrite.zip(
           // GeoJSONFile
-          (new ol.format.GeoJSON()).writeFeaturesObject(features, { featureProjection: 'EPSG:4326' }),
+          (new ol.format.GeoJSON()).writeFeaturesObject(features, { dataProjection: layer.crs, featureProjection: GUI.getService('map').getEpsg() || layer.crs }),
           {
+            outputType:     "blob",
+            prj:            layer.crs,
             folder:         name,
             types: {
               point:        name,
@@ -794,8 +790,10 @@
               polyline:     name,
               multiline:    name,
             }
-          }
-        );
+        });
+
+        saveAs(blob, name + '.zip');
+
         await this.$nextTick();
         ApplicationState.download = false;
         this.closeMenu();

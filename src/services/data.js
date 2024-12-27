@@ -387,7 +387,7 @@ export default {
         data:        JSON.stringify(params),
       });
 
-      return response.result ? (response.vector.data.features || []) : null;
+      return response.result ? (response.vector.data.features || []) : Promise.reject(JSON.stringify(response.error));
     } catch(e) {
       console.warn(e);
       return Promise.reject(e);
@@ -408,12 +408,19 @@ export default {
    * @param params.formatter
    * @param params.parent
    */
-  'expression:expression_eval'(params = {}) {
-    return XHR.post({
-      url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
-      contentType: 'application/json',
-      data:        JSON.stringify(params),
-    });
+  async 'expression:expression_eval'(params = {}) {
+    try {
+      const {result, value, error } = await XHR.post({
+        url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+        contentType: 'application/json',
+        data:        JSON.stringify(params),
+      });
+      return result ? value : Promise.reject(JSON.stringify(error));
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
+    }
+
   },
 
   /**

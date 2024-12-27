@@ -3,9 +3,6 @@
  * @since v3.8
  */
 
-// include backward compatibilies
-import './deprecated';
-
 // expose global variables
 import './g3w-globals';
 
@@ -60,6 +57,28 @@ import { getProject }              from 'utils/getProject';
 // Internationalization
 import { addI18n, t, tPlugin }     from 'g3w-i18n';
 
+Object
+  .entries({
+    ApplicationState,
+    G3WObject,
+    Panel,
+    Component,
+    ApplicationService,
+    GUI,
+    MapLayersStoresRegistry,
+    IframePluginService,
+    App,
+    BarLoader,
+    Progressbar,
+    HelpDiv,
+    DateTime,
+    Range,
+    Tabs,
+    Divider,
+    getProject
+  })
+  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
+
 /**
  * Install global components
  *
@@ -99,7 +118,7 @@ Vue.directive("download", vDownload);
 /**
  * Install global plugins
  */
-Vue.use(window.VueCookie);
+Vue.use(require('vue-cookie'));
 
 /**
  * Vue 2 Plugin used to add global-level functionality to Vue

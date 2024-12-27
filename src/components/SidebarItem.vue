@@ -115,16 +115,15 @@
           });
         }
         const node = this.component.getInternalComponent().$el;
-        //@since 3.11.0 need to check if is a html element node.
-        // In case of v-if vue element is false, return <!--> string
-        if (node.classList && node.parentNode) {
-          //@since 3.11.0 Need to add check of sidebar components, in case, for example, close
-          // contents element and some sidebar component is related to it's close, for example, qplotly
-          //a toggle menu open of <ul>
+        //@since 3.11.0 Need to add check of sidebar components, in case, for example, close
+        // contents element and some sidebar component is related to it's close, for example, qplotly
+        //a toggle menu open of <ul>
+        if (node.classList) {
           node.classList.toggle('menu-open', open);
-          // toggle active of <li> element
-          node.parentNode.classList.toggle('active', open);
         }
+        // toggle active of <li> element
+        node.parentNode.classList.toggle('active', open);
+
         this.component.setOpen(open);
 
       };

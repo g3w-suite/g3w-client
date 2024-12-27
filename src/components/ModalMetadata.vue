@@ -267,7 +267,7 @@
               >
                 <a :href="docs_url" rel="nofollow" target="_blank">📖 Docs</a>
                 <a href="mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
-                <a href="https://github.com/g3w-suite">🐞 Report a bug</a>
+                <a href="https://github.com/g3w-suite" target="_blank">🐞 Report a bug</a>
               </div>
 
               <hr>

@@ -25,8 +25,8 @@ export default {
       dropdownAutoWidth = false,
       /** @since 3.11.0 whether to create dropdown to immediate parent of "<select>" element */
       dropdownParent = false,
-      //@since 3.11.0 Placeholder *//
-      placeholder,
+      /* @since 3.11.0 Placeholder */
+      placeholder = '',
       /** @since 3.11.0*/
       clear = false,
 
@@ -40,7 +40,7 @@ export default {
         .select2({
           tags:             createTag,
           width:            '100%',
-          dropdownCssClass: 'skin-color',
+          // dropdownCssClass: 'skin-color',
           dropdownAutoWidth,
           dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
           templateResult,
@@ -66,32 +66,26 @@ export default {
           const selected = 'select2:select' === e.type;
           const id       = e.params.data.id;
           const ctx      = vnode.context;
+          const arr      = selected && (isArray ? ctx[value][indexItem].value : ctx[value]);
 
           // selected
-          /** @TODO reduce nesting level */
-          if (selected) {
-            const arr = (isArray ? ctx[value][indexItem].value : ctx[value]);
-            // check is can have multiple value
-            if (multiple && arr.every(d => id !== d)) {
-              arr.push(id);
-            } else if (isArray) {
-              ctx[value][indexItem].value = id;
-            } else {
-              // take in an account text binding value single world or object (eg. state.name)
-              const attrs = `${value}`.split('.');
-              const last = attrs.pop();
-              (attrs.reduce((acc, a) => { acc = acc[a]; return acc; }, vnode.context))[last] = id;
-            }
+          // check is can have multiple value
+          if (selected && multiple && arr.every(d => id !== d)) {
+            arr.push(id);
+          } else if (selected && isArray) {
+            ctx[value][indexItem].value = id;
+          } else if (selected) {
+            // take in an account text binding value single world or object (eg. state.name)
+            const attrs = `${value}`.split('.');
+            const last = attrs.pop();
+            (attrs.reduce((acc, a) => { acc = acc[a]; return acc; }, vnode.context))[last] = id;
           }
 
           // unselected
-          /** @TODO reduce nesting level */
-          if (!selected && multiple) {
-            if (isArray) {
-              ctx[value][indexItem].value = ctx[value][indexItem].value.filter(d => id !== d);
-            } else {
-              ctx[value] = ctx[value].filter(d => id !== d);
-            }
+          if (!selected && multiple && isArray) {
+            ctx[value][indexItem].value = ctx[value][indexItem].value.filter(d => id !== d);
+          } else if(!selected && multiple) {
+            ctx[value] = ctx[value].filter(d => id !== d);
           }
 
           // dispatch "change" event to native <select> element

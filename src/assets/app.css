@@ -1,3 +1,11 @@
+@import url("../../node_modules/bootstrap/dist/css/bootstrap.css");
+@import url("../../node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css");
+@import url("../../node_modules/ol/ol.css");
+@import url("../../node_modules/select2/dist/css/select2.css");
+@import url("../../node_modules/datatables.net-dt/css/jquery.dataTables.css");
+@import url("../../node_modules/@fortawesome/fontawesome-free/css/all.css");
+@import url("../../node_modules/quill/dist/quill.snow.css");
+
 /**************************************************************************************
  * 0. Fonts
  * 1. Loading spinners
@@ -83,35 +91,33 @@ html, body                   { height: 100%; width: 100%; }
 *:focus                      { outline: none; }
 
 table.dataTable > tbody > tr.child ul.dtr-details > li { border-bottom: 0 !important; }
+table.dataTable th.sorting::after,
+table.dataTable th.sorting::before { font-family: Monospace; }
+
+table.dataTable th.sorting_asc::after,
+table.dataTable th.sorting_desc::before { display: none; }
+table.dataTable th.sorting_asc::before,
+table.dataTable th.sorting_desc::after  { color:#7a80dd; opacity: 1; }
 
 /**************************************************************************************
  * 0. Fonts
  **************************************************************************************/
-@font-face {
-  font-family: 'icomoon';
-  src:
-    url('../fonts/iconmoon.ttf?fcb3cj') format('truetype'),
-    url('../fonts/iconmoon.woff?fcb3cj') format('woff'), 
-    url('../fonts/iconmoon.svg?fcb3cj#icomoon') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-300.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-300italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: italic; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-regular.woff2')   format('woff2'); font-family: 'Source Sans Pro'; font-weight: 400; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-600.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-600italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: italic; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-700.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: normal; }
-@font-face { src: url('../fonts/source-sans-pro-v13-latin-700italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: italic; }
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-400-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-400-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-400-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-400-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-700-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-700-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-ext-700-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
-/* @font-face { src: url(../fonts/titillium-web-latin-700-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
+@font-face { src: url('./fonts/iconmoon.woff?fcb3cj')                      format('woff');  font-family: 'icomoon';         font-weight: 300; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-300.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-300italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 300; font-style: italic; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-regular.woff2')   format('woff2'); font-family: 'Source Sans Pro'; font-weight: 400; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-600.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-600italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 600; font-style: italic; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-700.woff2')       format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: normal; }
+@font-face { src: url('./fonts/source-sans-pro-v13-latin-700italic.woff2') format('woff2'); font-family: 'Source Sans Pro'; font-weight: 700; font-style: italic; }
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-400-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-400-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-400-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-400-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 400; font-style: normal; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-700-italic.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-700-italic.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: italic; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-ext-700-normal.woff2)    format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
+/* @font-face { src: url(./fonts/titillium-web-latin-700-normal.woff2)        format("woff2"); font-family: Titillium Web; font-weight: 700; font-style: normal; font-display: swap; } */
 
 /**************************************************************************************
  * 1. Loading Spinners
@@ -668,9 +674,9 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
  * 7. Map Controls
  **************************************************************************************/
 .ol-viewport.ol-pointer                                                { cursor: pointer; }
-.ol-viewport.ol-zoom-in                                                { cursor: url('../cursors/mZoomIn.svg'), zoom-in }
-.ol-viewport.ol-help                                                   { cursor: url('../cursors/mIdentify.svg'), help }
-.ol-viewport.ol-streetview                                             { cursor: url('../cursors/mCapturePoint.svg'), pointer }
+.ol-viewport.ol-zoom-in                                                { cursor: url('./cursors/mZoomIn.svg'), zoom-in }
+.ol-viewport.ol-help                                                   { cursor: url('./cursors/mIdentify.svg'), help }
+.ol-viewport.ol-streetview                                             { cursor: url('./cursors/mCapturePoint.svg'), pointer }
 .ol-viewport.ol-crosshair                                              { cursor: crosshair; }
 .ol-viewport.ol-grabbing                                               { cursor: grabbing; }
 .ol-viewport.ol-grab                                                   { cursor: grab; }
@@ -686,18 +692,18 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
   .ol-querybydrawpolygon,
   .ol-measure
 )                                 button                               { position: relative; font-size: 0; }
-.ol-control                       button.ol-zoom-in::before            { background: url(../images/mActionZoomIn.svg)              no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control                       button.ol-zoom-out::before           { background: url(../images/mActionZoomOut.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-zoombox            button::before                       { background: url(../images/mActionZoomToArea.svg)          no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-zoom-extent        button::before                       { background: url(../images/mActionZoomFullExtent.svg)      no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-query              button::before                       { background: url(../images/mActionIdentify.svg)            no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybbox          button::before                       { background: url(../images/mActionIdentifyByRectangle.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybypolygon     button::before                       { background: url(../images/mActionIdentifyByFreehand.svg)  no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybydrawpolygon button::before                       { background: url(../images/mActionIdentifyByPolygon.svg)   no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-querybycircle      button::before                       { background: url(../images/mActionIdentifyByRadius.svg)    no-repeat center; content: ''; position: absolute; inset: 0; }
-.ol-control.ol-measure            button::before                       { background: url(../images/mActionMeasure.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control                       button.ol-zoom-in::before            { background: url(./images/mActionZoomIn.svg)              no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control                       button.ol-zoom-out::before           { background: url(./images/mActionZoomOut.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-zoombox            button::before                       { background: url(./images/mActionZoomToArea.svg)          no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-zoom-extent        button::before                       { background: url(./images/mActionZoomFullExtent.svg)      no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-query              button::before                       { background: url(./images/mActionIdentify.svg)            no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybbox          button::before                       { background: url(./images/mActionIdentifyByRectangle.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybypolygon     button::before                       { background: url(./images/mActionIdentifyByFreehand.svg)  no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybydrawpolygon button::before                       { background: url(./images/mActionIdentifyByPolygon.svg)   no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-querybycircle      button::before                       { background: url(./images/mActionIdentifyByRadius.svg)    no-repeat center; content: ''; position: absolute; inset: 0; }
+.ol-control.ol-measure            button::before                       { background: url(./images/mActionMeasure.svg)             no-repeat center; content: ''; position: absolute; inset: 0; }
 .ol-control.ol-streetview         button                               { color: #fdbf2d; text-shadow: 0 1px 0 #505050, 0 -1px 0 #505050, 1px 0 0 #505050, -1px 0px 0 #505050; }
-.ol-control.ol-rotate             button .ol-compass                   { background: url(../images/compass.svg)                    no-repeat 50% center; display: block; width: 100%; height: 100%; transform: rotate(30deg); font-size: 0; }
+.ol-control.ol-rotate             button .ol-compass                   { background: url(./images/compass.svg)                    no-repeat 50% center; display: block; width: 100%; height: 100%; transform: rotate(30deg); font-size: 0; }
 
 .ol-control, .ol-custom-overviewmap                                    { background-color: transparent; border-radius: 0; padding: 0; }
 :is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border-radius: 3px; font-size: 25px; font-family: icomoon; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 1px solid rgba(0,0,0,0.5); background-clip: padding-box; box-shadow: none !important; border-radius: 3px; }
@@ -856,7 +862,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .query-relations-page .relationtable td                                                    { padding: 2px 5px !important; }
 .query-relations-page .relationtable td span                                               { font-size: 1em; }
 
-
 .fade-enter, .fade-leave-to                                                                                  { opacity: 0; }
 .fade-enter-active, .fade-leave-active                                                                       { transition: opacity 0.25s ease-out; }
 
@@ -916,7 +921,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_body .editbtn.enabled:hover                             { background-color: #ddd; }
 .g3wform_body .editbtn.enabled.toggled                           { background-color: #ddd; }
 .g3wform_body .form-group                                        { margin-bottom: 5px; }
-.g3wform_body .bootstrap-filestyle > input.form-control          { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g3wform_body .form_editing_relation_input                       { position: relative; font-size: 1.2em; font-weight: bold; width: 100%; padding: 10px; }
 .g3wform_body .preview                                           { width: 100%; margin-top: 10px; display:flex; align-items: center; }
 .g3wform_body .preview .filename                                 { overflow: hidden; margin: 15px; font-weight: bold; }
@@ -964,7 +968,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 }
 .g3wform_body form .box-primary                                         { border-top-color: var(--skin-color); }
 .g3wform_body .form-control:focus                                       { border-color: var(--skin-color); }
-.g3wform_body .bootstrap-filestyle label.btn-primary                    { border-color: var(--skin-color); background-color: var(--skin-color); }
 .g3wform_body .relation-editbtn                                         { border: 2px solid var(--skin-color); }
 .bootstrap-datetimepicker-widget .datepicker .active                    { background-color: var(--skin-color); }
 
@@ -972,7 +975,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3wform_header .title.one                                              { color: var(--skin-d20); }
 .g3wform_header .title.tabs:hover                                       { border-bottom: 4px solid var(--skin-l40); }
 .g3wform_header .item_selected                                          { color: var(--skin-d20); border-bottom: 3px solid var(--skin-color) !important; }
-.g3wform_body .bootstrap-filestyle label.btn-primary:hover              { background-color: var(--skin-d20); }
 
 /**************************************************************************************
  * 10. Contents
@@ -980,6 +982,15 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .contents                            { padding: 0 10px; height: 100%; }
 .contents > div                      { height: 100%; }
 .contents table                      { empty-cells: show; width: 100%; background-color: #fff !important; }
+.contents .node-row > div + div,
+.contents .tabs-wrapper + .tabs-wrapper,
+.contents .node-row .field + .tabs-wrapper                          { border-left: 1px solid rgba(0,0,0,.1);  }
+.contents .node-row .tabs-wrapper                                   { border-top-right-radius: 3px; border-top-left-radius:3px; }
+.contents .node-row .tabs-wrapper                                   { border-right: 1px solid rgba(0,0,0,.1);  }
+.contents .node-row .tabs-wrapper:last-of-type                      { border-right: none; }
+.contents .nav-tabs                                                 { border-bottom: none; }
+.contents .node-row .tabs-wrapper .tab-content:not(:last-child)     { border-bottom: 3px double rgba(0,0,0,.25); }
+.contents .node-row .tabs-wrapper.sub-group .tabs-wrapper.sub-group { border: 1px solid rgba(0,0,0,.25); }
 
 /**************************************************************************************
  * 11. Errors
@@ -1055,6 +1066,31 @@ table.dataTable thead tr th                                               { padd
 
 .ql-tooltip[data-mode="link"]                                             { left: 0 !important; }
 body .tooltip .tooltip-inner                                              { max-width: 100% !important; }
+
+@keyframes hover-color                                          { 0% { border-color: silver } to { border-color: #3e97eb } }
+:is(.magic-checkbox, .magic-radio)                              { position: absolute; display: none }
+:is(.magic-checkbox, .magic-radio)[disabled]                    { cursor: not-allowed }
+:is(.magic-checkbox, .magic-radio)+label                        { position: relative; display: block; padding-left: 30px; cursor: pointer; vertical-align: middle; }
+:is(.magic-checkbox, .magic-radio)+label:hover:before           { animation-duration: .4s; animation-fill-mode: both; animation-name: hover-color; }
+:is(.magic-checkbox, .magic-radio)+label:before                 { position: absolute; top: 0; left: 0; display: inline-block; width: 20px; height: 20px; content: ''; border: 1px solid silver; }
+:is(.magic-checkbox, .magic-radio)+label:after                  { position: absolute; display: none; content: '' }
+:is(.magic-checkbox, .magic-radio)[disabled]+label              { cursor: not-allowed; color: #e4e4e4 }
+:is(.magic-checkbox, .magic-radio)[disabled]+label:after,
+:is(.magic-checkbox, .magic-radio)[disabled]+label:before,
+:is(.magic-checkbox, .magic-radio)[disabled]+label:hover        { cursor: not-allowed }
+:is(.magic-checkbox, .magic-radio)[disabled]+label:hover:before { border: 1px solid #e4e4e4; animation-name: none }
+:is(.magic-checkbox, .magic-radio)[disabled]+label:before       { border-color: #e4e4e4 }
+:is(.magic-checkbox, .magic-radio):checked+label:before         { animation-name: none; }
+:is(.magic-checkbox, .magic-radio):checked+label:after          { display: block; }
+.magic-radio+label:before                                       { border-radius: 50%; }
+.magic-radio+label:after                                        { top: 6px; left: 6px; width: 8px; height: 8px; border-radius: 50%; background: #3e97eb; }
+.magic-radio:checked+label:before                               { border: 1px solid #3e97eb }
+.magic-radio:checked[disabled]+label:before                     { border: 1px solid #c9e2f9 }
+.magic-radio:checked[disabled]+label:after                      { background: #c9e2f9 }
+.magic-checkbox+label:before                                    { border-radius: 3px }
+.magic-checkbox+label:after                                     { top: 2px; left: 7px; box-sizing: border-box; width: 6px; height: 12px; transform: rotate(45deg); border: 2px solid #fff; border-top: 0; border-left: 0 }
+.magic-checkbox:checked+label:before                            { border: #3e97eb; background: #3e97eb }
+.magic-checkbox:checked[disabled]+label:before                  { border: #c9e2f9; background: #c9e2f9 }
 
 .magic-checkbox:checked + label:before                                              { border: var(--skin-color); background: var(--skin-color); }
 .magic-radio + label:after                                                          { background: var(--skin-color); }

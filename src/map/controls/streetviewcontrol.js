@@ -165,7 +165,7 @@ export class StreetViewControl extends InteractionControl {
     if (this.key) {
       GUI.setContent({
         title:   'StreetView',
-        content: `<div id="streetview">` + (this.keyError ? `<div
+        content: `<div id="streetview" style="height:100%; width:100%;">` + (this.keyError ? `<div
           style = "display: flex;justify-content: center;align-items: center;font-weight: bold;height: 100%;padding: 10px;background-color: #FFF;"
           class = "skin-color"
         >${ this.keyError }</div>` : '') +`</div>`,

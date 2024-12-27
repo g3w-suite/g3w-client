@@ -3,9 +3,10 @@
  * @since 3.11.0
  */
 
-import { noop }     from 'utils/noop';
-import { debounce } from 'utils/debounce';
-import { throttle } from 'utils/throttle';
+import { noop }      from 'utils/noop';
+import { debounce }  from 'utils/debounce';
+import { throttle }  from 'utils/throttle';
+import EventEmitter  from 'wolfy87-eventemitter';
 
 /**
  * Mimics the behavior of child class fields in parent class,

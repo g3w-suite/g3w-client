@@ -41,11 +41,13 @@ export default {
   }
   .field div {
     padding-left: 3px;
-    padding-right: 3px;
   }
-
+  .field_value button {
+    margin-right: 5px; 
+  }
   .field_value {
     padding-left: 0 !important;
+    padding-right: 8px;
     text-align: right;
   }
 </style>

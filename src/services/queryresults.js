@@ -16,7 +16,6 @@ import DataRouterService                        from 'services/data';
 
 import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import RelationsPage                            from "components/RelationsPage.vue";
 
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { intersects }                           from 'utils/intersects';
@@ -97,9 +96,12 @@ export default new (class QueryResultsService extends G3WObject {
           this._vectorLayers.forEach(layer => {
             const id = layer.get('id');
             // TODO: extract this into `layer.isSomething()` ?
-            if (layer.getVisible() && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)) {
+            if (
+              layer.getVisible()
+              && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)
+            ) {
               queryResponse.data[
-                '__g3w_marker' === id // keep geocoding control "marker" layer at top
+                '__g3w_marker' === id // keep geocoding control "marker" layer at the top
                 ? 'unshift'
                 : 'push'
               ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
@@ -837,7 +839,7 @@ export default new (class QueryResultsService extends G3WObject {
             GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(RelationsPage))({
+                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
                   relations:        action.relations,
                   chartRelationIds: action.chartRelationIds,
                   feature,
@@ -1467,9 +1469,9 @@ export default new (class QueryResultsService extends G3WObject {
       vectorLayer.getSource().getFeatures().forEach(f => {
         let add;
         switch (filterConfig.spatialMethod) {
-          case 'intersects': add = intersects(geometry, f.getGeometry());                  break;
           case 'within':     add = within(geometry, f.getGeometry());                      break;
-          default:           add = geometry.intersectsExtent(f.getGeometry().getExtent()); break;
+          case 'intersects':
+          default:           add = intersects(geometry, f.getGeometry());                  break;
         }
         if (true === add) {
           features.push(f);
@@ -1617,7 +1619,7 @@ export default new (class QueryResultsService extends G3WObject {
      *
      * @param active
      */
-    const runDownload = async (active=false) => {
+    const runDownload = async (active = false) => {
 
       if (features.length > 1) {
         layer.downloadformats.active = active;
@@ -1625,7 +1627,7 @@ export default new (class QueryResultsService extends G3WObject {
       }
 
       await GUI.downloadWrapper(
-        ({layer, type, data}= {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
+        ({ layer, type, data } = {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
         {
           layer,
           type,
@@ -1794,7 +1796,7 @@ export default new (class QueryResultsService extends G3WObject {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
-        internalComponent: new (Vue.extend(RelationsPage))({
+        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
           currentview:      'relation',
           relations:        [projectRelation],
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],

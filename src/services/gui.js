@@ -13,10 +13,6 @@ import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 
-import ProjectsMenu              from 'components/ProjectsMenu.vue';
-import SidebarItem               from 'components/SidebarItem.vue';
-import { FormComponent }         from 'components/g3w-form';
-
 
 /** store legacy frontend components */
 const COMPONENTS = {};
@@ -225,15 +221,15 @@ export default new (class GUI extends G3WObject {
       }
     };
 
-    this.isready          = false;
+    this.isready           = false;
 
     //property to how a result has to be adding or close all and show new
     // false mean create new and close all open
-    this.push_content     = false;
+    this.push_content      = false;
 
     this._closeUserMessage = true;
 
-    this.dialog = bootbox;
+    this.dialog            = bootbox;
 
     this.notify = {
       warning:(message, autoclose = false) => { this.showUserMessage({ type: 'warning', message, autoclose }) },
@@ -244,7 +240,6 @@ export default new (class GUI extends G3WObject {
 
     /** @since 3.11.0 */
     this.currentoutputplace = 'gui';
-
   }
 
   addComponent(component, placeholder, options={}) {
@@ -254,7 +249,7 @@ export default new (class GUI extends G3WObject {
       if ('sidebar' === placeholder) {
         if (!isMobile.any || false !== component.mobile) {
           ApplicationState.sidebar.components.push(component);
-          (new (Vue.extend(SidebarItem))({ component, opts: options })).$mount();
+          (new (Vue.extend(require('components/SidebarItem.vue')))({ component, opts: options })).$mount();
         }
         register = true;
       } else if (SERVICES[placeholder]) {
@@ -402,6 +397,8 @@ export default new (class GUI extends G3WObject {
     //set current unique request id of request
     const rid = getUniqueDomId();
 
+    /** @type { String[] } cached requests (by id) */
+    this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
     /** In the case of a current output result is iframe, send to IFrameRouterService.outputDataPlace*/
     if ('iframe' === this.currentoutputplace) {
       return IFrameRouterService.outputDataPlace(promise, output);
@@ -419,40 +416,31 @@ export default new (class GUI extends G3WObject {
       ...(condition ? {} : output.show)
     });
 
-    // abort any previous request
-    if (this.pending_output) {
-      await this.pending_output();
-    }
-
     // if request doesn't need to add to a current query result
     if (!output.add) {
       this.showQueryResults(output.title || '');
     }
 
-    // Store data promise
-    let data = {};
-    // stop
-    let stop = false;
-
-    //set current pending out
-    this.pending_output = async () => stop = true;
-
-    //set current request id
-    this.crid = rid;
-
     try {
+      // Store data promise
+      const data = (await promise) || {};
 
-      if (!stop) {
-        data = await promise;
+      //Check id we can show data
+      const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
+      const last = show && rid === this.outputDataPlace.reqs.at(-1);
+
+      // set request output ids empty
+      if (last) {
+        this.outputDataPlace.reqs.splice(0);
       }
 
       //if set before call method and wait
-      if (!stop && output.before) {
+      if (last && output.before) {
         await output.before(data)
       }
 
       // in case of usermessage show user message
-      if (!stop && data.usermessage) {
+      if (last && data.usermessage) {
         this.showUserMessage({
           type:      data.usermessage.type,
           message:   data.usermessage.message,
@@ -460,22 +448,15 @@ export default new (class GUI extends G3WObject {
         });
       }
 
-      const show = !stop && 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-
       // check if data can be shown on query result content
-      if (!stop && show) {
-        (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: output.add });
-      }
-
-      if (!stop && !show) {
-        this.pending_output = await this.closeContent();
+      if (last) {
+        (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: !!output.add });
       }
 
       // call after is set with data
-      if (!stop && output.after) {
+      if (last && output.after) {
         output.after(data)
       }
-
     } catch(e) {
       console.warn(e);
       this.showUserMessage({
@@ -483,15 +464,17 @@ export default new (class GUI extends G3WObject {
         message:     errorToMessage(e),
         textMessage: true
       });
+      //@scince 3.11.0 emit error-output-data
+      this.emit('error-output-data', e);
       await this.closeContent();
     }
 
-    this.pending_output = null;
-    //set loading to false when done current request id
-    this.setLoadingContent(rid !== this.crid);
+    //set loading to false when no pending request
+    this.setLoadingContent(this.outputDataPlace.reqs.length > 0);
   }
 
   showForm(options = {}) {
+    const { FormComponent } = require('components/g3w-form');
     // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     this.setContent({
@@ -524,9 +507,8 @@ export default new (class GUI extends G3WObject {
     // remove all content stacks
     if (!pop && !backonclose){
       this.closeContent();
+      this.setModal(false);
     }
-
-    this.setModal(false);
   }
 
   disableElement({element, disable}) {
@@ -639,7 +621,7 @@ export default new (class GUI extends G3WObject {
       $(ApplicationState.sidebar.parent).empty();
     }
     let content = data.pop();
-    content = null;
+    content     = null;
     const current = ApplicationState.sidebar.contentsdata.at(-1);
     if (current) {
       $(current.content.internalPanel.$el).show();
@@ -798,7 +780,7 @@ export default new (class GUI extends G3WObject {
       ...opts,
       id: 'projectsmenu',
       title: opts.title || 'menu',
-      internalComponent: new (Vue.extend(ProjectsMenu))({
+      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue')))({
         host: opts.host,
         state: {
           menuitems: (opts.projects || getListableProjects()).map(p => ({

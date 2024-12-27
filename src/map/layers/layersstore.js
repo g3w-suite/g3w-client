@@ -253,6 +253,7 @@ export class LayersStore extends G3WObject {
        */
       bbox:        { minx, miny, maxx, maxy },
       nodes:       layerstree,
+      legendurls:  [], //@since 3.11.0 Set reactive change legend urls on check TOC visible layers
     };
 
     if (layerstree.length > 0) {

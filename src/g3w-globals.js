@@ -11,9 +11,9 @@ import ApplicationService                          from 'services/application';
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
-import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
+import { addZValue }                               from 'utils/addZValue';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
-import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
+import { removeZValue }                            from 'utils/removeZValue';
 import { getOLGeometry }                           from 'utils/getOLGeometry';
 import { isMultiGeometry }                         from 'utils/isMultiGeometry';
 import { isPointGeometryType }                     from 'utils/isPointGeometryType';
@@ -32,7 +32,6 @@ import { distance }                                from 'utils/distance';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
 import { getFilterExpression }                     from "utils/getFilterExpression";
 import { getProjectUrl }                           from 'utils/getProjectUrl';
-import { setProjectAliasUrl }                      from 'utils/setProjectAliasUrl';
 import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
 import { getProject }                              from 'utils/getProject';
@@ -86,11 +85,14 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
+
 import i18n                                        from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import { MapLayersStoresRegistry }                 from 'services/map';
 import { SearchPanel }                             from 'components/g3w-search';
 import { FormComponent, FormService }              from 'components/g3w-form';
+
+const deprecate                   = require('util-deprecate');
 
 /**
  * GUI modules
@@ -120,7 +122,7 @@ const g3wsdk = {
       noop,
     },
     geoutils: {
-      createVectorLayerFromFile,
+      createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
@@ -132,9 +134,9 @@ const g3wsdk = {
       intersects,
       distance,
       Geometry: {
-        GeometryTypes: G3W_CONSTANT.GEOMETRY_TYPES,
-        removeZValueToOLFeatureGeometry,
-        addZValueToOLFeatureGeometry,
+        GeometryTypes:                   G3W_CONSTANT.GEOMETRY_TYPES,
+        removeZValueToOLFeatureGeometry: removeZValue,
+        addZValueToOLFeatureGeometry:    addZValue,
         getOLGeometry,
         isMultiGeometry,
         isPointGeometryType,
@@ -161,7 +163,6 @@ const g3wsdk = {
       ProjectsRegistry: Object.assign(new G3WObject, {
         setters: { setCurrentProject(project) {} },
         getProjectUrl,
-        setProjectAliasUrl,
         getProjectConfigByGid,
         getListableProjects,
         getProject,
@@ -319,6 +320,9 @@ g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => Applicati
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
+
+/** used by the following plugins: "archiweb" */
+g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = window.initConfig.projects.find(p => alias.gid === p.gid); if (p) { p.url = `${alias.host || ''}${alias.url}` } };
 
 /**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances

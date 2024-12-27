@@ -6,6 +6,7 @@
 <template>
   <!-- Modal -->
   <div
+    v-if     = "show"
     id       = "modal-login"
     class    = "modal fade"
     tabindex = "-1"
@@ -38,6 +39,11 @@ export default {
 
   /** @since 3.11.0 */
   name: 'modal-login',
+  data() {
+    return {
+      show: true,
+    }
+  },
 
   computed: {
 
@@ -52,6 +58,7 @@ export default {
      onIframeLoaded(e) {
       const iframe = this.$refs.login_iframe.contentWindow.g3wsdk && this.$refs.login_iframe.contentWindow.g3wsdk.core.ApplicationState;
       if (iframe && iframe.user && iframe.user.logout_url) {
+        this.show = false;
         window.location.reload();
       }
     },

@@ -128,17 +128,13 @@
 
           <!-- DEBUG INFO -->
           <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
-            <summary style="text-align: center;">
-              <code style="border: 1px solid currentColor;color: var(--skin-color);background-color: transparent;">🐞 <b>DEBUG</b></code>
-            </summary>
-            <sub >
-              <br v-if = "input.options.description">
-              <span class = "skin-color">{{ input.type }}</span> | <span class = "skin-color">{{ input.widget_type }}</span>
-              <template v-if = "input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
-              <template v-if = "input.options.layer_id"><br><span class = "skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
-              <template v-if = "input.dependance"><br><span class = "skin-color">depends_on:</span> "{{ input.dependance }}"</template>
-              <template v-if = "input.dependance"><br><span class = "skin-color">strict:</span> {{ input.dependance_strict }}</template>
-            </sub>
+            <ul style="font-size: 80%;padding-left: 15px; font-family: monospace; white-space: nowrap; overflow-x: auto; scrollbar-width: thin;">
+              <li><b class = "skin-color">{{ input.type }}</b></li>
+              <li><b class = "skin-color">{{ input.widget_type }}</b><span v-if = "input.options.value">: {<br>  key: "{{ input.options.key }}",<br>  value: "{{ input.options.value }}"<br>}</span></li>
+              <li v-if = "input.options.layer_id"><b class = "skin-color">layer_id:</b> "{{ input.options.layer_id }}"</li>
+              <li v-if = "input.dependance"><b class = "skin-color">depends_on:</b> "{{ input.dependance }}"</li>
+              <li v-if = "input.dependance"><b class = "skin-color">strict:</b> {{ input.dependance_strict }}</li>
+            </ul>
           </details>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
@@ -151,7 +147,7 @@
 
         </div>
         <!-- @since 3.11.0 -->
-        <div class = "form-group">
+        <div class = "form-group" v-disabled = "'data' !== state.return">
           <input
             id        = "g3w-search-filter"
             class     = "magic-checkbox"

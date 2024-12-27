@@ -10,15 +10,15 @@ export function waitFor(predicate, timeout) {
   return new Promise((resolve, reject) => {
     const check = () => {
       if (!predicate()) {
-        return;
+        return 'invalid predicate';
       }
       clearInterval(interval);
-      resolve();
+      resolve('predicate');
     };
     const interval = setInterval(check, 100);
     check();
     if (timeout) {
-      setTimeout(() => { clearInterval(interval); reject(); }, timeout);
+      setTimeout(() => { clearInterval(interval); reject('timeout'); }, timeout);
     }
   });
 }

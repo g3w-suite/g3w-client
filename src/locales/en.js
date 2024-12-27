@@ -78,7 +78,14 @@ export default {
         download_image: "Download Image",
         fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
         fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-        help: "Exported layers are defined by the administrator"
+        help: "Exportable layers are defined by the administrator",
+        help_details: `<p>If you don't see some layer in your print file:</p>
+          <ol style="padding-left: 25px">
+            <li>try again by selecting a different template</li>
+            <li>try changing the zoom level</li>
+            <li>check the origin (eg. third-party WMS server)</li>
+            <li>make sure the item is actually checked within layers list</li>
+          </ol>`,
       },
       querybuilder: {
         title: 'Advanced search',
@@ -619,8 +626,12 @@ export default {
     /** @since 3.11.0 */
     add_new_wms_url_help: 'Search through saved connections or add a new server',
     /** @since 3.11.0 */
+    saved_connections: 'Saved connections:',
+    /** @since 3.11.0 */
     label: "Label",
     /** @since 3.11.0 */
     no_csv_field: 'No valid fields',
+    /** @since 3.11.0 */
+    show_more: 'Show more',
   },
 };
