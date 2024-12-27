@@ -73,8 +73,9 @@
       <div
         v-if   = "state.help && this.state.help.visible"
         v-html = "state.help.message"
-        class  = "g3w_input_help skin-background-color extralighten">
-      </div>
+        class  = "g3w_input_help skin-background-color"
+        style  = "background-color: var(--skin-l48) !important;"
+      ></div>
 
     </div>
   </div>

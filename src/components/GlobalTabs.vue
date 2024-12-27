@@ -251,7 +251,7 @@
   .formquerytabs.nav-tabs > li:last-child                     { margin-right: 0; }
   .formquerytabs.nav-tabs li:not(.active) > a                 { color: var(--skin-color); background-color: var(--skin-l48) !important; border: 1px solid var(--skin-l30); margin: 0 3px 3px 0; border-bottom: 0 !important; }
   .formquerytabs.nav-tabs li > a                              { color: var(--skin-color); }
-  .formquerytabs.nav-tabs li a.tab_a.group-title              { padding: 0 3px 0 3px; background-color: var(--skin-l20) !important; }
+  .formquerytabs.nav-tabs li a.tab_a.group-title              { background-color: var(--skin-l20) !important; }
   .formquerytabs.nav-tabs li.active > a,
   .formquerytabs.nav-tabs li.active > a:focus,
   .formquerytabs.nav-tabs .nav-tabs > li.active > a:hover     { background-color: var(--skin-color) !important; color: #fff; }
