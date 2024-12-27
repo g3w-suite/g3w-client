@@ -21,8 +21,8 @@ export async function downloadFile({
 
   const d = !content && url && await fetch(url, {
     type: mime_type,
-    headers,
     body: data,
+    headers,
     method,
     signal,
   }) || {};

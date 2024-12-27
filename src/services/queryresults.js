@@ -1619,7 +1619,7 @@ export default new (class QueryResultsService extends G3WObject {
      *
      * @param active
      */
-    const runDownload = async (active=false) => {
+    const runDownload = async (active = false) => {
 
       if (features.length > 1) {
         layer.downloadformats.active = active;
@@ -1627,7 +1627,7 @@ export default new (class QueryResultsService extends G3WObject {
       }
 
       await GUI.downloadWrapper(
-        ({layer, type, data}= {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
+        ({ layer, type, data } = {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
         {
           layer,
           type,
