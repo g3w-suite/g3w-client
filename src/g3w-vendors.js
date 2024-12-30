@@ -49,7 +49,7 @@ import isMobile             from 'ismobilejs';
 import Vue                  from 'vue/dist/vue';
 
 /**
- * Shims legacy window variables
+ * Shim legacy window variables
  */
 Object.assign(globalThis, {
   Vue,
@@ -158,6 +158,8 @@ globalThis.i18next           = require('i18next');
 globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
 globalThis.jqueryI18next     = require('jquery-i18next/jquery-i18next');
 globalThis.Quill             = require('quill').default;
+//@since 3.11.0 used in editing plugin to dissolve tool
+globalThis.jsts              = require('jsts/dist/jsts.min');
 
 /*!
   * HOTFIX: for invalid UMD definition
