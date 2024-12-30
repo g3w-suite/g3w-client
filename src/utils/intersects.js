@@ -1,5 +1,4 @@
 import jsts from 'jsts/dist/jsts.min.js';
-import geo from "../mixins/geo";
 
 /**
  * Check if `geometryCheck` intersects with `geometry`
