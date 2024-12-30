@@ -75,7 +75,7 @@ Vue.extend = function(opts) {
 };
 
 /**
- * Shims legacy window variables
+ * Shim legacy window variables
  */
 Object.assign(globalThis, {
   Vue,
