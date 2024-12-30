@@ -229,8 +229,8 @@ export default {
     async run() {
       try {
         this.loading.test = true;
-        const layer = getCatalogLayerById(this.currentlayer.id);
-        const { data } = await DataRouterService.getData('search:features', {
+        const layer       = getCatalogLayerById(this.currentlayer.id);
+        const { data }    = await DataRouterService.getData('search:features', {
           inputs: {
             layer,
             filter: createFilterFromString({ layer, filter: this.filter }),
@@ -239,14 +239,13 @@ export default {
           outputs: true,
         });
         const n         = data.length && data[0].features.length; // number of features
-        this.message    = undefined !== n ? ` ${n}` : '';
+        this.message    = undefined === n ? '' : ` ${n}`;
         return data;
       } catch(e) {
         console.warn(e);
       } finally {
         this.loading.test = false;
       }
-      
     },
 
     /**
@@ -255,8 +254,8 @@ export default {
     async save() {
       const id      = this.projectId || ApplicationState.project.getId();
       const edit_id = this.edit && this.$options.options.id;
-      const item   = window.localStorage.getItem('QUERYBUILDERSEARCHES');
-      let searches = item ? JSON.parse(item) : undefined;
+      const item    = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      let searches  = item ? JSON.parse(item) : undefined;
 
       let query;
 

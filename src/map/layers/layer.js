@@ -844,9 +844,9 @@ class Layer extends G3WObject {
     }
 
     return XHR.fileDownload({
-      url: this.getUrl('shapefile' === type ? 'shp' : type),
+      url:        this.getUrl('shapefile' === type ? 'shp' : type),
+      httpMethod: "POST",
       data,
-      httpMethod: "POST"
     });
   }
 
@@ -2160,7 +2160,7 @@ class Layer extends G3WObject {
    *
    * @param bool
    */
-  setTocHighlightable(bool=false) {
+  setTocHighlightable(bool = false) {
     this.state.tochighlightable = bool;
   }
 

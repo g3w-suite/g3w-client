@@ -96,9 +96,12 @@ export default new (class QueryResultsService extends G3WObject {
           this._vectorLayers.forEach(layer => {
             const id = layer.get('id');
             // TODO: extract this into `layer.isSomething()` ?
-            if (layer.getVisible() && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)) {
+            if (
+              layer.getVisible()
+              && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)
+            ) {
               queryResponse.data[
-                '__g3w_marker' === id // keep geocoding control "marker" layer at top
+                '__g3w_marker' === id // keep geocoding control "marker" layer at the top
                 ? 'unshift'
                 : 'push'
               ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
@@ -1466,9 +1469,9 @@ export default new (class QueryResultsService extends G3WObject {
       vectorLayer.getSource().getFeatures().forEach(f => {
         let add;
         switch (filterConfig.spatialMethod) {
-          case 'intersects': add = intersects(geometry, f.getGeometry());                  break;
           case 'within':     add = within(geometry, f.getGeometry());                      break;
-          default:           add = geometry.intersectsExtent(f.getGeometry().getExtent()); break;
+          case 'intersects':
+          default:           add = intersects(geometry, f.getGeometry());                  break;
         }
         if (true === add) {
           features.push(f);
@@ -1616,7 +1619,7 @@ export default new (class QueryResultsService extends G3WObject {
      *
      * @param active
      */
-    const runDownload = async (active=false) => {
+    const runDownload = async (active = false) => {
 
       if (features.length > 1) {
         layer.downloadformats.active = active;
@@ -1624,7 +1627,7 @@ export default new (class QueryResultsService extends G3WObject {
       }
 
       await GUI.downloadWrapper(
-        ({layer, type, data}= {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
+        ({ layer, type, data } = {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
         {
           layer,
           type,

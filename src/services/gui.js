@@ -451,7 +451,7 @@ export default new (class GUI extends G3WObject {
 
       // check if data can be shown on query result content
       if (last) {
-        (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: output.add });
+        (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: !!output.add });
       }
 
       // call after is set with data
@@ -465,6 +465,8 @@ export default new (class GUI extends G3WObject {
         message:     errorToMessage(e),
         textMessage: true
       });
+      //@scince 3.11.0 emit error-output-data
+      this.emit('error-output-data', e);
       await this.closeContent();
     }
 

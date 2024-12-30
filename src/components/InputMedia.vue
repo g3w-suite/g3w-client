@@ -26,7 +26,7 @@
       </div>
       <bar-loader :loading = "loading"/>
       <g3w-media :state = "data">
-        <div class = "clearmedia" @click.stop = "clearMedia()">
+        <div class = "clearmedia" @click.stop = "clearMedia">
           <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
         </div>
       </g3w-media>
@@ -57,7 +57,7 @@
           mime_type: null
         },
         mediaid: `media_${getUniqueDomId()}`,
-        loading: false
+        loading: false,
       }
     },
     methods: {
@@ -67,6 +67,31 @@
       clearMedia() {
         this.data.value = this.data.mime_type = this.state.value = null;
         this.change();
+      },
+      setMedia() {
+        if (this.state.value) {
+          this.data.value     = this.state.value.value;
+          this.data.mime_type = this.state.value.mime_type;
+        }
+      }
+    },
+    created() {
+      this.setMedia();
+    },
+    watch: {
+      /**
+       * @since 3.11.0
+       */
+      'state.value'() {
+        this.setMedia();
+      }
+    },
+    async mounted() {
+      const fieldName = this.state.name;
+      const formData = {
+        name:                fieldName,
+        csrfmiddlewaretoken: this.$cookie.get('csrftoken')
+      }
       },
       async onChangeFile(event) {
         const body = new FormData();

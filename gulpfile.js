@@ -325,6 +325,20 @@ gulp.task('build:app', async function() {
 });
 
 /**
+ * Compile vendors
+ */
+gulp.task('vendor:js', function(done) {
+  esbuild.build({
+    entryPoints: ['src/g3w-vendors.js'],
+    bundle:      true,
+    minify:      production,
+    sourcemap:   true,
+    outfile:    `${outputFolder}/static/client/vendor.min.js`,
+  });
+  done();
+});
+
+/**
  * Deploy client and vendor images
  */
 gulp.task('images', function () {

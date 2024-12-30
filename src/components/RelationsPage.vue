@@ -103,7 +103,7 @@ export default {
       ApplicationState.download = true;
       try      {
         await XHR.fileDownload({
-          url: createRelationsUrl(Object.assign(_options, { type })),
+          url:         createRelationsUrl(Object.assign(_options, { type })),
           httpMethod: "GET",
         })
       }
