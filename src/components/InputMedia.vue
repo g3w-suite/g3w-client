@@ -24,107 +24,92 @@
           >
         </i>
       </div>
-      <bar-loader :loading = "loading"/>
-      <g3w-media :state = "data">
-        <div class = "clearmedia" @click.stop = "clearMedia">
-          <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
-        </div>
-      </g3w-media>
+        <bar-loader :loading = "loading"/>
+        <g3w-media :state = "data">
+          <div class = "clearmedia" @click.stop = "clearMedia">
+            <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
+          </div>
+        </g3w-media>
     </div>
   </baseinput>
 </template>
 
 <script>
-  import GUI                from 'services/gui';
-  import { getUniqueDomId } from 'utils/getUniqueDomId';
+import GUI                from 'services/gui';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
-  const InputMixins                 = require('gui/inputs/input');
-  const { media_field: MediaField } = require('gui/fields/fields');
+const InputMixins                 = require('gui/inputs/input');
+const { media_field: MediaField } = require('gui/fields/fields');
 
-  export default {
+export default {
 
-    /** @since 3.8.6 */
-    name: 'input-media',
+  /** @since 3.8.6 */
+  name: 'input-media',
 
-    mixins: [InputMixins],
-    components: {
+  mixins: [InputMixins],
+  components: {
       'g3w-media': MediaField
-    },
-    data() {
-      return {
-        data: {
-          value:     null,
-          mime_type: null
-        },
-        mediaid: `media_${getUniqueDomId()}`,
-        loading: false,
-      }
-    },
-    methods: {
-      onClick() {
-        document.getElementById(this.mediaid).click();
+  },
+  data() {
+    return {
+      data: {
+        value:     null,
+        mime_type: null
       },
-      clearMedia() {
-        this.data.value = this.data.mime_type = this.state.value = null;
-        this.change();
-      },
-      setMedia() {
-        if (this.state.value) {
-          this.data.value     = this.state.value.value;
-          this.data.mime_type = this.state.value.mime_type;
-        }
-      }
+      mediaid: `media_${getUniqueDomId()}`,
+      loading: false
+    }
+  },
+  methods: {
+    onClick() {
+      document.getElementById(this.mediaid).click();
     },
-    created() {
-      this.setMedia();
+    clearMedia() {
+      this.data.value = this.data.mime_type = this.state.value = null;
+      this.change();
     },
-    watch: {
-      /**
-       * @since 3.11.0
-       */
-      'state.value'() {
-        this.setMedia();
-      }
-    },
-    async mounted() {
-      const fieldName = this.state.name;
-      const formData = {
-        name:                fieldName,
-        csrfmiddlewaretoken: this.$cookie.get('csrftoken')
-      }
-      },
-      async onChangeFile(event) {
-        const body = new FormData();
-        body.append('csrfmiddlewaretoken', this.$cookie.get('csrftoken'));
-        body.append(this.state.name, event.target.files[0]);
-
-        this.loading = true;
-
-        try {
-          const response = (await (await fetch(this.state.input.options.uploadurl, {
-            method:  'POST',
-            headers: { Accept: 'application/json' },
-            body
-          })).json())[this.state.name];
-          if (response) {
-            this.data.value     = response.value;
-            this.data.mime_type = response.mime_type;
-            this.state.value    = this.data;
-            this.change();
-          }
-        } catch (e) {
-          console.warn(e);
-          GUI.notify.error(this.$t("info.server_error"));
-        }
-
-        this.loading = false;
-      },
-    },
-    created() {
+    setMedia() {
       if (this.state.value) {
-        this.data.value = this.state.value.value;
+        this.data.value     = this.state.value.value;
         this.data.mime_type = this.state.value.mime_type;
       }
     },
-  };
+    async onChangeFile(event) {
+      const body = new FormData();
+      body.append('csrfmiddlewaretoken', this.$cookie.get('csrftoken'));
+      body.append(this.state.name, event.target.files[0]);
+
+      this.loading = true;
+
+      try {
+        const response = (await (await fetch(this.state.input.options.uploadurl, {
+          method:  'POST',
+          headers: { Accept: 'application/json' },
+          body
+        })).json())[this.state.name];
+        console.log(response)
+        if (response) {
+          this.state.value = response;
+        }
+      } catch(e) {
+        console.warn(e);
+        GUI.notify.error(this.$t("info.server_error"));
+      }
+
+      this.loading = false;
+    },
+  },
+  watch: {
+    /**
+     * @since 3.11.0
+     */
+    'state.value'() {
+      this.setMedia();
+      this.change();
+    }
+  },
+  created() {
+    this.setMedia();
+  },
+};
 </script>
