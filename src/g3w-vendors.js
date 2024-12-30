@@ -158,8 +158,6 @@ globalThis.i18next           = require('i18next');
 globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
 globalThis.jqueryI18next     = require('jquery-i18next/jquery-i18next');
 globalThis.Quill             = require('quill').default;
-//@since 3.11.0 used in editing plugin to dissolve tool
-globalThis.jsts              = require('jsts/dist/jsts.min');
 
 /*!
   * HOTFIX: for invalid UMD definition
