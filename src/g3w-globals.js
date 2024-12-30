@@ -28,6 +28,8 @@ import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
+//used by editing plugin
+import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
 import { getFilterExpression }                     from "utils/getFilterExpression";
@@ -132,6 +134,7 @@ const g3wsdk = {
       convertSingleMultiGeometry,
       within,
       intersects,
+      dissolve,
       distance,
       Geometry: {
         GeometryTypes:                   G3W_CONSTANT.GEOMETRY_TYPES,
