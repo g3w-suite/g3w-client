@@ -1026,6 +1026,11 @@
     display: flex;
     flex-direction: row;
   }
+
+  .catalog-context-menu li:not(.title) {
+    align-items: center;
+  }
+
   .catalog-context-menu li i {
     padding-right: 3px;
     margin-right: 6px;
