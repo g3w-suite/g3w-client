@@ -7,7 +7,7 @@
   <div
     v-if  = "show"
     class = "tabs-wrapper">
-    <template v-for = "root_tab in root_tabs">
+    <template v-for = "(root_tab, i) in root_tabs">
 
       <template v-if = "Array.isArray(root_tab)">
 
@@ -59,6 +59,7 @@
         </div>
       </template>
       <node v-else
+        :class               = "[(i % 2 ) ? 'odd': 'even']"
         :showRelationByField = "showRelationByField"
         :handleRelation      = "handleRelation"
         :feature             = "feature"

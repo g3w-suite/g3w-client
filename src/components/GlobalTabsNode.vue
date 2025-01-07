@@ -244,9 +244,12 @@
 </script>
 
 <style scoped>
-  .tab-node{
+  .tab-node {
     min-width: 0;
     overflow: hidden;
+  }
+  .tab-node.odd {
+    background-color: var(--skin-f10);
   }
   .title {
     font-weight: bold;
