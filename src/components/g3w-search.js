@@ -229,7 +229,10 @@ async function doSearch({
 
     // parse search_1n
     if (relation) {
-      const { referencedField, referencingField } = relation.fieldRef;
+      let { referencedField, referencingField } = relation.fieldRef;
+      //@since 3.11.0 Backport old relation with relation fields not array (no multiple field)
+      referencedField  = [].concat(referencedField);
+      referencingField = [].concat(referencingField);
       parsed = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
