@@ -1554,7 +1554,6 @@ class MapService extends G3WObject {
         layer.off('loaderror', this.onLayerLoadError);
       }
     }
-    console.log(layer, options)
     layer.update(this.state, options);
     return layer;
   }
