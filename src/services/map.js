@@ -267,7 +267,7 @@ class MapService extends G3WObject {
       unwatches:    [],
     };
 
-    this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
+    this.project.onafter('setBaseLayer', () => this.updateMapLayers()); // base layer
 
     this.debounces =  {
       setupCustomMapParamsToLegendUrl: {
@@ -1537,7 +1537,7 @@ class MapService extends G3WObject {
    * @param layer
    * @param options
    */
-  updateMapLayer(layer, options = { force: false, layerId }, { showSpinner = true } = {}) {
+  updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
     // if force to add g3w_time parameter to force request of map layer from server
     if (options.force) {
       options.g3w_time = Date.now();
@@ -1554,6 +1554,7 @@ class MapService extends G3WObject {
         layer.off('loaderror', this.onLayerLoadError);
       }
     }
+    console.log(layer, options)
     layer.update(this.state, options);
     return layer;
   }
