@@ -1538,7 +1538,7 @@ class MapService extends G3WObject {
    * @param options
    * @param options.force
    * @param options.layerId in case of filtertoken change on a single layer of TOC
-   * @param showSpinner <Boolen> show or not spinner
+   * @param { Boolean } showSpinner show or not spinner
    */
   updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
     // if force to add g3w_time parameter to force request of map layer from server
@@ -1615,7 +1615,7 @@ class MapService extends G3WObject {
    * return object having current toggled control if there is a toggled mapcontrol
    */
   addInteraction(interaction, options = { active:true, close:true }) {
-    const { active=true }     = options;
+    const { active = true }   = options;
     const control             = this.getCurrentToggledMapControl();
     const toggled             = control && control.isToggled && control.isToggled() || false;
     const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
