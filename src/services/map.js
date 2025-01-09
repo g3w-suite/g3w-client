@@ -209,11 +209,11 @@ class MapService extends G3WObject {
 
       mapcenter: new ol.layer.Vector({
         source: new ol.source.Vector(),
-        style: new ol.style.Style({
+        style:  new ol.style.Style({
           image: new ol.style.Icon({
             opacity: 1,
-            src: '/static/client/images/mapcentermarker.svg',
-            scale: 0.8
+            src:     '/static/client/images/mapcentermarker.svg',
+            scale:   0.8
           }),
         })
       }),
@@ -1536,6 +1536,9 @@ class MapService extends G3WObject {
    *
    * @param layer
    * @param options
+   * @param options.force
+   * @param options.layerId in case of filtertoken change on a single layer of TOC
+   * @param showSpinner <Boolen> show or not spinner
    */
   updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
     // if force to add g3w_time parameter to force request of map layer from server
