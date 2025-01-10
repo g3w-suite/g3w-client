@@ -621,73 +621,28 @@ export class FormService extends G3WObject {
   };
 
   /**
+   * Method to get default expression of field that has no dependencies fields listen when save form
    * @returns {Promise<void>}
    *
    * @since 3.8.0
    */
   async saveDefaultExpressionFieldsNotDependencies() {
     if (0 === this.default_expression_fields_on_update.length) { return }
-
     // disable listen changeInput
     this.listenChangeInput      = false;
-    // Array contains field name already resolved with server default_expression request
-    const requested_expressions = [];
-    // array of defaultExpressionPromises request
-    const pending_expressions   = [];
 
-    // loop through default_expression_fields
-    for (let i = 0; i < this.default_expression_fields_on_update.length; i++) {
-
-      // extract all dependency fields of current field
-      const dFs = Object.keys(this.default_expression_fields_dependencies)
-        .filter(field => {
-          return (
-            // check if dependency field is field on update
-            this.default_expression_fields_on_update.find(({ name }) => name === field) &&
-            // if it has bind current field
-            this.default_expression_fields_dependencies[field].find(name => name === this.default_expression_fields_on_update[i].name)
-          )
-        });
-
-      // id current field has an Array (at least one) dependency fields
-      // need to evaluate its value and after evaluate field value expression
-      for (let i = 0; i < dFs.length; i++) {
-        // in case already done a default_expression request evaluation from server
-        if (undefined !== requested_expressions.find(name => dFs[i] === name)) {
-          continue;
-        }
-        // get value. Need to wait response
-        try {
-          const value = await getDefaultExpression({
-            field:        this._getField(dFs[i]),
+    try {
+      //@since 3.11.0 get unique field names that has dependencies from another fields
+      const fields_with_dependencies = new Set(Object.values(this.default_expression_fields_dependencies).flat());
+      await Promise.allSettled(this.default_expression_fields_on_update
+        .filter(({ name }) => !fields_with_dependencies.has(name)) //filter fields that need to be updated by default expression without dependencies
+        .map(field => getDefaultExpression({
+            field,
             feature:      this.feature,
             qgs_layer_id: this.layer.getId(),
             parentData:   this.parentData
-          });
-          // update field with evaluated value to feature
-          this.feature.set(dFs[i], value);
-          // add to array
-          requested_expressions.push(dFs[i]);
-        } catch(e) {
-          console.warn(e);
-        }
-      }
-
-    }
-
-    this.default_expression_fields_on_update.forEach(field => {
-      if (undefined === requested_expressions.find(name => field.name === name)) {
-        pending_expressions.push(getDefaultExpression({
-          field,
-          feature:      this.feature,
-          qgs_layer_id: this.layer.getId(),
-          parentData:   this.parentData
-        }))
-      }
-    });
-
-    try {
-      await Promise.allSettled(pending_expressions);
+          })
+        ))
     } catch(e) {
       console.warn(e);
     }
