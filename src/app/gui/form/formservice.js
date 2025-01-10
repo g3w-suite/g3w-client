@@ -586,7 +586,7 @@ proto.saveDefaultExpressionFieldsNotDependencies = async function() {
     const fields_with_dependencies = new Set(Object.values(this.default_expression_fields_dependencies).flat());
     await Promise.allSettled(this.default_expression_fields_on_update
       .filter(({ name }) => !fields_with_dependencies.has(name)) //filter fields that need to be updated by default expression without dependencies
-      .map(field => getDefaultExpression({
+      .map(field => FormService._getDefaultExpression({
           field,
           feature:      this.feature,
           qgs_layer_id: this.layer.getId(),
