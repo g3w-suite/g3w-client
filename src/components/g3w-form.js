@@ -308,8 +308,8 @@ export class FormService extends G3WObject {
           qgs_layer_id: this.layer.getId(),
           field:        this._getField(dependency_field),
           feature:      this.feature,
-        }))
-      )
+        })
+      ))
     }
   };
 
