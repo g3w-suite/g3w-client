@@ -203,13 +203,6 @@ export class FormService extends G3WObject {
      */
     this.default_expression_fields_on_update = [];
 
-    /**
-     * Whether to listen for changes when `saveDefaultExpressionFieldsNotDependencies` is called
-     *
-     * @since 3.8.0
-     */
-    this.listenChangeInput = true;
-
     this.setFormFields(fields);
 
     if (this.layer && options.formStructure) {
