@@ -221,15 +221,18 @@ async function doSearch({
     const relation  = features.length && ApplicationState.project.getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
     const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
 
-    // no features on result → show an empty message
-    if (search_1n && 0 === features.length) {
+    // no features on result or no relation found (@since 3.11.0) → show an empty message
+    if (search_1n && (0 === features.length || !relation)) {
       GUI.outputDataPlace(Promise.resolve({ data: [] }));
       parsed = [];
     }
 
     // parse search_1n
     if (relation) {
-      const { referencedField, referencingField } = relation.fieldRef;
+      let { referencedField, referencingField } = relation.fieldRef;
+      //@since 3.11.0 Backport old relation with relation fields not array (no multiple field)
+      referencedField  = [].concat(referencedField);
+      referencingField = [].concat(referencingField);
       parsed = await DataRouterService.getData('search:features', {
         inputs: {
           layer,

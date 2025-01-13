@@ -208,11 +208,11 @@ class MapService extends G3WObject {
 
       mapcenter: new ol.layer.Vector({
         source: new ol.source.Vector(),
-        style: new ol.style.Style({
+        style:  new ol.style.Style({
           image: new ol.style.Icon({
             opacity: 1,
-            src: '/static/client/images/mapcentermarker.svg',
-            scale: 0.8
+            src:     '/static/client/images/mapcentermarker.svg',
+            scale:   0.8
           }),
         })
       }),
@@ -266,7 +266,7 @@ class MapService extends G3WObject {
       unwatches:    [],
     };
 
-    this.project.onafter('setBaseLayer', this.updateMapLayers), // base layer
+    this.project.onafter('setBaseLayer', () => this.updateMapLayers()); // base layer
 
     this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
 
@@ -1519,8 +1519,11 @@ class MapService extends G3WObject {
    *
    * @param layer
    * @param options
+   * @param options.force
+   * @param options.layerId in case of filtertoken change on a single layer of TOC
+   * @param { Boolean } showSpinner show or not spinner
    */
-  updateMapLayer(layer, options = { force: false, layerId }, { showSpinner = true } = {}) {
+  updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
     // if force to add g3w_time parameter to force request of map layer from server
     if (options.force) {
       options.g3w_time = Date.now();
@@ -1595,7 +1598,7 @@ class MapService extends G3WObject {
    * return object having current toggled control if there is a toggled mapcontrol
    */
   addInteraction(interaction, options = { active:true, close:true }) {
-    const { active=true }     = options;
+    const { active = true }   = options;
     const control             = this.getCurrentToggledMapControl();
     const toggled             = control && control.isToggled && control.isToggled() || false;
     const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
