@@ -55,7 +55,7 @@ function FormService() {
     addActionsForForm(actions) {},
 
     postRender(element) {
-      // hook for listener to chenge DOM
+      // hook for listener to change DOM
     }
 
   };
@@ -108,7 +108,7 @@ function FormService() {
 
     /**
      * Force update state of the service
-     * (e.g., setted on a child to parent form service relation)
+     * (e.g., set on a child to parent form service relation)
      */
     this.state = {
       layerid:              layer.getId(),
@@ -148,14 +148,7 @@ function FormService() {
      * @since 3.8.0
      */
     this.default_expression_fields_on_update = []; 
-  
-    /**
-     * Wheter to listen for changes when `saveDefaultExpressionFieldsNotDependencies` is called
-     * 
-     * @since 3.8.0
-     */
-    this.listenChangeInput = true;
-  
+
     this.setFormFields(fields);
   
     if (this.layer && options.formStructure) {
@@ -176,17 +169,22 @@ proto.setReady = function(bool = false) {
 
 /**
  * Called when an input change value
- * 
+ *
  * @param input
  */
-proto.changeInput = function(input) {
-  this.feature.set(input.name, input.value);
-  if (true === this.listenChangeInput) {
-    this.evaluateFilterExpressionFields(input);
-    this.evaluateDefaultExpressionFields(input);
+proto.changeInput = async function(input) {
+  try {
+    //need to set property
+    this.feature.set(input.name, input.value);
+    await this.evaluateFilterExpressionFields(input);
+    await this.evaluateDefaultExpressionFields(input);
     this.isValid(input);
     this.isUpdated(input);
+  } catch(e) {
+    console.warn(e);
   }
+  //emit event changeInput
+  this.emit('changeInput', input);
 };
 
 /**
@@ -222,18 +220,19 @@ proto.setUpdate = function(bool = false, options = {}) {
  * Evaluate filter expression
  * 
  * @param input
+ * @return Promise
  */
 proto.evaluateDefaultExpressionFields = function(input = {}) {
   const filter = this.default_expression_fields_dependencies[input.name];
   if (filter) {
-    filter.forEach(dependency_field => {
+    return Promise.allSettled(filter.forEach(dependency_field =>
       FormService._getDefaultExpression({
         parentData:   this.parentData,
         qgs_layer_id: this.layer.getId(),
         field:        this._getField(dependency_field),
         feature:      this.feature,
       })
-    })
+    ))
   }
 };
 
@@ -241,20 +240,21 @@ proto.evaluateDefaultExpressionFields = function(input = {}) {
  * Evaluate filter expression fields
  * 
  * @param input
+ * @return Promise
  */
 proto.evaluateFilterExpressionFields = function(input = {}) {
   const filter = this.filter_expression_fields_dependencies[input.name];
   if (filter) {
     // on form service inititalization `filter_expression` option has
     // `referencing_fields` or `referenced_columns` from another layer
-    filter.forEach(dependency_field => {
+    return Promise.allSettled(filter.forEach(dependency_field =>
       FormService._getFilterExpression({
         parentData:   this.parentData,
         qgs_layer_id: this.layer.getId(),
         field:        this._getField(dependency_field),
         feature:      this.feature,
       })
-    })
+    ))
   }
 };
 
@@ -578,27 +578,42 @@ proto.clearAll = function() {
  */
 proto.saveDefaultExpressionFieldsNotDependencies = async function() {
   if (0 === this.default_expression_fields_on_update.length) { return }
-  // disable listen changeInput
-  this.listenChangeInput      = false;
 
   try {
     //@since 3.11.0 get unique field names that has dependencies from another fields
     const fields_with_dependencies = new Set(Object.values(this.default_expression_fields_dependencies).flat());
-    await Promise.allSettled(this.default_expression_fields_on_update
-      .filter(({ name }) => !fields_with_dependencies.has(name)) //filter fields that need to be updated by default expression without dependencies
-      .map(field => FormService._getDefaultExpression({
-          field,
-          feature:      this.feature,
-          qgs_layer_id: this.layer.getId(),
-          parentData:   this.parentData
+    //get all fields with default expression without dependencies
+    const fields_without_dependencies = this.default_expression_fields_on_update
+      .filter(({ name }) => !fields_with_dependencies.has(name))
+    //set property value of field by default expression result from server
+    await Promise.allSettled(fields_without_dependencies
+      .map(field => new Promise(async (resolve, reject) => {
+          try {
+            //get current value of field
+            const cvalue = field.value;
+            //get value after calculate default expression from server
+            const value = await FormService._getDefaultExpression({
+              field,
+              feature:      this.feature,
+              qgs_layer_id: this.layer.getId(),
+              parentData:   this.parentData
+            });
+            //check if changed
+            if (cvalue !== value) {
+              //wait until changeInput method is resolved
+              await new Promise((resolve) => this.once('changeInput', resolve))
+            }
+            resolve();
+          } catch(e) {
+            console.warn(e);
+            reject();
+          }
         })
-      ))
+      )
+    )
   } catch(e) {
     console.warn(e);
   }
-
-  // enable listen changeInput
-  this.listenChangeInput = true;
 
 };
 
