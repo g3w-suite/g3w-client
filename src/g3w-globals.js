@@ -84,7 +84,6 @@ import { throttle }                                from 'utils/throttle';
 import { debounce }                                from 'utils/debounce';
 import { XHR }                                     from 'utils/XHR';
 import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
-import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 
@@ -144,7 +143,12 @@ const g3wsdk = {
       throttle,
       debounce,
       toRawType,
-      colorHEXToRGB,
+      /** used by the following plugins: "openrouteservice" */
+      colorHEXToRGB: (color='#FFFFFF') => ([
+        parseInt(color.substr(1,2), 16),
+        parseInt(color.substr(3,2), 16),
+        parseInt(color.substr(5,2), 16)
+      ]),
       createFilterFormInputs,
       noop,
     },

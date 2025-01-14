@@ -14,7 +14,6 @@ import ApplicationState          from 'store/application';
 import DataRouterService         from 'services/data';
 import GUI                       from 'services/gui';
 import G3WObject                 from 'g3w-object';
-import { parseAttributes }       from 'utils/parseAttributes';
 import { promisify, $promisify } from 'utils/promisify';
 import { downloadFile }          from 'utils/downloadFile';
 import { XHR }                   from 'utils/XHR';
@@ -1718,10 +1717,19 @@ class Layer extends G3WObject {
             filtertoken: ApplicationState.tokens.filtertoken
           })
       );
-      const features = response.data.features && response.data.features || [];
+
+      const features          = response.data.features && response.data.features || [];
+      const layerAttributes   = this.getAttributes() || [];
+      const featureAttributes = (features.length ? features[0].properties : []);
+
       return {
-        headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
         features,
+        headers: (layerAttributes && layerAttributes.length > 0)
+        ? layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
+        : Object
+            .keys(featureAttributes)
+            .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
+            .map(name => ({ name, label: name })),
         title: this.getTitle(),
         count: response.count
       };
