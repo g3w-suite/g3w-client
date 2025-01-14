@@ -9,7 +9,7 @@
     <!-- SEARCH LAYER -->
     <div
       id    = "query_builder_layers"
-      class = "margin-between-element">
+      class = "mb-5">
       <label
         class = "querybuilder-title"
         v-t   = "'sdk.querybuilder.panel.expression'">
@@ -67,7 +67,7 @@
     <label v-t = "'sdk.querybuilder.panel.fields'"></label>
 
     <!-- SEARCH FIELDS -->
-    <select ref = "search_fields" size = "4" class = "margin-between-element">
+    <select ref = "search_fields" size = "4" class = "mb-5">
       <option selected hidden></option>
       <option
         v-for     = "field in fields"
@@ -77,7 +77,7 @@
     </select>
 
     <!-- SEARCH OPERATORS -->
-    <div class = "content-wrap margin-between-element">
+    <div class = "content-wrap mb-5">
       <button
         v-for  = "operator in operators"
         @click = "addToExpression({ value: operator, type: 'operator' })"
@@ -89,7 +89,7 @@
     <bar-loader :loading = "loading.values" />
 
     <!-- SEARCH VALUES -->
-    <select v-if = "!manual" ref = "search_values" size = "4" class = "margin-between-element">
+    <select v-if = "!manual" ref = "search_values" size = "4" class = "mb-5">
       <option selected hidden></option>
       <option
         v-for     = "[key, value] in values"
@@ -416,7 +416,7 @@ option:nth-of-type(2n+1) {
   justify-content: flex-end;
   margin-top: 5px;
 }
-.margin-between-element {
+.mb-5 {
   margin-bottom: 5px;
 }
 #query_builder_expression_content {
