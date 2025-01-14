@@ -33,7 +33,6 @@ import RelationComponent                        from 'components/Relation.vue';
 import DataRouterService                        from 'services/data';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { XHR }                                  from 'utils/XHR';
-import { createSingleFieldParameter }           from 'utils/createSingleFieldParameter';
 import { createRelationsUrl }                   from 'utils/createRelationsUrl';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
@@ -150,7 +149,7 @@ export default {
         const { data } = await DataRouterService.getData('search:features', {
           inputs: {
             layer:     getCatalogLayerById(referencedLayer),
-            filter:    `${createSingleFieldParameter({ field: referencedField, value: values, logicop: 'OR' })}`,
+            filter:    values.map(v => `${referencedField}|eq|${encodeURIComponent(v)}`).join(`|OR,`),
             formatter: 1, // set formatter to
           },
           outputs: null

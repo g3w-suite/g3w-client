@@ -185,7 +185,6 @@
   }                                            from 'g3w-constants';
   import ApplicationState                      from 'store/application';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
-  import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import resizeMixin                           from 'mixins/resize';
   import { t }                                 from 'g3w-i18n';
@@ -300,7 +299,9 @@
             const filter = getDataForSearchInput.field({
               state,
               field,
-              fields: [SEARCH_ALLVALUE, undefined].includes(value) ? [] : [createSingleFieldParameter({ field, value, operator: input.operator })]
+              fields: [SEARCH_ALLVALUE, undefined].includes(value)
+                ? []
+                : [[].concat(value).map(v => `${field}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|OR,`)]
             });
 
             const cached = d.dvalues[filter];

@@ -1,6 +1,4 @@
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
-
 
 const Service = require('gui/inputs/service');
 
@@ -73,7 +71,7 @@ module.exports = class SelectService extends Service {
       this._layer.getDataTable({
         [ Array.isArray(search) ? 'field' : 'suggest' ] : Array.isArray(search) //take in account multiselect value
           ? search
-            .map((_, j) => createSingleFieldParameter({ field: key, value: search[j], operator: "eq", logicop: null }))
+            .map((_, j) => [].concat(search[j]).map(v => `${key}|eq|${encodeURIComponent(v)}`).join(`|null,`))
             .join('|OR,') || ''
           : `${key}|${search}`.trim(),
         ordering: this.state.input.options.orderbyvalue ? value : key, //@since 3.11.0

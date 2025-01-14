@@ -82,7 +82,6 @@
     selectMixin,
     select2Mixin
   }                                     from 'mixins';
-  import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
   const PickLayerInputService           = require('gui/inputs/picklayer/service');
@@ -90,6 +89,10 @@
   const InputMixin                      = require('gui/inputs/input');
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
+
+  function createSingleFieldParameter({ field, value, operator='eq', logicop='OR' }) {
+    return [].concat(value).map(v => `${field}|${operator.toLowerCase()}|${encodeURIComponent(v)}`).join(`|${logicop},`);
+  }
 
   export default {
 

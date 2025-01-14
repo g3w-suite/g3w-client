@@ -10,7 +10,6 @@ import ApplicationState               from 'store/application'
 import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
-import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 
 /**
@@ -335,11 +334,10 @@ class BaseIframeService extends G3WObject {
     layer,
     feature,
   }) {
-    const { field, value }  = feature;
-    const { data = [] }     = await DataRouterService.getData('search:features', {
+    const { data = [] } = await DataRouterService.getData('search:features', {
       inputs: {
         layer,
-        filter: createSingleFieldParameter({ field, value, operator: 'eq' })
+        filter: [].concat(feature.value).map(v => `${feature.field}|eq|${encodeURIComponent(v)}`).join('|OR,')
       },
       outputs: false
     });
