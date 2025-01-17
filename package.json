@@ -4,7 +4,7 @@
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
+    "preinstall": "",
     "build": "gulp version && gulp build",
     "dev": "gulp dev",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
@@ -34,7 +34,6 @@
     "datatables.net-dt": "^1.10.16",
     "eonasdan-bootstrap-datetimepicker": "^4.17.49",
     "i18next": "^18.0.1",
-    "i18next-http-backend": "^3.0.1",
     "ismobilejs": "^1.1.1",
     "jquery": "^2.2.1",
     "jsts": "^2.11.3",
@@ -57,9 +56,6 @@
     "vue2-teleport": "^1.1.4",
     "wolfy87-eventemitter": "^5.2.9"
   },
-  "overrides": {
-    "graceful-fs": "^4.2.10"
-  },
   "devDependencies": {
     "del": "^2.2.2",
     "esbuild": "^0.24.0",
@@ -73,7 +69,6 @@
     "uglify-js": "^2.6.2",
     "vue-template-compiler": "2.7.16"
   },
-  "browserslist": "defaults",
   "engines": {
     "node": ">=16.15.0",
     "npm": ">=8.5.5"

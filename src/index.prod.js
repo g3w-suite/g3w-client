@@ -58,7 +58,6 @@ import { getProject }              from 'utils/getProject';
 
 // Internationalization
 import { addI18n, t, tPlugin, i18next } from 'g3w-i18n';
-import i18nextHttpBackend               from 'i18next-http-backend';
 
 Object
   .entries({
@@ -278,7 +277,6 @@ ApplicationState.language = initConfig.user.i18n || 'en';
 (initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
 
 i18next
-  .use(i18nextHttpBackend)
   .init({
       lng:         initConfig.user.i18n,
       ns:          'app',
