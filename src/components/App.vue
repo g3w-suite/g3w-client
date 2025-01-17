@@ -1100,8 +1100,8 @@ export default {
 <style scoped>
   .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
   .project_title > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
-  .project_title .h2 { font-size: 1.6em; }
-  .project_title h1  { font-size: 1.3em; }
+  .project_title .h2 { font-size: 1.5em; }
+  .project_title h1  { font-size: 1.2em; padding-bottom: 5px; }
 
   #g3w-sidebarpanel-header-placeholder {
     overflow: hidden;
