@@ -285,7 +285,8 @@
         // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
         this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
 
-        const downloadformats = layer.getDownloadableFormats();
+        //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
+        const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
 
         /** @FIXME add description */
         if (downloadformats.length > 0) {
