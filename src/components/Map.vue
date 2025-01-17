@@ -325,7 +325,7 @@ export default {
 #permalink {
   font-weight: bold;
   font-size: 1.2em;
-  padding: 5px;
+  padding: 8px 5px 0 5px;
   cursor: pointer;
   background-color: #eee;
 }
@@ -337,7 +337,7 @@ export default {
   cursor: pointer;
 }
 #switch-mouse-coordinate span {
-  padding: 3px;
+  padding: 3px 5px 0 3px;
 }
 #map_footer_right {
   flex-shrink: 0;
