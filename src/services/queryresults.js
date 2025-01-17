@@ -21,7 +21,7 @@ import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPrope
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { printAtlas }                           from 'utils/printAtlas';
-import { downloadFile }                         from 'utils/downloadFile';
+import { saveBlob }                             from 'utils/saveBlob';
 import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { copyUrl }                              from 'utils/copyUrl';
@@ -1489,18 +1489,37 @@ export default new (class QueryResultsService extends G3WObject {
   /**
    *  @FIXME add description
    */
-  _printSingleAtlas({
+  async _printSingleAtlas({
     atlas    = {},
     features = [],
   } = {}) {
-    let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
-    return printAtlas({
+    let field = atlas.atlas?.field_name || '$id';
+
+    const { url } = await printAtlas({
       field,
       values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
       template: atlas.name,
       download: true
-    })
-    .then(({ url }) => GUI.downloadWrapper(downloadFile, { url, filename: atlas.name, mime_type: 'application/pdf' }));
+    });
+
+    GUI.setLoadingContent(true);
+
+    try {
+      const response = url && await fetch(url);
+
+      if (!response?.ok) {
+        throw (await response.json()).message;
+      }
+
+      saveBlob(await response.blob(), atlas.name || (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(1));
+    } catch(e) {
+      GUI.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
+    }
+
+    ApplicationState.download = true;
+    ApplicationState.download = false;
+
+    GUI.setLoadingContent(false);
   }
 
   /**

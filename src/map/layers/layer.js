@@ -15,7 +15,7 @@ import DataRouterService         from 'services/data';
 import GUI                       from 'services/gui';
 import G3WObject                 from 'g3w-object';
 import { promisify, $promisify } from 'utils/promisify';
-import { downloadFile }          from 'utils/downloadFile';
+import { saveBlob }              from 'utils/saveBlob';
 import { XHR }                   from 'utils/XHR';
 import { prompt }                from 'utils/prompt';
 import Table                     from 'components/Table.vue';
@@ -829,24 +829,37 @@ class Layer extends G3WObject {
   /** 
    * @returns { Promise }
    */
-  getDownloadFilefromDownloadDataType(type, { data = {} }) {
+  async getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
 
-    if ('pdf' === type) {
-      return downloadFile({
-        url:        this.getUrl('pdf'),
-        headers:    { 'Content-Type': 'application/json; charset=utf-8' },
-        data:       JSON.stringify(data),
-        mime_type: 'application/pdf',
-        method:    'POST'
-      });
+    let url, response;
+    switch(type) {
+      case 'pdf':
+        url       = this.getUrl('pdf');
+        response  = url && await fetch(url, {
+          body:    JSON.stringify(data),
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Expose-Headers': 'Content-Disposition' },
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+        break;
+      default:
+        url       = this.getUrl('shapefile' === type ? 'shp' : type);
+        response  = url && await fetch(url, {
+          body:     Object.keys(data || {}).reduce((a, k) => { a.append(k, data[k]); return a; }, new FormData()),
+          method:  'POST',
+          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+        break;
     }
 
-    return XHR.fileDownload({
-      url:        this.getUrl('shapefile' === type ? 'shp' : type),
-      httpMethod: "POST",
-      data,
-    });
+    if (!response?.ok) {
+      throw (await response.json()).message;
+    }
+
+    saveBlob(await response.blob(), response.headers.get('content-disposition'));
+
   }
 
   getGeoTIFF({ data = {} } = {}) { return this.getDownloadFilefromDownloadDataType('geotiff',   { data }); }

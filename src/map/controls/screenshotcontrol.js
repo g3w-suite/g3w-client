@@ -2,10 +2,9 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/screenshotcontrol.js@v3.10.2
  * @since 3.11.0
  */
-import saveAs                   from 'file-saver/dist/FileSaver';
-
 import ApplicationState         from 'store/application';
 import GUI                      from 'services/gui';
+import { saveBlob }             from 'utils/saveBlob';
 import { sameOrigin }           from 'utils/sameOrigin';
 import InteractionControl       from 'map/controls/interactioncontrol';
 
@@ -80,23 +79,18 @@ export class ScreenshotControl extends InteractionControl {
           ApplicationState.download = true;
           e.target.disabled = true;
           try {
-            const blobImage = await map.createMapImage();
+            const blob = 'screenshot' === this.type
+              ? await map.createMapImage()                                                              // PNG
+              : await (await fetch(`/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`, { // GeoTIFF
+                  method: 'POST',
+                  body: Object.entries({
+                    image:               await map.createMapImage(),
+                    csrfmiddlewaretoken: map.getCookie('csrftoken'),
+                    bbox:                map.getMapBBOX().toString(),
+                  }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
+                })).blob();
 
-            if ('screenshot' === this.type) {                   // PNG
-              saveAs(blobImage, `map_${Date.now()}.png`);
-            } else {                                            // GeoTIFF
-              const body = new FormData();
-              body.append('image',               blobImage);
-              body.append('csrfmiddlewaretoken', map.getCookie('csrftoken'));
-              body.append('bbox',                map.getMapBBOX().toString());
-              saveAs(
-                await (await fetch(
-                  `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
-                  { method: 'POST', body }
-                )).blob(),
-                `map_${Date.now()}.tif`
-              );
-            }
+            saveBlob(blob, `map_${Date.now()}`);
           } catch (e) {
             GUI.showUserMessage({
               type:    'SecurityError' === e.name ? 'warning' : 'alert',

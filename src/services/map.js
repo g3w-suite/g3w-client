@@ -864,12 +864,11 @@ class MapService extends G3WObject {
   /**
    * Used by the following plugins: "cdu", "archiweb"
    */
-  createMapImage({map, background} = {}) {
+  createMapImage({ map } = {}) {
     return new Promise((resolve, reject) => {
       try {
         const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
-        if (navigator.msSaveBlob) { resolve(canvas.msToBlob()) }
-        else { canvas.toBlob(blob => resolve(blob)) }
+        canvas.toBlob(blob => resolve(blob));
       } catch(e) {
         console.warn(e);
         reject(e);

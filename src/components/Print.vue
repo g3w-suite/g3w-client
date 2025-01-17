@@ -175,7 +175,7 @@ import ApplicationState             from 'store/application';
 import GUI                          from 'services/gui';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
-import { downloadFile }             from 'utils/downloadFile';
+import { saveBlob }                 from 'utils/saveBlob';
 import { printAtlas }               from 'utils/printAtlas';
 import { promisify }                from 'utils/promisify';
 import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
@@ -458,16 +458,21 @@ export default {
         // ATLAS PRINT
         if (has_atlas) {
           ApplicationState.download = true;
-          await downloadFile({
-            url: (await printAtlas({
-              template: this.state.template,
-              field:    this.state.atlas.field_name || '$id',
-              values:   this.atlas_values,
-              download: true
-            })).url,
-            filename: this.state.template,
-            mime_type: 'application/pdf'
+
+          const { url } = await printAtlas({
+            template: this.state.template,
+            field:    this.state.atlas.field_name || '$id',
+            values:   this.atlas_values,
+            download: true
           });
+
+          const response = url && await fetch(url);
+
+          if (!response?.ok) {
+            throw (await response.json()).message;
+          }
+
+          saveBlob(await response.blob(), this.state.template);
         }
 
         // SIMPLE PRINT
