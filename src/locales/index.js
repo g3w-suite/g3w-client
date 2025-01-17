@@ -6,6 +6,7 @@ import fr from './fr';
 import de from './de';
 import ro from './ro';
 import pl from './pl';
+import pl from './pt';
 
 const translations = {
   it,
@@ -16,6 +17,7 @@ const translations = {
   de,
   ro,
   pl,
+  pt
 };
 
 export default translations;
