@@ -362,10 +362,9 @@ export default {
           return;
         }
         try {
-          const deleted = (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
+          const deleted = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
             method: 'DELETE',
-            body:   JSON.stringify({}),
-          })).json()
+          })).json();
           if (deleted.result) {
             this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
             // show a success message to user
