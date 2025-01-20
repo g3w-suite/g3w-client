@@ -35,7 +35,6 @@ import * as sphere          from 'ol/sphere';
 import * as style           from 'ol/style';
 import * as tilegrid        from 'ol/tilegrid';
 import * as xml             from 'ol/xml';
-import RotateFeature        from 'ol-rotate-feature/dist/bundle.es';
 
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
@@ -145,7 +144,7 @@ globalThis.ol = Object.assign({}, ol, {
   format:      Object.assign({}, format,      { filter }),
   geom:        Object.assign({}, geom,        { Polygon: Object.assign(geom.Polygon, Polygon) }),
   has,
-  interaction: Object.assign({}, interaction, { RotateFeature }),
+  interaction,
   layer,
   loadingstrategy,
   proj:        Object.assign({}, proj,        { proj4: proj4ol, projections, Units, }),
