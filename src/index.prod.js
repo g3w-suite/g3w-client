@@ -40,11 +40,9 @@ import Divider                     from 'components/GlobalDivider.vue';
 
 // directives
 import vDisabled                   from 'directives/v-disabled';
-import vChecked                    from 'directives/v-checked';
 import vSelect2                    from 'directives/v-select2';
 import vTToltip                    from 'directives/v-t-tooltip';
 import vTHtml                      from 'directives/v-t-html';
-import vTTitle                     from 'directives/v-t-title';
 import vT                          from "directives/v-t";
 import vTPlugin                    from 'directives/v-t-plugin';
 import vDownload                   from 'directives/v-download';
@@ -108,11 +106,9 @@ Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
 Vue.directive("disabled", vDisabled);
-Vue.directive("checked", vChecked);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
 Vue.directive('t-html', vTHtml);
-Vue.directive('t-title', vTTitle);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
 Vue.directive("download", vDownload);
