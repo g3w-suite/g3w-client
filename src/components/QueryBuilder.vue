@@ -122,6 +122,7 @@ import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
+import { prompt }                  from 'utils/prompt';
 import { t }                       from 'g3w-i18n';
 
 export default {
@@ -264,7 +265,11 @@ export default {
           layerId:   this.currentlayer.id,
           filter:    this.filter,
           layerName: getCatalogLayerById(this.currentlayer.id).getName(),
-          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.prompt(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
+          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => prompt({
+            label: t('sdk.querybuilder.additem'),
+            value: '',
+            callback: d => d ? res(d) : rej()
+          }))),
           id:        edit_id || getUniqueDomId(),
         };
 
