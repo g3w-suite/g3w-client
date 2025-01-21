@@ -722,8 +722,8 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
  * 5. Viewport
  **************************************************************************************/
 
-#application-notifications                                                       { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 1; font-size: 25px; }
-#application-notifications > div                                                 { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; padding: 5px; background-color: #FFF; border-radius: 3px; }
+#application-notifications                                                       { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 1; font-size: 25px; pointer-events: none; }
+#application-notifications > div                                                 { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; background-color: #FFF; border-radius: 3px; }
 .g3w-view.map                                                                    { line-height: normal; display:inline-block; height:0; width:0; position: relative; }
 .g3w-view.map #resize-map-and-content                                            { position: absolute; z-index:4; user-select: none; }
 .g3w-view.map #resize-map-and-content:hover                                      { background-color: #ccc !important; }

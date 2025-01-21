@@ -345,24 +345,22 @@
         ></div>
 
         <div id="application-notifications">
-          <div id = "offline_notification"
-            :class = "{ 'g3w-hide': app.online }"
-            style = "color: #999"
-          >
+          <!-- OFFLINE -->
+          <div :class = "{ 'g3w-hide': app.online }" style = "color: #999">
             <i :class = "$fa('wifi')"></i>
-            <div style = "font-weight: bold; font-size:0.4em">offline</div>
+            <b style = "font-size: 0.4em">offline</b>
           </div>
-          <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
-            <bar-loader :loading = "true"/>
+          <!-- DOWNLOAD -->
+          <div :class = "{ 'skin-color': true, 'g3w-hide': !app.download }">
+            <bar-loader :loading = "true" />
             <i style = "padding:3px" :class = "$fa('download')"></i>
+            <b style = "font-size: 0.35em">download</b>
           </div>
-          <div
-            id     = "plugins_notification"
-            :class = "{ 'g3w-hide': 0 === app.plugins.length }"
-            style  = "color: #994b10"
-          >
-            <bar-loader :loading = "true"/>
-            <i :class = "$fa('plugin')"></i>
+          <!-- PLUGINS -->
+          <div :class = "{ 'g3w-hide': 0 === app.plugins.length }" style = "color: #994b10">
+            <bar-loader :loading = "true" />
+            <i :class = "$fa('tools')"></i>
+            <b style = "font-size: 0.4em">plugins</b>
           </div>
         </div>
 
