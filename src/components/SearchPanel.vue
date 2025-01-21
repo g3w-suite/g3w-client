@@ -250,7 +250,7 @@
        * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
        */
       getLabelOperator(operator) {
-        return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
+        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`
       },
 
       async onFocus(e) {
@@ -601,5 +601,8 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
+  }
+  .search-label .skin-color {
+    font-family: monospace;
   }
 </style>
