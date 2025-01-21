@@ -165,7 +165,7 @@ import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { t }                       from 'g3w-i18n';
 
 function toOLGeom(geom) {
-  return new Object.values({
+  return new (Object.entries({
     'MultiPolygon': ol.geom.MultiPolygon,
     'MultiLine':    ol.geom.MultiLineString,
     'MultiPoint':   ol.geom.MultiPoint,
@@ -173,7 +173,7 @@ function toOLGeom(geom) {
     'Line':         ol.geom.LineString,
     'Point':        ol.geom.Point,
     '':             ol.geom.Point, // fallback
-  }).find(o => geom.type.startsWith(o[0]))[1](geom.coordinates);
+  }).find(o => geom.type.startsWith(o[0])))[1](geom.coordinates);
 }
 
 function _createFeatureForSelection(f) {
