@@ -6,7 +6,7 @@ export default {
       f5: "Pressione Ctrl+F5"
     },
     cookie_law: {
-      message: "Este site usa cookies para garantir que obtenha a melhor experiência de uso.",
+      message: "Esta página utiliza cookies para garantir que obtenha a melhor experiência de uso.",
       buttonText: "OK!"
     },
     default:"predefinido",
@@ -60,12 +60,12 @@ export default {
         layer_not_querable: "Camada não é consultável (query)",
         autocomplete: {
           inputshort: {
-            pre: "Please enter",
-            post: "or more characters"
+            pre: "Inserir",
+            post: "ou mais carateres"
           }
         },
-        help_filter : "Search values are limited based on the active filter. Remove the filter to search all data.",
-        autofilter: "Filter results"
+        help_filter : "Os valores de pesquisa são limitados com base no filtro ativo. Remova o filtro para pesquisar todos os dados.",
+        autofilter: "Filtrar resultados"
 
 },
       print: {
@@ -115,17 +115,17 @@ export default {
           operators: 'OPERADORES',
           expression: 'EXPRESSÃO'
         },
-        error_run: 'An error occurs. Please check the query',
-        error_test: "An error occur during query execution",
-        delete: 'Do you want delete it?',
-        additem: 'Insert the name of the new search'
+        error_run: 'Ocorreu um erro. Verifique a consulta',
+        error_test: "Oorreu um erro durante a execução da consulta",
+        delete: 'Pretende eliminar?',
+        additem: 'Insira o nome da nova pesquisa'
       },
       errors: {
         layers: {
-          load: "Some layers are not available"
+          load: "Algumas camadas não estão disponíveis"
         },
-        unsupported_format: 'Not supported format',
-        add_external_layer: 'Load layer error'
+        unsupported_format: 'Formato não suportado',
+        add_external_layer: 'Erro de carregamento de camada'
       },
       metadata: {
         title: 'Metadados',
@@ -133,25 +133,25 @@ export default {
           general: {
             title: 'GERAL',
             fields: {
-              title: 'TITLE',
-              name: 'NAME',
-              description: "DESCRIPTION",
-              abstract: "ABSTRACT",
-              keywords: 'KEYWORDS',
-              fees: "FEES",
-              accessconstraints: "ACCESS CONSTRAINT",
-              contactinformation: "CONTACTS",
+              title: 'TÍTULO',
+              name: 'NOME',
+              description: "DESCRIÇÃO",
+              abstract: "RESUMO",
+              keywords: 'PALAVRAS CHAVE',
+              fees: "TAXAS",
+              accessconstraints: "RESTRIÇÃO DE ACESSO",
+              contactinformation: "CONTATOS",
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'References',
-                  contactvoicetelephone: 'Phone',
-                  contactorganization: 'Organization',
-                  ContactOrganization: 'Organization',
-                  contactposition: 'Position',
-                  ContactPosition: 'Position',
-                  contactperson: 'Person',
-                  ContactPerson: 'Person'
+                  personprimary: 'Referencias',
+                  contactvoicetelephone: 'Telefone',
+                  contactorganization: 'Organização',
+                  ContactOrganization: 'Organização',
+                  contactposition: 'Cargo',
+                  ContactPosition: 'Cargo',
+                  contactperson: 'Pessoa',
+                  ContactPerson: 'Pessoa'
                 }
               },
               wms_url: "WMS"
@@ -171,21 +171,21 @@ export default {
               subfields: {
                 crs: 'EPSG',
                 bbox: 'BBOX',
-                title: "TITLE",
-                name: 'NAME',
-                geometrytype: 'GEOMETRY',
-                source: 'SOURCE',
-                attributes: 'ATTRIBUTES',
-                abstract: 'ABSTRACT',
-                attribution: 'ATTRIBUTION',
-                keywords: "PAROLE CHIAVE",
-                metadataurl:'METADATA URL',
-                dataurl: "DATA URL"
+                title: "TÍTULO",
+                name: 'NOME',
+                geometrytype: 'GEOMETRIA',
+                source: 'FONTE',
+                attributes: 'ATRIBUTOS',
+                abstract: 'RESUMO',
+                attribution: 'ATRIBUIÇÃO',
+                keywords: "PALAVRA CHAVE",
+                metadataurl:'ENDEREÇO METADADOS',
+                dataurl: "ENDEREÇO DADOS"
               }
             },
             groups : {
-              general: 'GENERAL',
-              spatial: 'SPATIAL'
+              general: 'GERAL',
+              spatial: 'ESPACIAL'
             }
           },
           credits: {
@@ -195,9 +195,9 @@ export default {
       },
       tooltips: {
         relations: {
-          form_to_row: "Row View",
-          row_to_form: "Form View",
-          zoomtogeometry: "Zoom to Geometry",
+          form_to_row: "Vista de tabela",
+          row_to_form: "Vista de Formulário",
+          zoomtogeometry: "Aproximar à Geometria",
         },
         copy_map_extent_url: 'Copiar URL partilhável',
         download_shapefile: "Descarregar Shapefile",
@@ -218,7 +218,7 @@ export default {
               hint: "Adicionar/Remover Seleção"
             },
             zoom_to_features_extent:{
-              hint: "Zoom to features extent"
+              hint: "Aproximar à extensão da camada"
             },
             add_features_to_results: {
               hint: "Adicionar/Remover camadas aos resultados"
@@ -236,40 +236,40 @@ export default {
               hint: "Mostrar gráfico das relações"
             },
             download_features_shapefile:{
-              hint: 'Download features Shapefile'
+              hint: 'Descarregar camadas para Shapefile'
             },
             download_shapefile: {
-              hint: 'Download feature Shapefile'
+              hint: 'Descarregar camada para Shapefile'
             },
             download_features_gpx: {
-              hint: "Download feature GPX"
+              hint: "Descarregar camadas para GPX"
             },
             download_features_gpkg: {
-              hint: "Download features GPKG"
+              hint: "Descarregar camadas para GPKG"
             },
             download_gpx: {
-              hint: "Download feature GPX"
+              hint: "Descarregar camada para GPX"
             },
             download_gpkg: {
-              hint: "Download feature GPKG"
+              hint: "Descarregar camada para GPKG"
             },
             download_features_csv: {
-              hint: "Download features CSV"
+              hint: "Descarregar camadas para CSV"
             },
             download_csv: {
-              hint: "Download feature CSV"
+              hint: "Descarregar camada para CSV"
             },
             download_features_xls: {
-              hint: "Download features XLS"
+              hint: "Descarregar camadas para para XLS"
             },
             download_xls: {
-              hint: "Download feature XLS"
+              hint: "Descarregar camada para XLS"
             },
             download_pdf: {
-              hint: "Download feature PDF"
+              hint: "Descarregar camada para PDF"
             },
             atlas: {
-              hint: "Print Atlas"
+              hint: "Imprimir Atlas"
             },
             copy_zoom_to_fid_url: {
               hint: "Compartilhar link",
@@ -278,73 +278,73 @@ export default {
           }
         },
         queryby: {
-          title: 'Query area',
-          layer: 'Selected layer:',
-          none: 'NONE',
-          new: 'TEMPORARY LAYER',
-          all: 'ALL',
+          title: 'Consultar área',
+          layer: 'Selecionar camadas:',
+          none: 'NENHUM',
+          new: 'CAMADA TEMPORÁRIA',
+          all: 'TODOS',
           methods: {
-            intersects: 'intersects',
-            within: 'within'
+            intersects: 'interseção',
+            within: 'dentro de'
           },
           querybypolygon: {
-            tooltip: 'select a polygon'
+            tooltip: 'selecione um polígono'
           },
           querybydrawpolygon: {
-            tooltip: 'draw a polygon'
+            tooltip: 'desenhe um polígono'
           },
           querybbox: {
-            tooltip: 'draw a rectangle'
+            tooltip: 'desenhe um retangulo'
           },
           querybycircle: {
-            tooltip: 'draw a circle'
+            tooltip: 'desenhe um círculo'
           }
         },
         querybypolygon: {
           download: {
-            title: "Attributes download",
+            title: "Descarregar atributos",
             choiches:{
               feature: {
-                label:"Features only",
+                label:"Apenas geometrias",
               },
               feature_polygon: {
-                label:"Features+Query Polygon",
+                label:"Consultar Camadas+Polígono",
               }
             }
           },
-          tooltip: 'Query By Polygon',
-          no_geometry: 'No geometry on response',
+          tooltip: 'Consultar por Polígono',
+          no_geometry: 'Resposta sem geometrias',
           help: {
-            message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
+            message: "<ul><li>Selecione uma camada (ativa).</li><li>Clique sobre uma geometria no mapa.</li></ul>"
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon ",
+          tooltip: "Desenhe um polígono para consultar ",
           help: {
-            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers (underlined in yellow in legend)</li></ul>"
+            message: "<ul><li>Clique sobre o mapa para adicionar um novo vértice </li><li>Duplo clique para finalizar e inquirir camadas (sublinhado a amarelo na legenda)</li></ul>"
           }
         },
         querybbox: {
-          tooltip: 'Query BBox layer',
-          nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
+          tooltip: 'Consultar camada com retangulo',
+          nolayers_visible: 'Nenhuma camada consultável visivel. Defina pelo menos uma camada wfs visivel para executar a consulta',
           help: {
-            message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
+            message: "<ul><li>Arraste o rato para desenhar um retangulo e consultar as camadas. (sublinhado a amarelo na legenda)</li></ul>"
           }
         },
         querybycircle: {
-          tooltip: "Query by Draw Circle ",
-          label: 'Radius',
+          tooltip: "Consultar camada com circulo ",
+          label: 'Raio',
           help: {
-            message: "<ul><li>Click on map to draw circle</li></ul>"
+            message: "<ul><li>Clique no mapa para desenhar o círculo</li></ul>"
           },
         },
         addlayer: {
           messages: {
             csv: {
-              warning: "The result in the map is partial due to the presence of the below incorrect records list:"
+              warning: "O resulto no mapa é parcial, dada a presença dos seguintes registos incorretos:"
             }
           },
-          tooltip: 'Add Layer'
+          tooltip: 'Adicionar camada'
         },
         geolocation: {
           tooltip: 'Geolocalização'
@@ -353,18 +353,18 @@ export default {
           title: 'Medir',
           length: {
             tooltip: "Comprimento",
-            help: "Clique no mapa  on map to draw the line. Press <br>CANC if you want delete last vertex",
+            help: "Clique no mapa  para desenhar uma linha. Prima <br>CANC se pretender eliminar o ultimo vértice",
           },
           area: {
-            tooltip: "Area",
-            help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
+            tooltip: "Área",
+            help: "Clique para desenhar o polígono.Prima <br>CANC se pretender eliminar o ultimo vértice"
           }
         },
         screenshot: {
-          title: 'Screen capture',
+          title: 'Captura de ecran',
           screenshot: "PNG",
           geoscreenshot: "GeoTIFF",
-          download: 'Generate'
+          download: 'Gerar'
         },
         scale: {
           no_valid_scale: "Escala inválida"
@@ -381,47 +381,47 @@ export default {
         }
       },
       relations: {
-        relation_data: 'Relation data',
-        no_relations_found: 'No relations found',
-        back_to_relations: 'Back to relations',
-        list_of_relations_feature: 'List of relations of feature',
-        error_missing_father_field: "Field is missing",
-        field: "Relation key field",
+        relation_data: 'Dados da Relação',
+        no_relations_found: 'Relações não encontradas',
+        back_to_relations: 'Voltar para as relações',
+        list_of_relations_feature: 'Lista de relações da camada',
+        error_missing_father_field: "Atributo em falta",
+        field: "Campo chave da relação",
       },
       form: {
-        loading: 'Loading ...',
+        loading: 'A carregar ...',
         inputs: {
           messages: {
             errors: {
-              picklayer: "No feature selected. Check if layer is on editing or visible at current scale"
+              picklayer: "Sem camadas selecionadas. Verifique se a camada está em edição ou visível na escala atual."
             }
           },
           tooltips:{
-            picklayer: "Get value from ma layer",
-            lonlat: "Click on map to get coordinates"
+            picklayer: "Obter atributo da camada",
+            lonlat: "Clique no mapa para obter as coordenadas"
           },
-          input_validation_mutually_exclusive: "Field mutually exclusive with ",
-          input_validation_error: "Mandatory Field or wrong data type",
-          input_validation_error_type: "Wrong data type",
-          input_validation_min_field: "Value has to be more/equal to field value  ",
-          input_validation_max_field: "Value has to be less/equal to field value ",
-          input_validation_exclude_values: "Value has to be unique",
-          integer: "integer",
-          bigint: "integer",
-          text: "text",
-          varchar: "text",
-          textarea: "text",
+          input_validation_mutually_exclusive: "Atributo mutuamente exclusivo com ",
+          input_validation_error: "Atributo obrigatório ou tipo de dados incorreto",
+          input_validation_error_type: "Tipo de dados incorreto",
+          input_validation_min_field: "Valor deve ser maior/igual ao valor do campo ",
+          input_validation_max_field: "Valor deve ser menor/igual ao valor do campo ",
+          input_validation_exclude_values: "Valor deverá ser unico",
+          integer: "inteiro",
+          bigint: "inteiro",
+          text: "texto",
+          varchar: "texto",
+          textarea: "texto",
           string: "string",
-          date: "date",
-          datetime: "date",
+          date: "data",
+          datetime: "data",
           float: "float",
-          table: "table"
+          table: "tabela"
         },
         footer: {
-          "required_fields": "Required fields"
+          "required_fields": "Atributos necessários"
         },
         messages: {
-          qgis_input_widget_relation: "Use relation specific form to work with relation"
+          qgis_input_widget_relation: "Utilize o formulário específico para trabalhar com relações"
         }
       },
       catalog: {
@@ -450,17 +450,17 @@ export default {
         }
       },
       wps: {
-        list_process: "List of process",
+        list_process: "Listar processo",
         tooltip: 'Clique no mapa'
       }
     },
     credits: {
-      g3wSuiteFramework: "Application based on OS framework",
-      g3wSuiteDescription: "Publish and manage your QGIS projects on the web",
-      productOf: "Framework developed by",
+      g3wSuiteFramework: "Aplicativo baseado na framework OS",
+      g3wSuiteDescription: "Permite publicar e gerir os seus projetos QGIS na web",
+      productOf: "Framework desenvolvida por",
     },
-    toggle_color_scheme: "Toggle color scheme",
-    logout: "Logout",
+    toggle_color_scheme: "Altere o esquema de cores",
+    logout: "Sair",
     no_other_projects: "Não existem mais projetos para este grupo",
     no_other_groups: "Não existem outros Grupos para este Macrogrupo",
     yes: "Sim",
@@ -469,41 +469,41 @@ export default {
     backto: "Voltar para ",
     changemap: "Alterar mapa",
     change_session: "Alterar Sessão",
-    component: "Generic Component",
+    component: "Componente Genérico",
     search: "Pesquisar",
-    no_results: "No results found",
+    no_results: "Não foram encontrados resultados",
     print: "Imprimir",
-    create_print: "Create Print",
+    create_print: "Criar impressão",
     dosearch: "Pesquisar",
     catalog: "Mapa",
-    data: "Data",
+    data: "Dados",
     externalwms: "WMS",
     baselayers: "Base",
-    tools: "Tools",
-    tree: "Layers",
-    legend: "Legend",
-    nobaselayer: "No basemap",
-    street_search: "Find Address",
-    show: "Show",
-    hide: "Hide",
+    tools: "Ferramentas",
+    tree: "Camadas",
+    legend: "Legenda",
+    nobaselayer: "Sem mapa base",
+    street_search: "Encontrar endereço",
+    show: "Mostrar",
+    hide: "Esconder",
     copy_form_data: "Copiar dados",
     paste_form_data: "Colar",
     copy_form_data_from_feature: "Copia dados do mapa",
-    error_map_loading: "Error occurs loading map",
-    check_internet_connection_or_server_admin: "Check internet connection or contact admin",
-    could_not_load_vector_layers: "Connection error: Layers can be loaded",
-    server_saver_error: "Error in server saving",
-    server_error: "Server connection error",
+    error_map_loading: "Ocorreu um erro ao carregar o mapa",
+    check_internet_connection_or_server_admin: "Verifique a ligação internet ou contacte o administrador",
+    could_not_load_vector_layers: "Erro de ligação: Camadas não podem ser carregadas",
+    server_saver_error: "Erro no servidor ao guardar",
+    server_error: "Erro de ligação ao servidor",
     save: "Guardar",
     cancel: "Cancelar",
     update: "Atualizar",
     close: "Fechar",
     /** @since 3.8.0 */
-    dont_show_again: "Don't show again",
-    enlange_reduce: "Enlarge / Reduce",
-    add: "Add",
+    dont_show_again: "Não mostrar novamente",
+    enlange_reduce: "Aumentar / Reduzir",
+    add: "Adicionar",
     exitnosave: "Sair sem guardar",
-    annul: "Cancel",
+    annul: "Cancelar",
     layer_is_added: "Camada com o mesmo nome já adicionada",
     sidebar: {
       wms: {
@@ -516,123 +516,123 @@ export default {
             layers: 'Camadas'
           }
         },
-        add_wms_layer: "Add WMS layer",
-        delete_wms_url: "Remove",
-        layer_id_already_added: "A WMS connection with this name already exists",
-        url_already_added: "WMS URL/Name already added",
-        layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
+        add_wms_layer: "Adicionar camada WMS",
+        delete_wms_url: "Remover",
+        layer_id_already_added: "Já existe uma ligação WMS com o mesmo nome",
+        url_already_added: "Endereço/Nome do WMS já adicionado",
+        layer_add_error: "Camada WMS não adicionada. Verifique o parametro do endereço do wms"
       }
     },
     info: {
-      title: "Results",
-      list_of_relations: "List of Relations",
-      open_link: "Open attached document",
-      server_error: "An error occurred from server",
-      no_results: "No results found for this query/search",
-      link_button: "Open"
+      title: "Resultados",
+      list_of_relations: "Lista de Relações",
+      open_link: "Abrir documento anexo",
+      server_error: "Ocorreu um erro no servidor",
+      no_results: "Não foram encontrados resultados para a consulta/pesquisa",
+      link_button: "Abrir"
     },
     mapcontrols: {
       geolocation: {
-        error: "Can't get your position"
+        error: "Não é possivel obter a sua posição"
       },
       geocoding: {
-        choose_layer: "Choose a layer where to add this feature",
-        placeholder: "Address ...",
-        nolayers: "No editable point layers found on this project",
-        noresults: "No results",
-        notresponseserver: "No response from server"
+        choose_layer: "Escolher uma camada para adicionar a entidade",
+        placeholder: "Endereço ...",
+        nolayers: "Sem camadas de pontos editáveis no projeto",
+        noresults: "Sem resultados",
+        notresponseserver: "Sem resposta do servidor"
       },
       add_layer_control: {
-        header: "Add Layer",
-        select_projection: "Projection",
-        select_field_to_show: "field shown on map",
-        select_csv_separator: "Delimiter",
-        select_csv_x_field: "X field",
-        select_csv_y_field: "Y field",
-        select_color: "Layer Color",
-        drag_layer: "Add your file here",
-        persistent_data: "Persistent data",
-        persistent_help: "save layer into browser storage",
+        header: "Adicionar camada",
+        select_projection: "Projeção",
+        select_field_to_show: "campo a mostrar no mapa",
+        select_csv_separator: "Delimitador",
+        select_csv_x_field: "Campo X",
+        select_csv_y_field: "Campo Y",
+        select_color: "Cor da camada",
+        drag_layer: "Adicione o seu ficheiro aqui",
+        persistent_data: "Dados persistentes",
+        persistent_help: "guardar camada no armazenamento do navegador",
       },
       query: {
-        input_relation: "Click to show relations"
+        input_relation: "Clique para mostrar as relações"
       },
       length: {
-        tooltip: "Length"
+        tooltip: "Comprimento"
       },
       area: {
-        tooltip: "Area"
+        tooltip: "Área"
       },
       screenshot: {
-        error: "Screenshot error creation",
+        error: "Erro na criação da captura de ecra",
         securityError: `  
-        <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
+        <p><b>Erro de segurança</b>: uma camada externa está a impedir a impressão do mapa. Para verificar proceda da seguinte forma:</p>
         <ol>
-          <li>remove any manually added external layers (eg. WMS layers)</li>
-          <li>force page reload: <code>CTRL + F5</code></li>
-          <li>print again the map</li>
+          <li>remova as camadas externas (ex. camadas WMS)</li>
+          <li>recarregue a página: <code>CTRL + F5</code></li>
+          <li>imprima o mapa de novo</li>
         </ol>
-        <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        <p>Para mais informações contacte o administrador do sistema: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
         `
       }
     },
     catalog_items: {
-      helptext: "Open menu",
+      helptext: "Abrir o menu",
       contextmenu: {
-        zoomtolayer: "Zoom to Layer",
-        open_attribute_table: "Open Attribute Table",
-        show_metadata: "Metadata",
-        styles: 'Style',
-        vector_color_menu:"Color",
-        layer_opacity: "Opacity",
-        filters: "Filters",
-        download: 'Save as',
-        ogc_services: 'OGC Services',
-        edit: "Edit Layer",
+        zoomtolayer: "Aproximar à Camada",
+        open_attribute_table: "Abrir tabela de atributos",
+        show_metadata: "Metadados",
+        styles: 'Estilos',
+        vector_color_menu:"Cor",
+        layer_opacity: "Opacidade",
+        filters: "Filtros",
+        download: 'Guardar como',
+        ogc_services: 'Serviços OGC',
+        edit: "Editar Camada",
       }
     },
     dataTable: {
-      previous: "Previous",
-      next: "Next",
-      lengthMenu: "Show _MENU_ values per page",
-      info: "_TOTAL_ entries",
-      no_data: "No data",
-      nodatafilterd: "No matching records found",
-      infoFiltered: "(filtered from _MAX_ total records)"
+      previous: "Anterior",
+      next: "Próximo",
+      lengthMenu: "Mostrar valores _MENU_ por página",
+      info: "_TOTAL_ entradas",
+      no_data: "Sem dados",
+      nodatafilterd: "Não foram encontrados registos correspondentes",
+      infoFiltered: "(filtrados de _MAX_ registos totais)"
     },
     /**@since 3.10.0 */
-    no_geometry: 'This item has no geometry',
+    no_geometry: 'Elemento sem geometria',
     /**@since 3.11.0 */
-    query_filter: 'Filter by:',
+    query_filter: 'Filtrar por:',
     /**@since 3.11.0 */
-    sidebar_menu: 'Sidebar menu',
+    sidebar_menu: 'Menu barra lateral',
     /**@since 3.11.0 */
-    layer_type: 'Layer type',
+    layer_type: 'Tipo de camada',
     /** @since 3.11.0 */
-    choose_type: 'Choose type',
+    choose_type: 'Escolha tipo',
     /**@since 3.11.0 */
-    remote_wms_url: 'WMS (URL)',
+    remote_wms_url: 'WMS (Endereço)',
     /**@since 3.11.0 */
-    local_file: 'Local file',
+    local_file: 'Ficheiro Local',
     /**@since 3.11.0 */
     embed_map: 'Incorporar Mapa',
     /** @since 3.11.0 */
-    homepage: 'Home',
+    homepage: 'Início',
     /** @since 3.11.0 */
-    wms_server: 'WMS Server',
+    wms_server: 'Servidor WMS',
     /** @since 3.11.0 */
-    connect_to_wms: 'Connect',
+    connect_to_wms: 'Conectar',
     /** @since 3.11.0 */
-    disconnect_from_wms: 'Disconnect',
+    disconnect_from_wms: 'Desconectar',
     /** @since 3.11.0 */
-    add_new_wms_url_help: 'Search through saved connections or add a new server',
+    add_new_wms_url_help: 'procurar nas ligações guardadas ou adicionar um novo servidor',
     /** @since 3.11.0 */
-    saved_connections: 'Saved connections:',
+    saved_connections: 'Ligações guardadas:',
     /** @since 3.11.0 */
-    label: "Label",
+    label: "Etiqueta",
     /** @since 3.11.0 */
-    no_csv_field: 'No valid fields',
+    no_csv_field: 'Nenhum campo válido',
     /** @since 3.11.0 */
-    show_more: 'Show more',
+    show_more: 'Mostrar mais',
   },
 };
