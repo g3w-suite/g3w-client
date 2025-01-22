@@ -166,33 +166,28 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 /**
  * Based on Bootstrap v3.3.7
  */
-// require('bootstrap/js/transition');
-// require('bootstrap/js/alert');
-require('bootstrap/js/button');
+// require('bootstrap/js/button');
 require('bootstrap/js/carousel');
 require('bootstrap/js/collapse');
 require('bootstrap/js/dropdown');
 require('bootstrap/js/modal');
 require('bootstrap/js/tooltip');
-// require('bootstrap/js/popover');
-// require('bootstrap/js/scrollspy');
 require('bootstrap/js/tab');
-// require('bootstrap/js/affix');
 
 require('datatables.net/js/jquery.dataTables');
 require('select2')(jQuery);
 
 /** @TODO check if deprecated */
-jQuery.fn.select2.amd.define("select2/i18n/it", [], () => ({
-  errorLoading:   () => "I risultati non possono essere caricati.",
-  inputTooLong:    e => "Per favore cancella " + (e.input.length - e.maximum) + " caratter" + (1 !== (e.input.length - e.maximum) ? "i" : "e"),
-  inputTooShort:   e => "Per favore inserisci " + (e.minimum - e.input.length) + " o più caratteri",
-  loadingMore:    () => "Caricando più risultati…",
-  maximumSelected: e => "Puoi selezionare solo " + e.maximum + " element" (1 !== e.maximum ? "i" : "o"),
-  noResults:      () => "Nessun risultato trovato",
-  searching:      () => "Sto cercando…",
-  removeAllItems: () => "Rimuovi tutti gli oggetti",
-}));
+// jQuery.fn.select2.amd.define("select2/i18n/it", [], () => ({
+//   errorLoading:   () => "I risultati non possono essere caricati.",
+//   inputTooLong:    e => "Per favore cancella " + (e.input.length - e.maximum) + " caratter" + (1 !== (e.input.length - e.maximum) ? "i" : "e"),
+//   inputTooShort:   e => "Per favore inserisci " + (e.minimum - e.input.length) + " o più caratteri",
+//   loadingMore:    () => "Caricando più risultati…",
+//   maximumSelected: e => "Puoi selezionare solo " + e.maximum + " element" (1 !== e.maximum ? "i" : "o"),
+//   noResults:      () => "Nessun risultato trovato",
+//   searching:      () => "Sto cercando…",
+//   removeAllItems: () => "Rimuovi tutti gli oggetti",
+// }));
 
 globalThis.moment = require('moment/min/moment-with-locales');
 

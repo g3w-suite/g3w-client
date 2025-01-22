@@ -305,7 +305,7 @@ gulp.task('build:app', async function() {
 /**
  * Deploy client and vendor images
  */
-gulp.task('images', function () {
+gulp.task('images', async function () {
   return gulp.src([
     `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
