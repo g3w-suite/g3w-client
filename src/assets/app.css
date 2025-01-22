@@ -1165,7 +1165,8 @@ textarea.form-control                     { height: auto; }
 
 .glyphicon-remove::before        { content: '\1F5D9'; font-weight: bold; }
 .glyphicon-chevron-left::before  { content: '\2039'; font-weight: bold; font-size: 1.5em; }
-.glyphicon-chevron-right::before { content: '\203a'; font-weight: bold;font-size: 1.5em; }
+.glyphicon-chevron-right::before { content: '\203a'; font-weight: bold; font-size: 1.5em; }
+.glyphicon-time::before          { content: '🕑'; }
 
 /**************************************************************************************
  * 10. Contents
