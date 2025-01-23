@@ -312,7 +312,7 @@ gulp.task('build:app', async function() {
  */
 gulp.task('images', async function () {
   return gulp.src([
-    `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
+    `./src/assets/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
     `!${g3w.pluginsFolder}/**/node_modules/**/`,
     '!./src/**/node_modules/**/'
@@ -326,7 +326,7 @@ gulp.task('images', async function () {
  */
 gulp.task('cursors', function () {
   return gulp.src([
-    `${g3w.assetsFolder}/cursors/**/*`,
+    `./src/assets/cursors/**/*`,
   ])
   .pipe(flatten())
   .pipe(gulp.dest(`${outputFolder}/static/client/cursors/`))
@@ -337,7 +337,7 @@ gulp.task('cursors', function () {
  */
  gulp.task('fonts', function () {
   return gulp.src([
-    `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
+    `./src/assets/fonts/**/*.{eot,ttf,woff,woff2}`,
     `./node_modules/@fortawesome/fontawesome-free/webfonts//**/*.{eot,ttf,woff,woff2}`,
     `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
     `!${g3w.pluginsFolder}/**/node_modules/**`,
@@ -351,7 +351,7 @@ gulp.task('cursors', function () {
  * Deploy geocoding providers (src/assets/geocoding-providers)
  */
 gulp.task('geocoding-providers', function () {
-  return gulp.src(`${g3w.assetsFolder}/geocoding-providers/*`)
+  return gulp.src(`./src/assets/geocoding-providers/*`)
     .pipe(flatten())
     .pipe(gulp.dest(`${outputFolder}/static/client/geocoding-providers/`));
 });
