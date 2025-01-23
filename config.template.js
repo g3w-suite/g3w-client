@@ -27,6 +27,7 @@ let conf = {
   pluginsFolder: './src/plugins',                                           // path to G3W-CLIENT plugins folder
   admin_plugins_folder:   '../g3w-admin/g3w-admin',                         // path to G3W-ADMIN plugins folder
   admin_overrides_folder: '../g3w-suite-docker/config/g3w-suite/overrides', // path to G3W-SUITE overrides folder
+  docker_plugins_folder:  '../g3w-suite-docker/shared-volume/plugins',      // path to G3W-SUITE plugins folder
   host: G3W_HOST,
   port: G3W_CLIENT_PORT,
   // proxy configuration for local G3W_ADMIN server (where G3W-ADMIN is running)

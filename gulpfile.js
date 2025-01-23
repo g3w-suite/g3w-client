@@ -48,7 +48,7 @@ function setNODE_ENV() {
 const static_plugins = [
   'openrouteservice',
   'qplotly',
-  'qtimeseries'
+  'qtimeseries',
 ];
 
 // Built-in client plugins
@@ -357,31 +357,47 @@ gulp.task('geocoding-providers', function () {
 });
 
 /**
- * Make sure that core client plugins are there
- * 
- * [submodule "src/plugins/editing"] <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
+ * Symlink client plugins (admin, client, docker)
  */
-gulp.task('clone:default_plugins', function(done) {
+gulp.task('clone:plugins', function(done) {
+
   console.log(H1__ + `Cloning default plugins` + __H1);
+
+  // eg. [submodule "src/plugins/editing"] <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
   for (const pluginName of default_plugins) {
     if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
       execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, { stdio: 'inherit' });
     }
   }
+
+  // reset symlinks
+  fs.readdirSync(g3w.pluginsFolder).forEach(pluginName => {
+    if (pluginName.startsWith('g3w-admin-')) {
+      fs.unlinkSync(`${g3w.pluginsFolder}/${pluginName}`);
+    }
+  });
+
   // moved into g3w-admin (4.x)
   for (const pluginName of static_plugins) {
+    // detect legacy plugins (git)
     if (fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
       console.warn(`[WARN] legacy plugin: ${g3w.pluginsFolder}/${pluginName}\n`);
-    } else if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/`)) {
-      fs.symlink(path.resolve(`${g3w.admin_plugins_folder}/${pluginName}`), path.resolve(`${g3w.pluginsFolder}/${pluginName}`), 'junction', (err) => {
-        if (err) {
-            console.error('Error creating junction:', err);
-        } else {
-            console.log('Junction created successfully!');
-        }
-      });
+    }
+    // static plugins
+    if (!fs.existsSync(`${g3w.pluginsFolder}/g3w-admin-${pluginName}/`) && fs.existsSync(`${g3w.admin_plugins_folder}/${pluginName}`)) {
+      fs.symlinkSync(path.resolve(`${g3w.admin_plugins_folder}/${pluginName}`), path.resolve(`${g3w.pluginsFolder}/g3w-admin-${pluginName}/`), 'junction');
     }
   }
+
+  // pip plugins
+  if (g3w.docker_plugins_folder) {
+    fs.readdirSync(g3w.docker_plugins_folder).forEach(pluginName => {
+      if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}`)) {
+        fs.symlinkSync(path.resolve(`${g3w.docker_plugins_folder}/${pluginName}`), path.resolve(`${g3w.pluginsFolder}/${pluginName}`), 'junction');
+      }
+    })
+  }
+
   done();
 });
 
@@ -460,7 +476,7 @@ gulp.task('build', gulp.series(
   'production',
   'check:node_modules',
   // 'clean:admin',
-  'clone:default_plugins',
+  'clone:plugins',
   'select-plugins',
   'build:plugins',
   'build:client',
@@ -478,7 +494,7 @@ gulp.task('dev', gulp.series(
   'check:node_modules',
   // 'clean:admin',
   'clean:overrides',
-  'clone:default_plugins',
+  'clone:plugins',
   'build:client',
   )
 )
