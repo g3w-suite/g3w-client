@@ -53,24 +53,8 @@ let conf = {
 
 // backward compatibilities (v3.x)
 if (version < '4') {
-  conf.assetsFolder           = (version.localeCompare('3.7.0', undefined, { numeric: true, sensitivity: 'case' }) < 0 ? './assets' : conf.assetsFolder);
-  conf.distFolder             = './dist';
-  conf.clientFolder           = './dist/client';
-  conf.admin_static_folder    = `${conf.admin_plugins_folder}/client/static`;
-  conf.admin_templates_folder = `${conf.admin_plugins_folder}/client/templates`;
-  conf.createProject          = { before() {}, after() {} };
-  conf.setCurrentProject      = { before() {}, after() {} };
-  conf.plugins                = conf.plugins.reduce((a, v) => ({ ...a, [v]: { gid: 'qdjango:1', baseurl: `.${conf.distFolder}` }}), {});
-  conf.proxy.routes           = ['/media', '/api', '/ows', '/static', '/en/', '/it/', '/upload/'];
-  conf.proxy.urls             = conf.proxy.routes;
-  conf.localServerPort        = conf.port;
-  conf.g3w_admin_paths        = {
-    dev: {
-      g3w_admin_plugins_basepath:     conf.admin_plugins_folder.replace(/\/?$/, '/'),
-      g3w_admin_client_dest_static:   conf.admin_static_folder,
-      g3w_admin_client_dest_template: conf.admin_templates_folder
-    }
-  };
+  conf.assetsFolder = (version.localeCompare('3.7.0', undefined, { numeric: true, sensitivity: 'case' }) < 0 ? './assets' : conf.assetsFolder);
+  conf.plugins      = conf.plugins.reduce((a, v) => ({ ...a, [v]: { gid: 'qdjango:1', baseurl: './dist' }}), {});
 }
 
 module.exports = conf;
