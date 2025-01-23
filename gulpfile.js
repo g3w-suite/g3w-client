@@ -45,7 +45,7 @@ function setNODE_ENV() {
 }
 
 // moved into g3w-admin (4.x)
-const legacy_plugins = [
+const static_plugins = [
   'openrouteservice',
   'qplotly',
   'qtimeseries'
@@ -369,9 +369,17 @@ gulp.task('clone:default_plugins', function(done) {
     }
   }
   // moved into g3w-admin (4.x)
-  for (const pluginName of legacy_plugins) {
-    if (fs.existsSync(`${g3w.pluginsFolder}/${pluginName}`)) {
+  for (const pluginName of static_plugins) {
+    if (fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
       console.warn(`[WARN] legacy plugin: ${g3w.pluginsFolder}/${pluginName}\n`);
+    } else if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/`)) {
+      fs.symlink(path.resolve(`${g3w.admin_plugins_folder}/${pluginName}`), path.resolve(`${g3w.pluginsFolder}/${pluginName}`), 'junction', (err) => {
+        if (err) {
+            console.error('Error creating junction:', err);
+        } else {
+            console.log('Junction created successfully!');
+        }
+      });
     }
   }
   done();
@@ -392,7 +400,7 @@ gulp.task('select-plugins', function() {
         // exclude from plugin list "client" and all "template_" plugins
         choices: ['client'].concat(fs.readdirSync(g3w.pluginsFolder).filter(file => {
           try {
-            return !['client'].concat(legacy_plugins).includes(file)
+            return !['client'].concat(static_plugins).includes(file)
               && file.indexOf('_templates') === -1
               && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
               && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
