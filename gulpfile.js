@@ -392,7 +392,7 @@ gulp.task('select-plugins', function() {
         // exclude from plugin list "client" and all "template_" plugins
         choices: ['client'].concat(fs.readdirSync(g3w.pluginsFolder).filter(file => {
           try {
-            return file !== 'client'
+            return !['client'].concat(legacy_plugins).includes(file)
               && file.indexOf('_templates') === -1
               && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
               && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
