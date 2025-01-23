@@ -129,12 +129,6 @@ setNODE_ENV();
  */
 const build_plugin = async (pluginName) => {
 
-  // moved into g3w-admin (4.x)
-  if (legacy_plugins.includes(pluginName)) {
-    legacy_plugins.forEach(p => del([`${g3w.admin_overrides_folder}/static/${p}`, `${g3w.admin_overrides_folder}/templates/${p}`], { force: true }));
-    return;
-  }
-
   const outputFolder = production
     ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
     : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;           // plugin folder (DEV env)
@@ -372,6 +366,12 @@ gulp.task('clone:default_plugins', function(done) {
   for (const pluginName of default_plugins) {
     if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
       execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, { stdio: 'inherit' });
+    }
+  }
+  // moved into g3w-admin (4.x)
+  for (const pluginName of legacy_plugins) {
+    if (fs.existsSync(`${g3w.pluginsFolder}/${pluginName}`)) {
+      console.warn(`[WARN] legacy plugin: ${g3w.pluginsFolder}/${pluginName}\n`);
     }
   }
   done();
