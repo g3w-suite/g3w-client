@@ -143,12 +143,6 @@ const g3wsdk = {
       throttle,
       debounce,
       toRawType,
-      /** used by the following plugins: "openrouteservice" */
-      colorHEXToRGB: (color='#FFFFFF') => ([
-        parseInt(color.substr(1,2), 16),
-        parseInt(color.substr(3,2), 16),
-        parseInt(color.substr(5,2), 16)
-      ]),
       createFilterFormInputs,
       noop,
     },
@@ -344,11 +338,9 @@ g3wsdk.core.ApplicationService.getLocalItem         = id => window.localStorage.
 g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.user;
 /** used by the following plugins: "archiweb", "iframe" */
 g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
-/** used by the following plugins: "openrouteservice" */
-g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ApplicationState.project.getGid() });
 /** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
-/** used by the following plugins: "editing", "openrouteservice" */
+/** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
