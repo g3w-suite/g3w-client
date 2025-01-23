@@ -44,12 +44,16 @@ function setNODE_ENV() {
   console.log(`[G3W-CLIENT] loaded plugins: {\n  ${dev_plugins.map(pluginName => (GREEN__ + pluginName + __RESET + ': '+ get_version(pluginName))).join('\n  ')}\n}\n`);
 }
 
-// Built-in client plugins
-const default_plugins = [
-  'editing',
+// moved into g3w-admin (4.x)
+const legacy_plugins = [
   'openrouteservice',
   'qplotly',
   'qtimeseries'
+];
+
+// Built-in client plugins
+const default_plugins = [
+  'editing',
 ];
 
 // Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
@@ -124,6 +128,13 @@ setNODE_ENV();
  * @since 3.10.0
  */
 const build_plugin = async (pluginName) => {
+
+  // moved into g3w-admin (4.x)
+  if (legacy_plugins.includes(pluginName)) {
+    legacy_plugins.forEach(p => del([`${g3w.admin_overrides_folder}/static/${p}`, `${g3w.admin_overrides_folder}/templates/${p}`], { force: true }));
+    return;
+  }
+
   const outputFolder = production
     ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
     : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;           // plugin folder (DEV env)
@@ -354,10 +365,7 @@ gulp.task('geocoding-providers', function () {
 /**
  * Make sure that core client plugins are there
  * 
- * [submodule "src/plugins/editing"]          <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
- * [submodule "src/plugins/openrouteservice"] <-- https://github.com/g3w-suite/g3w-client-plugin-openrouteservice.git
- * [submodule "src/plugins/qplotly"]          <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
- * [submodule "src/plugins/qtimeseries"]      <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
+ * [submodule "src/plugins/editing"] <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
  */
 gulp.task('clone:default_plugins', function(done) {
   console.log(H1__ + `Cloning default plugins` + __H1);
