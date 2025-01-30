@@ -58,7 +58,7 @@ const default_plugins = [
 
 // Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
 const dev_plugins = Array.from(
-  new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins)))
+  new Set(default_plugins.concat(g3w.plugins instanceof Array ? g3w.plugins : Object.keys(g3w.plugins)))
 );
 
 /**
