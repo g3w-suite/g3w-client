@@ -3,6 +3,8 @@
  * @since v3.8
  */
 
+import 'assets/app.css';
+
 // expose global variables
 import './g3w-globals';
 
@@ -38,11 +40,9 @@ import Divider                     from 'components/GlobalDivider.vue';
 
 // directives
 import vDisabled                   from 'directives/v-disabled';
-import vChecked                    from 'directives/v-checked';
 import vSelect2                    from 'directives/v-select2';
 import vTToltip                    from 'directives/v-t-tooltip';
 import vTHtml                      from 'directives/v-t-html';
-import vTTitle                     from 'directives/v-t-title';
 import vT                          from "directives/v-t";
 import vTPlugin                    from 'directives/v-t-plugin';
 import vDownload                   from 'directives/v-download';
@@ -55,7 +55,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { addI18n, t, tPlugin }     from 'g3w-i18n';
+import { addI18n, t, tPlugin, i18next } from 'g3w-i18n';
 
 Object
   .entries({
@@ -106,11 +106,9 @@ Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
 Vue.directive("disabled", vDisabled);
-Vue.directive("checked", vChecked);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
 Vue.directive('t-html', vTHtml);
-Vue.directive('t-title', vTTitle);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vTPlugin);
 Vue.directive("download", vDownload);
@@ -160,9 +158,6 @@ Vue.use({
 }, {});
 
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
-
-// loading spinner at beginning
-$('body').append(`<div id="startingspinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>`)
 
 /** @TODO check if deprecated */
 const ACTIONS = {};
@@ -278,24 +273,12 @@ ApplicationState.language = initConfig.user.i18n || 'en';
 (initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
 
 i18next
-  .use(i18nextXHRBackend)
   .init({
       lng:         initConfig.user.i18n,
       ns:          'app',
       fallbackLng: 'en',
       resources:    translations
   });
-
-jqueryI18next.init(i18next, $, {
-  tName:                        't', // --> appends $.t = i18next.t
-  i18nName:                     'i18n', // --> appends $.i18n = i18next
-  handleName:                   'localize', // --> appends $(selector).localize(opts);
-  selectorAttr:                 'data-i18n', // selector for translating elements
-  targetAttr:                   'data-i18n-target', // element attribute to grab target element to translate (if diffrent then itself)
-  optionsAttr:                  'data-i18n-options', // element attribute that contains options, will load/set if useOptionsAttr = true
-  useOptionsAttr:               false, // see optionsAttr
-  parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
-});
 
 addI18n(ApplicationState.i18n.plugins);
 
@@ -364,7 +347,7 @@ $.ajaxSetup({
 
       MapLayersStoresRegistry.addLayersStore(store);
 
-      // BACKOMP v3.x
+      // BACKCOMP v3.x
       g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
 
       window.addEventListener('online', () => {
@@ -428,7 +411,7 @@ $.ajaxSetup({
                 icon:               GUI.getFontClass('bookmark'),
                 iconColor:          '#00bcd4',
                 title:              'sdk.spatialbookmarks.title',
-                vueComponentObject: require('components/SpatialBookMarks.vue'),
+                vueComponentObject: require('components/SpatialBookMarks.vue').default,
               });
 
               GUI.on('closecontent', () => { comp.state.open = false; });
@@ -446,7 +429,7 @@ $.ajaxSetup({
               iconColor:         '#FF9B21',
               title:             'print',
               service:           {},
-              internalComponent: new (Vue.extend(require('components/Print.vue'))),
+              internalComponent: new (Vue.extend(require('components/Print.vue').default)),
             }), {
               //@since 3.11.0 use internal methods called by component setters if declared
               _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
@@ -487,7 +470,7 @@ $.ajaxSetup({
                     return new Panel({
                       title: t('sdk.querybuilder.title'),
                       show: true,
-                      vueComponentObject: require('components/QueryBuilder.vue')
+                      vueComponentObject: require('components/QueryBuilder.vue').default
                     });
                   },
                   style: {
@@ -498,7 +481,7 @@ $.ajaxSetup({
                     marginRight:  '5px'
                   }
               }],
-              vueComponentObject: require('components/Search.vue'),
+              vueComponentObject: require('components/Search.vue').default,
             }),
 
             /**
@@ -568,7 +551,7 @@ $.ajaxSetup({
                         <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
                       </li>
                     </ul>`,
-                  components: { G3wTool: require('components/Tool.vue') },
+                  components: { G3wTool: require('components/Tool.vue').default },
                   data: () => ({ state: null }),
                   watch: {
                     async 'state.toolsGroups'(g) {
@@ -651,7 +634,7 @@ $.ajaxSetup({
                 iconColor:          '#019A4C',
                 title:              'catalog',
                 resizable:          true,
-                vueComponentObject: require('components/Catalog.vue'),
+                vueComponentObject: require('components/Catalog.vue').default,
                 service,
               });
             
@@ -667,7 +650,7 @@ $.ajaxSetup({
             id:                 'queryresults',
             title:              'Query Results',
             service:            require('services/queryresults').default,
-            vueComponentObject: require('components/QueryResults.vue'),
+            vueComponentObject: require('components/QueryResults.vue').default,
           }),
 
           /**
@@ -677,7 +660,7 @@ $.ajaxSetup({
             id:                 'map',
             title:              'Map Component',
             service:            new (require('services/map').default).MapService(),
-            vueComponentObject: require('components/Map.vue'),
+            vueComponentObject: require('components/Map.vue').default,
           }),
 
           /**
@@ -707,7 +690,7 @@ $.ajaxSetup({
         CONFIG.sidebar.forEach(comp => {
           if (!isMobile.any || false !== comp.mobile) {
             ApplicationState.sidebar.components.push(comp);
-            (new (Vue.extend(require('components/SidebarItem.vue')))({ component: comp })).$mount();
+            (new (Vue.extend(require('components/SidebarItem.vue').default))({ component: comp })).$mount();
           }
         });
 
@@ -717,7 +700,6 @@ $.ajaxSetup({
         GUI.addComponent(CONFIG.queryresults);
 
         // setup Font, Css class methods
-        $(document).localize();
 
         CONFIG.map    .mount('#g3w-view-map', true);
         CONFIG.content.mount('#g3w-view-content', true);

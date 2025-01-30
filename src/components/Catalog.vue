@@ -26,7 +26,6 @@
             aria-controls = "layers"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "tree"
             v-t           = "'data'">
           </a>
         </li>
@@ -41,7 +40,6 @@
             aria-controls = "externalwms"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "externalwms"
             v-t           = "'externalwms'">
           </a>
         </li>
@@ -56,7 +54,6 @@
             aria-controls = "baselayers"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "baselayers"
             v-t           = "'baselayers'">
           </a>
         </li>
@@ -956,10 +953,6 @@ export default {
   .catalog ul {
     line-height: 1.75em;
     list-style-type: none;
-  }
-  .catalog .list-group-item {
-    color: #fff;
-    background-color: #2c3b41;
   }
   .catalog .tree-item.selected ul.layer-categories,
   .catalog #legend div.selected ul.layer-categories {

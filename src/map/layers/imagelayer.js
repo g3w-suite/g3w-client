@@ -189,7 +189,7 @@ class RasterLayer extends G3WObject {
               headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
               body:    'POST' === method ? url.split('?')[1] : undefined,
             })
-            .then(async response => tile.getImage().src = window.URL.createObjectURL(await response.blob()))
+            .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
             .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
           } : undefined,
           /** @since 3.10.0 - Map Proxy cache_provider **/
@@ -330,7 +330,7 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
             body:    'POST' === method ? url.split('?')[1] : undefined,
           })
-          .then(async response => tile.getImage().src = window.URL.createObjectURL(await response.blob()))
+          .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
           .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
         }
         : undefined,
@@ -607,11 +607,11 @@ class ImageLayer extends GeoLayerMixin(Layer) {
 
     // set editing layer
     try {
-      const layerForEditing  = await new VectorLayer(this.config, {
+      const layerForEditing  = await (new VectorLayer(this.config, {
         vectorurl,
         project_type,
         project: project || ApplicationState.project,
-      }).layerForEditing;
+      })).layerForEditing;
       this.setEditingLayer(layerForEditing);
       return layerForEditing;
     } catch(e) {

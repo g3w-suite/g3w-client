@@ -362,7 +362,7 @@
 <script>
 import { Chrome as ChromeComponent } from 'vue-color';
 import JSZip                         from 'jszip/dist/jszip.min';
-import shp                           from 'shpjs/dist/shp';
+import shp                           from 'shpjs';
 
 import { GEOMETRY_FIELDS } from 'g3w-constants';
 import ApplicationState    from 'store/application';
@@ -444,6 +444,7 @@ export default {
       id:               null,
       olLayer:          null,
       map_crs:          ApplicationState.project.getProjection().getCode(),
+      layer_data:       null,
       position:         'top', // layer position on map
       persistent:       false,
       loading:          false, // loading reactive status
@@ -579,7 +580,7 @@ export default {
         (this.fields || []).splice(0); // reset fields
 
         // KMZ file
-        if ('kmz' === this.file_type) { 
+        if ('kmz' === this.file_type) {
           const zip = new JSZip();
           zip.load(await input.files[0].arrayBuffer(input.files[0]));
           data = zip.file(/.kml$/i).at(-1).asText(); // get last kml file within folder

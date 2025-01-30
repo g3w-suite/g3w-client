@@ -77,13 +77,36 @@
 
 <script>
 
+  import { G3W_FID }                                 from 'g3w-constants';
   import DataRouterService                           from 'services/data';
   import Node                                        from 'components/GlobalTabsNode.vue';
   import GUI                                         from 'services/gui';
-  import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
-  import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
+  import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
   import { getUniqueDomId }                          from 'utils/getUniqueDomId';
   import { noop }                                    from 'utils/noop';
+
+  /**
+   * Convert feature to form Data for expression/expression_eval request
+   */
+  function getFormData(feature, contenttype) {
+    let _feature = feature;
+
+    if ('editing' !== contenttype) {
+      delete feature.attributes.geometry;
+
+      _feature   = new ol.Feature(feature.geometry);
+      const properties = {};
+
+      getAlphanumericPropertiesFromFeature(feature.attributes)
+        .filter(p => G3W_FID !== p)
+        .forEach(p => properties[p] = feature.attributes[p]);
+
+      _feature.setProperties(properties);
+      _feature.setId(feature.attributes[G3W_FID]);
+    }
+
+    return (new ol.format.GeoJSON()).writeFeatureObject(_feature);
+  }
 
   export default {
     name: "tabs",
@@ -152,11 +175,7 @@
               {
               inputs: {
                 qgs_layer_id: this.layerid,
-                form_data:    (
-                  'editing' === this.contenttype ?
-                    convertFeatureToGEOJSON :
-                    getFormDataExpressionRequestFromFeature)(this.feature || {}
-                ),
+                form_data:    getFormData(this.feature || {}, this.contenttype),
                 expression:   tab.visibility_expression.expression,
                 formatter:    ('query' === this.contenttype ? 1 : 0),
               },
@@ -248,6 +267,20 @@
 </script>
 
 <style scoped>
+  .formquerytabs.nav-tabs > li                                { margin-right: 3px; }
+  .formquerytabs.nav-tabs > li:last-child                     { margin-right: 0; }
+  .formquerytabs.nav-tabs li:not(.active) > a                 { color: var(--skin-color); background-color: var(--skin-l48) !important; border: 1px solid var(--skin-l30); margin: 0 3px 3px 0; border-bottom: 0 !important; }
+  .formquerytabs.nav-tabs li > a                              { color: var(--skin-color); }
+  .formquerytabs.nav-tabs li a.tab_a.group-title              { background-color: var(--skin-l20) !important; }
+  .formquerytabs.nav-tabs li.active > a,
+  .formquerytabs.nav-tabs li.active > a:focus,
+  .formquerytabs.nav-tabs .nav-tabs > li.active > a:hover     { background-color: var(--skin-color) !important; color: #fff; }
+
+  .skin-green  .formquerytabs.nav-tabs li:not(.active) > a    { background-color: #e4ffcb !important; }
+  .skin-green  .formquerytabs.nav-tabs li a.tab_a.group-title { background-color: rgba(61, 166, 90, 0.85) !important; }
+  .skin-red    .formquerytabs.nav-tabs li:not(.active) > a    { background-color: var(--skin-danger-l40) !important; }
+  .skin-yellow .formquerytabs.nav-tabs li:not(.active) > a    { background-color: hsl(37, 87%, 99%) !important; border: 1px solid var(--skin-warning-d40); }
+
   .formquerytabs {
     overflow: hidden !important;
     display: flex;

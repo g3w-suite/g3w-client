@@ -5,99 +5,72 @@ const Validators = {
 
   validators: {
 
-    float(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
-        return !Number.isNaN(Number(1 * value));
-      }
-    },
+    float: (options = {}) => ({
+      options,
+      validate: (value) => !Number.isNaN(Number(1 * value))
+    }),
 
     /**
      * @since v3.10.0
      * @param options
      */
-    bigint(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
+    bigint: (options = {}) => ({
+      options,
+      validate(value) {
         value = 1 * value;
         return !Number.isNaN(value) ? value <= Number.MAX_SAFE_INTEGER : false;
       }
-    },
+    }),
 
-    integer(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
+    integer: (options = {}) => ({
+      options,
+      validate(value) {
         const integer = 1 * value;
         return !Number.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
       }
-    },
+    }),
 
-    checkbox(options = {}) {
-      this.options = options;
-      this.validate = function(value) {
-        return (this.options.values || []).includes(value);
-      }
-    },
+    checkbox: (options = {}) => ({
+      options,
+      validate: (value) => (this.options.values || []).includes(value)
+    }),
 
-    datetimepicker(options = {}) {
-      this.options = options;
-      this.validate = function(value, options) {
-        return moment(value, options.fielddatetimeformat, true).isValid();
-      }
-    },
+    datetimepicker: (options = {}) => ({
+      options,
+      validate: (value, options) => moment(value, options.fielddatetimeformat, true).isValid()
+    }),
 
     /**
      * @since 3.10.0
      * @param options
      */
-    char(options) {
-      this.options = options;
-      this.validate = function(value) {
-        return value && 1 === `${value}`.length;
-      }
-    },
+    char: (options) => ({
+      options,
+      validate: (value) => value && 1 === `${value}`.length
+    }),
 
     /**
      * @since 3.10.0
      * @param options
      */
-    varchar(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-    },
+    varchar: (options = {}) => ({ options, validate: () => true }),
+    text:    (options = {}) => ({ options, validate: () => true }),
+    string:  (options = {}) => ({ options, validate: () => true }),
+    radio:   (options = {}) => ({ options, validate: () => true }),
+    default: (options = {}) => ({ options, validate: () => true }),
 
-    text(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-    },
-
-    string(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-    },
-
-    radio(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-    },
-
-    default(options = {}) {
-      this.options  = options;
-      this.validate = () => true;
-    },
-
-    range(options = {}) {
-      const { min, max } = options;
-      this.validate = function(value) {
+    range: (options = {}) => ({
+      options,
+      validate(value) {
         value = 1 * value;
-        return value >= min && value <= max;
+        return value >= options.min && value <= options.max;
       }
-    },
+    }),
 
   },
 
   get(type, options = {}) {
-    return new (this.validators[type] || this.validators.default)(options);
+    return (this.validators[type] || this.validators.default)(options);
   }
 
 };
@@ -189,11 +162,7 @@ module.exports = class Service {
    * set input empty '', null, undefined or []
    */
   setEmpty() {
-    this.state.validate.empty = (
-      null === this.state.value //value is null
-      || !((Array.isArray(this.state.value) && this.state.value.length > 0)  //or empty array
-      || !(_.isEmpty(`${this.state.value}`.trim()))) // or empty string
-    );
+    this.state.validate.empty = (null === this.state.value || '' === `${this.state.value}`.trim());
   };
 
 // the general method to check the value of the state is valid or not

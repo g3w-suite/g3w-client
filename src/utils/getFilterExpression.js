@@ -1,5 +1,4 @@
-import DataRouterService           from 'services/data';
-import { convertFeatureToGEOJSON } from 'utils/convertFeatureToGEOJSON';
+import DataRouterService from 'services/data';
 
 /**
  * ORIGINAL SOURCE: src/app/core/expression/inputservice.js@3.8.6
@@ -31,7 +30,9 @@ export async function getFilterExpression({
   /**
    * @FIXME should return Promise.reject('some error message') ?
    */
-  if (!filter_expression) { return }
+  if (!filter_expression) {
+    return;
+  }
 
   loading.state = 'loading';
 
@@ -42,15 +43,15 @@ export async function getFilterExpression({
         field_name: field.name,
         layer_id,
         qgs_layer_id,
-        form_data: convertFeatureToGEOJSON(feature),
+        form_data: (new ol.format.GeoJSON()).writeFeatureObject(feature),
         parent: parentData && ({
-          form_data:    convertFeatureToGEOJSON(parentData.feature),
+          form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
           qgs_layer_id: parentData.qgs_layer_id,
           formatter:    0,
         }),
         formatter:  0,
         expression: filter_expression.expression,
-        ordering: [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
+        ordering:   [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
       },
       outputs: false,
     });

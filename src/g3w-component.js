@@ -12,8 +12,6 @@ import GUI            from 'services/gui';
 import _cloneDeep     from 'lodash.clonedeep';
 import deprecate      from 'util-deprecate';
 
-const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
-
 function merge(destination, source) {
   for (let key in source) {
     if (Object.prototype.hasOwnProperty.call(source, key)) {
@@ -45,8 +43,10 @@ export default class Component extends G3WObject {
 
   constructor(opts = {}) {
 
-    // BACKOMP v3.x
+    // BACKCOMP v3.x
     if (opts.iconConfig) {
+      console.warn('[G3W-CLIENT] iconConfig is deprecated');
+      console.trace();
       opts.iconColor = opts.iconConfig.color;
       opts.icon      = opts.iconConfig.icon;
       delete opts.iconConfig;
@@ -55,9 +55,9 @@ export default class Component extends G3WObject {
     // TODO: check why `GUI.getFontClass` is undefined
     opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
 
-    opts.open        = çç(opts.open, false);
-    opts.mobile      = çç(opts.mobile, true);
-    opts.collapsible = çç(opts.collapsible, true);
+    opts.open        = opts.open        ?? false;
+    opts.mobile      = opts.mobile      ?? true;
+    opts.collapsible = opts.collapsible ?? true;
 
     super({
       setters: {
@@ -97,26 +97,26 @@ export default class Component extends G3WObject {
     this._firstLayout = true;
 
     /** internal VUE component */
-    this.internalComponent = çç(opts.internalComponent, null);
+    this.internalComponent = opts.internalComponent ?? null;
 
     /** @type { Array } */
     this._components = [];
 
     /** @type { string } */
-    this.id = çç(opts.id, Math.random() * 1000);
+    this.id = opts.id ?? Math.random() * 1000;
 
     /** @type { string } */
-    this.title = çç(opts.title, '');
+    this.title = opts.title ?? '';
 
     this.state = {
       sizes:                        { width: 0, height:0 },
-      info:                         çç(opts.info, null),
-      open:                         çç(opts.open, false),
-      visible:                      çç(opts.visible, true),
-      loading:                      çç(opts.loading, false),
-      disabled:                     çç(opts.disabled, false),
-      resizable:                    çç(opts.resizable, false),
-      closewhenshowviewportcontent: çç(opts.closewhenshowviewportcontent, true),
+      info:                         opts.info                         ?? null,
+      open:                         opts.open                         ?? false,
+      visible:                      opts.visible                      ?? true,
+      loading:                      opts.loading                      ?? false,
+      disabled:                     opts.disabled                     ?? false,
+      resizable:                    opts.resizable                    ?? false,
+      closewhenshowviewportcontent: opts.closewhenshowviewportcontent ?? true,
     };
 
     this.setService(opts.service || this);
@@ -128,7 +128,7 @@ export default class Component extends G3WObject {
     merge(this, opts);
 
     // add events options
-    this.events = çç(opts.events, {});
+    this.events = opts.events ?? {};
 
     if (this.events.open) {
       const { when = "after", cb = () => {} } = this.events.open;
@@ -259,7 +259,6 @@ export default class Component extends G3WObject {
       }
 
       this.internalComponent.$nextTick(() => {
-        $(parent).localize();
         this.emit('ready');
         resolve(true);
       });

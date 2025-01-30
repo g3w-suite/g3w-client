@@ -140,6 +140,8 @@ export default {
     margin-right: -4px;
   }
   .carousel .carousel-control span {
-    color: #3c8dbc
+    color: #3c8dbc;
+    position: absolute;
+    top: 50%;
   }
 </style>

@@ -3,6 +3,9 @@
  * @since 3.11.0
  */
 
+// polyfills
+import '@ungap/with-resolvers';
+
 import * as ol              from 'ol';
 import * as array           from 'ol/array';
 import * as color           from 'ol/color';
@@ -16,12 +19,6 @@ import * as format          from 'ol/format';
 import * as filter          from 'ol/format/filter';
 import * as geom            from 'ol/geom';
 import * as Polygon         from 'ol/geom/Polygon';
-import * as Point           from 'ol/geom/Point';
-import * as LineString      from 'ol/geom/LineString';
-import * as LinearRing      from 'ol/geom/LinearRing'
-import * as MultiPoint      from 'ol/geom/MultiPoint';
-import * as MultiLineString from 'ol/geom/MultiLineString';
-import * as MultiPolygon    from 'ol/geom/MultiLineString';
 import * as has             from 'ol/has';
 import * as interaction     from 'ol/interaction';
 import * as layer           from 'ol/layer';
@@ -37,16 +34,44 @@ import * as source          from 'ol/source';
 import * as sphere          from 'ol/sphere';
 import * as style           from 'ol/style';
 import * as tilegrid        from 'ol/tilegrid';
-import WMTSTileGrid         from 'ol/tilegrid/WMTS';
-import TileGrid             from 'ol/tilegrid/TileGrid';
 import * as xml             from 'ol/xml';
-import RotateFeature        from 'ol-rotate-feature/dist/bundle.es';
 
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
 import $script              from 'scriptjs';
 import isMobile             from 'ismobilejs';
-import Vue                  from 'vue/dist/vue';
+import Vue                  from 'vue/dist/vue.js';
+
+/**
+ * Monkey patch for: `Vue.extend(require())`
+ */
+const extendProto = Vue.extend.bind(Vue);
+Vue.extend = function(opts) {
+  const esm_to_cjs = o => o.default && o.__esModule; // interopability properties added by esbuild
+  if (esm_to_cjs(opts)) {
+    console.warn(`[G3W-CLIENT] Vue.extend(require(${opts})) is deprecated`);
+    console.trace();
+  }
+  if (opts.mixins) {
+    for (const i in opts.mixins) {
+      if (esm_to_cjs(opts.mixins[i])) {
+        console.warn(`[G3W-CLIENT] Vue.extend({ mixins: [ require(${opts.mixins}) ] }) is deprecated`);
+        console.trace();
+        opts.mixins[i] = opts.mixins[i].default;
+      }
+    }
+  }
+  if (opts.components) {
+    for (const i in opts.components) {
+      if (esm_to_cjs(opts.components[i])) {
+        console.warn(`[G3W-CLIENT] Vue.extend({ components: [ require(${opts.components}) ] }) is deprecated`);
+        console.trace();
+        opts.components[i] = opts.components[i].default;
+      }
+    }
+  }
+  return extendProto(esm_to_cjs(opts) ? opts.default : opts);
+};
 
 /**
  * Shim legacy window variables
@@ -94,7 +119,10 @@ initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEn
   "group",
   "frontendurl",
 ].includes(key)).map(key => ([key, initConfig[key]]))), {
-  get(target, prop, receiver) { console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`); return Reflect.get(...arguments); }
+  get(target, prop, receiver) {
+    console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`);
+    return Reflect.get(...arguments);
+  }
 }));
 
 // gid of panoramic map project
@@ -114,17 +142,9 @@ globalThis.ol = Object.assign({}, ol, {
   extent,
   featureloader,
   format:      Object.assign({}, format,      { filter }),
-  geom:        Object.assign({}, geom, {
-                                                Point:           Object.assign(geom.Point, Point),
-                                                LineString:      Object.assign(geom.LineString, LineString),
-                                                LinearRing:      LinearRing.default,
-                                                Polygon:         Object.assign(geom.Polygon, Polygon),
-                                                MultiPoint:      Object.assign(geom.MultiPoint, MultiPoint),
-                                                MultiLineString: Object.assign(geom.MultiLineString, MultiLineString),
-                                                MultiPolygon:    Object.assign(geom.MultiPolygon, MultiPolygon)
-                                              }),
+  geom:        Object.assign({}, geom,        { Polygon: Object.assign(geom.Polygon, Polygon) }),
   has,
-  interaction: Object.assign({}, interaction, { RotateFeature }),
+  interaction,
   layer,
   loadingstrategy,
   proj:        Object.assign({}, proj,        { proj4: proj4ol, projections, Units, }),
@@ -133,31 +153,43 @@ globalThis.ol = Object.assign({}, ol, {
   source,
   sphere,
   style,
-  tilegrid:    Object.assign({}, tilegrid,    { WMTS: WMTSTileGrid , TileGrid }),
+  tilegrid,
   xml,
   Observable,
 });
-
 
 /**
  * Based on jQuery v2.2.4
  */
 globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 
-require('jquery-ui-package/jquery-ui');
-require('bootstrap/dist/js/bootstrap');
-require('blueimp-file-upload/js/jquery.fileupload');
+/**
+ * Based on Bootstrap v3.3.7
+ */
+// require('bootstrap/js/button');
+require('bootstrap/js/carousel');
+require('bootstrap/js/collapse');
+require('bootstrap/js/dropdown');
+require('bootstrap/js/modal');
+require('bootstrap/js/tooltip');
+require('bootstrap/js/tab');
+
 require('datatables.net/js/jquery.dataTables');
 require('select2')(jQuery);
-require('select2/dist/js/i18n/it.js');
 
-globalThis.bootbox           = require('bootbox/bootbox');
-globalThis._                 = require('lodash/lodash');
-globalThis.moment            = require('moment/min/moment-with-locales');
-globalThis.i18next           = require('i18next');
-globalThis.i18nextXHRBackend = require('i18next-xhr-backend');
-globalThis.jqueryI18next     = require('jquery-i18next/jquery-i18next');
-globalThis.Quill             = require('quill').default;
+/** @TODO check if deprecated */
+// jQuery.fn.select2.amd.define("select2/i18n/it", [], () => ({
+//   errorLoading:   () => "I risultati non possono essere caricati.",
+//   inputTooLong:    e => "Per favore cancella " + (e.input.length - e.maximum) + " caratter" + (1 !== (e.input.length - e.maximum) ? "i" : "e"),
+//   inputTooShort:   e => "Per favore inserisci " + (e.minimum - e.input.length) + " o più caratteri",
+//   loadingMore:    () => "Caricando più risultati…",
+//   maximumSelected: e => "Puoi selezionare solo " + e.maximum + " element" (1 !== e.maximum ? "i" : "o"),
+//   noResults:      () => "Nessun risultato trovato",
+//   searching:      () => "Sto cercando…",
+//   removeAllItems: () => "Rimuovi tutti gli oggetti",
+// }));
+
+globalThis.moment = require('moment/min/moment-with-locales');
 
 /*!
   * HOTFIX: for invalid UMD definition

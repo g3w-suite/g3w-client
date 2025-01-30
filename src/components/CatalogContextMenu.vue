@@ -449,12 +449,12 @@
 
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
-  import saveAs                        from 'file-saver/dist/FileSaver';
 
+  import { TIMEOUT }                   from 'g3w-constants';
   import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application';
   import GUI                           from 'services/gui';
-  import { downloadFile }              from 'utils/downloadFile';
+  import { saveBlob }                  from 'utils/saveBlob';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import { t }                         from 'g3w-i18n';
   import shpwrite                      from '@mapbox/shp-write';
@@ -678,9 +678,20 @@
        * 
        * @since 3.8.3
        */
-       downloadExternal(url) {
+       async downloadExternal(url) {
         ApplicationState.download = true;
-        downloadFile({ url });
+
+        const response = url && await fetch(url, {
+          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+
+        if (!response?.ok) {
+          throw (await response.json()).message;
+        }
+
+        saveBlob(await response.blob(), (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(-1));
+
         ApplicationState.download = false;
       },
 
@@ -792,7 +803,7 @@
             }
         });
 
-        saveAs(blob, name + '.zip');
+        saveBlob(blob, name);
 
         await this.$nextTick();
         ApplicationState.download = false;

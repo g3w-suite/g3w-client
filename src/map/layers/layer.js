@@ -14,9 +14,8 @@ import ApplicationState          from 'store/application';
 import DataRouterService         from 'services/data';
 import GUI                       from 'services/gui';
 import G3WObject                 from 'g3w-object';
-import { parseAttributes }       from 'utils/parseAttributes';
 import { promisify, $promisify } from 'utils/promisify';
-import { downloadFile }          from 'utils/downloadFile';
+import { saveBlob }              from 'utils/saveBlob';
 import { XHR }                   from 'utils/XHR';
 import { prompt }                from 'utils/prompt';
 import Table                     from 'components/Table.vue';
@@ -29,7 +28,6 @@ import { Feature }               from 'map/layers/feature';
 import { t }                     from 'g3w-i18n';
 
 const is_defined = d => undefined !== d;
-const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 // BACKCOMP v3.x
 function createProvider(name, layer) {
@@ -101,7 +99,7 @@ const Providers = {
         }
 
         let filter = [].concat(opts.filter)
-          // BACKOMP v3.x
+          // BACKCOMP v3.x
           .map(f => ({
             type:  f._type || f.type,
             value: (f._filter || f.value)
@@ -268,7 +266,7 @@ const Providers = {
       const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
       const projection = this._layer.getMapProjection() || this._layer.getProjection();
-      const tolerance  = çç(opts.query_point_tolerance, QUERY_POINT_TOLERANCE);
+      const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
       const url    = layers[0].getQueryUrl();
       const method = layers[0].getOwsMethod();
@@ -285,7 +283,7 @@ const Providers = {
         QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
         filtertoken:          ApplicationState.tokens.filtertoken,
         INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
-        FEATURE_COUNT:        çç(opts.feature_count, 10),
+        FEATURE_COUNT:        opts.feature_count ?? 10,
         WITH_GEOMETRY:        true,
         DPI:                  DOTS_PER_INCH,
         FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
@@ -372,7 +370,7 @@ const Providers = {
         SERVICE:      'WFS',
         VERSION:      '1.1.0',
         REQUEST:      'GetFeature',
-        MAXFEATURES:  çç(opts.feature_count, 10),
+        MAXFEATURES:  opts.feature_count ?? 10,
         TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
         OUTPUTFORMAT: layers[0].getInfoFormat(),
         SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
@@ -831,24 +829,37 @@ class Layer extends G3WObject {
   /** 
    * @returns { Promise }
    */
-  getDownloadFilefromDownloadDataType(type, { data = {} }) {
+  async getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
 
-    if ('pdf' === type) {
-      return downloadFile({
-        url:        this.getUrl('pdf'),
-        headers:    { 'Content-Type': 'application/json; charset=utf-8' },
-        data:       JSON.stringify(data),
-        mime_type: 'application/pdf',
-        method:    'POST'
-      });
+    let url, response;
+    switch(type) {
+      case 'pdf':
+        url       = this.getUrl('pdf');
+        response  = url && await fetch(url, {
+          body:    JSON.stringify(data),
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Expose-Headers': 'Content-Disposition' },
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+        break;
+      default:
+        url       = this.getUrl('shapefile' === type ? 'shp' : type);
+        response  = url && await fetch(url, {
+          body:     Object.keys(data || {}).reduce((a, k) => { a.append(k, data[k]); return a; }, new FormData()),
+          method:  'POST',
+          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+        break;
     }
 
-    return XHR.fileDownload({
-      url:        this.getUrl('shapefile' === type ? 'shp' : type),
-      httpMethod: "POST",
-      data,
-    });
+    if (!response?.ok) {
+      throw (await response.json()).message;
+    }
+
+    saveBlob(await response.blob(), response.headers.get('content-disposition'));
+
   }
 
   getGeoTIFF({ data = {} } = {}) { return this.getDownloadFilefromDownloadDataType('geotiff',   { data }); }
@@ -1719,10 +1730,19 @@ class Layer extends G3WObject {
             filtertoken: ApplicationState.tokens.filtertoken
           })
       );
-      const features = response.data.features && response.data.features || [];
+
+      const features          = response.data.features && response.data.features || [];
+      const layerAttributes   = this.getAttributes() || [];
+      const featureAttributes = (features.length ? features[0].properties : []);
+
       return {
-        headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
         features,
+        headers: (layerAttributes && layerAttributes.length > 0)
+        ? layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
+        : Object
+            .keys(featureAttributes)
+            .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
+            .map(name => ({ name, label: name })),
         title: this.getTitle(),
         count: response.count
       };

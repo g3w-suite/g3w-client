@@ -22,7 +22,6 @@ export class StreetViewControl extends InteractionControl {
       name:                    "streetview",
       tipLabel:                "StreetView",
       clickmap:                true,
-      label:                   "\ue905",
       interactionClass:        PickCoordinatesInteraction,
       interactionClassOptions: { cursor: 'ol-streetview' },
       cursorClass:             'ol-streetview',
@@ -59,7 +58,7 @@ export class StreetViewControl extends InteractionControl {
     
     this._layer = new ol.layer.Vector({
       source: new ol.source.Vector({ features: [] }),
-      style(feature) {
+      style: (feature) => {
         const coordinates = feature.getGeometry().getCoordinates();
         this._lastposition = this._lastposition ? this._lastposition : coordinates;
         const dx = coordinates[0] - this._lastposition[0];
@@ -67,20 +66,16 @@ export class StreetViewControl extends InteractionControl {
         const rotation = -Math.atan2(dy, dx);
         const styles = [
           new ol.style.Style({
-            text: new ol.style.Text({
-              text: '\ue905',
-              font: 'bold 18px icomoon',
-              fill: new ol.style.Fill({
-                color: '#ffffff'
-              })
-            })
-          }),
-          new ol.style.Style({
             image: new ol.style.Icon({
               src: '/static/client/images/streetviewarrow.png',
               rotation
             })
-          })
+          }),
+          new ol.style.Style({
+            image: new ol.style.Icon({
+              src: '/static/client/images/streetview.svg',
+            })
+          }),
         ];
         this._lastposition = coordinates;
         return styles

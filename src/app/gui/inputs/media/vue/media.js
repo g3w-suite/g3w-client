@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputMedia.vue';
+import vueComponentOptions from 'components/InputMedia.vue';
 
 const MediaInput = Vue.extend(vueComponentOptions);
 

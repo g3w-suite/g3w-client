@@ -139,7 +139,7 @@ export default {
 
   beforeDestroy() {
     if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
-      window.URL.revokeObjectURL(this.state.url);
+      URL.revokeObjectURL(this.state.url);
     }
   },
 

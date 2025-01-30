@@ -16,7 +16,6 @@ export class GeolocationControl extends InteractionControl {
       enabled:  true, // set initial to false. Is set enabled if is autorized
       name:     "geolocation",
       tipLabel: "sdk.mapcontrols.geolocation.tooltip",
-      label:    "\ue904"
     });
 
     /**

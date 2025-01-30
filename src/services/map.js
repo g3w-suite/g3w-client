@@ -36,6 +36,7 @@ import { getProject }                       from 'utils/getProject';
 import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 import { waitFor }                          from 'utils/waitFor';
+import { debounce }                         from 'utils/debounce';
 
 import { VectorLayer }                      from 'map/layers/vectorlayer';
 import { RasterLayer}                       from "map/layers/imagelayer";
@@ -78,7 +79,6 @@ const CONTROLS = {
     ...opts,
     name:             'zoombox',
     tipLabel:         'Zoom to box',
-    label:            '\ue901',
     interactionClass: ol.interaction.DragBox,
     cursorClass:      'ol-crosshair',
     onSetMap({ setter, map }) {
@@ -99,7 +99,6 @@ const CONTROLS = {
     offline:          false,
     name:             "query",
     tipLabel:         "sdk.mapcontrols.query.tooltip",
-    label:            opts.label || "\uea0f",
     clickmap:         true,
     interactionClass: PickCoordinatesInteraction,
     cursorClass:      'ol-help',
@@ -131,7 +130,7 @@ const CONTROLS = {
   'queryby':            QueryBy,
   'geolocation':        GeolocationControl,
   'streetview':         StreetViewControl,
-  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip",        label: "\ue907", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
+  'addlayers':          (opts = {}) => new InteractionControl({ ...opts, tipLabel: "sdk.mapcontrols.addlayer.tooltip", name: 'addlayer', onSetMap(e) { if ('after' === e.setter) $(this.element).on('click', () => this.dispatchEvent('addlayer')); } }),
   'measure':            MeasureControl,
   'mouseposition':      (opts = {}) => Object.assign((new ol.control.MousePosition({ ...opts, target: opts.target || 'mouse-position-control' })), { offline: true }),
   'scale':              ScaleControl,
@@ -269,12 +268,7 @@ class MapService extends G3WObject {
 
     this.project.onafter('setBaseLayer', () => this.updateMapLayers()); // base layer
 
-    this.debounces =  {
-      setupCustomMapParamsToLegendUrl: {
-        fnc: (...args) => { this._setupCustomMapParamsToLegendUrl(...args) },
-        delay: 1000
-      }
-    };
+    this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
 
     this.setters = {
 
@@ -323,7 +317,6 @@ class MapService extends G3WObject {
               case 'zoomtoextent':
                 this.createMapControl(type, {
                   options: {
-                    label: "\ue98c",
                     extent: this.project.state.initextent
                   }
                 });
@@ -422,16 +415,7 @@ class MapService extends G3WObject {
                 if (!isMobile.any && window.initConfig.overviewproject) {
                   getProject(window.initConfig.overviewproject)
                     .then(project => {
-                      //create a view for overview map
-                      const map = this.getMap();
                       const view = new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })); // at moment hardcoded
-                      view.on('change:center', function() {
-                        const current = view.getCenter();
-                        const center  = map.getView().constrainCenter(current);
-                        if (center[0] !== current[0] || center[1] !== current[1]) {
-                          view.setCenter(center);
-                        }
-                      });
                       this.createMapControl(type, {
                         add: false,
                           options: {
@@ -685,7 +669,7 @@ class MapService extends G3WObject {
           $('#' + this.target).css('background-color', this.config.background_color);
         }
 
-        $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
+        $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
 
         this.viewer.map.getInteractions().forEach(int => this._watchInteraction(int));
         this.viewer.map.getInteractions().on('add', int => this._watchInteraction(int.element));
@@ -880,16 +864,11 @@ class MapService extends G3WObject {
   /**
    * Used by the following plugins: "cdu", "archiweb"
    */
-  createMapImage({map, background} = {}) {
+  createMapImage({ map } = {}) {
     return new Promise((resolve, reject) => {
       try {
-        const canvas = $(
-          map
-            ? map.getViewport()
-            : $('#g3w-maps .g3w-map').last().children('.ol-viewport')[0]
-        ).children('canvas')[0];
-        if (navigator.msSaveBlob) { resolve(canvas.msToBlob()) }
-        else { canvas.toBlob(blob => resolve(blob)) }
+        const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
+        canvas.toBlob(blob => resolve(blob));
       } catch(e) {
         console.warn(e);
         reject(e);
@@ -1033,7 +1012,10 @@ class MapService extends G3WObject {
     toggled = false,
     options = {},
   } = {}) {
-    const control = CONTROLS[type] ? new CONTROLS[type]({ type, toggled, ...options }) : undefined;
+    let control;
+    if (CONTROLS[type]) {
+      control = CONTROLS[type].prototype ? new CONTROLS[type]({ type, toggled, ...options }) : CONTROLS[type]({ type, toggled, ...options });
+    }
     if (undefined === visible) {
       visible = (control.isVisible ? control.isVisible() : true)
     }
@@ -1305,7 +1287,7 @@ class MapService extends G3WObject {
     })
   }
 
-  _setupCustomMapParamsToLegendUrl(bool = true) {
+  setupCustomMapParamsToLegendUrl(bool = true) {
     if (bool) {
       const map  = this.getMap();
       const size = (map && map.getSize().filter(v => v > 0)) || null;
@@ -2039,7 +2021,7 @@ class MapService extends G3WObject {
     let x_min, x_max, y_min, y_max, rotation, scale;
     this.stopDrawGreyCover();
     this._drawShadow.listener = map.on('postcompose', e => {
-      const ctx  = e.context;
+      const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
       const size = this.getMap().getSize();
       // Inner polygon must be counter-clockwise
       const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;

@@ -69,7 +69,6 @@ export class QueryBy extends InteractionControl {
     super({
       ...opts,
       name:        'queryby',
-      label:       "\ue903",
       tipLabel:    "sdk.mapcontrols.queryby.title",
       enabled:     true,
       cursorClass: null, //store cursorClass of a current sub control enabled (querybbox, etc..)

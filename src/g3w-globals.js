@@ -84,7 +84,6 @@ import { throttle }                                from 'utils/throttle';
 import { debounce }                                from 'utils/debounce';
 import { XHR }                                     from 'utils/XHR';
 import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
-import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 
@@ -95,6 +94,31 @@ import { SearchPanel }                             from 'components/g3w-search';
 import { FormComponent, FormService }              from 'components/g3w-form';
 
 const deprecate                   = require('util-deprecate');
+
+/**
+ * BACKCOMP: v3.x (proxy "esbuild" classes for legacy plugins, still based on babel)
+ */
+function babelify(Class) {
+  return new Proxy(Class, {
+      // construct(target, args) {
+      //   if (new.target) {
+      //     console.warn('[G3W-CLIENT] class constructors must be invoked with "new"');
+      //     console.trace();
+      //     return Reflect.construct(target, args);
+      //   }
+      //   return new target(...args);
+      // },
+      apply(target, thisArg, argList) {
+        if ('Function' === target.constructor.name && target instanceof Function) {
+          console.warn('[G3W-CLIENT] class constructors must be invoked with "new"');
+          console.trace();
+          return Object.assign(thisArg, Reflect.construct(target, argList, /*thisArg.constructor*/));
+        }
+        return target.apply(thisArg, argList);
+      }
+  });
+}
+
 
 /**
  * GUI modules
@@ -109,7 +133,7 @@ const g3wsdk = {
 
   // CORE API METHODS AND OBJECTS
   core: {
-    G3WObject,
+    G3WObject: babelify(G3WObject),
     utils: {
       base,
       inherit,
@@ -119,7 +143,6 @@ const g3wsdk = {
       throttle,
       debounce,
       toRawType,
-      colorHEXToRGB,
       createFilterFormInputs,
       noop,
     },
@@ -182,13 +205,13 @@ const g3wsdk = {
       }
     },
     layer: {
-      LayersStore,
-      Layer,
-      TableLayer,
-      VectorLayer,
+      LayersStore:     babelify(LayersStore),
+      Layer:           babelify(Layer),
+      TableLayer:      babelify(TableLayer),
+      VectorLayer:     babelify(VectorLayer),
       features: {
-        Feature,
-        FeaturesStore,
+        Feature:       babelify(Feature),
+        FeaturesStore: babelify(FeaturesStore),
       },
     },
     interaction: {
@@ -196,9 +219,9 @@ const g3wsdk = {
       PickFeatureInteraction
     },
     plugin: {
-      Plugin,
-      PluginsRegistry,
-      PluginService
+      Plugin:          babelify(Plugin),
+      PluginsRegistry: babelify(PluginsRegistry),
+      PluginService:   babelify(PluginService)
     },
     input: {
       inputService: {
@@ -296,7 +319,7 @@ ${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __
   version: G3W_CONSTANT.APP_VERSION
 };
 
-// BACKOMP v3.x
+// BACKCOMP v3.x
 g3wsdk.core.geometry                             = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
@@ -315,11 +338,9 @@ g3wsdk.core.ApplicationService.getLocalItem         = id => window.localStorage.
 g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.user;
 /** used by the following plugins: "archiweb", "iframe" */
 g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
-/** used by the following plugins: "openrouteservice" */
-g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ApplicationState.project.getGid() });
 /** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
-/** used by the following plugins: "editing", "openrouteservice" */
+/** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;

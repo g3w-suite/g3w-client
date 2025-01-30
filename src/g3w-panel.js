@@ -69,7 +69,6 @@ export default class Panel extends G3WObject {
     const vueComp = panel.$mount();
     $(parent).append(vueComp.$el);
     vueComp.$nextTick(() => {
-      $(parent).localize();
       if (panel.onShow) { panel.onShow();}
     });
     return $promisify(Promise.resolve(true));

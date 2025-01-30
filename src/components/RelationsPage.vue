@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { G3W_FID }                              from 'g3w-constants';
+import { G3W_FID, TIMEOUT }                     from 'g3w-constants';
 import { VM }                                   from 'g3w-eventbus';
 import ApplicationState                         from 'store/application';
 import GUI                                      from "services/gui";
@@ -33,7 +33,7 @@ import RelationComponent                        from 'components/Relation.vue';
 import DataRouterService                        from 'services/data';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { XHR }                                  from 'utils/XHR';
-import { createSingleFieldParameter }           from 'utils/createSingleFieldParameter';
+import { saveBlob }                             from 'utils/saveBlob';
 import { createRelationsUrl }                   from 'utils/createRelationsUrl';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
@@ -99,15 +99,24 @@ export default {
     'relation':  RelationComponent
   },
   methods: {
+
     async saveRelations(type) {
       ApplicationState.download = true;
-      try      {
-        await XHR.fileDownload({
-          url:         createRelationsUrl(Object.assign(_options, { type })),
-          httpMethod: "GET",
-        })
-      }
-      catch(e) {
+
+      try {
+
+        const response = await fetch(createRelationsUrl(Object.assign(_options, { type })), {
+          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+
+        if (!response?.ok) {
+          throw (await response.json()).message;
+        }
+
+        saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
+
+      } catch(e) {
         console.warn(e);
         GUI.showUserMessage({
           type: 'alert',
@@ -115,8 +124,10 @@ export default {
           closable: true,
         });
       }
+
       ApplicationState.download = false;
     },
+
     reloadLayout() {
       VM.$emit('reload-relations');
     },
@@ -150,7 +161,7 @@ export default {
         const { data } = await DataRouterService.getData('search:features', {
           inputs: {
             layer:     getCatalogLayerById(referencedLayer),
-            filter:    `${createSingleFieldParameter({ field: referencedField, value: values, logicop: 'OR' })}`,
+            filter:    values.map(v => `${referencedField}|eq|${encodeURIComponent(v)}`).join(`|OR,`),
             formatter: 1, // set formatter to
           },
           outputs: null

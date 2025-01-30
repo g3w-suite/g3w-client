@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputColor.vue';
+import vueComponentOptions from 'components/InputColor.vue';
 
 const TextInput = Vue.extend(vueComponentOptions);
 
