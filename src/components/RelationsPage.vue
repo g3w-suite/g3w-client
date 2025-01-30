@@ -18,6 +18,8 @@
       :relation        = "relation"
       :nmRelation      = "nmRelation"
       :feature         = "feature"
+      :page            = "page"
+      :page_size       = "page_size"
       :table           = "table"/>
   </div>
 </template>
@@ -72,6 +74,8 @@ export default {
       currentview =      'relations',
       chartRelationIds = [],
       layer,
+      page,
+      page_size,
     } = this.$options;
     return {
       loading:         false,
@@ -87,6 +91,8 @@ export default {
       nmRelation,
       chartRelationIds,
       layer,
+      page,
+      page_size
     }
   },
   provide() {
@@ -182,19 +188,28 @@ export default {
       return relationsNM;
     },
 
-    async showRelation(relation) {
-      GUI.setLoadingContent(true);
-      this.loading        = true;
-      this.relation       = relation;
-      let relationLayerId = relation.referencingLayer;
+    /**
+     * @since 3.11.2
+     * Used to get relation data and set table
+     */
+    async setRelationDataTable({
+      page,
+      page_size,
+    } = {}) {
       try {
-        _options = {
-          layer: this.$options.layer,
-          fid:   this.feature.attributes[G3W_FID],
-          relation,
-        };
-        const response = await XHR.get({ url: createRelationsUrl(_options) }); // get relations
-        let relations  = response.result ? (response.vector.data.features || []).map(f => {
+        let relationLayerId = this.relation.referencingLayer;
+        let features;
+
+        const response = await XHR.get({
+          url: createRelationsUrl({
+            layer:    this.$options.layer,
+            fid:      this.feature.attributes[G3W_FID],
+            relation: this.relation,
+            page,
+            page_size,
+          })
+        }); // get relations
+        features = response.result ? (response.vector.data.features || []).map(f => {
           f.properties[G3W_FID] = f.id;
           return {
             geometry:   f.geometry,
@@ -202,16 +217,34 @@ export default {
             id:         f.id,
           };
         }) : null;
-
+        const count = features && response.vector.count;
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
-          relations = await this.getRelationsNM({
+          features = await this.getRelationsNM({
             nmRelation: this.nmRelation,
-            features:   relations
+            features
           });
         }
+
         this.showChartButton = !!this.chartRelationIds.find(id => relationLayerId === id);
-        this.table           = _buildRelationTable(relations, relationLayerId);
+
+        this.table       = _buildRelationTable(features, relationLayerId);
+        this.table.count = count;
+      } catch(e) {
+        console.warn(e);
+      }
+    },
+
+    async showRelation(relation) {
+      GUI.setLoadingContent(true);
+      this.loading        = true;
+      this.relation       = relation;
+      try {
+        await this.setRelationDataTable({
+          page:       this.page,
+          page_size:  this.page_size
+        })
+
         GUI.setCurrentContentOptions({
           title: relation.name,
           crumb: { title: relation.name, text: true }/**@since 3.11.0 text attribute */

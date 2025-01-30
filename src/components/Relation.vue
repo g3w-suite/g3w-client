@@ -186,7 +186,7 @@
 
 <script>
 
-  import { G3W_FID }                  from 'g3w-constants';
+  import { G3W_FID, PAGELENGTHS }     from 'g3w-constants';
   import Component                    from 'g3w-component';
   import Field                        from 'components/FieldG3W.vue';
   import DownloadFormats              from 'components/QueryResultsActionDownloadFormats.vue';
@@ -232,6 +232,11 @@
             downloads: [],
           },
         },
+        //@since 3.11.2
+        page:      1,
+        page_size: 10,
+        len :      PAGELENGTHS[0],
+        start:     0,
       };
     },
 
@@ -337,11 +342,38 @@
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
             order:          [ this.showTools ? 1 : 0, 'asc' ],
-            pageLength:     10,
+            lengthMenu:     PAGELENGTHS,
+            pageLength:     this.len,
+            displayStart:   this.start,
             responsive:     true,
             scrollResize:   true,
             scrollCollapse: true,
             scrollX:        true,
+            deferLoading:   this.table.count,
+            ajax: async (opts) => {
+              GUI.setLoadingContent(true);
+              try {
+                //Need to destroy table
+                this.relationDataTable.destroy(true);
+                this.relationDataTable = null;
+                //need to change table row to empty
+                this.table.rows        = [];
+                //wait next tick
+                await this.$nextTick();
+                //set len start
+                this.len               = opts.length;
+                this.start             = opts.start;
+                await this.$parent.setRelationDataTable({
+                  page:      0 === opts.start ? 1 : (opts.start/opts.length) + 1,
+                  page_size: opts.length,
+                })
+              } catch(e) {
+                console.warn(e);
+              }
+              GUI.setLoadingContent(false);
+
+            },
+            serverSide:     true,
           });
           this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
         }
