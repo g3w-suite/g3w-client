@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { G3W_FID, TIMEOUT }                     from 'g3w-constants';
+import { G3W_FID, TIMEOUT, PAGELENGTHS }        from 'g3w-constants';
 import { VM }                                   from 'g3w-eventbus';
 import ApplicationState                         from 'store/application';
 import GUI                                      from "services/gui";
@@ -91,8 +91,8 @@ export default {
       nmRelation,
       chartRelationIds,
       layer,
-      page,
-      page_size
+      page: page || 1,
+      page_size: page_size || PAGELENGTHS[0],
     }
   },
   provide() {

@@ -234,8 +234,7 @@
         },
         //@since 3.11.2
         page:      1,
-        page_size: 10,
-        len :      PAGELENGTHS[0],
+        page_size: PAGELENGTHS[0],
         start:     0,
       };
     },
@@ -343,7 +342,7 @@
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
             order:          [ this.showTools ? 1 : 0, 'asc' ],
             lengthMenu:     PAGELENGTHS,
-            pageLength:     this.len,
+            pageLength:     this.page_size,
             displayStart:   this.start,
             responsive:     true,
             scrollResize:   true,
@@ -361,7 +360,7 @@
                 //wait next tick
                 await this.$nextTick();
                 //set len start
-                this.len               = opts.length;
+                this.page_size         = opts.length;
                 this.start             = opts.start;
                 await this.$parent.setRelationDataTable({
                   page:      0 === opts.start ? 1 : (opts.start/opts.length) + 1,
