@@ -1,4 +1,3 @@
-import { PAGELENGTHS }        from 'g3w-constants';
 import ApplicationState       from 'store/application'
 import { sanitizeFidFeature } from 'utils/sanitizeFidFeature';
 
@@ -11,12 +10,12 @@ export function createRelationsUrl({
   fid,
   type       = 'data', // <editing, data, xls>
   formatter = 1,
-  page      = 1, //@since 3.11.2
-  page_size = PAGELENGTHS[0] //@since 3.11.2
+  page      , //@since 3.11.2
+  page_size,  //@since 3.11.2
 }) {
   return `${ApplicationState.project.getLayerById(
     undefined === relation.father
       ? (layer.id === relation.referencedLayer ? relation.referencingLayer : relation.referencedLayer)
       : (layer.id === relation.father          ? relation.child            : relation.father)
-  ).getUrl(type)}?relationonetomany=${relation.id}|${sanitizeFidFeature(fid)}&formatter=${formatter}&page=${page}&page_size=${page_size}`;
+  ).getUrl(type)}?relationonetomany=${relation.id}|${sanitizeFidFeature(fid)}&formatter=${formatter}${page ? '&page=' + page: ''}${page_size ? '&page_size=' + page_size: ''}`;
 }
