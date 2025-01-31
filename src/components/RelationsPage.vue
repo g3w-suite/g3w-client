@@ -63,7 +63,7 @@ export default {
   },
   computed: {
     showrelationslist() {
-      return 'relations' === this.previousview;
+      return 'relations' === this.previousview && this.relations.length > 1;
     }
   },
   methods: {
