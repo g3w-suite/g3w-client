@@ -1,11 +1,13 @@
 import ApplicationState from 'store/application';
 
+export const i18next = require('i18next');
+
 export const getAppLanguage = () => window.initConfig.user.i18n || "en";
 /* function to translate */
 export const t = text => i18next.t(text);
 
  /* function to translate plugins */
-export const tPlugin =  text =>i18next.t(`plugins.${text}`);
+export const tPlugin =  text => i18next.t(`plugins.${text}`);
 
 export const addI18n = i18nObject => {
   for (const lang in i18nObject) {

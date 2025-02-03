@@ -1,5 +1,3 @@
-import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
-
 /**
  * @param layer single layer or an array of layers
  * @param inputs
@@ -11,23 +9,13 @@ export function createFilterFormInputs({
   inputs = [],
 }) {
 
-  let filters;
-
-  const fields = inputs.map(({ attribute, value, operator, logicop }, i) => {
+  const filter = inputs.map((input, i) => Array.isArray(input.attribute)
     // multi key relation fields
-    if (Array.isArray(attribute)) {
-      return attribute
-        .map((attr, j) => createSingleFieldParameter({ field: attr, value: value[j], operator, logicop: null }))
-        .join('|AND,') || '';
-    }
+    ? input.attribute.map((attr, j) => [].concat(input.value[j]).map(v => `${attr}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|null,`)).join('|AND,')
     // input logic operator 
-    return `${i > 0 ? `|${inputs[i-1].logicop},` : ''}${createSingleFieldParameter({ field: attribute, value, operator, logicop })}`
-  });
-
-  let filter = fields.join('') || undefined; // NB: comma separator is already added before
-
-  filters = [].concat(layer).map(() => filter);
+    : `${i > 0 ? `|${inputs[i-1].logicop},` : ''}${[].concat(input.value).map(v => `${input.attribute}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|${undefined !== input.logicop ? input.logicop : 'OR'},`)}`
+  ).join('') || undefined;
 
   // check if is a single layer of an array of layers
-  return Array.isArray(layer) ? filters : filters[0];
+  return Array.isArray(layer) ? layer.map(() => filter) : filter;
 }

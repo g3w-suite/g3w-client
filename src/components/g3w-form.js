@@ -7,7 +7,7 @@ import G3WObject                   from 'g3w-object';
 import Component                   from 'g3w-component';
 import GUI                         from 'services/gui';
 
-import * as vueComp                from 'components/Form.vue';
+import vueComp                     from 'components/Form.vue';
 import BodyFormComp                from 'components/FormBody.vue';
 
 import { getDefaultExpression }    from 'utils/getDefaultExpression';

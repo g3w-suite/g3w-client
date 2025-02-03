@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.11.0
+# G3W-CLIENT v4.0.0-alpha.0
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -93,33 +93,11 @@ cd ./g3w-client
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up      # backend server   (g3w-admin)
+npm run docker:up # start g3w-admin server (backend)
 ```
 
 ```sh
-npm run dev            # frontend server  (g3w-client)
-```
-
-If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
-
-```sh
-# EXAMPLE 1:
-# project_group = "countries";
-# project_type  = "qdjango";
-# project_id    = "1"
-
-http://localhost:8000/en/map/countries/qdjango/1 # g3w-admin  (production)
-http://localhost:3000/en/map/countries/qdjango/1 # g3w-client (development)
-```
-
-```sh
-# EXAMPLE 2:
-# project_group = "eleprofile";
-# project_type  = "qdjango";
-# project_id    = "2"
-
-http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
-http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
+npm run dev       # watch g3w-client assets (frontend)
 ```
 
 ### Plugins

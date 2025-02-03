@@ -227,7 +227,7 @@ g3wsdk.gui.GUI.once('ready', () => {
         clickmap:    false,
         name:        'OPENIFRAME',
         tipLabel:    'Open in iframe',
-        customClass: g3wsdk.gui.GUI.getFontClass('plugin'),
+        customClass: 'fa fa-window-restore',
         onclick() {
           const w = window.open('about:blank', '_blank', `fullscreen=yes`);
           w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);

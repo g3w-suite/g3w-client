@@ -62,14 +62,6 @@
         @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
-      <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
-      <span
-        v-if   = "layerstree.external && layerstree.download"
-        style  = "color: #ffffff; margin-left: 5px;"
-        :class = "g3wtemplate.getFontClass('download')"
-        @click = "downloadExternalLayer(layerstree.download)"
-      ></span>
-
       <!-- HIDDEN NODE (LAYER) -->
       <span
         v-show = "!layerstree.hidden"
@@ -240,7 +232,6 @@ import ApplicationState            from "store/application";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
-import { downloadFile }            from 'utils/downloadFile';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 function _setAllLayersVisible(layers) {
@@ -548,14 +539,6 @@ export default {
 
     triClass() {
       return this.g3wtemplate.getFontClass(this.layerstree.checked ? 'check' : 'uncheck');
-    },
-
-    downloadExternalLayer(download) {
-      if (download.file) {
-        downloadFile(download.file);
-      } else if (download.url) {
-        /** @FIXME missing implementation */
-      }
     },
 
     removeExternalLayer(name) {

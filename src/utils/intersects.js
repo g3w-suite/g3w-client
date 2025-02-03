@@ -1,12 +1,10 @@
-import jsts from 'jsts/dist/jsts.min.js';
+import 'jsts/dist/jsts.min.js';
 
 /**
- * Check if `geometryCheck` intersects with `geometry`
- * 
  * @param   {ol.geometry} geometry
  * @param   {ol.geometry} geometryToCheck
  * 
- * @returns {boolean}     whether `geometryToCheck` interesects `geometry`
+ * @returns {boolean}     whether `geometry` interesects `geometryToCheck`  
  * 
  * @since 3.8.0
  */

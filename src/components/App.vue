@@ -149,7 +149,6 @@
 
               <!-- ADD LAYER -->
               <a
-                v-if   = "'legend' !== activeTab"
                 href   = "#"
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
@@ -346,24 +345,22 @@
         ></div>
 
         <div id="application-notifications">
-          <div id = "offline_notification"
-            :class = "{ 'g3w-hide': app.online }"
-            style = "color: #999"
-          >
+          <!-- OFFLINE -->
+          <div :class = "{ 'g3w-hide': app.online }" style = "color: #999">
             <i :class = "$fa('wifi')"></i>
-            <div style = "font-weight: bold; font-size:0.4em">offline</div>
+            <b style = "font-size: 0.4em">offline</b>
           </div>
-          <div id = "download_notification" v-download.show title = "DOWNLOAD" class = "skin-color">
-            <bar-loader :loading = "true"/>
+          <!-- DOWNLOAD -->
+          <div :class = "{ 'skin-color': true, 'g3w-hide': !app.download }">
+            <bar-loader :loading = "true" />
             <i style = "padding:3px" :class = "$fa('download')"></i>
+            <b style = "font-size: 0.35em">download</b>
           </div>
-          <div
-            id     = "plugins_notification"
-            :class = "{ 'g3w-hide': 0 === app.plugins.length }"
-            style  = "color: #994b10"
-          >
-            <bar-loader :loading = "true"/>
-            <i :class = "$fa('plugin')"></i>
+          <!-- PLUGINS -->
+          <div :class = "{ 'g3w-hide': 0 === app.plugins.length }" style = "color: #994b10">
+            <bar-loader :loading = "true" />
+            <i :class = "$fa('tools')"></i>
+            <b style = "font-size: 0.4em">plugins</b>
           </div>
         </div>
 
@@ -435,12 +432,12 @@
             :style = "[state.content.style.title]"
             :class = "{'mobile': isMobile()}"
           >
-          <b id = "contenttitle">
-            <span v-t = "contentTitle.text ? null : contentTitle.title">
-              <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
-            </span>
-            <span v-t = "contentTitle.post_title"></span>
-          </b>
+            <b id = "contenttitle">
+              <span v-t = "contentTitle.text ? null : contentTitle.title">
+                <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
+              </span>
+              <span v-t = "contentTitle.post_title"></span>
+            </b>
           </div>
           <div
             class = "g3-content-header-action-tools"
@@ -537,7 +534,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import { t }              from 'g3w-i18n';
+import { t, i18next }     from 'g3w-i18n';
 
 export default {
 
@@ -558,6 +555,7 @@ export default {
     custom_links.forEach(l => !l.id && (l.id = getUniqueDomId()));
 
     return {
+      iframe:                false,
       language:              null,
       cookie_law_buttonText: t('cookie_law.buttonText'),
       app:                   ApplicationState,
@@ -1071,11 +1069,6 @@ export default {
 </script>
 
 <style>
-  @keyframes sk-bounce                              { 0%, 100% { transform: scale(0.0); } 50% { transform: scale(1.0); } }
-  #startingspinner                                  { position: fixed; z-index: 100000; height: 10em; width: 10em; overflow: show; margin: auto; inset: 0; }
-  #startingspinner .double-bounce1,
-  #startingspinner .double-bounce2                  { width: 100%; height: 100%; border-radius: 50%; background-color: var(--skin-color); opacity: .6; position: absolute; top: 0; left: 0; animation: sk-bounce 2.0s infinite ease-in-out; }
-  #startingspinner .double-bounce2                  { animation-delay: -1.0s; }
   .g3w-modal-project-message.Info .modal-header     { background-color: #0073b7; }
   .g3w-modal-project-message.Warning .modal-header  { background-color: #e99611; }
   .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
@@ -1105,8 +1098,8 @@ export default {
 <style scoped>
   .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
   .project_title > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
-  .project_title .h2 { font-size: 1.6em; }
-  .project_title h1  { font-size: 1.3em; }
+  .project_title .h2 { font-size: 1.5em; }
+  .project_title h1  { font-size: 1.2em; padding-bottom: 5px; }
 
   #g3w-sidebarpanel-header-placeholder {
     overflow: hidden;
@@ -1161,6 +1154,7 @@ export default {
 
   @media (min-width: 767px) {
     .user-footer :is(.nav-sidebar, .nav-addlayer).btn-default { display: none; }
+    .project_title                                            { margin-right: auto; }
   }
 
   @media (max-width: 767px) {

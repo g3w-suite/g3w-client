@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputRange.vue';
+import vueComponentOptions from 'components/InputRange.vue';
 
 const RangeInput = Vue.extend(vueComponentOptions);
 

@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputTextArea.vue';
+import vueComponentOptions from 'components/InputTextArea.vue';
 
 const TextAreaInput = Vue.extend(vueComponentOptions);
 

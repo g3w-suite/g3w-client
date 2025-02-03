@@ -8,15 +8,7 @@
 /**
  * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
  */
-// import { version } from '../package.json';
-import version      from './version';
-
-/**
- * Same as "package.json" version
- * 
- * @type {string}
- */
-export const APP_VERSION = version;
+export { version as APP_VERSION } from '../package.json';
 
 /**
  * Default editing capabilities
@@ -424,7 +416,6 @@ export const SELECTION = {
 export const PAGELENGTHS = [10, 25, 50, 100];
 
 export default {
-  APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
   DOTS_PER_INCH,
   FILTER_OPERATORS,

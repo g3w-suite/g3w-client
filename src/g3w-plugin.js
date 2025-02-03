@@ -385,12 +385,10 @@ export class Plugin extends G3WObject {
    */
   createSideBarComponent(vue, opts = {}) {
 
-    const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
-
     opts.vueComponentObject = vue; 
-    opts.collapsible        = çç(opts.collapsible, true);
-    opts.mobile             = çç(opts.mobile, true);
-    opts.sidebarOptions     = çç(opts.sidebarOptions, { position: 1 });
+    opts.collapsible        = opts.collapsible    ?? true;
+    opts.mobile             = opts.mobile         ?? true;
+    opts.sidebarOptions     = opts.sidebarOptions ?? { position: 1 };
 
     GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
 

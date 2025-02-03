@@ -159,18 +159,29 @@ import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
-import { coordinatesToGeometry }   from 'utils/coordinatesToGeometry';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { t }                       from 'g3w-i18n';
+
+function toOLGeom(geom) {
+  return new (Object.entries({
+    'MultiPolygon': ol.geom.MultiPolygon,
+    'MultiLine':    ol.geom.MultiLineString,
+    'MultiPoint':   ol.geom.MultiPoint,
+    'Polygon':      ol.geom.Polygon,
+    'Line':         ol.geom.LineString,
+    'Point':        ol.geom.Point,
+    '':             ol.geom.Point, // fallback
+  }).find(o => geom.type.startsWith(o[0])))[1](geom.coordinates);
+}
 
 function _createFeatureForSelection(f) {
   return {
     id: f.id,
     feature: {
       attributes: f.attributes || f.properties,
-      geometry:   f.geometry ? coordinatesToGeometry(f.geometry.type, f.geometry.coordinates) : f.geometry,
+      geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
     },
   }
 }
@@ -283,7 +294,7 @@ export default {
         );
         // zoom to feature
         if (feature.geometry) {
-          GUI.getService('map').zoomToGeometry(coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates));
+          GUI.getService('map').zoomToGeometry(toOLGeom(feature.geometry));
         }
       } catch (e) {
        console.warn(e); 

@@ -20,12 +20,12 @@
       <div
         v-if = "show_required_field_message"
         id   = "g3w-for-inputs-required-inputs-message"
+        style = "caret-color: rgba(0,0,0,0);"
       >
-        <span class = "hide-cursor-caret-color">*</span>
+        <span>*</span>
         <span
-          class = "hide-cursor-caret-color"
-          v-t   = "'sdk.form.footer.required_fields'">
-        </span>
+          v-t   = "'sdk.form.footer.required_fields'"
+        ></span>
       </div>
     </div>
   </form>

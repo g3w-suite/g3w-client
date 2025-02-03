@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputCheckbox.vue';
+import vueComponentOptions from 'components/InputCheckbox.vue';
 
 const CheckBoxInput = Vue.extend(vueComponentOptions);
 

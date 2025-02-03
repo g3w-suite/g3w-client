@@ -1,6 +1,3 @@
-import { TIMEOUT }      from 'g3w-constants';
-import { downloadFile } from "utils/downloadFile";
-
 export const XHR = {
 
   /**
@@ -96,52 +93,6 @@ export const XHR = {
     } catch(e) {
       return response;
     }
-  },
-
-  fileDownload({ url, data, httpMethod = "POST", signal } = {}) {
-    let timeout;
-    return new Promise(async (resolve, reject) => {
-      try {
-        timeout = setTimeout(() => {
-          reject('Timeout');
-        }, TIMEOUT);
-        downloadFile({
-          url:     'GET' === httpMethod ? `${url}${data ? '?' + new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString() : ''}` : url,
-          headers: {
-            'Access-Control-Expose-Headers': 'Content-Disposition', //need to get filename from server
-          },
-          method:  httpMethod,
-          //set form data to download file @since 3.11.0 to replace $.fileDownload from 3.10.x
-          data:   'POST' === httpMethod ? Object.keys(data || {}).reduce((a, k) => { a.append(k, data[k]); return a; }, new FormData()): undefined,
-          signal,
-        })
-        return resolve();
-      } catch(e) {
-        return reject(e);
-      } finally {
-        clearTimeout(timeout);
-      }
-    })
-
-  },
-
-  /**
-   * Delete request
-   *
-   * @param url
-   * @param data
-   * @param signal
-   * 
-   * @returns {Promise<Response>}
-   * 
-   * @since 3.10.0
-   */
-  async delete({ url, data = {} , signal }) {
-    return (await fetch(url, {
-      method: 'DELETE',
-      body:   JSON.stringify(data),
-      signal,
-    })).json();
   },
 
 };

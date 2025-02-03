@@ -70,10 +70,10 @@
 </template>
 
 <script>
-import { toRawType } from 'utils/toRawType';
-
-import Field         from 'components/Field.vue';
-import Teleport      from 'vue2-teleport';
+import Teleport           from 'vue2-teleport';
+import Field              from 'components/Field.vue';
+import { toRawType }      from 'utils/toRawType';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 export default {
 
@@ -83,7 +83,7 @@ export default {
   props: ['state'],
   data() {
     return {
-      id:     Date.now(),
+      id:     getUniqueDomId(),
       active: null,
       value:  undefined !== this.state.value.mime_type ? this.state.value.value : this.state.value,
     }
@@ -140,6 +140,8 @@ export default {
     margin-right: -4px;
   }
   .carousel .carousel-control span {
-    color: #3c8dbc
+    color: #3c8dbc;
+    position: absolute;
+    top: 50%;
   }
 </style>

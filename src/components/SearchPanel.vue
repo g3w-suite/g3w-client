@@ -162,7 +162,6 @@
             id          = "dosearch"
             class       = "sidebar-button-run btn btn-block pull-right"
             @click.stop = "doSearch"
-            data-i18n   = "dosearch"
             v-t         = "'dosearch'"
           ></button>
         </div>
@@ -186,7 +185,6 @@
   }                                            from 'g3w-constants';
   import ApplicationState                      from 'store/application';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
-  import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import resizeMixin                           from 'mixins/resize';
   import { t }                                 from 'g3w-i18n';
@@ -252,7 +250,7 @@
        * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
        */
       getLabelOperator(operator) {
-        return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
+        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`
       },
 
       async onFocus(e) {
@@ -301,7 +299,9 @@
             const filter = getDataForSearchInput.field({
               state,
               field,
-              fields: [SEARCH_ALLVALUE, undefined].includes(value) ? [] : [createSingleFieldParameter({ field, value, operator: input.operator })]
+              fields: [SEARCH_ALLVALUE, undefined].includes(value)
+                ? []
+                : [[].concat(value).map(v => `${field}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|OR,`)]
             });
 
             const cached = d.dvalues[filter];
@@ -601,5 +601,8 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
+  }
+  .search-label .skin-color {
+    font-family: monospace;
   }
 </style>

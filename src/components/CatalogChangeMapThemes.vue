@@ -89,7 +89,6 @@
                   :value   = "map_theme.theme"
                   v-model  = "active_theme"
                   class    = "magic-radio"
-                  :checked = "map_theme.default"
                 />
                 <label
                   :for  = "`g3w-map_theme-${i}`"
@@ -136,7 +135,6 @@
                     :value   = "map_theme.theme"
                     v-model  = "active_theme"
                     class    = "magic-radio"
-                    :checked = "map_theme.default"
                   />
                   <label :for = "`g3w-map_theme-${i}-user`">
                     <span class = "g3w-long-text">{{ map_theme.theme }}</span>
@@ -364,7 +362,9 @@ export default {
           return;
         }
         try {
-          const deleted = await XHR.delete({url:`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`});
+          const deleted = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
+            method: 'DELETE',
+          })).json();
           if (deleted.result) {
             this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
             // show a success message to user

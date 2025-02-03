@@ -1,11 +1,9 @@
-import jsts from 'jsts/dist/jsts.min.js';
+import 'jsts/dist/jsts.min.js';
 
 /**
- * Check if `geometryToCheck` is within `geometry`
- * 
  * @param   { ol.geometry } geometry
  * @param   { ol.geometry } geometryToCheck
- * @returns { boolean }     whether `geometryToCheck` is within `geometry`
+ * @returns { boolean }     whether `geometry` contains `geometryToCheck` 
  * 
  * @since 3.8.0
  */
