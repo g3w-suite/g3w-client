@@ -200,7 +200,7 @@
   import { XHR }                                  from "utils/XHR";
   import { createRelationsUrl }                   from "utils/createRelationsUrl";
   import { getAlphanumericPropertiesFromFeature } from "utils/getAlphanumericPropertiesFromFeature";
-  import { saveBlob } from "utils/saveBlob";
+  import { saveBlob }                             from "utils/saveBlob";
 
   let SIDEBARWIDTH;
 
@@ -538,7 +538,7 @@
               signal:  AbortSignal.timeout(TIMEOUT),
           });
 
-          if (!response?.ok) {
+          if (!(response && response.ok)) {
             throw (await response.json()).message;
           }
 
