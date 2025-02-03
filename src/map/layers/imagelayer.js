@@ -20,7 +20,7 @@ import { get_legend_params }  from 'utils/get_legend_params';
  * @returns { string | null } a string if value is set or null
  */
 function __(name, value) {
-  return (value || 0 === value) ? `${name}${value}` : null;
+  return [null, undefined].includes(value) ? value : `${name}${value}`;
 }
 
 /**
@@ -823,7 +823,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * 
    * @see https://docs.qgis.org/3.28/en/docs/server_manual/services/wms.html#getlegendgraphics
    */
-  getLegendUrl(params = {}, opts = {categories:false,  all:false,format:'image/png',}) {
+  getLegendUrl(params = {}, opts = { categories:false,  all:false,format:'image/png',}) {
 
     let base_url, url_params;
 
@@ -845,7 +845,9 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       layerfontfamily,
       layerfontbold,
       itemfontbold,
+      itemfontsize, //@since 3.11.3
       layerfontitalic,
+      layerfontsize, //@since 3.11.3
       itemfontitalic,
       rulelabel,
       crs,
@@ -895,9 +897,9 @@ class ImageLayer extends GeoLayerMixin(Layer) {
         __('ITEMFONTCOLOR=',   color),
         __('LAYERFONTCOLOR=',  color),
         __('LAYERTITLE=',      layertitle),
-        __('ITEMFONTSIZE=',    fontsize),
+        __('ITEMFONTSIZE=',    itemfontsize || fontsize),
         __('CRS=',             crs),
-        __('BBOX=',            ([false, undefined].includes(opts.all) && bbox && bbox.join(','))),
+        __('BBOX=',            ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && bbox && bbox.join(',')))),
         __('BOXSPACE=',        boxspace),
         __('LAYERSPACE=',      layerspace),
         __('LAYERTITLESPACE=', layertitlespace),
@@ -910,6 +912,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
         __('LAYERFONTBOLD=',   layerfontbold),
         __('ITEMFONTBOLD=',    itemfontbold),
         __('LAYERFONTITALIC=', layerfontitalic),
+        __('LAYERFONTSIZE=',   layerfontsize), //@since 3.11.3
         __('ITEMFONTITALIC=',  itemfontitalic),
         __('RULELABEL=',       rulelabel),
         __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
