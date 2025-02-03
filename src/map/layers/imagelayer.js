@@ -845,9 +845,10 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       layerfontfamily,
       layerfontbold,
       itemfontbold,
-      itemfontsize, //@since 3.11.3
+      itemfontsize,     //@since 3.11.3
       layerfontitalic,
-      layerfontsize, //@since 3.11.3
+      layerfontsize,    //@since 3.11.3
+      showfeaturecount, //@since 3.11.3
       itemfontitalic,
       rulelabel,
       crs,
@@ -889,36 +890,37 @@ class ImageLayer extends GeoLayerMixin(Layer) {
         'SERVICE=WMS',
         'VERSION=1.3.0',
         'REQUEST=GetLegendGraphic',
-        __('SLD_VERSION=',     sld_version),
-        __('WIDTH=',           width),
-        __('HEIGHT=',          height),
-        __('FORMAT=',          (undefined === opts.format ? 'image/png' : opts.format)),
-        __('TRANSPARENT=',     transparent),
-        __('ITEMFONTCOLOR=',   color),
-        __('LAYERFONTCOLOR=',  color),
-        __('LAYERTITLE=',      layertitle),
-        __('ITEMFONTSIZE=',    itemfontsize || fontsize),
-        __('CRS=',             crs),
-        __('BBOX=',            ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && bbox && bbox.join(',')))),
-        __('BOXSPACE=',        boxspace),
-        __('LAYERSPACE=',      layerspace),
-        __('LAYERTITLESPACE=', layertitlespace),
-        __('SYMBOLSPACE=',     symbolspace),
-        __('ICONLABELSPACE=',  iconlabelspace),
-        __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
-        __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
-        __('LAYERFONTFAMILY=', layerfontfamily),
-        __('ITEMFONTFAMILY=',  itemfontfamily),
-        __('LAYERFONTBOLD=',   layerfontbold),
-        __('ITEMFONTBOLD=',    itemfontbold),
-        __('LAYERFONTITALIC=', layerfontitalic),
-        __('LAYERFONTSIZE=',   layerfontsize), //@since 3.11.3
-        __('ITEMFONTITALIC=',  itemfontitalic),
-        __('RULELABEL=',       rulelabel),
-        __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
-        __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
-        __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
-        __('LAYER=',           this.getWMSLayerName({ type: 'legend' }))
+        __('SLD_VERSION=',      sld_version),
+        __('WIDTH=',            width),
+        __('HEIGHT=',           height),
+        __('FORMAT=',           (undefined === opts.format ? 'image/png' : opts.format)),
+        __('TRANSPARENT=',      transparent),
+        __('ITEMFONTCOLOR=',    color),
+        __('LAYERFONTCOLOR=',   color),
+        __('LAYERTITLE=',       layertitle),
+        __('ITEMFONTSIZE=',     itemfontsize || fontsize), //@since 3.11.3 check itemfontsize or fontsize
+        __('CRS=',              crs),
+        __('BBOX=',             ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && bbox && bbox.join(',')))),
+        __('BOXSPACE=',         boxspace),
+        __('LAYERSPACE=',       layerspace),
+        __('LAYERTITLESPACE=',  layertitlespace),
+        __('SYMBOLSPACE=',      symbolspace),
+        __('ICONLABELSPACE=',   iconlabelspace),
+        __('SYMBOLWIDTH=',      (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
+        __('SYMBOLHEIGHT=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
+        __('LAYERFONTFAMILY=',  layerfontfamily),
+        __('ITEMFONTFAMILY=',   itemfontfamily),
+        __('LAYERFONTBOLD=',    layerfontbold),
+        __('ITEMFONTBOLD=',     itemfontbold),
+        __('LAYERFONTITALIC=',  layerfontitalic),
+        __('LAYERFONTSIZE=',    layerfontsize),    //@since 3.11.3
+        __('SHOWFEATURECOUNT=', showfeaturecount), //@since 3.11.3
+       __('ITEMFONTITALIC=',    itemfontitalic),
+        __('RULELABEL=',        rulelabel),
+        __('LEGEND_ON=',        ctx_legend && ctx_legend.LEGEND_ON),
+        __('LEGEND_OFF=',       ctx_legend && ctx_legend.LEGEND_OFF),
+        __('STYLES=',           (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
+        __('LAYER=',            this.getWMSLayerName({ type: 'legend' }))
       ]; 
     }
 
