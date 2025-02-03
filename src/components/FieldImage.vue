@@ -21,7 +21,7 @@
 <script>
 import Field from 'components/Field.vue';
 
-const { toRawType } = require('utils');
+const { toRawType, getUniqueDomId } = require('utils');
 
 export default {
 
@@ -31,7 +31,7 @@ export default {
   props: ['state'],
   data() {
     return {
-      galleryId: `gallery_${Date.now()}`,
+      galleryId: `gallery_${getUniqueDomId()}`,
       active:     null,
       value:      this.state.value.mime_type !== undefined ? this.state.value.value : this.state.value
     }
