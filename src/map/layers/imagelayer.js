@@ -915,7 +915,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
         __('LAYERFONTITALIC=',  layerfontitalic),
         __('LAYERFONTSIZE=',    layerfontsize),    //@since 3.11.3
         __('SHOWFEATURECOUNT=', showfeaturecount), //@since 3.11.3
-       __('ITEMFONTITALIC=',    itemfontitalic),
+        __('ITEMFONTITALIC=',   itemfontitalic),
         __('RULELABEL=',        rulelabel),
         __('LEGEND_ON=',        ctx_legend && ctx_legend.LEGEND_ON),
         __('LEGEND_OFF=',       ctx_legend && ctx_legend.LEGEND_OFF),
