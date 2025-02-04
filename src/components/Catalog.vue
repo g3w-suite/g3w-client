@@ -221,7 +221,7 @@
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
         <div
-          v-if   = "'tab' === legend_position"
+          v-if   = "'tab' === legend_position && 'legend' === activeTab"
           v-for  = "tree in state.layerstrees"
           :key   = "tree.id"
           role   = "tabpanel"
@@ -526,8 +526,7 @@ export default {
           obj.loading = false;
         }
       }
-
-    return legendurls;
+      return legendurls;
     },
 
     /**
