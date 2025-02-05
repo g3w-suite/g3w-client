@@ -660,7 +660,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     return (
         source && (
         ('map' !== type || (this.isExternalWMS() && this.isLayerProjectionASMapProjection())) &&
-        ('legend' === type || source.external)
+        ('legend' !== type || source.external)
       )
     );
   }
