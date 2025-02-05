@@ -536,22 +536,14 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
   .sidebar-open .content-wrapper        { transform: translate(300px,0); }
 }
 
-.tooltip                             { position: absolute; z-index: 1070; display: block; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-style: normal; font-weight: 400; line-height: 1.42857143; line-break: auto; text-align: left; text-align: start; text-decoration: none; text-shadow: none; text-transform: none; letter-spacing: normal; word-break: normal; word-spacing: normal; word-wrap: normal; white-space: normal; font-size: 12px; opacity: 0; }
-.tooltip.in                          { opacity: 0.9; }
-.tooltip.top                         { padding: 5px 0; margin-top: -3px; }
-.tooltip.right                       { padding: 0 5px; margin-left: 3px; }
-.tooltip.bottom                      { padding: 5px 0; margin-top: 3px; }
-.tooltip.left                        { padding: 0 5px; margin-left: -3px; }
-.tooltip.top          .tooltip-arrow { bottom: 0;   left:   50%; margin-left:   -5px; border-width: 5px 5px 0;     border-top-color:    #000; }
-.tooltip.top-left     .tooltip-arrow { right:  5px; bottom: 0;   margin-bottom: -5px; border-width: 5px 5px 0;     border-top-color:    #000; }
-.tooltip.top-right    .tooltip-arrow { bottom: 0;   left:   5px; margin-bottom: -5px; border-width: 5px 5px 0;     border-top-color:    #000; }
-.tooltip.right        .tooltip-arrow { top:    50%; left:   0;   margin-top:    -5px; border-width: 5px 5px 5px 0; border-right-color:  #000; }
-.tooltip.left         .tooltip-arrow { top:    50%; right:  0;   margin-top:    -5px; border-width: 5px 0 5px 5px; border-left-color:   #000; }
-.tooltip.bottom       .tooltip-arrow { top:    0;   left:   50%; margin-left:   -5px; border-width: 0 5px 5px;     border-bottom-color: #000; }
-.tooltip.bottom-left  .tooltip-arrow { top:    0;   right:  5px; margin-top:    -5px; border-width: 0 5px 5px;     border-bottom-color: #000; }
-.tooltip.bottom-right .tooltip-arrow { top:    0;   left:   5px; margin-top:    -5px; border-width: 0 5px 5px;     border-bottom-color: #000; }
-.tooltip-inner                       { max-width: 200px; padding: 3px 8px; color: #fff; text-align: center; background-color: #000; border-radius: 4px; }
-.tooltip-arrow                       { position: absolute; width: 0; height: 0; border-color: transparent; border-style: solid; }
+.tooltip        { position: absolute; z-index: 1070; display: block; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-style: normal; font-weight: 400; line-height: 1.42857143; line-break: auto; text-align: left; text-align: start; text-decoration: none; text-shadow: none; text-transform: none; letter-spacing: normal; word-break: normal; word-spacing: normal; word-wrap: normal; white-space: normal; font-size: 12px; opacity: 0; }
+.tooltip.in     { opacity: 0.9; }
+.tooltip.top    { padding: 5px 0; margin-top: -3px; }
+.tooltip.right  { padding: 0 5px; margin-left: 3px; }
+.tooltip.bottom { padding: 5px 0; margin-top: 3px; }
+.tooltip.left   { padding: 0 5px; margin-left: -3px; }
+.tooltip-arrow  { display: none; }
+.tooltip-inner  { max-width: 200px; color: #fff; text-align: center; border-radius: 4px; font-size: 1.25rem; padding: 8px; background-color: rgb(34, 34, 34, .8); border: 1px solid #fff; max-width: 100% !important;}
 
 /**************************************************************************************
  * 3. Header
@@ -559,7 +551,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 
 .navbar                                                      { position: relative; min-height: 50px; margin-bottom: 20px; border: 1px solid transparent; transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: 50px; border-radius: 0;}
 
-.nav-links li                                                { font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.5px; }
+.nav-links li                                                { border-right: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.5px; }
 .nav-links li:last-child                                     { border: 0; }
 .nav-links > li > a                                          { color: #fff; display: block; padding: 15px; }
 .nav-links > li > a:hover                                    { background: rgba(0,0,0,.1) !important; color: #f6f6f6; }
@@ -672,7 +664,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .main-sidebar .close-pane-button                                   { caret-color: rgba(0,0,0,0); color: transparent; border-radius: 30%; margin-top: 5px; line-height: 1.5em; height: 1.3em; width: 1.3em; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
 .main-sidebar .close-pane-button:hover                             { cursor: pointer; }
 .main-sidebar .close-pane-button .panel-icon                       { color: #fff; }
-.main-sidebar .treeview-label                                      { font-size: 1.1em; font-weight: bold; margin-left: 5px; }
+.main-sidebar .treeview-label                                      { margin-left: 5px; }
 .main-sidebar .menu-items                                          { padding: 10px 15px; }
 .main-sidebar .menu-items li                                       { background-color: #374850; border-radius: .25rem; padding: 2px; margin-bottom: 2px; color: #FFF; cursor: pointer; }
 .main-sidebar .menu-items li.toggled                               { color: #374850; background-color: #fff; }
@@ -790,7 +782,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 #tools.single li,
 #tools.single .tool,
 #tools.single .g3w-tools              { background-color: transparent; }
-#tools.single li                      { color: #fff; font-weight: bold; border-left: 3px solid transparent; }
+#tools.single li                      { color: #fff; border-left: 3px solid transparent; }
 #tools.single li:hover                { border-left-color: #e99611;   background: #1e282c; }
 
 /**************************************************************************************
@@ -1250,7 +1242,6 @@ table.dataTable thead tr th                                               { padd
 
 .ql-tooltip[data-mode="link"]                                             { left: 0 !important; }
 .ql-container                                                             { height: auto; }
-body .tooltip .tooltip-inner                                              { max-width: 100% !important; }
 
 
 @keyframes hover-color                                          { 0% { border-color: silver } to { border-color: #3e97eb } }
@@ -1330,8 +1321,6 @@ body .tooltip .tooltip-inner                                              { max-
 
 /* Catalog */
 .catalog-context-menu li:hover      { background: var(--skin-l10); }
-
-.tooltip .tooltip-inner             { font-weight: 700; font-size: 1.25rem; padding: 8px; background-color: #222; }
 
 /**************************************************************************************
  * 15. Print

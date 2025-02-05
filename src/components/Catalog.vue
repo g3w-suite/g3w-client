@@ -1076,7 +1076,6 @@ export default {
     flex: 1 1 0;
   }
   .catalog .catalalog-nav-tabs > li {
-    font-size: 1em;
     white-space: initial;
     display: flex;
     flex: 1 1 0;

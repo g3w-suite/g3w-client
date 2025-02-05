@@ -84,8 +84,8 @@
             <!-- USER NAME -->
             <li v-if = "user" class = "user-header">
               👋
-              <span v-if="!user.first_name && !user.last_name">{{ user.username }}</span>
-              <span v-else>{{ user.first_name }} {{ user.last_name }}</span>
+              <b v-if="!user.first_name && !user.last_name">{{ user.username }}</b>
+              <b v-else>{{ user.first_name }} {{ user.last_name }}</b>
             </li>
 
             <li class = "user-footer">
@@ -743,7 +743,7 @@ export default {
      templateResultLanguages(state) {
       if (!state.id) { return state.text }
       return $(/*html*/`
-        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
+        <div style="display:flex; align-items: center; justify-content: space-around;">
           <img src="${this.urls.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
           <span style="margin-left: 5px;">${state.text}</span> 
         </span>`
