@@ -227,6 +227,7 @@
           role   = "tabpanel"
           id     = "legend"
           class  = "tab-pane"
+          :style = "{ backgroundColor: backgroundLegend }"
           :class = "{ active: 'legend' === activeTab }"
         >
           <div v-for = "t in tree.tree" class = "legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
@@ -320,6 +321,7 @@ export default {
       legend_position:  ApplicationState.project.state.legend_position || 'tab',
       iframe:           ApplicationState.iframe,
       showlegend:       false,
+      backgroundLegend: ApplicationState.gui.layout.app.legend.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
       currentBaseLayer: null,
       activeTab:        'layers',
       loading:          false,
@@ -370,13 +372,13 @@ export default {
 
   methods: {
 
-    onLegendError(legendurl) {
-      legendurl.error   = true;
-      legendurl.loading = false;
+    onLegendError(url) {
+      url.error   = true;
+      url.loading = false;
     },
 
-    onLegendLoad(legendurl) {
-      legendurl.loading = false;
+    onLegendLoad(url) {
+      url.loading = false;
     },
 
     /**
@@ -522,8 +524,6 @@ export default {
           } catch (e) {
             console.warn(e);
           }
-
-          obj.loading = false;
         }
       }
       return legendurls;
