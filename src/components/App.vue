@@ -235,15 +235,19 @@
                   <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                 </span>
                 <span
-                  @click.stop        = "closeAllPanels"
-                  data-placement     = "left"
-                  data-toggle        = "tooltip"
-                  data-container     = "body"
-                  v-t-tooltip.create = "'close'"
-                  class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  @click.stop            = "sidebar.buttons.close.enabled && closeAllPanels"
+                  data-toggle            = "tooltip"
+                  data-container         = "body"
+                  v-t-tooltip:top.create = "sidebar.buttons.close.tooltip"
+                  :current-tooltip       = "sidebar.buttons.close.tooltip"
+                  class                  = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                 >
                   <i :class = "$fa('circle')" class = "fa-stack-1x panel-button"></i>
-                  <i :class = "$fa('close')"  class = "fa-stack-1x panel-icon"></i>
+                  <i
+                    :style = "{ opacity: sidebar.buttons.close.enabled ? '1' : '0.7', cursor: sidebar.buttons.close.enabled ? 'pointer' : 'not-allowed' }"
+                    :class = "$fa('close')"
+                    class  = "fa-stack-1x panel-icon">
+                  </i>
                 </span>
               </div>
 
@@ -563,6 +567,7 @@ export default {
       updatePreviousTitle:   false,
       header:                t('main navigation'),
       custom_links,
+      sidebar:               ApplicationState.gui.sidebar,
     }
   },
 

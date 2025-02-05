@@ -103,7 +103,16 @@ const STATE = Vue.observable({
        * @since v3.11.0
        * true open, false hide - icons only
        */
-      open    : true
+      open    : true,
+      /**
+       * @since 3.11.3
+       */
+      buttons : {
+        close: {
+          enabled: true,
+          tooltip: 'close'
+        }
+      }
     },
 
     layout: {
