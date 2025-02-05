@@ -367,13 +367,13 @@ export default {
 
   methods: {
 
-    onLegendError(legendurl) {
-      legendurl.error   = true;
-      legendurl.loading = false;
+    onLegendError(url) {
+      url.error   = true;
+      url.loading = false;
     },
 
-    onLegendLoad(legendurl) {
-      legendurl.loading = false;
+    onLegendLoad(url) {
+      url.loading = false;
     },
 
     /**
@@ -519,8 +519,6 @@ export default {
           } catch (e) {
             console.warn(e);
           }
-
-          obj.loading = false;
         }
       }
       return legendurls;
