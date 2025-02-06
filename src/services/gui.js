@@ -86,7 +86,7 @@ async function _clearContents() {
     if (d.content instanceof Component || d.content instanceof Panel) {
       await promisify(d.content.unmount());
     } else {
-      $(GUI.getComponent('contents').parent).empty();
+      $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
     }
   }));
   ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
