@@ -5,6 +5,7 @@ import Panel                     from 'g3w-panel';
 
 import ApplicationState          from 'store/application';
 
+import GUI                       from 'services/gui';
 import IFrameRouterService       from 'services/iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
