@@ -5,7 +5,6 @@ import Panel                     from 'g3w-panel';
 
 import ApplicationState          from 'store/application';
 
-import GUI                       from 'services/gui';
 import IFrameRouterService       from 'services/iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
@@ -87,7 +86,7 @@ async function _clearContents() {
     if (d.content instanceof Component || d.content instanceof Panel) {
       await promisify(d.content.unmount());
     } else {
-      $(GUI.getComponent('contents').parent).empty();
+      $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
     }
   }));
   ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
