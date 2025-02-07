@@ -253,34 +253,55 @@
           state:  null,
           config: { downloads: [] },
         },
-        /** @since 3.11.2 */
+
+        /**
+         * @since 3.11.2
+         */
         page: 1,
-        /** @since 3.11.2 */
+
+        /**
+         * @since 3.11.2
+         */
         page_size: PAGELENGTHS[0],
-        /** @since 3.11.2 */
+
+        /**
+         * @since 3.11.2
+         */
         start: 0,
-        /** @since 3.11.2 */
+
+        /**
+         * @since 3.11.2
+         */
         table: {
           rows: [],
         },
+
         /**
          * @type { string | null } parameter sent to server
          * @since 3.11.3
          */
-        ordering: null,
+         ordering: null,
+
         /**
          * @type { "desc" | "asc" | "current" } column order
          * @since 3.11.3
          */
         sort: 'asc',
+
         /**
          * @type { number } current column index
          * @since 3.11.3
          */
         sort_column: 0,
-        /** @since 3.11.2 */
+
+        /**
+         * @since 3.11.2
+         */
         nmRelation: ApplicationState.project.getRelationById(this.relation.nmRelationId),
-        /** @since 3.11.2 */
+
+        /**
+         * @since 3.11.2
+         */
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
       };
     },
