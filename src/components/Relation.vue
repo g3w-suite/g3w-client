@@ -473,12 +473,14 @@
         if (!this.one) {
             //check if you need to get data pagination from server or use all features
           const data_from_server = this.table.rows.length < this.table.count;
+          //check if there is a columns of tools. In this case need to take care of it in columsn index value
+          const one_or_zero = (this.showTools ? 1 : 0);
           this.relationDataTable = $(this.$refs.relationtable).DataTable({
             autoWidth:      false,
             bLengthChange:  true,
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          [ this.sort_column + (this.showTools ? 1 : 0), this.sort],
+            order:          [ this.sort_column + one_or_zero, this.sort],
             lengthMenu:     PAGELENGTHS,
             pageLength:     this.page_size,
             displayStart:   this.start,
@@ -499,12 +501,12 @@
                 // set len start
                 this.page_size    = opts.length;
                 this.start        = opts.start;
-                const column      = opts.order[0].column - 1;
+                const column      = opts.order[0].column - one_or_zero;
                 const sort        = column === this.sort_column ? (changed ? this.sort : ('desc' === this.sort  ? 'asc' : 'desc') ) : 'asc';
                 this.sort_column  = column;
                 this.sort         = sort;
                 // send parameter to server ("-" = descending )
-                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - 1].name}`;
+                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - one_or_zero].name}`;
                 this.table        = await this.getRelationDataTable({
                   page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
