@@ -253,14 +253,26 @@
           state:  null,
           config: { downloads: [] },
         },
-        //@since 3.11.2
-        page:            1,
-        page_size:       PAGELENGTHS[0],
-        start:           0,
-        table:           { rows: [] },
-        ordering:        null, //@since 3.11.3 parameter to server
-        order:           { column : 0, sort:  'asc' }, //@since 3.11.3 current means current column order.
-        nmRelation:      ApplicationState.project.getRelationById(this.relation.nmRelationId),
+        /** @since 3.11.2 */
+        page: 1,
+        /** @since 3.11.2 */
+        page_size: PAGELENGTHS[0],
+        /** @since 3.11.2 */
+        start: 0,
+        /** @since 3.11.2 */
+        table: {
+          rows: [],
+        },
+        /** @since 3.11.3 - parameter to server  */
+        ordering: null,
+        /** @since 3.11.3 - "current" means current column order */
+        order: {
+          column: 0,
+          sort: 'asc'
+        },
+        /** @since 3.11.2 */
+        nmRelation: ApplicationState.project.getRelationById(this.relation.nmRelationId),
+        /** @since 3.11.2 */
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
       };
     },
