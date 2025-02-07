@@ -263,13 +263,21 @@
         table: {
           rows: [],
         },
-        /** @since 3.11.3 - parameter to server  */
+        /**
+         * @type { string | null } parameter sent to server
+         * @since 3.11.3
+         */
         ordering: null,
-        /** @since 3.11.3 - "current" means current column order */
-        order: {
-          column: 0,
-          sort: 'asc'
-        },
+        /**
+         * @type { "desc" | "asc" | "current" } column order
+         * @since 3.11.3
+         */
+        sort: 'asc',
+        /**
+         * @type { number } current column index
+         * @since 3.11.3
+         */
+        sort_column: 0,
         /** @since 3.11.2 */
         nmRelation: ApplicationState.project.getRelationById(this.relation.nmRelationId),
         /** @since 3.11.2 */
@@ -470,7 +478,7 @@
             bLengthChange:  true,
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          [ this.order.column + (this.showTools ? 1 : 0), this.order.sort],
+            order:          [ this.sort_column + (this.showTools ? 1 : 0), this.sort],
             lengthMenu:     PAGELENGTHS,
             pageLength:     this.page_size,
             displayStart:   this.start,
@@ -492,15 +500,13 @@
                 this.page_size    = opts.length;
                 this.start        = opts.start;
                 const column      = opts.order[0].column - 1;
-                const sort        = column === this.order.column ? (changed ? this.order.sort : ('desc' === this.order.sort  ? 'asc' : 'desc') ) : 'asc';
-                // set current column index
-                this.order.column = column;
-                // set which mode we need to sort column (desc, asc)
-                this.order.sort   = sort;
+                const sort        = column === this.sort_column ? (changed ? this.sort : ('desc' === this.sort  ? 'asc' : 'desc') ) : 'asc';
+                this.sort_column  = column;
+                this.sort         = sort;
                 // send parameter to server ("-" = descending )
                 this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - 1].name}`;
                 this.table        = await this.getRelationDataTable({
-                  page:      0 === opts.start ? 1 : (opts.start/opts.length) + 1,
+                  page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
                   ordering:  this.ordering
                 });
