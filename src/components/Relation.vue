@@ -470,7 +470,7 @@
             bLengthChange:  true,
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          [ this.showTools ? this.order.column + 1 : this.order.column, this.order.sort],
+            order:          [ this.order.column + (this.showTools ? 1 : 0), this.order.sort],
             lengthMenu:     PAGELENGTHS,
             pageLength:     this.page_size,
             displayStart:   this.start,
