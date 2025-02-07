@@ -258,6 +258,8 @@
         page_size:       PAGELENGTHS[0],
         start:           0,
         table:           { rows: [] },
+        ordering:        null, //@since 3.11.3 parameter to server
+        order:           { column : 0, sort:  'asc' }, //@since 3.11.3 current means current column order.
         nmRelation:      ApplicationState.project.getRelationById(this.relation.nmRelationId),
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
       };
@@ -347,6 +349,7 @@
       async getRelationDataTable({
          page,
          page_size,
+         ordering
       } = {}) {
         GUI.setLoadingContent(true);
         let table = { rows: [] };
@@ -360,15 +363,16 @@
               relation: this.relation,
               page,
               page_size,
+              ordering,
             })
           }); // get relations
           features = response.result ? (response.vector.data.features || []).map(f => {
-              f.properties[G3W_FID] = f.id;
-              return {
-                  geometry:   f.geometry,
-                  attributes: f.properties,
-                  id:         f.id,
-              };
+            f.properties[G3W_FID] = f.id;
+            return {
+              geometry:   f.geometry,
+              attributes: f.properties,
+              id:         f.id,
+            };
           }) : null;
           const count = features && response.vector.count;
           if (this.nmRelation) {
@@ -454,7 +458,7 @@
             bLengthChange:  true,
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          [ this.showTools ? 1 : 0, 'asc' ],
+            order:          [ this.showTools ? this.order.column + 1 : this.order.column, this.order.sort],
             lengthMenu:     PAGELENGTHS,
             pageLength:     this.page_size,
             displayStart:   this.start,
@@ -472,12 +476,23 @@
                 this.table.rows        = [];
                 //wait next tick
                 await this.$nextTick();
+                //check if change page or number of rows
+                const change      = opts.length !== this.page_size || opts.start !== this.start;
                 //set len start
-                this.page_size         = opts.length;
-                this.start             = opts.start;
+                this.page_size    = opts.length;
+                this.start        = opts.start;
+                const column      = opts.order[0].column - 1;
+                const sort        = column === this.order.column ? (change ? this.order.sort : ('desc' === this.order.sort  ? 'asc' : 'desc') ) : 'asc';
+                //set current column index
+                this.order.column = column;
+                //set which mode we need to sort column (desc, asc)
+                this.order.sort   = sort;
+                //create parameter to server (- desc )
+                this.ordering                  = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - 1].name}`;
                 this.table             = await this.getRelationDataTable({
                   page:      0 === opts.start ? 1 : (opts.start/opts.length) + 1,
                   page_size: opts.length,
+                  ordering:  this.ordering
                 })
               } catch(e) {
                 console.warn(e);
@@ -734,10 +749,16 @@
     },
 
     async created()  {
-      this.table = await this.getRelationDataTable({
-        page:      this.page,
-        page_size: this.page_size,
-      });
+      try {
+        this.table = await this.getRelationDataTable({
+          page:      this.page,
+          page_size: this.page_size,
+          ordering:  this.ordering,
+        });
+      } catch(e) {
+        console.warn(e);
+      }
+
     },
 
     /**
