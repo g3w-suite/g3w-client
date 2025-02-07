@@ -69,7 +69,11 @@ const dev_plugins = Array.from(
 function get_version(pluginName) {
   const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
   // delete cache of require otherwise no package.json version rests the old (cache) one
-  delete require.cache[require.resolve(`${src}/package.json`)];
+  try {
+    delete require.cache[require.resolve(`${src}/package.json`)];
+  } catch (e) {
+    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')');
+  }
   try {
     return require(`${src}/package.json`).version;
   } catch(e) {
