@@ -481,31 +481,29 @@
             deferLoading:   data_from_server && this.table.count,
             ajax: data_from_server ? async (opts) => {
               try {
-                //Need to destroy table
+                // Destroy table
                 this.relationDataTable.destroy(true);
                 this.relationDataTable = null;
-                //need to change table row to empty
                 this.table.rows        = [];
-                //wait next tick
                 await this.$nextTick();
-                //check if change page or number of rows
-                const change      = opts.length !== this.page_size || opts.start !== this.start;
-                //set len start
+                // check if there is a change (page or number of rows)
+                const changed      = opts.length !== this.page_size || opts.start !== this.start;
+                // set len start
                 this.page_size    = opts.length;
                 this.start        = opts.start;
                 const column      = opts.order[0].column - 1;
-                const sort        = column === this.order.column ? (change ? this.order.sort : ('desc' === this.order.sort  ? 'asc' : 'desc') ) : 'asc';
-                //set current column index
+                const sort        = column === this.order.column ? (changed ? this.order.sort : ('desc' === this.order.sort  ? 'asc' : 'desc') ) : 'asc';
+                // set current column index
                 this.order.column = column;
-                //set which mode we need to sort column (desc, asc)
+                // set which mode we need to sort column (desc, asc)
                 this.order.sort   = sort;
-                //create parameter to server (- desc )
-                this.ordering                  = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - 1].name}`;
-                this.table             = await this.getRelationDataTable({
+                // send parameter to server ("-" = descending )
+                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - 1].name}`;
+                this.table        = await this.getRelationDataTable({
                   page:      0 === opts.start ? 1 : (opts.start/opts.length) + 1,
                   page_size: opts.length,
                   ordering:  this.ordering
-                })
+                });
               } catch(e) {
                 console.warn(e);
               }
