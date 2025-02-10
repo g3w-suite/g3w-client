@@ -235,7 +235,7 @@
                   <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                 </span>
                 <span
-                  @click.stop            = "sidebar.buttons.close.enabled && closeAllPanels()"
+                  @click.stop            = "$gui.sidebar.buttons.close.enabled && closeAllPanels()"
                   data-toggle            = "tooltip"
                   data-container         = "body"
                   v-t-tooltip:top.create = "$gui.sidebar.buttons.close.tooltip"
