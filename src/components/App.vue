@@ -211,7 +211,7 @@
         >
           <div id="g3w-sidebarpanel-header-placeholder">
             <div
-              style  = "display: flex;"
+              style  = "display: flex; margin-bottom: 5px;"
               :style = "{ justifyContent: app.sidebar.title ? 'space-between' : 'flex-end' }"
             >
 
@@ -238,13 +238,13 @@
                   @click.stop            = "sidebar.buttons.close.enabled && closeAllPanels()"
                   data-toggle            = "tooltip"
                   data-container         = "body"
-                  v-t-tooltip:top.create = "sidebar.buttons.close.tooltip"
-                  :current-tooltip       = "sidebar.buttons.close.tooltip"
+                  v-t-tooltip:top.create = "$gui.sidebar.buttons.close.tooltip"
+                  :current-tooltip       = "$gui.sidebar.buttons.close.tooltip"
                   class                  = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                 >
                   <i :class = "$fa('circle')" class = "fa-stack-1x panel-button"></i>
                   <i
-                    :style = "{ opacity: sidebar.buttons.close.enabled ? '1' : '0.7', cursor: sidebar.buttons.close.enabled ? 'pointer' : 'not-allowed' }"
+                    :style = "{ opacity: $gui.sidebar.buttons.close.enabled ? '1' : '0.7', cursor: $gui.sidebar.buttons.close.enabled ? 'pointer' : 'not-allowed' }"
                     :class = "$fa('close')"
                     class  = "fa-stack-1x panel-icon">
                   </i>
@@ -567,7 +567,6 @@ export default {
       updatePreviousTitle:   false,
       header:                t('main navigation'),
       custom_links,
-      sidebar:               ApplicationState.gui.sidebar,
     }
   },
 
