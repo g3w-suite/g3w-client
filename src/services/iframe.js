@@ -12,6 +12,7 @@ import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
 import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
+import { waitFor }                    from 'utils/waitFor';
 
 /**
  * @param epsg: Number Code of epsg Ex.4326
@@ -266,37 +267,23 @@ class BaseIframeService extends G3WObject {
     layers = {}
   } = {}) {
     this.layers = layers;
+
     // skip when plugin is not in configuration (ie. added to the application)
-    if (!ApplicationState.configurationPlugins.includes(this.pluginName)) {
+    if ('editing' !== this.pluginName || !ApplicationState.configurationPlugins.includes('editing')) {
       return;
     }
-    const plugin = PluginsRegistry.getPlugin(this.pluginName);
-    if (plugin) {
-      this.setDependencyApi(plugin.getApi());
-      this.setReady(true);
-    } else {
-      PluginsRegistry
-        .onafter('registerPlugin', async plugin => {
-          await plugin.isReady();
-          if (plugin.getName() === this.pluginName) {
-            this.setDependencyApi(plugin.getApi());
-            this.setReady(true);
-          }
-        })
-    }
-  }
 
-  /**
-   * ORIGINAL SOURCE: src/app/core/iframe/services/plugins/service.js@3.9.0
-   * 
-   * @virtual method need to be implemented by subclasses 
-   * 
-   * @since 3.9.1
-   */
-  setDependencyApi(api = {}) {
-    this.dependencyApi = api;
-  }
+    // wait until "editing" plugin is loaded
+    await waitFor(() => PluginsRegistry.getPlugin('editing'));
 
+    // BACKOMP v3.x
+    this.dependencyApi                     = PluginsRegistry.getPlugin('editing');
+    this.dependencyApi.getEditableLayersId = this.dependencyApi.getEditableLayersId || (() => Object.keys(this.dependencyApi.getEditableLayers()));
+    this.dependencyApi.hidePanel           = this.dependencyApi.hidePanel           || this.dependencyApi.hideEditingPanel;
+    this.dependencyApi.resetDefault        = this.dependencyApi.resetDefault        || this.dependencyApi.resetAPIDefault;
+
+    this.setReady(true);
+  }
   /**
    * ORIGINAL SOURCE: src/app/core/iframe/services/plugins/service.js@3.9.0
    * 
