@@ -278,7 +278,7 @@ class BaseIframeService extends G3WObject {
         .onafter('registerPlugin', async plugin => {
           await plugin.isReady();
           if (plugin.getName() === this.pluginName) {
-            this.setDependencyApi(plugin.getApi());
+            this.setDependencyApi(plugin.getService().getApi());
             this.setReady(true);
           }
         })
