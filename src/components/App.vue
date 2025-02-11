@@ -212,7 +212,7 @@
         >
           <div id="g3w-sidebarpanel-header-placeholder">
             <div
-              style  = "display: flex;"
+              style  = "display: flex; margin-bottom: 5px;"
               :style = "{ justifyContent: app.sidebar.title ? 'space-between' : 'flex-end' }"
             >
 
@@ -236,15 +236,19 @@
                   <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                 </span>
                 <span
-                  @click.stop        = "closeAllPanels"
-                  data-placement     = "left"
-                  data-toggle        = "tooltip"
-                  data-container     = "body"
-                  v-t-tooltip.create = "'close'"
-                  class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  @click.stop              = "app.sidebar.btn_close && closeAllPanels()"
+                  data-toggle              = "tooltip"
+                  data-container           = "body"
+                  v-t-tooltip:right.create = "app.sidebar.tooltip_close || 'close'"
+                  :current-tooltip         = "app.sidebar.tooltip_close || 'close'"
+                  class                    = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                 >
                   <i :class = "$fa('circle')" class = "fa-stack-1x panel-button"></i>
-                  <i :class = "$fa('close')"  class = "fa-stack-1x panel-icon"></i>
+                  <i
+                    :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+                    :class = "$fa('close')"
+                    class  = "fa-stack-1x panel-icon">
+                  </i>
                 </span>
               </div>
 
