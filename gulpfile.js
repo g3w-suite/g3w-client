@@ -69,7 +69,11 @@ const dev_plugins = Array.from(
 function get_version(pluginName) {
   const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
   // delete cache of require otherwise no package.json version rests the old (cache) one
-  delete require.cache[require.resolve(`${src}/package.json`)];
+  try {
+    delete require.cache[require.resolve(`${src}/package.json`)];
+  } catch (e) {
+    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')');
+  }
   try {
     return require(`${src}/package.json`).version;
   } catch(e) {
@@ -159,7 +163,9 @@ const build_plugin = async (pluginName) => {
         name: 'onBuildEnd',
         setup(build) {
           build.onEnd(result => {
-            console.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' → ' + Math.round(fs.statSync(`${outputFolder}/plugin.js`).size / 1024) + 'KB')
+            console.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' → ' + Math.round(fs.statSync(`${outputFolder}plugin.js`).size / 1024) + 'KB');
+            // Add "plugin.js" to git repository (eg. ./src/editing/plugin.js)
+            fs.cpSync(`${outputFolder}plugin.js`, `${g3w.pluginsFolder}/${pluginName}/plugin.js`);
             resolve();
           })
         },

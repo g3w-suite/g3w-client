@@ -253,12 +253,55 @@
           state:  null,
           config: { downloads: [] },
         },
-        //@since 3.11.2
-        page:            1,
-        page_size:       PAGELENGTHS[0],
-        start:           0,
-        table:           { rows: [] },
-        nmRelation:      ApplicationState.project.getRelationById(this.relation.nmRelationId),
+
+        /**
+         * @since 3.11.2
+         */
+        page: 1,
+
+        /**
+         * @since 3.11.2
+         */
+        page_size: PAGELENGTHS[0],
+
+        /**
+         * @since 3.11.2
+         */
+        start: 0,
+
+        /**
+         * @since 3.11.2
+         */
+        table: {
+          rows: [],
+        },
+
+        /**
+         * @type { string | null } parameter sent to server
+         * @since 3.11.3
+         */
+         ordering: null,
+
+        /**
+         * @type { "desc" | "asc" | "current" } column order
+         * @since 3.11.3
+         */
+        sort: 'asc',
+
+        /**
+         * @type { number } current column index
+         * @since 3.11.3
+         */
+        sort_column: 0,
+
+        /**
+         * @since 3.11.2
+         */
+        nmRelation: ApplicationState.project.getRelationById(this.relation.nmRelationId),
+
+        /**
+         * @since 3.11.2
+         */
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
       };
     },
@@ -347,6 +390,7 @@
       async getRelationDataTable({
          page,
          page_size,
+         ordering
       } = {}) {
         GUI.setLoadingContent(true);
         let table = { rows: [] };
@@ -360,15 +404,16 @@
               relation: this.relation,
               page,
               page_size,
+              ordering,
             })
           }); // get relations
           features = response.result ? (response.vector.data.features || []).map(f => {
-              f.properties[G3W_FID] = f.id;
-              return {
-                  geometry:   f.geometry,
-                  attributes: f.properties,
-                  id:         f.id,
-              };
+            f.properties[G3W_FID] = f.id;
+            return {
+              geometry:   f.geometry,
+              attributes: f.properties,
+              id:         f.id,
+            };
           }) : null;
           const count = features && response.vector.count;
           if (this.nmRelation) {
@@ -454,7 +499,7 @@
             bLengthChange:  true,
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          [ this.showTools ? 1 : 0, 'asc' ],
+            order:          [ this.sort_column + !!this.showTools, this.sort],
             lengthMenu:     PAGELENGTHS,
             pageLength:     this.page_size,
             displayStart:   this.start,
@@ -465,20 +510,27 @@
             deferLoading:   data_from_server && this.table.count,
             ajax: data_from_server ? async (opts) => {
               try {
-                //Need to destroy table
+                // Destroy table
                 this.relationDataTable.destroy(true);
                 this.relationDataTable = null;
-                //need to change table row to empty
                 this.table.rows        = [];
-                //wait next tick
                 await this.$nextTick();
-                //set len start
-                this.page_size         = opts.length;
-                this.start             = opts.start;
-                this.table             = await this.getRelationDataTable({
-                  page:      0 === opts.start ? 1 : (opts.start/opts.length) + 1,
+                // check if there is a change (page or number of rows)
+                const changed      = opts.length !== this.page_size || opts.start !== this.start;
+                // set len start
+                this.page_size    = opts.length;
+                this.start        = opts.start;
+                const column      = opts.order[0].column - !!this.showTools;
+                const sort        = column === this.sort_column ? (changed ? this.sort : ('desc' === this.sort  ? 'asc' : 'desc') ) : 'asc';
+                this.sort_column  = column;
+                this.sort         = sort;
+                // send parameter to server ("-" = descending )
+                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`;
+                this.table        = await this.getRelationDataTable({
+                  page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
-                })
+                  ordering:  this.ordering
+                });
               } catch(e) {
                 console.warn(e);
               }
@@ -734,10 +786,16 @@
     },
 
     async created()  {
-      this.table = await this.getRelationDataTable({
-        page:      this.page,
-        page_size: this.page_size,
-      });
+      try {
+        this.table = await this.getRelationDataTable({
+          page:      this.page,
+          page_size: this.page_size,
+          ordering:  this.ordering,
+        });
+      } catch(e) {
+        console.warn(e);
+      }
+
     },
 
     /**
