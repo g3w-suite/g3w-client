@@ -164,7 +164,7 @@ const build_plugin = async (pluginName) => {
         setup(build) {
           build.onEnd(result => {
             console.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' → ' + Math.round(fs.statSync(`${outputFolder}plugin.js`).size / 1024) + 'KB');
-            // Copy plugin.js to plugin code folder
+            // Add "plugin.js" to git repository (eg. ./src/editing/plugin.js)
             fs.cpSync(`${outputFolder}plugin.js`, `${g3w.pluginsFolder}/${pluginName}/plugin.js`);
             resolve();
           })
