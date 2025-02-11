@@ -127,31 +127,6 @@ Vue.use(require('vue-cookie'));
  */
 Vue.use({
   install(Vue) {
-    /**
-     * @since 3.11.3 Sidebar
-     */
-    Vue.prototype.$gui = {
-      updateSidebarButton({ type, opts = {}} = {}) {
-        if (undefined === this.sidebar.buttons[type]) {
-          return;
-        }
-        Object.keys(opts).forEach(k => this.sidebar.buttons[type][k] = opts[k] );
-      },
-      sidebar: Vue.observable({
-        /**
-         *
-         * @param type
-         * @param opts
-         */
-        buttons : {
-          close: {
-            enabled: true,
-            tooltip: 'close'
-          }
-        }
-      })
-    };
-
     /** @since 3.11.0 */
     Vue.prototype.$t = t;
     // hold a list of registered fontawsome classes for current project

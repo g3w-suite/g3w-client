@@ -235,16 +235,16 @@
                   <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
                 </span>
                 <span
-                  @click.stop            = "$gui.sidebar.buttons.close.enabled && closeAllPanels()"
-                  data-toggle            = "tooltip"
-                  data-container         = "body"
-                  v-t-tooltip:top.create = "$gui.sidebar.buttons.close.tooltip"
-                  :current-tooltip       = "$gui.sidebar.buttons.close.tooltip"
-                  class                  = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  @click.stop              = "app.sidebar.btn_close && closeAllPanels()"
+                  data-toggle              = "tooltip"
+                  data-container           = "body"
+                  v-t-tooltip:right.create = "app.sidebar.tooltip_close || 'close'"
+                  :current-tooltip         = "app.sidebar.tooltip_close || 'close'"
+                  class                    = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
                 >
                   <i :class = "$fa('circle')" class = "fa-stack-1x panel-button"></i>
                   <i
-                    :style = "{ opacity: $gui.sidebar.buttons.close.enabled ? '1' : '0.7', cursor: $gui.sidebar.buttons.close.enabled ? 'pointer' : 'not-allowed' }"
+                    :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
                     :class = "$fa('close')"
                     class  = "fa-stack-1x panel-icon">
                   </i>
