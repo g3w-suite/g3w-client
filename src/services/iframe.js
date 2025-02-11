@@ -388,7 +388,7 @@ class BaseIframeService extends G3WObject {
     }
     // in case of no response zoom to an initial extent
     if (!response.found) {
-      this.zoomToExtent(this.mapService.project.state.initextent)
+      this.mapService.zoomToExtent(this.mapService.project.state.initextent)
     }
     return response;
   }
