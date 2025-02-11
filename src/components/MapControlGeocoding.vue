@@ -682,7 +682,7 @@ export default {
         });
 
         // start editing session
-        await editing.getApi().addLayerFeature({ layerId: layerId, feature: _feature });
+        await editing.addLayerFeature({ layerId: layerId, feature: _feature });
 
       } catch(e) {
         console.warn(e);
