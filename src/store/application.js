@@ -103,7 +103,7 @@ const STATE = Vue.observable({
        * @since v3.11.0
        * true open, false hide - icons only
        */
-      open    : true
+      open    : true,
     },
 
     layout: {
@@ -160,7 +160,11 @@ const STATE = Vue.observable({
     /** DOM element where insert the component/panel  */
     parent:     null,
     /** barstack state. It stores the panel array */
-    contentsdata: [], // Array<{ content, options }> 
+    contentsdata: [], // Array<{ content, options }>
+    /** @since 3.11.3 - whether to enable close button  */
+    btn_close: true,
+    /** @since 3.11.3 - custom tooltip for close button */
+    tooltip_close: 'close',
   },
 
   contentsdata: [],

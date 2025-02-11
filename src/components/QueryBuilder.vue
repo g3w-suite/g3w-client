@@ -370,7 +370,6 @@ export default {
 
 <style scoped>
 #query_builder {
-  font-family: monospace;
   margin-bottom: 0;
   height: 100%;
   display: flex;
