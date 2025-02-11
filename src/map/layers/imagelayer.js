@@ -184,10 +184,10 @@ class RasterLayer extends G3WObject {
           projection,
           crossOrigin:      undefined,
           tileLoadFunction: (this.iframe_internal) ? (tile, url) => {
-            fetch('POST' === method ? (url || '').split('?')[0] : url, {
-              method,
+            fetch('POST' === this._method ? (url || '').split('?')[0] : url, {
+              method:  this._method,
               headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-              body:    'POST' === method ? url.split('?')[1] : undefined,
+              body:    'POST' === this._method ? url.split('?')[1] : undefined,
             })
             .then(async response => tile.getImage().src = window.URL.createObjectURL(await response.blob()))
             .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
