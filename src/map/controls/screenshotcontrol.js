@@ -2,10 +2,10 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/screenshotcontrol.js@v3.10.2
  * @since 3.11.0
  */
-import saveAs                   from 'file-saver/dist/FileSaver';
 
 import ApplicationState         from 'store/application';
 import GUI                      from 'services/gui';
+import { saveBlob }             from 'utils/saveBlob';
 import { sameOrigin }           from 'utils/sameOrigin';
 import InteractionControl       from 'map/controls/interactioncontrol';
 
@@ -38,11 +38,11 @@ export class ScreenshotControl extends InteractionControl {
       ...opts
     });
 
-    this.types = [];
+    this.types    = [];
 
-    (opts.types || []).forEach(type => this.addType(type));
+    (opts.types || []).forEach(t => this.addType(t));
 
-    this.layers= opts.layers;
+    this.layers = opts.layers;
 
     //set visibility based on layers
     this.setVisible(this.checkVisible(this.layers));
@@ -50,7 +50,7 @@ export class ScreenshotControl extends InteractionControl {
     //only if is visible (no CORS issue) need to listen to add/remove layer
     if (this.isVisible()) {
       //listen to add/remove External Layer event to check visibility of the control
-      GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+      GUI.getService('map').onafter('loadExternalLayer',   this._addLayer.bind(this));
       GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
     }
   }
@@ -72,32 +72,29 @@ export class ScreenshotControl extends InteractionControl {
           <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
             <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
           </select>
-          <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
-        </div>`,
+          <button v-disabled = "loading" style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+        </div>`,  
+      computed: {
+        loading: () => ApplicationState.download,
+      },  
       methods: {
-        async download(e) {
+        download: async (type) => {
           const map         = GUI.getService('map');
           // Start download
           ApplicationState.download = true;
-          e.target.disabled = true;
           try {
-            const blobImage = await map.createMapImage();
-
-            if ('screenshot' === this.type) {                   // PNG
-              saveAs(blobImage, `map_${Date.now()}.png`);
-            } else {                                            // GeoTIFF
-              const body = new FormData();
-              body.append('image',               blobImage);
-              body.append('csrfmiddlewaretoken', map.getCookie('csrftoken'));
-              body.append('bbox',                map.getMapBBOX().toString());
-              saveAs(
-                await (await fetch(
-                  `/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`,
-                  { method: 'POST', body }
-                )).blob(),
-                `map_${Date.now()}.tif`
-              );
-            }
+            const blob = 'screenshot' === type
+              ? await map.createMapImage()                                                              // PNG
+              : await (await fetch(`/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`, { // GeoTIFF
+                  method: 'POST',
+                  body: Object.entries({
+                    image:               await map.createMapImage(),
+                    csrfmiddlewaretoken: map.getCookie('csrftoken'),
+                    bbox:                map.getMapBBOX().toString(),
+                  }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
+                })).blob();
+            // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)
+            (this._onclick || saveBlob)(blob, `map_${Date.now()}`);
           } catch (e) {
             GUI.showUserMessage({
               type:    'SecurityError' === e.name ? 'warning' : 'alert',
@@ -108,7 +105,6 @@ export class ScreenshotControl extends InteractionControl {
           }
           // End download
           ApplicationState.download = false;
-          e.target.disabled = false;
           return true;
         }
       },
