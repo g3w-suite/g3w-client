@@ -40,7 +40,9 @@ export class ScreenshotControl extends InteractionControl {
     this.types    = [];
 
     //add disabled property for avoid to click on capture button many times
-    this.disabled = false;
+    this.state = {
+      disabled: false,
+    };
 
     (opts.types || []).forEach(t => this.addType(t));
 
@@ -68,20 +70,20 @@ export class ScreenshotControl extends InteractionControl {
     this.toggledTool = this.toggledTool || {
       __title: 'sdk.mapcontrols.screenshot.title',
       __iconClass: 'camera',
-      data: () => ({ types: this.types, type: this.types[0], disabled: this.disabled }),
+      data: () => ({ types: this.types, type: this.types[0], state: this.state }),
       template: /* html */ `
         <div style="width: 100%; padding: 5px;">
           <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
             <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
           </select>
-          <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+          <button v-disabled = "state.disabled" style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'sdk.mapcontrols.screenshot.download'"></button>
         </div>`,
       methods: {
         download: async (type) => {
           const map         = GUI.getService('map');
           // Start download
           ApplicationState.download = true;
-          this.disabled = true;
+          this.state.disabled = true;
           try {
             const blob = 'screenshot' === type
               ? await map.createMapImage()                                                              // PNG
@@ -105,7 +107,7 @@ export class ScreenshotControl extends InteractionControl {
           }
           // End download
           ApplicationState.download = false;
-          this.disabled             = false;
+          this.state.disabled       = false;
           return true;
         }
       },
