@@ -474,10 +474,11 @@ class AppService extends BaseIframeService {
       return;
     }
 
-    this.mapControls.screenshot.control.overwriteOnClickEvent(async() => {
+    this.mapControls.screenshot.control.overwriteOnClickEvent((blob) => {
       let response;
+      alert(blob)
       try {
-        response = { result: true, data: await this.mapService.createMapImage() };
+        response = { result: true, data: blob };
       } catch(e) {
         console.warn(e);
         response = { result: false, data: e };

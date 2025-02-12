@@ -33,14 +33,18 @@ export class ScreenshotControl extends InteractionControl {
       clickmap: true,
       enabled:  true,
       layers: [],
+      onclick: saveBlob,
       ...opts
     });
 
-    this.types = [];
+    this.types    = [];
 
-    (opts.types || []).forEach(type => this.addType(type));
+    //add disabled property for avoid to click on capture button many times
+    this.disabled = false;
 
-    this.layers= opts.layers;
+    (opts.types || []).forEach(t => this.addType(t));
+
+    this.layers = opts.layers;
 
     //set visibility based on layers
     this.setVisible(this.checkVisible(this.layers));
@@ -48,7 +52,7 @@ export class ScreenshotControl extends InteractionControl {
     //only if is visible (no CORS issue) need to listen to add/remove layer
     if (this.isVisible()) {
       //listen to add/remove External Layer event to check visibility of the control
-      GUI.getService('map').onafter('loadExternalLayer', this._addLayer.bind(this));
+      GUI.getService('map').onafter('loadExternalLayer',   this._addLayer.bind(this));
       GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
     }
   }
@@ -64,22 +68,22 @@ export class ScreenshotControl extends InteractionControl {
     this.toggledTool = this.toggledTool || {
       __title: 'sdk.mapcontrols.screenshot.title',
       __iconClass: 'camera',
-      data: () => ({ types: this.types, type: this.types[0] }),
+      data: () => ({ types: this.types, type: this.types[0], disabled: this.disabled }),
       template: /* html */ `
         <div style="width: 100%; padding: 5px;">
           <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
             <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
           </select>
-          <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+          <button style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'sdk.mapcontrols.screenshot.download'"></button>
         </div>`,
       methods: {
-        async download(e) {
+        download: async (type) => {
           const map         = GUI.getService('map');
           // Start download
           ApplicationState.download = true;
-          e.target.disabled = true;
+          this.disabled = true;
           try {
-            const blob = 'screenshot' === this.type
+            const blob = 'screenshot' === type
               ? await map.createMapImage()                                                              // PNG
               : await (await fetch(`/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`, { // GeoTIFF
                   method: 'POST',
@@ -89,8 +93,8 @@ export class ScreenshotControl extends InteractionControl {
                     bbox:                map.getMapBBOX().toString(),
                   }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
                 })).blob();
-
-            saveBlob(blob, `map_${Date.now()}`);
+            //Call onclik method    
+            this._onclick(blob, `map_${Date.now()}`);
           } catch (e) {
             GUI.showUserMessage({
               type:    'SecurityError' === e.name ? 'warning' : 'alert',
@@ -101,7 +105,7 @@ export class ScreenshotControl extends InteractionControl {
           }
           // End download
           ApplicationState.download = false;
-          e.target.disabled = false;
+          this.disabled             = false;
           return true;
         }
       },
