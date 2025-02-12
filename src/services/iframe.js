@@ -476,7 +476,6 @@ class AppService extends BaseIframeService {
 
     this.mapControls.screenshot.control.overwriteOnClickEvent((blob) => {
       let response;
-      alert(blob)
       try {
         response = { result: true, data: blob };
       } catch(e) {

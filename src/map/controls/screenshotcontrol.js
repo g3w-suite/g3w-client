@@ -33,7 +33,6 @@ export class ScreenshotControl extends InteractionControl {
       clickmap: true,
       enabled:  true,
       layers: [],
-      onclick: saveBlob,
       ...opts
     });
 
@@ -96,7 +95,7 @@ export class ScreenshotControl extends InteractionControl {
                   }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
                 })).blob();
             //Call onclik method    
-            this._onclick(blob, `map_${Date.now()}`);
+            (this._onclick || saveBlob)(blob, `map_${Date.now()}`);
           } catch (e) {
             GUI.showUserMessage({
               type:    'SecurityError' === e.name ? 'warning' : 'alert',
