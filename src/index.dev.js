@@ -233,6 +233,7 @@ g3wsdk.gui.GUI.once('ready', () => {
           w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
           // send message to iframe every time ifrema send a message con contentWindow
           w.addEventListener('message', e => {
+            //Emit iframe:message to handle the message in config.js file
             setTimeout(() => g3wsdk.gui.GUI.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
           }, false);
           // prevent page refresh (eg. CTRL+R)
