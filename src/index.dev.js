@@ -15,6 +15,7 @@ import 'g3w-globals';
 // print some debug info
 window.g3wsdk.info();
 
+
 // custom header links
 g3wsdk.core.ApplicationService.once('initconfig', () => {
   initConfig.header_custom_links = [
@@ -230,7 +231,34 @@ g3wsdk.gui.GUI.once('ready', () => {
         customClass: 'fa fa-window-restore',
         onclick() {
           const w = window.open('about:blank', '_blank', `fullscreen=yes`);
-          w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+          w.document.write(`
+            <!doctype HTML>
+            <html>
+              <head>
+                <title>Test Iframe</title>
+                <style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style>
+              </head>
+              <body>
+                <iframe src="${location.href}"></iframe>
+              </body>
+              <script>
+                window.addEventListener('message', e => {
+                  if (e.data.action === 'app:zoomtofeature') {
+                    document.querySelector('iframe').contentWindow.postMessage({
+                      id: null,
+                      action: 'editing:add',
+                      data: {
+                        qgs_layer_id: ['buildings_2f43dc1d_6725_42d2_a09b_dd446220104a', 'roads_ea006d6f_bd87_4635_aae0_4e9e7842b3f4'],
+                        properties: {
+                          name : 'Pollo'
+                        }
+                      }
+                    }, '*');
+                  }
+                }) 
+
+              </script>
+            </html>`);
           // send message to iframe when app is ready
           w.addEventListener('message', e => {
             if (e.data.action === 'app:ready') {
