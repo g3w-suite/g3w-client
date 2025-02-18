@@ -14,27 +14,31 @@ export default {
 
   get(crs = {}) {
     let p = ol.proj.get(normalizeEpsg(crs.epsg));
+    const proj = !p && {
+      code:            crs.epsg,
+      extent:          crs.extent,
+      axisOrientation: crs.axisinverted ? 'neu' : 'enu',
+      units:           crs.geographic ? 'degrees' : 'm'
+    };
+
+    // crs not yet registered
     if (!p) {
-      
-      const proj = {
-        code:            crs.epsg,
-        extent:          crs.extent,
-        axisOrientation: crs.axisinverted ? 'neu' : 'enu',
-        units:           crs.geographic ? 'degrees' : 'm'
-      };
       p = new ol.proj.Projection(proj);
       p.getAxisOrientation = () => proj.axisOrientation;
       ol.proj.addProjection(p);
-      //Only in case of proj4.defs change need to register
-      if (crs.proj4) {
-        proj4.defs(crs.epsg, crs.proj4);
-        ol.proj.proj4.register(proj4);
-      }
     }
-    //in case of missing extent
+
+    // crs is a proj4 object
+    if (proj && crs.proj4) {
+      proj4.defs(crs.epsg, crs.proj4);
+      ol.proj.proj4.register(proj4);
+    }
+
+    // crs has no extent
     if (crs.extent && !p.getExtent()){
       p.setExtent(crs.extent);
     }
+
     return p;
   },
 
