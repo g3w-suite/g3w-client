@@ -4,7 +4,7 @@
  * @since 3.11.0
  */
 import { normalizeEpsg } from 'utils/normalizeEpsg';
-import proj4             from 'proj4/dist/proj4-src';
+import proj4             from 'proj4';
 
 /**
  * ORIGINAL SOURCE: src/app/g3w-ol/projection/projection.js@v3.10.1
@@ -13,11 +13,9 @@ import proj4             from 'proj4/dist/proj4-src';
 export default {
 
   get(crs = {}) {
-    let p = ol.proj.get(crs.epsg);
+    let p = ol.proj.get(normalizeEpsg(crs.epsg));
     if (!p) {
-      if (crs.proj4) {
-        proj4.defs(crs.epsg, crs.proj4);
-      }
+      
       const proj = {
         code:            crs.epsg,
         extent:          crs.extent,
@@ -27,7 +25,15 @@ export default {
       p = new ol.proj.Projection(proj);
       p.getAxisOrientation = () => proj.axisOrientation;
       ol.proj.addProjection(p);
-      ol.proj.proj4.register(proj4);
+      //Only in case of proj4.defs change need to register
+      if (crs.proj4) {
+        proj4.defs(crs.epsg, crs.proj4);
+        ol.proj.proj4.register(proj4);
+      }
+    }
+    //in case of missing extent
+    if (crs.extent && !p.getExtent()){
+      p.setExtent(crs.extent);
     }
     return p;
   },
