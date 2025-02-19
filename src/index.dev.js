@@ -4,7 +4,6 @@
  */
 import localforage from 'localforage';
 import { waitFor } from 'utils/waitFor';
-import { VM }      from 'g3w-eventbus';
 import shpwrite    from '@mapbox/shp-write';
 
 // expose global variables
@@ -221,45 +220,37 @@ C,"POINT (11.2474811 43.7910709)"`],
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3wsdk.core.plugin.PluginsRegistry.onafter('registerPlugin', plugin => {
-  if (!plugin && 'editing' !== plugin.name) {
-    return;
-  }
-  VM.$watch(
+g3wsdk.gui.GUI.once('ready', () => {
+  (new Vue).$watch(
     () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
-    (data = []) => data
-      .filter(d => 'editing-panel' === d.content.id)
-      .forEach(d => {
-        const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
-        let iframe_btn = document.querySelector('#edit_in_iframe');
-        if (!tolboxes || iframe_btn) {
-          return;
-        }
-        tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
-        iframe_btn = document.querySelector('#edit_in_iframe');
-        iframe_btn.addEventListener('click', () => {
-          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
-          w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
-          //Listen message from application
-          w.addEventListener('message', e => {
-            if ('app:ready' === e.data.action) {
-              // send message to iframe every time iframe send a message con contentWindow
-              w.document.querySelector('iframe').contentWindow.postMessage({
-                id:      null,
-                action: 'editing:add',
-                data: {
-                  // only visible toolboxes
-                  qgs_layer_id: Array.from(editing_tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]),
-                  properties: { },
-                }
-              }, '*');
-            }
-          }, false);
-          // prevent page refresh (eg. CTRL+R)
-          w.onbeforeunload = () => w.close();
-        });
-      })
-  );
+    (data = []) => data.filter(d => 'editing-panel' === d.content.id).forEach(d => { //wait for editing panel
+      const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
+      let iframe_btn = document.querySelector('#edit_in_iframe');
+      if (!tolboxes || iframe_btn) {
+        return;
+      }
+      // append "edit in iframe" element immediately after toolboxes
+      tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
+      iframe_btn = document.querySelector('#edit_in_iframe');
+      iframe_btn.addEventListener('click', () => {
+        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+        w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+        w.addEventListener('message', e => {
+          if ('app:ready' === e.data.action) {
+            w.document.querySelector('iframe').contentWindow.postMessage({
+              id:      null,
+              action: 'editing:add',
+              data: {
+                qgs_layer_id: Array.from(editing_tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]), // toolbox id = layer id
+                properties: { },
+              }
+            }, '*');
+          }
+        }, false);
+        // prevent page refresh (eg. CTRL+R)
+        w.onbeforeunload = () => w.close();
+      });
+    }));
 });
 
 /**
