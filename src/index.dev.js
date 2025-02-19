@@ -4,6 +4,7 @@
  */
 import localforage from 'localforage';
 import { waitFor } from 'utils/waitFor';
+import { VM }      from 'g3w-eventbus';
 import shpwrite    from '@mapbox/shp-write';
 
 // expose global variables
@@ -217,6 +218,55 @@ C,"POINT (11.2474811 43.7910709)"`],
 
 // custom map control: "Open in iframe"
 g3wsdk.gui.GUI.once('ready', () => {
+
+  g3wsdk.core.plugin.PluginsRegistry.onafter('registerPlugin', plugin => {  
+    if (plugin && 'editing' === plugin.name) {
+      VM.$watch(
+        () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
+        (data = []) => {
+          data
+          .filter(d => 'editing-panel' === d.content.id)
+          .forEach(d => {
+            const editing_tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
+            let iframe_btn = document.querySelector('#edit_in_iframe');
+            if (editing_tolboxes && !iframe_btn) {
+                editing_tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
+                iframe_btn = document.querySelector('#edit_in_iframe');
+                iframe_btn.addEventListener('click', () => {
+                  const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+                  w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+                  //Listen message from application
+                  w.addEventListener('message', e => {
+                    if ('app:ready' === e.data.action) {
+                      const qgs_layer_id = [];
+                      for (let item of editing_tolboxes.children) {
+                        if (item.classList.contains('toolbox')) {
+                          qgs_layer_id.push(item.id.split('id_toolbox_')[1]);
+                        }
+                      }
+                      
+                      // send message to iframe every time ifrema send a message con contentWindow
+                      w.document.querySelector('iframe').contentWindow.postMessage({
+                        id:      null,
+                        action: 'editing:add',
+                        data: {
+                          qgs_layer_id,
+                          properties: { },
+                        }
+                      }, '*');
+                    }
+                  }, false);
+          
+                  // prevent page refresh (eg. CTRL+R)
+                  w.onbeforeunload = () => w.close();
+                });
+              }
+
+          })
+        }
+      )
+    }
+  })
 
   g3wsdk.gui.GUI.getService('map').once('ready', function() {
     this.createMapControl('onclick',
