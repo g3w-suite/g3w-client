@@ -241,7 +241,7 @@ g3wsdk.gui.GUI.once('ready', () => {
               id:      null,
               action: 'editing:add',
               data: {
-                qgs_layer_id: Array.from(editing_tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]), // toolbox id = layer id
+                qgs_layer_id: Array.from(tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]), // toolbox id = layer id
                 properties: { },
               }
             }, '*');
