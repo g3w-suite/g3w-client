@@ -216,58 +216,56 @@ C,"POINT (11.2474811 43.7910709)"`],
 
 });
 
-// custom map control: "Open in iframe"
-g3wsdk.gui.GUI.once('ready', () => {
-
-  g3wsdk.core.plugin.PluginsRegistry.onafter('registerPlugin', plugin => {  
-    if (plugin && 'editing' === plugin.name) {
-      VM.$watch(
-        () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
-        (data = []) => {
-          data
-          .filter(d => 'editing-panel' === d.content.id)
-          .forEach(d => {
-            const editing_tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
-            let iframe_btn = document.querySelector('#edit_in_iframe');
-            if (editing_tolboxes && !iframe_btn) {
-                editing_tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
-                iframe_btn = document.querySelector('#edit_in_iframe');
-                iframe_btn.addEventListener('click', () => {
-                  const qgs_layer_id = [];
-                  for (let item of editing_tolboxes.children) {
-                    //filter only visible toolbox
-                    if (item.classList.contains('toolbox') && 'none' !== item.style.display) {
-                      qgs_layer_id.push(item.id.split('id_toolbox_')[1]);
-                    }
-                  }
-                  const w = window.open('about:blank', '_blank', `fullscreen=yes`);
-                  w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
-                  //Listen message from application
-                  w.addEventListener('message', e => {
-                    if ('app:ready' === e.data.action) {
-                      // send message to iframe every time iframe send a message con contentWindow
-                      w.document.querySelector('iframe').contentWindow.postMessage({
-                        id:      null,
-                        action: 'editing:add',
-                        data: {
-                          qgs_layer_id,
-                          properties: { },
-                        }
-                      }, '*');
-                    }
-                  }, false);
-          
-                  // prevent page refresh (eg. CTRL+R)
-                  w.onbeforeunload = () => w.close();
-                });
-              }
-
-          })
+/**
+ * Edit in iframe
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/pull/736
+ */
+g3wsdk.core.plugin.PluginsRegistry.onafter('registerPlugin', plugin => {
+  if (!plugin && 'editing' !== plugin.name) {
+    return;
+  }
+  VM.$watch(
+    () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
+    (data = []) => data
+      .filter(d => 'editing-panel' === d.content.id)
+      .forEach(d => {
+        const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
+        let iframe_btn = document.querySelector('#edit_in_iframe');
+        if (!tolboxes || iframe_btn) {
+          return;
         }
-      )
-    }
-  })
+        tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
+        iframe_btn = document.querySelector('#edit_in_iframe');
+        iframe_btn.addEventListener('click', () => {
+          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+          w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+          //Listen message from application
+          w.addEventListener('message', e => {
+            if ('app:ready' === e.data.action) {
+              // send message to iframe every time iframe send a message con contentWindow
+              w.document.querySelector('iframe').contentWindow.postMessage({
+                id:      null,
+                action: 'editing:add',
+                data: {
+                  // only visible toolboxes
+                  qgs_layer_id: Array.from(editing_tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]),
+                  properties: { },
+                }
+              }, '*');
+            }
+          }, false);
+          // prevent page refresh (eg. CTRL+R)
+          w.onbeforeunload = () => w.close();
+        });
+      })
+  );
+});
 
+/**
+ * Custom map control: "Open in iframe"
+ */
+g3wsdk.gui.GUI.once('ready', () => {
   g3wsdk.gui.GUI.getService('map').once('ready', function() {
     this.createMapControl('onclick',
     {
