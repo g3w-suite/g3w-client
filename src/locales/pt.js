@@ -73,7 +73,6 @@ export default {
         template: "Modelo",
         labels: "Etiquetas",
         scale: "Escala",
-        scale: "Escala",
         format: "Formato",
         rotation: "Rotação",
         download_image: "Descarregar Imagem",
