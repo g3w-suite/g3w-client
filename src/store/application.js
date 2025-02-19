@@ -255,6 +255,9 @@ const STATE = Vue.observable({
 
   /** @since 3.11.0 */
   highlightlayers: false,
+  
+  /** @since 4.0.0 state of application development (true) production(false) */
+  development: false,
 
 });
 
