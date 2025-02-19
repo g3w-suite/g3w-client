@@ -23,11 +23,17 @@ let conf = {
       initConfig.group.vendorkeys = Object.assign(initConfig.group.vendorkeys || {}, G3W_KEYS);
       initConfig.group.plugins    = Object.assign(initConfig.group.plugins || {}, G3W_PLUGINS.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
     });
-    g3wsdk.gui.GUI.once('iframe:message', (w, e) => { w.postMessage({ // test MESSAGE sent to "Open in iframe" map control
-      id: null,
-      action: 'app:getcenter',                                        // or 'app:getextent'
-      data: { epsg: 4326 }	
-    }, '*') });
+    //Every time a new iframe is created, listen for messages
+    g3wsdk.gui.GUI.on('iframe:message', (w, e) => { 
+      //Once app is ready, send a message to the iframe
+      if (e.data.action === 'app:ready') {
+        w.postMessage({ // test MESSAGE sent to "Open in iframe" map control
+          id: null,
+          action: 'app:getcenter',                                        // or 'app:getextent'
+          data: { epsg: 4326 }	
+        }, '*')
+      }
+    });
     g3wsdk.gui.GUI.once('ready', () => { console.log('ready'); });
   }
 };
