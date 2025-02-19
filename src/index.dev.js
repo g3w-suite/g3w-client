@@ -233,19 +233,19 @@ g3wsdk.gui.GUI.once('ready', () => {
                 editing_tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
                 iframe_btn = document.querySelector('#edit_in_iframe');
                 iframe_btn.addEventListener('click', () => {
+                  const qgs_layer_id = [];
+                  for (let item of editing_tolboxes.children) {
+                    //filter only visible toolbox
+                    if (item.classList.contains('toolbox') && 'none' !== item.style.display) {
+                      qgs_layer_id.push(item.id.split('id_toolbox_')[1]);
+                    }
+                  }
                   const w = window.open('about:blank', '_blank', `fullscreen=yes`);
                   w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
                   //Listen message from application
                   w.addEventListener('message', e => {
                     if ('app:ready' === e.data.action) {
-                      const qgs_layer_id = [];
-                      for (let item of editing_tolboxes.children) {
-                        if (item.classList.contains('toolbox')) {
-                          qgs_layer_id.push(item.id.split('id_toolbox_')[1]);
-                        }
-                      }
-                      
-                      // send message to iframe every time ifrema send a message con contentWindow
+                      // send message to iframe every time iframe send a message con contentWindow
                       w.document.querySelector('iframe').contentWindow.postMessage({
                         id:      null,
                         action: 'editing:add',
