@@ -816,20 +816,19 @@ class EditingService extends BaseIframeService {
 
       // call method common
       await this.startAction({ toolboxes: qgs_layer_id, resolve, reject });
-
-      // return all toolboxes
+        // return all toolboxes
       const toolboxes = (
-        await this.startEditing(qgs_layer_id, {
-          tools:            this.config.tools.add,
-          startstopediting: false,
-          action :          'add',
-          selected:         1 === qgs_layer_id.length,
-        })
-      )
-      .filter(p => 'fulfilled' === p.status)
-      .map(p => p.value);
+          await this.startEditing(qgs_layer_id, {
+            tools:            this.config.tools.add,
+            startstopediting: false,
+            action :          'add',
+            selected:         1 === qgs_layer_id.length,
+          })
+        )
+        .filter(p => 'fulfilled' === p.status)
+        .map(p => p.value);
 
-      /** @FIXME add description */
+           /** @FIXME add description */
       if (!GUI.isSidebarVisible()) {
         GUI.showSidebar();
       }
@@ -884,9 +883,9 @@ class EditingService extends BaseIframeService {
       // return all toolboxes
       await this.startEditing([response.qgs_layer_id], {
         feature,
-        tools: this.config.tools.update,
+        tools:            this.config.tools.update,
         startstopediting: false,
-        action: 'update',
+        action:           'update',
       });
 
       if (!GUI.isSidebarVisible()) {
@@ -918,9 +917,10 @@ class EditingService extends BaseIframeService {
       case 'add':    filter.nofeatures = true;                                   break;
       case 'update': filter.field      = `${feature.field}|eq|${feature.value}`; break;
     }
-    const promises = [];
-    qgs_layer_id.forEach(id => { promises.push(this.dependencyApi.startEditing(id, options)) });
-    return await Promise.allSettled(promises);
+    //only in case of one layer id start editing otherwise client need to click on the layer
+    return await Promise.allSettled((1 === qgs_layer_id.length ? qgs_layer_id : [])
+      .map(id => this.dependencyApi.startEditing(id, options) ));
+
   }
 
   /**
