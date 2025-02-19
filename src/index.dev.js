@@ -217,7 +217,7 @@ C,"POINT (11.2474811 43.7910709)"`],
 });
 
 /**
- * Edit in iframe
+ * Custom editing control: "Edit in iframe"
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
