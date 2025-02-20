@@ -8,6 +8,8 @@ import shpwrite    from '@mapbox/shp-write';
 
 // expose global variables
 import 'g3w-globals';
+import g3wConstants from 'g3w-constants';
+import { color } from 'app/gui/inputs/services';
 
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
@@ -221,6 +223,7 @@ C,"POINT (11.2474811 43.7910709)"`],
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
 g3wsdk.gui.GUI.once('ready', () => {
+  //ADD EDITING FEATURE (editing:add)
   (new Vue).$watch(
     () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
     (data = []) => data.filter(d => 'editing-panel' === d.content.id).forEach(d => { //wait for editing panel
@@ -251,6 +254,50 @@ g3wsdk.gui.GUI.once('ready', () => {
         w.onbeforeunload = () => w.close();
       });
     }));
+
+  //UPDATE EDITING FEATURE (editing:update)
+  g3wsdk.gui.GUI.getService('queryresults').onafter('addActionsForLayers', (actions, layers) => {
+    Object.keys(actions).forEach(id => {
+      if (layers.find(l => id === l.id).editable) {
+        //Check only if has primay key value to ge unique feature to edit
+        const pkField = g3wsdk.core.catalog.CatalogLayersStoresRegistry.getLayerById(id).getEditingFields().find(f => f.pk);
+        // in case that layer has not pk field, iframe editing action is not
+        if (!pkField) {
+          return;
+        }
+        actions[id].push({
+          id: 'iframe_editing_update',
+          class: GUI.getFontClass('pencil'),
+          hint:  'Iframe update feature',
+          style: {
+            color: '#000000 !important'
+          },
+          cbk:   (layer, feature) => {
+            
+            const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+            w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+            w.addEventListener('message', e => {
+              if ('app:ready' === e.data.action) {
+                w.document.querySelector('iframe').contentWindow.postMessage({
+                  id:      null,
+                  action: 'editing:update',
+                  data: {
+                    qgs_layer_id: layer.id,
+                    feature: {
+                      field: pkField.name,
+                      value: feature.attributes[pkField.name]//
+                    }
+                  }
+                }, '*');
+              }
+            }, false);
+            // prevent page refresh (eg. CTRL+R)
+            w.onbeforeunload = () => w.close();
+          }
+        })
+      }
+    })
+  })
 });
 
 /**
