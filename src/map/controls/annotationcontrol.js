@@ -2,72 +2,122 @@
  * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/measuercontrol.js@v3.10.2
  * @since 3.11.0
  */
-import GUI                         from 'services/gui';
-import InteractionControl          from 'map/controls/interactioncontrol';
+import GUI                        from 'services/gui';
+import InteractionControl         from 'map/controls/interactioncontrol';
+import { Compact as ColorPicker } from 'vue-color';
+
 
 let count = 1;
 
-const color  = '255, 0, 0'; //base color
-const styleText = new ol.style.Text({
-  placement: 'point',
-  fill: new ol.style.Fill({ color : '#000000' }),
-  font: '15px Titillium Web',
-  stroke: new ol.style.Stroke({
-    color:     '#FFFFFF',
-    width:     3
-  }),
-});
+const color  = '244, 78, 59'; //base color
 
-const styleStroke = new ol.style.Stroke({
-  width: 3,
-  color: `rgb(${color})`
-});
+const styles = (type) => {
+  switch (type) {
+    case 'Point': 
+      return new ol.style.Style({
+        text: new ol.style.Text({
+          placement: 'point',
+          fill: new ol.style.Fill({ color : '#000000' }),
+          font: '15px Titillium Web',
+          stroke: new ol.style.Stroke({
+            color:     '#FFFFFF',
+            width:     3
+          }),
+        }),
+        image: new ol.style.Circle({
+          fill: new ol.style.Fill({
+            color: `rgb(${color})`,
+          }),
+          radius: 10,
+        }),
+      })
+    case 'LineString': 
+      return new ol.style.Style({
+        text:   new ol.style.Text({
+          placement: 'point',
+          fill: new ol.style.Fill({ color : '#000000' }),
+          font: '15px Titillium Web',
+          stroke: new ol.style.Stroke({
+            color:     '#FFFFFF',
+            width:     3
+          }),
+        }),
+        stroke: new ol.style.Stroke({
+          width: 3,
+          color: `rgb(${color})`
+        }),
+      })
+    case 'Polygon':    
+      return new ol.style.Style({
+        text:   new ol.style.Text({
+          placement: 'point',
+          fill: new ol.style.Fill({ color : '#000000' }),
+          font: '15px Titillium Web',
+          stroke: new ol.style.Stroke({
+            color:     '#FFFFFF',
+            width:     3
+          }),
+        }),
+        stroke: new ol.style.Stroke({
+          width: 3,
+          color: `rgb(${color})`
+        }),
+        fill:   new ol.style.Fill({
+          color: `rgba(${color}, 0.5)`
+        })
+      })
+    case 'Circle':     
+      return new ol.style.Style({
+        text:   new ol.style.Text({
+          placement: 'point',
+          fill: new ol.style.Fill({ color : '#000000' }),
+          font: '15px Titillium Web',
+          stroke: new ol.style.Stroke({
+            color:     '#FFFFFF',
+            width:     3
+          }),
+        }),
+        stroke: new ol.style.Stroke({
+          width: 3,
+          color: `rgb(${color})`
+        }),
+        fill:   new ol.style.Fill({
+          color: `rgba(${color}, 0.5)`
+        })
+      })
 
-const styleFill = new ol.style.Fill({
-  color: `rgba(${color}, 0.5)`
-})
-
-const styles = {
-  'Point':      new ol.style.Style({
-    text: styleText,
-    image: new ol.style.Circle({
-      fill: new ol.style.Fill({
-        color: `rgb(${color})`,
-      }),
-      radius: 10,
-    }),
-  }),
-  'LineString': new ol.style.Style({
-    text:   styleText,
-    stroke: styleStroke
-  }),
-  'Polygon':    new ol.style.Style({
-    text:   styleText,
-    stroke: styleStroke,
-    fill:   styleFill
-  }),
-  'Circle':     new ol.style.Style({
-    text:   styleText,
-    stroke: styleStroke,
-    fill:   styleFill
-  }),
-  'Rectangle':  new ol.style.Style({
-    text:   styleText,
-    stroke: styleStroke,
-    fill:   styleFill
-  }), 
-  'Text':       new ol.style.Style({
-    text: new ol.style.Text({
-      fill: new ol.style.Fill({ color : '#000000' }),
-      font: '15px Titillium Web',
-      placement: 'point',
-      stroke: new ol.style.Stroke({
-        color:     '#FFFFFF',
-        width:     8
-      }),
-    }),
-    
-  }),
+    case 'Rectangle':  
+      return new ol.style.Style({
+        text:   new ol.style.Text({
+          placement: 'point',
+          fill: new ol.style.Fill({ color : '#000000' }),
+          font: '15px Titillium Web',
+          stroke: new ol.style.Stroke({
+            color:     '#FFFFFF',
+            width:     3
+          }),
+        }),
+        stroke: new ol.style.Stroke({
+          width: 3,
+          color: `rgb(${color})`
+        }),
+        fill:   new ol.style.Fill({
+          color: `rgba(${color}, 0.5)`
+        })
+      }) 
+    case 'Text': 
+      return new ol.style.Style({  
+        text: new ol.style.Text({
+          fill: new ol.style.Fill({ color : '#000000' }),
+          font: '15px Titillium Web',
+          placement: 'point',
+          stroke: new ol.style.Stroke({
+            color:     '#FFFFFF',
+            width:     8
+          }),
+        }),
+      })
+  }
 }
 
 export class AnnotationControl extends InteractionControl {
@@ -91,17 +141,12 @@ export class AnnotationControl extends InteractionControl {
 
     this._interaction = null;
 
-    this._layer = opts.layer || new ol.layer.Vector({
-      source: new ol.source.Vector()
-    });
-
-
-
     //types of annotation
 
     this._data = {
       types:        ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text'],
       type:         'Point',
+      ids:           [],
       feature:       null, //annotation feature to edit,
       color:         color,
       text:          '',
@@ -109,50 +154,85 @@ export class AnnotationControl extends InteractionControl {
       show_info:     false, // show info feature (cordinates, lenght, area, etc.)
     };
 
+    this._layer = opts.layer || new ol.layer.Vector({
+      source: new ol.source.Vector()
+    });
+
+    this._layer.getSource().on('addfeature', ({ feature })    => { feature.setId(count); this._data.ids.push(count) });
+    this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(id => id !== feature.getId() ));
+
     this.toggledTool = {
       __title: 'sdk.mapcontrols.annotation.title',
       __iconClass: 'annotation',
+      components: { ColorPicker },
       data: () => this._data,
       template: /* html */ `
         <div style="width: 100%; padding: 5px;">
           <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
             <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.annotation.types.' + type"></option>
           </select>
+          <section v-if = "!feature && ids.length">
+            <div></div>
+          </section>
           <section v-if = "feature" id = "annotation_item" style = "margin-top: 5px;"> 
             <section id = "annotation-tools" style = "display: flex; justify-content: flex-end; padding: 5px; font-size: 1.2em;">
+              <p v-if = "ids.length" :class="$fa('back')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
               <p :class="$fa('download')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "download"></p>
               <p :class="$fa('trash')" style = "color: red; cursor: pointer;" @click.stop = "remove"></p>
             </section>
-            <div class = "form-group" style = "margin-bottom: 5px;"> 
+            <div class = "form-group"> 
               <input 
                 class   = "form-control" 
                 type    = "text" 
                 v-model = "text"/>
             </div>
-            <div v-if = "'Text' !== type" style = "display: flex; justify-content: space-between;">
-              <input 
-                id      = "feature-text"
-                class   = "form-control magic-checkbox" 
-                v-model = "show_text"
-                type    = "checkbox"/>
-              <label for = "feature-text">Show Text</label>
-              <input 
-                id      = "feature-info"
-                class   = "form-control magic-checkbox" 
-                type    = "checkbox" 
-                v-model = "show_info"/>
-              <label for = "feature-info">Info</label>
-            </div>
+            <section v-if = "'Text' !== type">
+              <section id = "color" style = "margin-bottom: 10px;">
+                <color-picker
+                  ref                 = "color_picker"
+                  :value              = "picker_color"
+                  @click.prevent.stop = ""
+                  @hook:beforeDestroy = "() => $refs.color_picker.$off()"
+                  @input              = "onChangeColor"
+                  style               = "width: 100%"
+                />
+              </section>
+              
+              <section id = "info-text" style = "display: flex; justify-content: space-between;">
+                <input 
+                  id      = "feature-text"
+                  class   = "form-control magic-checkbox" 
+                  v-model = "show_text"
+                  type    = "checkbox"/>
+                <label for = "feature-text">Show Text</label>
+                <input 
+                  id      = "feature-info"
+                  class   = "form-control magic-checkbox" 
+                  type    = "checkbox" 
+                  v-model = "show_info"/>
+                <label for = "feature-info">Info</label>
+              </section>
+              
+            </section>
           </section>
         </div>`,  
       computed: {
-        loading: () => ApplicationState.download,
+        picker_color() { 
+          return this.color.split(',').reduce((a, c, i) => { a[ 0 === i ? 'r' : 1 === i ? 'g' : 'b'] = Number(c); return a; } ,{ r: null, g: null, b: null }) 
+        },
       },  
       methods: {
+        showAll() {
+          this.feature = null;
+        },
         remove: () => {
           this.remove();
         },
-        download() {}
+        download() {},
+        onChangeColor(val) {
+          const { r, g, b} = val.rgba;
+          this.color = `${r}, ${g}, ${b}`;
+        }
       },
       watch: {
         type: {
@@ -161,12 +241,44 @@ export class AnnotationControl extends InteractionControl {
         },
         text:         t => this.setText(t),
         show_text:    () => this.showText(),
-        show_info:    b => this.showInfo(b),
-        feature: f    => f && this.setStyle(), 
+        show_info:    () => this.showText(),
+        feature:      f => f && this.setFeature(), 
+        color:        () => this.setColor()
       },  
       created()       { GUI.toggleUserMessage(false); },
       beforeDestroy() { GUI.toggleUserMessage(true); }
     };
+  }
+
+  setColor() {
+    switch(this._data.type) {
+      case 'Point':
+        this._data.feature
+          .getStyle()
+          .getImage()
+          .getFill()
+          .setColor(`rgb(${this._data.color})`);
+        break;
+      case 'LineString':
+        this._data.feature
+          .getStyle()
+          .getStroke()
+          .setColor(`rgb(${this._data.color})`)
+        break; 
+      case 'Polygon':
+      case 'Rectangle':
+      case 'Circle':
+        this._data.feature.getStyle()
+          .getStroke()
+          .setColor(`rgb(${this._data.color})`)
+
+        this._data.feature.getStyle()
+          .getFill()
+          .setColor(`rgba(${this._data.color}, 0.5)`)  
+        break;       
+    }
+
+    this._layer.changed()
   }
 
   setText(t = '') {
@@ -174,20 +286,44 @@ export class AnnotationControl extends InteractionControl {
     this.showText();
   }
 
-  setStyle() {
-    this._data.feature.setStyle(styles[this._data.type]);
-    this.showText();
+  setFeature() {
+    this._data.color = color;
+    this._data.feature.setStyle(styles(this._data.type));
+    this._data.show_text = 'Text' === this._data.type;
+    this._data.show_info = false;
+    this._data.text      = `${this._data.type} ${count++}`;
   }
 
   showText() {
-    const style = this._data.feature.getStyle();
-    style.getText().setText((this._data.show_text || 'Text' === this._data.type) ? this._data.feature.get('text'): '');
-    this._data.feature.setStyle(style);
+    this._data.feature
+      .getStyle()
+      .getText()
+      .setText(`${this._data.show_info ? `${this.getInfo()} \n` : ''}${this._data.show_text ? this._data.feature.get('text'): ''}`);
+    //force change layer to redraw
     this._layer.changed();
   }
 
-  showInfo(bool = false) {
-    console.log(this._data.type)
+  getInfo(bool = false) {
+    switch(this._data.type) {
+      case 'Point':
+        return `${this._data.feature.getGeometry().getCoordinates()}`;
+      case 'LineString':
+        const length = this._data.feature.getGeometry().getLength();
+        if (length > 100) {
+          return `${Math.round((length / 1000) * 100) / 100}  km`;
+        } 
+        return `${Math.round(length * 100) / 100} m`;
+      case 'Polygon':
+      case 'Reactangle':  
+        const area = this._data.feature.getGeometry().getArea();
+        if (area > 10000) {
+          return `${Math.round((area / 1000000) * 100) / 100} km²`;
+        } 
+        return `${Math.round(area * 100) / 100} m²`;
+      case 'Circle':
+        return `${this._data.feature.getGeometry().getCoordinates()}`;
+    }
+
   }
 
   remove() {
@@ -196,11 +332,11 @@ export class AnnotationControl extends InteractionControl {
   }
 
   changeAnnotationType(type) {
-
-    //set feature null
+    //set eventually previous feature to null
     this._data.feature = null;
 
     const map = this.getMap();
+
     if (this._interaction) {
       map.removeInteraction(this._interaction);
     }  
@@ -214,13 +350,12 @@ export class AnnotationControl extends InteractionControl {
       this._interaction.on('boxstart', e => startC = e.coordinate );
       //BBOX END
       this._interaction.on('boxend', e => {
-        this._data.feature = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
+        this._data.feature       = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
         this._data.feature._type = type;
         this._layer.getSource().addFeature(this._data.feature);
       });
 
       return;
-    
     } 
     
     this._interaction = new ol.interaction.Draw({
@@ -234,7 +369,6 @@ export class AnnotationControl extends InteractionControl {
     //DRAW END
     this._interaction.on('drawend', e => {
       e.feature._type    = type;
-      this._data.text    = `${type} ${count++}`;
       this._data.feature = e.feature;
     })
   }
