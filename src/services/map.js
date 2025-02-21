@@ -26,6 +26,7 @@ import { StreetViewControl }                from 'map/controls/streetviewcontrol
 import { ScaleControl }                     from 'map/controls/scalecontrol';
 import { ScreenshotControl }                from 'map/controls/screenshotcontrol';
 import { MeasureControl }                   from 'map/controls/measurecontrol';
+import { AnnotationControl }                from 'map/controls/annotationcontrol';
 import DataRouterService                    from 'services/data';
 import ApplicationService                   from 'services/application';
 import GUI                                  from 'services/gui';
@@ -136,6 +137,7 @@ const CONTROLS = {
   'scale':              ScaleControl,
   'onclick':            InteractionControl,
   'screenshot':         ScreenshotControl,
+  'annotation':         AnnotationControl,
 };
 
 /**
@@ -234,6 +236,11 @@ class MapService extends G3WObject {
       selectionLayer: new ol.layer.Vector({
         source: new ol.source.Vector(),
       }),
+
+      /**@since 3.12.0 */
+      annotation: new ol.layer.Vector({
+        source: new ol.source.Vector(),
+      })
 
     };
 
@@ -506,13 +513,22 @@ class MapService extends G3WObject {
               case 'zoomhistory':
                 $('.g3w-map-controls-left-bottom').append(this.createMapControl(type, { add: false }).element);
                 break;
-
+              /** @since 3.12.0 */  
+              case 'annotation':
+                this.createMapControl('annotation', {
+                  options: {
+                    name:     "annotation",
+                    layer:    this.defaultsLayers.annotation,
+                    tipLabel: 'sdk.mapcontrols.annotation.tooltip',
+                  }
+                });
+                break;
             }
         });
         return this.getMapControls()
       },
 
-      addHideMap({ switchable=false } = {}) {
+      addHideMap({ switchable = false } = {}) {
         const idMap = {
           id: `hidemap_${Date.now()}`,
           map: null,
@@ -689,9 +705,12 @@ class MapService extends G3WObject {
             layer:  e.element,
             zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
           });
-          if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
-          if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.setZIndex(zindex + 1); }
-          if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
+          //Annatotion always on top
+          if (this.defaultsLayers.annotation)     { this.defaultsLayers.annotation.setZIndex(zindex + 1); }
+          if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.setZIndex(zindex + 2); }
+          if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.setZIndex(zindex + 3); }
+          if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.setZIndex(zindex + 4); }
+
         });
 
         this.viewer.map.getLayers().on('remove', e => {
@@ -1195,7 +1214,6 @@ class MapService extends G3WObject {
     if (addToMapControls && !visible) {
       control.element.style.display = "none";
     }
-
     if (addToMapControls) {
       $('.g3w-map-controls').append(control.element);
     }
@@ -1445,6 +1463,8 @@ class MapService extends G3WObject {
 
     // set default layers order
     const map = this.getMap();
+
+    map.addLayer(this.defaultsLayers.annotation);
     map.addLayer(this.defaultsLayers.mapcenter);
     map.addLayer(this.defaultsLayers.selectionLayer);
     map.addLayer(this.defaultsLayers.highlightLayer);
