@@ -145,7 +145,7 @@ export class AnnotationControl extends InteractionControl {
 
     this._data = {
       types:        ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text'],
-      type:         'Point',
+      type:         null,
       ids:           [],
       feature:       null, //annotation feature to edit,
       color:         color,
@@ -168,9 +168,9 @@ export class AnnotationControl extends InteractionControl {
       data: () => this._data,
       template: /* html */ `
         <div style="width: 100%; padding: 5px;">
-          <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
-            <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.annotation.types.' + type"></option>
-          </select>
+          <section class = "annotation-buttons" style = "display: flex; justify-content: space-between; flex-flow: wrap;">
+            <button @click.stop = "type = t === type ? null : t " class = "btn" :class = "[type === t && 'toggled' , t ]" v-for = "t in types"></button>
+          </section>
           <section v-if = "!feature && ids.length">
             <div></div>
           </section>
@@ -235,10 +235,7 @@ export class AnnotationControl extends InteractionControl {
         }
       },
       watch: {
-        type: {
-          immediate: true,
-          handler: type => this.changeAnnotationType(type)
-        },
+        type:         t => this.changeAnnotationType(t),
         text:         t => this.setText(t),
         show_text:    () => this.showText(),
         show_info:    () => this.showText(),
@@ -332,6 +329,8 @@ export class AnnotationControl extends InteractionControl {
   }
 
   changeAnnotationType(type) {
+
+  
     //set eventually previous feature to null
     this._data.feature = null;
 
@@ -341,36 +340,44 @@ export class AnnotationControl extends InteractionControl {
       map.removeInteraction(this._interaction);
     }  
 
-    if ('Rectangle' === type) {
-      let startC;
-      this._interaction = new ol.interaction.DragBox();
-      this._interaction.setActive(true);
-      map.addInteraction(this._interaction);    
-      //BBOX START
-      this._interaction.on('boxstart', e => startC = e.coordinate );
-      //BBOX END
-      this._interaction.on('boxend', e => {
-        this._data.feature       = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
-        this._data.feature._type = type;
-        this._layer.getSource().addFeature(this._data.feature);
-      });
-
-      return;
-    } 
-    
-    this._interaction = new ol.interaction.Draw({
-      type: 'Text' === type ? 'Point': type,
-      source: this._layer.getSource(),
-    });
-
+    switch (type) {
+      case null:
+        this._interaction = new ol.interaction.Select({
+          layers: [this._layer]
+        });
+        break;
+      case 'Rectangle':
+        let startC;
+        this._interaction = new ol.interaction.DragBox();
+        //BBOX START
+        this._interaction.on('boxstart', e => startC = e.coordinate );
+        //BBOX END
+        this._interaction.on('boxend', e => {
+          this._data.feature       = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
+          this._data.feature._type = type;
+          this._layer.getSource().addFeature(this._data.feature);
+        });
+        break;
+      case 'Point':
+      case 'LineString':
+      case 'Circle':
+      case 'Text':  
+        this._interaction = new ol.interaction.Draw({
+          type: 'Text' === type ? 'Point': type,
+          source: this._layer.getSource(),
+        });
+        //DRAW END
+        this._interaction.on('drawend', e => {
+          e.feature._type    = type;
+          this._data.feature = e.feature;
+        })
+      break;  
+    }
+  
     this._interaction.setActive(true);
     map.addInteraction(this._interaction);
 
-    //DRAW END
-    this._interaction.on('drawend', e => {
-      e.feature._type    = type;
-      this._data.feature = e.feature;
-    })
+    
   }
 
 }
