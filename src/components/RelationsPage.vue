@@ -7,8 +7,6 @@
   <div class = "query-relations-page">
     <component
       :loading           = "loading"
-      @show-chart        = "showChart"
-      @hide-chart        = "hideChart"
       :ref               = "currentview"
       :previousview      = "previousview"
       :is                = "currentview"
@@ -71,13 +69,6 @@ export default {
     reloadLayout() {
       VM.$emit('reload-relations');
     },
-    showChart(container, relationData) {
-      GUI.getService('queryresults').showChart([this.relation.referencingLayer], container, relationData)
-    },
-    hideChart(container) {
-      GUI.getService('queryresults').hideChart(container)
-    },
-
     async showRelation(relation) {
       this.loading        = true;
       this.relation       = relation;

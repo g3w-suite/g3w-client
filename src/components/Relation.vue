@@ -482,7 +482,9 @@
           this.chart = !this.chart;
           await this.$nextTick();
           this.chartContainer = this.chartContainer ||  $('#chart_content');
-          this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
+          this.chart 
+            ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
+            : GUI.getService('queryresults').hideChart(this.chartContainer)
         });
 
         await this.$nextTick();
