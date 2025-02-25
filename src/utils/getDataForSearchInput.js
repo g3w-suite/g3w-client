@@ -21,7 +21,11 @@ export async function getDataForSearchInput({ state, field, suggest }) {
       })))
     )
       .filter(d => 'fulfilled' === d.status)
-      .reduce((acc, d, i) => 0 === i ? acc.concat(d.value.data || []) : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), []) // uniques by fformatter and get unique data from more than one serach_layers
+      .reduce((acc, d, i) => 0 === i
+        ? acc.concat(d.value.data || [])                                                       // TODO: add description
+        : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
+        [] 
+      )
       .map(([value, key]) => ({ key, value }));
 
   } catch(e) { console.warn(e); }
