@@ -760,7 +760,7 @@
         this.$options.service.printAtlas(layer);
       },
       showLayerDownloadFormats(layer) {
-        this.$options.service.showLayerDownloadFormats(layer)
+        this.$options.service.showLayerDownloadFormats(layer);
       },
       saveLayerResult(layer, type = "csv") {
         this.$options.service.downloadFeatures(type, layer, layer.features);
