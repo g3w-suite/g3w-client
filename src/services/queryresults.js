@@ -1624,11 +1624,10 @@ export default new (class QueryResultsService extends G3WObject {
     }
 
     const { query = {} } = this.state;
-    //@since 3.11.5 In case of search, need to set field parameter instead fids
-    // In this way we reduce the amount of fids and issue due of search with pagination
-    const data           = 'search' === query.type 
-      ? { field: query.search.join()} 
-      : { fids: features.map(f => f.attributes[G3W_FID]).join(',') };
+
+    const data = 'search' === query.type 
+      ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
+      : { fids: features.map(f => f.attributes[G3W_FID]).join(',') }; // query results (default behavior)
 
     //In the case of pdf type need to add html element
     if ('pdf' === type) {
