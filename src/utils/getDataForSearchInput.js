@@ -22,7 +22,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
     )
       .filter(d => 'fulfilled' === d.status)
       .reduce((acc, d, i) => 0 === i
-        ? acc.concat(d.value.data || [])                                                       // TODO: add description
+        ? acc.concat(d.value.data || [])                                                       // for first layer get all uninques values 
         : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
         [] 
       )
