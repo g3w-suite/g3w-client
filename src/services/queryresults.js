@@ -1625,9 +1625,9 @@ export default new (class QueryResultsService extends G3WObject {
 
     const { query = {} } = this.state;
 
-    const data = 'search' === query.type 
+    const data = 'search' === query.type
       ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
-      : { fids: features.map(f => f.attributes[G3W_FID]).join(',') }; // query results (default behavior)
+      : { fids: features.map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
 
     //In the case of pdf type need to add html element
     if ('pdf' === type) {
