@@ -158,8 +158,8 @@ export class AnnotationControl extends InteractionControl {
       source: new ol.source.Vector()
     });
 
-    this._layer.getSource().on('addfeature', ({ feature })    => { feature.setId(count); this._data.ids.push(count) });
-    this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(id => id !== feature.getId() ));
+    this._layer.getSource().on('addfeature', ({ feature })    => { feature.setId(count); this._data.ids.push({id: count, text: feature.get('text')}) });
+    this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(({id}) => id !== feature.getId() ));
 
     this.toggledTool = {
       __title: 'sdk.mapcontrols.annotation.title',
@@ -167,14 +167,14 @@ export class AnnotationControl extends InteractionControl {
       components: { ColorPicker },
       data: () => this._data,
       template: /* html */ `
-        <div style="width: 100%; padding: 5px;">
+        <div style="width: 100%; padding: 5px;" id = "annotations-content">
           <section class = "annotation-buttons" style = "display: flex; justify-content: space-between; flex-flow: wrap;">
-            <button @click.stop = "type = t === type ? null : t " class = "btn" :class = "[type === t && 'toggled' , t ]" v-for = "t in types"></button>
+            <button @click.stop = "type = t === type ? null : t " class = "btn" :class = "[type === t && 'skin-background-color' , t ]" v-for = "t in types"></button>
           </section>
-          <section v-if = "!feature && ids.length">
-            <div></div>
+          <section v-if = "null === type && ids.length > 0" id = "annotation-list">
+            <div v-for = "item in ids" @click.stop = "editFeature(item.id)">{{ item.text }}</div>
           </section>
-          <section v-if = "feature" id = "annotation_item" style = "margin-top: 5px;"> 
+          <section v-if = "feature" id = "annotation-item" style = "margin-top: 5px;"> 
             <section id = "annotation-tools" style = "display: flex; justify-content: flex-end; padding: 5px; font-size: 1.2em;">
               <p v-if = "ids.length" :class="$fa('back')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
               <p :class="$fa('download')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "download"></p>
@@ -232,7 +232,8 @@ export class AnnotationControl extends InteractionControl {
         onChangeColor(val) {
           const { r, g, b} = val.rgba;
           this.color = `${r}, ${g}, ${b}`;
-        }
+        },
+        editFeature: (id) => this.editFeature(id)
       },
       watch: {
         type:         t => this.changeAnnotationType(t),
@@ -246,6 +247,10 @@ export class AnnotationControl extends InteractionControl {
       beforeDestroy() { GUI.toggleUserMessage(true); }
     };
   }
+
+  editFeature(id) {
+    this._data.feature = this._layer.getSource().getFeatureById(id);
+  };
 
   setColor() {
     switch(this._data.type) {
