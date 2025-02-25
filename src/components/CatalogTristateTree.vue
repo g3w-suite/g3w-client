@@ -155,7 +155,7 @@
 
         <!-- TOGGLE FILTER  -->
         <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
+          v-if                         = "!layerstree.external && layerstree.selection.active && layerstree.filter.active && !layerstree.filter.pagination"
           class                        = "action-button skin-tooltip-left selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
