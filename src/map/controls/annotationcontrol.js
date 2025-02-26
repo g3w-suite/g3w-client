@@ -158,8 +158,27 @@ export class AnnotationControl extends InteractionControl {
       source: new ol.source.Vector()
     });
 
-    this._layer.getSource().on('addfeature', ({ feature })    => { feature.setId(count); this._data.ids.push({id: count, text: feature.get('text')}) });
-    this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(({id}) => id !== feature.getId() ));
+    //On add feature
+    this._layer.getSource().on('addfeature', ({ feature })    => { 
+      const text = `${this._data.type} ${count++}`;
+
+      feature.setId(count); 
+      feature.set('text', text); 
+      this._data.feature.setStyle(styles(this._data.type));
+
+      this._data.text              = text; 
+      this._data.feature.type      = this._data.type; // set type
+      this._data.feature.color     = this._data.color     = color;
+      this._data.feature.show_text = this._data.show_text = 'Text' === this._data.type;
+      this._data.feature.show_info = this._data.show_info = false;
+      
+      //stop to draw
+      this._data.type              = null
+      this._data.ids.push({ id: count, text: feature.get('text') }); 
+    });
+
+    //on Remove feature
+    this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(({ id }) => id !== feature.getId() ));
 
     this.toggledTool = {
       __title: 'sdk.mapcontrols.annotation.title',
@@ -168,17 +187,25 @@ export class AnnotationControl extends InteractionControl {
       data: () => this._data,
       template: /* html */ `
         <div style="width: 100%; padding: 5px;" id = "annotations-content">
-          <section class = "annotation-buttons" style = "display: flex; justify-content: space-between; flex-flow: wrap;">
+          <section class = "annotation-buttons" style = "display: flex; justify-content: space-between; flex-flow: wrap; margin-bottom: 5px;">
             <button @click.stop = "type = t === type ? null : t " class = "btn" :class = "[type === t && 'skin-background-color' , t ]" v-for = "t in types"></button>
           </section>
-          <section v-if = "null === type && ids.length > 0" id = "annotation-list">
-            <div v-for = "item in ids" @click.stop = "editFeature(item.id)">{{ item.text }}</div>
+          <section v-if = "null === feature && 'Edit' === type && ids.length > 0" id = "annotation-list">
+            <divider/>
+            <button 
+              v-for       = "item in ids" :key = "item.id" 
+              @click.stop = "editFeature(item.id)"
+              class       = "btn"
+              style       = "width: 100%; margin: 3px; border: solid 1px #ccc"
+              >
+                {{ item.text }}
+            </button>
           </section>
           <section v-if = "feature" id = "annotation-item" style = "margin-top: 5px;"> 
             <section id = "annotation-tools" style = "display: flex; justify-content: flex-end; padding: 5px; font-size: 1.2em;">
               <p v-if = "ids.length" :class="$fa('back')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
-              <p :class="$fa('download')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "download"></p>
-              <p :class="$fa('trash')" style = "color: red; cursor: pointer;" @click.stop = "remove"></p>
+              <p :class = "$fa('download')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "download"></p>
+              <p :class = "$fa('trash')"    style = "color: red; cursor: pointer;" @click.stop = "remove"></p>
             </section>
             <div class = "form-group"> 
               <input 
@@ -222,25 +249,20 @@ export class AnnotationControl extends InteractionControl {
         },
       },  
       methods: {
-        showAll() {
-          this.feature = null;
-        },
-        remove: () => {
-          this.remove();
-        },
+        showAll () { this.type = 'Edit'; this.feature = null; },
+        remove: ()  => this.remove(),
         download() {},
         onChangeColor(val) {
           const { r, g, b} = val.rgba;
           this.color = `${r}, ${g}, ${b}`;
         },
-        editFeature: (id) => this.editFeature(id)
+        editFeature: id => this.editFeature(id)
       },
       watch: {
-        type:         t => this.changeAnnotationType(t),
-        text:         t => this.setText(t),
+        type:         t  => this.changeAnnotationType(t),
+        text:         t  => this.setText(t),
         show_text:    () => this.showText(),
         show_info:    () => this.showText(),
-        feature:      f => f && this.setFeature(), 
         color:        () => this.setColor()
       },  
       created()       { GUI.toggleUserMessage(false); },
@@ -248,12 +270,29 @@ export class AnnotationControl extends InteractionControl {
     };
   }
 
+  setCurrentEditFeature(feature) {
+    this._data.feature   = feature;
+    this._data.text      = this._data.feature.get('text'); 
+    this._data.color     = this._data.feature.color;
+    this._data.show_text = this._data.feature.show_text;
+    this._data.show_info = this._data.feature.show_info;
+  }
+
+  /**
+   * 
+   * @param {*} id 
+   */
   editFeature(id) {
-    this._data.feature = this._layer.getSource().getFeatureById(id);
+    this.setCurrentEditFeature(this._layer.getSource().getFeatureById(id));
+    GUI.getService('map').zoomToFeatures([this._data.feature]);
   };
 
+  /**
+   * 
+   */
   setColor() {
-    switch(this._data.type) {
+    this._data.feature.color = this._data.color;
+    switch(this._data.feature.type) {
       case 'Point':
         this._data.feature
           .getStyle()
@@ -270,33 +309,38 @@ export class AnnotationControl extends InteractionControl {
       case 'Polygon':
       case 'Rectangle':
       case 'Circle':
-        this._data.feature.getStyle()
+        this._data.feature
+          .getStyle()
           .getStroke()
           .setColor(`rgb(${this._data.color})`)
 
-        this._data.feature.getStyle()
+        this._data.feature
+          .getStyle()
           .getFill()
           .setColor(`rgba(${this._data.color}, 0.5)`)  
         break;       
     }
-
-    this._layer.changed()
+    this._layer.changed();
   }
 
+  /**
+   * 
+   * @param {*} t 
+   */
   setText(t = '') {
     this._data.feature.set('text', t);
-    this.showText();
+    this._data.ids.find(({ id }) => this._data.feature.getId() === id).text = t;
+    if (this._data.show_text) {
+      this.showText();
+    }
   }
 
-  setFeature() {
-    this._data.color = color;
-    this._data.feature.setStyle(styles(this._data.type));
-    this._data.show_text = 'Text' === this._data.type;
-    this._data.show_info = false;
-    this._data.text      = `${this._data.type} ${count++}`;
-  }
-
+  /**
+   * 
+   */
   showText() {
+    this._data.feature.show_text = this._data.show_text;
+    this._data.feature.show_info = this._data.show_info;
     this._data.feature
       .getStyle()
       .getText()
@@ -305,8 +349,12 @@ export class AnnotationControl extends InteractionControl {
     this._layer.changed();
   }
 
-  getInfo(bool = false) {
-    switch(this._data.type) {
+  /**
+   * 
+   * @returns 
+   */
+  getInfo() {
+    switch(this._data.feature.type) {
       case 'Point':
         return `${this._data.feature.getGeometry().getCoordinates()}`;
       case 'LineString':
@@ -316,14 +364,14 @@ export class AnnotationControl extends InteractionControl {
         } 
         return `${Math.round(length * 100) / 100} m`;
       case 'Polygon':
-      case 'Reactangle':  
+      case 'Rectangle':  
         const area = this._data.feature.getGeometry().getArea();
         if (area > 10000) {
           return `${Math.round((area / 1000000) * 100) / 100} km²`;
         } 
         return `${Math.round(area * 100) / 100} m²`;
       case 'Circle':
-        return `${this._data.feature.getGeometry().getCoordinates()}`;
+        return `${this._data.feature.getGeometry().getRadius()}`;
     }
 
   }
@@ -334,55 +382,73 @@ export class AnnotationControl extends InteractionControl {
   }
 
   changeAnnotationType(type) {
-
-  
-    //set eventually previous feature to null
-    this._data.feature = null;
-
     const map = this.getMap();
 
     if (this._interaction) {
       map.removeInteraction(this._interaction);
     }  
 
-    switch (type) {
+    if (type) {
+      this._data.feature = null;
+    }
+
+    switch(type) {
       case null:
-        this._interaction = new ol.interaction.Select({
-          layers: [this._layer]
-        });
+        this._interaction = null;
         break;
+      case 'Edit': 
+        this._interaction = new ol.interaction.Pointer({
+          layers: [this._layer],
+          handleMoveEvent: e => {
+            e.map.getTargetElement().style.cursor = e.map.getFeaturesAtPixel(e.pixel, {
+              layerFilter: l => this._layer === l,
+              hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
+            }) ? 'pointer': '';
+          },
+          handleDownEvent: e => {
+            setCurrentEditFeature(e.map.getFeaturesAtPixel(e.pixel, {
+              layerFilter: l => this._layer === l,
+              hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
+            })[0]);
+          },
+        });
+        break;  
       case 'Rectangle':
-        let startC;
-        this._interaction = new ol.interaction.DragBox();
-        //BBOX START
-        this._interaction.on('boxstart', e => startC = e.coordinate );
-        //BBOX END
-        this._interaction.on('boxend', e => {
-          this._data.feature       = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
-          this._data.feature._type = type;
-          this._layer.getSource().addFeature(this._data.feature);
-        });
-        break;
       case 'Point':
       case 'LineString':
+      case 'Polygon':  
       case 'Circle':
       case 'Text':  
+        //reset data feature
+        this._data.feature = null;
+        if ('Rectangle' === type) {
+          let startC;
+          this._interaction = new ol.interaction.DragBox();
+          //BBOX START
+          this._interaction.on('boxstart', e => startC = e.coordinate );
+          //BBOX END
+          this._interaction.on('boxend', e => {
+            this._data.feature       = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
+            this._layer.getSource().addFeature(this._data.feature);
+          });
+          break;
+        } 
         this._interaction = new ol.interaction.Draw({
           type: 'Text' === type ? 'Point': type,
           source: this._layer.getSource(),
         });
         //DRAW END
         this._interaction.on('drawend', e => {
-          e.feature._type    = type;
           this._data.feature = e.feature;
         })
+      
       break;  
     }
-  
-    this._interaction.setActive(true);
-    map.addInteraction(this._interaction);
 
-    
+    if (this._interaction) {
+      this._interaction.setActive(true);
+      map.addInteraction(this._interaction);
+    }
   }
 
 }
