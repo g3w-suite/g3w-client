@@ -1,410 +1,409 @@
 export default {
   translation: {
     error_page: {
-      error: "Connection error",
-      at_moment: "At the moment is not possible show map",
-      f5: "Press Ctrl+F5"
+      error: "Помилка з'єднання",
+      at_moment: "Неможливо відобразити мапу",
+      f5: "Натисніть Ctrl+F5"
     },
     cookie_law: {
-      message: "This website uses cookies to ensure you get the best experience on our website.",
-      buttonText: "Got It!"
+      message: "Сайт використовує cookies щоб забезпечити найкращий досвід від використання сервісу.",
+      buttonText: "Зрозуміло!"
     },
-    default:"default",
-    sign_in: "Sign in",
+    default: "за замовчанням",
+    sign_in: "Вхід",
     layer_selection_filter: {
       tools: {
-        filter: "Enable/Disable filter",
-        nofilter: "Remove Filter",
-        invert: "Invert Selection",
-        clear: "Clear Selection",
-        show_features_on_map: "Update results when map moves",
-        savefilter: "Save Filter",
-        filterName: "Filter Name",
+        filter: "Активувати/вимкнути фільтр",
+        nofilter: "Видалити фільтр",
+        invert: "Інвертувати виділення",
+        clear: "Очистити виділення",
+        show_features_on_map: "Оновлювати результати при переміщенні мапи",
+        savefilter: "Зберегти фільтр",
+        filterName: "Назва фільтра",
       }
     },
     warning: {
-      not_supported_format: "Not supported format"
+      not_supported_format: "Формат не підтримується"
     },
     layer_position: {
-      top: 'top',
-      bottom: 'bottom',
-      message: "Position"
+      top: "вгорі",
+      bottom: "внизу",
+      message: "Положення"
     },
     sdk: {
       atlas: {
         template_dialog: {
-          title: "Select Template"
+          title: "Виберіть шаблон"
         }
       },
       spatialbookmarks: {
-        title: "Bookmarks",
-        helptext: "Move on map extent, insert name and click Add",
+        title: "Закладки",
+        helptext: "Встановіть бажані межі мапи, задайте назву та натисніть Додати",
         input: {
-          name: "Name"
+          name: "Назва"
         },
         sections: {
           project:{
-            title: "Project Bookmarks"
+            title: "Закладки проекту"
           },
           user: {
-            title: "User Bookmarks"
+            title: "Закладки користувача"
           }
         }
       },
       search: {
-        all: 'ALL',
-        no_results: "No results",
-        searching: "Searching ...",
-        error_loading: "Error Loading Data",
-        layer_not_searchable: "Layer is not searchable",
-        layer_not_querable: "Layer is not querable",
+        all: "ВСЕ",
+        no_results: "Не знайдено",
+        searching: "Пошук…",
+        error_loading: "Помилка завантаження даних",
+        layer_not_searchable: "Пошук по шару неможливий",
+        layer_not_querable: "Шар не підтримує запити",
         autocomplete: {
           inputshort: {
-            pre: "Please enter",
-            post: "or more characters"
+            pre: "Введіть",
+            post: "або більше символів"
           }
         },
-        help_filter : "Search values are limited based on the active filter. Remove the filter to search all data.",
-        autofilter: "Filter results"
-
-},
+        help_filter : "Результати пошуку обмежуються фільтром. Видаліть фільтр щоб шукати по всьому шару.",
+        autofilter: "Фільтрувати за результатами"
+      },
       print: {
-        no_layers: 'No Layer to print',
-        template: "Template",
-        labels: "Labels",
-        scale: "Scale",
-        format: "Format",
-        rotation: "Rotation",
-        download_image: "Download Image",
-        fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
-        fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-        help: "Exportable layers are defined by the administrator",
-        help_details: `<p>If you don't see some layer in your print file:</p>
+        no_layers: "Відсутні видимі шари",
+        template: "Шаблон",
+        labels: "Підписи",
+        scale: "Масштаб",
+        format: "Формат",
+        rotation: "Обертання",
+        download_image: "Завантажити зображення",
+        fids_instruction: "Допустимі значення: від 1 до значення позначеного [max]. Підтримуються діапазони значень, наприклад, 4-6",
+        fids_example: "Наприклад, 1,4-6 надрукує сторінки 1,4,5,6",
+        help: "Шари, які можна експортувати, задаються адміністратором",
+        help_details: `<p>Якщо у файлі відсутні деякі шари:</p>
           <ol style="padding-left: 25px">
-            <li>try again by selecting a different template</li>
-            <li>try changing the zoom level</li>
-            <li>check the origin (eg. third-party WMS server)</li>
-            <li>make sure the item is actually checked within layers list</li>
+            <li>спробуйте обрати інший шаблон</li>
+            <li>спробуйте змінитиіть масштаб</li>
+            <li>перевірте джерела даних (наприклад, зовнішній WMS-сервер)</li>
+            <li>переконайтеся, що шар дійсно вибрано у списку шарів</li>
           </ol>`,
       },
       querybuilder: {
-        title: 'Advanced search',
+        title: "Розширений пошук",
         search: {
-          run: "Run",
-          info: "Information",
-          delete: "Delete",
-          edit: "Edit"
+          run: "Виконати",
+          info: "Інформація",
+          delete: "Видалити",
+          edit: "Змінити"
         },
         messages: {
-          changed: 'Saved',
-          number_of_features: "Features found:"
+          changed: "Збережено",
+          number_of_features: "Знайдено об'єктів:"
         },
         panel: {
           button: {
-            all: 'SEARCH A VALUE',
-            save: 'SAVE',
-            test: 'TEST',
-            clear: 'CLEAR',
-            run: 'RUN',
-            manual: 'MANUAL'
+            all: "ПОШУК ЗНАЧЕННЯ",
+            save: "ЗБЕРЕГТИ",
+            test: "ПЕРЕВІРИТИ",
+            clear: "ОЧИСТИТИ",
+            run: "ВИКОНАТИ",
+            manual: "ДОВІДКА"
           },
-          layers: 'LAYERS',
-          fields: 'FIELDS',
-          values: 'VALUES',
-          operators: 'OPERATORS',
-          expression: 'EXPRESSION'
+          layers: "ШАРИ",
+          fields: "ПОЛЯ",
+          values: "ЗНАЧЕННЯ",
+          operators: "ОПЕРАТОРИ",
+          expression: "ВИРАЗ"
         },
-        error_run: 'An error occurs. Please check the query',
-        error_test: "An error occur during query execution",
-        delete: 'Do you want delete it?',
-        additem: 'Insert the name of the new search'
+        error_run: "Помилка. Перевірте правильність запиту",
+        error_test: "Помилка виконання запиту",
+        delete: "Скасувати?",
+        additem: "Задайте назву запиту"
       },
       errors: {
         layers: {
-          load: "Some layers are not available"
+          load: "Деякі шари недоступні"
         },
-        unsupported_format: 'Not supported format',
-        add_external_layer: 'Load layer error'
+        unsupported_format: "Формат не підтримується",
+        add_external_layer: "Помилка завантаження шару"
       },
       metadata: {
-        title: 'Metadata',
+        title: "Метадані",
         groups: {
           general: {
-            title: 'GENERAL',
+            title: "ЗАГАЛЬНЕ",
             fields: {
-              title: 'TITLE',
-              name: 'NAME',
-              description: "DESCRIPTION",
-              abstract: "ABSTRACT",
-              keywords: 'KEYWORDS',
-              fees: "FEES",
-              accessconstraints: "ACCESS CONSTRAINT",
-              contactinformation: "CONTACTS",
+              title: "НАЗВА",
+              name: "ІМ'Я",
+              description: "ОПИС",
+              abstract: "АННОТАЦІЯ",
+              keywords: "КЛЮЧОВІ СЛОВА",
+              fees: "ОПЛАТА",
+              accessconstraints: "ОБМЕЖЕННЯ ДОСТУПУ",
+              contactinformation: "КОНТАКТИ",
               subfields: {
                 contactinformation: {
                   contactelectronicmailaddress: "Email",
-                  personprimary: 'References',
-                  contactvoicetelephone: 'Phone',
-                  contactorganization: 'Organization',
-                  ContactOrganization: 'Organization',
-                  contactposition: 'Position',
-                  ContactPosition: 'Position',
-                  contactperson: 'Person',
-                  ContactPerson: 'Person'
+                  personprimary: "Посилання",
+                  contactvoicetelephone: "Телефон",
+                  contactorganization: "Організація",
+                  ContactOrganization: "Організація",
+                  contactposition: "Посада",
+                  ContactPosition: "Посада",
+                  contactperson: "Особа",
+                  ContactPerson: "Особа"
                 }
               },
               wms_url: "WMS"
             }
           },
           spatial:{
-            title: 'SPATIAL',
+            title: "ПРОСТОРОВА ІНФОРМАЦІЯ",
             fields : {
-              crs: 'EPSG',
-              extent: 'BBOX'
+              crs: "EPSG",
+              extent: "BBOX"
             }
           },
           layers: {
-            title: 'LAYERS',
+            title: "ШАРИ",
             fields: {
-              layers: 'LAYERS',
+              layers: "ШАРИ",
               subfields: {
-                crs: 'EPSG',
-                bbox: 'BBOX',
-                title: "TITLE",
-                name: 'NAME',
-                geometrytype: 'GEOMETRY',
-                source: 'SOURCE',
-                attributes: 'ATTRIBUTES',
-                abstract: 'ABSTRACT',
-                attribution: 'ATTRIBUTION',
-                keywords: "PAROLE CHIAVE",
-                metadataurl:'METADATA URL',
-                dataurl: "DATA URL"
+                crs: "EPSG",
+                bbox: "BBOX",
+                title: "НАЗВА",
+                name: "ІМ'Я",
+                geometrytype: "ГЕОМЕТРІЯ",
+                source: "ДЖЕРЕЛО",
+                attributes: "АТРИБУТИ",
+                abstract: "АННОТАЦІЯ",
+                attribution: "ПОХОДЖЕННЯ",
+                keywords: "КЛЮЧОВІ СЛОВА",
+                metadataurl: "URL МЕТАДАНИХ",
+                dataurl: "URL ДАНИХ"
               }
             },
             groups : {
-              general: 'GENERAL',
-              spatial: 'SPATIAL'
+              general: "ЗАГАЛЬНЕ",
+              spatial: "ПРОСТОРОВА ІНФОРМАЦІЯ"
             }
           },
           credits: {
-            title: 'Credits',
+            title: 'Про проект',
           }
         }
       },
       tooltips: {
         relations: {
-          form_to_row: "Row View",
-          row_to_form: "Form View",
-          zoomtogeometry: "Zoom to Geometry",
+          form_to_row: "Таблиця",
+          row_to_form: "Форма",
+          zoomtogeometry: "Наблизити до об'єкта",
         },
-        copy_map_extent_url: 'Copy share URL',
-        download_shapefile: "Download Shapefile",
-        download_gpx: "Download GPX",
-        download_gpkg: "Download GPKG",
-        download_csv: "Download CSV",
-        download_xls: "Download XLS",
-        download_pdf: "Download PDF",
-        show_chart: "Show Chart",
-        atlas: "Print Atlas",
-        editing: "Editing",
+        copy_map_extent_url: "Поділитися",
+        download_shapefile: "Завантажити Shapefile",
+        download_gpx: "Завантажити GPX",
+        download_gpkg: "Завантажити GPKG",
+        download_csv: "Завантажити CSV",
+        download_xls: "Завантажити XLS",
+        download_pdf: "Завантажити PDF",
+        show_chart: "Показати діаграми",
+        atlas: "Друкувати атлас",
+        editing: "Оцифровка",
       },
       mapcontrols: {
         query: {
-          tooltip: 'Query layer',
+          tooltip: "Запит до шару",
           actions: {
             add_selection: {
-              hint: "Add/Remove Selection"
+              hint: "Додати до/Вилучити з вибірки"
             },
             zoom_to_features_extent:{
-              hint: "Zoom to features extent"
+              hint: "Наблизити до об'єктів"
             },
             add_features_to_results: {
-              hint: "Add/Remove features to results"
+              hint: "Додати до/Вилучити з результатів"
             },
             remove_feature_from_results: {
-              hint: "Remove feature from results"
+              hint: "Видалити об'єкт з результатів"
             },
             zoom_to_feature: {
-              hint: "Zoom to feature"
+              hint: "Наблизити до об'єкта"
             },
             relations: {
-              hint: "Show Relations"
+              hint: "Показати відношення"
             },
             relations_charts: {
-              hint: "Show relations chart"
+              hint: "Показати діаграму відношення"
             },
             download_features_shapefile:{
-              hint: 'Download features Shapefile'
+              hint: "Завантажити Shapefile"
             },
             download_shapefile: {
-              hint: 'Download feature Shapefile'
+              hint: "Завантажити Shapefile"
             },
             download_features_gpx: {
-              hint: "Download feature GPX"
+              hint: "Завантажити GPX"
             },
             download_features_gpkg: {
-              hint: "Download features GPKG"
+              hint: "Завантажити GPKG"
             },
             download_gpx: {
-              hint: "Download feature GPX"
+              hint: "Завантажити GPX"
             },
             download_gpkg: {
-              hint: "Download feature GPKG"
+              hint: "Завантажити GPKG"
             },
             download_features_csv: {
-              hint: "Download features CSV"
+              hint: "Завантажити CSV"
             },
             download_csv: {
-              hint: "Download feature CSV"
+              hint: "Завантажити CSV"
             },
             download_features_xls: {
-              hint: "Download features XLS"
+              hint: "Завантажити XLS"
             },
             download_xls: {
-              hint: "Download feature XLS"
+              hint: "Завантажити XLS"
             },
             download_pdf: {
-              hint: "Download feature PDF"
+              hint: "Завантажити PDF"
             },
             atlas: {
-              hint: "Print Atlas"
+              hint: "Друкувати Атлас"
             },
             copy_zoom_to_fid_url: {
-              hint: "Share via link",
-              hint_change: "Copied"
+              hint: "Поділитися",
+              hint_change: "Скопійовано до буферу обміну"
             }
           }
         },
         queryby: {
-          title: 'Query area',
-          layer: 'Selected layer:',
-          none: 'NONE',
-          new: 'TEMPORARY LAYER',
-          all: 'ALL',
+          title: "Вибрати полігоном",
+          layer: "Шар:",
+          none: "НІЧОГО",
+          new: "ТИМЧАСОВИЙ ШАР",
+          all: "ВСЕ",
           methods: {
-            intersects: 'intersects',
-            within: 'within'
+            intersects: "intersects",
+            within: "within"
           },
           querybypolygon: {
-            tooltip: 'select a polygon'
+            tooltip: "вибрати полігоном"
           },
           querybydrawpolygon: {
-            tooltip: 'draw a polygon'
+            tooltip: "оцифрувати полігон"
           },
           querybbox: {
-            tooltip: 'draw a rectangle'
+            tooltip: "оцифрувати прямокутник"
           },
           querybycircle: {
-            tooltip: 'draw a circle'
+            tooltip: "оцифрувати коло"
           }
         },
         querybypolygon: {
           download: {
-            title: "Attributes download",
+            title: "Завантижити атрибути",
             choiches:{
               feature: {
-                label:"Features only",
+                label: "Тільки об'єкти",
               },
               feature_polygon: {
-                label:"Features+Query Polygon",
+                label: "Об'єкти та полігон",
               }
             }
           },
-          tooltip: 'Query By Polygon',
-          no_geometry: 'No geometry on response',
+          tooltip: "Вибрати за об'єктом шару",
+          no_geometry: "Відповідь не містить геометрії",
           help: {
-            message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
+            message: "<ul><li>Виберіть (видимий) шар.</li><li>Клацніть по об'єкту на мапі.</li></ul>"
           }
         },
         querybydrawpolygon: {
-          tooltip: "Query by Draw Polygon ",
+          tooltip: "Вибрати за полігоном",
           help: {
-            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers (underlined in yellow in legend)</li></ul>"
+            message: "<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
           }
         },
         querybbox: {
-          tooltip: 'Query BBox layer',
-          nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
+          tooltip: "Вибрати у межах шару",
+          nolayers_visible: "Відсутні видимі шари до яких можна сформувати запит. Переконайтеся, що є хоча б один видимий шар WFS",
           help: {
-            message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
+            message: "<ul><li>Протягніть мишкою щоб намалювати полігон та виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
           }
         },
         querybycircle: {
-          tooltip: "Query by Draw Circle ",
-          label: 'Radius',
+          tooltip: "Вибрати за радіусом",
+          label: "Радіус",
           help: {
-            message: "<ul><li>Click on map to draw circle</li></ul>"
+            message: "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>"
           },
         },
         addlayer: {
           messages: {
             csv: {
-              warning: "The result in the map is partial due to the presence of the below incorrect records list:"
+              warning: "Результати неповні через наявність наступних некоректних записів:"
             }
           },
-          tooltip: 'Add Layer'
+          tooltip: "Додати шар"
         },
         geolocation: {
-          tooltip: 'Geolocation'
+          tooltip: "Геолокація"
         },
         measures: {
-          title: 'Measure',
+          title: "Виміряти",
           length: {
-            tooltip: "Length",
-            help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
+            tooltip: "Довжина",
+            help: "Клацніть по мапі щоб намалювати лінію. Натисніть <br>CANC щоб видалити останню вершину",
           },
           area: {
-            tooltip: "Area",
-            help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
+            tooltip: "Площа",
+            help: "Клацніть по мапі щоб намалювати полігон. Натисність <br>CANC щоб видалити останню вершину"
           }
         },
         screenshot: {
-          title: 'Screen capture',
+          title: "Знімок екрану",
           screenshot: "PNG",
           geoscreenshot: "GeoTIFF",
-          download: 'Generate'
+          download: "Створити"
         },
         scale: {
-          no_valid_scale: "Invalid Scale"
+          no_valid_scale: "Неправильний масштаб"
         },
         scaleline: {
           units: {
-            metric: 'Meters',
-            nautical: 'Nautical Mile'
+            metric: "Метри",
+            nautical: "Морські милі"
           }
         },
         zoomhistory: {
-          zoom_last: "Zoom Last",
-          zoom_next: "Zoom Next"
+          zoom_last: "Попередній масштаб",
+          zoom_next: "Наступний масштаб"
         }
       },
       relations: {
-        relation_data: 'Relation data',
-        no_relations_found: 'No relations found',
-        back_to_relations: 'Back to relations',
-        list_of_relations_feature: 'List of relations of feature',
-        error_missing_father_field: "Field is missing",
-        field: "Relation key field",
+        relation_data: "Відношення",
+        no_relations_found: "Відношення відсутні",
+        back_to_relations: "До відношень",
+        list_of_relations_feature: "Відношення об'єкта",
+        error_missing_father_field: "Відсутнє поле",
+        field: "Ключ відношення",
       },
       form: {
-        loading: 'Loading ...',
+        loading: "Завантаження…",
         inputs: {
           messages: {
             errors: {
-              picklayer: "No feature selected. Check if layer is on editing or visible at current scale"
+              picklayer: "Жодного об'єкта не вибрано. Перевірте що шар у режимі редагування та видимий за поточного масштабу"
             }
           },
           tooltips:{
-            picklayer: "Get value from ma layer",
-            lonlat: "Click on map to get coordinates"
+            picklayer: "Отримати значення з мапи",
+            lonlat: "Клацніть по мапі щоб отримати координати"
           },
-          input_validation_mutually_exclusive: "Field mutually exclusive with ",
-          input_validation_error: "Mandatory Field or wrong data type",
-          input_validation_error_type: "Wrong data type",
-          input_validation_min_field: "Value has to be more/equal to field value  ",
-          input_validation_max_field: "Value has to be less/equal to field value ",
-          input_validation_exclude_values: "Value has to be unique",
+          input_validation_mutually_exclusive: "Поле взаємовиключне з ",
+          input_validation_error: "Обов'язкове поле або неправильний тип даних",
+          input_validation_error_type: "Неправильний тип даних",
+          input_validation_min_field: "Значення повинно бути більше або дорівнювати значенню поля ",
+          input_validation_max_field: "Значення повинно бути менше або дорівнювати значенню поля ",
+          input_validation_exclude_values: "Значення повинні бути унікальними",
           integer: "integer",
           bigint: "integer",
           text: "text",
@@ -417,221 +416,221 @@ export default {
           table: "table"
         },
         footer: {
-          "required_fields": "Required fields"
+          required_fields: "Обов'язкові поля"
         },
         messages: {
-          qgis_input_widget_relation: "Use relation specific form to work with relation"
+          qgis_input_widget_relation: "Керуйте відношеннями за допомогою спеціальної форми"
         }
       },
       catalog: {
-        current_map_theme_prefix: "THEME",
-        choose_map_theme: "CHOOSE THEME",
-        choose_map_theme_input_label: 'Name of new map theme',
-        project_map_theme : 'Project Themes',
-        user_map_theme: 'User Themes',
-        question_delete_map_theme: "Do you want delete the theme?",
-        delete_map_theme: "Theme deleted successfully",
-        saved_map_theme: "Theme saved successfully",
-        updated_map_theme: "Theme updated successfully",
-        invalid_map_theme_name: "Invalid or exiting name",
+        current_map_theme_prefix: "ТЕМА",
+        choose_map_theme: "ВИБРАТИ ТЕМУ",
+        choose_map_theme_input_label: "Назва нової теми",
+        project_map_theme: "Теми проекту",
+        user_map_theme: "Теми користувача",
+        question_delete_map_theme: "Видалити тему?",
+        delete_map_theme: "Тему видалено",
+        saved_map_theme: "Тему збережено",
+        updated_map_theme: "Тему оновлено",
+        invalid_map_theme_name: "Неправильна назва або тема з такою назвою вже існує",
         menu: {
-          layerposition: 'Layer Position',
-          setwmsopacity: "Set Opacity",
+          layerposition: "Положення шару",
+          setwmsopacity: "Встановити непрозорість",
           wms: {
             title:"",
-            copy: "Click here to copy url",
-            copied: "Copied"
+            copy: "Скопіювати посилання",
+            copied: "Скопійовано"
           },
           download: {
-            unknow: 'Download',
-            geotiff_map_extent: "GeoTiff (current view)"
+            unknow: "Завантажити",
+            geotiff_map_extent: "GeoTiff (поточні межі)"
           }
         }
       },
       wps: {
-        list_process: "List of process",
-        tooltip: 'Click on map'
+        list_process: "Список процесів",
+        tooltip: "Клацніть по мапі"
       }
     },
     credits: {
-      g3wSuiteFramework: "Application based on OS framework",
-      g3wSuiteDescription: "Publish and manage your QGIS projects on the web",
-      productOf: "Framework developed by",
+      g3wSuiteFramework: "Програма на основі фреймворку ОС",
+      g3wSuiteDescription: "Публікуйте та керуйте проектами QGIS в мережі Інтернет",
+      productOf: "Розроблено",
     },
-    toggle_color_scheme: "Toggle color scheme",
-    logout: "Logout",
-    no_other_projects: "No more project for this group",
-    no_other_groups: "No more groups for this Macrogroup",
-    yes: "Yes",
-    no: "No",
-    back: "Back",
-    backto: "Back to ",
-    changemap: "Change map",
-    change_session: "Change Session",
-    component: "Generic Component",
-    search: "Search",
-    no_results: "No results found",
-    print: "Print",
-    create_print: "Create Print",
-    dosearch: "Search",
-    catalog: "Map",
-    data: "Data",
+    toggle_color_scheme: "Перемкнути колірну схему",
+    logout: "Вихід",
+    no_other_projects: "У групі карт відсутні інші проекти",
+    no_other_groups: "У макрогрупі відсутні інші групи",
+    yes: "Так",
+    no: "Ні",
+    back: "Назад",
+    backto: "Повернутися до ",
+    changemap: "Змінити мапу",
+    change_session: "Змінити сесію",
+    component: "Універсальний компонент",
+    search: "Пошук",
+    no_results: "Нічого не знайдено",
+    print: "Друк",
+    create_print: "Створити Друк",
+    dosearch: "Пошук",
+    catalog: "Мапа",
+    data: "Дані",
     externalwms: "WMS",
-    baselayers: "Base",
-    tools: "Tools",
-    tree: "Layers",
-    legend: "Legend",
-    nobaselayer: "No basemap",
-    street_search: "Find Address",
-    show: "Show",
-    hide: "Hide",
-    copy_form_data: "Copy data",
-    paste_form_data: "Paste",
-    copy_form_data_from_feature: "Copy data from map",
-    error_map_loading: "Error occurs loading map",
-    check_internet_connection_or_server_admin: "Check internet connection or contact admin",
-    could_not_load_vector_layers: "Connection error: Layers can be loaded",
-    server_saver_error: "Error in server saving",
-    server_error: "Server connection error",
-    save: "Save",
-    cancel: "Cancel",
-    update: "Update",
-    close: "Close",
+    baselayers: "Базові шари",
+    tools: "Інструменти",
+    tree: "Шари",
+    legend: "Легенда",
+    nobaselayer: "Без базових шарів",
+    street_search: "Знайти адресу",
+    show: "Показати",
+    hide: "Сховати",
+    copy_form_data: "Копіювати",
+    paste_form_data: "Вставити",
+    copy_form_data_from_feature: "Копіювати дані з мапи",
+    error_map_loading: "Помилка завантаження нової мапи",
+    check_internet_connection_or_server_admin: "Перевірте мережеве з'єднання або зв'яжіться з адміністратором",
+    could_not_load_vector_layers: "Помилка з'єднання з сервером: не вдалося завантажити шари",
+    server_saver_error: "Помилка завантаження на сервер",
+    server_error: "Помилка підключення до сервера",
+    save: "Зберегти",
+    cancel: "Скасувати",
+    update: "Оновити",
+    close: "Закрити",
     /** @since 3.8.0 */
-    dont_show_again: "Don't show again",
-    enlange_reduce: "Enlarge / Reduce",
-    add: "Add",
-    exitnosave: "Exit without save",
-    annul: "Cancel",
-    layer_is_added: "Layer with same name already added",
+    dont_show_again: "Більше не показувати",
+    enlange_reduce: "Збільшити / Зменшити",
+    add: "Додати",
+    exitnosave: "Вийти без збереження",
+    annul: "Скасувати",
+    layer_is_added: "Шар з таким ім'ям вже існує",
     sidebar: {
       wms: {
         panel: {
-          title:'Add WMS Layer',
+          title: "Додати шар WMS",
           label: {
-            position: "Map Position",
-            name: "Name",
-            projections: 'Projection',
-            layers: 'Layers'
+            position: "Розташування на мапі",
+            name: "Ім'я",
+            projections: "Система координат",
+            layers: "Шари"
           }
         },
-        add_wms_layer: "Add WMS layer",
-        delete_wms_url: "Remove",
-        layer_id_already_added: "A WMS connection with this name already exists",
-        url_already_added: "WMS URL/Name already added",
-        layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
+        add_wms_layer: "Додати шар WMS",
+        delete_wms_url: "Вилучити",
+        layer_id_already_added: "WMS з'єднання з таким ім'ям вже існує",
+        url_already_added: "WMS з'єднання вже додане",
+        layer_add_error: "WMS шар не додано. Перевірте параметри або URL сервера"
       }
     },
     info: {
-      title: "Results",
-      list_of_relations: "List of Relations",
-      open_link: "Open attached document",
-      server_error: "An error occurred from server",
-      no_results: "No results found for this query/search",
-      link_button: "Open"
+      title: "Результати",
+      list_of_relations: "Список відношень",
+      open_link: "Відкрити вкладений документ",
+      server_error: "Помилка запиту до сервера",
+      no_results: "За запитом нічого не знайдено",
+      link_button: "Відкрити"
     },
     mapcontrols: {
       geolocation: {
-        error: "Can't get your position"
+        error: "Не вдалося отримати місцезнаходження"
       },
       geocoding: {
-        choose_layer: "Choose a layer where to add this feature",
-        placeholder: "Address ...",
-        nolayers: "No editable point layers found on this project",
-        noresults: "No results",
-        notresponseserver: "No response from server"
+        choose_layer: "Оберіть шар у який буде додано об'єкт",
+        placeholder: "Адреса…",
+        nolayers: "У проекті відсутні точкові шари, які можна редагувати",
+        noresults: "Немає результатів",
+        notresponseserver: "Сервер не відповідає"
       },
       add_layer_control: {
-        header: "Add Layer",
-        select_projection: "Projection",
-        select_field_to_show: "field shown on map",
-        select_csv_separator: "Delimiter",
-        select_csv_x_field: "X field",
-        select_csv_y_field: "Y field",
-        select_color: "Layer Color",
-        drag_layer: "Add your file here",
-        persistent_data: "Persistent data",
-        persistent_help: "save layer into browser storage",
+        header: "Додати шар",
+        select_projection: "Система координат",
+        select_field_to_show: "значення для відображення на мапі",
+        select_csv_separator: "Роздільник",
+        select_csv_x_field: "X",
+        select_csv_y_field: "Y",
+        select_color: "Колір шару",
+        drag_layer: "Додати файл",
+        persistent_data: "Постійні дані",
+        persistent_help: "зберегти шар у сховищі браузера",
       },
       query: {
-        input_relation: "Click to show relations"
+        input_relation: "Показати відношення"
       },
       length: {
-        tooltip: "Length"
+        tooltip: "Довжина"
       },
       area: {
-        tooltip: "Area"
+        tooltip: "Площа"
       },
       screenshot: {
-        error: "Screenshot error creation",
+        error: "Помилка створення знімка екрана",
         securityError: `  
-        <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
+        <p><b>Порушення безпеки</b>: зовнішній шар перешкоджає друку мапи. Щоб переконатися в цьому:</p>
         <ol>
-          <li>remove any manually added external layers (eg. WMS layers)</li>
-          <li>force page reload: <code>CTRL + F5</code></li>
-          <li>print again the map</li>
+          <li>видаліть всі зовнішні шари додані вручну (наприклад, шари WMS)</li>
+          <li>оновіть сторінку: <code>CTRL + F5</code></li>
+          <li>спробуйте роздрукувати мапу ще раз</li>
         </ol>
-        <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
+        <p>Зв'яжіться з адміністратором щоб дізнатися більше про <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; безпеку та зіпсовані полотна canvas</a></p>
         `
       }
     },
     catalog_items: {
-      helptext: "Open menu",
+      helptext: "Відкрити меню",
       contextmenu: {
-        zoomtolayer: "Zoom to Layer",
-        open_attribute_table: "Open Attribute Table",
-        show_metadata: "Metadata",
-        styles: 'Style',
-        vector_color_menu:"Color",
-        layer_opacity: "Opacity",
-        filters: "Filters",
-        download: 'Save as',
-        ogc_services: 'OGC Services',
-        edit: "Edit Layer",
+        zoomtolayer: "Наблизити до шару",
+        open_attribute_table: "Відкрити таблицю атрибутів",
+        show_metadata: "Метадані",
+        styles: "Стиль",
+        vector_color_menu: "Колір",
+        layer_opacity: "Непрозорість",
+        filters: "Фільтри",
+        download: "Зберегти як",
+        ogc_services: "Сервіси OGC",
+        edit: "Редагувати шар",
       }
     },
     dataTable: {
-      previous: "Previous",
-      next: "Next",
-      lengthMenu: "Show _MENU_ values per page",
-      info: "_TOTAL_ entries",
+      previous: "Попередній",
+      next: "Наступний",
+      lengthMenu: "Показувати _MENU_ значень на сторінці",
+      info: "_TOTAL_ записів",
       no_data: "No data",
-      nodatafilterd: "No matching records found",
-      infoFiltered: "(filtered from _MAX_ total records)"
+      nodatafilterd: "Нічого не знайдено",
+      infoFiltered: "(відфільтровано з _MAX_ записів)"
     },
     /**@since 3.10.0 */
-    no_geometry: 'This item has no geometry',
+    no_geometry: "Об'єкт не має геометрії",
     /**@since 3.11.0 */
-    query_filter: 'Filter by:',
+    query_filter: "Фільтрувати за:",
     /**@since 3.11.0 */
-    sidebar_menu: 'Sidebar menu',
+    sidebar_menu: "Бічне меню",
     /**@since 3.11.0 */
-    layer_type: 'Layer type',
+    layer_type: "Тип шару",
     /** @since 3.11.0 */
-    choose_type: 'Choose type',
+    choose_type: "Обрати тип",
     /**@since 3.11.0 */
-    remote_wms_url: 'WMS (URL)',
+    remote_wms_url: "WMS (URL)",
     /**@since 3.11.0 */
-    local_file: 'Local file',
+    local_file: "Файл",
     /**@since 3.11.0 */
-    embed_map: 'Embed map',
+    embed_map: "Вбудувати мапу",
     /** @since 3.11.0 */
-    homepage: 'Home',
+    homepage: "Домашня",
     /** @since 3.11.0 */
-    wms_server: 'WMS Server',
+    wms_server: "Сервер WMS",
     /** @since 3.11.0 */
-    connect_to_wms: 'Connect',
+    connect_to_wms: "Під'єднатися",
     /** @since 3.11.0 */
-    disconnect_from_wms: 'Disconnect',
+    disconnect_from_wms: "Від'єднатися",
     /** @since 3.11.0 */
-    add_new_wms_url_help: 'Search through saved connections or add a new server',
+    add_new_wms_url_help: "Шукати серед наявних з'єднань або додати новий сервер",
     /** @since 3.11.0 */
-    saved_connections: 'Saved connections:',
+    saved_connections: "Збережені з'єднання:",
     /** @since 3.11.0 */
-    label: "Label",
+    label: "Мітка",
     /** @since 3.11.0 */
-    no_csv_field: 'No valid fields',
+    no_csv_field: "Поля відсутні",
     /** @since 3.11.0 */
-    show_more: 'Show more',
+    show_more: "Показати більше",
   },
 };
