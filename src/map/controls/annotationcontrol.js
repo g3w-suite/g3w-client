@@ -254,7 +254,7 @@ export class AnnotationControl extends InteractionControl {
           this._data.type        = null,
           this._data.feature     = null;
           this._data.text        = ''; 
-          this._data.style       = { color, width, radius, opacity, angle };
+          this._data.style       = { color, width, radius, opacity, rotation };
           this._data.show_text   = false;
           this._data.show_info   = false;
           //set al features not selected
@@ -332,9 +332,22 @@ export class AnnotationControl extends InteractionControl {
       }
     })
 
+    const features = this._selectInteraction.getFeatures();
+
+    const self = this;
+
     //Modify Feature
-    this._modifyInteraction = new ol.interaction.Modify({
-      features: this._selectInteraction.getFeatures(),
+    this._modifyInteraction = new (class M extends ol.interaction.Modify {
+      constructor() {
+        super({ features });
+      }
+
+      handleDragEvent(e) {
+        self._data.feature.endCoordinates = e.coordinate;
+        super.handleDragEvent(e);
+        self.change();
+
+      }
     });
 
     // //Translate Feature
