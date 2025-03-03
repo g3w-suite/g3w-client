@@ -373,7 +373,6 @@ export class AnnotationControl extends InteractionControl {
         this.setCurrentEditFeature(feature);
       }
     })
-
     const self = this;
 
     //based on example https://openlayers.org/en/latest/examples/modify-scale-and-rotate.html
@@ -386,6 +385,14 @@ export class AnnotationControl extends InteractionControl {
         super({ 
           source:                self._layer.getSource(),
           insertVertexCondition: () => 'Rectangle' !== self._data.feature.type,//In case of recatngle annotation, can't
+          //modify only selected feature  
+          condition(e) {
+            const features = e.map.getFeaturesAtPixel(e.pixel, {
+              layerFilter: l => self._layer === l,
+              hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
+            });
+            return (features.length && features[0].selected) || false;
+          },
           style: (feature) => {
             //get current feature in modify
             const modifyFeature  = feature.get('features')[0];
@@ -427,7 +434,7 @@ export class AnnotationControl extends InteractionControl {
         });
 
         //Modify start. Useful for Rectangle
-        this.on('modifystart' , (e) => {
+        this.on('modifystart', (e) => {
           if ('Rectangle' === self._data.feature.type) {
             self._data.feature.set(
               'modifyGeometry',
@@ -438,7 +445,7 @@ export class AnnotationControl extends InteractionControl {
         })
 
         //Modify end. Useful for Rectangle
-        this.on('modifyend' , (e) => {
+        this.on('modifyend', (e) => {
           if ('Rectangle' === self._data.feature.type) {
             const modifyGeometry = self._data.feature.get('modifyGeometry');
             if (modifyGeometry) {
@@ -447,11 +454,8 @@ export class AnnotationControl extends InteractionControl {
             }
           }
         })
-  
-
       }
 
-     
       handleDragEvent(e) {
         self._data.feature.endCoordinates = e.coordinate;
         super.handleDragEvent(e);
@@ -636,6 +640,7 @@ export class AnnotationControl extends InteractionControl {
     this._data.style.color = this._data.feature.color;
     this._data.show_text   = this._data.feature.show_text;
     this._data.show_info   = this._data.feature.show_info;
+    feature.changed();
   }
 
   /**
