@@ -7,6 +7,8 @@ import ApplicationState           from 'store/application';
 import { saveBlob }               from 'utils/saveBlob';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import { Compact as ColorPicker } from 'vue-color';
+import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
+import { containsCoordinate } from 'ol/extent';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -15,6 +17,36 @@ const radius   = 8; // deafult radius point
 const width    = 3; // default width stroke
 const opacity  = 0.5; //default opacity
 const rotation = 0; //default rotation text
+
+function calculateCenter(geometry) {
+  let center, coordinates, minRadius;
+  const type = geometry.getType();
+  if (type === 'Polygon') {
+      let x = 0;
+      let y = 0;
+      let i = 0;
+      coordinates = geometry.getCoordinates()[0].slice(1);
+      coordinates.forEach(function (coordinate) {
+          x += coordinate[0];
+          y += coordinate[1];
+          i++;
+      });
+      center = [x / i, y / i];
+  }
+  let deltas;
+  if (coordinates) {
+      deltas = coordinates.map(function (coordinate) {
+          const dx = coordinate[0] - center[0];
+          const dy = coordinate[1] - center[1];
+          return dx, dy;
+      });
+      // minRadius = Math.sqrt(Math.max.apply(Math, sqDistances)) / 3;
+  } 
+  return {
+      center: center,
+      deltas: deltas,
+  };
+}
 
 /**
  * 
@@ -123,6 +155,8 @@ const styles = (type) => {
 
     case 'Rectangle':  
       return (feature) => {
+        //take in account modify
+        const geometry = (feature.get('modifyGeometry') && feature.get('modifyGeometry').geometry) || feature.getGeometry();
         return [
           new ol.style.Style({
             text:   new ol.style.Text({
@@ -146,7 +180,8 @@ const styles = (type) => {
             }),
             fill: new ol.style.Fill({
               color: `rgba(${feature.color}, ${feature.opacity})`
-            })
+            }),
+            geometry: () => geometry
           }),
           ...(feature.selected ? [
             new ol.style.Style({
@@ -154,7 +189,7 @@ const styles = (type) => {
                 radius: 5,
                 stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
               }),
-              geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates()[0])
+              geometry: f => new ol.geom.MultiPoint(geometry.getCoordinates()[0])
             })
           ] : [])
         ]
@@ -286,6 +321,8 @@ export class AnnotationControl extends InteractionControl {
       feature.show_info = this._data.show_info      = false;
       feature.selected  = true;
       
+      //set current feature
+      this._data.feature = feature;
       //set current text for input value
       this._data.text = text; 
       //stop to draw
@@ -318,7 +355,7 @@ export class AnnotationControl extends InteractionControl {
     this._interaction = null;
 
     this._selectInteraction = new ol.interaction.Select({
-      features: new ol.Collection(this._layer.getSource().getFeatures()),
+      layers: [this._layer],
       style: (feature) => styles(feature.type)(feature) ,
       hitTolerance: 10
     })
@@ -326,28 +363,104 @@ export class AnnotationControl extends InteractionControl {
     //Select Interaction to select feature to modify
     this._selectInteraction.on('select', e => {
       const feature = e.selected[0];
+      //in case already in editing, skip
+      if (feature && this._data.feature && feature.getId() === this._data.feature.getId()) {
+        return;
+      }
+
       if (feature) {
         feature.selected = true;
         this.setCurrentEditFeature(feature);
       }
     })
 
-    const features = this._selectInteraction.getFeatures();
-
     const self = this;
 
+    //based on example https://openlayers.org/en/latest/examples/modify-scale-and-rotate.html
+    const defaultStyle = new ol.interaction.Modify({source: this._layer.getSource()})
+      .getOverlay()
+      .getStyleFunction(); 
     //Modify Feature
-    this._modifyInteraction = new (class M extends ol.interaction.Modify {
+    this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
       constructor() {
-        super({ features });
+        super({ 
+          source:                self._layer.getSource(),
+          insertVertexCondition: () => 'Rectangle' !== self._data.feature.type,//In case of recatngle annotation, can't
+          style: (feature) => {
+            //get current feature in modify
+            const modifyFeature  = feature.get('features')[0];
+            const modifyGeometry = modifyFeature.get('modifyGeometry');
+            if (modifyGeometry) {
+              const vertex       = feature.getGeometry().getCoordinates();   
+              const coordinates  = modifyFeature.getGeometry().getCoordinates()[0];
+              const index        = coordinates.findIndex(c => vertex[0] === c[0] && vertex[1] === c[1]);
+              /**
+               *    (1)-------(2)
+               *      |       | 
+               *      |       |
+               * (0,4) -------(3)
+               * 
+               */
+              let [c0, c1, c2, c3, c4] = coordinates;
+              switch(index) {
+                case 0:
+                  c1 = [vertex[0], c1[1]];
+                  c3 = [c3[0], vertex[1]];
+                  break;
+                case 1:
+                  c0 = c4 = [vertex[0], c4[1]];
+                  c2 = [c2[0], vertex[1]];
+                  break;
+                case 2:
+                  c1 = [c1[0], vertex[1]];
+                  c3 = [vertex[0], c3[1]];
+                  break;
+                case 3:  
+                  c0 = c4 = [c4[0], vertex[1]];
+                  c2 = [vertex[0], c2[1]];
+                  break;
+              }
+              modifyGeometry.geometry.setCoordinates([[c0, c1, c2, c3, c4]]);
+            }
+            return defaultStyle(feature);
+          }
+        });
+
+        //Modify start. Useful for Rectangle
+        this.on('modifystart' , (e) => {
+          if ('Rectangle' === self._data.feature.type) {
+            self._data.feature.set(
+              'modifyGeometry',
+              { geometry: self._data.feature.getGeometry().clone() },
+              true,
+            );
+          }
+        })
+
+        //Modify end. Useful for Rectangle
+        this.on('modifyend' , (e) => {
+          if ('Rectangle' === self._data.feature.type) {
+            const modifyGeometry = self._data.feature.get('modifyGeometry');
+            if (modifyGeometry) {
+               self._data.feature.setGeometry(modifyGeometry.geometry);
+               self._data.feature.unset('modifyGeometry', true);
+            }
+          }
+        })
+  
+
       }
 
+     
       handleDragEvent(e) {
         self._data.feature.endCoordinates = e.coordinate;
         super.handleDragEvent(e);
-        self.change();
-
+        //redraw layer only if feature has show_info to true
+        if (self._data.feature.show_info) {
+          self.change();
+        }
       }
+
     });
 
     // //Translate Feature
@@ -415,6 +528,20 @@ export class AnnotationControl extends InteractionControl {
                   style               = "width: 100%"
                 />
               </section>
+
+              <!-- RADIUS POINT STYLE CHANGE -->
+              <section v-if = "['Point'].includes(feature.type)" id = "style-radius">
+                <label for = "radius">Radius</label>
+                <input 
+                  id      = "radius" 
+                  type    = "range" 
+                  name    = "radius" 
+                  min     = "3" 
+                  step    = "1"
+                  max     = "20" 
+                  v-model = "style.radius" />
+              </section>
+
               <!-- STROKE WIDTH STYLE CHANGE -->
               <section v-if = "['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.type)" id = "style-stroke-width">
                 <label for = "stroke">Stroke</label>
@@ -475,7 +602,13 @@ export class AnnotationControl extends InteractionControl {
       },
       watch: {
         type:               (t) => this.changeAnnotationType(t),
-        text(t)             { this.feature.set('text', t); this.ids.find(({ id }) => this.feature.getId() === id).text = t; this.change() },
+        text(t)             { 
+          this.feature.set('text', t);
+          this.ids.find(({ id }) => this.feature.getId() === id).text = t;
+          if (this.feature.show_text) {
+            this.change();
+          } 
+        },
         show_text(b)        { this.feature.show_text = b; this.change() },
         show_info(b)        { this.feature.show_info = b; this.change() },
         'style.color'(c)    { this.feature.color     = c; this.change() },
@@ -574,8 +707,7 @@ export class AnnotationControl extends InteractionControl {
           this._interaction.on('boxstart', e => startC = e.coordinate );
           //BBOX END
           this._interaction.on('boxend', e => {
-            this._data.feature       = new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate])));
-            this._layer.getSource().addFeature(this._data.feature);
+            this._layer.getSource().addFeature(new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate]))));
           });
           break;
         } 
@@ -590,8 +722,8 @@ export class AnnotationControl extends InteractionControl {
         });
         //DRAW END
         this._interaction.on('drawend', e => {
-          this._data.feature                = e.feature;
-          this._data.feature.endCoordinates = endCoordinates;
+          console.log('fronte')
+          e.feature.endCoordinates = endCoordinates;
         })
       
       break;  
