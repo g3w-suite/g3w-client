@@ -6,6 +6,7 @@ import fr from './fr';
 import de from './de';
 import ro from './ro';
 import pl from './pl';
+import uk from './uk';
 import pt from './pt';
 
 const translations = {
@@ -17,7 +18,8 @@ const translations = {
   de,
   ro,
   pl,
-  pt
+  uk,
+  pt,
 };
 
 export default translations;

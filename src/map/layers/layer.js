@@ -194,7 +194,7 @@ const Providers = {
               url:  this._layer.getUrl('editing') + params,
               data: JSON.stringify({
                 in_bbox:     options.filter.bbox.join(','),
-                filtertoken: ApplicationState.tokens.filtertoken
+                filtertoken: this.getFilterToken(),
               }),
               contentType: 'application/json',
             })
@@ -1240,8 +1240,8 @@ class Layer extends G3WObject {
       this.state.filter.current = null  // set current filter set to null
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
-      this.setFilterToken(filtertoken); // pass `filtertoken` to application
-
+      this.setFilterToken(null); //force to null
+      ApplicationState.tokens.filtertoken = filtertoken; // pass `filtertoken` to application
     } catch(e) {
       console.warn(e);
     }
@@ -1315,7 +1315,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getFilterToken() {
-    return ApplicationState.tokens.filtertoken;
+    return this.state.filter.active ? ApplicationState.tokens.filtertoken : undefined;
   }
 
   /**
@@ -1727,7 +1727,7 @@ class Layer extends G3WObject {
             formatter,
             suggest,
             in_bbox,
-            filtertoken: ApplicationState.tokens.filtertoken
+            filtertoken: this.getFilterToken()
           })
       );
 
@@ -1876,7 +1876,7 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: ApplicationState.tokens.filtertoken,
+      filtertoken: this.getFilterToken(),
       autofilter,
       page,
       page_size,
