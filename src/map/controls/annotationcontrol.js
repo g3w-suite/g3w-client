@@ -81,6 +81,15 @@ const styles = (type) => {
     case 'LineString': 
       return (feature) => {
         return [
+          ...(feature.selected 
+            ? [new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                  width: feature.width + 3,
+                  color: `#FFFFFF`,
+                }),
+             })] 
+            : []
+          ),
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
@@ -117,6 +126,15 @@ const styles = (type) => {
     case 'Polygon':    
       return (feature) => {
         return [
+          ...(feature.selected 
+            ? [new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                  width: feature.width + 3,
+                  color: `#FFFFFF`,
+                }),
+             })] 
+            : []
+          ),
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
@@ -158,6 +176,15 @@ const styles = (type) => {
         //take in account modify
         const geometry = (feature.get('modifyGeometry') && feature.get('modifyGeometry').geometry) || feature.getGeometry();
         return [
+          ...(feature.selected 
+            ? [new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                  width: feature.width + 3,
+                  color: `#FFFFFF`,
+                }),
+             })] 
+            : []
+          ),
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
@@ -183,21 +210,33 @@ const styles = (type) => {
             }),
             geometry: () => geometry
           }),
-          ...(feature.selected ? [
-            new ol.style.Style({
-              image: new ol.style.Circle({
-                radius: 5,
-                stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
-              }),
-              geometry: f => new ol.geom.MultiPoint(geometry.getCoordinates()[0])
-            })
-          ] : [])
+          ...(feature.selected 
+            ? [
+                new ol.style.Style({
+                  image: new ol.style.Circle({
+                  radius: 5,
+                  stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
+                }),
+                geometry: f => new ol.geom.MultiPoint(geometry.getCoordinates()[0])
+                })
+              ] 
+            : []
+          )
         ]
       }
 
     case 'Circle':     
       return (feature) => {
         return [
+          ...(feature.selected 
+            ? [new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                  width: feature.width + 3,
+                  color: `#FFFFFF`,
+                }),
+             })] 
+            : []
+          ),
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
@@ -355,23 +394,23 @@ export class AnnotationControl extends InteractionControl {
     this._interaction = null;
 
     this._selectInteraction = new ol.interaction.Select({
-      layers: [this._layer],
-      style: (feature) => styles(feature.type)(feature) ,
-      hitTolerance: 10
+      layers:       [this._layer],
+      style:        f => styles(f.type)(f) ,
+      hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
     })
 
     //Select Interaction to select feature to modify
     this._selectInteraction.on('select', e => {
+      //get selected feature
       const feature = e.selected[0];
+    
       //in case already in editing, skip
       if (feature && this._data.feature && feature.getId() === this._data.feature.getId()) {
         return;
       }
 
-      if (feature) {
-        feature.selected = true;
-        this.setCurrentEditFeature(feature);
-      }
+      this.setCurrentEditFeature(feature);
+      
     })
     const self = this;
 
@@ -429,7 +468,8 @@ export class AnnotationControl extends InteractionControl {
               }
               modifyGeometry.geometry.setCoordinates([[c0, c1, c2, c3, c4]]);
             }
-            return defaultStyle(feature);
+            //return default style if there is a selected feature
+            return self._data.feature && defaultStyle(feature);
           }
         });
 
@@ -630,16 +670,24 @@ export class AnnotationControl extends InteractionControl {
    * 
    * @param {Set current feature to edit} feature 
    */
-  setCurrentEditFeature(feature) {
+  setCurrentEditFeature(feature = null) {
+    //In case a current feature is selected 
     if (this._data.feature) {
       this._data.feature.selected = false;
     }
-    feature.selected       = true;
+    //if no feature is passed, unselected
+    if (!feature) {
+      this._data.feature = null;
+      return;
+    };
+
     this._data.feature     = feature;
     this._data.text        = this._data.feature.get('text'); 
     this._data.style.color = this._data.feature.color;
     this._data.show_text   = this._data.feature.show_text;
     this._data.show_info   = this._data.feature.show_info;
+    
+    feature.selected       = true;
     feature.changed();
   }
 
@@ -726,10 +774,7 @@ export class AnnotationControl extends InteractionControl {
           }
         });
         //DRAW END
-        this._interaction.on('drawend', e => {
-          console.log('fronte')
-          e.feature.endCoordinates = endCoordinates;
-        })
+        this._interaction.on('drawend', e => e.feature.endCoordinates = endCoordinates)
       
       break;  
     }
@@ -740,10 +785,10 @@ export class AnnotationControl extends InteractionControl {
         this._data.feature          = null;
         this.change();
       }
-      this._selectInteraction.setActive(false);
       this._interaction.setActive(true);
       map.addInteraction(this._interaction);
     }
+    this._selectInteraction.setActive(!this._interaction);
   }
 
 }
