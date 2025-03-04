@@ -194,7 +194,7 @@ const Providers = {
               url:  this._layer.getUrl('editing') + params,
               data: JSON.stringify({
                 in_bbox:     options.filter.bbox.join(','),
-                filtertoken: this.getFilterToken(),
+                filtertoken: this._layer.getFilterToken(),
               }),
               contentType: 'application/json',
             })
