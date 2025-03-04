@@ -18,36 +18,6 @@ const width    = 3; // default width stroke
 const opacity  = 0.5; //default opacity
 const rotation = 0; //default rotation text
 
-function calculateCenter(geometry) {
-  let center, coordinates, minRadius;
-  const type = geometry.getType();
-  if (type === 'Polygon') {
-      let x = 0;
-      let y = 0;
-      let i = 0;
-      coordinates = geometry.getCoordinates()[0].slice(1);
-      coordinates.forEach(function (coordinate) {
-          x += coordinate[0];
-          y += coordinate[1];
-          i++;
-      });
-      center = [x / i, y / i];
-  }
-  let deltas;
-  if (coordinates) {
-      deltas = coordinates.map(function (coordinate) {
-          const dx = coordinate[0] - center[0];
-          const dy = coordinate[1] - center[1];
-          return dx, dy;
-      });
-      // minRadius = Math.sqrt(Math.max.apply(Math, sqDistances)) / 3;
-  } 
-  return {
-      center: center,
-      deltas: deltas,
-  };
-}
-
 /**
  * 
  * @param {Styles} type 
@@ -182,6 +152,7 @@ const styles = (type) => {
                   width: feature.width + 3,
                   color: `#FFFFFF`,
                 }),
+                geometry: () => geometry,
              })] 
             : []
           ),
@@ -309,7 +280,6 @@ export class AnnotationControl extends InteractionControl {
           //add and active interaction
           this._selectInteraction.setActive(true);
           this.getMap().addInteraction(this._selectInteraction);
-          this._modifyInteraction.setActive(true);
           this.getMap().addInteraction(this._modifyInteraction);
           // this._translateInteraction.setActive(true);
           // this.getMap().addInteraction(this._translateInteraction);
@@ -401,6 +371,7 @@ export class AnnotationControl extends InteractionControl {
 
     //Select Interaction to select feature to modify
     this._selectInteraction.on('select', e => {
+      console.log(e)
       //get selected feature
       const feature = e.selected[0];
     
@@ -409,15 +380,12 @@ export class AnnotationControl extends InteractionControl {
         return;
       }
 
+      this._modifyInteraction.setActive(!!feature)
       this.setCurrentEditFeature(feature);
       
     })
     const self = this;
 
-    //based on example https://openlayers.org/en/latest/examples/modify-scale-and-rotate.html
-    const defaultStyle = new ol.interaction.Modify({source: this._layer.getSource()})
-      .getOverlay()
-      .getStyleFunction(); 
     //Modify Feature
     this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
       constructor() {
@@ -432,45 +400,6 @@ export class AnnotationControl extends InteractionControl {
             });
             return (features.length && features[0].selected) || false;
           },
-          style: (feature) => {
-            //get current feature in modify
-            const modifyFeature  = feature.get('features')[0];
-            const modifyGeometry = modifyFeature.get('modifyGeometry');
-            if (modifyGeometry) {
-              const vertex       = feature.getGeometry().getCoordinates();   
-              const coordinates  = modifyFeature.getGeometry().getCoordinates()[0];
-              const index        = coordinates.findIndex(c => vertex[0] === c[0] && vertex[1] === c[1]);
-              /**
-               *    (1)-------(2)
-               *      |       | 
-               *      |       |
-               * (0,4) -------(3)
-               * 
-               */
-              let [c0, c1, c2, c3, c4] = coordinates;
-              switch(index) {
-                case 0:
-                  c1 = [vertex[0], c1[1]];
-                  c3 = [c3[0], vertex[1]];
-                  break;
-                case 1:
-                  c0 = c4 = [vertex[0], c4[1]];
-                  c2 = [c2[0], vertex[1]];
-                  break;
-                case 2:
-                  c1 = [c1[0], vertex[1]];
-                  c3 = [vertex[0], c3[1]];
-                  break;
-                case 3:  
-                  c0 = c4 = [c4[0], vertex[1]];
-                  c2 = [vertex[0], c2[1]];
-                  break;
-              }
-              modifyGeometry.geometry.setCoordinates([[c0, c1, c2, c3, c4]]);
-            }
-            //return default style if there is a selected feature
-            return self._data.feature && defaultStyle(feature);
-          }
         });
 
         //Modify start. Useful for Rectangle
@@ -499,6 +428,44 @@ export class AnnotationControl extends InteractionControl {
       handleDragEvent(e) {
         self._data.feature.endCoordinates = e.coordinate;
         super.handleDragEvent(e);
+        if ('Rectangle' === self._data.feature.type) {
+          //get current feature in modify
+          const modifyFeature  = self._data.feature;
+          const modifyGeometry = modifyFeature.get('modifyGeometry');
+          if (modifyGeometry) {
+            const vertex       = e.coordinate;   
+            const coordinates  = modifyFeature.getGeometry().getCoordinates()[0];
+            const index        = coordinates.findIndex(c => vertex[0] === c[0] && vertex[1] === c[1]);
+            /**
+              *    (1)-------(2)
+              *      |       | 
+              *      |       |
+              * (0,4) -------(3)
+              * 
+              */
+            let [c0, c1, c2, c3, c4] = coordinates;
+            switch(index) {
+              case 0:
+                c1 = [vertex[0], c1[1]];
+                c3 = [c3[0], vertex[1]];
+                break;
+              case 1:
+                c0 = c4 = [vertex[0], c4[1]];
+                c2 = [c2[0], vertex[1]];
+                break;
+              case 2:
+                c1 = [c1[0], vertex[1]];
+                c3 = [vertex[0], c3[1]];
+                break;
+              case 3:  
+                c0 = c4 = [c4[0], vertex[1]];
+                c2 = [vertex[0], c2[1]];
+                break;
+            }
+            modifyGeometry.geometry.setCoordinates([[c0, c1, c2, c3, c4]]);
+          }
+        }
+       
         //redraw layer only if feature has show_info to true
         if (self._data.feature.show_info) {
           self.change();
@@ -788,7 +755,7 @@ export class AnnotationControl extends InteractionControl {
       this._interaction.setActive(true);
       map.addInteraction(this._interaction);
     }
-    this._selectInteraction.setActive(!this._interaction);
+
   }
 
 }
