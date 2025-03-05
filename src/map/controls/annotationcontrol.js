@@ -12,12 +12,11 @@ import { containsCoordinate } from 'ol/extent';
 
 let count = 1; //incremental number to unique identify id feature
 
-const color    = '244, 78, 59'; //deafult color;
-const radius   = 8; // deafult radius point
-const width    = 3; // default width stroke
-const opacity  = 0.5; //default opacity
-const rotation = 0; //default rotation text
-
+const color         = '244, 78, 59'; //deafult color;
+const radius        = 8; // deafult radius point
+const width         = 3; // default width stroke
+const opacity       = 0.5; //default opacity
+const rotation      = 0; //default rotation text
 /**
  * 
  * @param {Styles} type 
@@ -198,11 +197,12 @@ const styles = (type) => {
 
     case 'Circle':     
       return (feature) => {
+        console.log(feature.selected)
         return [
-          ...(feature.selected 
+          ...(feature.selected || undefined === feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                  width: feature.width + 3,
+                  width: (feature.width || width) + 3,
                   color: `#FFFFFF`,
                 }),
              })] 
@@ -220,17 +220,24 @@ const styles = (type) => {
               }),
             }),
             stroke: new ol.style.Stroke({
-              width: feature.width,
-              color: `rgb(${feature.color})`
+              width: feature.width || width,
+              color: `rgb(${feature.color || '3, 169, 244'})`
             }),
             fill:   new ol.style.Fill({
-              color: `rgba(${feature.color}, ${feature.opacity})`
+              color: `rgba(${feature.color || color}, ${feature.opacity || 0})`
             })
           }),
+          ...(feature.selected || undefined === feature.selected 
+            ? [new ol.style.Style({
+                stroke: new ol.style.Stroke({ color: '#FFFFFF', width: 6 }), 
+                geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
+             })] 
+            : []
+          ),
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'line',
-              text: `${feature.show_info 
+              text: `${feature.show_info || undefined === feature.show_info //case draw circle
                 ? `${feature.getGeometry().getRadius() > 100 
                   ? (Math.round((feature.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
                   : (Math.round(feature.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
@@ -243,8 +250,25 @@ const styles = (type) => {
                 width: 3
               }),
             }),
-            stroke: new ol.style.Stroke({ color: `rgb(${feature.color})`, width: 3 }), 
+            stroke: new ol.style.Stroke({ color: `rgb(${feature.color || '3, 169, 244'})`, width: 3 }), 
             geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
+          }),
+          new ol.style.Style({
+            text:   new ol.style.Text({
+              placement: 'point',
+              offsetX: 20,
+              text: `${feature.show_info || undefined === feature.show_info //case draw circle
+                ? `${parseInt(Math.atan2(feature.getGeometry().getCenter()[0] - feature.endCoordinates[0], feature.getGeometry().getCenter()[1] - feature.endCoordinates[1]) * 180 / Math.PI)}°`
+                : ''
+              }`,
+              fill: new ol.style.Fill({ color : '#000000' }),
+              font: '15px Titillium Web',
+              stroke: new ol.style.Stroke({
+                color: '#FFFFFF',
+                width: 3
+              }),
+            }),
+            geometry: f => new ol.geom.Point(f.endCoordinates) 
           }),
         ]
       }
@@ -371,7 +395,6 @@ export class AnnotationControl extends InteractionControl {
 
     //Select Interaction to select feature to modify
     this._selectInteraction.on('select', e => {
-      console.log(e)
       //get selected feature
       const feature = e.selected[0];
     
@@ -539,9 +562,8 @@ export class AnnotationControl extends InteractionControl {
                   style               = "width: 100%"
                 />
               </section>
-
               <!-- RADIUS POINT STYLE CHANGE -->
-              <section v-if = "['Point'].includes(feature.type)" id = "style-radius">
+              <section v-if = "'Point' === feature.type" id = "style-radius">
                 <label for = "radius">Radius</label>
                 <input 
                   id      = "radius" 
@@ -732,18 +754,39 @@ export class AnnotationControl extends InteractionControl {
           break;
         } 
         let endCoordinates = null; //used by circle
-        this._interaction = new ol.interaction.Draw({
-          type: 'Text' === type ? 'Point': type,
-          source: this._layer.getSource(),
-          finishCondition(e) {
-            endCoordinates = e.coordinate;
-            return true
+        const source = this._layer.getSource();
+        const defaultStyleFnc = (new ol.interaction.Draw({ type: 'Text' === type ? 'Point': type })).getOverlay().getStyleFunction();
+        this._interaction = new (class D extends ol.interaction.Draw {
+          constructor() {
+            super({
+              type: 'Text' === type ? 'Point': type,
+              source,
+              style(feature, resolution) {
+                if ('Point' === feature.getGeometry().getType()) {
+                  endCoordinates = feature.getGeometry().getCoordinates();
+                }
+
+                if ('Circle' === feature.getGeometry().getType()) {
+                  feature.endCoordinates = endCoordinates;
+                  return styles(type)(feature)
+                }
+
+                return defaultStyleFnc(feature, resolution);
+
+              },
+              finishCondition(e) {
+                endCoordinates = e.coordinate;
+                return true
+              }
+            })
+            //DRAW END
+            this.on('drawend', e => {
+              e.feature.endCoordinates = endCoordinates;
+            })
           }
-        });
-        //DRAW END
-        this._interaction.on('drawend', e => e.feature.endCoordinates = endCoordinates)
-      
-      break;  
+        })
+          
+        break;  
     }
 
     if (this._interaction) {

@@ -383,7 +383,7 @@ class MapService extends G3WObject {
 
               case 'query':
                 this.createMapControl(type, {
-                  add: true,
+                  add:     true,
                   toggled: true
                 });
                 break;
