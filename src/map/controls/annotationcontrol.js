@@ -7,8 +7,6 @@ import ApplicationState           from 'store/application';
 import { saveBlob }               from 'utils/saveBlob';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import { Compact as ColorPicker } from 'vue-color';
-import QueryResultsActionChooseLayer from 'components/QueryResultsActionChooseLayer.vue';
-import { containsCoordinate } from 'ol/extent';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -17,6 +15,10 @@ const radius        = 8; // deafult radius point
 const width         = 3; // default width stroke
 const opacity       = 0.5; //default opacity
 const rotation      = 0; //default rotation text
+const circle        = {
+  radius: 0,
+  unit:   1
+};
 /**
  * 
  * @param {Styles} type 
@@ -197,7 +199,6 @@ const styles = (type) => {
 
     case 'Circle':     
       return (feature) => {
-        console.log(feature.selected)
         return [
           ...(feature.selected || undefined === feature.selected 
             ? [new ol.style.Style({
@@ -224,7 +225,7 @@ const styles = (type) => {
               color: `rgb(${feature.color || '3, 169, 244'})`
             }),
             fill:   new ol.style.Fill({
-              color: `rgba(${feature.color || color}, ${feature.opacity || 0})`
+              color: `rgba(${feature.color || '255, 255, 255'}, ${feature.opacity || 0.5})`
             })
           }),
           ...(feature.selected || undefined === feature.selected 
@@ -268,7 +269,7 @@ const styles = (type) => {
                 width: 3
               }),
             }),
-            geometry: f => new ol.geom.Point(f.endCoordinates) 
+            geometry: f => new ol.geom.Point(f.endCoordinates)
           }),
         ]
       }
@@ -360,8 +361,10 @@ export class AnnotationControl extends InteractionControl {
       this._data.text = text; 
       //stop to draw
       this._data.type = null
+      //circle
+      this._data.circle = circle;
       this._data.ids.push({ id: count, text: feature.get('text') }); 
-      this._selectInteraction.setActive(true);
+
     });
 
     //on Remove feature
@@ -380,6 +383,7 @@ export class AnnotationControl extends InteractionControl {
         opacity,
         rotation,
       },
+      circle,
       text:          '',
       show_text:     false, //show text
       show_info:     false, // show info feature (cordinates, lenght, area, etc.)
@@ -387,27 +391,32 @@ export class AnnotationControl extends InteractionControl {
 
     this._interaction = null;
 
-    this._selectInteraction = new ol.interaction.Select({
-      layers:       [this._layer],
-      style:        f => styles(f.type)(f) ,
-      hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
-    })
-
-    //Select Interaction to select feature to modify
-    this._selectInteraction.on('select', e => {
-      //get selected feature
-      const feature = e.selected[0];
-    
-      //in case already in editing, skip
-      if (feature && this._data.feature && feature.getId() === this._data.feature.getId()) {
-        return;
-      }
-
-      this._modifyInteraction.setActive(!!feature)
-      this.setCurrentEditFeature(feature);
-      
-    })
     const self = this;
+
+    this._selectInteraction = new (class Selec extends ol.interaction.Pointer {
+
+      constructor(opts = {}) {
+    
+        const featuresAtPixel = ({ pixel, map } = {}) => map.getFeaturesAtPixel(pixel, {
+          layerFilter: l => self._layer === l,
+          hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
+        });
+    
+        super({
+          handleDownEvent(e) {
+            //get selected feature
+            const feature = featuresAtPixel(e)[0];
+            //active modify Interaction only if a feature is get
+            self._modifyInteraction.setActive(!!feature);
+            //set current selected feature
+            self.setCurrentEditFeature(feature);
+          },
+          handleMoveEvent(e) {
+            e.map.getTargetElement().style.cursor = featuresAtPixel(e).length > 0 ? 'pointer': '';
+          }
+        });
+      }    
+    })
 
     //Modify Feature
     this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
@@ -426,7 +435,7 @@ export class AnnotationControl extends InteractionControl {
         });
 
         //Modify start. Useful for Rectangle
-        this.on('modifystart', (e) => {
+        this.on('modifystart', e => {
           if ('Rectangle' === self._data.feature.type) {
             self._data.feature.set(
               'modifyGeometry',
@@ -437,7 +446,7 @@ export class AnnotationControl extends InteractionControl {
         })
 
         //Modify end. Useful for Rectangle
-        this.on('modifyend', (e) => {
+        this.on('modifyend', e => {
           if ('Rectangle' === self._data.feature.type) {
             const modifyGeometry = self._data.feature.get('modifyGeometry');
             if (modifyGeometry) {
@@ -531,6 +540,24 @@ export class AnnotationControl extends InteractionControl {
                 {{ item.text }}
             </button>
           </section>
+           <!-- CIRCLE RADIUS SET -->
+          <section v-if = "!feature && 'Circle' === type" id = "circle-radius">
+           <label for = "cradius">Radius</label>
+           <div style = "display: flex;">
+            <input 
+              id      = "cradius" 
+              class   = "form-control"
+              type    = "number" 
+              name    = "radius" 
+              min     = "0" 
+              step    = "0.1"
+             v-model  = "circle.radius" />
+              <select id = "cradiusunit" class = "form-control" v-model = "circle.unit">
+                <option value = "1">m</option>
+                <option value = "1000">km</option>
+              </select> 
+           </div>
+          </section>
           <section v-if = "feature" id = "annotation-item" style = "margin-top: 5px;"> 
             <div class = "form-group"> 
               <input 
@@ -574,7 +601,6 @@ export class AnnotationControl extends InteractionControl {
                   max     = "20" 
                   v-model = "style.radius" />
               </section>
-
               <!-- STROKE WIDTH STYLE CHANGE -->
               <section v-if = "['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.type)" id = "style-stroke-width">
                 <label for = "stroke">Stroke</label>
@@ -600,7 +626,7 @@ export class AnnotationControl extends InteractionControl {
                   max     = "1" 
                   v-model = "style.opacity" />
               </section>
-              
+              <!-- INFO TEXT CHOOSE -->
               <section id = "info-text" style = "display: flex; justify-content: space-between;">
                 <input 
                   id      = "feature-text"
@@ -663,6 +689,7 @@ export class AnnotationControl extends InteractionControl {
     //In case a current feature is selected 
     if (this._data.feature) {
       this._data.feature.selected = false;
+      this._data.feature.changed();
     }
     //if no feature is passed, unselected
     if (!feature) {
@@ -753,7 +780,10 @@ export class AnnotationControl extends InteractionControl {
           });
           break;
         } 
-        let endCoordinates = null; //used by circle
+        //used by circle
+        let endCoordinates = null; 
+        const circle = this._data.circle;
+        
         const source = this._layer.getSource();
         const defaultStyleFnc = (new ol.interaction.Draw({ type: 'Text' === type ? 'Point': type })).getOverlay().getStyleFunction();
         this._interaction = new (class D extends ol.interaction.Draw {
@@ -761,12 +791,33 @@ export class AnnotationControl extends InteractionControl {
             super({
               type: 'Text' === type ? 'Point': type,
               source,
-              style(feature, resolution) {
-                if ('Point' === feature.getGeometry().getType()) {
-                  endCoordinates = feature.getGeometry().getCoordinates();
+              geometryFunction: 'Circle' === type 
+                ? function(coordinates, geometry) {
+                    const center = coordinates[0];
+                    const last = coordinates[coordinates.length - 1];
+                    const dx = center[0] - last[0];
+                    const dy = center[1] - last[1];
+                    const radius = this.radius || Math.sqrt(dx * dx + dy * dy);
+                    if (!geometry) {
+                      geometry = new ol.geom.Circle(center, radius);
+                    } else {
+                      geometry.setCenterAndRadius(center, radius);
+                    }
+                    return geometry;
+                  }
+                : null,
+              style: (feature, resolution) => {
+                if ('Circle' === type && 'Point' === feature.getGeometry().getType()) {
+                  if (this.circleGeometry) {
+                    endCoordinates =  this.circleGeometry.getClosestPoint(feature.getGeometry().getCoordinates());
+                    feature.getGeometry().setCoordinates(endCoordinates);
+                  } else {
+                    endCoordinates = feature.getGeometry().getCoordinates()
+                  }
                 }
 
                 if ('Circle' === feature.getGeometry().getType()) {
+                  endCoordinates = feature.getGeometry().getClosestPoint(endCoordinates);
                   feature.endCoordinates = endCoordinates;
                   return styles(type)(feature)
                 }
@@ -778,17 +829,32 @@ export class AnnotationControl extends InteractionControl {
                 endCoordinates = e.coordinate;
                 return true
               }
-            })
+            });
+            this.on('drawstart', function(e) {
+              if ('Circle' === type) {
+                if (Number(circle.radius) > 0) {
+                  this.radius = Number(circle.radius) * circle.unit;
+                  e.feature.getGeometry().setRadius(this.radius);
+                  this.circleGeometry = e.feature.getGeometry();
+                }
+              }
+            });
             //DRAW END
             this.on('drawend', e => {
-              e.feature.endCoordinates = endCoordinates;
+              if ('Circle' === type) {
+                e.feature.endCoordinates = e.feature.getGeometry().getClosestPoint(endCoordinates);
+                this.radius         = null;
+                this.circleGeometry = null;
+                //reset default value
+                circle.radius       = 0;
+                circle.unit         = 1;
+              }
             })
           }
         })
           
         break;  
     }
-
     if (this._interaction) {
       if (this._data.feature) {
         this._data.feature.selected = false;
