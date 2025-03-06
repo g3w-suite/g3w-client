@@ -905,7 +905,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-scale-control span.select2-selection                               { border: 2px solid var(--skin-color); }
 
 .ol-scale-line                                                         { background: var(--skin-color); }
-.ol-box                                                                { border: 3px solid var(--skin-color); }
+.ol-box                                                                { border: 3px solid rgb(3, 169, 244); background-color: rgba(255, 255, 255, 0.50); }
 .mtooltip                                                              { background: rgba(0, 0, 0, 0.9); }
 .mtooltip-static                                                       { background-color: #ffcc33; color: black; border: 1px solid #ecbe2e; }
 .mtooltip-measure:before,
