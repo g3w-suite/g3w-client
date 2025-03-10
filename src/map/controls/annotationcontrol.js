@@ -9,6 +9,7 @@ import InteractionControl         from 'map/controls/interactioncontrol';
 import { Compact as ColorPicker } from 'vue-color';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
+import Vue from 'vue';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -238,6 +239,7 @@ const styles = (type) => {
     case 'Circle':     
       return (feature) => {
         return [
+          //stroke selection
           ...(feature.selected || undefined === feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
@@ -247,6 +249,7 @@ const styles = (type) => {
              })] 
             : []
           ),
+          //crcle style
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
@@ -266,7 +269,7 @@ const styles = (type) => {
               color: `rgba(${feature.color || '255, 255, 255'}, ${feature.opacity || 0.5})`
             })
           }),
-          ...(feature.selected || undefined === feature.selected 
+          ...(feature.selected && feature.show_info 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({ color: '#FFFFFF', width: 6 }), 
                 geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
@@ -289,8 +292,15 @@ const styles = (type) => {
                 width: 3
               }),
             }),
-            stroke: new ol.style.Stroke({ color: `rgb(${feature.color || '3, 169, 244'})`, width: 3 }), 
-            geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
+            ...(feature.show_info || undefined === feature.show_info 
+              ? 
+                {
+                  stroke: new ol.style.Stroke({ color: `rgb(${feature.color || '3, 169, 244'})`, width: 3 }), 
+                geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
+              } 
+              : {}
+            )
+            
           }),
           new ol.style.Style({
             text:   new ol.style.Text({
@@ -407,6 +417,9 @@ export class AnnotationControl extends InteractionControl {
     //on Remove feature
     this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(({ id }) => id !== feature.getId() ));
 
+    //used to wath change input during draw
+    this.VM = new Vue();
+
     //types of annotation
     this._data = {
       types:        ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text'],
@@ -437,7 +450,7 @@ export class AnnotationControl extends InteractionControl {
 
     this._selectInteraction = new (class Selec extends ol.interaction.Pointer {
 
-      constructor(opts = {}) {
+      constructor() {
     
         const featuresAtPixel = ({ pixel, map } = {}) => map.getFeaturesAtPixel(pixel, {
           layerFilter: l => null === self._interaction && self._layer === l ,
@@ -790,7 +803,23 @@ export class AnnotationControl extends InteractionControl {
         'style.opacity'(o)  { this.feature.opacity   = o; this.change() },
         'style.radius'(r)   { this.feature.radius    = r; this.change() },
         'style.rotation'(r) { this.feature.rotation  = r * (Math.PI/180); this.change() },
-      },  
+        //Handle meausure geometry
+        'constraints.circle': {
+          deep : true,
+          handler() { self._interaction.radius = this.constraints.circle.radius * this.constraints.circle.unit },
+        }, 
+        'constraints.line': {
+          deep : true,
+          handler() { self._interaction.length = this.constraints.line.length * this.constraints.line.unit },
+        }, 
+        'constraints.rectangle': {
+          deep : true,
+          handler() { 
+            self._interaction.width  = this.constraints.rectangle.width 
+            self._interaction.height = this.constraints.rectangle.height
+          },
+        }, 
+      }, 
       created()       { GUI.toggleUserMessage(false); },
       beforeDestroy() { GUI.toggleUserMessage(true); }
     };
@@ -870,7 +899,6 @@ export class AnnotationControl extends InteractionControl {
    */
   changeAnnotationType(type) {
     const map = this.getMap();
-    const self = this;
 
     if (this._interaction) {
       map.removeInteraction(this._interaction);
@@ -884,25 +912,20 @@ export class AnnotationControl extends InteractionControl {
       case 'Polygon':  
       case 'Circle':
       case 'Text':  
+        this.unwatch = [];
         //In case of rectangle
         if ('Rectangle' === type) {
           let startC;
           let endC;
-          let traslate = false;
-          let width    = 0;
-          let height   = 0;
+          this.width    = Number(this._data.constraints.rectangle.width);
+          this.height   = Number(this._data.constraints.rectangle.height);
           this._interaction = new ol.interaction.DragBox();
 
           //BBOX START
-          this._interaction.on('boxstart', ({ coordinate }) => {
-            startC   = coordinate;
-            width    = Number(this._data.constraints.rectangle.width);
-            height   = Number(this._data.constraints.rectangle.height);
-            traslate = width > 0 && height > 0;
-          });
+          this._interaction.on('boxstart', ({ coordinate }) => startC = coordinate);
 
           this._interaction.on('boxdrag', (e) => {
-            if (traslate) {
+            if (this.width > 0 && this.height > 0) {
               width  = width  * this._data.constraints.rectangle.wunit;
               height = height * this._data.constraints.rectangle.hunit;
               endC = [startC[0] + (startC[0] > e.coordinate[0] ?  -1 : 1) * width, startC[1] + (startC[1] > e.coordinate[1] ? -1 : 1)* height];
@@ -1049,7 +1072,6 @@ export class AnnotationControl extends InteractionControl {
                   if (Number(constraints.circle.radius) > 0) {
                     this.radius = Number(constraints.circle.radius) * constraints.circle.unit;
                     e.feature.getGeometry().setRadius(this.radius);
-                    
                   }
                   break;   
               }
