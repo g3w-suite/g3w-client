@@ -7,6 +7,8 @@ import ApplicationState           from 'store/application';
 import { saveBlob }               from 'utils/saveBlob';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import { Compact as ColorPicker } from 'vue-color';
+import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
+import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -15,10 +17,46 @@ const radius        = 8; // deafult radius point
 const width         = 3; // default width stroke
 const opacity       = 0.5; //default opacity
 const rotation      = 0; //default rotation text
-const circle        = {
+
+//creation feature constraints
+
+const circle = {
   radius: 0,
   unit:   1
 };
+
+const line = {
+  length: 0,
+  unit:   1
+};
+
+const rectangle = {
+  width:  400,
+  wunit:  1,
+  height: 200,
+  hunit:  1,
+};
+
+//Method to handle fix lengyh segments of LineString or Polygon
+const handleLengthGeometry = ({ coordinates, length } ) => {
+  //get first coordinate (start)
+  let currentSegment = [coordinates[0]];
+  const segments     = [coordinates[0]];
+  for (let i = 1; i < coordinates.length; i++) {
+    let newCoordinate = null;
+    const start = ol.sphere.getLength(new ol.geom.LineString(currentSegment));
+    const end   = ol.sphere.getLength(new ol.geom.LineString([...currentSegment, coordinates[i]]));
+    const ratio = (length - start) / (end - start);
+    newCoordinate = [
+      currentSegment[0][0] + ratio * (coordinates[i][0] - currentSegment[0][0]),
+      currentSegment[0][1] + ratio * (coordinates[i][1] - currentSegment[0][1])
+    ];
+    segments.push(newCoordinate);
+    currentSegment = [newCoordinate];
+  }
+  return segments;
+}
+
 /**
  * 
  * @param {Styles} type 
@@ -338,7 +376,7 @@ export class AnnotationControl extends InteractionControl {
     });
 
     //On add feature
-    this._layer.getSource().on('addfeature', ({ feature })    => { 
+    this._layer.getSource().on('addfeature', ({ feature }) => { 
       const text = `${this._data.type} ${count++}`;
 
       feature.setId(count); 
@@ -362,7 +400,6 @@ export class AnnotationControl extends InteractionControl {
       //stop to draw
       this._data.type = null
       //circle
-      this._data.circle = circle;
       this._data.ids.push({ id: count, text: feature.get('text') }); 
 
     });
@@ -383,7 +420,12 @@ export class AnnotationControl extends InteractionControl {
         opacity,
         rotation,
       },
-      circle,
+      
+      constraints: {
+        circle,
+        line,
+        rectangle,
+      },
       text:          '',
       show_text:     false, //show text
       show_info:     false, // show info feature (cordinates, lenght, area, etc.)
@@ -398,7 +440,7 @@ export class AnnotationControl extends InteractionControl {
       constructor(opts = {}) {
     
         const featuresAtPixel = ({ pixel, map } = {}) => map.getFeaturesAtPixel(pixel, {
-          layerFilter: l => self._layer === l,
+          layerFilter: l => null === self._interaction && self._layer === l ,
           hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
         });
     
@@ -524,7 +566,7 @@ export class AnnotationControl extends InteractionControl {
           <section v-if = "feature || (null === type && ids.length > 0)" id = "annotation-tools">
             <divider/>
             <div style = "display: flex; justify-content: flex-end; margin-top: 10px; font-size: 1.2em;">
-              <p v-if = "feature && ids.length > 0" :class="$fa('back')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
+              <p v-if = "feature && ids.length > 0" :class="$fa('list')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
               <p :class = "$fa('download')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "dowload"></p>
               <p :class = "$fa('trash')"    style = "color: red; cursor: pointer;" @click.stop = "remove"></p>
             </div>
@@ -540,24 +582,97 @@ export class AnnotationControl extends InteractionControl {
                 {{ item.text }}
             </button>
           </section>
-           <!-- CIRCLE RADIUS SET -->
-          <section v-if = "!feature && 'Circle' === type" id = "circle-radius">
-           <label for = "cradius">Radius</label>
-           <div style = "display: flex;">
-            <input 
-              id      = "cradius" 
-              class   = "form-control"
-              type    = "number" 
-              name    = "radius" 
-              min     = "0" 
-              step    = "0.1"
-             v-model  = "circle.radius" />
-              <select id = "cradiusunit" class = "form-control" v-model = "circle.unit">
-                <option value = "1">m</option>
-                <option value = "1000">km</option>
-              </select> 
-           </div>
-          </section>
+          <!-- ANNOTATION CONSTRAINTS --> 
+          <section v-if = "!feature" id = "annotation-constraints">
+            <!-- LINE LENGTH  -->
+            <section v-if = "'LineString' === type" id = "line-length">
+              <label for = "llength">Length</label>
+              <div style = "display: flex;">
+                <input 
+                id      = "llength" 
+                class   = "form-control"
+                type    = "number" 
+                name    = "length" 
+                min     = "0" 
+                step    = "1"
+                v-model  = "constraints.line.length" />
+                <select id = "cllengthunit" style = "width: 25%" class = "form-control" v-model = "constraints.line.unit">
+                  <option value = "1">m</option>
+                  <option value = "1000">km</option>
+                </select> 
+              </div>
+            </section>
+            <!-- POLYGON SEGMENT LENGTH -->
+            <section v-if = "'Polygon' === type" id = "polygon-length">
+              <label for = "plength">Length</label>
+              <div style = "display: flex;">
+                <input 
+                  id      = "plength" 
+                  class   = "form-control"
+                  type    = "number" 
+                  name    = "length" 
+                  min     = "0" 
+                  step    = "1"
+                  v-model  = "constraints.line.length" />
+                <select id = "cplengthunit" style = "width: 25%" class = "form-control" v-model = "constraints.line.unit">
+                  <option value = "1">m</option>
+                  <option value = "1000">km</option>
+                </select> 
+              </div>
+            </section>
+            <!-- RECTANGLE SEGMENT LENGTH -->
+            <section v-if = "'Rectangle' === type" id = "rectangle-lengths">
+              <label for = "rwlength">W Length</label>
+              <div style = "display: flex;">
+                <input 
+                  id      = "rwlength" 
+                  class   = "form-control"
+                  type    = "number" 
+                  name    = "width" 
+                  min     = "0" 
+                  step    = "1"
+                  v-model  = "constraints.rectangle.width" />
+                <select id = "rwidthunit" style = "width: 25%" class = "form-control" v-model = "constraints.rectangle.wunit">
+                  <option value = "1">m</option>
+                  <option value = "1000">km</option>
+                </select> 
+              </div>
+              <label for = "rhlength">H Length</label>
+              <div style = "display: flex;">
+                <input 
+                  id      = "rhlength" 
+                  class   = "form-control"
+                  type    = "number" 
+                  name    = "height" 
+                  min     = "0" 
+                  step    = "1"
+                  v-model  = "constraints.rectangle.height" />
+                <select id = "rheighthunit" style = "width: 25%" class = "form-control" v-model = "constraints.rectangle.hunit">
+                  <option value = "1">m</option>
+                  <option value = "1000">km</option>
+                </select> 
+              </div>
+            </section>
+            <!-- CIRCLE RADIUS SET -->
+            <section v-if = "'Circle' === type" id = "circle-radius">
+              <label for = "cradius">Radius</label>
+              <div style = "display: flex;">
+                <input 
+                  id      = "cradius" 
+                  class   = "form-control"
+                  type    = "number" 
+                  name    = "radius" 
+                  min     = "0" 
+                  step    = "1"
+                  v-model  = "constraints.circle.radius" />
+                <select id = "cradiusunit" style = "width: 25%" class = "form-control" v-model = "constraints.circle.unit">
+                  <option value = "1">m</option>
+                  <option value = "1000">km</option>
+                </select> 
+              </div>
+            </section>
+          </section> 
+          
           <section v-if = "feature" id = "annotation-item" style = "margin-top: 5px;"> 
             <div class = "form-group"> 
               <input 
@@ -755,6 +870,7 @@ export class AnnotationControl extends InteractionControl {
    */
   changeAnnotationType(type) {
     const map = this.getMap();
+    const self = this;
 
     if (this._interaction) {
       map.removeInteraction(this._interaction);
@@ -771,19 +887,42 @@ export class AnnotationControl extends InteractionControl {
         //In case of rectangle
         if ('Rectangle' === type) {
           let startC;
+          let endC;
+          let traslate = false;
+          let width    = 0;
+          let height   = 0;
           this._interaction = new ol.interaction.DragBox();
+
           //BBOX START
-          this._interaction.on('boxstart', e => startC = e.coordinate );
+          this._interaction.on('boxstart', ({ coordinate }) => {
+            startC   = coordinate;
+            width    = Number(this._data.constraints.rectangle.width);
+            height   = Number(this._data.constraints.rectangle.height);
+            traslate = width > 0 && height > 0;
+          });
+
+          this._interaction.on('boxdrag', (e) => {
+            if (traslate) {
+              width  = width  * this._data.constraints.rectangle.wunit;
+              height = height * this._data.constraints.rectangle.hunit;
+              endC = [startC[0] + (startC[0] > e.coordinate[0] ?  -1 : 1) * width, startC[1] + (startC[1] > e.coordinate[1] ? -1 : 1)* height];
+              //Draw box with set dimension (width, height)
+              this._interaction.box_.setPixels(this.getMap().getPixelFromCoordinate(startC), this.getMap().getPixelFromCoordinate(endC));
+            }
+          })
+
           //BBOX END
-          this._interaction.on('boxend', e => {
-            this._layer.getSource().addFeature(new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, e.coordinate]))));
+          this._interaction.on('boxend', ({ coordinate }) => {
+            this._layer.getSource().addFeature(new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([startC, endC || coordinate]))));
+            this._data.constraints.rectangle.width = this._data.constraints.rectangle.height = 0; 
+            this._data.constraints.rectangle.wunit = this._data.constraints.rectangle.hunit  = 1;        
           });
           break;
         } 
+        let measureTooltip     = null;
         //used by circle
-        let endCoordinates = null; 
-        const circle = this._data.circle;
-        
+        let endCoordinates     = null; 
+        const { constraints }  = this._data;
         const source = this._layer.getSource();
         const defaultStyleFnc = (new ol.interaction.Draw({ type: 'Text' === type ? 'Point': type })).getOverlay().getStyleFunction();
         this._interaction = new (class D extends ol.interaction.Draw {
@@ -791,37 +930,102 @@ export class AnnotationControl extends InteractionControl {
             super({
               type: 'Text' === type ? 'Point': type,
               source,
-              geometryFunction: 'Circle' === type 
+              geometryFunction: ['LineString', 'Polygon', 'Circle', 'Rectangle'].includes(type) 
                 ? function(coordinates, geometry) {
-                    const center = coordinates[0];
-                    const last = coordinates[coordinates.length - 1];
-                    const dx = center[0] - last[0];
-                    const dy = center[1] - last[1];
-                    const radius = this.radius || Math.sqrt(dx * dx + dy * dy);
-                    if (!geometry) {
-                      geometry = new ol.geom.Circle(center, radius);
-                    } else {
-                      geometry.setCenterAndRadius(center, radius);
-                    }
+                    //coordinates is array contains each single click point
+                    //Circle - coordinate[0] center of circle, coordinate[1] mouse position 
+                    //Linestring - coordinates contains vertex of Linestring
+                    switch(type) {
+
+                      case 'Circle':
+                        const center = coordinates[0];
+                        const last   = coordinates[coordinates.length - 1];
+                        const dx     = center[0] - last[0];
+                        const dy     = center[1] - last[1];
+                        const radius = this.radius || Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+                        if (!geometry) {
+                          geometry = new ol.geom.Circle(center, radius);
+                        } else {
+                          geometry.setCenterAndRadius(center, radius);
+                        }
+                        break;
+
+                      case 'LineString':
+                        geometry = geometry || new ol.geom.LineString([]);
+                        if (this.length) {
+                          geometry.setCoordinates(handleLengthGeometry({ coordinates, length: this.length }));
+                
+                        } else {
+                          geometry.setCoordinates(coordinates);
+                        }
+                        break; 
+
+                      case 'Polygon':
+                        geometry          = geometry || new ol.geom.Polygon([]);
+                        const startVertex = coordinates[0][0];
+                        if (this.length) {
+                          const segments = handleLengthGeometry({ coordinates: coordinates[0], length: this.length });
+                          segments.push(startVertex);
+                          coordinates = [segments];
+                          geometry.setCoordinates(coordinates);
+                        }
+                        else {
+                          geometry.setCoordinates([[...coordinates[0], startVertex]]);
+                        }
+
+                        this.geometry = geometry;
+                        break;
+
+                      case 'Recatangle':
+                        break;
+          
+
+                    };
+
                     return geometry;
-                  }
-                : null,
+                  
+                }
+              : null,
               style: (feature, resolution) => {
-                if ('Circle' === type && 'Point' === feature.getGeometry().getType()) {
-                  if (this.circleGeometry) {
-                    endCoordinates =  this.circleGeometry.getClosestPoint(feature.getGeometry().getCoordinates());
-                    feature.getGeometry().setCoordinates(endCoordinates);
-                  } else {
-                    endCoordinates = feature.getGeometry().getCoordinates()
+
+                if ('Circle' === type) {
+                  if ('Point' === feature.getGeometry().getType()) {
+                    if (this.geometry) {
+                      endCoordinates = this.geometry.getClosestPoint(feature.getGeometry().getCoordinates());
+                      feature.getGeometry().setCoordinates(endCoordinates);
+                    } else {
+                      endCoordinates = feature.getGeometry().getCoordinates()
+                    }
+                  }
+
+                  if ('Circle' === feature.getGeometry().getType()) {
+                    endCoordinates = feature.getGeometry().getClosestPoint(endCoordinates);
+                    feature.endCoordinates = endCoordinates;
+                    return styles(type)(feature)
                   }
                 }
 
-                if ('Circle' === feature.getGeometry().getType()) {
-                  endCoordinates = feature.getGeometry().getClosestPoint(endCoordinates);
-                  feature.endCoordinates = endCoordinates;
-                  return styles(type)(feature)
-                }
+                if ('LineString' === type && this.length) {
+                  if ('Point' === feature.getGeometry().getType() ) {
+                    feature.getGeometry().setCoordinates(this.geometry.getLastCoordinate())
+                  }
+                } 
+                  
+                if ('Polygon' === type && this.length) {
+                  if ('Point' === feature.getGeometry().getType()) {
+                    feature.getGeometry().setCoordinates(this.geometry.getCoordinates()[0][this.geometry.getCoordinates()[0].length - 2])
+                  }
 
+                  if ('LineString' === feature.getGeometry().getType()) {
+                    feature.getGeometry().setCoordinates(this.geometry.getCoordinates()[0].slice(0, -1));
+                  }
+
+                  if ('Polygon' === feature.getGeometry().getType()) {
+                    feature.getGeometry().setCoordinates(this.geometry.getCoordinates());
+                  }
+                  
+                }
+                
                 return defaultStyleFnc(feature, resolution);
 
               },
@@ -830,25 +1034,46 @@ export class AnnotationControl extends InteractionControl {
                 return true
               }
             });
+
+            //DRAW START EVENT
             this.on('drawstart', function(e) {
-              if ('Circle' === type) {
-                if (Number(circle.radius) > 0) {
-                  this.radius = Number(circle.radius) * circle.unit;
-                  e.feature.getGeometry().setRadius(this.radius);
-                  this.circleGeometry = e.feature.getGeometry();
-                }
+              switch(type) {
+                case 'LineString':
+                case 'Polygon':
+                  measureTooltip = createMeasureTooltip({ map: this.getMap(), feature: e.feature });
+                  if (Number(constraints.line.length) > 0) {
+                    this.length   = Number(constraints.line.length) * constraints.line.unit;
+                  }
+                  break;
+                case 'Circle':
+                  if (Number(constraints.circle.radius) > 0) {
+                    this.radius = Number(constraints.circle.radius) * constraints.circle.unit;
+                    e.feature.getGeometry().setRadius(this.radius);
+                    
+                  }
+                  break;   
               }
+              //set geometry of draw feature
+              this.geometry = e.feature.getGeometry();
             });
             //DRAW END
             this.on('drawend', e => {
+              measureTooltip && removeMeasureTooltip({ map: this.getMap(), ...measureTooltip });
               if ('Circle' === type) {
                 e.feature.endCoordinates = e.feature.getGeometry().getClosestPoint(endCoordinates);
-                this.radius         = null;
-                this.circleGeometry = null;
+                this.radius               = null;
                 //reset default value
-                circle.radius       = 0;
-                circle.unit         = 1;
+                constraints.circle.radius = 0;
+                constraints.circle.unit   = 1;
               }
+              if (['LineString', 'Polygon'].includes(type)) {
+                this.length              = null;
+                //reset default value
+                constraints.line.length = 0;
+                constraints.line.unit   = 1;
+              }
+
+              this.geometry  = measureTooltip =  null;
             })
           }
         })
