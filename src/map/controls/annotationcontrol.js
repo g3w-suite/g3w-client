@@ -31,9 +31,9 @@ const line = {
 };
 
 const rectangle = {
-  width:  400,
+  width:  0,
   wunit:  1,
-  height: 200,
+  height: 0,
   hunit:  1,
 };
 
