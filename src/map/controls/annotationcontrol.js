@@ -374,6 +374,7 @@ export class AnnotationControl extends InteractionControl {
           this._data.style       = { color, width, radius, opacity, rotation };
           this._data.show_text   = false;
           this._data.show_info   = false;
+          this.resetContraints();
           //set al features not selected
           this._layer.getSource().getFeatures().forEach(f => f.selected = false);
           this.change();
@@ -435,9 +436,9 @@ export class AnnotationControl extends InteractionControl {
       },
       
       constraints: {
-        circle,
-        line,
-        rectangle,
+        circle:    {...circle},
+        line:      {...line},
+        rectangle: {...rectangle},
       },
       text:          '',
       show_text:     false, //show text
@@ -445,6 +446,8 @@ export class AnnotationControl extends InteractionControl {
     };
 
     this._interaction = null;
+
+    this._measureTooltip = null;
 
     const self = this;
 
@@ -780,15 +783,16 @@ export class AnnotationControl extends InteractionControl {
         },
       },  
       methods: {
-        showAll      () { this.type = null; this.feature.selected = false; this.feature = null; this.change(); },
-        onChangeColor({ rgba: {r, g, b } }) { this.style.color = `${r}, ${g}, ${b}` },
-        remove:      ()   =>  this.remove(),
-        dowload:     ()   =>  this.dowload(),
-        editFeature: (id) => this.editFeature(id),
-        change:      ()   => this.change(),
+        showAll          () { this.type = null; this.feature.selected = false; this.feature = null; this.change(); },
+        onChangeColor    ({ rgba: {r, g, b } }) { this.style.color = `${r}, ${g}, ${b}` },
+        remove:          ()   =>  this.remove(),
+        dowload:         ()   =>  this.dowload(),
+        editFeature:     id   => this.editFeature(id),
+        change:          ()   => this.change(),
+        resetContraints: ()   => this.resetContraints()
       },
       watch: {
-        type:               (t) => this.changeAnnotationType(t),
+        type:               t => { if (null === t) this.resetContraints(); this.changeAnnotationType(t) },
         text(t)             { 
           this.feature.set('text', t);
           this.ids.find(({ id }) => this.feature.getId() === id).text = t;
@@ -796,33 +800,41 @@ export class AnnotationControl extends InteractionControl {
             this.change();
           } 
         },
-        show_text(b)        { this.feature.show_text = b; this.change() },
-        show_info(b)        { this.feature.show_info = b; this.change() },
-        'style.color'(c)    { this.feature.color     = c; this.change() },
-        'style.width'(w)    { this.feature.width     = w; this.change() },
-        'style.opacity'(o)  { this.feature.opacity   = o; this.change() },
-        'style.radius'(r)   { this.feature.radius    = r; this.change() },
+        show_text       (b) { this.feature.show_text = b; this.change() },
+        show_info       (b) { this.feature.show_info = b; this.change() },
+        'style.color'   (c) { this.feature.color     = c; this.change() },
+        'style.width'   (w) { this.feature.width     = w; this.change() },
+        'style.opacity' (o) { this.feature.opacity   = o; this.change() },
+        'style.radius'  (r) { this.feature.radius    = r; this.change() },
         'style.rotation'(r) { this.feature.rotation  = r * (Math.PI/180); this.change() },
         //Handle meausure geometry
         'constraints.circle': {
           deep : true,
-          handler() { self._interaction.radius = this.constraints.circle.radius * this.constraints.circle.unit },
+          handler() { if (self._interaction) self._interaction.radius = this.constraints.circle.radius * this.constraints.circle.unit },
         }, 
         'constraints.line': {
           deep : true,
-          handler() { self._interaction.length = this.constraints.line.length * this.constraints.line.unit },
+          handler() { if (self._interaction) self._interaction.length = this.constraints.line.length * this.constraints.line.unit },
         }, 
         'constraints.rectangle': {
           deep : true,
           handler() { 
-            self._interaction.width  = this.constraints.rectangle.width 
-            self._interaction.height = this.constraints.rectangle.height
+            if (self._interaction) {
+              self._interaction.width  = this.constraints.rectangle.width; 
+              self._interaction.height = this.constraints.rectangle.height;
+            }  
           },
         }, 
       }, 
       created()       { GUI.toggleUserMessage(false); },
-      beforeDestroy() { GUI.toggleUserMessage(true); }
+      beforeDestroy() { GUI.toggleUserMessage(true);  }
     };
+  }
+  /**
+  * Reset data contraints 
+  */
+  resetContraints() { 
+    this._data.constraints = { circle: { ...circle }, line: { ...line }, rectangle: { ...rectangle } } 
   }
 
   /**
@@ -898,12 +910,19 @@ export class AnnotationControl extends InteractionControl {
    * @param {*} type 
    */
   changeAnnotationType(type) {
-    const map = this.getMap();
+    const self = this;
+    const map  = this.getMap();
 
     if (this._interaction) {
       map.removeInteraction(this._interaction);
       this._interaction = null;
     }  
+
+    if (this._measureTooltip) {
+      console.log(this._measureTooltip)
+      removeMeasureTooltip({ map: this.getMap(), ...this._measureTooltip });
+      this._measureTooltip = null;
+    }
 
     switch(type) {
       case 'Rectangle':
@@ -912,23 +931,24 @@ export class AnnotationControl extends InteractionControl {
       case 'Polygon':  
       case 'Circle':
       case 'Text':  
-        this.unwatch = [];
         //In case of rectangle
         if ('Rectangle' === type) {
           let startC;
           let endC;
-          this.width    = Number(this._data.constraints.rectangle.width);
-          this.height   = Number(this._data.constraints.rectangle.height);
+          this.width;
+          this.height;
           this._interaction = new ol.interaction.DragBox();
 
           //BBOX START
           this._interaction.on('boxstart', ({ coordinate }) => startC = coordinate);
 
           this._interaction.on('boxdrag', (e) => {
+            this.width  = Number(this._data.constraints.rectangle.width);
+            this.height = Number(this._data.constraints.rectangle.height);
             if (this.width > 0 && this.height > 0) {
-              width  = width  * this._data.constraints.rectangle.wunit;
-              height = height * this._data.constraints.rectangle.hunit;
-              endC = [startC[0] + (startC[0] > e.coordinate[0] ?  -1 : 1) * width, startC[1] + (startC[1] > e.coordinate[1] ? -1 : 1)* height];
+              this.width  = this.width  * this._data.constraints.rectangle.wunit;
+              this.height = this.height * this._data.constraints.rectangle.hunit;
+              endC = [startC[0] + (startC[0] > e.coordinate[0] ?  -1 : 1) * this.width, startC[1] + (startC[1] > e.coordinate[1] ? -1 : 1)* this.height];
               //Draw box with set dimension (width, height)
               this._interaction.box_.setPixels(this.getMap().getPixelFromCoordinate(startC), this.getMap().getPixelFromCoordinate(endC));
             }
@@ -942,7 +962,6 @@ export class AnnotationControl extends InteractionControl {
           });
           break;
         } 
-        let measureTooltip     = null;
         //used by circle
         let endCoordinates     = null; 
         const { constraints }  = this._data;
@@ -976,25 +995,22 @@ export class AnnotationControl extends InteractionControl {
                       case 'LineString':
                         geometry = geometry || new ol.geom.LineString([]);
                         if (this.length) {
-                          geometry.setCoordinates(handleLengthGeometry({ coordinates, length: this.length }));
-                
-                        } else {
-                          geometry.setCoordinates(coordinates);
-                        }
+                          coordinates.push(
+                            ...(this.length ? handleLengthGeometry({ coordinates: coordinates.splice(-2), length: this.length }) : []
+                          ));
+                        } 
+                        geometry.setCoordinates(coordinates);
+                        
                         break; 
 
                       case 'Polygon':
                         geometry          = geometry || new ol.geom.Polygon([]);
                         const startVertex = coordinates[0][0];
                         if (this.length) {
-                          const segments = handleLengthGeometry({ coordinates: coordinates[0], length: this.length });
-                          segments.push(startVertex);
-                          coordinates = [segments];
-                          geometry.setCoordinates(coordinates);
+                          coordinates[0].splice(-2, 2, ...handleLengthGeometry({ coordinates: coordinates[0].slice(-2), length: this.length }));
                         }
-                        else {
-                          geometry.setCoordinates([[...coordinates[0], startVertex]]);
-                        }
+                        geometry.setCoordinates([[...coordinates[0], startVertex]]);
+                        
 
                         this.geometry = geometry;
                         break;
@@ -1029,13 +1045,13 @@ export class AnnotationControl extends InteractionControl {
                 }
 
                 if ('LineString' === type && this.length) {
-                  if ('Point' === feature.getGeometry().getType() ) {
+                  if ('Point' === feature.getGeometry().getType() && this.geometry) {
                     feature.getGeometry().setCoordinates(this.geometry.getLastCoordinate())
                   }
                 } 
                   
                 if ('Polygon' === type && this.length) {
-                  if ('Point' === feature.getGeometry().getType()) {
+                  if ('Point' === feature.getGeometry().getType() && this.geometry) {
                     feature.getGeometry().setCoordinates(this.geometry.getCoordinates()[0][this.geometry.getCoordinates()[0].length - 2])
                   }
 
@@ -1063,7 +1079,7 @@ export class AnnotationControl extends InteractionControl {
               switch(type) {
                 case 'LineString':
                 case 'Polygon':
-                  measureTooltip = createMeasureTooltip({ map: this.getMap(), feature: e.feature });
+                  self._measureTooltip = createMeasureTooltip({ map: this.getMap(), feature: e.feature });
                   if (Number(constraints.line.length) > 0) {
                     this.length   = Number(constraints.line.length) * constraints.line.unit;
                   }
@@ -1080,22 +1096,16 @@ export class AnnotationControl extends InteractionControl {
             });
             //DRAW END
             this.on('drawend', e => {
-              measureTooltip && removeMeasureTooltip({ map: this.getMap(), ...measureTooltip });
+              
               if ('Circle' === type) {
                 e.feature.endCoordinates = e.feature.getGeometry().getClosestPoint(endCoordinates);
                 this.radius               = null;
-                //reset default value
-                constraints.circle.radius = 0;
-                constraints.circle.unit   = 1;
               }
               if (['LineString', 'Polygon'].includes(type)) {
                 this.length              = null;
-                //reset default value
-                constraints.line.length = 0;
-                constraints.line.unit   = 1;
               }
 
-              this.geometry  = measureTooltip =  null;
+              this.geometry =  null;
             })
           }
         })
