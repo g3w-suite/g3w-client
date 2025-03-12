@@ -9,7 +9,7 @@ import InteractionControl         from 'map/controls/interactioncontrol';
 import { Compact as ColorPicker } from 'vue-color';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
-import Vue from 'vue';
+import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -40,6 +40,9 @@ const rectangle = {
 
 //Method to handle fix lengyh segments of LineString or Polygon
 const handleLengthGeometry = ({ coordinates, length } ) => {
+  if (areCoordinatesEqual(coordinates[0], coordinates[1])) {
+    return coordinates;
+  }
   //get first coordinate (start)
   let currentSegment = [coordinates[0]];
   const segments     = [coordinates[0]];
@@ -919,7 +922,6 @@ export class AnnotationControl extends InteractionControl {
     }  
 
     if (this._measureTooltip) {
-      console.log(this._measureTooltip)
       removeMeasureTooltip({ map: this.getMap(), ...this._measureTooltip });
       this._measureTooltip = null;
     }
@@ -1004,14 +1006,15 @@ export class AnnotationControl extends InteractionControl {
                         break; 
 
                       case 'Polygon':
-                        geometry          = geometry || new ol.geom.Polygon([]);
-                        const startVertex = coordinates[0][0];
+                        geometry = geometry || new ol.geom.Polygon([]);
                         if (this.length) {
-                          coordinates[0].splice(-2, 2, ...handleLengthGeometry({ coordinates: coordinates[0].slice(-2), length: this.length }));
+                          coordinates = [[
+                            ...coordinates[0].slice(0, -2), // get coordinates without last 2 point2 (last segment)
+                            ...handleLengthGeometry({ coordinates: coordinates[0].slice(-2), length: this.length }) //check last sgement lenght
+                          ]];
                         }
-                        geometry.setCoordinates([[...coordinates[0], startVertex]]);
+                        geometry.setCoordinates([[...coordinates[0], coordinates[0][0]]]);
                         
-
                         this.geometry = geometry;
                         break;
 
@@ -1070,7 +1073,7 @@ export class AnnotationControl extends InteractionControl {
               },
               finishCondition(e) {
                 endCoordinates = e.coordinate;
-                return true
+                return true;
               }
             });
 
@@ -1099,10 +1102,10 @@ export class AnnotationControl extends InteractionControl {
               
               if ('Circle' === type) {
                 e.feature.endCoordinates = e.feature.getGeometry().getClosestPoint(endCoordinates);
-                this.radius               = null;
+                this.radius = null;
               }
               if (['LineString', 'Polygon'].includes(type)) {
-                this.length              = null;
+                this.length = null;
               }
 
               this.geometry =  null;
