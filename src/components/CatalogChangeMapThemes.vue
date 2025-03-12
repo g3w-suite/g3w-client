@@ -344,9 +344,10 @@ export default {
           throw response;
         }
         // update custom map theme styles
-        const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
-        c_theme.styles     = params.styles;
-        c_theme.layerstree = params.layerstree;
+        Object.assign(this.map_themes.custom.find(mt => theme === mt.theme), {
+          styles:     params.styles,
+          layerstree: params.layerstree,
+        });
         // show a success update map theme message to user
         GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
       } catch(e) {
