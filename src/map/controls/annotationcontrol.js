@@ -10,7 +10,6 @@ import { Compact as ColorPicker } from 'vue-color';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
-import select from 'mixins/select';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -97,7 +96,7 @@ const styles = (type) => {
         return [
           ...(feature.selected 
             ? [new ol.style.Style({
-                stroke: new ol.style.Stroke({
+                  stroke: new ol.style.Stroke({
                   width: feature.width + 3,
                   color: `#FFFFFF`,
                 }),
@@ -126,12 +125,12 @@ const styles = (type) => {
             }),
           }),
           ...(feature.selected ? [
-            new ol.style.Style({
-              image: new ol.style.Circle({
-                radius: 5,
-                stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
-              }),
-              geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates())
+                new ol.style.Style({
+                  image: new ol.style.Circle({
+                    radius: 5,
+                    stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
+                  }),
+                  geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates())
             })
           ] : [])
         ]
@@ -724,8 +723,8 @@ export class AnnotationControl extends InteractionControl {
                   id      = "stroke" 
                   type    = "range" 
                   name    = "width" 
-                  min     = "0.5" 
-                  step    = "0.5"
+                  min     = "1" 
+                  step    = "1"
                   max     = "8" 
                   v-model = "style.width" />
               </section>
@@ -788,10 +787,10 @@ export class AnnotationControl extends InteractionControl {
         show_text       (b) { this.feature.show_text = b; this.change() },
         show_info       (b) { this.feature.show_info = b; this.change() },
         'style.color'   (c) { this.feature.color     = c; this.change() },
-        'style.width'   (w) { this.feature.width     = w; this.change() },
-        'style.opacity' (o) { this.feature.opacity   = o; this.change() },
-        'style.radius'  (r) { this.feature.radius    = r; this.change() },
-        'style.rotation'(r) { this.feature.rotation  = r * (Math.PI/180); this.change() },
+        'style.width'   (w) { this.feature.width     = Number(w); this.change() },
+        'style.opacity' (o) { this.feature.opacity   = Number(o); this.change() },
+        'style.radius'  (r) { this.feature.radius    = Number(r); this.change() },
+        'style.rotation'(r) { this.feature.rotation  = Number(r) * (Math.PI/180); this.change() },
         //Handle meausure geometry
         'constraints.circle': {
           deep : true,
