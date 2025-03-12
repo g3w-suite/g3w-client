@@ -96,7 +96,7 @@ const styles = (type) => {
         return [
           ...(feature.selected 
             ? [new ol.style.Style({
-                  stroke: new ol.style.Stroke({
+                stroke: new ol.style.Stroke({
                   width: feature.width + 3,
                   color: `#FFFFFF`,
                 }),
@@ -125,12 +125,12 @@ const styles = (type) => {
             }),
           }),
           ...(feature.selected ? [
-                new ol.style.Style({
-                  image: new ol.style.Circle({
-                    radius: 5,
-                    stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
-                  }),
-                  geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates())
+            new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: 5,
+                stroke: new ol.style.Stroke({ color: '#000000', width: 3 }) 
+              }),
+              geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates())
             })
           ] : [])
         ]
@@ -243,7 +243,7 @@ const styles = (type) => {
       return (feature) => {
         return [
           //stroke selection
-          ...(feature.selected || undefined === feature.selected 
+          ...(feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
                   width: (feature.width || width) + 3,
@@ -282,7 +282,7 @@ const styles = (type) => {
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'line',
-              text: `${feature.show_info || undefined === feature.show_info //case draw circle
+              text: `${feature.show_info
                 ? `${feature.getGeometry().getRadius() > 100 
                   ? (Math.round((feature.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
                   : (Math.round(feature.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
@@ -309,7 +309,7 @@ const styles = (type) => {
             text:   new ol.style.Text({
               placement: 'point',
               offsetX: 20,
-              text: `${feature.show_info || undefined === feature.show_info //case draw circle
+              text: `${feature.show_info 
                 ? `${parseInt(Math.atan2(feature.getGeometry().getCenter()[0] - feature.endCoordinates[0], feature.getGeometry().getCenter()[1] - feature.endCoordinates[1]) * 180 / Math.PI)}°`
                 : ''
               }`,
@@ -415,10 +415,7 @@ export class AnnotationControl extends InteractionControl {
       this._data.type = null
       //circle
       this._data.ids.push({ id: count, text: feature.get('text') }); 
-      //clear selection
-      this._selectInteraction.getFeatures().clear();
-      //add current feature to be modified
-      this._selectInteraction.getFeatures().push(feature);
+
     });
 
     //on Remove feature
@@ -457,23 +454,45 @@ export class AnnotationControl extends InteractionControl {
 
     const self = this;
 
-    this._selectInteraction = new ol.interaction.Select({
-      layers: [this._layer],
-      style(feature) {
-        return styles(feature.type)(feature);
-      }
-    });
+    this._selectInteraction = new (class Selec extends ol.interaction.Pointer {
 
-    this._selectInteraction.on('select', (e) => {
-      this.setCurrentEditFeature(e.selected[0]);
+      constructor() {
+    
+        const featuresAtPixel = ({ pixel, map } = {}) => map.getFeaturesAtPixel(pixel, {
+          layerFilter: l => null === self._interaction && self._layer === l ,
+          hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
+        });
+    
+        super({
+          handleDownEvent(e) {
+            //get selected feature
+            const feature = featuresAtPixel(e)[0];
+            //active modify Interaction only if a feature is get
+            self._modifyInteraction.setActive(!!feature);
+            //set current selected feature
+            self.setCurrentEditFeature(feature);
+          },
+          handleMoveEvent(e) {
+            e.map.getTargetElement().style.cursor = featuresAtPixel(e).length > 0 ? 'pointer': '';
+          }
+        });
+      }    
     })
 
     //Modify Feature
     this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
       constructor() {
         super({ 
-          features:              self._selectInteraction.getFeatures(),
-          insertVertexCondition: () => 'Rectangle' !== (self._data.feature || {}).type,//In case of rectangle annotation, can't
+          source:                self._layer.getSource(),
+          insertVertexCondition: () => self._data.feature && 'Rectangle' !== self._data.feature.type,//In case of recatngle annotation, can't
+          //modify only selected feature  
+          condition(e) {
+            const features = e.map.getFeaturesAtPixel(e.pixel, {
+              layerFilter: l => self._layer === l,
+              hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
+            });
+            return (features.length && features[0].selected) || false;
+          },
         });
 
         //Modify start. Useful for Rectangle
@@ -554,7 +573,7 @@ export class AnnotationControl extends InteractionControl {
     // });
 
     this.toggledTool = {
-      __title: 'sdk.mapcontrols.annotation.title',
+      __title:     'sdk.mapcontrols.annotation.title',
       __iconClass: 'annotation',
       components: { ColorPicker },
       data: () => this._data,
@@ -723,8 +742,8 @@ export class AnnotationControl extends InteractionControl {
                   id      = "stroke" 
                   type    = "range" 
                   name    = "width" 
-                  min     = "1" 
-                  step    = "1"
+                  min     = "0.5" 
+                  step    = "0.5"
                   max     = "8" 
                   v-model = "style.width" />
               </section>
@@ -852,9 +871,7 @@ export class AnnotationControl extends InteractionControl {
    * @param {*} id 
    */
   editFeature(id) {
-    const feature = this._layer.getSource().getFeatureById(id);
-    this._selectInteraction.getFeatures().push(feature);
-    this.setCurrentEditFeature(feature);
+    this.setCurrentEditFeature(this._layer.getSource().getFeatureById(id));
   };
 
   /**
@@ -963,7 +980,7 @@ export class AnnotationControl extends InteractionControl {
                     //Circle - coordinate[0] center of circle, coordinate[1] mouse position 
                     //Linestring - coordinates contains vertex of Linestring
                     switch(type) {
-                      //CIRCLE
+
                       case 'Circle':
                         const center = coordinates[0];
                         const last   = coordinates[coordinates.length - 1];
@@ -989,12 +1006,11 @@ export class AnnotationControl extends InteractionControl {
                         break; 
 
                       case 'Polygon':
-                        geometry = geometry || new ol.geom.Polygon([]);
+                        geometry          = geometry || new ol.geom.Polygon([]);
                         if (this.length) {
-                          coordinates = [[
-                            ...coordinates[0].slice(0, -2), // get coordinates without last 2 point2 (last segment)
-                            ...handleLengthGeometry({ coordinates: coordinates[0].slice(-2), length: this.length }) //check last sgement lenght
-                          ]];
+                          const segment = coordinates[0].splice(-2);
+                          coordinates[0].push(...handleLengthGeometry({ coordinates: segment, length: this.length }));
+                          coordinates = [coordinates[0]];
                         }
                         geometry.setCoordinates([[...coordinates[0], coordinates[0][0]]]);
                         
@@ -1003,6 +1019,8 @@ export class AnnotationControl extends InteractionControl {
 
                       case 'Recatangle':
                         break;
+          
+
                     };
 
                     return geometry;
@@ -1069,6 +1087,7 @@ export class AnnotationControl extends InteractionControl {
                   }
                   break;
                 case 'Circle':
+                  self._measureTooltip = createMeasureTooltip({ map: this.getMap(), feature: e.feature });
                   if (Number(constraints.circle.radius) > 0) {
                     this.radius = Number(constraints.circle.radius) * constraints.circle.unit;
                     e.feature.getGeometry().setRadius(this.radius);

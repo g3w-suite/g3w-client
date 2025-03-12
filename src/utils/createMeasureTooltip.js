@@ -32,11 +32,14 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
           coords = geom.getInteriorPoints().getCoordinates()[0];
         } else if (geom instanceof ol.geom.LineString || geom instanceof ol.geom.MultiLineString) {
           coords = geom.getLastCoordinate();
+        } else if (geom instanceof ol.geom.Circle && feature.endCoordinates) {    
+          coords = feature.endCoordinates;
         }
 
         const projection = map.getView().getProjection();
         const is_line    = isLineGeometryType(geom.getType());
         const is_poly    = isPolygonGeometryType(geom.getType());
+        const is_circle  = 'Circle' === geom.getType(); // add circle geometry type
         const is_multi   = isMultiGeometry(geom.getType());
         const is_sphere  = 'EPSG:3857' === projection.getCode() || 'degrees' === projection.getUnits();
         let segments     = [];
@@ -68,6 +71,14 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
             )
           : undefined;
 
+        let radius = is_circle ? geom.getRadius() : undefined;
+
+        if (undefined !== radius) {
+          radius = radius > 1000
+            ? `${(Math.round(radius / 1000 * 100) / 100).toFixed(3)} km`
+            : `${(Math.round(radius * 100) / 100).toFixed(2)} m`;
+        }  
+
         if (undefined !== length) {
           length = 'nautical' === ApplicationState.map.unit
             ? `${length * 0.0005399568} nm`
@@ -86,7 +97,8 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
 
         element.innerHTML = (undefined !== area ? `Area: ${area} <br>` : '')
                           + (undefined !== area && undefined !== length ? `<div style="width: 100%; padding: 3px; border-bottom: 2px solid #ffffff"></div> ` : '')
-                          + (undefined !== length ? length : '');
+                          + (undefined !== length ? length : '')
+                          + (undefined !== radius ? `${parseInt(Math.atan2(geom.getCenter()[0] - feature.endCoordinates[0], geom.getCenter()[1] - feature.endCoordinates[1]) * 180 / Math.PI)}°, ${radius}` : '');
         tooltip.setPosition(coords);
       })
   };
