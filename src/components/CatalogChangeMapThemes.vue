@@ -354,7 +354,6 @@ export default {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
       }
-
     },
 
     /**
