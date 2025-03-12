@@ -10,6 +10,7 @@ import { Compact as ColorPicker } from 'vue-color';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
+import select from 'mixins/select';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -415,7 +416,10 @@ export class AnnotationControl extends InteractionControl {
       this._data.type = null
       //circle
       this._data.ids.push({ id: count, text: feature.get('text') }); 
-
+      //clear selection
+      this._selectInteraction.getFeatures().clear();
+      //add current feature to be modified
+      this._selectInteraction.getFeatures().push(feature);
     });
 
     //on Remove feature
@@ -454,45 +458,23 @@ export class AnnotationControl extends InteractionControl {
 
     const self = this;
 
-    this._selectInteraction = new (class Selec extends ol.interaction.Pointer {
+    this._selectInteraction = new ol.interaction.Select({
+      layers: [this._layer],
+      style(feature) {
+        return styles(feature.type)(feature);
+      }
+    });
 
-      constructor() {
-    
-        const featuresAtPixel = ({ pixel, map } = {}) => map.getFeaturesAtPixel(pixel, {
-          layerFilter: l => null === self._interaction && self._layer === l ,
-          hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
-        });
-    
-        super({
-          handleDownEvent(e) {
-            //get selected feature
-            const feature = featuresAtPixel(e)[0];
-            //active modify Interaction only if a feature is get
-            self._modifyInteraction.setActive(!!feature);
-            //set current selected feature
-            self.setCurrentEditFeature(feature);
-          },
-          handleMoveEvent(e) {
-            e.map.getTargetElement().style.cursor = featuresAtPixel(e).length > 0 ? 'pointer': '';
-          }
-        });
-      }    
+    this._selectInteraction.on('select', (e) => {
+      this.setCurrentEditFeature(e.selected[0]);
     })
 
     //Modify Feature
     this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
       constructor() {
         super({ 
-          source:                self._layer.getSource(),
-          insertVertexCondition: () => 'Rectangle' !== self._data.feature.type,//In case of recatngle annotation, can't
-          //modify only selected feature  
-          condition(e) {
-            const features = e.map.getFeaturesAtPixel(e.pixel, {
-              layerFilter: l => self._layer === l,
-              hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
-            });
-            return (features.length && features[0].selected) || false;
-          },
+          features:              self._selectInteraction.getFeatures(),
+          insertVertexCondition: () => 'Rectangle' !== (self._data.feature || {}).type,//In case of rectangle annotation, can't
         });
 
         //Modify start. Useful for Rectangle
@@ -871,7 +853,9 @@ export class AnnotationControl extends InteractionControl {
    * @param {*} id 
    */
   editFeature(id) {
-    this.setCurrentEditFeature(this._layer.getSource().getFeatureById(id));
+    const feature = this._layer.getSource().getFeatureById(id);
+    this._selectInteraction.getFeatures().push(feature);
+    this.setCurrentEditFeature(feature);
   };
 
   /**
@@ -980,7 +964,7 @@ export class AnnotationControl extends InteractionControl {
                     //Circle - coordinate[0] center of circle, coordinate[1] mouse position 
                     //Linestring - coordinates contains vertex of Linestring
                     switch(type) {
-
+                      //CIRCLE
                       case 'Circle':
                         const center = coordinates[0];
                         const last   = coordinates[coordinates.length - 1];
@@ -1020,8 +1004,6 @@ export class AnnotationControl extends InteractionControl {
 
                       case 'Recatangle':
                         break;
-          
-
                     };
 
                     return geometry;
