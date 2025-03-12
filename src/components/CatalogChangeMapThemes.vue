@@ -300,30 +300,30 @@ export default {
         return;
       }
       try {
-        const params = this._getMapThemeParams();
-        const saved = await XHR.post({
+        const params   = this._getMapThemeParams();
+        const response = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
           data:        JSON.stringify(params),
         });
-        if (saved.result) {
-          this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
-          // show a success add custom matp theme message to user
-          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
-          // close dialog
-          this.show_form    = false;
-          //set as current active name map theme
-          this.active_theme = this.custom_theme.value;
-          //need to wait watch
-          await this.$nextTick();
-          //set custom map theme value to null. Reset value
-          this.custom_theme.value = null;
-        } else {
-          throw saved;
-        }       
+        // handle server error
+        if (!response.result) {
+          throw response;
+        }
+        this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
+        // show a success add custom matp theme message to user
+        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
+        // close dialog
+        this.show_form    = false;
+        //set as current active name map theme
+        this.active_theme = this.custom_theme.value;
+        //need to wait watch
+        await this.$nextTick();
+        //set custom map theme value to null. Reset value
+        this.custom_theme.value = null;
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: saved.error || 'info.server_error', autoclose: false });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
       }
     },
 
@@ -384,7 +384,6 @@ export default {
           if (theme === this.active_theme) { this.active_theme = null;}
         } catch(e) {
           console.warn(e);
-          // show a error message to user
           GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
         }
       });
