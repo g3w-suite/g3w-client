@@ -454,45 +454,23 @@ export class AnnotationControl extends InteractionControl {
 
     const self = this;
 
-    this._selectInteraction = new (class Selec extends ol.interaction.Pointer {
+    this._selectInteraction = new ol.interaction.Select({
+      layers: [this._layer],
+      style:  (feature) => {
+        return styles(feature.type)(feature);
+      }
+    });
 
-      constructor() {
-    
-        const featuresAtPixel = ({ pixel, map } = {}) => map.getFeaturesAtPixel(pixel, {
-          layerFilter: l => null === self._interaction && self._layer === l ,
-          hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
-        });
-    
-        super({
-          handleDownEvent(e) {
-            //get selected feature
-            const feature = featuresAtPixel(e)[0];
-            //active modify Interaction only if a feature is get
-            self._modifyInteraction.setActive(!!feature);
-            //set current selected feature
-            self.setCurrentEditFeature(feature);
-          },
-          handleMoveEvent(e) {
-            e.map.getTargetElement().style.cursor = featuresAtPixel(e).length > 0 ? 'pointer': '';
-          }
-        });
-      }    
-    })
+    this._selectInteraction.on('select', (e) => {
+      this.setCurrentEditFeature(e.selected[0]);
+    });
 
     //Modify Feature
     this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
       constructor() {
         super({ 
-          source:                self._layer.getSource(),
+          features:                self._selectInteraction.getFeatures(),
           insertVertexCondition: () => self._data.feature && 'Rectangle' !== self._data.feature.type,//In case of recatngle annotation, can't
-          //modify only selected feature  
-          condition(e) {
-            const features = e.map.getFeaturesAtPixel(e.pixel, {
-              layerFilter: l => self._layer === l,
-              hitTolerance: (isMobile && isMobile.any) ? 10 : 0,
-            });
-            return (features.length && features[0].selected) || false;
-          },
         });
 
         //Modify start. Useful for Rectangle
@@ -584,14 +562,14 @@ export class AnnotationControl extends InteractionControl {
           </section>
           <section v-if = "feature || (null === type && ids.length > 0)" id = "annotation-tools">
             <divider/>
-            <div style = "display: flex; justify-content: flex-end; margin-top: 10px; font-size: 1.2em;">
-              <p v-if = "feature && ids.length > 0" :class="$fa('list')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
+            <div style  = "display: flex; justify-content: flex-end; margin-top: 10px; font-size: 1.2em;">
+              <p v-if   = "feature && ids.length > 0" :class="$fa('list')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "showAll"></p>
               <p :class = "$fa('download')" style = "cursor: pointer; margin-right: 5px;" @click.stop = "dowload"></p>
               <p :class = "$fa('trash')"    style = "color: red; cursor: pointer;" @click.stop = "remove"></p>
             </div>
             <divider/>
           </section>
-          <section v-if = "null === feature && null === type && ids.length > 0" id = "annotation-list">
+          <section v-if   = "null === feature && null === type && ids.length > 0" id = "annotation-list">
             <button 
               v-for       = "item in ids" :key = "item.id" 
               @click.stop = "editFeature(item.id)"
@@ -623,8 +601,8 @@ export class AnnotationControl extends InteractionControl {
             </section>
             <!-- POLYGON SEGMENT LENGTH -->
             <section v-if = "'Polygon' === type" id = "polygon-length">
-              <label for = "plength">Length</label>
-              <div style = "display: flex;">
+              <label for  = "plength">Length</label>
+              <div style  = "display: flex;">
                 <input 
                   id      = "plength" 
                   class   = "form-control"
