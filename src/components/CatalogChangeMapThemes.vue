@@ -311,16 +311,19 @@ export default {
           // show a success add custom matp theme message to user
           GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
           // close dialog
-          this.show_form = false;
+          this.show_form    = false;
           //set as current active name map theme
           this.active_theme = this.custom_theme.value;
           //need to wait watch
           await this.$nextTick();
           //set custom map theme value to null. Reset value
           this.custom_theme.value = null;
-        }        
-      } catch (e) {
+        } else {
+          throw saved;
+        }       
+      } catch(e) {
         console.warn(e);
+        GUI.showUserMessage({ type: 'alert', message: saved.error || 'info.server_error', autoclose: false });
       }
     },
 
@@ -331,19 +334,24 @@ export default {
       }
       try {
         const params = this._getMapThemeParams();
-        await XHR.post({
+        const update = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
           data:        JSON.stringify(params),
         });
-        // update custom map theme styles
-        const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
-        c_theme.styles     = params.styles;
-        c_theme.layerstree = params.layerstree;
-        // show a success update map theme message to user
-        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
+        if (update.result) {
+          // update custom map theme styles
+          const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
+          c_theme.styles     = params.styles;
+          c_theme.layerstree = params.layerstree;
+          // show a success update map theme message to user
+          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
+        } else {
+          throw update;
+        }
       } catch(e) {
         console.warn(e);
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
       }
 
     },
@@ -371,9 +379,13 @@ export default {
             GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
             // in the case of deleted current map theme set current theme to null
             if (theme === this.active_theme) { this.active_theme = null;}
-          }          
-        } catch (e) {
-          console.warn(e)
+          } else {
+            throw deleted;
+          }        
+        } catch(e) {
+          console.warn(e);
+          // show a error message to user
+          GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
         }
       });
     },
