@@ -333,22 +333,22 @@ export default {
         return;
       }
       try {
-        const params = this._getMapThemeParams();
-        const update = await XHR.post({
+        const params   = this._getMapThemeParams();
+        const response = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
           data:        JSON.stringify(params),
         });
-        if (update.result) {
-          // update custom map theme styles
-          const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
-          c_theme.styles     = params.styles;
-          c_theme.layerstree = params.layerstree;
-          // show a success update map theme message to user
-          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
-        } else {
-          throw update;
+        // handle server error
+        if (!response.result) {
+          throw response;
         }
+        // update custom map theme styles
+        const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
+        c_theme.styles     = params.styles;
+        c_theme.layerstree = params.layerstree;
+        // show a success update map theme message to user
+        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
@@ -370,18 +370,18 @@ export default {
           return;
         }
         try {
-          const deleted = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
+          const response = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
             method: 'DELETE',
           })).json();
-          if (deleted.result) {
-            this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
-            // show a success message to user
-            GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
-            // in the case of deleted current map theme set current theme to null
-            if (theme === this.active_theme) { this.active_theme = null;}
-          } else {
-            throw deleted;
-          }        
+          // handle server error
+          if (!response.result) {
+            throw response;
+          }
+          this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
+          // show a success message to user
+          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
+          // in the case of deleted current map theme set current theme to null
+          if (theme === this.active_theme) { this.active_theme = null;}
         } catch(e) {
           console.warn(e);
           // show a error message to user
