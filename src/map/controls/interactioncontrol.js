@@ -118,6 +118,11 @@ export default class InteractionControl extends ol.control.Control {
     this.priority        = options.priority || 0;
 
     /**
+     * @since 4.0.0 Add click map option
+     */
+    this.clickmap       = options.clickmap || false;
+
+    /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * button click handler
