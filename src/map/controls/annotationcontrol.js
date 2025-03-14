@@ -38,6 +38,14 @@ const rectangle = {
   hunit:  1,
 };
 
+//set feature stye properties
+const setFeatureStyleProperties = (feature, style = {}) => {
+  feature.set('style', {
+    ...(feature.get('style') || {}),
+    ...style,
+  });
+};
+
 //Method to handle fix lengyh segments of LineString or Polygon
 const handleLengthGeometry = ({ coordinates, length } ) => {
   if (areCoordinatesEqual(coordinates[0], coordinates[1])) {
@@ -63,18 +71,18 @@ const handleLengthGeometry = ({ coordinates, length } ) => {
 
 /**
  * 
- * @param {Styles} type 
- * @param {*} selected 
- * @returns 
+ * @param { String } type 
+ * @returns { Array<ol.style.Style> }
  */
 const styles = (type) => {
   switch (type) {
     case 'Point': 
       return (feature) => {
+        const style = feature.get('style') || {};
         return new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text: `${feature.show_info ? `${`${feature.getGeometry().getCoordinates()}`} \n` : ''}${feature.show_text ? feature.get('text'): ''}`,
+            text: `${feature.get('show_info') ? `${`${feature.getGeometry().getCoordinates()}`} \n` : ''}${feature.get('show_text') ? feature.get('text'): ''}`,
             fill: new ol.style.Fill({ color : '#000000' }),
             font: '15px Titillium Web',
             stroke: new ol.style.Stroke({
@@ -84,20 +92,21 @@ const styles = (type) => {
           }),
           image: new ol.style.Circle({
             fill: new ol.style.Fill({
-              color: `rgb(${feature.color})`,
+              color: `rgb(${style.color})`,
             }),
-            radius: feature.radius,
+            radius: style.radius,
           }),
         })
       }
 
     case 'LineString': 
       return (feature) => {
+        const style = feature.get('style') || {};
         return [
           ...(feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                  width: feature.width + 3,
+                  width: style.width + 3,
                   color: `#FFFFFF`,
                 }),
              })] 
@@ -106,11 +115,11 @@ const styles = (type) => {
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
-              text: `${feature.show_info 
+              text: `${feature.get('show_info') 
                 ? `${feature.getGeometry().getLength() > 100 
                   ? (Math.round((feature.getGeometry().getLength() / 1000) * 100) / 100) +  ' km' 
                   : (Math.round(feature.getGeometry().getLength() * 100) / 100) + ' m'} \n` 
-                : ''}${feature.show_text ? feature.get('text'): ''
+                : ''}${feature.get('show_text') ? feature.get('text'): ''
               }`,
               fill: new ol.style.Fill({ color : '#000000' }),
               font: '15px Titillium Web',
@@ -120,8 +129,8 @@ const styles = (type) => {
               }),
             }),
             stroke: new ol.style.Stroke({
-              width: feature.width,
-              color: `rgb(${feature.color})`
+              width: style.width,
+              color: `rgb(${style.color})`
             }),
           }),
           ...(feature.selected ? [
@@ -138,11 +147,12 @@ const styles = (type) => {
 
     case 'Polygon':    
       return (feature) => {
+        const style = feature.get('style') || {};
         return [
           ...(feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                  width: feature.width + 3,
+                  width: style.width + 3,
                   color: `#FFFFFF`,
                 }),
              })] 
@@ -151,11 +161,11 @@ const styles = (type) => {
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
-              text: `${feature.show_info 
+              text: `${feature.get('show_info') 
                 ? `${feature.getGeometry().getArea() > 10000 
                   ? (Math.round((feature.getGeometry().getArea() / 1000000) * 100) / 100) +  ' km²' 
                   : (Math.round(feature.getGeometry().getArea() * 100) / 100) + ' m²'} \n` 
-                : ''}${feature.show_text ? feature.get('text'): ''
+                : ''}${feature.get('show_text') ? feature.get('text'): ''
               }`,
               fill: new ol.style.Fill({ color : '#000000' }),
               font: '15px Titillium Web',
@@ -165,11 +175,11 @@ const styles = (type) => {
               }),
             }),
             stroke: new ol.style.Stroke({
-              width: feature.width,
-              color: `rgb(${feature.color})`
+              width: style.width,
+              color: `rgb(${style.color})`
             }),
             fill:   new ol.style.Fill({
-              color: `rgba(${feature.color}, ${feature.opacity})`
+              color: `rgba(${style.color}, ${style.opacity})`
             })
           }),
           ...(feature.selected ? [
@@ -187,12 +197,13 @@ const styles = (type) => {
     case 'Rectangle':  
       return (feature) => {
         //take in account modify
+        const style    = feature.get('style') || {};
         const geometry = (feature.get('modifyGeometry') && feature.get('modifyGeometry').geometry) || feature.getGeometry();
         return [
           ...(feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                  width: feature.width + 3,
+                  width: style.width + 3,
                   color: `#FFFFFF`,
                 }),
                 geometry: () => geometry,
@@ -202,11 +213,11 @@ const styles = (type) => {
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
-              text: `${feature.show_info 
+              text: `${feature.get('show_info') 
                 ? `${feature.getGeometry().getArea() > 10000 
                   ? (Math.round((feature.getGeometry().getArea() / 1000000) * 100) / 100) +  ' km²' 
                   : (Math.round(feature.getGeometry().getArea() * 100) / 100) + ' m²'} \n` 
-                : ''}${feature.show_text ? feature.get('text'): ''
+                : ''}${feature.get('show_text') ? feature.get('text'): ''
               }`,
               fill: new ol.style.Fill({ color : '#000000' }),
               font: '15px Titillium Web',
@@ -216,11 +227,11 @@ const styles = (type) => {
               }),
             }),
             stroke: new ol.style.Stroke({
-              width: feature.width,
-              color: `rgb(${feature.color})`
+              width: style.width,
+              color: `rgb(${style.color})`
             }),
             fill: new ol.style.Fill({
-              color: `rgba(${feature.color}, ${feature.opacity})`
+              color: `rgba(${style.color}, ${style.opacity})`
             }),
             geometry: () => geometry
           }),
@@ -241,12 +252,13 @@ const styles = (type) => {
 
     case 'Circle':     
       return (feature) => {
+        const style = feature.get('style') || {};
         return [
           //stroke selection
           ...(feature.selected 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                  width: (feature.width || width) + 3,
+                  width: (style.width || width) + 3,
                   color: `#FFFFFF`,
                 }),
              })] 
@@ -256,7 +268,7 @@ const styles = (type) => {
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'point',
-              text: `${feature.show_text ? feature.get('text'): ''}`,
+              text: `${feature.get('show_text') ? feature.get('text'): ''}`,
               fill: new ol.style.Fill({ color : '#000000' }),
               font: '15px Titillium Web',
               stroke: new ol.style.Stroke({
@@ -265,14 +277,14 @@ const styles = (type) => {
               }),
             }),
             stroke: new ol.style.Stroke({
-              width: feature.width || width,
-              color: `rgb(${feature.color || '3, 169, 244'})`
+              width: style.width || width,
+              color: `rgb(${style.color || '3, 169, 244'})`
             }),
             fill:   new ol.style.Fill({
-              color: `rgba(${feature.color || '255, 255, 255'}, ${feature.opacity || 0.5})`
+              color: `rgba(${style.color || '255, 255, 255'}, ${undefined === style.opacity ? 0.5 : style.opacity})`
             })
           }),
-          ...(feature.selected && feature.show_info 
+          ...(feature.selected && feature.get('show_info') 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({ color: '#FFFFFF', width: 6 }), 
                 geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
@@ -282,7 +294,7 @@ const styles = (type) => {
           new ol.style.Style({
             text:   new ol.style.Text({
               placement: 'line',
-              text: `${feature.show_info
+              text: `${feature.get('show_info')
                 ? `${feature.getGeometry().getRadius() > 100 
                   ? (Math.round((feature.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
                   : (Math.round(feature.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
@@ -295,10 +307,10 @@ const styles = (type) => {
                 width: 3
               }),
             }),
-            ...(feature.show_info || undefined === feature.show_info 
+            ...(feature.get('show_info') || undefined === feature.get('show_info') 
               ? 
                 {
-                  stroke: new ol.style.Stroke({ color: `rgb(${feature.color || '3, 169, 244'})`, width: 3 }), 
+                  stroke: new ol.style.Stroke({ color: `rgb(${style.color || '3, 169, 244'})`, width: 3 }), 
                 geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
               } 
               : {}
@@ -309,7 +321,7 @@ const styles = (type) => {
             text:   new ol.style.Text({
               placement: 'point',
               offsetX: 20,
-              text: `${feature.show_info 
+              text: `${feature.get('show_info') 
                 ? `${parseInt(Math.atan2(feature.getGeometry().getCenter()[0] - feature.endCoordinates[0], feature.getGeometry().getCenter()[1] - feature.endCoordinates[1]) * 180 / Math.PI)}°`
                 : ''
               }`,
@@ -327,10 +339,11 @@ const styles = (type) => {
 
     case 'Text': 
       return (feature) => {
+        const style = feature.get('style');
         return new ol.style.Style({  
           text: new ol.style.Text({
             text: `${feature.get('text')}`,
-            rotation: `${feature.rotation}`,
+            rotation: `${style.rotation}`,
             fill: new ol.style.Fill({ color : '#000000' }),
             font: '15px Titillium Web',
             placement: 'point',
@@ -395,17 +408,22 @@ export class AnnotationControl extends InteractionControl {
 
       feature.setId(count); 
       feature.set('text', text); 
+      feature.set('show_text', false);
+      feature.set('info', '');
+      feature.set('show_info', false);
+      feature.set('type', this._data.type);
       feature.setStyle(styles(this._data.type));
       
-      feature.type      = this._data.type; // set type
-      feature.color     = this._data.style.color    = color;
-      feature.radius    = this._data.style.radius   = radius;
-      feature.width     = this._data.style.width    = width;
-      feature.opacity   = this._data.style.opacity  = opacity;
-      feature.rotation  = this._data.style.rotation = rotation;
-      feature.show_text = this._data.show_text      = 'Text' === this._data.type;
-      feature.show_info = this._data.show_info      = false;
-      feature.selected  = true;
+      this._data.style.color    = color;
+      this._data.style.radius   = radius;
+      this._data.style.width    = width;
+      this._data.style.opacity  = opacity;
+      this._data.style.rotation = rotation;
+      this._data.show_text      = 'Text' === this._data.type;
+      this._data.show_info      = false;
+      feature.selected          = true;
+
+      setFeatureStyleProperties(feature, this._data.style);
       
       //set current feature
       this._data.feature = feature;
@@ -457,7 +475,7 @@ export class AnnotationControl extends InteractionControl {
     this._selectInteraction = new ol.interaction.Select({
       layers: [this._layer],
       style:  (feature) => {
-        return styles(feature.type)(feature);
+        return styles(feature.get('type'))(feature);
       }
     });
 
@@ -470,12 +488,12 @@ export class AnnotationControl extends InteractionControl {
       constructor() {
         super({ 
           features:                self._selectInteraction.getFeatures(),
-          insertVertexCondition: () => self._data.feature && 'Rectangle' !== self._data.feature.type,//In case of recatngle annotation, can't
+          insertVertexCondition: () => self._data.feature && 'Rectangle' !== self._data.feature.get('type'),//In case of recatngle annotation, can't
         });
 
         //Modify start. Useful for Rectangle
         this.on('modifystart', e => {
-          if ('Rectangle' === self._data.feature.type) {
+          if ('Rectangle' === self._data.feature.get('type')) {
             self._data.feature.set(
               'modifyGeometry',
               { geometry: self._data.feature.getGeometry().clone() },
@@ -486,7 +504,7 @@ export class AnnotationControl extends InteractionControl {
 
         //Modify end. Useful for Rectangle
         this.on('modifyend', e => {
-          if ('Rectangle' === self._data.feature.type) {
+          if ('Rectangle' === self._data.feature.get('type')) {
             const modifyGeometry = self._data.feature.get('modifyGeometry');
             if (modifyGeometry) {
                self._data.feature.setGeometry(modifyGeometry.geometry);
@@ -499,7 +517,7 @@ export class AnnotationControl extends InteractionControl {
       handleDragEvent(e) {
         self._data.feature.endCoordinates = e.coordinate;
         super.handleDragEvent(e);
-        if ('Rectangle' === self._data.feature.type) {
+        if ('Rectangle' === self._data.feature.get('type')) {
           //get current feature in modify
           const modifyFeature  = self._data.feature;
           const modifyGeometry = modifyFeature.get('modifyGeometry');
@@ -538,7 +556,7 @@ export class AnnotationControl extends InteractionControl {
         }
        
         //redraw layer only if feature has show_info to true
-        if (self._data.feature.show_info) {
+        if (self._data.feature.get('show_info')) {
           self.change();
         }
       }
@@ -678,7 +696,7 @@ export class AnnotationControl extends InteractionControl {
                 v-model = "text"/>
             </div>
             <!-- ROTATION TEXT STYLE CHANGE -->
-            <section v-if = "'Text' === feature.type" id = "style-rotation-text">
+            <section v-if = "'Text' === feature.get('type')" id = "style-rotation-text">
               <label for = "rotation">Rotation</label>
               <input 
                 id      = "rotation"
@@ -690,7 +708,7 @@ export class AnnotationControl extends InteractionControl {
                 v-model = "style.rotation" />
             </section>
             <!-- COLOR STYLE CHANGE -->
-            <section v-if = "'Text' !== feature.type">
+            <section v-if = "'Text' !== feature.get('type')">
               <section id = "color" style = "margin-bottom: 10px;">
                 <color-picker
                   ref                 = "color_picker"
@@ -702,7 +720,7 @@ export class AnnotationControl extends InteractionControl {
                 />
               </section>
               <!-- RADIUS POINT STYLE CHANGE -->
-              <section v-if = "'Point' === feature.type" id = "style-radius">
+              <section v-if = "'Point' === feature.get('type')" id = "style-radius">
                 <label for = "radius">Radius</label>
                 <input 
                   id      = "radius" 
@@ -714,7 +732,7 @@ export class AnnotationControl extends InteractionControl {
                   v-model = "style.radius" />
               </section>
               <!-- STROKE WIDTH STYLE CHANGE -->
-              <section v-if = "['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.type)" id = "style-stroke-width">
+              <section v-if = "['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.get('type'))" id = "style-stroke-width">
                 <label for = "stroke">Stroke</label>
                 <input 
                   id      = "stroke" 
@@ -727,14 +745,14 @@ export class AnnotationControl extends InteractionControl {
               </section>
 
               <!-- OPACITY STYLE CHANGE -->
-              <section v-if = "['Polygon', 'Rectangle' , 'Circle'].includes(feature.type)" id = "style-opacity">
+              <section v-if = "['Polygon', 'Rectangle' , 'Circle'].includes(feature.get('type'))" id = "style-opacity">
                 <label for = "opacity">Opacity</label>
                 <input 
                   id      = "opacity" 
                   type    = "range" 
-                  name    = "width" 
+                  name    = "opacity" 
                   min     = "0" 
-                  step    = "0.1"
+                  step    = "0.05"
                   max     = "1" 
                   v-model = "style.opacity" />
               </section>
@@ -747,7 +765,7 @@ export class AnnotationControl extends InteractionControl {
                   type    = "checkbox"/>
                 <label for = "feature-text">Show Text</label>
                 <input 
-                  v-if    = "'Text' !== feature.type"
+                  v-if    = "'Text' !== feature.get('type')"
                   id      = "feature-info"
                   class   = "form-control magic-checkbox" 
                   type    = "checkbox" 
@@ -777,17 +795,17 @@ export class AnnotationControl extends InteractionControl {
         text(t)             { 
           this.feature.set('text', t);
           this.ids.find(({ id }) => this.feature.getId() === id).text = t;
-          if (this.feature.show_text) {
+          if (this.feature.get('show_text')) {
             this.change();
           } 
         },
-        show_text       (b) { this.feature.show_text = b; this.change() },
-        show_info       (b) { this.feature.show_info = b; this.change() },
-        'style.color'   (c) { this.feature.color     = c; this.change() },
-        'style.width'   (w) { this.feature.width     = Number(w); this.change() },
-        'style.opacity' (o) { this.feature.opacity   = Number(o); this.change() },
-        'style.radius'  (r) { this.feature.radius    = Number(r); this.change() },
-        'style.rotation'(r) { this.feature.rotation  = Number(r) * (Math.PI/180); this.change() },
+        show_text       (b) { this.feature.set('show_text', b); this.change() },
+        show_info       (b) { this.feature.set('show_info', b); this.change() },
+        'style.color'   (c) { setFeatureStyleProperties(this.feature, { color: c }); this.change() },
+        'style.width'   (w) { setFeatureStyleProperties(this.feature, { width: Number(w) }); this.change() },
+        'style.radius'  (r) { setFeatureStyleProperties(this.feature, { radius: Number(r) }); this.change() },
+        'style.opacity' (o) { setFeatureStyleProperties(this.feature, { opacity: Number(o) }); this.change() },
+        'style.rotation'(r) { setFeatureStyleProperties(this.feature, { rotaion: Number(r) * (Math.PI/180) }); this.change() },
         //Handle meausure geometry
         'constraints.circle': {
           deep : true,
@@ -836,9 +854,9 @@ export class AnnotationControl extends InteractionControl {
 
     this._data.feature     = feature;
     this._data.text        = this._data.feature.get('text'); 
-    this._data.style.color = this._data.feature.color;
-    this._data.show_text   = this._data.feature.show_text;
-    this._data.show_info   = this._data.feature.show_info;
+    this._data.style.color = this._data.feature.get('style').color;
+    this._data.show_text   = this._data.feature.get('show_text');
+    this._data.show_info   = this._data.feature.get('show_info');
     
     feature.selected       = true;
     feature.changed();
@@ -867,6 +885,7 @@ export class AnnotationControl extends InteractionControl {
     ApplicationState.download = true;
     
     const bytes = new TextEncoder().encode(JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(this._data.feature ? [this._data.feature] : this._layer.getSource().getFeatures(), { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()} )));
+
     const blob = new Blob([bytes], { type: "application/json;charset=utf-8" });
     saveBlob(blob, 'annotation');
 
