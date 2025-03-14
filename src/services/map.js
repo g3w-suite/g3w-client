@@ -519,6 +519,7 @@ class MapService extends G3WObject {
                   options: {
                     name:     "annotation",
                     layer:    this.defaultsLayers.annotation,
+                    features: this.project.annotation || {}, // in case annotation on project config
                     tipLabel: 'sdk.mapcontrols.annotation.tooltip',
                   }
                 });
