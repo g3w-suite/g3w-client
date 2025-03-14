@@ -406,6 +406,7 @@ export class AnnotationControl extends InteractionControl {
     this._layer.getSource().on('addfeature', ({ feature }) => { 
       const text = `${this._data.type} ${count++}`;
 
+      //set id and default properties values of new feature
       feature.setId(count); 
       feature.set('text', text); 
       feature.set('show_text', false);
@@ -423,15 +424,16 @@ export class AnnotationControl extends InteractionControl {
       this._data.show_info      = false;
       feature.selected          = true;
 
+      //set style properties of feature
       setFeatureStyleProperties(feature, this._data.style);
       
       //set current feature
       this._data.feature = feature;
       //set current text for input value
       this._data.text = text; 
-      //stop to draw
+      //stop to draw. Reset type
       this._data.type = null
-      //circle
+      //Add feature to features list
       this._data.ids.push({ id: count, text: feature.get('text') }); 
 
     });
@@ -439,12 +441,8 @@ export class AnnotationControl extends InteractionControl {
     //on Remove feature
     this._layer.getSource().on('removefeature', ({ feature }) => this._data.ids = this._data.ids.filter(({ id }) => id !== feature.getId() ));
 
-    //used to wath change input during draw
-    this.VM = new Vue();
-
-    //types of annotation
+    //Annotation data
     this._data = {
-      types:        ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text'],
       type:         null,
       ids:           [],
       feature:       null, //annotation feature to edit,
@@ -474,9 +472,7 @@ export class AnnotationControl extends InteractionControl {
 
     this._selectInteraction = new ol.interaction.Select({
       layers: [this._layer],
-      style:  (feature) => {
-        return styles(feature.get('type'))(feature);
-      }
+      style:  feature => styles(feature.get('type'))(feature)
     });
 
     this._selectInteraction.on('select', (e) => {
@@ -487,7 +483,7 @@ export class AnnotationControl extends InteractionControl {
     this._modifyInteraction = new (class AnnotatioModify extends ol.interaction.Modify {
       constructor() {
         super({ 
-          features:                self._selectInteraction.getFeatures(),
+          features:              self._selectInteraction.getFeatures(),
           insertVertexCondition: () => self._data.feature && 'Rectangle' !== self._data.feature.get('type'),//In case of recatngle annotation, can't
         });
 
@@ -576,7 +572,12 @@ export class AnnotationControl extends InteractionControl {
       template: /* html */ `
         <div style="width: 100%; padding: 5px;" id = "annotations-content">
           <section class = "annotation-buttons" style = "display: flex; justify-content: space-between; flex-flow: wrap; margin-bottom: 5px;">
-            <button @click.stop = "type = t === type ? null : t " class = "btn" :class = "[type === t && 'skin-background-color' , t ]" v-for = "t in types"></button>
+            <!--- ANNOTATION TYPES -->
+            <button v-for = "t in ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text']" 
+              @click.stop = "type = t === type ? null : t " 
+              class       = "btn" 
+              :class      = "[type === t && 'skin-background-color' , t ]" >
+            </button>
           </section>
           <section v-if = "feature || (null === type && ids.length > 0)" id = "annotation-tools">
             <divider/>
@@ -1121,7 +1122,5 @@ export class AnnotationControl extends InteractionControl {
       this._interaction.setActive(true);
       map.addInteraction(this._interaction);
     }
-
   }
-
 }
