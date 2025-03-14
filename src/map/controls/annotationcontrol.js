@@ -398,12 +398,6 @@ export class AnnotationControl extends InteractionControl {
       }
     });
 
-
-    opts.features = {
-      "type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[1251927.2435795162,5433818.436857749],[1251764.566491856,5433400.550761006],[1252103.3527202862,5433312.4961906215],[1252315.2806693483,5433366.224403059],[1252360.0541797136,5433569.197650049],[1251927.2435795162,5433818.436857749]]]},"properties":{"text":"Polygon 1","show_text":false,"info":"","show_info":true,"type":"Polygon","style":{"color":"250, 40, 255","width":3,"radius":8,"opacity":0.5,"rotation":0}},"id":2}]
-    };
-
-    
     this._layer = opts.layer || new ol.layer.Vector({
       source: new ol.source.Vector()
     });
