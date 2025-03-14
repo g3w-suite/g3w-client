@@ -405,11 +405,11 @@ export class AnnotationControl extends InteractionControl {
     //map projection
     const projection = GUI.getService('map').getEpsg();
     //Add features if passed
-    const features = opts.features 
+    const features = opts.annotations 
     ? (new ol.format.GeoJSON({ 
         dataProjection:     projection,
         featureProjection:  projection 
-      })).readFeatures(opts.features) 
+      })).readFeatures(opts.annotations) 
     : [];
 
     //set Styles

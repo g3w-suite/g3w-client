@@ -517,10 +517,10 @@ class MapService extends G3WObject {
               case 'annotation':
                 this.createMapControl('annotation', {
                   options: {
-                    name:     "annotation",
-                    layer:    this.defaultsLayers.annotation,
-                    features: this.project.annotation || {}, // in case annotation on project config
-                    tipLabel: 'sdk.mapcontrols.annotation.tooltip',
+                    name:        "annotation",
+                    layer:       this.defaultsLayers.annotation,
+                    annotations: this.project.annotations, // in case annotation on project config
+                    tipLabel:    'sdk.mapcontrols.annotation.tooltip',
                   }
                 });
                 break;
