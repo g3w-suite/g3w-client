@@ -38,6 +38,12 @@ const rectangle = {
   hunit:  1,
 };
 
+//save geometry info to properties to create feature  when passed geojson features from server
+const saveCircleGeometryProperties = (feature) => {
+  feature.set('radius', feature.getGeometry().getRadius());
+  feature.set('center', feature.getGeometry().getCenter());
+};
+
 //set feature stye properties
 const setFeatureStyleProperties = (feature, style = {}) => {
   feature.set('style', {
@@ -253,6 +259,7 @@ const styles = (type) => {
     case 'Circle':     
       return (feature) => {
         const style = feature.get('style') || {};
+        const endCoordinates = feature.get('endCoordinates');
         return [
           //stroke selection
           ...(feature.selected 
@@ -287,7 +294,7 @@ const styles = (type) => {
           ...(feature.selected && feature.get('show_info') 
             ? [new ol.style.Style({
                 stroke: new ol.style.Stroke({ color: '#FFFFFF', width: 6 }), 
-                geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
+                geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), endCoordinates]) 
              })] 
             : []
           ),
@@ -311,7 +318,7 @@ const styles = (type) => {
               ? 
                 {
                   stroke: new ol.style.Stroke({ color: `rgb(${style.color || '3, 169, 244'})`, width: 3 }), 
-                geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), f.endCoordinates]) 
+                geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), endCoordinates]) 
               } 
               : {}
             )
@@ -322,7 +329,7 @@ const styles = (type) => {
               placement: 'point',
               offsetX: 20,
               text: `${feature.get('show_info') 
-                ? `${parseInt(Math.atan2(feature.getGeometry().getCenter()[0] - feature.endCoordinates[0], feature.getGeometry().getCenter()[1] - feature.endCoordinates[1]) * 180 / Math.PI)}°`
+                ? `${parseInt(Math.atan2(feature.getGeometry().getCenter()[0] - endCoordinates[0], feature.getGeometry().getCenter()[1] - endCoordinates[1]) * 180 / Math.PI)}°`
                 : ''
               }`,
               fill: new ol.style.Fill({ color : '#000000' }),
@@ -332,7 +339,7 @@ const styles = (type) => {
                 width: 3
               }),
             }),
-            geometry: f => new ol.geom.Point(f.endCoordinates)
+            geometry: f => new ol.geom.Point(endCoordinates)
           }),
         ]
       }
@@ -414,6 +421,10 @@ export class AnnotationControl extends InteractionControl {
 
     //set Styles
     features.forEach(f => {
+      //circle
+      if ('Circle' === f.get('type')) {
+        f.setGeometry(new ol.geom.Circle(f.get('center'), Number(f.get('radius'))));
+      }
       //add count from eventually added features
       count = Math.max(count, f.getId()) + 1;
       f.setStyle(styles(f.get('type')))
@@ -436,6 +447,9 @@ export class AnnotationControl extends InteractionControl {
       feature.set('info', '');
       feature.set('show_info', false);
       feature.set('type', this._data.type);
+      if ('Circle' === this._data.type) {
+        saveCircleGeometryProperties(feature);
+      }
       feature.setStyle(styles(this._data.type));
       
       this._data.style.color    = color;
@@ -532,11 +546,14 @@ export class AnnotationControl extends InteractionControl {
                self._data.feature.unset('modifyGeometry', true);
             }
           }
+          if ('Circle' === self._data.feature.get('type')) {
+            saveCircleGeometryProperties(self._data.feature);
+          }
         })
       }
 
       handleDragEvent(e) {
-        self._data.feature.endCoordinates = e.coordinate;
+        self._data.feature.set('endCoordinates', e.coordinate);
         super.handleDragEvent(e);
         if ('Rectangle' === self._data.feature.get('type')) {
           //get current feature in modify
@@ -1068,7 +1085,7 @@ export class AnnotationControl extends InteractionControl {
 
                   if ('Circle' === feature.getGeometry().getType()) {
                     endCoordinates = feature.getGeometry().getClosestPoint(endCoordinates);
-                    feature.endCoordinates = endCoordinates;
+                    feature.set('endCoordinates', endCoordinates);
                     return styles(type)(feature)
                   }
                 }
@@ -1128,7 +1145,7 @@ export class AnnotationControl extends InteractionControl {
             this.on('drawend', e => {
               
               if ('Circle' === type) {
-                e.feature.endCoordinates = e.feature.getGeometry().getClosestPoint(endCoordinates);
+                e.feature.set('endCoordinates', e.feature.getGeometry().getClosestPoint(endCoordinates));
                 this.radius = null;
               }
               if (['LineString', 'Polygon'].includes(type)) {

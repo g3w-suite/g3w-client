@@ -32,8 +32,8 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
           coords = geom.getInteriorPoints().getCoordinates()[0];
         } else if (geom instanceof ol.geom.LineString || geom instanceof ol.geom.MultiLineString) {
           coords = geom.getLastCoordinate();
-        } else if (geom instanceof ol.geom.Circle && feature.endCoordinates) {    
-          coords = feature.endCoordinates;
+        } else if (geom instanceof ol.geom.Circle && feature.get('endCoordinates')) {    
+          coords = feature.get('endCoordinates');
         }
 
         const projection = map.getView().getProjection();
@@ -42,6 +42,7 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
         const is_circle  = 'Circle' === geom.getType(); // add circle geometry type
         const is_multi   = isMultiGeometry(geom.getType());
         const is_sphere  = 'EPSG:3857' === projection.getCode() || 'degrees' === projection.getUnits();
+
         let segments     = [];
 
 
@@ -98,7 +99,7 @@ export function createMeasureTooltip({ map, feature } = {}, options = {}) {
         element.innerHTML = (undefined !== area ? `Area: ${area} <br>` : '')
                           + (undefined !== area && undefined !== length ? `<div style="width: 100%; padding: 3px; border-bottom: 2px solid #ffffff"></div> ` : '')
                           + (undefined !== length ? length : '')
-                          + (undefined !== radius ? `${parseInt(Math.atan2(geom.getCenter()[0] - feature.endCoordinates[0], geom.getCenter()[1] - feature.endCoordinates[1]) * 180 / Math.PI)}°, ${radius}` : '');
+                          + (undefined !== radius ? `${parseInt(Math.atan2(geom.getCenter()[0] - coords[0], geom.getCenter()[1] - coords[1]) * 180 / Math.PI)}°, ${radius}` : '');
         tooltip.setPosition(coords);
       })
   };
