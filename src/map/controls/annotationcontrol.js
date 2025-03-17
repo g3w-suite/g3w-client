@@ -424,6 +424,9 @@ export class AnnotationControl extends InteractionControl {
 
     //On add feature
     this._layer.getSource().on('addfeature', ({ feature }) => { 
+      //clear eventually selected feature
+      this._selectInteraction.getFeatures().clear();
+      //get text
       const text = `${this._data.type} ${count++}`;
 
       //set id and default properties values of new feature
@@ -455,6 +458,8 @@ export class AnnotationControl extends InteractionControl {
       this._data.type = null
       //Add feature to features list
       this._data.ids.push({ id: count, text: feature.get('text') }); 
+      //add current feature to selection to modify it
+      this._selectInteraction.getFeatures().push(feature);
 
     });
 
