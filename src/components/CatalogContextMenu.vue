@@ -238,6 +238,14 @@
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <bar-loader :loading = "ApplicationState.download"/>
         <ul>
+          <div v-if = "hasRelations()" style = "padding: 3px; border-bottom: 3px solid var(--skin-color)">
+            <input
+              id         = "g3w-layer-download-relations"
+              class      = "magic-checkbox"
+              v-model    = "down_with_relations" 
+              type       = "checkbox"/>
+              <label for = "g3w-layer-download-relations" v-t = "'sdk.relations.download_with_relations'"></label>
+          </div>
 
           <!-- Download as GeoTIFF -->
           <li
@@ -510,12 +518,13 @@
     data() {
       return {
         ApplicationState,
-        layer:         null,
-        layer_style:   null,
-        top:           0,
-        left:          0,
-        project_menu:  false,
-        layer_menu:    false,
+        layer:               null,
+        layer_style:         null,
+        top:                 0,
+        left:                0,
+        project_menu:        false,
+        layer_menu:          false,
+        down_with_relations: false, //@since 3.11.7 download with relations
       };
     },
 
@@ -579,8 +588,9 @@
        * @param { string } menu
        */
       closeMenu() {
-        this.layer_menu = false;
-        this.project_menu = false;
+        this.layer_menu          = false;
+        this.project_menu        = false;
+        this.down_with_relations = false;
       },
 
       onChangeColor(val) {
@@ -610,7 +620,8 @@
        */
       canDownload(format, layerId) {
         const layer = getCatalogLayerById(layerId);
-        return layer && layer['is' + format + 'Downloadable']();
+        //exclude pdf forma. It is used only for single feature download
+        return layer && layer.getDownloadableFormats().filter(f => 'pdf' !== f).length && layer['is' + format + 'Downloadable']();
       },
 
       getWmsUrl(layerId) {
@@ -664,7 +675,10 @@
         ApplicationState.download = true;
         try {
           await getCatalogLayerById(layerId)['get' + format]({
-            data:  map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : undefined
+            data: {
+                    ...(map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : {}),
+                    down_with_relations: this.down_with_relations
+                  },
           });
         } catch (e) {
           GUI.notify.error(t("info.server_error"));
@@ -988,6 +1002,13 @@
         }
 
       },
+      /**
+       * @since 3.11.7
+       * Check if layer has relation
+       */
+      hasRelations() {
+        return getCatalogLayerById(this.layer.id).getRelations().getArray().length > 0;
+      }
 
     },
 
