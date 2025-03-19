@@ -349,92 +349,9 @@ const Providers = {
 
     }
   },
-
-  wfs: class {
-  
-    // query method
-    query(opts = {}, params = {}) {
-      const filter = opts.filter || {};
-      const layers = opts.layers || [this._layer];
-      const url    = `${layers[0].getQueryUrl()}/`.replace(/\/+$/, '/');
-      const method = layers[0].getOwsMethod();
-
-      // BACKCOMP v3.x
-      Object.assign(filter, {
-        config: filter.config || {},
-        type:   filter._type || filter.type,
-        value:  filter._filter || filter.value,
-      })
-
-      params = Object.assign(params, {
-        SERVICE:      'WFS',
-        VERSION:      '1.1.0',
-        REQUEST:      'GetFeature',
-        MAXFEATURES:  opts.feature_count ?? 10,
-        TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
-        OUTPUTFORMAT: layers[0].getInfoFormat(),
-        SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
-        FILTER:       'all' !== filter.type ? `(${(
-          new ol.format.WFS().writeGetFeature({
-            featureTypes: [''], //v3.11.0 @TODO need to check https://openlayers.org/en/v5.3.0/apidoc/module-ol_format_WFS-WFS.html#writeGetFeature
-            filter:       ({
-              'bbox':       () => ol.format.filter.bbox('the_geom', filter.value),
-              'geometry':   () => ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
-              'expression': () => null,
-            })[filter.type](),
-          })
-        ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
-      });
-
-      let timer;
-
-      // promise with timeout
-      return $promisify(Promise.race([
-        new Promise(res => { timer = setTimeout(() => { res({
-          data: (layers || []).map(layer => ({ layer, rawdata: 'timeout' })),
-          query: {},
-        }); }, TIMEOUT) }),
-        (async () => {
-          try {
-            let response;
-
-            if ('GET' === method && !['all', 'geometry'].includes(filter.type)) {
-              response = await XHR.get({ url: url + '?' + new URLSearchParams(params || {}).toString() });
-            }
-  
-            if ('POST' === method || ['all', 'geometry'].includes(filter.type)) {
-              response = await XHR.post({ url, data: params })
-            }
-
-            const data = ResponseParser.get(layers[0].getInfoFormat())({
-              response,
-              projections: {
-                map:   this._layer.getMapProjection(),
-                layer: (opts.reproject ? this._layer.getProjection() : null)
-              },
-              layers,
-              wms: false,
-            });
-
-            // sanitize in case of nil:true
-            data
-              .flatMap(l => l.features || [])
-              .forEach(f => Object.entries(f.getProperties())
-                .forEach(([ attribute, value ]) => value && value['xsi:nil'] && feature.set(attribute, 'NULL'))
-              );
-            return { data };
-          } finally {
-            clearTimeout(timer)
-          }
-        })(),
-      ]));
-
-    }
-
-  },
-  //https://github.com/g3w-suite/g3w-admin/issues/1070
+  //Changed based on https://github.com/g3w-suite/g3w-admin/issues/1070
   //@since 3.11.7
-  api: class {
+  wfs: class {
     async query(opts = {}, params = {}) {
       const filter = opts.filter || {};
       const spatialMethod = filter.config.spatialMethod || 'intersects';
@@ -460,7 +377,10 @@ const Providers = {
          if (response && response.result) {
           data.push({ 
             layer:    this._layer,
-            features: response.vector && response.vector.data && response.vector.data.features || [],
+            features: ResponseParser.get('g3w-vector/json')(
+              response.vector && response.vector.data || {},
+              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }},
+            ),
           })
          } else {
           throw response.error;
@@ -799,7 +719,7 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
-      ].includes(layerType) && createProvider('api', this),
+      ].includes(layerType) && createProvider('wfs', this),
 
       filtertoken: [
         'QGIS virtual',
