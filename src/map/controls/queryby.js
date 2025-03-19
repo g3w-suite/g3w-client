@@ -705,9 +705,9 @@ function _getAvailableLayers(type) {
   const queryable = MapLayersStoresRegistry.getQuerableLayersStores();
   return [...new Set([
 
-    // WFS
+    // QUERABLE
     ...queryable
-      .flatMap(s => s.getLayers({ GEOLAYER: true, FILTERABLE: true, SELECTED_OR_ALL: true }, { filtrable: { ows: 'WFS' } }))
+      .flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }))
       .filter(l => 'wfs' === l.getProvider('filter').getName()),
 
     // POLYGONS
