@@ -605,11 +605,10 @@ export class QueryBy extends InteractionControl {
             // Catalog layers (TOC) properties that need to be satisfied
             layersFilterObject: {
               SELECTED_OR_ALL: true, // selected or all
-              FILTERABLE:      true, // see: src/app/core/layers/layer.js#L925
+              QUERABLE:        true, // see: src/app/core/layers/layer.js#L925
               VISIBLE:         true  // need to be visible
             },
-            condition:     { filtrable: { ows: 'WFS' } },
-            multilayers:   [].concat(project.state.querymultilayers).includes(control.name),
+            multilayers:   false, //query single layer @since 3.11.7
             filterConfig:  { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           }
         });
@@ -637,7 +636,7 @@ export class QueryBy extends InteractionControl {
               }
             },
             type:            (type || '').replace('queryby', '') || undefined,
-            multilayers:     [].concat(project.state.querymultilayers).includes('querybypolygon'), //hardcoded using querymultilayers server config
+            multilayers:     false, //query single layer @since 3.11.7
             filterConfig:    { spatialMethod: control.getSpatialMethod() }, // added spatial method to polygon filter
           },
           outputs: {
