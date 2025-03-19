@@ -442,7 +442,8 @@ const Providers = {
         case 'bbox':
         case 'geometry':
           params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
-          params.geo_filter_wkt = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }))
+          params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }));
+          params.formatter       = 1;
           break;
         case 'expression':
           break;    
