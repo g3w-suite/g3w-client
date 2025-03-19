@@ -432,7 +432,46 @@ const Providers = {
     }
 
   },
+  //https://github.com/g3w-suite/g3w-admin/issues/1070
+  //@since 3.11.7
+  api: class {
+    async query(opts = {}, params = {}) {
+      const filter = opts.filter || {};
+      const spatialMethod = filter.config.spatialMethod || 'intersects';
+      switch(filter.type) {
+        case 'bbox':
+        case 'geometry':
+          params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
+          params.geo_filter_wkt = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }))
+          break;
+        case 'expression':
+          break;    
+      }
 
+      const data = [];
+
+      try {
+        const response = await XHR.post({ 
+          url :  this._layer.getUrl('data'),
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+         });
+         if (response && response.result) {
+          data.push({ 
+            layer:    this._layer,
+            features: response.vector && response.vector.data && response.vector.data.features || [],
+          })
+         } else {
+          throw response.error;
+         }
+      } catch(e) {
+        console.warn(e);
+      }
+
+      return { data }
+      
+    }  
+  }
 };
 
 const DOWNLOAD_FORMATS = {
@@ -759,7 +798,7 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
-      ].includes(layerType) && createProvider('wfs', this),
+      ].includes(layerType) && createProvider('api', this),
 
       filtertoken: [
         'QGIS virtual',
