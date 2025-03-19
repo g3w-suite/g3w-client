@@ -620,7 +620,7 @@
        */
       canDownload(format, layerId) {
         const layer = getCatalogLayerById(layerId);
-        //exclude pdf forma. It is used only for single feature download
+        //exclude pdf format. It is used only for single feature download
         return layer && layer.getDownloadableFormats().filter(f => 'pdf' !== f).length && layer['is' + format + 'Downloadable']();
       },
 
