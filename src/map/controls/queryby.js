@@ -687,7 +687,7 @@ function _hasVisible(control) {
       selected && selected.isVisible() &&
       // check if at least one layer is visible (project or external layer)
       (
-        control.layers.some(l => (l !== selected) && (l.isVisible() && l.isFilterable({ ows: 'WFS' }))) ||
+        control.layers.some(l => (l !== selected) && (l.external || (l.isVisible() && l.isFilterable({ ows: 'WFS' })))) ||
         GUI.getService('map').getLegacyExternalLayers().find(l => l !== selected && true === l.visible)
       )
     );
