@@ -271,8 +271,6 @@ export class QueryBy extends InteractionControl {
                 //set spatial method
                 this.control.spatialMethod = this.method;
                 this.control.toggle(true, { parent: CONTROLS['queryby'].id });
-                // show highlight class only if 'querybbox' or 'querybydrawpolygon' or 'querybycircle' type control
-                this.control.layers.forEach(l => l.setTocHighlightable(['querybbox', 'querybydrawpolygon', 'querybycircle'].includes(this.type)));
                 await this.$nextTick();
                 // set queryable layers (select2)
                 this.layers.push(...this.queryable);
@@ -314,7 +312,6 @@ export class QueryBy extends InteractionControl {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;
                 CONTROLS['queryby'].element.classList.toggle(`ol-${t}`, t === this.types[0]);
-                CONTROLS[t].layers.forEach(l => l.setTocHighlightable(false));
               });
             }
           }
@@ -476,10 +473,6 @@ export class QueryBy extends InteractionControl {
       this.setMouseCursor(e.target.get(e.key), control.cursorClass);              // set mouse cursor
       //set same cursor class to parent queryby control
       this.cursorClass = control.cursorClass;
-
-      if (['querybbox', 'querybydrawpolygon', 'querybycircle'].includes(type)) {
-        ApplicationState.highlightlayers = e.target.get(e.key); // highlight layers in legend
-      }
     });
 
     // listen for layers visibility change
@@ -546,12 +539,6 @@ export class QueryBy extends InteractionControl {
       const control = CONTROLS[t];
 
       control.layers = _getAvailableLayers(t);
-
-      // set layer property
-      if ('querybbox' === t) {
-        layer.setTocHighlightable(control.isToggled() && control.getEnable())
-      }
-
       // watch `layer.selected` and `layer.visible` properties
       unWatches.push(VM.$watch(
         () => [layer.selected, layer.visible],
