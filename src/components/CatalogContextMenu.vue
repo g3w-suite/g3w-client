@@ -38,6 +38,7 @@
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
         style = "border-radius: 0 3px 3px 0;"
+        class = "sub-contex-menu"
       >
         <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
       </ul>
@@ -77,7 +78,7 @@
         <i :class = "$fa('sort')"></i>
         {{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})
         <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li
             v-for  = "position in ['top', 'bottom']"
             @click = "setLayerPosition(position)"
@@ -100,7 +101,7 @@
         <i :class = "$fa('palette')"></i>
         {{ $t('catalog_items.contextmenu.styles') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
         <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li
             v-for       = "(style, i) in layer.styles"
             @click.stop = "setLayerStyle(i)"
@@ -124,7 +125,7 @@
         <i :class = "$fa('slider')"></i>
         {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ (layer.opacity / 100) }})
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li style="display: list-item;">
             <input
               type    = "range"
@@ -153,7 +154,7 @@
         <i :class = "$fa('slider')"></i>
         {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ layer.opacity }})
         <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li style="display: list-item;">
             <input
               type    = "range"
@@ -183,7 +184,7 @@
         {{ $t('catalog_items.contextmenu.vector_color_menu') }}
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li style="padding: 14px; background-color: #E0E0E0;">
             <chrome-picker
               ref                 = "color_picker"
@@ -204,7 +205,7 @@
         <i :class = "$fa('filter')"></i>
         {{ $t('catalog_items.contextmenu.filters') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li
             v-for       = "filter in layer.filters"
             :key        = "filter.fid"
@@ -237,7 +238,7 @@
         {{ $t('catalog_items.contextmenu.download') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <bar-loader :loading = "ApplicationState.download"/>
-        <ul>
+        <ul class = "sub-contex-menu">
           <div v-if = "hasRelations()" style = "padding: 3px; border-bottom: 3px solid var(--skin-color)">
             <input
               id         = "g3w-layer-download-relations"
@@ -344,7 +345,7 @@
       >
         <i :class = "$fa('map')"></i> {{ $t('catalog_items.contextmenu.ogc_services') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
-        <ul>
+        <ul class = "sub-contex-menu">
 
           <!-- Click to Copy WMS URL -->
           <li
