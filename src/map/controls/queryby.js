@@ -693,8 +693,7 @@ function _getAvailableLayers(type) {
 
     // QUERABLE
     ...queryable
-      .flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }))
-      .filter(l => 'wfs' === l.getProvider('filter').getName()),
+      .flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true })),
 
     // POLYGONS
     ...(GUI.getService('map').getLegacyExternalLayers() || [])
