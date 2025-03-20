@@ -5,7 +5,7 @@
 
 <template>
   <div>
-    <div v-if = "layer.hasrelations" style = "display: flex; justify-content: flex-end;">
+    <div v-if = "layer.hasrelations" style = "display: flex;">
       <input
         id        = "g3w-download-relations"
         class     = "magic-checkbox"
