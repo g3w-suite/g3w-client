@@ -234,6 +234,11 @@ export class QueryBy extends InteractionControl {
                   if (['__ALL__', '__NEW__'].includes(value) && '__ALL__' !== getSelectedLayerId()) {
                     map.selectLayer();
                   }
+
+                  //@since 3.11.7 request again when change layer selected if not new
+                  if ('__NEW__' !== value) {
+                    this.reset();
+                  }
                 }
               },
             },
@@ -278,8 +283,8 @@ export class QueryBy extends InteractionControl {
                 if ('querybypolygon' === this.type) {
                   this.control.setEnable(false);
                 }
-                // re-run query when changing spatial method
-                if (this.control.autorun) {
+                // re-run query when changing spatial method and already query was done
+                if (this.control.autorun && GUI.getContentLength()) {
                   CONTROLS['queryby'].runSpatialQuery(this.type);
                 }
               },
