@@ -239,7 +239,7 @@
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <bar-loader :loading = "ApplicationState.download"/>
         <ul class = "sub-contex-menu">
-          <div v-if = "hasRelations()" style = "padding: 3px; border-bottom: 3px solid var(--skin-color)">
+          <div v-if = "hasDowloadableRelations()" style = "padding: 3px; border-bottom: 3px solid var(--skin-color)">
             <input
               id         = "g3w-layer-download-relations"
               class      = "magic-checkbox"
@@ -1005,10 +1005,10 @@
       },
       /**
        * @since 3.11.7
-       * Check if layer has relation
+       * Check if layer has relation with download format activated
        */
-      hasRelations() {
-        return getCatalogLayerById(this.layer.id).getRelations().getArray().length > 0;
+       hasDowloadableRelations() {
+        return getCatalogLayerById(this.layer.id).hasDowloadableRelations();
       }
 
     },

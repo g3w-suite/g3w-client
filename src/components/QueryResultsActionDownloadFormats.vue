@@ -5,7 +5,7 @@
 
 <template>
   <div>
-    <div v-if = "layer.hasrelations" style = "display: flex;">
+    <div v-if = "layer.hasdownloadablerelations" style = "display: flex;">
       <input
         id        = "g3w-download-relations"
         class     = "magic-checkbox"
@@ -75,9 +75,6 @@ export default {
     },
   },
   methods: {
-    pippo(){
-      alert()
-    },
     async download() {
       try {
         const download = this.config.downloads.find(action => action.format === this.download_format);

@@ -231,7 +231,6 @@ export default new (class QueryResultsService extends G3WObject {
                 _setRelationField(node);
               }
             }
-
             // layerObj
             return {
               id,
@@ -264,15 +263,15 @@ export default new (class QueryResultsService extends G3WObject {
                   (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
                 ),
               } : undefined,
-              relationsattributes:    (is_layer || is_vector || is_string)                       ? []                     : undefined,
-              hasrelations:           layer.getRelations().getArray().length > 0,
-              filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-              selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
-              title:                  (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
-              atlas:                  this._atlas.filter(a => a.atlas.qgs_layer_id === id),
-              rawdata:                rawdata  || null,
-              error:                  error    || '',
-              toc:                    external || layer.state.toc, //@since v3.10.0
+              relationsattributes:      (is_layer || is_vector || is_string)                       ? []                     : undefined,
+              hasdownloadablerelations: layer.hasDowloadableRelations(), //@since 3.11.7
+              filter:                   (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
+              selection:                (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
+              title:                    (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
+              atlas:                    this._atlas.filter(a => a.atlas.qgs_layer_id === id),
+              rawdata:                  rawdata  || null,
+              error:                    error    || '',
+              toc:                      external || layer.state.toc, //@since v3.10.0
             };
           });
         this.setLayersData(layers, options);
