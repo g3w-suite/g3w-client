@@ -88,14 +88,11 @@ export default {
           'pdf' === download.format
             ? document.querySelector(`[feature-html-content="${this.layer.id}_${this.featureIndex}"]`).innerHTML
             : null,
-          this.down_with_relations,  //
+          Number(this.down_with_relations),  //@since 3.11.7 Convert booelan to 0/1
         );
       }
-      catch(e) {console.warn(e) }
+      catch(e) { console.warn(e); }
     }
   },
-  created() {
-    console.log(this.layer)
-  }
 }
 </script>

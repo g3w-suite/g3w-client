@@ -1594,7 +1594,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @param html
    * @param down_with_relations
    */
-  async downloadFeatures(type, layer, features = [], action, index, html, down_with_relations = false) {
+  async downloadFeatures(type, layer, features = [], action, index, html, down_with_relations = 0) {
 
     if (features && !Array.isArray(features)) {
       features = [features];
@@ -1606,7 +1606,7 @@ export default new (class QueryResultsService extends G3WObject {
       ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
       : { fids: features.map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
     
-    data.down_with_relations = down_with_relations;
+    data.down_with_relations = down_with_relations; 
   
     //In the case of pdf type need to add html element
     if ('pdf' === type) {
