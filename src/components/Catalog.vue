@@ -255,7 +255,7 @@
       style  = "
         position: sticky;
         bottom: 0;
-        background-color: #222d32;
+        background-color: var(--sidebar-color);
         display: flex;
         text-align: center;
         line-height: 48px;
@@ -877,7 +877,7 @@ export default {
   }
   .tabbable-line > .nav-tabs > li {
     margin-right: 2px;
-    border-bottom: 4px solid #21292d;
+    border-bottom: 4px solid var(--sidebar-color-l14);
   }
   .tabbable-line > .nav-tabs > li > a {
     border: 0;
@@ -904,7 +904,7 @@ export default {
   .tabbable-line > .nav-tabs > li.active > a {
     border: 0;
     color: #fff;
-    background-color: #2c3b41;
+    background-color: var(--sidebar-color-l20);
   }
   .tabbable-line > .nav-tabs > li.active > a > i {
     color: #fff;
