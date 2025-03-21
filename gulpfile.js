@@ -320,9 +320,9 @@ gulp.task('images', async function () {
   return gulp.src([
     `./src/assets/images/**/*.{png,jpg,gif,svg}`,
     `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
-    `!${g3w.pluginsFolder}/g3w-admin-*/**/*`, //exclude admin plugins
-    `!${g3w.pluginsFolder}/**/node_modules/**/`,
-    '!./src/**/node_modules/**/'
+    `!${g3w.pluginsFolder}/g3w-admin-*/**`, //exclude admin plugins
+    `!${g3w.pluginsFolder}/**/node_modules/**`,
+    '!./src/**/node_modules/**'
   ])
   .pipe(flatten())
   .pipe(gulp.dest(`${outputFolder}/static/client/images/`))
@@ -347,9 +347,9 @@ gulp.task('cursors', function () {
     `./src/assets/fonts/**/*.{eot,ttf,woff,woff2}`,
     `./node_modules/@fortawesome/fontawesome-free/webfonts//**/*.{eot,ttf,woff,woff2}`,
     `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
-    `!${g3w.pluginsFolder}/g3w-admin-*/**/*`, //exclude admin plugins
+    `!${g3w.pluginsFolder}/g3w-admin-*/**`, //exclude admin plugins
     `!${g3w.pluginsFolder}/**/node_modules/**`,
-    '!./src/**/node_modules/**/'
+    '!./src/**/node_modules/**'
   ])
   .pipe(flatten())
   .pipe(gulp.dest(`${outputFolder}/static/client/fonts/`))
