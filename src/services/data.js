@@ -199,7 +199,7 @@ export default {
                 ? { SELECTED: !excludeSelected }
                 : { SELECTED_OR_ALL: true }
             ),
-            QUERABLE: true,
+            QUERYABLE: true,
             VISIBLE: true
           }),
           // options
