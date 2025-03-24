@@ -609,7 +609,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .sidebar-aside-toggle                                                       { transition: left .3s ease-in-out, width .3s ease-in-out; }
 .main-sidebar                                                               { padding-bottom: 0; }
 .sidebar-menu                                                               { list-style: none; margin: 0; padding: 0; }
-.sidebar-menu > li                                                          { margin: 0; padding: 0; }
+.sidebar-menu > li                                                          { margin: 0; padding: 0;}
 .sidebar-menu > li > a                                                      { padding: 12px 5px 12px 10px; display: block; }
 .sidebar-menu > li > a > :is(.fa, .glyphicon, .ion)                         { width: 20px; }
 .sidebar-menu > li :is(.label, .badge)                                      { margin-top: 3px; margin-right: 5px; }
@@ -658,7 +658,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .main-sidebar .menu-items li.toggled                               { color: #374850; background-color: #fff; }
 .main-sidebar .menu-items li.toggled:hover                         { background-color: #fff; }
 .main-sidebar .menu-items li:hover                                 { background-color: #415660; }
-.main-sidebar .sidebar-menu > li,
+.main-sidebar .sidebar-menu > li                                   { border-bottom: 1px solid hsl(from var(--bgcolor) h s calc(l - 2));}
 .main-sidebar .sidebar-menu > li:last-child                        { border:0; }
 .main-sidebar .btn.quick-action                                    { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }
 .main-sidebar .btn.quick-action:hover                              { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }
