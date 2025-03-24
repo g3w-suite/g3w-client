@@ -877,7 +877,7 @@ export default {
   }
   .tabbable-line > .nav-tabs > li {
     margin-right: 2px;
-    border-bottom: 4px solid hsl(from var(--bgcolor) h 0 s 0 l -2%);
+    border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2));
   }
   .tabbable-line > .nav-tabs > li > a {
     border: 0;
@@ -904,7 +904,7 @@ export default {
   .tabbable-line > .nav-tabs > li.active > a {
     border: 0;
     color: #fff;
-    background-color: hsl(from var(--bgcolor) h 0 s 0 l 4%);
+    background-color: hsl(from var(--bgcolor) h s calc(l + 4));
   }
   .tabbable-line > .nav-tabs > li.active > a > i {
     color: #fff;

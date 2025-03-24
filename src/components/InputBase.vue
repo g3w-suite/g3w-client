@@ -74,7 +74,7 @@
         v-if   = "state.help && this.state.help.visible"
         v-html = "state.help.message"
         class  = "g3w_input_help skin-background-color"
-        style  = "background-color: hsl(from var(--skin-color) h 0 s 0 l 48%) !important;"
+        style  = "background-color: hsl(from var(--skin-color) h s calc(l + 48)) !important;"
       ></div>
 
     </div>

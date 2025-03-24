@@ -249,7 +249,7 @@
     overflow: hidden;
   }
   .tab-node.odd {
-    background-color: hsl(from var(--skin-color) h 0 s 0 l 0 / 0.1);
+    background-color: hsl(from var(--skin-color) h s l / 0.1);
   }
   .title {
     font-weight: bold;
