@@ -15,7 +15,7 @@
 
         <bar-loader :loading = "state.loading" />
 
-        <fieldset style="border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: rgb(56, 66, 70); color: rgb(255, 255, 255); user-select:none">
+        <fieldset style="border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: hsl(from var(--bgcolor) h s calc(l + 8)); color: rgb(255, 255, 255); user-select:none">
           <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
           <details>
             <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right.create = "'show_more'">
