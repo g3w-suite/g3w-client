@@ -88,7 +88,7 @@ export default {
           'pdf' === download.format
             ? document.querySelector(`[feature-html-content="${this.layer.id}_${this.featureIndex}"]`).innerHTML
             : null,
-          Number(this.down_with_relations),  //@since 3.11.7 Convert booelan to 0/1
+          Number(this.down_with_relations),  //@since 3.11.7 Convert boolean to 0/1
         );
       }
       catch(e) { console.warn(e); }
