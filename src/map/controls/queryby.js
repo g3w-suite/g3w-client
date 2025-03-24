@@ -610,7 +610,7 @@ export class QueryBy extends InteractionControl {
             // Catalog layers (TOC) properties that need to be satisfied
             layersFilterObject: {
               SELECTED_OR_ALL: true, // selected or all
-              QUERABLE:        true, // see: src/app/core/layers/layer.js#L925
+              QUERYABLE:        true, // see: src/app/core/layers/layer.js#L925
               VISIBLE:         true  // need to be visible
             },
             multilayers:   false, //query single layer @since 3.11.7
