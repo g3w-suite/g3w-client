@@ -834,8 +834,9 @@ export default {
           data: () => ({ id: getUniqueDomId(), checked: false }),
           template: /* html */ `
             <div style="display: flex; margin-top: 10px;">
-              <input :id="id"  v-model="checked" class="magic-checkbox" type="checkbox" />
-              <label :for="id" v-t="'dont_show_again'"/>
+              <label :for="id" v-t="'dont_show_again'">
+                <input :id="id"  v-model="checked" type="checkbox" />
+              </label>
             </div>`
         }));
     
