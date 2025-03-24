@@ -678,7 +678,7 @@
           await getCatalogLayerById(layerId)['get' + format]({
             data: {
                     ...(map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : {}),
-                    down_with_relations: Number(this.down_with_relations) // convert boolen to 0/1
+                    down_with_relations: Number(this.down_with_relations) // convert boolean to 0/1
                   },
           });
         } catch (e) {
