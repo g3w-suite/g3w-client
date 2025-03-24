@@ -255,7 +255,7 @@
       style  = "
         position: sticky;
         bottom: 0;
-        background-color: var(--sidebar-color);
+        background-color: var(--sidebar-bgcolor);
         display: flex;
         text-align: center;
         line-height: 48px;
@@ -877,7 +877,7 @@ export default {
   }
   .tabbable-line > .nav-tabs > li {
     margin-right: 2px;
-    border-bottom: 4px solid var(--sidebar-color-l14);
+    border-bottom: 4px solid hsl(from var(--sidebar-bgcolor) h 0 s 0 l -2%);
   }
   .tabbable-line > .nav-tabs > li > a {
     border: 0;
@@ -904,7 +904,7 @@ export default {
   .tabbable-line > .nav-tabs > li.active > a {
     border: 0;
     color: #fff;
-    background-color: var(--sidebar-color-l20);
+    background-color: hsl(from var(--sidebar-bgcolor) h 0 s 0 l 4%);
   }
   .tabbable-line > .nav-tabs > li.active > a > i {
     color: #fff;
