@@ -103,12 +103,13 @@ export class QueryBy extends InteractionControl {
         hooks: {
           body: {
             data: () => ({
-              types:         this.types,
-              type:          this.types[0],
-              methods:       SPATIAL_METHODS,
-              method:        this.getSpatialMethod(),
-              layers:        [],
-              selectedLayer: getSelectedLayerId(),
+              types:           this.types,
+              type:            this.types[0],
+              methods:         SPATIAL_METHODS,
+              method:          this.getSpatialMethod(),
+              layers:          [],
+              selectedLayer:   getSelectedLayerId(),
+              showSelectLayer: true, //@since 3.11.7 @to update select on querybypolygon change control value
             }),
             template: /* html */ `
               <div style="width: 100%;">
@@ -157,7 +158,7 @@ export class QueryBy extends InteractionControl {
                 <!-- SELECTED LAYER -->
                 <div style = "padding: 5px;">
                   <label v-t="'sdk.mapcontrols.queryby.layer'"></label>
-                  <select ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
+                  <select v-if="showSelectLayer" ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
                     <option v-t="all" :value ="'__ALL__'"></option>
                     <option v-for="layer in layers" :value="layer.getId()" :selected="selectedLayer === layer.getId()">{{ layer.get('name') }}</option>
                     <option :value="'__NEW__'" v-t="'sdk.mapcontrols.queryby.new'"></option>
@@ -173,7 +174,7 @@ export class QueryBy extends InteractionControl {
               queryable() { return (this.control.layers || []).filter(l => 'querybypolygon' === this.type ? POLYGON_TYPES.includes(l.getGeometryType()) : true); },
               no_layers() { return !this.queryable || !_hasVisible(this.control) },
               help()      { return `sdk.mapcontrols.${this.type}.help.message`; },
-              all()       { return this.no_layers ? 'sdk.mapcontrols.queryby.none' : 'sdk.mapcontrols.queryby.all'; },
+              all()       { return (this.no_layers || 'querybypolygon' === this.type) ? 'sdk.mapcontrols.queryby.none' : 'sdk.mapcontrols.queryby.all'; },
               radius:    {
                 get() { return QUERY.radius },
                 set(v) {
@@ -193,7 +194,10 @@ export class QueryBy extends InteractionControl {
             },
             watch: {
               method()  { this.reset(); },
-              type()    {
+              async type()    {
+                this.showSelectLayer = false; // set false to destroy select layer
+                await this.$nextTick(); // need to await to remove select from html
+                this.showSelectLayer = true; //set true to show select input layers
                 //after a change type needs to check, is all being updated to change select2 option text
                 this.reset().then( () => this.update__ALL__Text())
               },
