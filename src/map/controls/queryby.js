@@ -247,10 +247,7 @@ export class QueryBy extends InteractionControl {
                * Update selects2 the __ALL__ option text as to select all change text
                */
               update__ALL__Text() {
-                $(this.$refs.layer).select2('close');
-                $(this.$refs.layer).find('option[value="__ALL__"]').text(t(this.all));
-                $(this.$refs.layer).select2('data')[0].text = t(this.all);
-                $(this.$refs.layer).trigger('change');
+                this.selectedLayer = '__ALL__'; //@since 3.11.7 set selectedLayer to__ALL__ 
               },
               selectedLayerNotQuerable() {
                 //In the case of selection of layer (by TOC) that not belong to a layer list,
@@ -279,10 +276,6 @@ export class QueryBy extends InteractionControl {
                 await this.$nextTick();
                 // set queryable layers (select2)
                 this.layers.push(...this.queryable);
-
-                if ('querybypolygon' === this.type) {
-                  this.control.setEnable(false);
-                }
                 // re-run query when changing spatial method and already query was done
                 if (this.control.autorun && GUI.getContentLength()) {
                   CONTROLS['queryby'].runSpatialQuery(this.type);
