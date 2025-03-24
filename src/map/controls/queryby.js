@@ -696,7 +696,7 @@ function _getAvailableLayers(type) {
   const queryable = MapLayersStoresRegistry.getQuerableLayersStores();
   return [...new Set([
 
-    // QUERABLE
+    // QUERYABLE
     ...queryable
       .flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true })),
 
