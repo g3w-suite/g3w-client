@@ -955,7 +955,7 @@ export default {
   }
   .catalog .tree-item.selected ul.layer-categories,
   .catalog #legend div.selected ul.layer-categories {
-    background-color: #222d32;
+    background-color: var(--bgcolor);
   }
   .catalog .tree-item div.tree-node-title,
   .catalog #legend div div.tree-node-title {

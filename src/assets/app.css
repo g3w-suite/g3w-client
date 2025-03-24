@@ -651,13 +651,13 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .g3w-sidebarpanel-placeholder h3                                   { margin-top: 0; }
 .main-sidebar .close-pane-button                                   { caret-color: rgba(0,0,0,0); color: transparent; border-radius: 30%; margin-top: 5px; line-height: 1.5em; height: 1.3em; width: 1.3em; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
 .main-sidebar .close-pane-button:hover                             { cursor: pointer; }
-.main-sidebar .close-pane-button .panel-icon                       { color: #fff; }
+.main-sidebar .close-pane-button .panel-icon                       { color: #fff; padding: 10px; }
 .main-sidebar .treeview-label                                      { font-size: 1.1em; font-weight: bold; margin-left: 5px; }
 .main-sidebar .menu-items                                          { padding: 10px 15px; }
 .main-sidebar .menu-items li                                       { background-color: hsl(from var(--bgcolor) h s calc(l + 10)); border-radius: .25rem; padding: 2px; margin-bottom: 2px; color: #FFF; cursor: pointer; }
 .main-sidebar .menu-items li.toggled                               { color: #374850; background-color: #fff; }
 .main-sidebar .menu-items li.toggled:hover                         { background-color: #fff; }
-.main-sidebar .menu-items li:hover                                 { background-color: #415660; }
+.main-sidebar .menu-items li:hover                                 { background-color: hsl(from var(--bgcolor) h s calc(l + 15)); }
 .main-sidebar .sidebar-menu > li                                   { border-bottom: 1px solid hsl(from var(--bgcolor) h s calc(l - 2));}
 .main-sidebar .sidebar-menu > li:last-child                        { border:0; }
 .main-sidebar .btn.quick-action                                    { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }

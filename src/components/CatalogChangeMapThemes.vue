@@ -19,15 +19,15 @@
             v-if  = "active_theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'" style = "color: #ccc !important;">:</span>
+            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'">:</span>
             <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
           </span>
           <!-- Choose a theme -->
-          <div
+          <b
             v-else
-            class = "choose_map_theme treeview-label"
+            class = "treeview-label"
             v-t   = "'sdk.catalog.choose_map_theme'">
-          </div>
+          </b>
         </section>
       </a>
 
@@ -461,10 +461,6 @@ export default {
     overflow: hidden;
     white-space: normal;
     text-overflow: ellipsis;
-  }
-  .choose_map_theme {
-    color: #ccc !important;
-    font-weight: bold;
   }
   .project_map_theme {
     font-weight: bold;

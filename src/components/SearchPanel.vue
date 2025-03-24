@@ -584,7 +584,7 @@
     position: absolute;
     padding: 5px;
     top: -24px;
-    background: #222d32;
+    background: var(--bgcolor);
   }
   #dosearch {
     color: #fff;
