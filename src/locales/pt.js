@@ -385,6 +385,7 @@ export default {
         back_to_relations: 'Voltar para as relações',
         list_of_relations_feature: 'Lista de relações da camada',
         error_missing_father_field: "Atributo em falta",
+        download_with_relations: "Download com relações",
         field: "Campo chave da relação",
       },
       form: {
