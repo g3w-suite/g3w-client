@@ -1045,7 +1045,7 @@
   .catalog-context-menu li i {
     padding-right: 3px;
     margin-right: 6px;
-    color: var(--skin-d20) !important;
+    color: hsl(from var(--skin-color) h 0 s 0 l -20%) !important;
   }
   .catalog-context-menu li .click-to-copy {
     color: #000;
