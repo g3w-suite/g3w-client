@@ -234,9 +234,9 @@ export class QueryBy extends InteractionControl {
                   if (['__ALL__', '__NEW__'].includes(value) && '__ALL__' !== getSelectedLayerId()) {
                     map.selectLayer();
                   }
-
-                  //@since 3.11.7 request again when change layer selected if not new
-                  if ('__NEW__' !== value) {
+                  //@since 3.11.7 request again when change layer selected if not new 
+                  // and current control is not queybypolygon 
+                  if ('__NEW__' !== value && 'querybypolygon' !== this.type) {
                     this.reset();
                   }
                 }
@@ -610,7 +610,7 @@ export class QueryBy extends InteractionControl {
             // Catalog layers (TOC) properties that need to be satisfied
             layersFilterObject: {
               SELECTED_OR_ALL: true, // selected or all
-              QUERYABLE:        true, // see: src/app/core/layers/layer.js#L925
+              QUERYABLE:       true, // see: src/app/core/layers/layer.js#L925
               VISIBLE:         true  // need to be visible
             },
             multilayers:   false, //query single layer @since 3.11.7
@@ -677,10 +677,7 @@ function _hasVisible(control) {
       // check if the current selected layer is visible
       selected && selected.isVisible() &&
       // check if at least one layer is visible (project or external layer)
-      (
-        control.layers.filter(l => !l.external).some(l => (l !== selected) && (l.isVisible() && l.isQueryable())) ||
-        GUI.getService('map').getLegacyExternalLayers().find(l => l !== selected && true === l.visible)
-      )
+      control.layers.some(l => (l !== selected) && (l.external ? l.visible : (l.isVisible() && l.isQueryable())))
     );
   }
 
