@@ -199,7 +199,6 @@ export class QueryBy extends InteractionControl {
                 this.showSelectLayer = true; //set true to show select input layers
                 //after a change type needs to check, is all being updated to change select2 option text
                 this.reset().then( () => {
-                  //set enable control on reset
                   this.control.setEnable(_hasVisible(this.control)); //set enable control @since 3.11.7
                   this.update__ALL__Text(); //set text ALL
                 })
@@ -665,20 +664,16 @@ export class QueryBy extends InteractionControl {
 }
 
 /**
- * @returns { Boolean } whether control has a visible layer 
+ * @returns { boolean } whether control has a visible layer
  */
 function _hasVisible(control) {
-  //get selected layer
-  const selected  = GUI.getService('map').getSelectedLayer();
-  const isVisible = l => l.external ? l.visible : l.isVisible();
-  const layers    = (control.layers || []);
-  // whether one layer is visible (and not selected)
-  return Boolean(
-    ('querybypolygon' === control.name) 
-      ? // check if the current selected layer is visible and check if at least one layer is visible (project or external layer)
-        selected && isVisible(selected) && layers.some(l => l !== selected && isVisible(l))
-      : layers.some(l => isVisible(l)) // whether one layer is visible
-  )
+  const selected = GUI.getService('map').getSelectedLayer();
+  const layers   = control.layers || [];
+  return !!(
+    'querybypolygon' === control.name
+      ? selected && selected.isVisible() && layers.some(l => l !== selected && l.isVisible())
+      : layers.some(l => l.isVisible())
+  );
 }
 
 /**
