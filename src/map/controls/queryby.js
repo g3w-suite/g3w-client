@@ -115,7 +115,7 @@ export class QueryBy extends InteractionControl {
               <div style="width: 100%;">
                 <!-- DOCS URL -->
                 <a
-                  :href  = "'https://g3w-suite.readthedocs.io/en/v3.8.x/g3wsuite_client.html#map-controls'"
+                  :href  = "'https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#map-controls'"
                   target = "_blank"
                   style  = "position: absolute;inset: 1em 1em auto auto;"
                   title  = "Docs"
