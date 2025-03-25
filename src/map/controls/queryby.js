@@ -50,14 +50,6 @@ const QUERY = Vue.observable({
 });
 
 /**
- * Return current layer id selected or __ALL__ (no layer selected)
- * @return {string}
- */
-function getSelectedLayerId() {
-  return (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId();
-}
-
-/**
  * ORIGINAL SOURCE: src/app/g3w-ol/controls/querybybboxcontrol.js@v3.9.10
  * ORIGINAL SOURCE: src/app/g3w-ol/controls/querybypolygoncontrol.js@v3.9.10
  * ORIGINAL SOURCE: src/app/g3w-ol/controls/querybydrawpolygoncontrol.js@v3.9.10
@@ -87,8 +79,6 @@ export class QueryBy extends InteractionControl {
 
     CONTROLS['queryby'] = this;
 
-    this.selectedLayer = '__ALL__';
-
     // toolbox (options)
     this.on('toggled', ({ toggled }) => {
       if (!toggled) {
@@ -108,7 +98,7 @@ export class QueryBy extends InteractionControl {
               methods:         SPATIAL_METHODS,
               method:          this.getSpatialMethod(),
               layers:          [],
-              selectedLayer:   getSelectedLayerId(),
+              selectedLayer:   (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getService('map').getSelectedLayer()?.getId() || '__ALL__'
               /** @since 3.11.7 - force update select2 element */
               showSelectLayer: true,
             }),
@@ -218,6 +208,7 @@ export class QueryBy extends InteractionControl {
                     return;
                   }
                   const map = GUI.getService('map');
+
                   // auto selects added layer
                   if ('__NEW__' === value) {
                     const listener = map.onafter('loadExternalLayer', l => {
@@ -231,15 +222,18 @@ export class QueryBy extends InteractionControl {
                     map.showAddLayerModal();
                   }
 
-                  if (!['__ALL__', '__NEW__'].includes(value) && value !== getSelectedLayerId() ) {
+                  const selected = (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(); // TODO: use optional chaining instead: GUI.getService('map').getSelectedLayer()?.getId() || '__ALL__'
+
+                  if (!['__ALL__', '__NEW__'].includes(value) && value !== selected) {
                     map.selectLayer(value);
                   }
-                  //reset selection if a selection is done by TOC catalog
-                  if (['__ALL__', '__NEW__'].includes(value) && '__ALL__' !== getSelectedLayerId()) {
+
+                  // reset selection when done through TOC catalog
+                  if (['__ALL__', '__NEW__'].includes(value) && '__ALL__' !== selected) {
                     map.selectLayer();
                   }
-                  //@since 3.11.7 request again when change layer selected if not new 
-                  // and current control is not queybypolygon 
+
+                  // perform request again
                   if ('__NEW__' !== value && 'querybypolygon' !== this.type) {
                     this.reset();
                   }
@@ -249,11 +243,7 @@ export class QueryBy extends InteractionControl {
             methods: {
               /** Force layer selection to "__ALL__" when users choose an un-queryable layer (from TOC) */
               checkLayers() {
-                if (
-                  !['__ALL__', '__NEW__'].includes(this.selectedLayer)
-                  && this.layers.length
-                  && !this.layers.map(l => l.getId()).includes(this.selectedLayer)
-                ) {
+                if (!['__ALL__', '__NEW__'].includes(this.selectedLayer) && this.layers.length && !(this.layers || []).map(l => l.getId()).includes(this.selectedLayer)) {
                   this.selectedLayer = '__ALL__';
                 }
               },
