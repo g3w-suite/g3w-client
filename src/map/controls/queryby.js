@@ -15,7 +15,6 @@ import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-import { t }                          from 'g3w-i18n';
 
 const POLYGON_TYPES = [
   GEOMETRY_TYPES.POLYGON,
