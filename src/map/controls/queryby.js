@@ -667,13 +667,8 @@ export class QueryBy extends InteractionControl {
  * @returns { boolean } whether control has a visible layer
  */
 function _hasVisible(control) {
-  const selected = GUI.getService('map').getSelectedLayer();
-  const layers   = control.layers || [];
-  return !!(
-    'querybypolygon' === control.name
-      ? selected && selected.isVisible() && layers.some(l => l !== selected && l.isVisible())
-      : layers.some(l => l.isVisible())
-  );
+  const selected  = GUI.getService('map').getSelectedLayer();
+  return (control.layers || []).some(l => l.isVisible() && ('querybypolygon' === control.name ? l !== selected && selected && selected.isVisible() : true));
 }
 
 /**
