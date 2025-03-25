@@ -172,9 +172,8 @@ export class QueryBy extends InteractionControl {
             computed: {
               control()   { return CONTROLS[this.type]; },
               queryable() { return (this.control.layers || []).filter(l => 'querybypolygon' === this.type ? POLYGON_TYPES.includes(l.getGeometryType()) : true); },
-              no_layers() { return !this.queryable || !_hasVisible(this.control) },
               help()      { return `sdk.mapcontrols.${this.type}.help.message`; },
-              all()       { return (this.no_layers || 'querybypolygon' === this.type) ? 'sdk.mapcontrols.queryby.none' : 'sdk.mapcontrols.queryby.all'; },
+              all()       { return `sdk.mapcontrols.queryby.${(!this.queryable.length || !_hasVisible(this.control)) ? 'none' : 'all'}`; },
               radius:    {
                 get() { return QUERY.radius },
                 set(v) {
