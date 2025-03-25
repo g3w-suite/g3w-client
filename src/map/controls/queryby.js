@@ -199,7 +199,6 @@ export class QueryBy extends InteractionControl {
                 await this.$nextTick();
                 this.showSelectLayer = true;
                 await this.reset();
-                this.control.setEnable(_hasVisible(this.control));
                 this.selectedLayer = '__ALL__';
               },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
@@ -270,7 +269,7 @@ export class QueryBy extends InteractionControl {
                   ].includes(this.type))          { QUERY.dfeature = null; }
                   CONTROLS[t].autorun = false;
                 });
-                //set spatial method
+                // set spatial method
                 this.control.spatialMethod = this.method;
                 this.control.toggle(true, { parent: CONTROLS['queryby'].id });
                 await this.$nextTick();
@@ -280,6 +279,8 @@ export class QueryBy extends InteractionControl {
                 if (this.control.autorun && GUI.getContentLength()) {
                   CONTROLS['queryby'].runSpatialQuery(this.type);
                 }
+                // toggle mouse interaction 
+                this.control.setEnable(_hasVisible(this.control));
               },
               templateType(state) {
                 if (!state.id) { return state.text }
