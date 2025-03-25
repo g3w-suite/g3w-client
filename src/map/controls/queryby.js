@@ -671,14 +671,9 @@ function _hasVisible(control) {
   //get selected layer
   const selected  = GUI.getService('map').getSelectedLayer();
   const isVisible = l => l.external ? l.visible : l.isVisible();
-  const layers    = (control.layers || []);
   // whether one layer is visible (and not selected)
-  return Boolean(
-    ('querybypolygon' === control.name) 
-      ? // check if the current selected layer is visible and check if at least one layer is visible (project or external layer)
-        selected && isVisible(selected) && layers.some(l => l !== selected && isVisible(l))
-      : layers.some(l => isVisible(l)) // whether one layer is visible
-  )
+  // check if the current selected layer is visible and check if at least one layer is visible (project or external layer)
+  return (control.layers || []).some(l => ('querybypolygon' === control.name) ? selected && isVisible(selected) && l !== selected && isVisible(l) : isVisible(l)) // whether one layer is visible
 }
 
 /**
