@@ -198,7 +198,11 @@ export class QueryBy extends InteractionControl {
                 await this.$nextTick(); // need to await to remove select from html
                 this.showSelectLayer = true; //set true to show select input layers
                 //after a change type needs to check, is all being updated to change select2 option text
-                this.reset().then( () => this.update__ALL__Text())
+                this.reset().then( () => {
+                  //set enable control on reset
+                  this.control.setEnable(_hasVisible(this.control)); //set enable control @since 3.11.7
+                  this.update__ALL__Text(); //set text ALL
+                })
               },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
               layers() {
@@ -475,7 +479,7 @@ export class QueryBy extends InteractionControl {
       //set same cursor class to parent queryby control
       this.cursorClass = control.cursorClass;
     });
-
+    
     // listen for layers visibility change
     this.unwatches = this.unwatches || [];
     this.unwatches.forEach(unwatch => unwatch());
@@ -661,24 +665,20 @@ export class QueryBy extends InteractionControl {
 }
 
 /**
- * @returns {boolean} whether control has a visible layer 
+ * @returns { Boolean } whether control has a visible layer 
  */
 function _hasVisible(control) {
-
-  const selected = GUI.getService('map').getSelectedLayer();
-
+  //get selected layer
+  const selected  = GUI.getService('map').getSelectedLayer();
+  const isVisible = l => l.external ? l.visible : l.isVisible();
+  const layers    = (control.layers || []);
   // whether one layer is visible (and not selected)
-  if ('querybypolygon' === control.name) {
-    return !!(
-      // check if the current selected layer is visible
-      selected && selected.isVisible() &&
-      // check if at least one layer is visible (project or external layer)
-      control.layers.some(l => (l !== selected) && (l.external ? l.visible : (l.isVisible() && l.isQueryable())))
-    );
-  }
-
-  // whether one layer is visible
-  return !!((control.layers || []).some(l => l.isVisible()) || GUI.getService('map').getLegacyExternalLayers().some(l => l.visible));
+  return Boolean(
+    ('querybypolygon' === control.name) 
+      ? // check if the current selected layer is visible and check if at least one layer is visible (project or external layer)
+        selected && isVisible(selected) && layers.some(l => l !== selected && isVisible(l))
+      : layers.some(l => isVisible(l)) // whether one layer is visible
+  )
 }
 
 /**
