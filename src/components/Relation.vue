@@ -494,6 +494,7 @@
         this.relation.title = this.relation.name;
 
         if (!this.one) {
+          let order = [{ column: 1, dir: 'asc' }];
             //check if you need to get data pagination from server or use all features
           const data_from_server = this.table.rows.length < this.table.count;
           this.relationDataTable = $(this.$refs.relationtable).DataTable({
@@ -527,7 +528,7 @@
                 this.sort_column  = column;
                 this.sort         = sort;
                 // send parameter to server ("-" = descending )
-                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`;
+                this.ordering     = order.reduce((a, o, i) => a || (o.column !== opts.order[i].column || o.dir !== opts.order[i].dir), false) ? `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}` : undefined;
                 this.table        = await this.getRelationDataTable({
                   page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
@@ -536,6 +537,7 @@
               } catch(e) {
                 console.warn(e);
               }
+              order = opts.order; //get order
               GUI.setLoadingContent(false);
 
             } : null,

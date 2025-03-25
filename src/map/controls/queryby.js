@@ -183,20 +183,17 @@ export class QueryBy extends InteractionControl {
             },
             watch: {
               method()  { this.reset(); },
-              async type()    {
+              type()    {
+                //every time change type control, set __ALL__ removeove eventually selection
+                this.selectedLayer   = '__ALL__';
+                //Hide select to remount with new values after nextTick
                 this.showSelectLayer = false;
-                await this.$nextTick();
-                this.showSelectLayer = true;
-                await this.reset();
-                this.selectedLayer = '__ALL__';
+                this.reset().then(() => this.showSelectLayer = true);
+                
               },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
               layers() {
                 this.checkLayers();
-              },
-              // see: https://forums.select2.org/t/cannot-rename-selected-option/154/2
-              all() {
-                this.selectedLayer = '__ALL__';
               },
               selectedLayer: {
                 immediate: true,
