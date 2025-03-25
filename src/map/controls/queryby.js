@@ -109,7 +109,8 @@ export class QueryBy extends InteractionControl {
               method:          this.getSpatialMethod(),
               layers:          [],
               selectedLayer:   getSelectedLayerId(),
-              showSelectLayer: true, //@since 3.11.7 @to update select on querybypolygon change control value
+              /** @since 3.11.7 - force update select2 element */
+              showSelectLayer: true,
             }),
             template: /* html */ `
               <div style="width: 100%;">
@@ -194,17 +195,16 @@ export class QueryBy extends InteractionControl {
             watch: {
               method()  { this.reset(); },
               async type()    {
-                this.showSelectLayer = false; // set false to destroy select layer
-                await this.$nextTick(); // need to await to remove select from html
-                this.showSelectLayer = true; //set true to show select input layers
-                //after a change type needs to check, is all being updated to change select2 option text
+                this.showSelectLayer = false;
+                await this.$nextTick();
+                this.showSelectLayer = true;
                 await this.reset();
-                this.control.setEnable(_hasVisible(this.control)); //set enable control @since 3.11.7
+                this.control.setEnable(_hasVisible(this.control));
                 this.selectedLayer = '__ALL__';
               },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
               layers() {
-                this.selectedLayerNotQuerable();
+                this.checkLayers();
               },
               // see: https://forums.select2.org/t/cannot-rename-selected-option/154/2
               all() {
@@ -213,7 +213,7 @@ export class QueryBy extends InteractionControl {
               selectedLayer: {
                 immediate: true,
                 handler(value, oldValue) {
-                  this.selectedLayerNotQuerable();
+                  this.checkLayers();
                   //It means that it is mounted. No value before
                   if (undefined === oldValue) {
                     return;
@@ -248,14 +248,15 @@ export class QueryBy extends InteractionControl {
               },
             },
             methods: {
-              selectedLayerNotQuerable() {
-                //In the case of selection of layer (by TOC) that not belong to a layer list,
-                // set the value of selectedLayer __ALL__
+              /** Force layer selection to "__ALL__" when users choose an un-queryable layer (from TOC) */
+              checkLayers() {
                 if (
                   !['__ALL__', '__NEW__'].includes(this.selectedLayer)
                   && this.layers.length
                   && !this.layers.map(l => l.getId()).includes(this.selectedLayer)
-                ) { this.selectedLayer = '__ALL__'; }
+                ) {
+                  this.selectedLayer = '__ALL__';
+                }
               },
               async reset() {
                 this.layers.splice(0);
