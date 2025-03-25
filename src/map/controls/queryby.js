@@ -198,10 +198,9 @@ export class QueryBy extends InteractionControl {
                 await this.$nextTick(); // need to await to remove select from html
                 this.showSelectLayer = true; //set true to show select input layers
                 //after a change type needs to check, is all being updated to change select2 option text
-                this.reset().then( () => {
-                  this.control.setEnable(_hasVisible(this.control)); //set enable control @since 3.11.7
-                  this.update__ALL__Text(); //set text ALL
-                })
+                await this.reset();
+                this.control.setEnable(_hasVisible(this.control)); //set enable control @since 3.11.7
+                this.selectedLayer = '__ALL__';
               },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
               layers() {
@@ -209,7 +208,7 @@ export class QueryBy extends InteractionControl {
               },
               // see: https://forums.select2.org/t/cannot-rename-selected-option/154/2
               all() {
-                this.update__ALL__Text();
+                this.selectedLayer = '__ALL__';
               },
               selectedLayer: {
                 immediate: true,
@@ -249,12 +248,6 @@ export class QueryBy extends InteractionControl {
               },
             },
             methods: {
-              /**
-               * Update selects2 the __ALL__ option text as to select all change text
-               */
-              update__ALL__Text() {
-                this.selectedLayer = '__ALL__'; //@since 3.11.7 set selectedLayer to__ALL__ 
-              },
               selectedLayerNotQuerable() {
                 //In the case of selection of layer (by TOC) that not belong to a layer list,
                 // set the value of selectedLayer __ALL__
