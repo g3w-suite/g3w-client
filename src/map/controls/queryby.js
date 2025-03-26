@@ -98,7 +98,7 @@ export class QueryBy extends InteractionControl {
               method:          this.getSpatialMethod(),
               layers:          [],
               selectedLayer:   (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getService('map').getSelectedLayer()?.getId() || '__ALL__'
-              loading:         true,
+              reloading:       true,
             }),
             template: /* html */ `
               <div style="width: 100%;">
