@@ -363,10 +363,7 @@
               features = data[0].features.map(f => ({
                 id:         f.getId(),
                 geometry:   f.getGeometry(),
-                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((accumulator, property) => {
-                  accumulator[property] = f.get(property);
-                  return accumulator;
-                }, {}),
+                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
               }));
             }
           }
