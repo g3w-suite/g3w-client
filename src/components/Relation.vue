@@ -279,8 +279,16 @@
         /**
          * @type { string | null } parameter sent to server
          * @since 3.11.3
+        */
+        ordering: null,
+
+        /**
+         * @since 3.11.7
+         * Set to true once change ordering column on pagination
+         * At beginning leave without ordering parameter to server. 
+         * Get data withi insert order 
          */
-         ordering: null,
+        change_ordering : false,
 
         /**
          * @type { "desc" | "asc" | "current" } column order
@@ -512,6 +520,7 @@
             deferLoading:   data_from_server && this.table.count,
             ajax: data_from_server ? async (opts) => {
               try {
+                this.change_ordering = this.change_ordering || [{ column: 1, dir: 'asc' }].reduce((a, o, i) => a && (o.column !== opts.order[i].column || o.dir !== opts.order[i].dir), true);
                 // Destroy table
                 this.relationDataTable.destroy(true);
                 this.relationDataTable = null;
@@ -527,7 +536,7 @@
                 this.sort_column  = column;
                 this.sort         = sort;
                 // send parameter to server ("-" = descending )
-                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`;
+                this.ordering     = this.change_ordering ? `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}` : undefined;
                 this.table        = await this.getRelationDataTable({
                   page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
@@ -768,7 +777,7 @@
       /**
        * @FIXME add description
        */
-      async chart() {
+      async chart(){
         await this.$nextTick();
         this.resize();
       },
@@ -787,7 +796,7 @@
       this.delayType = 'debounce';
     },
 
-    async created()  {
+    async created() {
       try {
         this.table = await this.getRelationDataTable({
           page:      this.page,
@@ -804,7 +813,7 @@
      * @fires hide-chart
      */
     async beforeDestroy() {
-      // skip when ..
+      // skip no datatbale is create
       if (!this.relationDataTable) {
         return;
       }
@@ -813,8 +822,9 @@
       if (this.chartContainer) {
         this.$emit('hide-chart', this.chartContainer);
       }
-      this.chartContainer = null;
+      this.chartContainer    = null;
       this.tableHeaderHeight = null;
+      this.change_ordering   = false;
       GUI.off('pop-content', this.resize);
     },
 
