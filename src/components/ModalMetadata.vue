@@ -426,7 +426,7 @@ ${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __
   }
 
   .modal-header.nav li.active a.metadata-item-tab {
-    border-bottom-color: #222d32 !important;
+    border-bottom-color: var(--bgcolor) !important;
     border-bottom-width: 4px;
     background-color: transparent !important;
     color: #2c3b41 !important;

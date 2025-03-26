@@ -19,15 +19,15 @@
             v-if  = "active_theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'" style = "color: #ccc !important;">:</span>
+            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'">:</span>
             <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
           </span>
           <!-- Choose a theme -->
-          <div
+          <b
             v-else
-            class = "choose_map_theme treeview-label"
+            class = "treeview-label"
             v-t   = "'sdk.catalog.choose_map_theme'">
-          </div>
+          </b>
         </section>
       </a>
 
@@ -82,18 +82,17 @@
                 v-for = "(map_theme, i) in map_themes.project"
                 :key  = "map_theme.theme"
               >
-                <input
-                  type     = "radio"
-                  name     = "radio"
-                  :id      = "`g3w-map_theme-${i}`"
-                  :value   = "map_theme.theme"
-                  v-model  = "active_theme"
-                  class    = "magic-radio"
-                />
                 <label
                   :for  = "`g3w-map_theme-${i}`"
-                  style = "display: flex; justify-content: space-between;"
+                  style = "display: flex; gap: .5em;"
                 >
+                  <input
+                    type     = "radio"
+                    name     = "radio"
+                    :id      = "`g3w-map_theme-${i}`"
+                    :value   = "map_theme.theme"
+                    v-model  = "active_theme"
+                  />
                   <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                 </label>
               </div>
@@ -128,15 +127,14 @@
                 style = "display: flex; justify-content: space-between;"
               >
                 <span>
-                  <input
-                    type     = "radio"
-                    name     = "radio"
-                    :id      = "`g3w-map_theme-${i}-user`"
-                    :value   = "map_theme.theme"
-                    v-model  = "active_theme"
-                    class    = "magic-radio"
-                  />
                   <label :for = "`g3w-map_theme-${i}-user`">
+                    <input
+                      type     = "radio"
+                      name     = "radio"
+                      :id      = "`g3w-map_theme-${i}-user`"
+                      :value   = "map_theme.theme"
+                      v-model  = "active_theme"
+                    />
                     <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                   </label>
                 </span>
@@ -463,10 +461,6 @@ export default {
     overflow: hidden;
     white-space: normal;
     text-overflow: ellipsis;
-  }
-  .choose_map_theme {
-    color: #ccc !important;
-    font-weight: bold;
   }
   .project_map_theme {
     font-weight: bold;
