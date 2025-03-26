@@ -41,7 +41,7 @@
     font-size: 0.7em;
     margin-top: -4px;
     margin-left: -4px;
-    background-color: #222d32;
+    background-color: var(--bgcolor);
     font-weight: bold;
     color: #ffffff;
     position: absolute;

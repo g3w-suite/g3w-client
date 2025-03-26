@@ -356,7 +356,7 @@ export default {
   font-size: 4em;
   position: absolute;
   z-index: 100;
-  background-color: #222d32;
+  background-color: var(--bgcolor);
   pointer-events: none;
 }
 
