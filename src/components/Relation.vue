@@ -527,7 +527,7 @@
                 this.sort_column  = column;
                 this.sort         = sort;
                 // send parameter to server ("-" = descending ) only if user has already clicked on a column to sort data
-                this.ordering     = (1 !== opts.order[0].column || 'asc' !== opts.order[0].dir) ? `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}` : undefined;
+                this.ordering     = this.ordering || (1 !== opts.order[0].column || 'asc' !== opts.order[0].dir) ? `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`: undefined;
                 this.table        = await this.getRelationDataTable({
                   page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
