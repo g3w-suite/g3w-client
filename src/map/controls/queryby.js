@@ -194,7 +194,6 @@ export class QueryBy extends InteractionControl {
                     return;
                   }
                   const map = GUI.getService('map');
-
                   // auto selects added layer
                   if ('__NEW__' === value) {
                     const listener = map.onafter('loadExternalLayer', l => {
@@ -246,6 +245,8 @@ export class QueryBy extends InteractionControl {
                   ].includes(this.type))          { QUERY.dfeature = null; }
                   CONTROLS[t].autorun = false;
                 });
+                //set autorun base on layers
+                this.control.autorun = _hasVisible(this.control);
                 // set spatial method
                 this.control.spatialMethod = this.method;
                 this.control.toggle(true, { parent: CONTROLS['queryby'].id });
@@ -257,7 +258,7 @@ export class QueryBy extends InteractionControl {
                   CONTROLS['queryby'].runSpatialQuery(this.type);
                 }
                 // toggle mouse interaction 
-                this.control.setEnable(_hasVisible(this.control));
+                this.control.setEnable(this.control.autorun);
                 this.reloading = false;
               },
               templateType(state) {
