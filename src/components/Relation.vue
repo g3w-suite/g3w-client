@@ -461,7 +461,7 @@
             bLengthChange:  true,
             dom:            'ltip',
             columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          this.ordering ? [ this.sort_column + !!this.showTools, this.sort] : [],
+            order:          this.ordering ? [ this.sort_column, this.sort] : [],
             lengthMenu:     PAGELENGTHS,
             pageLength:     this.page_size,
             displayStart:   this.start,
@@ -486,11 +486,19 @@
                 // set len start
                 this.page_size    = opts.length;
                 this.start        = opts.start;
-                this.sort         = this.ordering ? (changed ? opts.order[0].dir : opts.order[0].column !== this.sort_column ? 'asc': ('desc' === this.sort ? 'asc' : 'desc') ) : this.sort;
+                this.sort         = this.ordering //check if ordering is asked by user by click on a column
+                                    ? ( changed 
+                                        ? opts.order[0].dir //in case of change page, get last sorting of column
+                                        : (opts.order[0].column !== (this.sort_column)) // in case of sort columns is not a previous column
+                                          ? 'asc' //sort it will be asc always
+                                          : ('desc' === this.sort ? 'asc' : 'desc') // invert sort
+                                      ) 
+                                    : this.sort;
                 // send parameter to server ("-" = descending ) only if user has already clicked on a column to sort data
-                this.ordering     = this.ordering || opts.order.length ? `${'desc' === this.sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`: undefined;
-                this.sort_column  = this.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === this.sort ? this.ordering.slice(1) : this.ordering) === name));
-
+                this.ordering     = (this.ordering || opts.order.length) //in case of set ordering (field sort) or not set ordering (start time)
+                                    ? `${'desc' === this.sort ? '-' : ''}${this.table.fields[opts.order[0].column - Number(!!this.showTools)].name}`
+                                    : undefined;
+                this.sort_column  = this.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === this.sort ? this.ordering.slice(1) : this.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
                 this.createTable({
                   page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
