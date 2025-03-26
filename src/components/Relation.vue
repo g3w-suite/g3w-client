@@ -520,6 +520,8 @@
             deferLoading:   data_from_server && this.table.count,
             ajax: data_from_server ? async (opts) => {
               try {
+                //Change ordering if true, already user click on a column to oder data, no check is done, otherwise check ops.order if order is request first time by user
+                //Once sort is request by user, ordering parameter is pass to server.
                 this.change_ordering = this.change_ordering || [{ column: 1, dir: 'asc' }].reduce((a, o, i) => a && (o.column !== opts.order[i].column || o.dir !== opts.order[i].dir), true);
                 // Destroy table
                 this.relationDataTable.destroy(true);
