@@ -490,7 +490,6 @@
                 this.page_size    = opts.length;
                 this.start        = opts.start;
                 this.sort         = this.ordering ? (changed ? opts.order[0].dir : opts.order[0].column !== this.sort_column ? 'asc': ('desc' === this.sort ? 'asc' : 'desc') ) : this.sort;
-
                 // send parameter to server ("-" = descending ) only if user has already clicked on a column to sort data
                 this.ordering     = this.ordering || opts.order.length ? `${'desc' === this.sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`: undefined;
                 this.sort_column  = this.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === this.sort ? this.ordering.slice(1) : this.ordering) === name));
