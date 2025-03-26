@@ -283,13 +283,6 @@
         ordering: null,
 
         /**
-         * @type { boolean } whether user has already clicked on a column to sort data (used during pagination)
-         * 
-         * @since 3.11.7
-         */
-        change_ordering: false,
-
-        /**
          * @type { "desc" | "asc" | "current" } column order
          * @since 3.11.3
          */
@@ -519,7 +512,6 @@
             deferLoading:   data_from_server && this.table.count,
             ajax: data_from_server ? async (opts) => {
               try {
-                this.change_ordering = this.change_ordering || (1 !== opts.order[0].column || 'asc' !== opts.order[0].dir);
                 // Destroy table
                 this.relationDataTable.destroy(true);
                 this.relationDataTable = null;
@@ -534,8 +526,8 @@
                 const sort        = column === this.sort_column ? (changed ? this.sort : ('desc' === this.sort  ? 'asc' : 'desc') ) : 'asc';
                 this.sort_column  = column;
                 this.sort         = sort;
-                // send parameter to server ("-" = descending )
-                this.ordering     = this.change_ordering ? `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}` : undefined;
+                // send parameter to server ("-" = descending ) only if user has already clicked on a column to sort data
+                this.ordering     = (1 !== opts.order[0].column || 'asc' !== opts.order[0].dir) ? `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}` : undefined;
                 this.table        = await this.getRelationDataTable({
                   page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
                   page_size: opts.length,
@@ -823,7 +815,6 @@
       }
       this.chartContainer    = null;
       this.tableHeaderHeight = null;
-      this.change_ordering   = false;
       GUI.off('pop-content', this.resize);
     },
 
