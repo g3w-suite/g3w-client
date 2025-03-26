@@ -283,12 +283,11 @@
         ordering: null,
 
         /**
+         * @type { boolean } whether user has already clicked on a column to sort data (used during pagination)
+         * 
          * @since 3.11.7
-         * Set to true once change ordering column on pagination
-         * At beginning leave without ordering parameter to server. 
-         * Get data withi insert order 
          */
-        change_ordering : false,
+        change_ordering: false,
 
         /**
          * @type { "desc" | "asc" | "current" } column order
@@ -520,9 +519,7 @@
             deferLoading:   data_from_server && this.table.count,
             ajax: data_from_server ? async (opts) => {
               try {
-                //Change ordering if true, already user click on a column to oder data, no check is done, otherwise check ops.order if order is request first time by user
-                //Once sort is request by user, ordering parameter is pass to server.
-                this.change_ordering = this.change_ordering || [{ column: 1, dir: 'asc' }].reduce((a, o, i) => a && (o.column !== opts.order[i].column || o.dir !== opts.order[i].dir), true);
+                this.change_ordering = this.change_ordering || (1 !== opts.order[0].column || 'asc' !== opts.order[0].dir);
                 // Destroy table
                 this.relationDataTable.destroy(true);
                 this.relationDataTable = null;
