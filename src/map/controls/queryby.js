@@ -98,8 +98,7 @@ export class QueryBy extends InteractionControl {
               method:          this.getSpatialMethod(),
               layers:          [],
               selectedLayer:   (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getService('map').getSelectedLayer()?.getId() || '__ALL__'
-              /** @since 3.11.7 - force update select2 element */
-              showSelectLayer: true,
+              loading:         true,
             }),
             template: /* html */ `
               <div style="width: 100%;">
@@ -148,7 +147,7 @@ export class QueryBy extends InteractionControl {
                 <!-- SELECTED LAYER -->
                 <div style = "padding: 5px;">
                   <label v-t="'sdk.mapcontrols.queryby.layer'"></label>
-                  <select v-if="showSelectLayer" ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
+                  <select v-if="!reloading" ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
                     <option v-t="all" :value ="'__ALL__'"></option>
                     <option v-for="layer in layers" :value="layer.getId()" :selected="selectedLayer === layer.getId()">{{ layer.get('name') }}</option>
                     <option :value="'__NEW__'" v-t="'sdk.mapcontrols.queryby.new'"></option>
@@ -183,18 +182,9 @@ export class QueryBy extends InteractionControl {
             },
             watch: {
               method()  { this.reset(); },
-              type()    {
-                //every time change type control, set __ALL__ removeove eventually selection
-                this.selectedLayer   = '__ALL__';
-                //Hide select to remount with new values after nextTick
-                this.showSelectLayer = false;
-                this.reset().then(() => this.showSelectLayer = true);
-                
-              },
+              type()    { this.selectedLayer   = '__ALL__'; this.reset(); },
               control() { this.types.forEach(t => CONTROLS['queryby'].element.classList.toggle('ol-' + t, t === this.type)); },
-              layers() {
-                this.checkLayers();
-              },
+              layers()  { this.checkLayers(); },
               selectedLayer: {
                 immediate: true,
                 handler(value, oldValue) {
@@ -244,6 +234,7 @@ export class QueryBy extends InteractionControl {
                 }
               },
               async reset() {
+                this.reloading = true;
                 this.layers.splice(0);
                 // reset autorun options
                 this.types.filter(t => t !== this.type).forEach(t => {
@@ -267,6 +258,7 @@ export class QueryBy extends InteractionControl {
                 }
                 // toggle mouse interaction 
                 this.control.setEnable(_hasVisible(this.control));
+                this.reloading = false;
               },
               templateType(state) {
                 if (!state.id) { return state.text }
