@@ -323,10 +323,13 @@
 
           try {
 
+            const changed = (opts.page_size !== prevOpts.page_size || opts.start !== prevOpts.start);
+
+            // merge options: (defaults + old + new) 
             opts = {
               /** @type { "desc" | "asc" | "current" } column order */
               sort: 'asc',
-              /** parameter sent to server ("-" = descending ) only if user has already clicked on a column to sort data */
+              /** @type { string | undefined } parameter sent to server ("-" = descending ) only if user has already clicked on a column to sort data */
               ordering: undefined,
               start: 0,
               sort_column: 0,
@@ -337,12 +340,18 @@
 
 
             // check if ordering is asked by user by click on a column
-            if (opts.ordering) {
-              opts.sort  = opts.page_size !== prevOpts.page_size || opts.start !== prevOpts.start 
-                ? opts.order[0].dir //in case of change page, get last sorting of column
-                : (opts.order[0].column !== opts.sort_column) // in case of sort columns is not a previous column
-                  ? 'asc' //sort it will be asc always
-                  : ('desc' === opts.sort ? 'asc' : 'desc') // invert sort
+            if (opts.ordering && changed) {
+              opts.sort = opts.order[0].dir; // in case of change page, get last sorting of column
+            }
+
+            // in case of sort columns is not a previous column
+            if (opts.ordering && !changed && opts.order[0].column !== opts.sort_column) {
+              opts.sort = 'asc';
+            }
+
+            // invert sort
+            if (opts.ordering && !changed && opts.order[0].column === opts.sort_column) {
+              opts.sort = ('desc' === opts.sort ? 'asc' : 'desc');
             }
 
             // in case of set ordering (field sort) or not set ordering (start time)
