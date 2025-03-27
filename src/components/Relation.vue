@@ -132,7 +132,7 @@
                   title:   table.title,
                   layerid: table.layerId,
                   feature: table.features[index],
-                  fields:  table.fields.map((field, i) => Object.assign(field, { value: row[i], query: true, input: { type: `${this.getFieldType(field)}` } })),
+                  fields:  table.fields.map((field, i) => Object.assign(field, { value: row[i], query: true, input: { type: `${getFieldType(field)}` } })),
                   tabs:    table.formStructure
                   })"
                 v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
@@ -162,7 +162,7 @@
         v-show          = "chart"
         class           = "skin-border-color lighten"
         style           = "border-style: solid; border-width: 0 1px 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;"
-        @mousedown.stop = "resizeStart"
+        @mousedown.stop = "onChartResize"
       ></div>
 
       <div
@@ -240,42 +240,9 @@
         /**
          * @since 3.11.2
          */
-        page: 1,
-
-        /**
-         * @since 3.11.2
-         */
-        page_size: PAGELENGTHS[0],
-
-        /**
-         * @since 3.11.2
-         */
-        start: 0,
-
-        /**
-         * @since 3.11.2
-         */
         table: {
           rows: [],
         },
-
-        /**
-         * @type { string | null } parameter sent to server
-         * @since 3.11.3
-        */
-        ordering: null,
-
-        /**
-         * @type { "desc" | "asc" | "current" } column order
-         * @since 3.11.3
-         */
-        sort: 'asc',
-
-        /**
-         * @type { number } current column index
-         * @since 3.11.3
-         */
-        sort_column: 0,
 
         /**
          * @since 3.11.2
@@ -297,7 +264,22 @@
        * @since 3.9.0
        */
       showTools() {
-        return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
+        const isGeoLayer = (this.table.features || []).some(f => f.geometry);
+        return [!!this.isEditable, !!this.table.formStructure, !!isGeoLayer].filter(Boolean).length;
+      },
+
+    },
+
+    watch: {
+
+      async chart(){
+        await this.$nextTick();
+        this.resize();
+      },
+
+      async headercomponent() {
+        await this.$nextTick();
+        this.resize();
       },
 
     },
@@ -322,53 +304,70 @@
       /**
        * @returns { Promise<void> }
        */
-      async createTable(relation_options) {
+      async createTable(opts) {
 
         GUI.setLoadingContent(true);
 
         try {
 
-          let features;
+          opts.start       = opts.start || 0;
+          opts.sort_column = opts.sort_column || 0;
+          opts.order       = opts.order || [];
+          
+          /** @type { "desc" | "asc" | "current" } column order */
+          opts.sort  = opts.ordering //check if ordering is asked by user by click on a column
+                        ? opts.changed 
+                            ? opts.order[0].dir //in case of change page, get last sorting of column
+                            : (opts.order[0].column !== (opts.sort_column)) // in case of sort columns is not a previous column
+                              ? 'asc' //sort it will be asc always
+                              : ('desc' === opts.sort ? 'asc' : 'desc') // invert sort
+                        : (opts.sort || 'asc');
+
+          /** parameter sent to server ("-" = descending ) only if user has already clicked on a column to sort data */
+          opts.ordering = opts.ordering || opts.order.length //in case of set ordering (field sort) or not set ordering (start time)
+                          ? `${'desc' === opts.sort ? '-' : ''}${this.table.fields[opts.order[0].column - Number(!!this.showTools)].name}`
+                          : undefined;
+
+          /** @type { number } current column index */
+          opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
+
           const response = await XHR.get({
             url: createRelationsUrl({
               layer:    this.layer,
               fid:      this.feature.attributes[G3W_FID],
               relation: this.relation,
-              page:      relation_options.page,
-              page_size: relation_options.page_size,
-              ordering:  relation_options.ordering,
+              page:      opts.page,
+              page_size: opts.page_size,
+              ordering:  opts.ordering,
             })
           }); // get relations
-          features = response.result ? (response.vector.data.features || []).map(f => {
+
+          let features = response.result ? (response.vector.data.features || []).map(f => {
             f.properties[G3W_FID] = f.id;
             return {
               geometry:   f.geometry,
               attributes: f.properties,
               id:         f.id,
             };
-          }) : null;
-          const count = features && response.vector.count;
+          }) : [];
 
           // handle NM relations
-          if (this.nmRelation && (features || []).length) {
-            const { data } = await DataRouterService.getData('search:features', {
-              inputs: {
-                layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
-                filter:    features.map(f => f.attributes[this.nmRelation.fieldRef.referencingField]).map(v => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(v)}`).join(`|OR,`),
-                formatter: 1, // set formatter to
-              },
-              outputs: null
-            });
-            if (data && data[0] && Array.isArray(data[0].features)) {
-              features = data[0].features.map(f => ({
-                id:         f.getId(),
-                geometry:   f.getGeometry(),
-                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
-              }));
-            }
-          }
+          const NM = this.nmRelation && (features || []).length && await DataRouterService.getData('search:features', {
+            inputs: {
+              layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
+              filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
+              formatter: 1, // set formatter to
+            },
+            outputs: null
+          });
 
-          features = features || [];
+          if (NM && NM.data && NM.data[0] && Array.isArray(NM.data[0].features)) {
+            features = NM.data[0].features.map(f => ({
+              id:         f.getId(),
+              geometry:   f.getGeometry(),
+              attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
+            }));
+          }
 
           // build relation table
           const layer = ApplicationState.project.getLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
@@ -376,7 +375,7 @@
           const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
 
           this.table = {
-            count,
+            count:            response.result && response.vector.count,
             features,
             columns:          cols.map(c => c.label),
             rows:             features.map(r => cols.map(c => r.attributes[c.name])),
@@ -401,10 +400,6 @@
         const layer     = getCatalogLayerById(this.table.layerId);
 
         this.isEditable = layer.isEditable() && !layer.isInEditing();
-
-        // check if feature has geometry.
-        // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
-        this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
 
         //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
         const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
@@ -460,50 +455,34 @@
             autoWidth:      false,
             bLengthChange:  true,
             dom:            'ltip',
-            columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          this.ordering ? [ this.sort_column, this.sort] : [],
+            columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
+            order:          [].concat(opts.ordering ? [ opts.sort_column, opts.sort] : []),
             lengthMenu:     PAGELENGTHS,
-            pageLength:     this.page_size,
-            displayStart:   this.start,
+            pageLength:     opts.page_size,
+            displayStart:   opts.start,
             responsive:     true,
             scrollResize:   true,
             scrollCollapse: true,
             scrollX:        true,
             deferLoading:   data_from_server && this.table.count,
             serverSide:     data_from_server,
-            ajax: data_from_server ? async opts => {
+            ajax: data_from_server ? async newOpts => {
               try {
                 // Destroy table
                 this.$table.destroy(true);
-                this.$table = null;
-                this.table.rows        = [];
+                this.$table     = null;
+                this.table.rows = [];
 
                 await this.$nextTick();
 
-                // check if there is a change (page or number of rows)
-                const changed      = opts.length !== this.page_size || opts.start !== this.start;
-
-                // set len start
-                this.page_size    = opts.length;
-                this.start        = opts.start;
-                this.sort         = this.ordering //check if ordering is asked by user by click on a column
-                                    ? ( changed 
-                                        ? opts.order[0].dir //in case of change page, get last sorting of column
-                                        : (opts.order[0].column !== (this.sort_column)) // in case of sort columns is not a previous column
-                                          ? 'asc' //sort it will be asc always
-                                          : ('desc' === this.sort ? 'asc' : 'desc') // invert sort
-                                      ) 
-                                    : this.sort;
-                // send parameter to server ("-" = descending ) only if user has already clicked on a column to sort data
-                this.ordering     = (this.ordering || opts.order.length) //in case of set ordering (field sort) or not set ordering (start time)
-                                    ? `${'desc' === this.sort ? '-' : ''}${this.table.fields[opts.order[0].column - Number(!!this.showTools)].name}`
-                                    : undefined;
-                this.sort_column  = this.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === this.sort ? this.ordering.slice(1) : this.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
                 this.createTable({
-                  page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
-                  page_size: opts.length,
-                  ordering:  this.ordering
-                }, true);
+                  ...opts,
+                  ...newOpts,
+                  page:       1 + (0 !== newOpts.start ? (newOpts.start/newOpts.length) : 0),
+                  page_size: newOpts.length,
+                  // check if there is a change (page or number of rows)
+                  changed: newOpts.length !== opts.page_size || newOpts.start !== opts.start
+                },);
               } catch (e) {
                console.log(e); 
               }
@@ -636,7 +615,7 @@
           .getService('queryresults')
           .editFeature({
             layer: {
-              id: this.table.layerId,
+              id:         this.table.layerId,
               attributes: this.table.fields,
             },
             feature: this.table.features[index],
@@ -659,59 +638,15 @@
         this.$parent.setRelationsList();
       },
 
-      /**
-       * @param type
-       * @param value
-       *
-       * @returns { boolean }
-       */
-      is(type, value) {
-        return this.getFieldType(value) === type;
-      },
-
-      wrapMoveFnc(e) {
-        this.moveFnc(e);
-      },
-
-      resizeStart() {
-        document.getElementById('g3w-view-content').addEventListener('mousemove', this.wrapMoveFnc);
-        document.getElementById('g3w-view-content').addEventListener('mouseup', this.resizeStop, { once: true });
-      },
-
-      async resizeStop() {
-        document.getElementById('g3w-view-content').removeEventListener('mousemove', this.wrapMoveFnc);
-        await this.$nextTick();
-        GUI.emit('resize');
-      },
-
-      /**
-       * @param evt
-       */
-      moveFnc(evt) {
-        const sidebarHeaderSize        =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-        const size                     = evt.pageX+2 - sidebarHeaderSize;
-        this.$refs.content.style.width = `${size}px`;
-        this.$refs.chart.style.width   = `${$(this.$refs.wrapper).width() - size - 10}px`;
-      },
-
-    },
-
-    watch: {
-
-      /**
-       * @FIXME add description
-       */
-      async chart(){
-        await this.$nextTick();
-        this.resize();
-      },
-
-      /**
-       * @FIXME add description
-       */
-      async headercomponent() {
-        await this.$nextTick();
-        this.resize();
+      onChartResize() {
+        const move = e => {
+          const size                     = e.pageX+2 - ($('.sidebar-collapse').length ? 0 : SIDEBARWIDTH);
+          this.$refs.content.style.width = `${size}px`;
+          this.$refs.chart.style.width   = `${$(this.$refs.wrapper).width() - size - 10}px`;
+        };
+        const el = document.getElementById('g3w-view-content');
+        el.addEventListener('mousemove', move);
+        el.addEventListener('mouseup', () => { el.removeEventListener('mousemove', move); this.$nextTick().then(() => GUI.emit('resize')) }, { once: true });
       },
 
     },
@@ -722,9 +657,8 @@
 
     async created() {
       await this.createTable({
-        page:      this.page,
-        page_size: this.page_size,
-        ordering:  this.ordering,
+        page:      1,
+        page_size: PAGELENGTHS[0],
       });
     },
 
