@@ -100,9 +100,8 @@
       getAlphanumericPropertiesFromFeature(feature.attributes)
         .filter(p => G3W_FID !== p)
         .forEach(p => properties[p] = feature.attributes[p]);
-
       _feature.setProperties(properties);
-      _feature.setId(feature.attributes[G3W_FID]);
+      _feature.setId(feature.id || feature.attributes[G3W_FID]);
     }
 
     return (new ol.format.GeoJSON()).writeFeatureObject(_feature);

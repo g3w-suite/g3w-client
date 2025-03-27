@@ -15,7 +15,7 @@
         v-t   = "'sdk.querybuilder.panel.expression'">
       </label>
       <a
-        :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#search-and-query-builder`"
+        :href  = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
         target = "_blank"
         style  = "float: right;"
         title  = "Docs"
