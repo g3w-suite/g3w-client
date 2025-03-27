@@ -247,7 +247,6 @@ export class QueryBy extends InteractionControl {
                   CONTROLS[t].autorun = false;
                 });
                 //set autorun base on layers
-                this.control.autorun = _hasVisible(this.control);
                 // set spatial method
                 this.control.spatialMethod = this.method;
                 this.control.toggle(true, { parent: CONTROLS['queryby'].id });
@@ -259,7 +258,7 @@ export class QueryBy extends InteractionControl {
                   CONTROLS['queryby'].runSpatialQuery(this.type);
                 }
                 // toggle mouse interaction 
-                this.control.setEnable(this.control.autorun);
+                this.control.setEnable(_hasVisible(this.control));
                 this.reloading = false;
               },
               templateType(state) {
