@@ -361,19 +361,21 @@
 
             /** @type { number } current column index */
             opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
-
+            
+            // Get relations from server
             const response = await XHR.get({
               url: createRelationsUrl({
-                layer:    this.layer,
-                fid:      this.feature.attributes[G3W_FID],
-                relation: this.relation,
+                layer:     this.layer,
+                fid:       this.feature.attributes[G3W_FID],
+                relation:  this.relation,
                 page:      opts.page,
                 page_size: opts.page_size,
                 ordering:  opts.ordering,
               })
-            }); // get relations
+            }); 
 
-            let features = response.result ? (response.vector.data.features || []).map(f => {
+            //extract features attributes, Array, and digest for table
+            let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
               f.properties[G3W_FID] = f.id;
               return {
                 geometry:   f.geometry,
@@ -422,7 +424,7 @@
             console.warn(e);
           }
 
-          if (!this.table.rows.length) {
+          if (0 === this.table.rows.length) {
             return;
           }
 
