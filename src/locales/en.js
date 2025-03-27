@@ -320,14 +320,14 @@ export default {
         querybydrawpolygon: {
           tooltip: "Query by Draw Polygon ",
           help: {
-            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers (underlined in yellow in legend)</li></ul>"
+            message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>"
           }
         },
         querybbox: {
           tooltip: 'Query BBox layer',
           nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
           help: {
-            message: "<ul><li>Drag the mouse to draw a rectangle and query layers (underlined in yellow in legend)</li></ul>"
+            message: "<ul><li>Drag the mouse to draw a rectangle and query layers</li></ul>"
           }
         },
         querybycircle: {
