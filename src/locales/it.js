@@ -317,14 +317,14 @@ export default {
         querybydrawpolygon: {
           tooltip: "Disegna un poligono per interrogare",
           help: {
-            message: "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli (sottolineati in giallo nella legenda)</li></ul>"
+            message: "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli</li></ul>"
           },
         },
         querybbox: {
           tooltip: 'Interroga per BBOX',
           nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
           help: {
-            message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli (sottolineati in giallo nella legenda)</li></ul>"
+            message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli</li></ul>"
           },
         },
         querybycircle: {

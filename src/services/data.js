@@ -104,17 +104,15 @@ export default {
     feature_count      = ApplicationState.project.state.feature_count || 5,
     filterConfig       = {},
     multilayers        = false,
-    condition          = { filtrable: { ows: 'WFS' } },
     /** @since 3.8.0 **/
     excludeSelected    = null,
     /** @since 3.8.0 **/
     addExternal = true,
-    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
+    layersFilterObject = { SELECTED_OR_ALL: true, QUERYABLE: true, VISIBLE: true }
   } = {}) {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
     const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
-
     try {
       return {
         result: true,
@@ -132,7 +130,7 @@ export default {
         },
         data: (!external && await this.getQueryLayersPromisesByGeometry(
           // layers
-          getMapLayersByFilter(layersFilterObject, condition),
+          getMapLayersByFilter(layersFilterObject),
           // options
           {
             geometry: ol.geom.Polygon.fromExtent(bbox),
@@ -158,7 +156,6 @@ export default {
     feature_count   = ApplicationState.project.state.feature_count || 5,
     filterConfig    = {},
     multilayers     = false,
-    condition       = { filtrable: { ows: 'WFS' } },
     /** @since 3.8.0 */
     layerName       = '',
     /** @since 3.8.0 */
@@ -202,9 +199,9 @@ export default {
                 ? { SELECTED: !excludeSelected }
                 : { SELECTED_OR_ALL: true }
             ),
-            FILTERABLE: true,
+            QUERYABLE: true,
             VISIBLE: true
-          }, condition),
+          }),
           // options
           {
             geometry,
