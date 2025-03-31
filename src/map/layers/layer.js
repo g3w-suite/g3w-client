@@ -351,9 +351,8 @@ const Providers = {
 
     }
   },
-
+  //backward compatibilities v3.11.6
   wfs: class {
-  
     // query method
     query(opts = {}, params = {}) {
       const filter = opts.filter || {};
@@ -432,9 +431,51 @@ const Providers = {
       ]));
 
     }
-
   },
+  //Changed based on https://github.com/g3w-suite/g3w-admin/issues/1070
+  //@since 3.11.7
+  g3w: class {
+    async query(opts = {}, params = {}) {
+      const filter = opts.filter || {};
+      const spatialMethod = filter.config.spatialMethod || 'intersects';
+      switch(filter.type) {
+        case 'bbox':
+        case 'geometry':
+          params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
+          params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }));
+          params.formatter       = 1;
+          break;
+        case 'expression':
+          break;    
+      }
 
+      const data = [];
+
+      try {
+        const response = await XHR.post({ 
+          url :  this._layer.getUrl('data'),
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+         });
+         if (response && response.result) {
+          data.push({ 
+            layer:    this._layer,
+            features: ResponseParser.get('g3w-vector/json')(
+              response.vector && response.vector.data || {},
+              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }},
+            ),
+          })
+         } else {
+          throw response.error;
+         }
+      } catch(e) {
+        console.warn(e);
+      }
+
+      return { data }
+      
+    }  
+  }
 };
 
 const DOWNLOAD_FORMATS = {
@@ -761,7 +802,7 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
-      ].includes(layerType) && createProvider('wfs', this),
+      ].includes(layerType) && createProvider('g3w', this),
 
       filtertoken: [
         'QGIS virtual',
