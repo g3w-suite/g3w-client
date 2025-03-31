@@ -314,7 +314,7 @@ export const ResponseParser = {
               }
   
               // inverted axis --> reverse features coordinates
-              if (is_reprojected && 'ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
+              if ('ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
                 feats.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
               }
   
