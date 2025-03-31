@@ -1424,7 +1424,7 @@ class MapService extends G3WObject {
           /** @since 3.11.7 Get Format from layer */ 
           format: layer.getFormat()
         },
-        1 === layers.length ? {} : this.layersExtraParams
+        this.layersExtraParams
       );
       layers.reverse().forEach(l => mapLayer.addLayer(l));
       mapLayers.push(mapLayer);
