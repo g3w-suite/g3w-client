@@ -1421,7 +1421,6 @@ class MapService extends G3WObject {
         {
           id: `layer_${id}`,
           projection: this.getProjection(),
-          /** @since 3.11.7 Get Format from layer */ 
           format: layer.getFormat()
         },
         this.layersExtraParams
