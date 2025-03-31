@@ -7,13 +7,13 @@
   <div
     v-if   = "table"
     class  = "query-relation"
-    ref    = "query_relation"
+    ref    = "relation"
     :class = "isMobile() ? 'mobile' : null"
   >
 
     <div
       class = "header skin-background-color lighten"
-      ref   = "relation-header"
+      ref   = "header"
     >
 
       <div class = "g3w-long-text">
@@ -67,13 +67,13 @@
 
     <div
       v-if  = "table.rows.length"
-      ref   = "relationwrapper"
+      ref   = "wrapper"
       class = "relation-wrapper"
     >
 
       <div
         id     = "table_content"
-        ref    = "tablecontent"
+        ref    = "content"
         :style = "{
           width:       chart ? '70%' : '100%',
           marginRight: chart ? '8px' : '3px',
@@ -91,7 +91,7 @@
           />
         </div>
         <table
-          ref   = "relationtable"
+          ref   = "table"
           class = "hover relationtable table table-striped row-border compact nowrap"
         >
           <thead>
@@ -128,7 +128,13 @@
               ></span>
               <span
                 v-if                     = "table.formStructure"
-                @click.stop              = "showFormStructureRow({ title: table.title, layerid: table.layerId, feature: table.features[index], fields: getRowFields(row), tabs: table.formStructure })"
+                @click.stop              = "showFormStructureRow({
+                  title:   table.title,
+                  layerid: table.layerId,
+                  feature: table.features[index],
+                  fields:  table.fields.map((field, i) => Object.assign(field, { value: row[i], query: true, input: { type: `${getFieldType(field)}` } })),
+                  tabs:    table.formStructure
+                  })"
                 v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                 class                    = "action-button row-form skin-color"
                 :class                   = "$fa('table')"
@@ -155,19 +161,14 @@
       <div
         v-show          = "chart"
         class           = "skin-border-color lighten"
-        style           = "border-style: solid; border-width: 0 1px 0 1px"
-        :style          = "{
-          minWidth:        '5px',
-          backgroundColor: '#dddddd',
-          cursor:          'col-resize',
-        }"
-        @mousedown.stop = "resizeStart"
+        style           = "border-style: solid; border-width: 0 1px 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;"
+        @mousedown.stop = "onChartResize"
       ></div>
 
       <div
         v-show   = "chart"
         id       = "chart_content"
-        ref      = "chartcontent"
+        ref      = "chart"
         :style   = "{ width: chart ? '30%' : '0' }"
       ></div>
 
@@ -187,40 +188,22 @@
 <script>
 
   import { G3W_FID, PAGELENGTHS, TIMEOUT }        from 'g3w-constants';
-  import ApplicationState                         from "store/application";
+  import ApplicationState                         from 'store/application';
   import Component                                from 'g3w-component';
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
   import GUI                                      from 'services/gui';
   import { fieldsMixin, resizeMixin }             from 'mixins';
   import { VM }                                   from 'g3w-eventbus';
-  import DataRouterService                        from "services/data";
+  import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
   import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
-  import { XHR }                                  from "utils/XHR";
-  import { createRelationsUrl }                   from "utils/createRelationsUrl";
-  import { getAlphanumericPropertiesFromFeature } from "utils/getAlphanumericPropertiesFromFeature";
-  import { saveBlob }                             from "utils/saveBlob";
+  import { XHR }                                  from 'utils/XHR';
+  import { createRelationsUrl }                   from 'utils/createRelationsUrl';
+  import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+  import { saveBlob }                             from 'utils/saveBlob';
 
   let SIDEBARWIDTH;
-
-  function _buildRelationTable(features = [], id) {
-    const layer = ApplicationState.project.getLayerById(id);
-    const attrs = Object.keys(features[0] ? features[0].attributes : {});
-    const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
-    return {
-      columns:          cols.map(c => c.label),
-      rows:             features.map(r => cols.map(c => r.attributes[c.name])),
-      rows_fid:         features.map(r => r.attributes[G3W_FID]),
-      features,
-      fields:           cols.length ? cols : null,
-      formStructure:    layer.getLayerEditingFormStructure(),
-      rowFormStructure: null,
-      layerId:          layer.getId(),
-      title:            layer.getName() || layer.getTitle(), //@since 3.11.0
-    };
-  }
-
 
   export default {
 
@@ -257,42 +240,9 @@
         /**
          * @since 3.11.2
          */
-        page: 1,
-
-        /**
-         * @since 3.11.2
-         */
-        page_size: PAGELENGTHS[0],
-
-        /**
-         * @since 3.11.2
-         */
-        start: 0,
-
-        /**
-         * @since 3.11.2
-         */
         table: {
           rows: [],
         },
-
-        /**
-         * @type { string | null } parameter sent to server
-         * @since 3.11.3
-         */
-         ordering: null,
-
-        /**
-         * @type { "desc" | "asc" | "current" } column order
-         * @since 3.11.3
-         */
-        sort: 'asc',
-
-        /**
-         * @type { number } current column index
-         * @since 3.11.3
-         */
-        sort_column: 0,
 
         /**
          * @since 3.11.2
@@ -314,11 +264,22 @@
        * @since 3.9.0
        */
       showTools() {
-        return [!!this.isEditable, !!this.table.formStructure, !!this.isGeoLayer].filter(Boolean).length;
+        const isGeoLayer = (this.table.features || []).some(f => f.geometry);
+        return [!!this.isEditable, !!this.table.formStructure, !!isGeoLayer].filter(Boolean).length;
       },
 
-      one() {
-        return 'ONE' === this.relation.type;
+    },
+
+    watch: {
+
+      async chart(){
+        await this.$nextTick();
+        this.resize();
+      },
+
+      async headercomponent() {
+        await this.$nextTick();
+        this.resize();
       },
 
     },
@@ -339,215 +300,223 @@
             .zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), { highlight: true });
         }
       },
-      /**
-       * ORIGINAL SOURCE: src/services/relations.js@v3.10.2
-       *
-       * Get relations NM
-       *
-       * @param nmRelation
-       * @param features
-       *
-       * @returns {Promise<[]>}
-       *
-       * @since 3.11.0
-       */
-      async getRelationsNM({ nmRelation, features = [] } = {}) {
-        const {
-          referencedLayer,
-          fieldRef: { referencingField, referencedField }
-        }               = nmRelation;
-        let relationsNM = []; // start with an empty relations result
-        if (features.length) {
-          const values   = features.map(f => f.attributes[referencingField]);
-          const { data } = await DataRouterService.getData('search:features', {
-            inputs: {
-              layer:     getCatalogLayerById(referencedLayer),
-              filter:    values.map(v => `${referencedField}|eq|${encodeURIComponent(v)}`).join(`|OR,`),
-              formatter: 1, // set formatter to
-            },
-            outputs: null
-          });
-          if (data && data[0] && Array.isArray(data[0].features)) {
-            relationsNM = data[0].features.map(f => {
-              return {
-                id:         f.getId(),
-                geometry:   f.getGeometry(),
-                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((accumulator, property) => {
-                  accumulator[property] = f.get(property);
-                  return accumulator;
-                }, {}),
-              }
-            })
-          }
-        }
-        return relationsNM;
-      },
 
       /**
-       * @since 3.11.2
-       * Used to get relation data and set table
-       */
-      async getRelationDataTable({
-         page,
-         page_size,
-         ordering
-      } = {}) {
-        GUI.setLoadingContent(true);
-        let table = { rows: [] };
-        try {
-          let relationLayerId = this.relation.referencingLayer;
-          let features;
-          const response = await XHR.get({
-            url: createRelationsUrl({
-              layer:    this.layer,
-              fid:      this.feature.attributes[G3W_FID],
-              relation: this.relation,
-              page,
-              page_size,
-              ordering,
-            })
-          }); // get relations
-          features = response.result ? (response.vector.data.features || []).map(f => {
-            f.properties[G3W_FID] = f.id;
-            return {
-              geometry:   f.geometry,
-              attributes: f.properties,
-              id:         f.id,
-            };
-          }) : null;
-          const count = features && response.vector.count;
-          if (this.nmRelation) {
-            relationLayerId = this.nmRelation.referencedLayer;
-            features = await this.getRelationsNM({
-              nmRelation: this.nmRelation,
-              features
-            });
-          }
-
-          table       = _buildRelationTable(features, relationLayerId);
-          table.count = count;
-        } catch(e) {
-          console.warn(e);
-        }
-
-        GUI.setLoadingContent(false);
-        return table;
-      },
-
-      /**
+       * @param opts     - settings used for render new table
+       * @param prevOpts - settings used for render old table
+       *  
        * @returns { Promise<void> }
        */
-      async createTable() {
-        const layer     = getCatalogLayerById(this.table.layerId);
+      async createTable(opts, prevOpts = {}) {
 
-        this.isEditable = layer.isEditable() && !layer.isInEditing();
+        try {
 
-        // check if feature has geometry.
-        // layer.isGeolayer() may return true, but QGIS project is not set to return geometry on response
-        this.isGeoLayer = undefined !== this.table.features.find(f => f.geometry);
+          GUI.setLoadingContent(true);
 
-        //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
-        const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
-
-        /** @FIXME add description */
-        if (downloadformats.length > 0) {
-          this.downloadButton = {
-            toggled: false,
-            tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-            handler: downloadformats.length > 1
-              ? async () => {
-                  this.downloadButton.toggled         = !this.downloadButton.toggled;
-                  this.downloadLayer.state            = this.downloadLayer.state || layer.state;
-                  this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
-                    ? this.downloadLayer.config.downloads
-                    : downloadformats.map(format => ({
-                        id: format,
-                        format,
-                        cbk: () => {
-                          this.saveRelation(layer.getDownloadUrl(format));
-                          this.headercomponent = null;
-                        },
-                        download: true,
-                      })
-                  );
-                  this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-                }
-              : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
+          // Destroy previous table
+          if (this.$table) {
+            this.$table.destroy(true);
+            this.$table     = null;
+            this.table.rows = [];
+            await this.$nextTick();
           }
-        }
 
-        VM.$on('reload-relations', () => { this.reloadLayout(); });
+          try {
 
-        this.showChart = throttle(async () => {
-          this.chart = !this.chart;
-          await this.$nextTick();
-          this.chartContainer = this.chartContainer ||  $('#chart_content');
-          this.chart 
-            ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
-            : GUI.getService('queryresults').hideChart(this.chartContainer)
-        });
+            const changed = (opts.page_size !== prevOpts.page_size || opts.start !== prevOpts.start);
 
-        await this.$nextTick();
+            // merge options: (defaults + old + new) 
+            opts = {
+              /** @type { "desc" | "asc" | "current" } column order */
+              sort: 'asc',
+              /** @type { string | undefined } parameter sent to server ("-" = descending ) only if user has already clicked on a column to sort data */
+              ordering: undefined,
+              start: 0,
+              sort_column: 0,
+              order: [],
+              ...prevOpts,
+              ...opts
+            };
 
-        SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
 
-        this.relation.title = this.relation.name;
+            // check if ordering is asked by user by click on a column
+            if (opts.ordering && changed) {
+              opts.sort = opts.order[0].dir; // in case of change page, get last sorting of column
+            }
 
-        if (!this.one) {
-            //check if you need to get data pagination from server or use all features
-          const data_from_server = this.table.rows.length < this.table.count;
-          this.relationDataTable = $(this.$refs.relationtable).DataTable({
-            autoWidth:      false,
-            bLengthChange:  true,
-            dom:            'ltip',
-            columnDefs:     [ this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }],
-            order:          [ this.sort_column + !!this.showTools, this.sort],
-            lengthMenu:     PAGELENGTHS,
-            pageLength:     this.page_size,
-            displayStart:   this.start,
-            responsive:     true,
-            scrollResize:   true,
-            scrollCollapse: true,
-            scrollX:        true,
-            deferLoading:   data_from_server && this.table.count,
-            ajax: data_from_server ? async (opts) => {
-              try {
-                // Destroy table
-                this.relationDataTable.destroy(true);
-                this.relationDataTable = null;
-                this.table.rows        = [];
-                await this.$nextTick();
-                // check if there is a change (page or number of rows)
-                const changed      = opts.length !== this.page_size || opts.start !== this.start;
-                // set len start
-                this.page_size    = opts.length;
-                this.start        = opts.start;
-                const column      = opts.order[0].column - !!this.showTools;
-                const sort        = column === this.sort_column ? (changed ? this.sort : ('desc' === this.sort  ? 'asc' : 'desc') ) : 'asc';
-                this.sort_column  = column;
-                this.sort         = sort;
-                // send parameter to server ("-" = descending )
-                this.ordering     = `${'desc' === sort ? '-' : ''}${this.table.fields[opts.order[0].column - !!this.showTools].name}`;
-                this.table        = await this.getRelationDataTable({
-                  page:       1 + (0 !== opts.start ? (opts.start/opts.length) : 0),
-                  page_size: opts.length,
-                  ordering:  this.ordering
-                });
-              } catch(e) {
-                console.warn(e);
-              }
-              GUI.setLoadingContent(false);
+            // in case of sort columns is not a previous column
+            if (opts.ordering && !changed && opts.order[0].column !== opts.sort_column) {
+              opts.sort = 'asc';
+            }
 
-            } : null,
-            serverSide:     data_from_server,
+            // invert sort
+            if (opts.ordering && !changed && opts.order[0].column === opts.sort_column) {
+              opts.sort = ('desc' === opts.sort ? 'asc' : 'desc');
+            }
+
+            // in case of set ordering (field sort) or not set ordering (start time)
+            if (opts.ordering || opts.order.length) {
+              opts.ordering = `${'desc' === opts.sort ? '-' : ''}${this.table.fields[opts.order[0].column - Number(!!this.showTools)].name}`;
+            }
+
+            /** @type { number } current column index */
+            opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
+            
+            // Get relations from server
+            const response = await XHR.get({
+              url: createRelationsUrl({
+                layer:     this.layer,
+                fid:       this.feature.attributes[G3W_FID],
+                relation:  this.relation,
+                page:      opts.page,
+                page_size: opts.page_size,
+                ordering:  opts.ordering,
+              })
+            }); 
+
+            //extract features attributes, Array, and digest for table
+            let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
+              f.properties[G3W_FID] = f.id;
+              return {
+                geometry:   f.geometry,
+                attributes: f.properties,
+                id:         f.id,
+              };
+            }) : [];
+
+            // handle NM relations
+            const NM = this.nmRelation && (features || []).length && await DataRouterService.getData('search:features', {
+              inputs: {
+                layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
+                filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
+                formatter: 1, // set formatter to
+              },
+              outputs: null
+            });
+
+            if (NM && NM.data && NM.data[0] && Array.isArray(NM.data[0].features)) {
+              features = NM.data[0].features.map(f => ({
+                id:         f.getId(),
+                geometry:   f.getGeometry(),
+                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
+              }));
+            }
+
+            // build relation table
+            const layer = ApplicationState.project.getLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
+            const attrs = Object.keys(features[0] ? features[0].attributes : {});
+            const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
+
+            this.table = {
+              count:            response.result && response.vector.count,
+              features,
+              columns:          cols.map(c => c.label),
+              rows:             features.map(r => cols.map(c => r.attributes[c.name])),
+              rows_fid:         features.map(r => r.attributes[G3W_FID]),
+              fields:           cols.length ? cols : null,
+              formStructure:    layer.getLayerEditingFormStructure(),
+              rowFormStructure: null,
+              layerId:          layer.getId(),
+              title:            layer.getName() || layer.getTitle(), //@since 3.11.0
+            };
+          } catch(e) {
+            this.table = { rows: [] };
+            console.warn(e);
+          }
+
+          if (0 === this.table.rows.length) {
+            return;
+          }
+
+          const layer     = getCatalogLayerById(this.table.layerId);
+
+          this.isEditable = layer.isEditable() && !layer.isInEditing();
+
+          //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
+          const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
+
+          /** @FIXME add description */
+          if (downloadformats.length > 0) {
+            this.downloadButton = {
+              toggled: false,
+              tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
+              handler: downloadformats.length > 1
+                ? async () => {
+                    this.downloadButton.toggled         = !this.downloadButton.toggled;
+                    this.downloadLayer.state            = this.downloadLayer.state || layer.state;
+                    this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
+                      ? this.downloadLayer.config.downloads
+                      : downloadformats.map(format => ({
+                          id: format,
+                          format,
+                          cbk: () => {
+                            this.saveRelation(layer.getDownloadUrl(format));
+                            this.headercomponent = null;
+                          },
+                          download: true,
+                        })
+                    );
+                    this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
+                  }
+                : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
+            }
+          }
+
+          VM.$on('reload-relations', () => { this.reloadLayout(); });
+
+          this.showChart = throttle(async () => {
+            this.chart = !this.chart;
+            await this.$nextTick();
+            this.chartContainer = this.chartContainer ||  $('#chart_content');
+            this.chart 
+              ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
+              : GUI.getService('queryresults').hideChart(this.chartContainer)
           });
-          this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+
+          await this.$nextTick();
+
+          SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
+
+          this.relation.title = this.relation.name;
+
+          if ('ONE' !== this.relation.type) {
+            //check if you need to get data pagination from server or use all features
+            const data_from_server = this.table.rows.length < this.table.count;
+            this.$table = $(this.$refs.table).DataTable({
+              autoWidth:      false,
+              bLengthChange:  true,
+              dom:            'ltip',
+              columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
+              order:          [].concat(opts.ordering ? [ opts.sort_column, opts.sort] : []),
+              lengthMenu:     PAGELENGTHS,
+              pageLength:     opts.page_size,
+              displayStart:   opts.start,
+              responsive:     true,
+              scrollResize:   true,
+              scrollCollapse: true,
+              scrollX:        true,
+              deferLoading:   data_from_server && this.table.count,
+              serverSide:     data_from_server,
+              ajax: data_from_server ? newOpts => {
+                this.createTable({
+                  ...newOpts,
+                  page:       1 + (0 !== newOpts.start ? newOpts.start/newOpts.length : 0),
+                  page_size: newOpts.length,
+                }, opts);
+              } : null,
+            });
+            this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+          }
+
+          // resize after popping child relation
+          GUI.on('pop-content', () => setTimeout(() => this.resize()));
+
+          this.resize();
+        } catch(e) {
+          console.warn(e);
+        } finally {
+          GUI.setLoadingContent(false);
         }
-
-        // resize after popping child relation
-        GUI.on('pop-content', () => setTimeout(() => this.resize()));
-
-        this.resize();
       },
 
       /**
@@ -555,19 +524,19 @@
        */
       async resize() {
         // skip when ..
-        if (!this.$refs.query_relation || 'none' === this.$refs.query_relation.parentNode.style.display) {
+        if (!this.$refs.relation || 'none' === this.$refs.relation.parentNode.style.display) {
           return;
         }
 
         // in case of waiting table
-        const table      = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
+        const table      = $(this.$refs.relation).find('div.dataTables_scrollBody');
         table.height(
           $(".content").height()
           - this.tableHeaderHeight
           - $('.content_breadcrumb')                       .outerHeight()
           - $('.navbar')                                   .outerHeight()
           - $('.close-panel-block')                        .outerHeight()
-          - $(this.$refs['relation-header'])               .outerHeight()
+          - $(this.$refs.header)                           .outerHeight()
           - $('.dataTables_filter').last()                 .outerHeight()
           - $('.dataTables_paginate.paging_simple_numbers').outerHeight()
           - $('.dataTables_scrollHead').last()             .outerHeight()
@@ -579,7 +548,6 @@
       /**
        * @param type
        */
-
        async saveRelation(type) {
         ApplicationState.download = true;
         try {
@@ -621,15 +589,13 @@
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
-              data() {
-                return {
-                  layerid,
-                  feature,
-                  fields,
-                  formStructure: tabs,
-                }
-              },
-              template: `
+              data: () => ({
+                layerid,
+                feature,
+                fields,
+                formStructure: tabs,
+              }),
+              template: /* html */`
                 <div class="queryresults-wrapper">
                   <div class ="queryresults-container">
                     <table ref="table" class="table">
@@ -659,7 +625,6 @@
           closable:   false,
           title, //@since 3.11.0
         });
-
       },
 
       /**
@@ -670,7 +635,7 @@
           .getService('queryresults')
           .editFeature({
             layer: {
-              id: this.table.layerId,
+              id:         this.table.layerId,
               attributes: this.table.fields,
             },
             feature: this.table.features[index],
@@ -678,25 +643,11 @@
       },
 
       /**
-       * @param row
-       *
-       * @returns {*}
-       */
-      getRowFields(row) {
-        return this.table.fields.map((field, index) => {
-          field.value = row[index];
-          field.query = true;
-          field.input = { type: `${this.getFieldType(field)}` };
-          return field;
-        });
-      },
-
-      /**
        * @FIXME add description
        */
       reloadLayout() {
-        if (this.relationDataTable) {
-          this.relationDataTable.columns.adjust();
+        if (this.$table) {
+          this.$table.columns.adjust();
         }
       },
 
@@ -707,78 +658,15 @@
         this.$parent.setRelationsList();
       },
 
-      /**
-       * @param type
-       * @param value
-       *
-       * @returns { boolean }
-       */
-      fieldIs(type, value) {
-        return this.getFieldType(value) === type;
-      },
-
-      /**
-       * @param type
-       * @param value
-       *
-       * @returns { boolean }
-       */
-      is(type, value) {
-        return this.fieldIs(type, value);
-      },
-
-      wrapMoveFnc(e) {
-        this.moveFnc(e);
-      },
-
-      resizeStart() {
-        document.getElementById('g3w-view-content').addEventListener('mousemove', this.wrapMoveFnc);
-        document.getElementById('g3w-view-content').addEventListener('mouseup', this.resizeStop, { once: true });
-      },
-
-      async resizeStop() {
-        document.getElementById('g3w-view-content').removeEventListener('mousemove', this.wrapMoveFnc);
-        await this.$nextTick();
-        GUI.emit('resize');
-      },
-
-      /**
-       * @param evt
-       */
-      moveFnc(evt) {
-        const sidebarHeaderSize             =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-        const size                          = evt.pageX+2 - sidebarHeaderSize;
-        this.$refs.tablecontent.style.width = `${size}px`;
-        this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
-      },
-
-    },
-
-    watch: {
-
-      /**
-       * When showing a relation directly
-       */
-      table(table) {
-        if (table && table.rows.length) {
-          this.createTable();
-        }
-      },
-
-      /**
-       * @FIXME add description
-       */
-      async chart() {
-        await this.$nextTick();
-        this.resize();
-      },
-
-      /**
-       * @FIXME add description
-       */
-      async headercomponent() {
-        await this.$nextTick();
-        this.resize();
+      onChartResize() {
+        const move = e => {
+          const size                     = e.pageX+2 - ($('.sidebar-collapse').length ? 0 : SIDEBARWIDTH);
+          this.$refs.content.style.width = `${size}px`;
+          this.$refs.chart.style.width   = `${$(this.$refs.wrapper).width() - size - 10}px`;
+        };
+        const el = document.getElementById('g3w-view-content');
+        el.addEventListener('mousemove', move);
+        el.addEventListener('mouseup', () => { el.removeEventListener('mousemove', move); this.$nextTick().then(() => GUI.emit('resize')) }, { once: true });
       },
 
     },
@@ -787,33 +675,25 @@
       this.delayType = 'debounce';
     },
 
-    async created()  {
-      try {
-        this.table = await this.getRelationDataTable({
-          page:      this.page,
-          page_size: this.page_size,
-          ordering:  this.ordering,
-        });
-      } catch(e) {
-        console.warn(e);
-      }
-
+    async created() {
+      await this.createTable({
+        page:      1,
+        page_size: PAGELENGTHS[0],
+      });
     },
 
     /**
      * @fires hide-chart
      */
     async beforeDestroy() {
-      // skip when ..
-      if (!this.relationDataTable) {
-        return;
+      if (this.$table) {
+        this.$table.destroy();
+        this.$table = null;
       }
-      this.relationDataTable.destroy();
-      this.relationDataTable = null;
       if (this.chartContainer) {
         this.$emit('hide-chart', this.chartContainer);
+        this.chartContainer    = null;
       }
-      this.chartContainer = null;
       this.tableHeaderHeight = null;
       GUI.off('pop-content', this.resize);
     },
