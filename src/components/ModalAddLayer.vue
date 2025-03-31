@@ -50,7 +50,7 @@
 
             <!-- DOCS -->
             <a
-              :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#wms`"
+              :href  = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#wms`"
               target = "_blank"
               style  = "float: right;"
               title  = "Docs"

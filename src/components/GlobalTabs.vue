@@ -77,13 +77,35 @@
 
 <script>
 
+  import { G3W_FID }                                 from 'g3w-constants';
   import DataRouterService                           from 'services/data';
   import Node                                        from 'components/GlobalTabsNode.vue';
   import GUI                                         from 'services/gui';
-  import { getFormDataExpressionRequestFromFeature } from 'utils/getFormDataExpressionRequestFromFeature';
-  import { convertFeatureToGEOJSON }                 from 'utils/convertFeatureToGEOJSON';
+  import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
   import { getUniqueDomId }                          from 'utils/getUniqueDomId';
   import { noop }                                    from 'utils/noop';
+
+  /**
+   * Convert feature to form Data for expression/expression_eval request
+   */
+  function getFormData(feature, contenttype) {
+    let _feature = feature;
+
+    if ('editing' !== contenttype) {
+      delete feature.attributes.geometry;
+
+      _feature   = new ol.Feature(feature.geometry);
+      const properties = {};
+
+      getAlphanumericPropertiesFromFeature(feature.attributes)
+        .filter(p => G3W_FID !== p)
+        .forEach(p => properties[p] = feature.attributes[p]);
+      _feature.setProperties(properties);
+      _feature.setId(feature.id || feature.attributes[G3W_FID]);
+    }
+
+    return (new ol.format.GeoJSON()).writeFeatureObject(_feature);
+  }
 
   export default {
     name: "tabs",
@@ -152,11 +174,7 @@
               {
               inputs: {
                 qgs_layer_id: this.layerid,
-                form_data:    (
-                  'editing' === this.contenttype ?
-                    convertFeatureToGEOJSON :
-                    getFormDataExpressionRequestFromFeature)(this.feature || {}
-                ),
+                form_data:    getFormData(this.feature || {}, this.contenttype),
                 expression:   tab.visibility_expression.expression,
                 formatter:    ('query' === this.contenttype ? 1 : 0),
               },
