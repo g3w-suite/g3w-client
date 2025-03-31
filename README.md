@@ -361,7 +361,49 @@ For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.
 
 <details>
 
-<summary>5. How can I translate this project?</summary>
+<summary>5. How can I change the default colors?</summary>
+
+There are several options (depending on your coding skills 👨‍💻), but our basic advice is almost always the same 👉 [`G3WSUITE_CUSTOM_CSS`](https://g3w-suite.readthedocs.io/en/v3.9.x/branding.html#g3wsuite-custom-css).
+
+![image](https://github.com/user-attachments/assets/a0f86d7e-e501-4bb7-8a16-03022278d9fc)
+
+Here is a foundation you can use for create a your own custom theme:
+
+```css
+/* Custom G3W-CLIENT theme (v4.0.0) */
+
+:root {
+  --skin-color: red;
+}
+
+.main-sidebar {
+  --bgcolor: #eee;
+  border-right: 1px solid #d6d6d6;
+}
+
+.main-sidebar *:not(legend) {
+  color: initial !important;
+}
+
+.sidebar-aside-toggle {
+  --bgcolor: #555;
+}
+
+.main-sidebar .panel-button.fa-circle {
+  display: none;
+}
+
+.ol-scale-line-inner {
+  color: #fff;
+  border-color: hsl(from currentColor h s l / 80%);
+}
+```
+
+</details>
+
+<details>
+
+<summary>6. How can I translate this project?</summary>
 
 Depending on your current project version, you can edit one of the following files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):
 

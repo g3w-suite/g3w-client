@@ -229,10 +229,9 @@
                   data-toggle        = "tooltip"
                   data-container     = "body"
                   v-t-tooltip.create = "'back'"
-                  class              = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  class              = "skin-tooltip-left g3w-span-button close-pane-button"
                 >
-                  <i :class = "$fa('circle')"     class = "fa-stack-1x panel-button"></i>
-                  <i :class = "$fa('arrow-left')" class = "fa-stack-1x panel-icon"></i>
+                  <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
                 </span>
                 <span
                   @click.stop              = "app.sidebar.btn_close && closeAllPanels()"
@@ -240,13 +239,12 @@
                   data-container           = "body"
                   v-t-tooltip:right.create = "app.sidebar.tooltip_close || 'close'"
                   :current-tooltip         = "app.sidebar.tooltip_close || 'close'"
-                  class                    = "skin-tooltip-left g3w-span-button close-pane-button fa-stack"
+                  class                    = "skin-tooltip-left g3w-span-button close-pane-button"
                 >
-                  <i :class = "$fa('circle')" class = "fa-stack-1x panel-button"></i>
                   <i
                     :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
                     :class = "$fa('close')"
-                    class  = "fa-stack-1x panel-icon">
+                    class  = "panel-icon">
                   </i>
                 </span>
               </div>
@@ -834,8 +832,9 @@ export default {
           data: () => ({ id: getUniqueDomId(), checked: false }),
           template: /* html */ `
             <div style="display: flex; margin-top: 10px;">
-              <input :id="id"  v-model="checked" class="magic-checkbox" type="checkbox" />
-              <label :for="id" v-t="'dont_show_again'"/>
+              <label :for="id" v-t="'dont_show_again'">
+                <input :id="id"  v-model="checked" type="checkbox" />
+              </label>
             </div>`
         }));
     

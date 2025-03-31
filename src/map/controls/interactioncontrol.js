@@ -158,12 +158,7 @@ export default class InteractionControl extends ol.control.Control {
    * @since 3.11.0
    */
   setMouseCursor(toggled, className = this.cursorClass) {
-    const viewport = this.getMap().getViewport()
-    if (toggled) {
-      setTimeout(() => viewport.classList.add(className));
-    } else {
-      viewport.classList.remove(className);
-    }
+    this.getMap().getViewport().classList[toggled ? 'add' : 'remove'](className);
   }
 
   initInteraction(options = {}) {
