@@ -7,11 +7,11 @@
   <div>
     <div v-if = "layer.hasdownloadablerelations">
       <input
-        id        = "g3w-download-relations"
+        :id        = "`g3w-download-relations_${featureIndex}`"
         class     = "magic-checkbox"
         v-model   = "down_with_relations"
         type      = "checkbox"/>
-        <label for = "g3w-download-relations" v-t = "'sdk.relations.download_with_relations'"></label>
+        <label :for = "`g3w-download-relations_${featureIndex}`" v-t = "'sdk.relations.download_with_relations'"></label>
     </div>
     <div
       class               = "g3w-download-formats-content"
@@ -25,12 +25,12 @@
         class     ="form-control"
       >
         <option
-          v-for  = "download in config.downloads"
+          v-for  = "download in downloads_formats"
           :key   = "download.id"
           :value = "download.format"
           v-download
         >
-          <span style = "font-weight: bold">{{download.format}}</span>
+          <span style = "font-weight: bold">{{ download.format }}</span>
         </option>
       </select>
       <button
@@ -48,6 +48,7 @@
 </template>
 
 <script>
+
 export default {
 
   /** @since 3.8.7 */
@@ -57,6 +58,7 @@ export default {
     return {
       download_format:     this.config.downloads[0].format,
       down_with_relations: false,
+      downloads_formats:   [...this.config.downloads],
     }
   },
   props: {
@@ -73,6 +75,23 @@ export default {
       type: Object,
       default: null
     },
+  },
+  watch: {
+    down_with_relations(bool) {
+      //In case of download relation is checked
+      if (bool) {
+        //filter download formats without pdf because it isn't possible download relation in pdf format
+        this.downloads_formats = this.downloads_formats.filter(({ format }) => 'pdf' !== format);
+      }
+      //If checked download relation and current dowload format is pdf, need to set another format
+      if (bool && 'pdf' === this.download_format) {
+        this.download_format   =  this.downloads_formats[0].format;
+      }
+      //in case of no checked downloa relations, get all formats
+      if (!bool) {
+        this.downloads_formats = [...this.config.downloads];
+      }
+    }
   },
   methods: {
     async download() {
