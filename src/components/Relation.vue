@@ -64,9 +64,8 @@
 
       </div>
     </div>
-
     <div
-      v-if  = "table.rows.length"
+      v-if  = "table.data_from_server || table.rows.length"
       ref   = "wrapper"
       class = "relation-wrapper"
     >
@@ -255,8 +254,9 @@
          * @since 3.11.2
          */
         table: {
-          rows:   [],
-          filter: {} //filter columns
+          rows:             [],
+          filter:           {}, //filter columns
+          data_from_server: false, //@since 4.0 need to handle no results from columns search
         },
 
         /**
@@ -329,9 +329,11 @@
 
           // Destroy previous table
           if (this.$table) {
-            this.$table.destroy(true);
-            this.$table     = null;
-            this.table.rows = [];
+            this.$table.destroy(!opts.data_from_server); // In case of data_from_server set .destroy(false), https://datatables.net/reference/api/destroy() 
+            this.$table                 = null;
+            this.table.rows             = [];
+            //set data from server to show for example search columns with no results
+            this.table.data_from_server = opts.data_from_server;
             await this.$nextTick();
           }
 
@@ -376,7 +378,6 @@
             /** @type { number } current column index */
             opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
             
-            console.log(this.table.columns)
             // Get relations from server
             const response = await XHR.post(createRelationsUrl(
               {
@@ -387,7 +388,7 @@
                 page_size: opts.page_size,
                 ordering:  opts.ordering,
                 method:    'POST',
-                field:     (this.table.columns || []).filter(c => undefined !== c.search).map(c => `${c.name}|ilike|${c.search}|and`).join(',') || undefined,
+                field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}|and`).join(',').replace(/\|and$/, '') || undefined,
               }
             )
             ); 
@@ -436,13 +437,14 @@
               rowFormStructure: null,
               layerId:          layer.getId(),
               title:            layer.getName() || layer.getTitle(), //@since 3.11.0
+              data_from_server: Boolean(opts.data_from_server),
             };
           } catch(e) {
             this.table = { rows: [] };
             console.warn(e);
           }
 
-          if (0 === this.table.rows.length) {
+          if (!opts.data_from_server && 0 === this.table.rows.length) {
             return;
           }
 
@@ -499,7 +501,7 @@
 
           if ('ONE' !== this.relation.type) {
             //check if you need to get data pagination from server or use all features
-            const data_from_server = this.table.rows.length < this.table.count;
+            const data_from_server = opts.data_from_server || this.table.rows.length < this.table.count;
             this.$table = $(this.$refs.table).DataTable({
               autoWidth:      false,
               bLengthChange:  true,
@@ -517,11 +519,11 @@
               deferLoading:   data_from_server && this.table.count,
               serverSide:     data_from_server,
               ajax: data_from_server ? newOpts => {
-                console.log(newOpts)
                 this.createTable({
                   ...newOpts,
                   page:       1 + (0 !== newOpts.start ? newOpts.start/newOpts.length : 0),
                   page_size: newOpts.length,
+                  data_from_server: true, //alwasy true
                 }, opts);
               } : null,
             });
@@ -529,7 +531,6 @@
             //Register changeCoumns
             this.changeColumn = debounce((e, i) => {
               const value = e.target.value.trim();
-              console.log(value)
               this.table.columns[i].search = value;
               this.$table.columns(i).search(value).draw()
             })  
