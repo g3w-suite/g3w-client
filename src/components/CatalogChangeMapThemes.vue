@@ -82,17 +82,18 @@
                 v-for = "(map_theme, i) in map_themes.project"
                 :key  = "map_theme.theme"
               >
+                <input
+                  type     = "radio"
+                  name     = "radio"
+                  :id      = "`g3w-map_theme-${i}`"
+                  :value   = "map_theme.theme"
+                  v-model  = "active_theme"
+                  class    = "magic-radio"
+                />
                 <label
                   :for  = "`g3w-map_theme-${i}`"
-                  style = "display: flex; gap: .5em;"
+                  style = "display: flex; justify-content: space-between;"
                 >
-                  <input
-                    type     = "radio"
-                    name     = "radio"
-                    :id      = "`g3w-map_theme-${i}`"
-                    :value   = "map_theme.theme"
-                    v-model  = "active_theme"
-                  />
                   <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                 </label>
               </div>
@@ -127,14 +128,15 @@
                 style = "display: flex; justify-content: space-between;"
               >
                 <span>
+                  <input
+                    type     = "radio"
+                    name     = "radio"
+                    :id      = "`g3w-map_theme-${i}-user`"
+                    :value   = "map_theme.theme"
+                    v-model  = "active_theme"
+                    class    = "magic-radio"
+                  />
                   <label :for = "`g3w-map_theme-${i}-user`">
-                    <input
-                      type     = "radio"
-                      name     = "radio"
-                      :id      = "`g3w-map_theme-${i}-user`"
-                      :value   = "map_theme.theme"
-                      v-model  = "active_theme"
-                    />
                     <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                   </label>
                 </span>
