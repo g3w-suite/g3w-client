@@ -70,9 +70,13 @@
         </tr>
         <tr>
           <th v-disabled = "disableSelectAll">
-            <label @click.capture.stop.prevent = "selectAllRows">
-              <input type = "checkbox" :checked   = "state.selectAll" />
-            </label>
+            <input
+              type       = "checkbox"
+              id         = "attribute_table_select_all_rows"
+              :checked   = "state.selectAll"
+              class      = "magic-checkbox"
+            />
+            <label for = "attribute_table_select_all_rows" @click.capture.stop.prevent = "selectAllRows">&nbsp;</label>
           </th>
           <th v-for = "(header, i) in state.headers" v-if = "i > 0">
             <input
@@ -103,13 +107,13 @@
           <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
           <td>
             <div style = "display: flex">
-              <label :for = "get_check_id(false)" @click.capture.stop.prevent = "select(feature)">
-                <input
-                  type     = "checkbox"
-                  :id      = "get_check_id(true)"
-                  :checked = "feature.selected"
-                />
-              </label>
+              <input
+                type     = "checkbox"
+                :id      = "get_check_id(true)"
+                :checked = "feature.selected"
+                class    = "magic-checkbox"
+              />
+              <label :for = "get_check_id(false)" @click.capture.stop.prevent = "select(feature)"></label>
                <i
                 @click.stop            = "openForm(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
@@ -841,6 +845,9 @@ export default {
   } */
   #layer_attribute_table > tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
+  }
+  label[for="attribute_table_select_all_rows"] {
+    margin-bottom: 0 !important;
   }
 </style>
 
