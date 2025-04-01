@@ -795,6 +795,10 @@
     display: flex;
     justify-content: space-between;
   }
+  .form-control.column-search {
+    font-style: italic;
+    font-weight: normal;
+  }
 </style>
 
 <style>
