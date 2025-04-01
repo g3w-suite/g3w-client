@@ -329,6 +329,7 @@
 
           // Destroy previous table
           if (this.$table) {
+            /** @TODO remove "data_from_server" and use table.ajax.reload(); instead */
             this.$table.destroy(!opts.data_from_server); // In case of data_from_server set .destroy(false), https://datatables.net/reference/api/destroy() 
             this.$table                 = null;
             this.table.rows             = [];
@@ -437,7 +438,7 @@
               rowFormStructure: null,
               layerId:          layer.getId(),
               title:            layer.getName() || layer.getTitle(), //@since 3.11.0
-              data_from_server: Boolean(opts.data_from_server),
+              data_from_server: !!opts.data_from_server,
             };
           } catch(e) {
             this.table = { rows: [] };
