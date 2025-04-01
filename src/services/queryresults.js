@@ -1562,7 +1562,9 @@ export default new (class QueryResultsService extends G3WObject {
 
     atlasLayer.forEach((atlas, index) => {
       const id = getUniqueDomId();
-      inputs += /* html */`<label for="${id}"><input id="${id}" g3w_atlas_index="${index}" type="radio" name="template" value="${atlas.name}" /> ${atlas.name}</label><br>`;
+      inputs += `<input id="${id}" g3w_atlas_index="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>`;
+      inputs += `<label for="${id}">${atlas.name}</label>`;
+      inputs += `<br>`;
     });
 
     GUI.showModalDialog({
