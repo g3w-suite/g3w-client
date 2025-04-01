@@ -187,7 +187,7 @@
     </div>
 
     <div
-      v-else
+      v-else-if = "!loading"
       class = "dataTables_scrollBody"
     >
       <span v-t = "'sdk.relations.no_relations_found'"></span>
@@ -268,6 +268,7 @@
          * @since 3.11.2
          */
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
+        loading:         false, //@since v4.0.0 loading data from server 
       };
     },
 
@@ -326,6 +327,7 @@
         try {
 
           GUI.setLoadingContent(true);
+          this.loading = true;
 
           // Destroy previous table
           if (this.$table) {
@@ -545,6 +547,7 @@
           console.warn(e);
         } finally {
           GUI.setLoadingContent(false);
+          this.loading = false;
         }
       },
 
