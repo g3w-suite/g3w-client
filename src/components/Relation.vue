@@ -103,7 +103,20 @@
                   padding:  '0 !important',
                 }"
               ></th>
-              <th v-for = "column in table.columns">{{ column }}</th>
+              <th v-for = "c in table.columns">{{ c.label }}</th>
+            </tr>
+            <tr>
+              <th v-if   = "showTools"></th>
+              <th v-for = "(c, i) in table.columns">
+                <input
+                  type         = "text"
+                  class        = "form-control column-search"
+                  @keyup       = "changeColumn($event, i)"
+                  :placeholder = "c.name"
+                  :value       = "c.search"
+                  :title       = "'search by ' + c.name"
+                />
+              </th>
             </tr>
           </thead>
 
@@ -197,6 +210,7 @@
   import { VM }                                   from 'g3w-eventbus';
   import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
+  import { debounce }                             from 'utils/debounce';
   import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
   import { XHR }                                  from 'utils/XHR';
   import { createRelationsUrl }                   from 'utils/createRelationsUrl';
@@ -241,7 +255,8 @@
          * @since 3.11.2
          */
         table: {
-          rows: [],
+          rows:   [],
+          filter: {} //filter columns
         },
 
         /**
@@ -281,7 +296,6 @@
         await this.$nextTick();
         this.resize();
       },
-
     },
 
     methods: {
@@ -362,17 +376,21 @@
             /** @type { number } current column index */
             opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
             
+            console.log(this.table.columns)
             // Get relations from server
-            const response = await XHR.get({
-              url: createRelationsUrl({
+            const response = await XHR.post(createRelationsUrl(
+              {
                 layer:     this.layer,
                 fid:       this.feature.attributes[G3W_FID],
                 relation:  this.relation,
                 page:      opts.page,
                 page_size: opts.page_size,
                 ordering:  opts.ordering,
-              })
-            }); 
+                method:    'POST',
+                field:     (this.table.columns || []).filter(c => undefined !== c.search).map(c => `${c.name}|ilike|${c.search}|and`).join(',') || undefined,
+              }
+            )
+            ); 
 
             //extract features attributes, Array, and digest for table
             let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
@@ -405,15 +423,15 @@
             // build relation table
             const layer = ApplicationState.project.getLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
             const attrs = Object.keys(features[0] ? features[0].attributes : {});
-            const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
+            const cols  = this.table.columns || layer.getTableHeaders().filter(h => attrs.includes(h.name));
 
             this.table = {
               count:            response.result && response.vector.count,
               features,
-              columns:          cols.map(c => c.label),
+              columns:          cols,
               rows:             features.map(r => cols.map(c => r.attributes[c.name])),
               rows_fid:         features.map(r => r.attributes[G3W_FID]),
-              fields:           cols.length ? cols : null,
+              fields:           cols.length ? cols : [],
               formStructure:    layer.getLayerEditingFormStructure(),
               rowFormStructure: null,
               layerId:          layer.getId(),
@@ -486,6 +504,7 @@
               autoWidth:      false,
               bLengthChange:  true,
               dom:            'ltip',
+              bSortCellsTop:  true,
               columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
               order:          [].concat(opts.ordering ? [ opts.sort_column, opts.sort] : []),
               lengthMenu:     PAGELENGTHS,
@@ -498,6 +517,7 @@
               deferLoading:   data_from_server && this.table.count,
               serverSide:     data_from_server,
               ajax: data_from_server ? newOpts => {
+                console.log(newOpts)
                 this.createTable({
                   ...newOpts,
                   page:       1 + (0 !== newOpts.start ? newOpts.start/newOpts.length : 0),
@@ -506,6 +526,13 @@
               } : null,
             });
             this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+            //Register changeCoumns
+            this.changeColumn = debounce((e, i) => {
+              const value = e.target.value.trim();
+              console.log(value)
+              this.table.columns[i].search = value;
+              this.$table.columns(i).search(value).draw()
+            })  
           }
 
           // resize after popping child relation
