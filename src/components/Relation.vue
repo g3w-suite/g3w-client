@@ -327,6 +327,7 @@
         try {
 
           GUI.setLoadingContent(true);
+          GUI.disableContent(true);
           this.loading = true;
 
           // Destroy previous table
@@ -547,6 +548,7 @@
           console.warn(e);
         } finally {
           GUI.setLoadingContent(false);
+          GUI.disableContent(false); //avoid to click or do something
           this.loading = false;
         }
       },
