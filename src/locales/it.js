@@ -394,6 +394,7 @@ export default {
         back_to_relations: 'Ritorna alle relazioni',
         list_of_relations_feature: 'Lista delle relazioni della feature',
         error_missing_father_field: "Il campo relazionato non esiste",
+        download_with_relations: "Scarica con relazioni",
         field: "Campo chiave relazione",
       },
       form: {

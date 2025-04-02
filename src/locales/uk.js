@@ -387,6 +387,7 @@ export default {
         back_to_relations: "До відношень",
         list_of_relations_feature: "Відношення об'єкта",
         error_missing_father_field: "Відсутнє поле",
+        download_with_relations: "Завантажити з відносинами",
         field: "Ключ відношення",
       },
       form: {

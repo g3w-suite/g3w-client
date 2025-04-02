@@ -9,11 +9,12 @@
       <input
         @change   = "changeCheckBox"
         :tabIndex = "tabIndex"
+        style     = "width:100%"
         :class    = "{'input-error-validation' : notvalid}"
+        class     = "magic-checkbox"
         v-model   = "value"
         type      = "checkbox"
-        :id       = "id"
-      />
+        :id       = "id">
       <label :for = "id">{{ label }}</label>
     </div>
   </baseinput>
