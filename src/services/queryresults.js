@@ -264,7 +264,7 @@ export default new (class QueryResultsService extends G3WObject {
                 ),
               } : undefined,
               relationsattributes:      (is_layer || is_vector || is_string)                       ? []                     : undefined,
-              hasdownloadablerelations: layer.hasDowloadableRelations(), //@since 3.11.7
+              hasdownloadablerelations: !external && layer.hasDowloadableRelations(), //@since 3.11.7
               filter:                   (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
               selection:                (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
               title:                    (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
