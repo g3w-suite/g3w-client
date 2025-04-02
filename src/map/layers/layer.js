@@ -24,6 +24,8 @@ import Table                     from 'components/Table.vue';
 import { ResponseParser }        from 'utils/parsers';
 import { get_legend_params }     from 'utils/get_legend_params';
 import { createRelationsUrl }    from 'utils/createRelationsUrl';
+import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
+
 
 import { Feature }               from 'map/layers/feature';
 import { t }                     from 'g3w-i18n';
@@ -902,7 +904,14 @@ class Layer extends G3WObject {
   /**
    * @returns { string[] } download formats
    */
-  getDownloadableFormats() { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+  getDownloadableFormats()  { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+
+  /**
+   * @since 3.11.7  
+   * @returns { Boolean } Return true if at least one layer has a download format not equal to pdf
+   */
+  hasDowloadableRelations() { 
+    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
 
   /**
    * @param download url

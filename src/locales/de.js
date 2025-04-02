@@ -357,6 +357,7 @@ export default {
         back_to_relations: 'Zurück zu den Relationen',
         list_of_relations_feature: 'Liste der Relationen des Features',
         error_missing_father_field: "Ein Feld fehlt",
+        download_with_relations: "Download mit Beziehungen",
         field: "Relation key field",
       },
       form: {
