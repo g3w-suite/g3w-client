@@ -362,6 +362,7 @@ export default {
         back_to_relations: 'Retour aux relations',
         list_of_relations_feature: 'Liste des relations entre les entités',
         error_missing_father_field: "Le champ concerné n'existe pas",
+        download_with_relations: "Télécharger avec les relations",
         field: "Relation key field",
       },
       form: {

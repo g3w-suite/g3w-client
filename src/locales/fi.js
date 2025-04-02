@@ -363,6 +363,7 @@ export default {
         back_to_relations: 'Takaisin relaatioihin',
         list_of_relations_feature: 'Lista ominaisuuden relaatioista',
         error_missing_father_field: "Kenttä puuttu",
+        download_with_relations: "Lataa suhteiden kanssa",
         field: "Relation key field",
       },
       form: {

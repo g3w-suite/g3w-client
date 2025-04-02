@@ -363,6 +363,7 @@ export default {
         back_to_relations: 'Tillbaka till relationerna',
         list_of_relations_feature: 'Lista på egenskapens relationer',
         error_missing_father_field: "Fält saknas",
+        download_with_relations: "Ladda ner med relationer",
         field: "Relation key field",
       },
       form: {
