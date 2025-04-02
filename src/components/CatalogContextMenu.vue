@@ -38,6 +38,7 @@
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
         style = "border-radius: 0 3px 3px 0;"
+        class = "sub-contex-menu"
       >
         <li class = "layer-menu-metadata-info" v-html = "layer.metadata.abstract"></li>
       </ul>
@@ -77,7 +78,7 @@
         <i :class = "$fa('sort')"></i>
         {{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})
         <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li
             v-for  = "position in ['top', 'bottom']"
             @click = "setLayerPosition(position)"
@@ -100,7 +101,7 @@
         <i :class = "$fa('palette')"></i>
         {{ $t('catalog_items.contextmenu.styles') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
         <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li
             v-for       = "(style, i) in layer.styles"
             @click.stop = "setLayerStyle(i)"
@@ -124,7 +125,7 @@
         <i :class = "$fa('slider')"></i>
         {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ (layer.opacity / 100) }})
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li style="display: list-item;">
             <input
               type    = "range"
@@ -153,7 +154,7 @@
         <i :class = "$fa('slider')"></i>
         {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ layer.opacity }})
         <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li style="display: list-item;">
             <input
               type    = "range"
@@ -183,7 +184,7 @@
         {{ $t('catalog_items.contextmenu.vector_color_menu') }}
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li style="padding: 14px; background-color: #E0E0E0;">
             <chrome-picker
               ref                 = "color_picker"
@@ -204,7 +205,7 @@
         <i :class = "$fa('filter')"></i>
         {{ $t('catalog_items.contextmenu.filters') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul>
+        <ul class = "sub-contex-menu">
           <li
             v-for       = "filter in layer.filters"
             :key        = "filter.fid"
@@ -237,7 +238,15 @@
         {{ $t('catalog_items.contextmenu.download') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <bar-loader :loading = "ApplicationState.download"/>
-        <ul>
+        <ul class = "sub-contex-menu">
+          <div v-if = "hasDowloadableRelations()" style = "padding: 3px; border-bottom: 3px solid var(--skin-color)">
+            <input
+              id         = "g3w-layer-download-relations"
+              class      = "magic-checkbox"
+              v-model    = "down_with_relations" 
+              type       = "checkbox"/>
+              <label for = "g3w-layer-download-relations" v-t = "'sdk.relations.download_with_relations'"></label>
+          </div>
 
           <!-- Download as GeoTIFF -->
           <li
@@ -336,7 +345,7 @@
       >
         <i :class = "$fa('map')"></i> {{ $t('catalog_items.contextmenu.ogc_services') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
-        <ul>
+        <ul class = "sub-contex-menu">
 
           <!-- Click to Copy WMS URL -->
           <li
@@ -510,12 +519,13 @@
     data() {
       return {
         ApplicationState,
-        layer:         null,
-        layer_style:   null,
-        top:           0,
-        left:          0,
-        project_menu:  false,
-        layer_menu:    false,
+        layer:               null,
+        layer_style:         null,
+        top:                 0,
+        left:                0,
+        project_menu:        false,
+        layer_menu:          false,
+        down_with_relations: false, //@since 3.11.7 download with relations
       };
     },
 
@@ -579,8 +589,9 @@
        * @param { string } menu
        */
       closeMenu() {
-        this.layer_menu = false;
-        this.project_menu = false;
+        this.layer_menu          = false;
+        this.project_menu        = false;
+        this.down_with_relations = false;
       },
 
       onChangeColor(val) {
@@ -610,7 +621,8 @@
        */
       canDownload(format, layerId) {
         const layer = getCatalogLayerById(layerId);
-        return layer && layer['is' + format + 'Downloadable']();
+        //exclude pdf format. It is used only for single feature download
+        return layer && layer.getDownloadableFormats().filter(f => 'pdf' !== f).length && layer['is' + format + 'Downloadable']();
       },
 
       getWmsUrl(layerId) {
@@ -664,7 +676,10 @@
         ApplicationState.download = true;
         try {
           await getCatalogLayerById(layerId)['get' + format]({
-            data:  map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : undefined
+            data: {
+                    ...(map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : {}),
+                    down_with_relations: Number(this.down_with_relations) // convert boolean to 0/1
+                  },
           });
         } catch (e) {
           GUI.notify.error(t("info.server_error"));
@@ -988,6 +1003,13 @@
         }
 
       },
+      /**
+       * @since 3.11.7
+       * Check if layer has relation with download format activated
+       */
+       hasDowloadableRelations() {
+        return getCatalogLayerById(this.layer.id).hasDowloadableRelations();
+      }
 
     },
 
@@ -1045,7 +1067,7 @@
   .catalog-context-menu li i {
     padding-right: 3px;
     margin-right: 6px;
-    color: var(--skin-d20) !important;
+    color: hsl(from var(--skin-color) h s calc(l - 20)) !important;
   }
   .catalog-context-menu li .click-to-copy {
     color: #000;

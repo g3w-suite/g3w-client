@@ -231,7 +231,6 @@ export default new (class QueryResultsService extends G3WObject {
                 _setRelationField(node);
               }
             }
-
             // layerObj
             return {
               id,
@@ -264,14 +263,15 @@ export default new (class QueryResultsService extends G3WObject {
                   (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
                 ),
               } : undefined,
-              relationsattributes:    (is_layer || is_vector || is_string)                       ? []                     : undefined,
-              filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-              selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
-              title:                  (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
-              atlas:                  this._atlas.filter(a => a.atlas.qgs_layer_id === id),
-              rawdata:                rawdata  || null,
-              error:                  error    || '',
-              toc:                    external || layer.state.toc, //@since v3.10.0
+              relationsattributes:      (is_layer || is_vector || is_string)                       ? []                     : undefined,
+              hasdownloadablerelations: layer.hasDowloadableRelations(), //@since 3.11.7
+              filter:                   (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
+              selection:                (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
+              title:                    (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
+              atlas:                    this._atlas.filter(a => a.atlas.qgs_layer_id === id),
+              rawdata:                  rawdata  || null,
+              error:                    error    || '',
+              toc:                      external || layer.state.toc, //@since v3.10.0
             };
           });
         this.setLayersData(layers, options);
@@ -788,17 +788,10 @@ export default new (class QueryResultsService extends G3WObject {
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.currentactionfeaturelayer[layer.id] = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.layersactions[layer.id]             = this.state.layersactions[layer.id] || [];
-
-      const download_format  = 1 === layer.downloads.length && (layer.downloads || []).at(0); // NB: format == layer.downloads[0]
       const relations        = (this._relations[layer.id] || []).filter(r => 'MANY' === r.type);
       const chartRelationIds = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
-
-      if (download_format) {
-        layer[download_format] = Vue.observable({ active: false });
-      }
-
       // set actionstools configs
-      if (layer.downloads.length > 1) {
+      if (layer.downloads.length > 0) {
         this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
         this.state.actiontools.downloadformats[layer.id] = {
           downloads: layer.downloads.map(format => ({
@@ -807,12 +800,12 @@ export default new (class QueryResultsService extends G3WObject {
             format,
             class:    GUI.getFontClass(format),
             hint:     `sdk.tooltips.download_${format}`,
-            cbk: (layer, feature, action, index, html) => {
+            cbk: (layer, feature, action, index, html, down_with_relations) => {
               // un-toggle downloads action
-              this.downloadFeatures(format, layer, feature, action, index, html);
+              this.downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
               if ('polygon' !== this.state.query.type) {
                 const downloadsaction = this.state.layersactions[layer.id].find(a => 'downloads' === a.id);
-                downloadsaction.cbk(layer, feature, downloadsaction, index, html);
+                downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
               }
             }
           }))
@@ -890,25 +883,8 @@ export default new (class QueryResultsService extends G3WObject {
           cbk:      this.printAtlas.bind(this)
         },
 
-        // download features (single)
-        download_format && {
-          id:       `download_${download_format}_feature`,
-          download: true,
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => {a[i] = null; return a; }, {}) }),
-          class:    GUI.getFontClass('download'),
-          hint:     `sdk.tooltips.download_${download_format}`,
-          cbk: (layer, feature, action, index, container) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            if (action.state.toggled[index]) {
-              this.downloadFeatures(download_format, layer, feature, action, index, ('pdf' === download_format ? container[0].innerHTML : null));
-            } else {
-              this.setCurrentActionLayerFeatureTool({ index, action, layer })
-            }
-          }
-        },
-
-        // download features (multi)
-        layer.downloads.length > 1 && {
+        // download features
+        layer.downloads.length > 0 && {
           id:         'downloads',
           download:   true,
           class:      GUI.getFontClass('download'),
@@ -1616,18 +1592,22 @@ export default new (class QueryResultsService extends G3WObject {
    * @param action
    * @param index
    * @param html
+   * @param down_with_relations
    */
-  async downloadFeatures(type, layer, features = [], action, index, html) {
+  async downloadFeatures(type, layer, features = [], action, index, html, down_with_relations = 0) {
 
     if (features && !Array.isArray(features)) {
       features = [features];
     }
 
     const { query = {} } = this.state;
-    const data           = {
-      fids: features.map(f => f.attributes[G3W_FID]).join(',')
-    };
 
+    const data = 'search' === query.type
+      ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
+      : { fids: features.map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
+    
+    data.down_with_relations = down_with_relations; 
+  
     //In the case of pdf type need to add html element
     if ('pdf' === type) {
       data.html = html;

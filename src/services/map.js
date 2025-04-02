@@ -1421,10 +1421,9 @@ class MapService extends G3WObject {
         {
           id: `layer_${id}`,
           projection: this.getProjection(),
-          /** @since 3.9.1 */
-          format: 1 === layers.length ? layer.getFormat() : null
+          format: layer.getFormat()
         },
-        1 === layers.length ? {} : this.layersExtraParams
+        this.layersExtraParams
       );
       layers.reverse().forEach(l => mapLayer.addLayer(l));
       mapLayers.push(mapLayer);

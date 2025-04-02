@@ -94,21 +94,7 @@
                       </span>
                     </span>
                     <!--        DOWNLOAD        -->
-                    <template v-if = "1 === getLayerDownloads(layer.downloads).length ">
-                      <span
-                        class                   = "action-button"
-                        :class                  = "{'toggled': layer.downloadformats.active}"
-                        v-t-tooltip:left.create = "`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`"
-                        v-download
-                      >
-                        <span
-                          class       = "action-button-icon"
-                          :class      = "g3wtemplate.getFontClass('download')"
-                          @click.stop = "saveLayerResult(layer, getLayerDownloads(layer.downloads)[0])"
-                        ></span>
-                      </span>
-                    </template>
-                    <template v-else-if = "getLayerDownloads(layer.downloads).length > 1">
+                    <template v-if = "getLayerDownloads(layer.downloads).length > 0">
                       <span
                         class                   = "action-button"
                         :class                  = "{'toggled': layer.downloadformats.active}"
@@ -760,7 +746,7 @@
         this.$options.service.printAtlas(layer);
       },
       showLayerDownloadFormats(layer) {
-        this.$options.service.showLayerDownloadFormats(layer)
+        this.$options.service.showLayerDownloadFormats(layer);
       },
       saveLayerResult(layer, type = "csv") {
         this.$options.service.downloadFeatures(type, layer, layer.features);

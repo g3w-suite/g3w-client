@@ -255,7 +255,7 @@
       style  = "
         position: sticky;
         bottom: 0;
-        background-color: #222d32;
+        background-color: var(--bgcolor);
         display: flex;
         text-align: center;
         line-height: 48px;
@@ -877,7 +877,7 @@ export default {
   }
   .tabbable-line > .nav-tabs > li {
     margin-right: 2px;
-    border-bottom: 4px solid #21292d;
+    border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2));
   }
   .tabbable-line > .nav-tabs > li > a {
     border: 0;
@@ -904,7 +904,7 @@ export default {
   .tabbable-line > .nav-tabs > li.active > a {
     border: 0;
     color: #fff;
-    background-color: #2c3b41;
+    background-color: hsl(from var(--bgcolor) h s calc(l + 4));
   }
   .tabbable-line > .nav-tabs > li.active > a > i {
     color: #fff;
@@ -955,7 +955,7 @@ export default {
   }
   .catalog .tree-item.selected ul.layer-categories,
   .catalog #legend div.selected ul.layer-categories {
-    background-color: #222d32;
+    background-color: var(--bgcolor);
   }
   .catalog .tree-item div.tree-node-title,
   .catalog #legend div div.tree-node-title {
@@ -1069,7 +1069,7 @@ export default {
   }
   .catalog .layer-legend {
     padding: 3px 0 0 35px;
-    background-color: #222d32;
+    background-color: var(--bgcolor);
   }
   .catalog .catalalog-nav-tabs {
     display: flex;

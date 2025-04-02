@@ -19,15 +19,15 @@
             v-if  = "active_theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'" style = "color: #ccc !important;">:</span>
+            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'">:</span>
             <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
           </span>
           <!-- Choose a theme -->
-          <div
+          <b
             v-else
-            class = "choose_map_theme treeview-label"
+            class = "treeview-label"
             v-t   = "'sdk.catalog.choose_map_theme'">
-          </div>
+          </b>
         </section>
       </a>
 
@@ -300,27 +300,30 @@ export default {
         return;
       }
       try {
-        const params = this._getMapThemeParams();
-        const saved = await XHR.post({
+        const params   = this._getMapThemeParams();
+        const response = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
           data:        JSON.stringify(params),
         });
-        if (saved.result) {
-          this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
-          // show a success add custom matp theme message to user
-          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
-          // close dialog
-          this.show_form = false;
-          //set as current active name map theme
-          this.active_theme = this.custom_theme.value;
-          //need to wait watch
-          await this.$nextTick();
-          //set custom map theme value to null. Reset value
-          this.custom_theme.value = null;
-        }        
-      } catch (e) {
+        // handle server error
+        if (!response.result) {
+          throw response;
+        }
+        this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
+        // show a success add custom matp theme message to user
+        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
+        // close dialog
+        this.show_form    = false;
+        //set as current active name map theme
+        this.active_theme = this.custom_theme.value;
+        //need to wait watch
+        await this.$nextTick();
+        //set custom map theme value to null. Reset value
+        this.custom_theme.value = null;
+      } catch(e) {
         console.warn(e);
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
       }
     },
 
@@ -330,22 +333,27 @@ export default {
         return;
       }
       try {
-        const params = this._getMapThemeParams();
-        await XHR.post({
+        const params   = this._getMapThemeParams();
+        const response = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
           data:        JSON.stringify(params),
         });
+        // handle server error
+        if (!response.result) {
+          throw response;
+        }
         // update custom map theme styles
-        const c_theme = this.map_themes.custom.find(mt => theme === mt.theme)
-        c_theme.styles     = params.styles;
-        c_theme.layerstree = params.layerstree;
+        Object.assign(this.map_themes.custom.find(mt => theme === mt.theme), {
+          styles:     params.styles,
+          layerstree: params.layerstree,
+        });
         // show a success update map theme message to user
         GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
       } catch(e) {
         console.warn(e);
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
       }
-
     },
 
     /**
@@ -362,18 +370,21 @@ export default {
           return;
         }
         try {
-          const deleted = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
+          const response = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
             method: 'DELETE',
           })).json();
-          if (deleted.result) {
-            this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
-            // show a success message to user
-            GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
-            // in the case of deleted current map theme set current theme to null
-            if (theme === this.active_theme) { this.active_theme = null;}
-          }          
-        } catch (e) {
-          console.warn(e)
+          // handle server error
+          if (!response.result) {
+            throw response;
+          }
+          this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
+          // show a success message to user
+          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
+          // in the case of deleted current map theme set current theme to null
+          if (theme === this.active_theme) { this.active_theme = null;}
+        } catch(e) {
+          console.warn(e);
+          GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
         }
       });
     },
@@ -452,10 +463,6 @@ export default {
     overflow: hidden;
     white-space: normal;
     text-overflow: ellipsis;
-  }
-  .choose_map_theme {
-    color: #ccc !important;
-    font-weight: bold;
   }
   .project_map_theme {
     font-weight: bold;

@@ -23,6 +23,8 @@ import Table                     from 'components/Table.vue';
 import { ResponseParser }        from 'utils/parsers';
 import { get_legend_params }     from 'utils/get_legend_params';
 import { createRelationsUrl }    from 'utils/createRelationsUrl';
+import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
+
 
 import { Feature }               from 'map/layers/feature';
 import { t }                     from 'g3w-i18n';
@@ -194,7 +196,7 @@ const Providers = {
               url:  this._layer.getUrl('editing') + params,
               data: JSON.stringify({
                 in_bbox:     options.filter.bbox.join(','),
-                filtertoken: ApplicationState.tokens.filtertoken
+                filtertoken: this._layer.getFilterToken(),
               }),
               contentType: 'application/json',
             })
@@ -349,9 +351,8 @@ const Providers = {
 
     }
   },
-
+  //backward compatibilities v3.11.6
   wfs: class {
-  
     // query method
     query(opts = {}, params = {}) {
       const filter = opts.filter || {};
@@ -430,9 +431,51 @@ const Providers = {
       ]));
 
     }
-
   },
+  //Changed based on https://github.com/g3w-suite/g3w-admin/issues/1070
+  //@since 3.11.7
+  g3w: class {
+    async query(opts = {}, params = {}) {
+      const filter = opts.filter || {};
+      const spatialMethod = filter.config.spatialMethod || 'intersects';
+      switch(filter.type) {
+        case 'bbox':
+        case 'geometry':
+          params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
+          params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }));
+          params.formatter       = 1;
+          break;
+        case 'expression':
+          break;    
+      }
 
+      const data = [];
+
+      try {
+        const response = await XHR.post({ 
+          url :  this._layer.getUrl('data'),
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+         });
+         if (response && response.result) {
+          data.push({ 
+            layer:    this._layer,
+            features: ResponseParser.get('g3w-vector/json')(
+              response.vector && response.vector.data || {},
+              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }},
+            ),
+          })
+         } else {
+          throw response.error;
+         }
+      } catch(e) {
+        console.warn(e);
+      }
+
+      return { data }
+      
+    }  
+  }
 };
 
 const DOWNLOAD_FORMATS = {
@@ -759,7 +802,7 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
-      ].includes(layerType) && createProvider('wfs', this),
+      ].includes(layerType) && createProvider('g3w', this),
 
       filtertoken: [
         'QGIS virtual',
@@ -872,7 +915,14 @@ class Layer extends G3WObject {
   /**
    * @returns { string[] } download formats
    */
-  getDownloadableFormats() { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+  getDownloadableFormats()  { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+
+  /**
+   * @since 3.11.7  
+   * @returns { Boolean } Return true if at least one layer has a download format not equal to pdf
+   */
+  hasDowloadableRelations() { 
+    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
 
   /**
    * @param download url
@@ -1240,8 +1290,8 @@ class Layer extends G3WObject {
       this.state.filter.current = null  // set current filter set to null
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
-      this.setFilterToken(filtertoken); // pass `filtertoken` to application
-
+      this.setFilterToken(null); //force to null
+      ApplicationState.tokens.filtertoken = filtertoken; // pass `filtertoken` to application
     } catch(e) {
       console.warn(e);
     }
@@ -1315,7 +1365,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getFilterToken() {
-    return ApplicationState.tokens.filtertoken;
+    return this.state.filter.active ? ApplicationState.tokens.filtertoken : undefined;
   }
 
   /**
@@ -1727,7 +1777,7 @@ class Layer extends G3WObject {
             formatter,
             suggest,
             in_bbox,
-            filtertoken: ApplicationState.tokens.filtertoken
+            filtertoken: this.getFilterToken()
           })
       );
 
@@ -1876,7 +1926,7 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: ApplicationState.tokens.filtertoken,
+      filtertoken: this.getFilterToken(),
       autofilter,
       page,
       page_size,
