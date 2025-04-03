@@ -65,7 +65,6 @@
       </div>
     </div>
     <div
-      v-if  = "table.data_from_server || table.rows.length"
       ref   = "wrapper"
       class = "relation-wrapper"
     >
@@ -186,13 +185,6 @@
 
     </div>
 
-    <div
-      v-else-if = "!loading"
-      class = "dataTables_scrollBody"
-    >
-      <span v-t = "'sdk.relations.no_relations_found'"></span>
-    </div>
-
   </div>
 
 </template>
@@ -254,9 +246,9 @@
          * @since 3.11.2
          */
         table: {
-          rows:             [],
-          filter:           {}, //filter columns
-          data_from_server: false, //@since 4.0 need to handle no results from columns search
+          columns: [],
+          rows:    [],
+          filter:  {}, //filter columns
         },
 
         /**
@@ -317,241 +309,76 @@
       },
 
       /**
-       * @param opts     - settings used for render new table
-       * @param prevOpts - settings used for render old table
-       *  
-       * @returns { Promise<void> }
+       * 
+       * @param opts 
+       * @param prevOpts 
        */
-      async createTable(opts, prevOpts = {}) {
-
+      async getData(opts) {
+        GUI.setLoadingContent(true);
+        GUI.disableContent(true);
+        this.loading = true;
+  
         try {
+          // Get relations from server
+          const response = await XHR.post(createRelationsUrl(
+            {
+              layer:     this.layer,
+              fid:       this.feature.attributes[G3W_FID],
+              relation:  this.relation,
+              page:      opts.start,
+              page_size: opts.length,
+              ordering:  opts.ordering,
+              method:    'POST',
+              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}|and`).join(',').replace(/\|and$/, '') || undefined,
+            }
+          )); 
 
-          GUI.setLoadingContent(true);
-          GUI.disableContent(true);
-          this.loading = true;
+          const count = response.result && response.vector && response.vector.count;
 
-          // Destroy previous table
-          if (this.$table) {
-            /** @TODO remove "data_from_server" and use table.ajax.reload(); instead */
-            this.$table.destroy(!opts.data_from_server); // In case of data_from_server set .destroy(false), https://datatables.net/reference/api/destroy() 
-            this.$table                 = null;
-            this.table.rows             = [];
-            //set data from server to show for example search columns with no results
-            this.table.data_from_server = opts.data_from_server;
-            await this.$nextTick();
-          }
-
-          try {
-
-            const changed = (opts.page_size !== prevOpts.page_size || opts.start !== prevOpts.start);
-
-            // merge options: (defaults + old + new) 
-            opts = {
-              /** @type { "desc" | "asc" | "current" } column order */
-              sort: 'asc',
-              /** @type { string | undefined } parameter sent to server ("-" = descending ) only if user has already clicked on a column to sort data */
-              ordering: undefined,
-              start: 0,
-              sort_column: 0,
-              order: [],
-              ...prevOpts,
-              ...opts
+          //extract features attributes, Array, and digest for table
+          let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
+            f.properties[G3W_FID] = f.id;
+            return {
+              geometry:   f.geometry,
+              attributes: f.properties,
+              id:         f.id,
             };
+          }) : [];
 
-
-            // check if ordering is asked by user by click on a column
-            if (opts.ordering && changed) {
-              opts.sort = opts.order[0].dir; // in case of change page, get last sorting of column
-            }
-
-            // in case of sort columns is not a previous column
-            if (opts.ordering && !changed && opts.order[0].column !== opts.sort_column) {
-              opts.sort = 'asc';
-            }
-
-            // invert sort
-            if (opts.ordering && !changed && opts.order[0].column === opts.sort_column) {
-              opts.sort = ('desc' === opts.sort ? 'asc' : 'desc');
-            }
-
-            // in case of set ordering (field sort) or not set ordering (start time)
-            if (opts.ordering || opts.order.length) {
-              opts.ordering = `${'desc' === opts.sort ? '-' : ''}${this.table.fields[opts.order[0].column - Number(!!this.showTools)].name}`;
-            }
-
-            /** @type { number } current column index */
-            opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
-            
-            // Get relations from server
-            const response = await XHR.post(createRelationsUrl(
-              {
-                layer:     this.layer,
-                fid:       this.feature.attributes[G3W_FID],
-                relation:  this.relation,
-                page:      opts.page,
-                page_size: opts.page_size,
-                ordering:  opts.ordering,
-                method:    'POST',
-                field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}|and`).join(',').replace(/\|and$/, '') || undefined,
-              }
-            )
-            ); 
-
-            //extract features attributes, Array, and digest for table
-            let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
-              f.properties[G3W_FID] = f.id;
-              return {
-                geometry:   f.geometry,
-                attributes: f.properties,
-                id:         f.id,
-              };
-            }) : [];
-
-            // handle NM relations
-            const NM = this.nmRelation && (features || []).length && await DataRouterService.getData('search:features', {
-              inputs: {
-                layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
-                filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
-                formatter: 1, // set formatter to
-              },
-              outputs: null
-            });
-
-            if (NM && NM.data && NM.data[0] && Array.isArray(NM.data[0].features)) {
-              features = NM.data[0].features.map(f => ({
-                id:         f.getId(),
-                geometry:   f.getGeometry(),
-                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
-              }));
-            }
-
-            // build relation table
-            const layer = ApplicationState.project.getLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
-            const attrs = Object.keys(features[0] ? features[0].attributes : {});
-            const cols  = this.table.columns || layer.getTableHeaders().filter(h => attrs.includes(h.name));
-
-            this.table = {
-              count:            response.result && response.vector.count,
-              features,
-              columns:          cols,
-              rows:             features.map(r => cols.map(c => r.attributes[c.name])),
-              rows_fid:         features.map(r => r.attributes[G3W_FID]),
-              fields:           cols.length ? cols : [],
-              formStructure:    layer.getLayerEditingFormStructure(),
-              rowFormStructure: null,
-              layerId:          layer.getId(),
-              title:            layer.getName() || layer.getTitle(), //@since 3.11.0
-              data_from_server: !!opts.data_from_server,
-            };
-          } catch(e) {
-            this.table = { rows: [] };
-            console.warn(e);
-          }
-
-          if (!opts.data_from_server && 0 === this.table.rows.length) {
-            return;
-          }
-
-          const layer     = getCatalogLayerById(this.table.layerId);
-
-          this.isEditable = layer.isEditable() && !layer.isInEditing();
-
-          //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
-          const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
-
-          /** @FIXME add description */
-          if (downloadformats.length > 0) {
-            this.downloadButton = {
-              toggled: false,
-              tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-              handler: downloadformats.length > 1
-                ? async () => {
-                    this.downloadButton.toggled         = !this.downloadButton.toggled;
-                    this.downloadLayer.state            = this.downloadLayer.state || layer.state;
-                    this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
-                      ? this.downloadLayer.config.downloads
-                      : downloadformats.map(format => ({
-                          id: format,
-                          format,
-                          cbk: () => {
-                            this.saveRelation(layer.getDownloadUrl(format));
-                            this.headercomponent = null;
-                          },
-                          download: true,
-                        })
-                    );
-                    this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-                  }
-                : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
-            }
-          }
-
-          VM.$on('reload-relations', () => { this.reloadLayout(); });
-
-          this.showChart = throttle(async () => {
-            this.chart = !this.chart;
-            await this.$nextTick();
-            this.chartContainer = this.chartContainer ||  $('#chart_content');
-            this.chart 
-              ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
-              : GUI.getService('queryresults').hideChart(this.chartContainer)
+          // handle NM relations
+          const NM = this.nmRelation && (features || []).length && await DataRouterService.getData('search:features', {
+            inputs: {
+              layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
+              filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
+              formatter: 1, // set formatter to
+            },
+            outputs: null
           });
 
-          await this.$nextTick();
+          if (NM && NM.data && NM.data[0] && Array.isArray(NM.data[0].features)) {
+            features = NM.data[0].features.map(f => ({
+              id:         f.getId(),
+              geometry:   f.getGeometry(),
+              attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
+            }));
+          }          
 
-          SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
-
-          this.relation.title = this.relation.name;
-
-          if ('ONE' !== this.relation.type) {
-            //check if you need to get data pagination from server or use all features
-            const data_from_server = opts.data_from_server || this.table.rows.length < this.table.count;
-            this.$table = $(this.$refs.table).DataTable({
-              autoWidth:      false,
-              bLengthChange:  true,
-              dom:            'ltip',
-              bSortCellsTop:  true,
-              columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
-              order:          [].concat(opts.ordering ? [ opts.sort_column, opts.sort] : []),
-              lengthMenu:     PAGELENGTHS,
-              pageLength:     opts.page_size,
-              displayStart:   opts.start,
-              responsive:     true,
-              scrollResize:   true,
-              scrollCollapse: true,
-              scrollX:        true,
-              deferLoading:   data_from_server && this.table.count,
-              serverSide:     data_from_server,
-              ajax: data_from_server ? newOpts => {
-                this.createTable({
-                  ...newOpts,
-                  page:       1 + (0 !== newOpts.start ? newOpts.start/newOpts.length : 0),
-                  page_size: newOpts.length,
-                  data_from_server: true, //alwasy true
-                }, opts);
-              } : null,
-            });
-            this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-            //Register changeCoumns
-            this.changeColumn = debounce((e, i) => {
-              const value = e.target.value.trim();
-              this.table.columns[i].search = value;
-              this.$table.columns(i).search(value).draw()
-            })  
-          }
-
-          // resize after popping child relation
-          GUI.on('pop-content', () => setTimeout(() => this.resize()));
-
-          this.resize();
+          return {
+            // DataTable pagination
+            data: features.map(f => [null].concat(this.table.columns.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
+            recordsFiltered: count,
+            recordsTotal:    count,
+          };
+          
         } catch(e) {
           console.warn(e);
         } finally {
           GUI.setLoadingContent(false);
-          GUI.disableContent(false); //avoid to click or do something
+          GUI.disableContent(false);
           this.loading = false;
         }
       },
+
 
       /**
        * @returns { Promise<void> }
@@ -709,11 +536,103 @@
       this.delayType = 'debounce';
     },
 
-    async created() {
-      await this.createTable({
-        page:      1,
-        page_size: PAGELENGTHS[0],
+    created() {
+      const layer        = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
+      this.isEditable    = layer.isEditable() && !layer.isInEditing();
+      this.table.columns = layer.getTableHeaders();
+    },
+
+    async mounted() {
+      const layer        = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
+      await this.$nextTick();
+
+      SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
+
+      
+      this.relation.title = this.relation.name;
+
+      
+      //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
+      const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
+
+      /** @FIXME add description */
+      if (downloadformats.length > 0) {
+        this.downloadButton = {
+          toggled: false,
+          tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
+          handler: downloadformats.length > 1
+            ? async () => {
+                this.downloadButton.toggled         = !this.downloadButton.toggled;
+                this.downloadLayer.state            = this.downloadLayer.state || layer.state;
+                this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
+                  ? this.downloadLayer.config.downloads
+                  : downloadformats.map(format => ({
+                      id: format,
+                      format,
+                      cbk: () => {
+                        this.saveRelation(this.layer.getDownloadUrl(format));
+                        this.headercomponent = null;
+                      },
+                      download: true,
+                    })
+                );
+                this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
+              }
+            : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
+        }
+      }
+
+      VM.$on('reload-relations', () => { this.reloadLayout(); });
+
+      this.showChart = throttle(async () => {
+        this.chart = !this.chart;
+        await this.$nextTick();
+        this.chartContainer = this.chartContainer ||  $('#chart_content');
+        this.chart 
+          ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
+          : GUI.getService('queryresults').hideChart(this.chartContainer)
       });
+
+      
+      if ('ONE' !== this.relation.type) {
+        this.$table = $(this.$refs.table).DataTable({
+          autoWidth:      false,
+          bLengthChange:  true,
+          dom:            'ltip',
+          bSortCellsTop:  true,
+          columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
+          order:          [],
+          lengthMenu:     PAGELENGTHS,
+          pageLength:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
+          displayStart:   1,
+          responsive:     true,
+          scrollResize:   true,
+          scrollCollapse: true,
+          scrollX:        true,
+          serverSide:     true,
+          ajax: async (opts, cb) => {
+            const data = await this.getData(opts);
+            cb(data);
+            await this.$nextTick();
+            this.$table.columns.adjust();
+          },
+        });
+
+        this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+        //Register changeCoumns
+        this.changeColumn = debounce((e, i) => {
+          const value = e.target.value.trim();
+          this.table.columns[i].search = value;
+          this.$table.columns(i).search(value).draw()
+        })  
+
+      }
+
+      // resize after popping child relation
+      GUI.on('pop-content', () => setTimeout(() => this.resize()));
+
+      this.resize();
+
     },
 
     /**
