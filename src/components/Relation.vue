@@ -514,7 +514,7 @@
               columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
               order:          [].concat(opts.ordering ? [ opts.sort_column, opts.sort] : []),
               lengthMenu:     PAGELENGTHS,
-              pageLength:     opts.page_size,
+              pageLength:     opts.page_size || layer.getAttributeTablePageLength() || PAGELENGTHS[1],
               displayStart:   opts.start,
               responsive:     true,
               scrollResize:   true,
@@ -711,8 +711,7 @@
 
     async created() {
       await this.createTable({
-        page:      1,
-        page_size: PAGELENGTHS[0],
+        page:      1
       });
     },
 
