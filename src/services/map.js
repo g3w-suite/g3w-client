@@ -237,11 +237,6 @@ class MapService extends G3WObject {
         source: new ol.source.Vector(),
       }),
 
-      /**@since 3.12.0 */
-      annotation: new ol.layer.Vector({
-        source: new ol.source.Vector(),
-      })
-
     };
 
     this.layersExtraParams = {};
@@ -518,7 +513,6 @@ class MapService extends G3WObject {
                 this.createMapControl('annotation', {
                   options: {
                     name:        "annotation",
-                    layer:       this.defaultsLayers.annotation,
                     annotations: this.project.annotations, // in case annotation on project config
                     tipLabel:    'sdk.mapcontrols.annotation.tooltip',
                   }
@@ -706,11 +700,9 @@ class MapService extends G3WObject {
             layer:  e.element,
             zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
           });
-          //Annatotion always on top
-          if (this.defaultsLayers.annotation)     { this.defaultsLayers.annotation.setZIndex(zindex + 1); }
-          if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.setZIndex(zindex + 2); }
-          if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.setZIndex(zindex + 3); }
-          if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.setZIndex(zindex + 4); }
+          if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
+          if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.setZIndex(zindex + 2); }
+          if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.setZIndex(zindex + 3); }
 
         });
 
@@ -1464,7 +1456,6 @@ class MapService extends G3WObject {
     // set default layers order
     const map = this.getMap();
 
-    map.addLayer(this.defaultsLayers.annotation);
     map.addLayer(this.defaultsLayers.mapcenter);
     map.addLayer(this.defaultsLayers.selectionLayer);
     map.addLayer(this.defaultsLayers.highlightLayer);

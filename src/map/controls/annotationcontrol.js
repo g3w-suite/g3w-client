@@ -10,6 +10,7 @@ import { Compact as ColorPicker } from 'vue-color';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
+import { makeArrayPusher } from 'ol/xml';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -405,10 +406,11 @@ export class AnnotationControl extends InteractionControl {
       }
     });
 
-    this._layer = opts.layer || new ol.layer.Vector({
+    //Passing layer or create a new one
+    this._layer = new ol.layer.Vector({
       source: new ol.source.Vector()
     });
-    
+
     //map projection
     const projection = GUI.getService('map').getEpsg();
     //Add features if passed
@@ -874,7 +876,8 @@ export class AnnotationControl extends InteractionControl {
   }
 
   setMap(map) {
-    super.setMap(map)
+    super.setMap(map);
+    map.addLayer(this._layer);
   }
   /**
   * Reset data contraints 
