@@ -14,7 +14,7 @@ export function createRelationsUrl({
   page_size,  //@since 3.11.2
   ordering,   //@since 3.11.3
   field,      // @since 4.0.0 search columns purpose 
-  method = 'GET' // @since v4.0.0 <GET or POST> In case of post return a pst object with url data etc ..
+  method = 'GET', // @since v4.0.0 <GET or POST> In case of post return a pst object with url data etc ..
 }) {
   const url = `${ApplicationState.project.getLayerById(
     undefined === relation.father
@@ -23,7 +23,7 @@ export function createRelationsUrl({
   ).getUrl(type)}?relationonetomany=${relation.id}|${sanitizeFidFeature(fid)}`
 
   if ('GET' === method) {
-    return `${url}&formatter=${formatter}${page ? '&page=' + page: ''}${page_size ? '&page_size=' + page_size: ''} ${ordering ? '&ordering=' + ordering: '', field ? '&field=' + field : ''}`;
+    return `${url}${Object.entries({ formatter, page, page_size, ordering, field }).filter(([_, v]) => ![null, undefined, ''].includes(v)).reduce((a, [k, v]) => `${a}&${k}=${v}`, '')}`;
   }
 
   if ('POST' === method) {
