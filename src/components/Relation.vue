@@ -119,6 +119,7 @@
           </thead>
           <tbody id = "table_body_attributes" hidden></tbody>
           <tbody ref = "table_body">
+            
             <tr
               v-for  = "(row, index) in table.rows"
               :key   = "table.rows_fid[index]"
@@ -158,7 +159,7 @@
                   :class                   = "$fa('pencil')"
                 ></span>
               </td>
-              <td v-for = "value in row">
+              <td v-for = "value in row.slice(1)">
                 <field :state = "{value:value}"/>
               </td>
             </tr>
