@@ -112,7 +112,7 @@ abbr[title], abbr[data-original-title]      { cursor: help; }
 address                                     { margin-bottom: 20px; font-style: normal; line-height: 1.42857143; }
 
 .container, .container-fluid                { padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
-*:has(> [class*="col-"])                    { display: grid !important; grid-template-columns: repeat(12, 1fr); gap: 15px; }
+*:has(> [class*="col-"])                    { display: grid !important; grid-template-columns: repeat(12, 1fr);}
 [class*="col-"]                             { grid-column: span 12; }
 
 @media (min-width: 768px) {
