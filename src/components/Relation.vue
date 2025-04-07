@@ -269,7 +269,10 @@
          */
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
 
-        norelations:     false, //@since 4.0.0 used to show table or not depending of first get data from server 
+        /**
+         * @since 4.0.0 whether to show table (inital request)
+         */
+        norelations: false,
       };
     },
 
@@ -324,96 +327,86 @@
       },
 
       /**
-       * @param opts 
+       * @param opts
+       * 
+       * @returns DataTable pagination
        * 
        * @since 4.0.0
        */
       async getData(opts = {}) {
-        GUI.setLoadingContent(true);
-        GUI.disableContent(true);
-        let data;
         try {
+          GUI.setLoadingContent(true);
+          GUI.disableContent(true);
+
           // Get relations from server
           const response = await (await fetch(createRelationsUrl({
               layer:    this.layer,
               fid:      this.feature.attributes[G3W_FID],
               relation: this.relation,
-              type
             }), {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
-              page:      (opts.start === 0) ? 1 : (opts.start/opts.length) + 1, // get current page,
+              page:      (opts.start ? opts.start/opts.length : 0) + 1, // get current page,
               page_size: opts.length,
               formatter: 1,
               ordering:  opts.order.length ? `${'desc' === opts.order[0].dir ? '-' : ''}${this.table.columns[opts.order[0].column - Number(!!this.showTools)].name}` : undefined,
-              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}|and`).join(',').replace(/\|and$/, '') || undefined,
+              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}`).join('|and,') || undefined,
             }),
           })).json();
 
-          const count = response.result && response.vector && response.vector.count;
-
-          //extract features attributes, Array, and digest for table
-          let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
+          // extract features attributes
+          let features = (response?.vector?.data?.features || []).map(f => {
             f.properties[G3W_FID] = f.id;
             return {
+              id:         f.id,
               geometry:   f.geometry,
               attributes: f.properties,
-              id:         f.id,
             };
-          }) : [];
-
-          // handle NM relations
-          const NM = this.nmRelation && (features || []).length && await DataRouterService.getData('search:features', {
-            inputs: {
-              layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
-              filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
-              formatter: 1, // set formatter to
-            },
-            outputs: null
           });
 
-          if (NM && NM.data && NM.data[0] && Array.isArray(NM.data[0].features)) {
-            features = NM.data[0].features.map(f => ({
+          // handle NM relations
+          if (this.nmRelation && features.length) {
+            features = (await DataRouterService.getData('search:features', {
+              inputs: {
+                layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
+                filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
+                formatter: 1,
+              },
+              outputs: null
+            })?.data?.[0]?.features || []).map(f => ({
               id:         f.getId(),
               geometry:   f.getGeometry(),
               attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
             }));
-          }        
+          }
 
           this.table.features = features;
           this.table.rows     = features.map(f => [null].concat(this.table.columns.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; })))
           this.table.rows_fid = features.map(r => r.attributes[G3W_FID]);
-          data = {
-            // DataTable pagination
+          return {
             data:            this.table.rows,
-            recordsFiltered: count,
-            recordsTotal:    count,
+            recordsFiltered: response?.vector?.count ?? false,
+            recordsTotal:    response?.vector?.count ?? false,
             filter:          features.map(f => f.id)
           };
-          
         } catch(e) {
           console.warn(e);
-          data = {
-            // DataTable pagination
+          return {
             data:            [],
             recordsFiltered: 0,
             recordsTotal:    0,
           };
-        } 
-
-        //just first request server data table
-        if (!this.table.get_data) {
-          this.norelations = 0 === this.table.rows.length;
-          this.table.get_data = true;
+        } finally {
+          // first request
+          if (!this.table.get_data) {
+            this.norelations = 0 === this.table.rows.length;
+            this.table.get_data = true;
+          }
+          GUI.setLoadingContent(false);
+          GUI.disableContent(false);
         }
-
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
-       
-        return data;
       },
-
 
       /**
        * @returns { Promise<void> }
@@ -583,8 +576,7 @@
 
       SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
       this.relation.title = this.relation.name;
-      //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
-      const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
+      const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f); // filter out pdf because already includes all features
 
       /** @FIXME add description */
       if (downloadformats.length > 0) {
@@ -642,32 +634,32 @@
           ajax: debounce(async (opts, cb) => {
             cb(await this.getData(opts));
             await this.$nextTick();
-            //if no relation feature get from first server request
+            // initial request
             if (this.norelations) {
               this.$table.destroy(true);
               this.$table = null;
-            }
-            //in case of no relations no need to 
-            if (!this.norelations) {
+            } else {
               this.$table.columns.adjust();
             }
           }),
         });
 
         this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-        //Register changeCoumns
+
         this.changeColumn = debounce((e, i) => {
           const value = e.target.value.trim();
           this.table.columns[i].search = value;
           this.$table.columns(i).search(value).draw();
-        })  
+        });
       }
+
       // resize after popping child relation
       GUI.on('pop-content', () => setTimeout(() => this.resize()));
+
       // hide datatable rows → show only our custom "table_body"
       document.getElementById('table_body_attributes').remove();
-      this.resize();
 
+      this.resize();
     },
 
     /**
