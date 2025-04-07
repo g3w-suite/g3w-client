@@ -208,11 +208,9 @@
   import { throttle }                             from 'utils/throttle';
   import { debounce }                             from 'utils/debounce';
   import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
-  import { XHR }                                  from 'utils/XHR';
   import { createRelationsUrl }                   from 'utils/createRelationsUrl';
   import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
   import { saveBlob }                             from 'utils/saveBlob';
-import GlobalBarLoader from './GlobalBarLoader.vue';
 
   let SIDEBARWIDTH;
 
@@ -335,18 +333,22 @@ import GlobalBarLoader from './GlobalBarLoader.vue';
         let data;
         try {
           // Get relations from server
-          const response = await XHR.post(createRelationsUrl(
-            {
-              layer:     this.layer,
-              fid:       this.feature.attributes[G3W_FID],
-              relation:  this.relation,
+          const response = await (await fetch(createRelationsUrl({
+              layer:    this.layer,
+              fid:      this.feature.attributes[G3W_FID],
+              relation: this.relation,
+              type
+            }), {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
               page:      (opts.start === 0) ? 1 : (opts.start/opts.length) + 1, // get current page,
               page_size: opts.length,
+              formatter: 1,
               ordering:  opts.order.length ? `${'desc' === opts.order[0].dir ? '-' : ''}${this.table.columns[opts.order[0].column - Number(!!this.showTools)].name}` : undefined,
-              method:    'POST',
               field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}|and`).join(',').replace(/\|and$/, '') || undefined,
-            }
-          )); 
+            }),
+          })).json();
 
           const count = response.result && response.vector && response.vector.count;
 
@@ -444,13 +446,19 @@ import GlobalBarLoader from './GlobalBarLoader.vue';
        async saveRelation(type) {
         ApplicationState.download = true;
         try {
-          const response = await fetch(createRelationsUrl(Object.assign({
+          const response = await fetch(createRelationsUrl({
               layer:    this.layer,
               fid:      this.feature.attributes[G3W_FID],
               relation: this.relation,
-            }, { type })), {
-              headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
-              signal:  AbortSignal.timeout(TIMEOUT),
+              type
+            }), {
+            method:  'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
+            },
+            body: JSON.stringify({ formatter: 1 }),
+            signal: AbortSignal.timeout(TIMEOUT),
           });
 
           if (!response?.ok) {

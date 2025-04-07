@@ -201,7 +201,17 @@ const Providers = {
               contentType: 'application/json',
             })
           } else if (is_defined(options.filter.fid)) { // fid filter
-            response = await XHR.get({ url: createRelationsUrl(options.filter.fid) });
+            response = await XHR.post({
+              url:         createRelationsUrl(options.filter.fid),
+              contentType: 'application/json',
+              data:        JSON.stringify({
+                page:      options.filter.fid.page,
+                page_size: options.filter.fid.page_size,
+                formatter: options.filter.fid.formatter ?? 1,
+                ordering:  options.filter.fid.ordering,
+                field:     options.filter.fid.field,
+              }),
+            });
           } else if (options.filter.field) {
             response = await XHR.post({
               url:         this._layer.getUrl('editing') + params,
