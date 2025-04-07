@@ -251,7 +251,7 @@
          * @since 3.11.2
          */
         table: {
-          title:         layer.getName() || layer.getTitle(), //@since 3.11.0,
+          title:         layer.getName() || layer.getTitle(),
           formStructure: layer.getLayerEditingFormStructure(),
           features:      [],
           columns:       layer.getTableHeaders(),
