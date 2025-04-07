@@ -119,9 +119,6 @@
             <tr
               v-for  = "(row, index) in table.rows"
               :key   = "table.rows_fid[index]"
-              :class = "{
-                'selected': table.rowFormStructure === row,
-              }"
             >
               <td
                 v-if  = "showTools"
