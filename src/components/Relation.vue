@@ -290,11 +290,6 @@
 
     watch: {
 
-      async chart(){
-        await this.$nextTick();
-        this.resize();
-      },
-
       async norelations() {
         await this.$nextTick();
         this.resize();
@@ -592,6 +587,7 @@
         } else {
           GUI.getService('queryresults').hideChart(this.chart.container)
         }
+        this.resize();
       });
       
       if ('ONE' !== this.relation.type) {
