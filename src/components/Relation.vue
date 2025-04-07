@@ -324,8 +324,9 @@
       },
 
       /**
-       * @since 4.0.0
        * @param opts 
+       * 
+       * @since 4.0.0
        */
       async getData(opts = {}) {
         GUI.setLoadingContent(true);
