@@ -7,13 +7,11 @@
   <div class = "field">
     <div
       v-if  = "state.label"
-      class = "col-sm-6  field_label"
+      class = "field_label"
     >
       <slot name = "label">{{state.label}}</slot>
     </div>
-    <div
-      :class = "[state.label ? 'col-sm-6' : null ]"
-      class  = "field_value">
+    <div class = "field_value">
       <slot name = "field">
         <span style = "word-wrap: break-word;" v-html = "state.value"></span>
       </slot>
@@ -35,6 +33,8 @@ export default {
     padding-bottom: 3px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
   }
   .value {
     position: relative;
@@ -49,5 +49,6 @@ export default {
     padding-left: 0 !important;
     padding-right: 8px;
     text-align: right;
+    margin-left: auto;
   }
 </style>
