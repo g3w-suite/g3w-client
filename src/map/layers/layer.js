@@ -204,13 +204,7 @@ const Providers = {
             response = await XHR.post({
               url:         createRelationsUrl(options.filter.fid),
               contentType: 'application/json',
-              data:        JSON.stringify({
-                page:      options.filter.fid.page,
-                page_size: options.filter.fid.page_size,
-                formatter: options.filter.fid.formatter ?? 1,
-                ordering:  options.filter.fid.ordering,
-                field:     options.filter.fid.field,
-              }),
+              data:        JSON.stringify({ formatter: 1 }),
             });
           } else if (options.filter.field) {
             response = await XHR.post({
