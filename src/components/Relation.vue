@@ -37,26 +37,26 @@
 
         <!-- DOWNLOAD BUTTON -->
         <span
-          v-if                    = "downloadButton"
+          v-if                    = "download.formats.length"
           v-download
           class                   = "action-button-icon action-button"
           :class                  = "[
             $fa('download'),
-            { 'toggled-white': downloadButton.toggled },
+            { 'toggled-white': download.toggled },
           ]"
-          @click.stop             = "downloadButton.handler"
-          v-t-tooltip:left.create = "downloadButton.tooltip">
+          @click.stop             = "download.handler"
+          v-t-tooltip:left.create = "download.formats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${this.download.formats[0]}`">
         </span>
 
         <!-- SHOW CHART BUTTON -->
         <span
-          v-if                      = "showChartButton"
+          v-if                      = "chart.button"
           class                     = "action-button-icon action-button"
           :class                    = "[
             $fa('chart'),
-            chart ? 'toggled-white' : '',
+            chart.toggled ? 'toggled-white' : '',
           ]"
-          @click.stop               = "showChart"
+          @click.stop               = "chart.handler"
           v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'">
         </span>
 
@@ -72,21 +72,17 @@
         id     = "table_content"
         ref    = "content"
         :style = "{
-          width:       chart ? '70%' : '100%',
-          marginRight: chart ? '8px' : '3px',
+          width:       chart.toggled ? '70%' : '100%',
+          marginRight: chart.toggled ? '8px' : '3px',
           position:    'relative',
         }"
       >
-        <div
-          v-if  = "headercomponent"
-          class = "header-component"
-        >
-          <component
-            :is     = "headercomponent"
-            :layer  = "downloadLayer.state"
-            :config = "downloadLayer.config"
-          />
-        </div>
+        <downloadformats
+          v-if    = "download.toggled"
+          class   = "header-component"
+          :layer  = "download.layer"
+          :config = "download.config"
+        />
 
         <table
           ref       = "table"
@@ -164,17 +160,17 @@
       </div>
 
       <div
-        v-show          = "chart"
+        v-show          = "chart.toggled"
         class           = "skin-border-color lighten"
         style           = "border-style: solid; border-width: 0 1px 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;"
         @mousedown.stop = "onChartResize"
       ></div>
 
       <div
-        v-show   = "chart"
+        v-show   = "chart.toggled"
         id       = "chart_content"
         ref      = "chart"
-        :style   = "{ width: chart ? '30%' : '0' }"
+        :style   = "{ width: chart.toggled ? '30%' : '0' }"
       ></div>
 
     </div>
@@ -196,7 +192,6 @@
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
   import GUI                                      from 'services/gui';
-  import { resizeMixin }                          from 'mixins';
   import { VM }                                   from 'g3w-eventbus';
   import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
@@ -223,22 +218,31 @@
       chartRelationIds:  { default: [] }
     },
 
-    mixins: [resizeMixin],
-
     components: {
       Field,
+      'downloadformats': DownloadFormats,
     },
 
     data() {
-      const layer = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
+      const layer  = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
       return {
-        fields:          null,
-        chart:           false,
-        headercomponent: null,
-        downloadButton:  null,
-        downloadLayer:  {
-          state:  null,
-          config: { downloads: [] },
+
+        /**
+         * @since 4.0.0 chart state (action button)
+         */
+        chart: {
+          toggled: false,
+          button: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
+        },
+
+        /**
+         * @since 4.0.0 download state (action button)
+         */
+        download: {
+          formats: layer.getDownloadableFormats().filter(f => 'pdf' !== f), // filter out pdf because already includes all features
+          layer:   null,
+          toggled: false,
+          config:  { downloads: [] }
         },
 
         /**
@@ -247,7 +251,7 @@
         isEditable: layer.isEditable() && !layer.isInEditing(),
 
         /**
-         * @since 3.11.2
+         * @since 3.11.2 table state
          */
         table: {
           title:         layer.getName() || layer.getTitle(),
@@ -262,11 +266,6 @@
          * @since 3.11.2
          */
         nmRelation: ApplicationState.project.getRelationById(this.relation.nmRelationId),
-
-        /**
-         * @since 3.11.2
-         */
-        showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
 
         /**
          * @since 4.0.0 whether to show table (inital request)
@@ -292,11 +291,6 @@
     watch: {
 
       async chart(){
-        await this.$nextTick();
-        this.resize();
-      },
-
-      async headercomponent() {
         await this.$nextTick();
         this.resize();
       },
@@ -383,8 +377,8 @@
 
           return {
             data:            this.table.rows,
-            recordsFiltered: response?.vector?.count ?? false,
-            recordsTotal:    response?.vector?.count ?? false,
+            recordsFiltered: response?.vector?.count ?? 0,
+            recordsTotal:    response?.vector?.count ?? 0,
             filter:          features.map(f => f.id)
           };
         } catch(e) {
@@ -418,7 +412,7 @@
         const table      = $(this.$refs.relation).find('div.dataTables_scrollBody');
         table.height(
           $(".content").height()
-          - this.tableHeaderHeight
+          - $('.query-relation  div.dataTables_scrollHeadInner').height()
           - $('.content_breadcrumb')                       .outerHeight()
           - $('.navbar')                                   .outerHeight()
           - $('.close-panel-block')                        .outerHeight()
@@ -428,7 +422,9 @@
           - $('.dataTables_scrollHead').last()             .outerHeight()
         );
 
-        this.reloadLayout();
+        if (this.$table) {
+          this.$table.columns.adjust();
+        }
       },
 
       /**
@@ -468,7 +464,7 @@
           }
 
           ApplicationState.download = false;
-          this.downloadButton.toggled = false;
+          this.download.toggled     = false;
       },
 
       /**
@@ -536,15 +532,6 @@
       /**
        * @FIXME add description
        */
-      reloadLayout() {
-        if (this.$table) {
-          this.$table.columns.adjust();
-        }
-      },
-
-      /**
-       * @FIXME add description
-       */
       back() {
         this.$parent.setRelationsList();
       },
@@ -562,54 +549,49 @@
 
     },
 
-    beforeCreate() {
-      this.delayType = 'debounce';
+    created() {
+      this.resize = debounce(this.resize.bind(this));
+      GUI.on('resize', this.resize);
     },
 
     async mounted() {
       const layer = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
+
       await this.$nextTick();
 
       SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
       this.relation.title = this.relation.name;
-      const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f); // filter out pdf because already includes all features
 
       /** @FIXME add description */
-      if (downloadformats.length > 0) {
-        this.downloadButton = {
-          toggled: false,
-          tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-          handler: downloadformats.length > 1
-            ? async () => {
-                this.downloadButton.toggled         = !this.downloadButton.toggled;
-                this.downloadLayer.state            = this.downloadLayer.state || layer.state;
-                this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
-                  ? this.downloadLayer.config.downloads
-                  : downloadformats.map(format => ({
-                      id: format,
-                      format,
-                      cbk: () => {
-                        this.saveRelation(this.layer.getDownloadUrl(format));
-                        this.headercomponent = null;
-                      },
-                      download: true,
-                    })
-                );
-                this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-              }
-            : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
-        }
+      if (this.download.formats.length) {
+        this.download.layer = layer.state;
+        this.download.config.downloads = this.download.formats.map(format => ({
+          id: format,
+          format,
+          cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
+          download: true,
+        }));
+        this.download.handler = async () => {
+          if (1 == this.download.formats.length) {
+            this.saveRelation(layer.getDownloadUrl(this.download.formats[0]));
+          } else {
+            this.download.toggled = !this.download.toggled;
+          }
+          this.resize();
+        };
       }
 
-      VM.$on('reload-relations', () => { this.reloadLayout(); });
+      VM.$on('reload-relations', () => { this.$table?.columns?.adjust(); });
 
-      this.showChart = throttle(async () => {
-        this.chart = !this.chart;
+      this.chart.handler = throttle(async () => {
+        this.chart.toggled = !this.chart.toggled;
         await this.$nextTick();
-        this.chartContainer = this.chartContainer ||  $('#chart_content');
-        this.chart 
-          ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
-          : GUI.getService('queryresults').hideChart(this.chartContainer)
+        this.chart.container = this.chart.container ||  $('#chart_content');
+        if (this.chart.toggled) {
+          GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
+        } else {
+          GUI.getService('queryresults').hideChart(this.chart.container)
+        }
       });
       
       if ('ONE' !== this.relation.type) {
@@ -640,8 +622,6 @@
           }),
         });
 
-        this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-
         this.changeColumn = debounce((e, i) => {
           const value = e.target.value.trim();
           this.table.columns[i].search = value;
@@ -666,12 +646,12 @@
         this.$table.destroy();
         this.$table = null;
       }
-      if (this.chartContainer) {
-        this.$emit('hide-chart', this.chartContainer);
-        this.chartContainer    = null;
+      if (this.chart.container) {
+        this.$emit('hide-chart', this.chart.container);
+        this.chart.container = null;
       }
-      this.tableHeaderHeight = null;
       GUI.off('pop-content', this.resize);
+      GUI.off('resize', this.resize);
     },
 
   };
