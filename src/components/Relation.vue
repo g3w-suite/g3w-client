@@ -97,7 +97,7 @@
               <th
                 v-if   = "showTools"
                 :style = "{
-                  minWidth: this.showTools * 30 + 'px',
+                  minWidth: showTools * 30 + 'px',
                   padding:  '0 !important',
                 }"
               ></th>
@@ -140,13 +140,7 @@
                 ></span>
                 <span
                   v-if                     = "table.formStructure"
-                  @click.stop              = "showFormStructureRow({
-                    title:   table.title,
-                    layerid: table.layerId,
-                    feature: table.features[index],
-                    fields:  table.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${getFieldType(c)}` } })),
-                    tabs:    table.formStructure
-                    })"
+                  @click.stop              = "showFormStructure(row, index)"
                   v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
                   class                    = "action-button row-form skin-color"
                   :class                   = "$fa('table')"
@@ -202,7 +196,7 @@
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
   import GUI                                      from 'services/gui';
-  import { fieldsMixin, resizeMixin }             from 'mixins';
+  import { resizeMixin }                          from 'mixins';
   import { VM }                                   from 'g3w-eventbus';
   import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
@@ -229,7 +223,7 @@
       chartRelationIds:  { default: [] }
     },
 
-    mixins: [fieldsMixin, resizeMixin],
+    mixins: [resizeMixin],
 
     components: {
       Field,
@@ -246,7 +240,12 @@
           state:  null,
           config: { downloads: [] },
         },
-        isEditable: layer.isEditable() && !layer.isInEditing(), //check if relation layer is editbale
+
+        /**
+         * @since 4.0.0 whether relation layer is editable
+         */
+        isEditable: layer.isEditable() && !layer.isInEditing(),
+
         /**
          * @since 3.11.2
          */
@@ -338,7 +337,7 @@
           GUI.setLoadingContent(true);
           GUI.disableContent(true);
 
-          // Get relations from server
+          // get relations from server
           const response = await (await fetch(createRelationsUrl({
               layer:    this.layer,
               fid:      this.feature.attributes[G3W_FID],
@@ -347,7 +346,7 @@
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
-              page:      (opts.start ? opts.start/opts.length : 0) + 1, // get current page,
+              page:      (opts.start ? opts.start/opts.length : 0) + 1, // get current page
               page_size: opts.length,
               formatter: 1,
               ordering:  opts.order.length ? `${'desc' === opts.order[0].dir ? '-' : ''}${this.table.columns[opts.order[0].column - Number(!!this.showTools)].name}` : undefined,
@@ -356,14 +355,11 @@
           })).json();
 
           // extract features attributes
-          let features = (response?.vector?.data?.features || []).map(f => {
-            f.properties[G3W_FID] = f.id;
-            return {
-              id:         f.id,
-              geometry:   f.geometry,
-              attributes: f.properties,
-            };
-          });
+          let features = (response?.vector?.data?.features || []).map(f => ({
+            id:         f.id,
+            geometry:   f.geometry,
+            attributes: Object.assign(f.properties, { [G3W_FID]: f.id }),
+          }));
 
           // handle NM relations
           if (this.nmRelation && features.length) {
@@ -384,6 +380,7 @@
           this.table.features = features;
           this.table.rows     = features.map(f => [null].concat(this.table.columns.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; })))
           this.table.rows_fid = features.map(r => r.attributes[G3W_FID]);
+
           return {
             data:            this.table.rows,
             recordsFiltered: response?.vector?.count ?? false,
@@ -475,35 +472,34 @@
       },
 
       /**
-       * @param event
        * @param row
-       *
-       * @returns { Promise<void> }
+       * @param index
        */
-      async showFormStructureRow({ title, layerid, feature, fields, tabs } = {}) {
+      async showFormStructure(row, index) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
               data: () => ({
-                layerid,
-                feature,
-                fields,
-                formStructure: tabs,
+                layerid:       this.table.layerId,
+                feature:       this.table.features[index],
+                fields:        this.table.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${require('gui/fields/fieldsservice').getType(c)}` } })),
+                formStructure: this.table.formStructure,
               }),
               template: /* html */`
                 <div class="queryresults-wrapper">
                   <div class ="queryresults-container">
                     <table ref="table" class="table">
                       <tbody>
-                      <tr class="featurebox-body">
-                        <td>
-                          <tabs
-                            :layerid = "layerid"
-                            :feature = "feature"
-                            :fields  = "fields"
-                            :tabs    = "formStructure" />
-                        </td>
-                      </tr>
+                        <tr class="featurebox-body">
+                          <td>
+                            <tabs
+                              :layerid = "layerid"
+                              :feature = "feature"
+                              :fields  = "fields"
+                              :tabs    = "formStructure"
+                            />
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -518,7 +514,7 @@
           push:       true,
           showgoback: true,
           closable:   false,
-          title, //@since 3.11.0
+          title:      this.table.title,
         });
       },
 
