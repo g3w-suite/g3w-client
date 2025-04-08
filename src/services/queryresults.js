@@ -1278,16 +1278,26 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
+   * @since 3.11.8
+   * @param {*} layer 
+   * @param {*} feature 
+   */
+  showFeature(layer, feature) {
+    return feature.show && ((layer.filter || { active: false }).active ? feature.selection.selected : true);
+  }
+
+  /**
    * @FIXME add description
    *
    * @param layer
    * @param options
    */
   highLightLayerFeatures(layer, options = {}) {
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this._asyncFnc.highLightLayerFeatures.async) {
-      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), layer.features || [], options);
+      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), features, options);
     } else {
-      GUI.getService('map').highlightFeatures(layer.features || [], options);
+      GUI.getService('map').highlightFeatures(features, options);
     }
   }
 
@@ -1834,7 +1844,6 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   addToSelection(layer, feature, action, index) {
-
     const service          = GUI.getService('queryresults');
     const map              = GUI.getService('map');
 
@@ -1944,7 +1953,6 @@ export default new (class QueryResultsService extends G3WObject {
           layers.splice(0);
         }
       });
-
     }
 
     /**

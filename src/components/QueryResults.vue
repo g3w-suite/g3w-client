@@ -284,8 +284,11 @@
                 <!-- CASE FORM STRUCTURE LAYER-->
                 <template v-else-if = "hasFormStructure(layer)">
                   <table class = "table" :class = "{'mobile': isMobile()}">
-                    <tbody>
-                      <template v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))">
+                    <tbody 
+                      v-for = "(feature, index) in layer.features"
+                      v-if  = "showFeature(layer, feature)"
+                      :key  = "feature.id"
+                      > 
                         <header-feature-actions-body
                           :colspan                 = "getColSpan(layer)"
                           :actions                 = "state.layersactions[layer.id]"
@@ -380,7 +383,6 @@
                               :feature = "feature"/>
                           </td>
                         </tr>
-                      </template>
                     </tbody>
                   </table>
                 </template>
@@ -388,7 +390,8 @@
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody
-                      v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))"
+                      v-for = "(feature, index) in layer.features"
+                      v-if  = "showFeature(layer, feature)"
                       :key  = "feature.id"
                     >
                       <header-feature-actions-body
@@ -761,11 +764,9 @@
       saveFilter(layer) {
         getCatalogLayerById(layer.id).saveFilter();
       },
-
       async addRemoveFilter(layer) {
         await getCatalogLayerById(layer.id).toggleFilterToken();
       },
-
       getContainerFromFeatureLayer({ layer, index } = {}) {
         return $(`#${layer.id}_${index} > td`);
       },
@@ -859,7 +860,7 @@
        * Show only features that have show true and in case of active filter, only selected 
        */
       showFeature(layer, feature) {
-        return feature.show && ((layer.filter || { active: false }).active ? feature.selection.selected : true);
+        return this.$options.service.showFeature(layer, feature);
       },
       getBoxId(layer, feature, relation_index) {
         return this.$options.service.getBoxId(layer, feature, relation_index);
