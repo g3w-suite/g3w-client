@@ -1876,8 +1876,6 @@ export default new (class QueryResultsService extends G3WObject {
       _layer.clearSelectionFids();
       return;
     }
-
-    console.log(params.fids)
     /**
      * PROJECT LAYER
      */
