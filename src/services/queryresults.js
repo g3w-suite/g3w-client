@@ -1270,10 +1270,11 @@ export default new (class QueryResultsService extends G3WObject {
    */
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this._asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), layer.features || [], options);
+      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), features, options);
     } else {
-      GUI.getService('map').zoomToFeatures(layer.features || [], options);
+      GUI.getService('map').zoomToFeatures(features, options);
     }
   }
 
