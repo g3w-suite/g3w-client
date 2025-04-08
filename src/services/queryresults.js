@@ -1850,7 +1850,7 @@ export default new (class QueryResultsService extends G3WObject {
     const _layer         = layerSelection ? (layer.external ? layer : getCatalogLayerById(layer.id))        : (((service.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
     const features       = layerSelection ? (layer.features && layer.features.length ? layer.features : []) : [feature];
     const params         = layerSelection ? {
-      fids: features.length > 0 ? features.map(f => _layer.external ? f.id : (f.attributes[G3W_FID] || f.id)) : null,
+      fids: features.length > 0 ? features.map(f => getFeatureId(f, layer.external)) : null,
       features,
       force: toggled ? 'remove' : 'add'
     } : {
