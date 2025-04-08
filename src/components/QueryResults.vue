@@ -285,7 +285,7 @@
                 <template v-else-if = "hasFormStructure(layer)">
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody>
-                      <template v-if = "feature.show" v-for = "(feature, index) in layer.features">
+                      <template v-if = "showFeature(layer, feature)" v-for = "(feature, index) in layer.features">
                         <header-feature-actions-body
                           :colspan                 = "getColSpan(layer)"
                           :actions                 = "state.layersactions[layer.id]"
@@ -388,7 +388,7 @@
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody
-                      v-if  = "feature.show"
+                      v-if  = "showFeature(layer, feature)"
                       v-for = "(feature, index) in layer.features"
                       :key  = "feature.id"
                     >
@@ -766,12 +766,6 @@
 
       async addRemoveFilter(layer) {
         await getCatalogLayerById(layer.id).toggleFilterToken();
-        //@since 3.11.0 In case of set active filter, remove all features not selected
-        if (layer.filter.active) {
-         layer.features
-          .filter(f => !f.selection.selected)
-          .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
-        }
       },
 
       getContainerFromFeatureLayer({ layer, index } = {}) {
@@ -860,6 +854,14 @@
           tabs: this.hasFormStructure(layer),
           show: box ? !box.collapsed : false,
         });
+      },
+
+      /**
+       * @since 3.11.8
+       * Show only features that have show true and in case of active filter, only selected 
+       */
+      showFeature(layer, feature) {
+        return feature.show && ((layer.filter || { active: false }).active ? feature.selection.selected : true);
       },
       getBoxId(layer, feature, relation_index) {
         return this.$options.service.getBoxId(layer, feature, relation_index);

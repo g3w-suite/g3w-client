@@ -693,10 +693,10 @@ export default new (class QueryResultsService extends G3WObject {
   updateLayerResultFeatures(responseLayer, replace = false) {
     const layer            = this.state.layers.find(l => l.id === responseLayer.id);                // get layer from current `state.layers` showed on a result
     const responseFeatures = responseLayer.features || [];                                            // extract features from responseLayer object
-    const external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
+    const external         = (layer || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
     const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
     if (has_features) {
-      const features_ids = replace ? [] : layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
+      const features_ids = replace ? [] : layer.features.map(f => this._getFeatureId(f, external)) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
       if (replace) {
@@ -712,7 +712,7 @@ export default new (class QueryResultsService extends G3WObject {
             (external ? layer : getCatalogLayerById(layer.id)).excludeSelectionFid(feature_id, layer.filter.active);
           }
           //filter feature
-          layer.features.splice(index, 1);
+          layer.features = layer.features.filter(f => feature_id !== this._getFeatureId(f, external));
           delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
           if (action) {
             delete action.state.toggled[index];
