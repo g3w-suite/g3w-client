@@ -240,7 +240,7 @@ export default new (class QueryResultsService extends G3WObject {
                 id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
                 attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
                 geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-                selection:  { selected: false },
+                selection:  { selected: !!queryResponse.query.autofilter }, //@snce 3.11.8 check if autofilter is set
                 show:       true,
               })),
               hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
