@@ -9,6 +9,7 @@ import {
   DOTS_PER_INCH,
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
+  G3W_FID,
 }                                from 'g3w-constants';
 import ApplicationState          from 'store/application';
 import DataRouterService         from 'services/data';
@@ -462,8 +463,8 @@ const Providers = {
             layer:    this._layer,
             features: ResponseParser.get('g3w-vector/json')(
               response.vector && response.vector.data || {},
-              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }},
-            ),
+              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }})
+              .map(f => { f.set(G3W_FID, f.getId()); return f; }) //set g3w_fid to have G3W_FID property,
           })
          } else {
           throw response.error;

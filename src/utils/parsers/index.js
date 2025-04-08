@@ -114,7 +114,6 @@ export const ResponseParser = {
               featureProjection: options.mapCrs || options.crs,
             }))
             .readFeatures('string' === typeof data ? JSON.parse(data) : data)
-            .map(f => { f.set(G3W_FID, f.getId()); return f; }); //set g3w_fid to have G3W_FID property
           } catch (e) {
             console.warn(e);
             return [];
