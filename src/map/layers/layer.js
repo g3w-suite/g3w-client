@@ -445,6 +445,7 @@ const Providers = {
           params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
           params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }));
           params.formatter       = 1;
+          params.filtertoken     = ApplicationState.tokens.filtertoken; // add filtertoken
           break;
         case 'expression':
           break;    
@@ -875,6 +876,7 @@ class Layer extends G3WObject {
    */
   async getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
+    console.log(data)
 
     let url, response;
     switch(type) {
