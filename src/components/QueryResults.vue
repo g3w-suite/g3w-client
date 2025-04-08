@@ -285,7 +285,7 @@
                 <template v-else-if = "hasFormStructure(layer)">
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody>
-                      <template v-if = "showFeature(layer, feature)" v-for = "(feature, index) in layer.features">
+                      <template v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))">
                         <header-feature-actions-body
                           :colspan                 = "getColSpan(layer)"
                           :actions                 = "state.layersactions[layer.id]"
@@ -388,8 +388,7 @@
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody
-                      v-if  = "showFeature(layer, feature)"
-                      v-for = "(feature, index) in layer.features"
+                      v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))"
                       :key  = "feature.id"
                     >
                       <header-feature-actions-body
@@ -439,7 +438,7 @@
                         </td>
                       </tr>
                       <header-feature-body
-                        v-if="!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                        v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                         :actions                 = "state.layersactions[layer.id]"
                         :layer                   = "layer"
                         :feature                 = "feature"
@@ -503,7 +502,6 @@
                         </td>
                       </tr>
                     </tbody>
-                    <tbody v-else></tbody>
                   </table>
                 </template>
               </div>
