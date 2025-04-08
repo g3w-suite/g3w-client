@@ -254,6 +254,11 @@
           title:         layer.getName() || layer.getTitle(),
           formStructure: layer.getLayerEditingFormStructure(),
           features:      [],
+          //@TODO
+          // Take in account code from 3.11 that check features attributes due settings of field visible
+          /*const attrs = Object.keys(features[0] ? features[0].attributes : {});
+          const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
+          */
           columns:       layer.getTableHeaders(),
           rows:          [],
           rows_fid:      [],  
@@ -547,6 +552,7 @@
     },
 
     async mounted() {
+      console.log(this.table.columns);
       const layer = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
 
       await this.$nextTick();
@@ -643,6 +649,8 @@
         this.$emit('hide-chart', this.chart.container);
         this.chart.container = null;
       }
+      //reset columns search attribute to reset search
+      this.table.columns.forEach(c => delete c.search); 
       GUI.off('pop-content', this.resize);
       GUI.off('resize', this.resize);
     },
