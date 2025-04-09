@@ -876,7 +876,6 @@ class Layer extends G3WObject {
    */
   async getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
-    console.log(data)
 
     let url, response;
     switch(type) {
