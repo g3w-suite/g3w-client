@@ -112,8 +112,7 @@ export const ResponseParser = {
               geometryName:      'geometry',
               dataProjection:    options.crs,
               featureProjection: options.mapCrs || options.crs,
-            }))
-            .readFeatures('string' === typeof data ? JSON.parse(data) : data)
+            })).readFeatures('string' === typeof data ? JSON.parse(data) : data)
           } catch (e) {
             console.warn(e);
             return [];
