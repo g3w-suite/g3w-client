@@ -1279,12 +1279,12 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
+   * @returns { boolean } whether show feature in results (show + active filter + selected)
+   * 
    * @since 3.11.8
-   * @param {*} layer 
-   * @param {*} feature 
    */
   showFeature(layer, feature) {
-    return feature.show && ((layer.filter || { active: false }).active ? feature.selection.selected : true);
+    return feature.show && ((layer.filter || {}).active ? feature.selection.selected : true);
   }
 
   /**
@@ -1615,7 +1615,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     const data = 'search' === query.type
       ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
-      : { fids: features.filter(f => !(layer.filter || { active: false }).active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
+      : { fids: features.filter(f => !(layer.filter || {}).active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
     
     data.down_with_relations = down_with_relations; 
   
@@ -1831,7 +1831,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   _getFeatureId(feature, external) {
-    return external ? feature.id : (feature.attributes[G3W_FID] || feature.id); //@v3.11.8 in case of query by geometry, features are returned without G3W_FID. They have id 
+    return external ? feature.id : (feature.attributes[G3W_FID] || feature.id); // in case of query by geometry, features are returned without G3W_FID. They have id 
   }
 
   /**
