@@ -24,7 +24,7 @@
         v-else-if = "isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
         class     = "skin-color"
         :class    = "g3wtemplate.getFontClass('image')"></span>
-      <span v-else >{{feature.attributes[attribute.name]}}</span>
+      <span v-else v-html = "feature.attributes[attribute.name]"></span>
 
     </td>
     <td v-if="!hasLayerOneFeature(layer)">
