@@ -240,7 +240,7 @@ export default new (class QueryResultsService extends G3WObject {
                 id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
                 attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
                 geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-                selection:  { selected: false },
+                selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.state.selection.active) }, //@since 3.11.8 check if autofilter is set
                 show:       true,
               })),
               hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -693,10 +693,10 @@ export default new (class QueryResultsService extends G3WObject {
   updateLayerResultFeatures(responseLayer, replace = false) {
     const layer            = this.state.layers.find(l => l.id === responseLayer.id);                // get layer from current `state.layers` showed on a result
     const responseFeatures = responseLayer.features || [];                                            // extract features from responseLayer object
-    const external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
+    const external         = (layer || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
     const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
     if (has_features) {
-      const features_ids = replace ? [] : layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
+      const features_ids = replace ? [] : layer.features.map(f => this._getFeatureId(f, external)) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
       if (replace) {
@@ -712,7 +712,7 @@ export default new (class QueryResultsService extends G3WObject {
             (external ? layer : getCatalogLayerById(layer.id)).excludeSelectionFid(feature_id, layer.filter.active);
           }
           //filter feature
-          layer.features.splice(index, 1);
+          layer.features = layer.features.filter(f => feature_id !== this._getFeatureId(f, external));
           delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
           if (action) {
             delete action.state.toggled[index];
@@ -1270,11 +1270,21 @@ export default new (class QueryResultsService extends G3WObject {
    */
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this._asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), layer.features || [], options);
+      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), features, options);
     } else {
-      GUI.getService('map').zoomToFeatures(layer.features || [], options);
+      GUI.getService('map').zoomToFeatures(features, options);
     }
+  }
+
+  /**
+   * @returns { boolean } whether show feature in results (show + active filter + selected)
+   * 
+   * @since 3.11.8
+   */
+  showFeature(layer, feature) {
+    return feature.show && ((layer.filter || {}).active ? feature.selection.selected : true);
   }
 
   /**
@@ -1284,10 +1294,11 @@ export default new (class QueryResultsService extends G3WObject {
    * @param options
    */
   highLightLayerFeatures(layer, options = {}) {
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this._asyncFnc.highLightLayerFeatures.async) {
-      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), layer.features || [], options);
+      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), features, options);
     } else {
-      GUI.getService('map').highlightFeatures(layer.features || [], options);
+      GUI.getService('map').highlightFeatures(features, options);
     }
   }
 
@@ -1585,7 +1596,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     const data = 'search' === query.type
       ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
-      : { fids: features.map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
+      : { fids: features.filter(f => !(layer.filter || {}).active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
     
     data.down_with_relations = down_with_relations; 
   
@@ -1801,7 +1812,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   _getFeatureId(feature, external) {
-    return external ? feature.id : feature.attributes[G3W_FID];
+    return external ? feature.id : (feature.attributes[G3W_FID] || feature.id); // in case of query by geometry, features are returned without G3W_FID. They have id 
   }
 
   /**
@@ -1815,7 +1826,6 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   addToSelection(layer, feature, action, index) {
-
     const service          = GUI.getService('queryresults');
     const map              = GUI.getService('map');
 
@@ -1831,7 +1841,7 @@ export default new (class QueryResultsService extends G3WObject {
     const _layer         = layerSelection ? (layer.external ? layer : getCatalogLayerById(layer.id))        : (((service.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
     const features       = layerSelection ? (layer.features && layer.features.length ? layer.features : []) : [feature];
     const params         = layerSelection ? {
-      fids: features.length > 0 ? features.map(f => _layer.external ? f.id : f.attributes[G3W_FID]) : null,
+      fids: features.length > 0 ? features.map(f => getFeatureId(f, layer.external)) : null,
       features,
       force: toggled ? 'remove' : 'add'
     } : {
@@ -1857,7 +1867,6 @@ export default new (class QueryResultsService extends G3WObject {
       _layer.clearSelectionFids();
       return;
     }
-
     /**
      * PROJECT LAYER
      */
@@ -1926,7 +1935,6 @@ export default new (class QueryResultsService extends G3WObject {
           layers.splice(0);
         }
       });
-
     }
 
     /**

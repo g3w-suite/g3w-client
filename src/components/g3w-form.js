@@ -638,20 +638,13 @@ export class FormService extends G3WObject {
       await Promise.allSettled(fields_without_dependencies
         .map(field => new Promise(async (resolve, reject) => {
             try {
-              //get current value of field
-              const cvalue = field.value;
-              //get value after calculate default expression from server
-              const value = await getDefaultExpression({
+              //await until default expression is resolved and set value to field
+              await getDefaultExpression({
                 field,
                 feature:      this.feature,
                 qgs_layer_id: this.layer.getId(),
                 parentData:   this.parentData
               });
-              //check if changed
-              if (cvalue !== value) {
-                //wait until changeInput method is resolved
-                await new Promise((resolve) => this.once('changeInput', resolve))
-              }
               resolve();
             } catch(e) {
               console.warn(e);
