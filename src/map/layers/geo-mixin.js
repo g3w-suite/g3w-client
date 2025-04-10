@@ -237,9 +237,7 @@ export default BaseClass => class extends BaseClass {
   addOlSelectionFeature({ id, feature: feat } = {}) {
     //create a new ol feature
     const feature = new ol.Feature(feat.geometry);
-    //@since 3.11.8 need to add layerId prefix to feature id, because if another feature of another layer has same feature id, 
-    //OL doesn't add it to vector selection source
-    feature.setId(`${this.getId()}_${id}`); 
+    feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
     Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
       feature,
