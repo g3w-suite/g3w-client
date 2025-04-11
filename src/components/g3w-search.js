@@ -167,13 +167,14 @@ async function doSearch({
 
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
   //show take in account type or return
-  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
+  show     = undefined === show ? 'search' === state.type && 'data' === state.return : show;
 
   state.searching = true;
 
   let data, parsed;
   //For pagination purpose
   const page_sizes = PAGELENGTHS;
+  const search_1n  = !show && ('search_1n' === state.type);
 
   try {
     data = await DataRouterService.getData('search:features', {
@@ -188,7 +189,8 @@ async function doSearch({
         feature_count,
         raw:        'search' === state.return, // in order to get a raw response
         autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
-        ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
+        // @since 3.11.8 need to check if serach is not type search_1n because in that case we need to set the pagination parametres. All valuees need to be get.
+        ...(state.paginate && !search_1n ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
@@ -216,7 +218,6 @@ async function doSearch({
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
-    const search_1n = !show           && ('search_1n' === state.type);
     const features  = search_1n       && (data.data[0] || {}).features || []
     const relation  = features.length && ApplicationState.project.getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
     const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
