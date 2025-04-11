@@ -152,7 +152,7 @@ export function SearchPanel(opts = {}, show = false) {
  * @param opts.filter
  * @param opts.queryUrl
  * @param opts.feature_count
- * @param opts.show            - false = internal request (No output data)
+ * @param { boolean } opts.show false = internal request (No output data)
  * 
  * @returns { Promise<void|unknown> }
  */
@@ -164,16 +164,12 @@ async function doSearch({
   state
 } = {}) {
 
-
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
-  //show take in account type or return
-  show     = undefined === show ? 'search' === state.type && 'data' === state.return : show;
+  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
 
   state.searching = true;
 
   let data, parsed;
-  //For pagination purpose
-  const page_sizes = PAGELENGTHS;
   const search_1n  = !show && ('search_1n' === state.type);
 
   try {
@@ -187,10 +183,9 @@ async function doSearch({
         queryUrl,
         formatter: 1,
         feature_count,
-        raw:        'search' === state.return, // in order to get a raw response
-        autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
-        // @since 3.11.8 need to check if serach is not type search_1n because in that case we need to set the pagination parametres. All valuees need to be get.
-        ...(state.paginate && !search_1n ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
+        raw:        'search' === state.return,                                        // whether get a raw response
+        autofilter: Number(show && state.autofilter.value),                           // 0/1 = autofilter (by server)
+        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}) // @since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
@@ -251,8 +246,8 @@ async function doSearch({
           }),
           formatter: 1,
           feature_count,
-          autofilter: state.autofilter.value, //0/1 autofilter by server
-          ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
+          autofilter: state.autofilter.value,                             // 0/1 autofilter (by server)
+          ...(state.paginate ? { page: 1, page_sizes: PAGELENGTHS } : {}) //@since 3.11.0 pagination configuration
         },
         outputs: {
           title: state.title
