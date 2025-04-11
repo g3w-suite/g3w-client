@@ -1296,8 +1296,8 @@ class Layer extends G3WObject {
       this.state.filter.current = null  // set current filter set to null
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
-      this.setFilterToken(null); //force to null
-      ApplicationState.tokens.filtertoken = filtertoken; // pass `filtertoken` to application
+      this.setFilterToken(filtertoken); //set filtertoken 
+      this.setFilter(false); //set false - delete filtertoken
     } catch(e) {
       console.warn(e);
     }
