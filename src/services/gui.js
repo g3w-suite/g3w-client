@@ -127,97 +127,7 @@ export default new (class GUI extends G3WObject {
   constructor(opts) {
     super(opts);
 
-    this.setters = {
-
-      async setContent(options = {}) {
-        this.emit('opencontent', true);
-
-        // close user message before set content
-        if (this._closeUserMessage) {
-          this.closeUserMessage();
-        }
-
-        options.content     = options.content || null;
-        options.title       = options.title || "";
-        options.push        = (true === options.push || false === options.push) ? options.push : false;
-        options.perc        = isMobile.any ? 100 : options.perc;
-        options.split       = options.split || 'h';
-        options.backonclose = (true === options.backonclose || false === options.backonclose) ? options.backonclose : false;
-        options.showtitle   = (true === options.showtitle || false === options.showtitle) ? options.showtitle : true;
-
-        const opts = options;
-
-        const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
-        opts.perc = opts.perc !== undefined ? opts.perc : content_perc;
-
-        // check if push is set
-        opts.push = opts.push || false;
-        const event = opts.perc === 100 ? 'show-content-full' : 'show-content';
-
-        // set all content parameters
-        Object.assign(ApplicationState.viewport.content, {
-          title:        opts.title,
-          split:        undefined === opts.split       ? null : opts.split,
-          closable:     undefined === opts.closable    || opts.closable,
-          backonclose:  undefined === opts.backonclose || opts.backonclose,
-          style:        undefined === opts.style ? {} : opts.style,
-          headertools:  undefined === opts.headertools ? [] : opts.headertools,
-          showgoback:   undefined === opts.showgoback  || opts.showgoback,
-          contentsdata: this.getComponent('contents').contentsdata,
-        });
-
-        // call show view (in this case content (other is map)
-        this._showView('content', opts);
-
-        const contents = this.getComponent('contents');
-        
-        // whether to clean the stack every time, sure to have just one component.
-        if (!opts.push) {
-          await _clearContents();
-        }
-
-        const content = opts.content;
-        const _options = Object.assign(opts, { parent: contents.internalComponent.$el, append: true });
-        contents.parent = _options.parent;
-
-        // check the type of content:
-
-        // String or JQuery
-        if (content instanceof jQuery || 'string' === typeof content) {
-          let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
-          $(contents.parent).append(el);
-          ApplicationState.contentsdata.push({ content: el, options: _options });
-          console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', ApplicationState.contentsdata.at(-1));
-        }
-
-        // Vue element
-        else if (content.mount && 'function' === typeof content.mount) {
-          // Check a duplicate element by component id (if already exist)
-          let id = ApplicationState.contentsdata.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
-          if (-1 !== id) {
-            await promisify(ApplicationState.contentsdata[id].content.unmount());
-            ApplicationState.contentsdata.splice(id, 1);
-          }
-          // Mount vue component
-          await promisify(content.mount(contents.parent, _options.append || false));
-          ApplicationState.contentsdata.push({ content, options: _options });
-        }
-
-        // DOM element
-        else {
-          contents.parent.appendChild(content);
-          ApplicationState.contentsdata.push({ content, options: _options });
-        }
-
-        Array
-          .from(contents.internalComponent.$el.children)  // hide other elements but not the last one
-          .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-
-        contents.setOpen(true);
-
-        this._layoutComponents(event);
-      }
-    };
+    this.setters = ['setContent'];
 
     this.isready           = false;
 
@@ -932,6 +842,98 @@ export default new (class GUI extends G3WObject {
     const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
     rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
     this._layoutComponents();
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  async setContent(options = {}) {
+    this.emit('opencontent', true);
+
+    // close user message before set content
+    if (this._closeUserMessage) {
+      this.closeUserMessage();
+    }
+
+    options.content     = options.content || null;
+    options.title       = options.title || "";
+    options.push        = (true === options.push || false === options.push) ? options.push : false;
+    options.perc        = isMobile.any ? 100 : options.perc;
+    options.split       = options.split || 'h';
+    options.backonclose = (true === options.backonclose || false === options.backonclose) ? options.backonclose : false;
+    options.showtitle   = (true === options.showtitle || false === options.showtitle) ? options.showtitle : true;
+
+    const opts = options;
+
+    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
+    opts.perc = opts.perc !== undefined ? opts.perc : content_perc;
+
+    // check if push is set
+    opts.push = opts.push || false;
+    const event = opts.perc === 100 ? 'show-content-full' : 'show-content';
+
+    // set all content parameters
+    Object.assign(ApplicationState.viewport.content, {
+      title:        opts.title,
+      split:        undefined === opts.split       ? null : opts.split,
+      closable:     undefined === opts.closable    || opts.closable,
+      backonclose:  undefined === opts.backonclose || opts.backonclose,
+      style:        undefined === opts.style ? {} : opts.style,
+      headertools:  undefined === opts.headertools ? [] : opts.headertools,
+      showgoback:   undefined === opts.showgoback  || opts.showgoback,
+      contentsdata: this.getComponent('contents').contentsdata,
+    });
+
+    // call show view (in this case content (other is map)
+    this._showView('content', opts);
+
+    const contents = this.getComponent('contents');
+    
+    // whether to clean the stack every time, sure to have just one component.
+    if (!opts.push) {
+      await _clearContents();
+    }
+
+    const content = opts.content;
+    const _options = Object.assign(opts, { parent: contents.internalComponent.$el, append: true });
+    contents.parent = _options.parent;
+
+    // check the type of content:
+
+    // String or JQuery
+    if (content instanceof jQuery || 'string' === typeof content) {
+      let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
+      $(contents.parent).append(el);
+      ApplicationState.contentsdata.push({ content: el, options: _options });
+      console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', ApplicationState.contentsdata.at(-1));
+    }
+
+    // Vue element
+    else if (content.mount && 'function' === typeof content.mount) {
+      // Check a duplicate element by component id (if already exist)
+      let id = ApplicationState.contentsdata.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
+      if (-1 !== id) {
+        await promisify(ApplicationState.contentsdata[id].content.unmount());
+        ApplicationState.contentsdata.splice(id, 1);
+      }
+      // Mount vue component
+      await promisify(content.mount(contents.parent, _options.append || false));
+      ApplicationState.contentsdata.push({ content, options: _options });
+    }
+
+    // DOM element
+    else {
+      contents.parent.appendChild(content);
+      ApplicationState.contentsdata.push({ content, options: _options });
+    }
+
+    Array
+      .from(contents.internalComponent.$el.children)  // hide other elements but not the last one
+      .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
+
+    contents.setOpen(true);
+
+    this._layoutComponents(event);
   }
 
   // hide content

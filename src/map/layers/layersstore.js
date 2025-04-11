@@ -26,20 +26,40 @@ export class LayersStore extends G3WObject {
     this._isQueryable = (true === config.queryable || false === config.queryable ) ? config.queryable : true;
     this._layers = this.config.layers || {};
 
-    this.setters = {
-      setLayerSelected(id, selected) {
-        this.getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false);
-      },
-      addLayers(layers = []) {
-        layers.forEach(l => this.addLayer(l))
-      },
-      addLayer(layer) {
-        this._addLayer(layer);
-      },
-      removeLayer(id) {
-        this._removeLayer(id);
-      }
-    };
+    this.setters = [
+      'setLayerSelected',
+      'addLayers',
+      'addLayer',
+      'removeLayer',
+    ];
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  setLayerSelected(id, selected) {
+    this.getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false);
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  addLayers(layers = []) {
+    layers.forEach(l => this.addLayer(l))
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  addLayer(layer) {
+    this._addLayer(layer);
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  removeLayer(id) {
+    this._removeLayer(id);
   }
 
   isQueryable() {
