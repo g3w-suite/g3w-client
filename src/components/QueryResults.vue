@@ -946,7 +946,11 @@
       async loadPaginationData(index, page, page_size) {
         this.state.layers[index].loading = true;
         try {
-          await this.$options.service.loadPaginationData(index, page, page_size, this.state.query);
+          //set current features count show set by selection 
+          if (undefined !== page_size) {
+            this.state.query.pagination.current_sizes[index] = page_size;
+          }
+          await this.$options.service.loadPaginationData(index, page, this.state.query.pagination.current_sizes[index], this.state.query);
         } catch(e) {
           console.warn(e);
         }
