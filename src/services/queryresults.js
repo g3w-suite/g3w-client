@@ -944,10 +944,9 @@ export default new (class QueryResultsService extends G3WObject {
               const pLayer               = getCatalogLayerById(layer.id);
               const fid                  = this._getFeatureId(feature, layer.external);
               //@since 3.11.8 set selected feature in case of search with autofilter, or has filter active or if has selection on a specific feature
-              let is_selected_feature    = state.query.autofilter || pLayer.state.filter.active || (feature ? pLayer.hasSelectionFid(fid) : false);
+              let is_selected_feature    = state.query.autofilter || pLayer.state.filter.active || pLayer.hasSelectionFid(fid);
               //force to add selection feature in case of no pagination and selection is due an autofilter search
-              if (!this.state.query.pagination && pLayer.state.filter.active && !is_selected_feature) {
-                is_selected_feature = true;
+              if (is_selected_feature && !pLayer.state.filter.pagination && !pLayer.hasSelectionFid(fid)) {
                 (pLayer.addOlSelectionFeature({ id: fid, feature })).selected = true;
                 pLayer.includeSelectionFid(fid, false);
               }
