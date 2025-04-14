@@ -90,6 +90,7 @@ export function SearchPanel(opts = {}, show = false) {
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
       const input            = state.forminputs[i];
+
       // set key-values for select
       input.values = [
         ...(
@@ -98,7 +99,7 @@ export function SearchPanel(opts = {}, show = false) {
             : []
           ),          
         ...(input.dependance_strict || 'selectfield' !== input.type || ('selectfield' === input.type && state.child) //@in the case of parent, values are stored
-              ? input.values
+              ? filtered ? input.values : input.values.filter(v => SEARCH_ALLVALUE !== v.value )// remove `SEARCH_ALLVALUE` from values
               : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
         )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
