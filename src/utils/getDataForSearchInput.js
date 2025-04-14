@@ -5,6 +5,14 @@ import { SEARCH_ALLVALUE }            from 'g3w-constants';
  */
 export async function getDataForSearchInput({ state, field, suggest }) {
 
+  /**
+   * @since 3.11.8 in case of search_1n with filter active, filter values with current value set
+   */
+  if (state.search_1n_layer && state.search_1n_layer.state.filter.active) {
+    return ([].concat(state.forminputs
+      .find(i => field === i.attribute) || [])) // only selectfield
+      .map(i => i.values.find(v => i.value === v.value));
+  }
   try {
     // get unique value from each layers
     return (
@@ -15,7 +23,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         field: getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
-          field: suggest ? field : (state.forminputs.find(i => i.attribute === field) || {}).dependance || field,
+          field:  suggest ? field : (state.forminputs.find(i => field === i.attribute) || {}).dependance || field,
           fields: []
         }),
       })))
