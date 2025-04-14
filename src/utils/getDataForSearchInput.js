@@ -1,4 +1,5 @@
-import { SEARCH_ALLVALUE }            from 'g3w-constants';
+import { SEARCH_ALLVALUE }      from 'g3w-constants';
+import { getRelationLayerById } from 'utils/getRelationLayerById';
 
 /**
  * @returns { Array } of unique values from field
@@ -6,13 +7,15 @@ import { SEARCH_ALLVALUE }            from 'g3w-constants';
 export async function getDataForSearchInput({ state, field, suggest }) {
 
   /**
-   * @since 3.11.8 in case of search_1n with filter active, filter values with current value set
+   * @since 3.11.8 in case of search_1n with active filter, filter values by current value
    */
-  if (state.search_1n_layer && state.search_1n_layer.state.filter.active) {
-    return ([].concat(state.forminputs
-      .find(i => field === i.attribute) || [])) // only selectfield
-      .map(i => i.values.find(v => i.value === v.value));
+  const filtered = state.search_1n_relationid && getRelationLayerById(state.search_1n_relationid);
+  if (filtered && filtered.state.filter.active) {
+    return state.forminputs
+      .filter(i => field === i.attribute)                      // select the relevant field
+      .flatMap(i => i.values.filter(v => i.value === v.value)) // flatten results
   }
+
   try {
     // get unique value from each layers
     return (

@@ -186,6 +186,7 @@
   import ApplicationState                      from 'store/application';
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
+  import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import resizeMixin                           from 'mixins/resize';
   import { t }                                 from 'g3w-i18n';
 
@@ -224,9 +225,17 @@
         return this.state.forminputs.reduce((bool, i) => bool || i.loading, false);
       },
 
+      /**
+       * @TODO make use only of "this.state.search_layers" instead
+       */
+      search_layers() {
+        return [].concat(getRelationLayerById(this.state.search_1n_relationid), this.state.search_layers);
+      },
+
       filterlayers() {
-        return (ApplicationState.tokens.filtertoken && [].concat(this.state.search_1n_layer || [], this.state.search_layers).filter(l => l.getFilterToken()) || []);
-      }
+        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getFilterToken()) || [];
+      },
+
     },
 
     methods: {
@@ -546,7 +555,7 @@
       //Listen change filtertoken on layer
       //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
       //because when create a new filter with new rules, the filtertoken string doesn't change
-      [].concat(this.state.search_1n_layer || [], this.state.search_layers).forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
+      this.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
     },
 
     async mounted() {
@@ -560,8 +569,7 @@
     },
 
     beforeDestroy() {
-      [].concat(this.state.search_1n_layer || [], this.state.search_layers).forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
-      this.state.search_1n_layer = null;
+      this.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
       this.clearSelect2();
     }
 
