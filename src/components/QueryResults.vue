@@ -946,7 +946,7 @@
       async loadPaginationData(index, page, page_size) {
         this.state.layers[index].loading = true;
         try {
-          //set current features count show set by selection 
+          // set current features count shown by selection 
           if (undefined !== page_size) {
             this.state.query.pagination.current_sizes[index] = page_size;
           }

@@ -233,7 +233,7 @@ async function doSearch({
         inputs: {
           layer,
           filter: createFilterFormInputs({
-            layer:  [layer], //set as an array according to the function
+            layer:  [layer],
             inputs: features.map(f => ({
               attribute: (1 === referencedField.length ? referencedField[0] : referencedField),
               logicop:   'OR',
