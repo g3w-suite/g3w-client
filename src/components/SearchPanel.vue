@@ -234,13 +234,7 @@
       * @since 3.11.0
       */
       clearFilters() {
-        this.filterlayers.forEach(l => {
-          if (this.state.paginate) {
-            l.clearSelectionFids()
-          } else {
-            l.toggleFilterToken();
-          }
-        })
+        this.filterlayers.forEach(l => l.getFilterToken() && l.deleteFilterToken());
       },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
