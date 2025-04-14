@@ -292,7 +292,7 @@ export default new (class QueryResultsService extends G3WObject {
         // get features from added pick layer in case of a new request query
         layers.forEach((l, index) => {
           //@since 3.11.0 check if a result comes from pagination
-          l.filter.pagination = l.filter.pagination || !!(this.state.query.pagination && this.state.query.pagination.counts[index] > l.features.length) ;
+          l.filter.pagination = !!(this.state.query.pagination && this.state.query.pagination.counts[index] > l.features.length);
           options.add || options.update ? this.updateLayerResultFeatures(l, options.update) : this.state.layers.push(l)
         });
         this.setActionsForLayers(layers, { add: options.add, update: options.update });
@@ -632,8 +632,6 @@ export default new (class QueryResultsService extends G3WObject {
       })
       layer.state.filter.active    = bool;
       layer.state.selection.active = bool;
-
-      this.state.layers[index].filter.pagination = this.state.layers[index].features.length < this.state.query.pagination.counts[index];
       //in the case of layer with geometry, zoom to features
       if (this.state.layers[index].hasgeometry) {
         this.highLightLayerFeatures(this.state.layers[index]);
@@ -906,7 +904,7 @@ export default new (class QueryResultsService extends G3WObject {
           class:     GUI.getFontClass('minus-square'),
           style:     { color: 'red' },
           // in case of pagination, disabled @since 3.11.0
-          state:     Vue.observable({ show: !state.query.pagination && !layer.filter.pagination }), //@since 3.11.0 show false in case of pagination
+          state:     Vue.observable({ show: !layer.filter.pagination }), //@since 3.11.0 show false in case of pagination
           hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
           cbk:       this.removeFeatureLayerFromResult.bind(this),
           /**
@@ -924,7 +922,7 @@ export default new (class QueryResultsService extends G3WObject {
             this.unwatch && this.unwatch();
           },
           change() {
-            this.state.disabled = !state.query.pagination && !layer.filter.pagination;
+            this.state.disabled = !layer.filter.pagination;
           }
         },
 
@@ -936,7 +934,7 @@ export default new (class QueryResultsService extends G3WObject {
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
             // in case of pagination, show @since 3.11.0
-            show:    !state.query.pagination && !layer.filter.pagination
+            show:    !layer.filter.pagination
           }),
           // check feature selection
           init:     ({ feature, index, action } = {}) => {
@@ -945,7 +943,8 @@ export default new (class QueryResultsService extends G3WObject {
             } else if (feature && undefined !== layer.selection.active) { // project layer
               const pLayer               = getCatalogLayerById(layer.id);
               const fid                  = this._getFeatureId(feature, layer.external);
-              let is_selected_feature  = feature ? pLayer.hasSelectionFid(fid) : false;
+              //@since 3.11.8 set selected feature in case of search with autofilter, or has filter active or if has selection on a specific feature
+              let is_selected_feature    = state.query.autofilter || pLayer.state.filter.active || (feature ? pLayer.hasSelectionFid(fid) : false);
               //force to add selection feature in case of no pagination and selection is due an autofilter search
               if (!this.state.query.pagination && pLayer.state.filter.active && !is_selected_feature) {
                 is_selected_feature = true;
@@ -959,19 +958,11 @@ export default new (class QueryResultsService extends G3WObject {
                 //or if feature fid is in selected array
                 || is_selected_feature
               );
-              action.unwatch = VM.$watch(() => layer.filter.pagination, bool => action.state.show = !bool );
             }
-          },
-          /**
-           * @since @3.11.0
-           * Clear action when destroy
-           */
-          clear() {
-            this.unwatch && this.unwatch();
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
           change({ features }) {
-            this.state.show = !state.query.pagination && !layer.filter.pagination;
+            this.state.show = !state.query.pagination;
             features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
           },
           cbk: throttle(this.addToSelection.bind(this))
@@ -1125,6 +1116,7 @@ export default new (class QueryResultsService extends G3WObject {
     this.clearState();
     this.closeComponent();
     this.resultsQueryLayer.getSource().clear();
+    this.state.layers.forEach(l => l.filter.pagination = false); //@since 3.11.8 reset pagination
     GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
   }
 

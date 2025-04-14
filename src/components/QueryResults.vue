@@ -131,7 +131,7 @@
                         || (
                             layer.source
                             && layer.source.type !== 'wms'
-                            && (layer.selection.active || showInPagination(layer, index))
+                            && (layer.selection.active || !layer.filter.pagination)
                            )
                       )
                     "
@@ -146,7 +146,7 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active && showInPagination(layer, index)">
+                  <template v-if = "!layer.external && layer.selection.active && !layer.filter.pagination">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
@@ -664,15 +664,6 @@
 
     },
     methods: {
-      /**
-       * @since 3.11.0
-       * Return true if we need a show element when pagination is set
-       * @param layer
-       * @return {boolean}
-       */
-      showInPagination(layer) {
-        return !layer.filter.pagination;
-      },
 
       /**
        * @since v3.10.0
