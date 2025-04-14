@@ -423,6 +423,7 @@
 
         await this.$nextTick();
 
+        //@since 3.11.8 In case of dependance_strict, set disable if fiter is set
         if (this.reload && input.dependance_strict) {
           input.disabled = this.filterlayers.length > 0;
         }
