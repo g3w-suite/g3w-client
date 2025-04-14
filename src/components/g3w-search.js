@@ -152,7 +152,7 @@ export function SearchPanel(opts = {}, show = false) {
  * @param opts.filter
  * @param opts.queryUrl
  * @param opts.feature_count
- * @param opts.show            - false = internal request (No output data)
+ * @param { boolean } opts.show false = internal request (No output data)
  * 
  * @returns { Promise<void|unknown> }
  */
@@ -164,16 +164,13 @@ async function doSearch({
   state
 } = {}) {
 
-
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
-  //show take in account type or return
   show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
 
   state.searching = true;
 
   let data, parsed;
-  //For pagination purpose
-  const page_sizes = PAGELENGTHS;
+  const search_1n  = !show && ('search_1n' === state.type);
 
   try {
     data = await DataRouterService.getData('search:features', {
@@ -186,9 +183,9 @@ async function doSearch({
         queryUrl,
         formatter: 1,
         feature_count,
-        raw:        'search' === state.return, // in order to get a raw response
-        autofilter: Number(show && state.autofilter.value), //0/1 autofilter by server,
-        ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
+        raw:        'search' === state.return,                                        // whether get a raw response
+        autofilter: Number(show && state.autofilter.value),                           // 0/1 = autofilter (by server)
+        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}) // @since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
@@ -216,7 +213,6 @@ async function doSearch({
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
-    const search_1n = !show           && ('search_1n' === state.type);
     const features  = search_1n       && (data.data[0] || {}).features || []
     const relation  = features.length && ApplicationState.project.getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
     const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
@@ -237,7 +233,7 @@ async function doSearch({
         inputs: {
           layer,
           filter: createFilterFormInputs({
-            layer,
+            layer:  [layer],
             inputs: features.map(f => ({
               attribute: (1 === referencedField.length ? referencedField[0] : referencedField),
               logicop:   'OR',
@@ -250,8 +246,8 @@ async function doSearch({
           }),
           formatter: 1,
           feature_count,
-          autofilter: state.autofilter.value, //0/1 autofilter by server
-          ...(state.paginate ? { page: 1, page_sizes } : {}) //@since 3.11.0 pagination configuration
+          autofilter: state.autofilter.value,                             // 0/1 autofilter (by server)
+          ...(state.paginate ? { page: 1, page_sizes: PAGELENGTHS } : {}) //@since 3.11.0 pagination configuration
         },
         outputs: {
           title: state.title
