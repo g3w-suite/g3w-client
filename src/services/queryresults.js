@@ -604,7 +604,6 @@ export default new (class QueryResultsService extends G3WObject {
     }
     if (page_size) {
       this.state.query.pagination.getData.params[index].page_size = page_size;
-      this.state.query.pagination.pages[index]                    = Math.round(this.state.query.pagination.counts[index] / page_size);
     } //set page size
     //get config from getData object set by pagination method
     const { layers = [], method, params } = this.state.query.pagination.getData;
