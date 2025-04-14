@@ -39,6 +39,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
     search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
+    search_1n_layer:      ApplicationState.project.getLayerById((ApplicationState.project.getRelationById(opts.options.search_1n_relationid) || {}).referencedLayer), // @since 3.11.8
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -83,12 +84,19 @@ export function SearchPanel(opts = {}, show = false) {
 
   const setInputs = async () => {
 
+    //no filter is set on serach layers
+    const filtered = ApplicationState.tokens.filtertoken && [].concat(state.search_1n_layer || [], state.search_layers).filter(l => l.getFilterToken()).length > 0;
+    
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
       const input            = state.forminputs[i];
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
+        ...(
+          'selectfield' === input.type && !filtered //is select field and no filter set
+            ? [SEARCH_ALLVALUE] // set `SEARCH_ALLVALUE` as first element
+            : []
+          ),          
         ...(input.dependance_strict || 'selectfield' !== input.type || ('selectfield' === input.type && state.child) //@in the case of parent, values are stored
               ? input.values
               : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server

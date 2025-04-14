@@ -225,7 +225,7 @@
       },
 
       filterlayers() {
-        return (ApplicationState.tokens.filtertoken && this.state.search_layers.filter(l => l.getFilterToken()) || []);
+        return (ApplicationState.tokens.filtertoken && [].concat(this.state.search_1n_layer || [], this.state.search_layers).filter(l => l.getFilterToken()) || []);
       }
     },
 
@@ -423,6 +423,10 @@
 
         await this.$nextTick();
 
+        if (this.reload && input.dependance_strict) {
+          input.disabled = this.filterlayers.length > 0;
+        }
+
         const numdigaut        = input.options.numdigaut;
         const has_autocomplete = 'autocompletefield' === input.type;
         const ajax             = has_autocomplete ? {
@@ -527,7 +531,7 @@
 
         this.clearSelect2();
         try {
-          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)))
+          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)));
         } catch(e) {
           console.warn(e);
         }
@@ -547,7 +551,7 @@
       //Listen change filtertoken on layer
       //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
       //because when create a new filter with new rules, the filtertoken string doesn't change
-      this.state.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
+      [].concat(this.state.search_1n_layer || [], this.state.search_layers).forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
     },
 
     async mounted() {
@@ -561,7 +565,8 @@
     },
 
     beforeDestroy() {
-      this.state.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs))
+      [].concat(this.state.search_1n_layer || [], this.state.search_layers).forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
+      this.state.search_1n_layer = null;
       this.clearSelect2();
     }
 
