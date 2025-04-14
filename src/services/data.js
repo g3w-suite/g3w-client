@@ -294,7 +294,7 @@ export default {
           getData: {
             params: params.filter.map(filter => ({ ...params, filter })),
             method: 'searchFeatures',
-            layers: Array.isArray(layer) ? layer : [layer] // set as array
+            layers: [].concat(layer)
           }
         },
       },
