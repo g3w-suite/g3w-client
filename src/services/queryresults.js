@@ -1840,9 +1840,7 @@ export default new (class QueryResultsService extends G3WObject {
     const layer_selection = undefined === feature && undefined === action && undefined === index;
     const _action         = layer_selection ? query.getActionLayerById({ layer, id: 'selection' }) : action;
     const toggled         = layer_selection && Object.values(_action.state.toggled).every(toggled => toggled);
-    const catalog_layer   = layer_selection
-      ? (layer.external ? layer : getCatalogLayerById(layer.id))
-      : (((query.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
+    const catalog_layer   = (layer_selection && layer.external) || (query.state.layers.find(l => l.id === layer.id) || {}).external ? layer : getCatalogLayerById(layer.id);
     const features        = layer_selection ? (layer.features || []) : [feature];
 
     // toggle selection (all features of a layer)
