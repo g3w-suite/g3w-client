@@ -1933,7 +1933,11 @@ export default new (class QueryResultsService extends G3WObject {
             layers.find(l => l.id === layer.getId())
           );
           if (currentLayer) {
-            currentLayer.features.splice(undefined === index ? idx : index, 1);
+            const i = undefined === index ? idx : index; // index feature to remove
+            currentLayer.features.splice(i, 1);
+            delete _action.state.toggled[i]; //remove action state toogled to avoid that fetaure next removed feature get action  toogle state of delete feature
+            //when a feature is delete and relattive action toogled index, need to reset the index of acrion state,toggled
+            _action.state.toggled = Object.entries(_action.state.toggled).reduce((a, t, i) => {a[i] = t; return a}, {});
           }
         })
       
