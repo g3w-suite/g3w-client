@@ -1825,7 +1825,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @TODO make it simpler..
    * @TODO make it a Layers class function ? 
    * 
    * Add / Remove features from selection
@@ -1834,174 +1833,154 @@ export default new (class QueryResultsService extends G3WObject {
    * 
    * @since 3.9.0
    */
-  addToSelection(layer, feature, action, index) {
-    const service          = GUI.getService('queryresults');
-    const map              = GUI.getService('map');
+  async addToSelection(layer, feature, action, index) {
+    const query = GUI.getService('queryresults');
 
-    // TODO: avoid referencing this private stuff
-    const getFeatureId       = service._getFeatureId.bind(service);
-    const getActionLayerById = service.getActionLayerById.bind(service);
+    // true = when you click on the top "selection" icon (above of each layer result)
+    const layer_selection = undefined === feature && undefined === action && undefined === index;
+    const _action         = layer_selection ? query.getActionLayerById({ layer, id: 'selection' }) : action;
+    const toggled         = layer_selection && Object.values(_action.state.toggled).every(toggled => toggled);
+    const catalog_layer   = layer_selection
+      ? (layer.external ? layer : getCatalogLayerById(layer.id))
+      : (((query.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
+    const features        = layer_selection ? (layer.features || []) : [feature];
 
-    //is true when click on the selection icon on top of each layer result
-    const layerSelection     = undefined === feature && undefined === action && undefined === index;
-
-    const _action        = layerSelection ? getActionLayerById({ layer, id: 'selection' })                  : action;
-    const toggled        = layerSelection && Object.values(_action.state.toggled).reduce((prev, curr) => prev && curr, true);
-    const _layer         = layerSelection ? (layer.external ? layer : getCatalogLayerById(layer.id))        : (((service.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
-    const features       = layerSelection ? (layer.features && layer.features.length ? layer.features : []) : [feature];
-    const params         = layerSelection ? {
-      fids: features.length > 0 ? features.map(f => getFeatureId(f, layer.external)) : null,
-      features,
-      force: toggled ? 'remove' : 'add'
-    } : {
-      fids: [feature ? getFeatureId(feature, _layer.external) : null],
-      features,
-      index,
-      force: undefined
-    };
-
-    //in case, switch selection for all features of a layer
-    if (layerSelection) {
+    // toggle selection (all features of a layer)
+    if (layer_selection) {
       layer.features.forEach((f, i) => {
         _action.state.toggled[i] = !toggled;
         f.selection.selected     = _action.state.toggled[i];
       });
-    } else { //in the case of switch selection on single feature layer
+    }
+
+    // toggle selection (on a single feature)
+    if (!layer_selection) {
       _action.state.toggled[index] = !_action.state.toggled[index];
       feature.selection.selected   = _action.state.toggled[index];
     }
 
-    //In case of pagination and toggled selection layer
-    if (toggled && layerSelection) {
-      _layer.clearSelectionFids();
+    // handle pagination
+    if (toggled && layer_selection) {
+      catalog_layer.clearSelectionFids();
       return;
     }
-    /**
-     * PROJECT LAYER
-     */
-    if (!layer.external && ![null, undefined].includes(params.fids)) {
-      let layer                     = _layer;
-      let { fids, features, force } = params;
 
-      fids     = Array.isArray(fids) ? fids : [fids];
-      features = Array.isArray(features) ? features : [features];
+    if (!feature && !(layer.features || []).length) {
+      return console.trace('GIVE_ME_A_NAME');
+    }
+
+    // ensure "layer.selection.features" is defined
+    if (layer.external && undefined === catalog_layer.selection.features) {
+      catalog_layer.selection.features = [];
+    }
+
+    const fids         = layer_selection
+    ? (features || []).map(f => layer.external ? f.id : (f.attributes[G3W_FID] || f.id))
+    : feature && [catalog_layer.external ? feature.id : (feature.attributes[G3W_FID] || feature.id)] || [];
+
+    const include_fids = []; // fids to include
+    const exclude_fids = []; // fids to exclude
+
+    fids.forEach((fid, i) => {
+
+      const feature = features[i];
+
+      const is_selected = !layer.external && (catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
+
+      // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
+      if (!layer.external && !is_selected && feature && feature.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
+        catalog_layer.addOlSelectionFeature({ id: fid, feature });
+      }
     
-      const include = []; // fid of features to include
-      const exclude = []; // fid of features to exclude
+      // exclude
+      if (!layer.external && !layer_selection && is_selected) {
+        catalog_layer.excludeSelectionFid(fid);
+      }
 
+      // include
+      if (!layer.external && !layer_selection && !is_selected) {
+        catalog_layer.includeSelectionFid(fid);
+      }
+  
+      // add
+      if (!layer.external && layer_selection && !toggled && !is_selected) {
+        include_fids.push(fid);
+      }
+  
+      // remove
+      if (!layer.external && layer_selection && toggled) {
+        exclude_fids.push(fid);
+      }
+
+      // Set feature used in selection tool action
+      if (layer.external && !catalog_layer.selection.features.some(f => f.getId() === fid)) {
+        let feat = feature;
+        if (feature.geometry) {
+          feat = new ol.Feature(feature.geometry);
+          feat.setId(fid);
+        }
+        Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+        catalog_layer.selection.features.push(
+            Object.assign(feat, {
+            __layerId: catalog_layer.id,
+            selection: feature.selection,
+          })
+        );
+      }
+
+      //check if feature is already select or feature is already removed (no selected)
+      // add external layer selection (on map)
+      if (layer.external && !((layer_selection && !toggled && feature.selection.selected) || (layer_selection && toggled && !feature.selection.selected))) {
+        GUI.getService('map').setSelectionFeatures(
+          feature.selection.selected ? 'add' : 'remove',
+          { feature: catalog_layer.selection.features.find(f => fid === f.getId()) }
+        );
+      }
+    });
+
+    // PROJECT LAYER
+    if (!layer.external) {
+      catalog_layer.includeSelectionFids(include_fids, false);
+      catalog_layer.excludeSelectionFids(exclude_fids, false);
+    }
+    
+    // PROJECT LAYER
+    if (!layer.external && catalog_layer.state.filter.active) {
+      await catalog_layer.createFilterToken();
+    }
+
+    // PROJECT LAYER
+    if (!layer.external) {
       fids.forEach((fid, idx) => {
-        const feature     = features[idx];
-        const is_selected = layer.state.filter.active || layer.hasSelectionFid(fid);
-      
-        // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
-        if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-          layer.addOlSelectionFeature({ id: fid, feature });
-        }
-      
-        // force action
-        if (undefined === force) {
-          layer[is_selected ? 'excludeSelectionFid' : 'includeSelectionFid'](fid);
-        }
-    
-        // force add
-        if ('add' === force && !is_selected) {
-          include.push(fid);
-        }
-    
-        // force remove
-        if ('remove' === force) {
-          exclude.push(fid);
-        }
-      });
-
-      layer.includeSelectionFids(include, false);
-      layer.excludeSelectionFids(exclude, false);
-
-      (
-        layer.state.filter.active
-          ? layer.createFilterToken()
-          : Promise.resolve()
-      ).then(() => {
-        const { layers } = GUI.getService('queryresults').getState();
-    
-        /** @TODO add description */
-        fids.forEach((fid, idx) => {
-          const currentLayer = (
-            !layer.hasSelectionFid(fid) &&
-            layer.state.filter.active &&
-            layer.getSelectionFids().size > 0 &&
-            layers.find(l => l.id === layer.getId())
-          );
-          if (currentLayer) {
-            const i = undefined === index ? idx : index; // index feature to remove
-            currentLayer.features.splice(i, 1);
-            delete _action.state.toggled[i]; //remove action state toogled to avoid that fetaure next removed feature get action  toogle state of delete feature
-            //when a feature is delete and relattive action toogled index, need to reset the index of acrion state,toggled
-            _action.state.toggled = Object.entries(_action.state.toggled).reduce((a, t, i) => {a[i] = t; return a}, {});
-          }
-        })
-      
-        map.clearHighlightGeometry();
-      
-        /** @TODO add description */
-        if (1 === layers.length && !layers[0].features.length) {
-          layers.splice(0);
+        const _layer = (
+          catalog_layer.state.filter.active &&
+          !catalog_layer.hasSelectionFid(fid) &&
+          catalog_layer.getSelectionFids().size > 0 &&
+          query.getState().layers.find(l => l.id === catalog_layer.getId())
+        );
+        if (_layer) {
+          const i = undefined === index ? idx : index; // index of feature to remove
+          _layer.features.splice(i, 1);
+          delete _action.state.toggled[i];
+          // reset the index of action state (toggled)
+          _action.state.toggled = Object.entries(_action.state.toggled).reduce((a, t, i) => {a[i] = t; return a}, {});
         }
       });
     }
 
-    /**
-     * EXTERNAL LAYER
-     */
-    if (layer.external && ![null, undefined].includes(params.fids)) {
+    // PROJECT LAYER
+    if (!layer.external) {
+      GUI.getService('map').clearHighlightGeometry();
+    }
 
-      let layer                     = _layer;
-      let { fids, features, force } = params;
+    // PROJECT LAYER
+    if (!layer.external && 1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
+      query.getState().layers.splice(0);
+    }
 
-      //Take in an account array or single fid
-      features = Array.isArray(features) ? features : [features];
-
-      //check if layer.selection.features is undefined
-      if (undefined === layer.selection.features) {
-        //set array
-        layer.selection.features = [];
-      }
-    
-      fids.forEach((fid, i) => {
-        const feature = features[i];
-
-        // Set feature used in selection tool action
-        if (undefined === layer.selection.features.find(f => f.getId() === fid)) {
-          // create ol feature from an object
-          let feat = feature;
-          const { attributes } = feature;
-          if (feature.geometry) {
-            feat = new ol.Feature(feature.geometry);
-            feat.setId(fid);
-          }
-          Object.keys(attributes).forEach(attr => feat.set(attr, attributes[attr]));
-          feat.__layerId = layer.id;
-          feat.selection = feature.selection;
-          layer.selection.features.push(feat);
-        }
-    
-        //check if feature is already select or feature is already removed (no selected)
-        /** If not, changes to apply return */
-        if (('add' === force && feature.selection.selected) || ('remove' === force && !feature.selection.selected)) {
-          return;
-        }
-
-        /** Need to add selection on map */
-        map.setSelectionFeatures(
-          (feature.selection.selected ? 'add' : 'remove'),
-          {
-            feature: layer.selection.features.find(selectionFeature => fid === selectionFeature.getId())
-          }
-        );
-      })
-
-      // Set selection layer active based on features selection selected properties.
-      layer.selection.active = layer.selection.features.reduce((acc, feature) => acc || feature.selection.selected, false);
+    // set selection property (external layer)
+    if (layer.external) {
+      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
     }
 
   }
