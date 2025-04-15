@@ -229,7 +229,7 @@
        * @TODO make use only of "this.state.search_layers" instead
        */
       search_layers() {
-        return [].concat(getRelationLayerById(this.state.search_1n_relationid), this.state.search_layers);
+        return [].concat(getRelationLayerById(this.state.search_1n_relationid) || [], this.state.search_layers);
       },
 
       filterlayers() {
