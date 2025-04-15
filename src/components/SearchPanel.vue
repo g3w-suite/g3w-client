@@ -10,6 +10,7 @@
   >
     <bar-loader :loading = "state.searching || loading || reload"/>
     <h4><b>{{ state.title }}</b></h4>
+
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
       <helpdiv message="sdk.search.help_filter"/>
       <button
@@ -146,14 +147,19 @@
           </div>
 
         </div>
-        <!-- @since 3.11.0 -->
+
+        <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
           <input
             id        = "g3w-search-filter"
             class     = "magic-checkbox"
             v-model   = "autofilter"
-            type      = "checkbox"/>
-            <label for = "g3w-search-filter" v-t = "'sdk.search.autofilter'"></label>
+            type      = "checkbox"
+          />
+          <label for = "g3w-search-filter" v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'">
+            {{ $t('sdk.search.autofilter') }}
+            <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
+          </label>
         </div>
 
         <!-- SEARCH BUTTON -->
