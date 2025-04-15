@@ -903,8 +903,8 @@ export default new (class QueryResultsService extends G3WObject {
           mouseover: true,
           class:     GUI.getFontClass('minus-square'),
           style:     { color: 'red' },
-          // in case of pagination, disabled @since 3.11.0
-          state:     Vue.observable({ show: !layer.filter.pagination }), //@since 3.11.0 show false in case of pagination
+          /** @since 3.11.0 hide element in case of pagination (show = false) */
+          state:     Vue.observable({ show: !layer.filter.pagination }),
           hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
           cbk:       this.removeFeatureLayerFromResult.bind(this),
           /**
@@ -933,30 +933,30 @@ export default new (class QueryResultsService extends G3WObject {
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
-            // in case of pagination, show @since 3.11.0
             show:    !layer.filter.pagination
           }),
           // check feature selection
-          init:     ({ feature, index, action } = {}) => {
-            if (layer.external && undefined !== layer.selection.active) { // external layer
-              action.state.toggled[index] = feature.selection.selected;
-            } else if (feature && undefined !== layer.selection.active) { // project layer
-              const pLayer               = getCatalogLayerById(layer.id);
-              const fid                  = this._getFeatureId(feature, layer.external);
-              //@since 3.11.8 set selected feature in case of search with autofilter, or has filter active or if has selection on a specific feature
-              let is_selected_feature    = state.query.autofilter || pLayer.state.filter.active || pLayer.hasSelectionFid(fid);
-              //force to add selection feature in case of no pagination and selection is due an autofilter search
-              if (is_selected_feature && !pLayer.state.filter.pagination && !pLayer.hasSelectionFid(fid)) {
-                (pLayer.addOlSelectionFeature({ id: fid, feature })).selected = true;
-                pLayer.includeSelectionFid(fid, false);
-              }
-              feature.selection.selected = is_selected_feature;
-              action.state.toggled[index] = (
-                //need to check if set active filter and no saved filter is set
-                (pLayer.state.filter.active && null == pLayer.state.filter.current)
-                //or if feature fid is in selected array
-                || is_selected_feature
-              );
+          init({ layer, feature, index, action } = {}) {
+            if (!feature) {
+              return console.trace('Invalid feature');
+            }
+
+            const layer_selected   = !layer.external && undefined !== layer.selection.active;
+            const catalog_layer    = layer_selected && getCatalogLayerById(layer.id);
+            const fid              = feature.attributes[G3W_FID] || feature.id;
+            const feature_selected = layer_selected && (state.query.autofilter || catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
+
+            // force feature selection (when no pagination and selection is due an autofilter search)
+            if (feature_selected && !catalog_layer.state.filter.pagination && !catalog_layer.hasSelectionFid(fid)) {
+              catalog_layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
+              catalog_layer.includeSelectionFid(fid, false);
+            }
+
+            feature.selection.selected = layer_selected ? feature_selected : feature.selection.selected;
+
+            /** @FIXME add description */
+            if (undefined !== layer.selection.active) {
+              action.state.toggled[index] = feature.selection.selected || (layer.external ? action.state.toggled[index] : (catalog_layer.state.filter.active && null == catalog_layer.state.filter.current)); // active filter + no saved filter is set
             }
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
