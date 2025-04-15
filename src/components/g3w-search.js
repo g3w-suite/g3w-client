@@ -39,7 +39,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
+    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)).filter(Boolean),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -85,7 +85,7 @@ export function SearchPanel(opts = {}, show = false) {
   const setInputs = async () => {
 
     // whether end-user has filtered some layers
-    const filtered = ApplicationState.tokens.filtertoken && state.search_layers.concat(getRelationLayerById(state.search_1n_relationid)).filter(l => l.getFilterToken()).length > 0;
+    const filtered = ApplicationState.tokens.filtertoken && state.search_layers.concat(getRelationLayerById(state.search_1n_relationid) || []).filter(l => l.getFilterToken()).length > 0;
     
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
