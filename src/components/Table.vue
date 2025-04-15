@@ -46,7 +46,7 @@
 
       <!-- TOGGLE FILTER -->
       <div
-        v-show             = "state.show_tools"
+        v-show             = "state.show_tools && (layer.state.filter.active || !layer.selectionFids.has('__ALL__'))"
         class              = "skin-color action-button skin-tooltip-right"
         :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
