@@ -39,7 +39,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
+    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -105,15 +105,11 @@ export function SearchPanel(opts = {}, show = false) {
 
       // set key-values for select
       input.values = [
-        ...(
-          'selectfield' === input.type && !filtered
-            ? [SEARCH_ALLVALUE] // set `SEARCH_ALLVALUE` as first element
-            : []
-          ),          
-        ...(input.dependance_strict || 'selectfield' !== input.type || state.child     // in the case of parent, values are stored
-              ? input.values.filter(v => filtered || SEARCH_ALLVALUE !== v.value )     // avoid showing a duplicated `SEARCH_ALLVALUE` when removing filter to dependant input
-              : await getDataForSearchInput({ state, field: input.attribute })         // retrieve input values from server
-        )
+        ...('selectfield' === input.type && !filtered ? [SEARCH_ALLVALUE] : []),   // set `SEARCH_ALLVALUE` as first element (when no other filter is set)
+        ...(input.dependance_strict || 'selectfield' !== input.type || state.child
+              ? input.values.filter(v => filtered || SEARCH_ALLVALUE !== v.value)  // retrieve input values from storage
+              : await getDataForSearchInput({ state, field: input.attribute })     // retrieve input values from server
+          )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
 
       // there is a dependance
@@ -212,24 +208,22 @@ async function doSearch({
       outputs: show && { title: state.title }
     });
 
+    /* Used by the following plugins: "cadastre" ************************************/
     const has_values = Object.keys((data.data[0] || {}).data || {}).length > 0;
-
     // has search response (values) → show panel
     if (has_values && 'search' === state.return) {
       await GUI.closeContent();
-      const opts = (data.data[0] || {}).data;
-      opts.child = true; //set child true
-      new SearchPanel(opts, true)
+      new SearchPanel(Object.assign((data.data[0] || {}).data, { child: true }), true);     // TODO: remove it from core
     }
-    
     // no search response (values) → show an empty result
     if (!has_values && 'search' === state.return) {
       GUI.outputDataPlace(Promise.resolve({ data: [] }));
       data = [];
     }
+    /********************************************************************************/
 
-    // auto zoom to query (not pagination)
-    if (show && !state.paginate && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
+    // auto zoom to query (response)
+    if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
@@ -281,5 +275,5 @@ async function doSearch({
 
   state.searching = false;
 
-  return parsed ? parsed : data;
+  return parsed || data;
 }
