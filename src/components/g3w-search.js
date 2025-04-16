@@ -110,9 +110,9 @@ export function SearchPanel(opts = {}, show = false) {
             ? [SEARCH_ALLVALUE] // set `SEARCH_ALLVALUE` as first element
             : []
           ),          
-        ...(input.dependance_strict || 'selectfield' !== input.type || ('selectfield' === input.type && state.child) // in the case of parent, values are stored
-              ? input.values.filter(v => filtered || SEARCH_ALLVALUE !== v.value )                                   // avoid showing a duplicated `SEARCH_ALLVALUE` when removing filter to dependant input
-              : await getDataForSearchInput({ state, field: input.attribute })                                       // retrieve input values from server
+        ...(input.dependance_strict || 'selectfield' !== input.type || state.child     // in the case of parent, values are stored
+              ? input.values.filter(v => filtered || SEARCH_ALLVALUE !== v.value )     // avoid showing a duplicated `SEARCH_ALLVALUE` when removing filter to dependant input
+              : await getDataForSearchInput({ state, field: input.attribute })         // retrieve input values from server
         )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
 
