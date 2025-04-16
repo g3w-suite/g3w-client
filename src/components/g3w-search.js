@@ -102,9 +102,9 @@ export function SearchPanel(opts = {}, show = false) {
 
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),   // set `SEARCH_ALLVALUE` as first element (when no other filter is set)
+        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                // set `SEARCH_ALLVALUE` as first element
         ...(input.dependance_strict || 'selectfield' !== input.type || state.child
-              ? input.values // retrieve input values from storage
+              ? input.values                                                       // retrieve input values from storage
               : await getDataForSearchInput({ state, field: input.attribute })     // retrieve input values from server
           )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
