@@ -213,7 +213,7 @@ async function doSearch({
     // has search response (values) → show panel
     if (has_values && 'search' === state.return) {
       await GUI.closeContent();
-      new SearchPanel(Object.assign((data.data[0] || {}).data, { child: true }), true);     // TODO: remove it from core
+      new SearchPanel(Object.assign((data.data[0] || {}).data, { child: true }), true); // TODO: remove "child: true" it from core
     }
     // no search response (values) → show an empty result
     if (!has_values && 'search' === state.return) {
