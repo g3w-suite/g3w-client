@@ -39,7 +39,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)).filter(Boolean),
+    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -84,6 +84,15 @@ export function SearchPanel(opts = {}, show = false) {
     /** @since 3.11.0 whether search is coming from another search */
     child:     !!opts.child,
   };
+
+  // see: https://github.com/g3w-suite/g3w-client/pull/785#discussion_r2044936089
+  if (state.search_layers.some(l => !l)) {
+    state.search_layers = state.search_layers.filter(l => l);
+    GUI.showUserMessage({
+      type: 'warning',
+      message: `Invalid <code>search_layers</code> config. Have you deleted some layers from your QGIS project recently?`
+    });
+  }
 
   const setInputs = async () => {
 
