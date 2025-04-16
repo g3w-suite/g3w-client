@@ -131,7 +131,7 @@
                         || (
                             layer.source
                             && layer.source.type !== 'wms'
-                            && !layer.filter.pagination || (layer.selection.active && layer.filter.active)
+                            && !(state.query.pagination && state.query.pagination.paginate[index]) || (layer.selection.active && layer.filter.active)
                            )
                       )
                     "
@@ -208,7 +208,7 @@
 
               <!-- PAGINATION -->
               <section
-                v-if       = "state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
+                v-if       = "state.query.pagination.paginate[index] && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
@@ -923,7 +923,7 @@
        */
       showPagination(index) {
         return (
-          this.state.query.pagination //check if pagination is set
+          this.state.query.pagination.paginate[index] //check if pagination is set
           && this.state.layers[index].features.length < this.state.query.pagination.counts[index] //features are less than the total feature of a query
         );
       },
@@ -990,7 +990,7 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool && !this.state.query.pagination) {
+        if (bool && !this.state.query.pagination.paginate[0]) {
           GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }

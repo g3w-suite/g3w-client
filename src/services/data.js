@@ -251,6 +251,7 @@ export default {
     //@since 3.11.0 count features returned by
     const counts     = [];
     const page_sizes = []; //set pages based on count feature returned by server
+    const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
@@ -269,12 +270,14 @@ export default {
           }
 
           if (params.page_sizes)  {
+            const features = (value.data || [])[0].features;
             //get max number of elements per page
             const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
             //Check if count (total number of elements of search is more o less than max)
             page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             //add a count element on counts array
             counts.push(value.count);
+            paginate.push(features && value.count > features.length);
           }
           if (params.raw)                                         { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
@@ -290,6 +293,7 @@ export default {
           page_sizes,    //Array contains a number of features that want get with pagination
           current_sizes: counts.map(() => page_sizes[0][0]), // @since 3.11.8 current page size how many features are get
           counts,
+          paginate,
           //Object contains info for do another request by another part of code
           getData: {
             params: params.filter.map(filter => ({ ...params, filter })),
