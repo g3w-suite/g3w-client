@@ -102,8 +102,8 @@ export function SearchPanel(opts = {}, show = false) {
       // set key-values for select
       input.values = [
         ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict || 'selectfield' !== input.type || state.child
-              ? input.values.filter(v => SEARCH_ALLVALUE !== v.value)     //@since v3.11.8 In case of set filtertoken on search_1n layer, to avoid to has duplicate ALL value                                                   // retrieve input values from storage
+        ...(input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value)        
+              ? [] //in case of dependance_strict set empty array in when 'no value' is set on dependece input                                              
               : await getDataForSearchInput({ state, field: input.attribute })     // retrieve input values from server
           )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
