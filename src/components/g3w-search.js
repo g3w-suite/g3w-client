@@ -99,19 +99,19 @@ export function SearchPanel(opts = {}, show = false) {
 
       const input = state.forminputs[i];
 
+      const no_value = input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value);
+
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value)        
-              ? [] //in case of dependance_strict set empty array in when 'no value' is set on dependece input                                              
-              : await getDataForSearchInput({ state, field: input.attribute })     // retrieve input values from server
+        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                        // set `SEARCH_ALLVALUE` as first element
+        ...(no_value ? [] : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server (set empty in case of strict dependance)
           )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
 
       // there is a dependance
       if (input.dependance) {
         state.loading[input.dependance] = false;
-        input.disabled                  = input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value); // disabled for BACKCOMP Nee to check ALL value, null, or undefined, or empty in case of search_1n
+        input.disabled                  = no_value; // disabled for BACKCOMP
       }
 
       // save a copy of original values
