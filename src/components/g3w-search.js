@@ -95,9 +95,6 @@ export function SearchPanel(opts = {}, show = false) {
   }
 
   const setInputs = async () => {
-
-    // whether end-user has filtered some layers
-    const filtered = ApplicationState.tokens.filtertoken && state.search_layers.concat(getRelationLayerById(state.search_1n_relationid) || []).filter(l => l.getFilterToken()).length > 0;
     
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
@@ -105,9 +102,9 @@ export function SearchPanel(opts = {}, show = false) {
 
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type && !filtered ? [SEARCH_ALLVALUE] : []),   // set `SEARCH_ALLVALUE` as first element (when no other filter is set)
+        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),   // set `SEARCH_ALLVALUE` as first element (when no other filter is set)
         ...(input.dependance_strict || 'selectfield' !== input.type || state.child
-              ? input.values.filter(v => filtered || SEARCH_ALLVALUE !== v.value)  // retrieve input values from storage
+              ? input.values // retrieve input values from storage
               : await getDataForSearchInput({ state, field: input.attribute })     // retrieve input values from server
           )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
