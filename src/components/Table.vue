@@ -258,7 +258,6 @@ export default {
       //in the case of autofilter with pagination need to get features to set selection
       if (layer.state.filter.active && !layer.selectionFids.has('__ALL__')) {
         this.state.selectAll = false;
-        this.selectAllRows();
       }
       layer.toggleFilterToken();
     },
