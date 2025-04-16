@@ -131,7 +131,7 @@
                         || (
                             layer.source
                             && layer.source.type !== 'wms'
-                            && (layer.selection.active || !layer.filter.pagination)
+                            && !layer.filter.pagination || (layer.selection.active && layer.filter.active)
                            )
                       )
                     "

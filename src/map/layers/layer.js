@@ -1287,7 +1287,8 @@ class Layer extends G3WObject {
         this.state.filters = this.state.filters.filter(f => fid !== f.fid);
       }
 
-      this.state.filter.current = null  // set current filter set to null
+      this.state.filter.current    = null  // set current filter set to null
+      this.state.selection.active  = !this.state.filter.pagination; //in case of pagination, set selected to false
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
       this.setFilterToken(filtertoken); //set filtertoken 
