@@ -1926,7 +1926,7 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: this.getFilterToken(),
+      filtertoken: ApplicationState.tokens.filtertoken,
       autofilter,
       page,
       page_size,
