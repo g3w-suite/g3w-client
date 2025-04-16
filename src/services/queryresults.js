@@ -1115,7 +1115,6 @@ export default new (class QueryResultsService extends G3WObject {
     this.clearState();
     this.closeComponent();
     this.resultsQueryLayer.getSource().clear();
-    this.state.layers.forEach(l => l.filter.pagination = false); //@since 3.11.8 reset pagination
     GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
   }
 
