@@ -292,7 +292,7 @@ export default new (class QueryResultsService extends G3WObject {
         // get features from added pick layer in case of a new request query
         layers.forEach((l, index) => {
           //@since 3.11.0 check if a result comes from pagination
-          l.filter.pagination = l.filter.active && this.state.query.pagination.paginate[index];
+          l.filter.pagination = l.filter.active && this.state.query.pagination && this.state.query.pagination.paginate[index];
           options.add || options.update ? this.updateLayerResultFeatures(l, options.update) : this.state.layers.push(l)
         });
         this.setActionsForLayers(layers, { add: options.add, update: options.update });
