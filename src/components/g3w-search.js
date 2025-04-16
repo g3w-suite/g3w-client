@@ -18,7 +18,6 @@ import { toRawType }                  from 'utils/toRawType';
 import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-import { getRelationLayerById }       from 'utils/getRelationLayerById';
 
 import vueSearchComp                  from 'components/SearchPanel.vue';
 

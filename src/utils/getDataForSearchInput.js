@@ -1,5 +1,4 @@
 import { SEARCH_ALLVALUE }      from 'g3w-constants';
-import { getRelationLayerById } from 'utils/getRelationLayerById';
 
 /**
  * @returns { Array } of unique values from field
