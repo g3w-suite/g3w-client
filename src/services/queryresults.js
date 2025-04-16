@@ -1112,6 +1112,8 @@ export default new (class QueryResultsService extends G3WObject {
       highLightLayerFeatures:    { async: false },
       goToGeometry:              { async: false },
     };
+    //reset pagination
+    this.state.layers.filter(l => !l.external).forEach(l => getCatalogLayerById(l.id).state.filter.pagination = false);
     this.clearState();
     this.closeComponent();
     this.resultsQueryLayer.getSource().clear();
