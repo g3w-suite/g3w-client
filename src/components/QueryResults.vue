@@ -53,7 +53,7 @@
                   </span>
                   {{ layer.title }}
                   <template v-show = "!layer.rawdata">
-                    <span v-if = "state.query.pagination.paginate[index]"
+                    <span v-if = "state.query && state.query.pagination && state.query.pagination.paginate[index]"
                       class  = "query-layer-feature-count"
                     >({{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }})
                     </span>
@@ -111,7 +111,7 @@
                     <!--        END DOWNLOAD        -->
                   </template>
                   <span
-                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type && !state.query.pagination)"
+                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
                     @click.stop             = "addLayerFeaturesToResults(layer)"
                     class                   = "action-button"
                     :class                  = "{'toggled': layer.addfeaturesresults.active}"
@@ -131,7 +131,7 @@
                         || (
                             layer.source
                             && layer.source.type !== 'wms'
-                            && !(state.query.pagination && state.query.pagination.paginate[index]) || (layer.selection.active && layer.filter.active)
+                            && !(state.query && state.query.pagination && state.query.pagination.paginate[index]) || (layer.selection.active && layer.filter.active)
                            )
                       )
                     "
@@ -208,7 +208,7 @@
 
               <!-- PAGINATION -->
               <section
-                v-if       = "state.query.pagination && state.query.pagination.paginate[index] && state.query.pagination.page_sizes[index].length > 1"
+                v-if       = "state.query && state.query.pagination && state.query.pagination.paginate[index] && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
