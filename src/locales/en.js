@@ -65,7 +65,8 @@ export default {
           }
         },
         help_filter : "Search values are limited based on the active filter. Remove the filter to search all data.",
-        autofilter: "Filter results"
+        autofilter: "Filter results",
+        autofilter_tooltip: "Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.",
 
 },
       print: {
