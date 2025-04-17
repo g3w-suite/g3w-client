@@ -27,65 +27,16 @@ export class TableLayer extends Layer {
 
     /**
      * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-     * Hook setters methods
      */
-    this.setters = {
-      /**
-       * Clear all features of the layer
-       */
-      clearFeatures()        { this._featuresstore.clearFeatures(); },
-      addFeature(feature)    { this._featuresstore.addFeature(feature); },
-      /**
-       * @TODO it used ????
-       * @param feature
-       */
-      updateFeature(feature) { this._featuresstore.updateFeature(feature);},
-      setFeatures(features)  { this._featuresstore.setFeatures(features); },
-      setColor(color)        { this._color = color; },
-
-      /**
-       * get data from every sources (server, wms, etc..)
-       * through provider related to featuresstore
-       *
-       * @param {*} opts
-       */
-      getFeatures(opts = {}) {
-        return $promisify(async () => {
-          const features = await promisify(this._featuresstore.getFeatures(opts));
-          this.emit('getFeatures', features);
-          return features;
-        });
-      },
-
-      commit(commitItems) {
-        return $promisify(async () => {
-          const response = await promisify(this._featuresstore.commit(commitItems));
-          // sync selection filter features
-          if (response && response.result) {
-            try {
-              const layer = getCatalogLayerById(this.getId());
-              //if layer has geometry
-              if (layer.isGeoLayer()) {
-                commitItems.update.forEach(({ id, geometry } = {}) => {
-                  if (layer.getOlSelectionFeature(id)) {
-                    layer.updateOlSelectionFeature({id, geometry});
-                  }
-                });
-              }
-              commitItems.delete.forEach(id => {
-                if (layer.hasSelectionFid(id)) {
-                  layer.excludeSelectionFid(id);
-                }
-              })
-            } catch(e) {
-              console.warn(e);
-            }
-          }
-          return response;
-        });
-      },
-
-    };
+    this.setters = [
+      'clearFeatures',
+      'addFeature',
+      'updateFeature',
+      'setFeatures',
+      'setColor',
+      'getFeatures',
+      'commit',
+    ];
 
     /**
      * EDITING API URL: /api/vector/<type of request: data/editing/config>/<project_type>/<project_id>/<layer_id>
@@ -159,6 +110,86 @@ export class TableLayer extends Layer {
      */
     this._featuresstore = new FeaturesStore({ provider: this.providers.data });
 
+  }
+
+  /**
+   * Clear all features of the layer
+   * 
+   * @since 4.0.0
+   */
+  clearFeatures()        { this._featuresstore.clearFeatures(); }
+
+  /**
+   * @since 4.0.0 
+   */
+  addFeature(feature)    { this._featuresstore.addFeature(feature); }
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.0.0
+   */
+  updateFeature(feature) { this._featuresstore.updateFeature(feature);}
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.0.0
+   */
+  setFeatures(features)  { this._featuresstore.setFeatures(features); }
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.0.0
+   */
+  setColor(color)        { this._color = color; }
+
+  /**
+   * get data from every sources (server, wms, etc..)
+   * through provider related to featuresstore
+   *
+   * @param {*} opts
+   * 
+   * @since 4.0.0
+   */
+  getFeatures(opts = {}) {
+    return $promisify(async () => {
+      const features = await promisify(this._featuresstore.getFeatures(opts));
+      this.emit('getFeatures', features);
+      return features;
+    });
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  commit(commitItems) {
+    return $promisify(async () => {
+      const response = await promisify(this._featuresstore.commit(commitItems));
+      // sync selection filter features
+      if (response && response.result) {
+        try {
+          const layer = getCatalogLayerById(this.getId());
+          //if layer has geometry
+          if (layer.isGeoLayer()) {
+            commitItems.update.forEach(({ id, geometry } = {}) => {
+              if (layer.getOlSelectionFeature(id)) {
+                layer.updateOlSelectionFeature({id, geometry});
+              }
+            });
+          }
+          commitItems.delete.forEach(id => {
+            if (layer.hasSelectionFid(id)) {
+              layer.excludeSelectionFid(id);
+            }
+          })
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+      return response;
+    });
   }
 
   /**
