@@ -1139,13 +1139,15 @@ class MapService extends G3WObject {
               }
             }
             break;
-
+          case 'annotation':
+            this.createMapControl(type, {});
+            break;  
           /**
            * @since 3.8.0
            */
           case 'zoomhistory':
             $('.g3w-map-controls-left-bottom').append(this.createMapControl(type, { add: false }).element);
-            break;
+            break;  
 
         }
     });

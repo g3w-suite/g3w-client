@@ -10,7 +10,6 @@ import { Compact as ColorPicker } from 'vue-color';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { removeMeasureTooltip }   from 'utils/removeMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
-import { makeArrayPusher } from 'ol/xml';
 
 let count = 1; //incremental number to unique identify id feature
 
@@ -370,6 +369,7 @@ export class AnnotationControl extends InteractionControl {
   constructor(opts = {}) {
     super({
       ...opts,
+      name:     'annotation',
       clickmap: true,
       enabled:  true,
       onToggled(toggled) {
