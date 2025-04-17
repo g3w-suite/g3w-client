@@ -495,7 +495,7 @@ export default new (class QueryResultsService extends G3WObject {
         };
       });
     this.setLayersData(layers, options);
-  },
+  }
 
   /**
    * Setter method called when adding layer and feature for response
