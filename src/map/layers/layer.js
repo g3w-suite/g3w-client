@@ -1117,8 +1117,6 @@ class Layer extends G3WObject {
    */
   setFilter(bool = false) {
     this.state.filter.active     = bool;
-    //@since 3.11.0 need to reset pagination filter when bool is false
-    this.state.filter.pagination = bool && this.state.filter.pagination;
     if (this.isGeoLayer() && this.state.filter.active) {
       this.hideOlSelectionFeatures();
     }
@@ -1288,7 +1286,9 @@ class Layer extends G3WObject {
       if (undefined !== fid) {
         this.state.filters = this.state.filters.filter(f => fid !== f.fid);
       }
-
+      if (this.state.filter.active && this.state.filter.pagination) {
+        this.state.selection.active  = false; //in case of pagination, set selected to false
+      }
       this.state.filter.current = null  // set current filter set to null
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
@@ -1928,7 +1928,7 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: this.getFilterToken(),
+      filtertoken: ApplicationState.tokens.filtertoken,
       autofilter,
       page,
       page_size,
