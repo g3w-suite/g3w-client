@@ -131,7 +131,7 @@
                         || (
                             layer.source
                             && layer.source.type !== 'wms'
-                            && (layer.selection.active || showInPagination(layer, index))
+                            && !layer.filter.pagination || (layer.selection.active && layer.filter.active)
                            )
                       )
                     "
@@ -146,7 +146,7 @@
                     ></span>
                   </span>
                   <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active && showInPagination(layer, index)">
+                  <template v-if = "!layer.external && layer.selection.active && !layer.filter.pagination">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
@@ -284,8 +284,11 @@
                 <!-- CASE FORM STRUCTURE LAYER-->
                 <template v-else-if = "hasFormStructure(layer)">
                   <table class = "table" :class = "{'mobile': isMobile()}">
-                    <tbody>
-                      <template v-if = "feature.show" v-for = "(feature, index) in layer.features">
+                    <tbody 
+                      v-for = "(feature, index) in layer.features"
+                      v-if  = "showFeature(layer, feature)"
+                      :key  = "feature.id"
+                      > 
                         <header-feature-actions-body
                           :colspan                 = "getColSpan(layer)"
                           :actions                 = "state.layersactions[layer.id]"
@@ -380,7 +383,6 @@
                               :feature = "feature"/>
                           </td>
                         </tr>
-                      </template>
                     </tbody>
                   </table>
                 </template>
@@ -388,8 +390,8 @@
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody
-                      v-if  = "feature.show"
                       v-for = "(feature, index) in layer.features"
+                      v-if  = "showFeature(layer, feature)"
                       :key  = "feature.id"
                     >
                       <header-feature-actions-body
@@ -439,7 +441,7 @@
                         </td>
                       </tr>
                       <header-feature-body
-                        v-if="!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                        v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                         :actions                 = "state.layersactions[layer.id]"
                         :layer                   = "layer"
                         :feature                 = "feature"
@@ -503,7 +505,6 @@
                         </td>
                       </tr>
                     </tbody>
-                    <tbody v-else></tbody>
                   </table>
                 </template>
               </div>
@@ -663,15 +664,6 @@
 
     },
     methods: {
-      /**
-       * @since 3.11.0
-       * Return true if we need a show element when pagination is set
-       * @param layer
-       * @return {boolean}
-       */
-      showInPagination(layer) {
-        return !layer.filter.pagination;
-      },
 
       /**
        * @since v3.10.0
@@ -763,17 +755,9 @@
       saveFilter(layer) {
         getCatalogLayerById(layer.id).saveFilter();
       },
-
       async addRemoveFilter(layer) {
         await getCatalogLayerById(layer.id).toggleFilterToken();
-        //@since 3.11.0 In case of set active filter, remove all features not selected
-        if (layer.filter.active) {
-         layer.features
-          .filter(f => !f.selection.selected)
-          .forEach(f => this.$options.service.removeFeatureLayerFromResult(layer, f))
-        }
       },
-
       getContainerFromFeatureLayer({ layer, index } = {}) {
         return $(`#${layer.id}_${index} > td`);
       },
@@ -861,6 +845,14 @@
           show: box ? !box.collapsed : false,
         });
       },
+
+      /**
+       * @since 3.11.8
+       * Show only features that have show true and in case of active filter, only selected 
+       */
+      showFeature(layer, feature) {
+        return this.$options.service.showFeature(layer, feature);
+      },
       getBoxId(layer, feature, relation_index) {
         return this.$options.service.getBoxId(layer, feature, relation_index);
       },
@@ -945,7 +937,11 @@
       async loadPaginationData(index, page, page_size) {
         this.state.layers[index].loading = true;
         try {
-          await this.$options.service.loadPaginationData(index, page, page_size, this.state.query);
+          // set current features count shown by selection 
+          if (undefined !== page_size) {
+            this.state.query.pagination.current_sizes[index] = page_size;
+          }
+          await this.$options.service.loadPaginationData(index, page, this.state.query.pagination.current_sizes[index], this.state.query);
         } catch(e) {
           console.warn(e);
         }

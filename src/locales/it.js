@@ -65,7 +65,8 @@ export default {
           }
         },
         help_filter : "I valori di ricerca sono limitati sulla base del filtro attivo. Rimuovere il filtro per ricercare su tutti i dati.",
-        autofilter: "Filtro sui risultati"
+        autofilter: "Filtro sui risultati",
+        autofilter_tooltip: "Filtra automaticamente le geometrie visualizzate nella mappa<br>per mostrare solo quelle relative ai risultati della ricerca corrente.",
       },
       print: {
         no_layers: 'Nessun Layer visibile',

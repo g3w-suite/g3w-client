@@ -1,4 +1,4 @@
-import { SEARCH_ALLVALUE }            from 'g3w-constants';
+import { SEARCH_ALLVALUE }      from 'g3w-constants';
 
 /**
  * @returns { Array } of unique values from field
@@ -15,7 +15,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         field: getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
-          field: suggest ? field : (state.forminputs.find(i => i.attribute === field) || {}).dependance || field,
+          field:  suggest ? field : (state.forminputs.find(i => field === i.attribute) || {}).dependance || field,
           fields: []
         }),
       })))

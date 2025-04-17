@@ -218,8 +218,6 @@ gulp.task('production', function(done) {
   done();
 });
 
-gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFolder}/templates/*`], { force: true }));
-gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
 gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
 
 /**
@@ -293,11 +291,6 @@ gulp.task('build:app', async function() {
           });
           build.onEnd(result => {
             console.log(GREEN__ + '[client]' + __RESET + ' → ' + Math.round((fs.statSync(`${outputFolder}/static/client/app.min.js`).size + fs.statSync(`${outputFolder}/static/client/vendor.min.js`).size) / 1024)+ 'KB');
-            try {
-              fs.cpSync('./src/index.html', `${outputFolder}/templates/client/index.html`);
-            } catch (e) {
-              console.error('Failed to copy file:', e);
-            }
             resolve();
           })
         },
@@ -483,7 +476,6 @@ gulp.task('check:node_modules', function(done) {
 gulp.task('build', gulp.series(
   'production',
   'check:node_modules',
-  // 'clean:admin',
   'clone:plugins',
   'select-plugins',
   'build:plugins',
@@ -500,7 +492,6 @@ gulp.task('build', gulp.series(
  */
 gulp.task('dev', gulp.series(
   'check:node_modules',
-  // 'clean:admin',
   'clean:overrides',
   'clone:plugins',
   'build:client',

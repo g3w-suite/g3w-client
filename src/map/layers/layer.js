@@ -9,6 +9,7 @@ import {
   DOTS_PER_INCH,
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
+  G3W_FID,
 }                                from 'g3w-constants';
 import ApplicationState          from 'store/application';
 import DataRouterService         from 'services/data';
@@ -444,6 +445,7 @@ const Providers = {
           params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
           params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }));
           params.formatter       = 1;
+          params.filtertoken     = ApplicationState.tokens.filtertoken; // add filtertoken
           break;
         case 'expression':
           break;    
@@ -462,8 +464,8 @@ const Providers = {
             layer:    this._layer,
             features: ResponseParser.get('g3w-vector/json')(
               response.vector && response.vector.data || {},
-              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }},
-            ),
+              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }})
+              .map(f => { f.set(G3W_FID, f.getId()); return f; }) //set g3w_fid to have G3W_FID property,
           })
          } else {
           throw response.error;
@@ -1115,8 +1117,6 @@ class Layer extends G3WObject {
    */
   setFilter(bool = false) {
     this.state.filter.active     = bool;
-    //@since 3.11.0 need to reset pagination filter when bool is false
-    this.state.filter.pagination = bool && this.state.filter.pagination;
     if (this.isGeoLayer() && this.state.filter.active) {
       this.hideOlSelectionFeatures();
     }
@@ -1286,12 +1286,14 @@ class Layer extends G3WObject {
       if (undefined !== fid) {
         this.state.filters = this.state.filters.filter(f => fid !== f.fid);
       }
-
+      if (this.state.filter.active && this.state.filter.pagination) {
+        this.state.selection.active  = false; //in case of pagination, set selected to false
+      }
       this.state.filter.current = null  // set current filter set to null
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
-      this.setFilterToken(null); //force to null
-      ApplicationState.tokens.filtertoken = filtertoken; // pass `filtertoken` to application
+      this.setFilterToken(filtertoken); //set filtertoken 
+      this.setFilter(false); //set false - delete filtertoken
     } catch(e) {
       console.warn(e);
     }
@@ -1926,7 +1928,7 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: this.getFilterToken(),
+      filtertoken: ApplicationState.tokens.filtertoken,
       autofilter,
       page,
       page_size,
