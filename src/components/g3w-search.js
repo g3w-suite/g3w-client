@@ -38,7 +38,7 @@ export function SearchPanel(opts = {}, show = false) {
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
+    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -74,30 +74,44 @@ export function SearchPanel(opts = {}, show = false) {
       /** keep a reference to initial search options (you shouldn't mutate them..) */
       options:   d.input.options,
     })),
-    //@since v3.11.0. Used to set already feature layers filtered https://github.com/g3w-suite/g3w-client/issues/676
-    autofilter:           { value: 0 }, //value 0 no set, 1
-    paginate:             !!opts.options.paginate, //@since 3.11.0 paginate or not
-    return:               (opts.options || {}).return  || 'data',   //@since 3.11.0 considere type of search return. Can be another search or data
-    child:               !!opts.child, //@since 3.11.0 Need to know if search is coming from another search
+    /** @since 3.11.0 whether layers are filtered (value = 0/1, see: https://github.com/g3w-suite/g3w-client/issues/676) */
+    autofilter: { value: 0 }, //
+    /** @since 3.11.0 whether paginate results */
+    paginate:  !!opts.options.paginate,
+    /** @type { 'search' | 'data' } @since 3.11.0 */
+    return:    (opts.options || {}).return  || 'data',
+    /** @since 3.11.0 whether search is coming from another search */
+    child:     !!opts.child,
   };
 
-  const setInputs = async () => {
+  // see: https://github.com/g3w-suite/g3w-client/pull/785#discussion_r2044936089
+  if (state.search_layers.some(l => !l)) {
+    state.search_layers = state.search_layers.filter(l => l);
+    GUI.showUserMessage({
+      type: 'warning',
+      message: `Invalid <code>search_layers</code> config. Have you deleted some layers from your QGIS project recently?`
+    });
+  }
 
+  const setInputs = async () => {
+    
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
 
-      const input            = state.forminputs[i];
+      const input = state.forminputs[i];
+
+      const no_value = input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value);
+
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict || 'selectfield' !== input.type || ('selectfield' === input.type && state.child) //@in the case of parent, values are stored
-              ? input.values
-              : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
-        )
+        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                        // set `SEARCH_ALLVALUE` as first element
+        ...(no_value ? [] : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server (set empty in case of strict dependance)
+          )
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-      // there is a dependence
+
+      // there is a dependance
       if (input.dependance) {
         state.loading[input.dependance] = false;
-        input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
+        input.disabled                  = no_value; // disabled for BACKCOMP
       }
 
       // save a copy of original values
@@ -129,7 +143,7 @@ export function SearchPanel(opts = {}, show = false) {
     },
     createFilter: () => createFilterFormInputs({
       layer:  state.search_layers,
-      inputs: state.forminputs.filter(i => ![null, undefined, SEARCH_ALLVALUE].includes(i.value) && '' !== i.value.toString().trim()), // Filter input by NONVALIDVALUES
+      inputs: state.forminputs.filter(i => ![null, undefined, SEARCH_ALLVALUE].includes(i.value) && '' !== i.value.toString().trim()), // filter out INVALID VALUES
     }),
   });
 
@@ -190,26 +204,22 @@ async function doSearch({
       outputs: show && { title: state.title }
     });
 
-    // @since 3.11.0.
-    // In case of search return == 'search' options.return = 'search', it means that a new search panel needs to show
-    if ('search' === state.return) {
-      // in case of return, a structure of search
-      if (Object.keys((data.data[0] || {}).data || {}).length > 0) {
-        //need to eventually close an open result
-        await GUI.closeContent();
-        const opts = (data.data[0] || {}).data;
-        opts.child = true; //set child true
-        //and open a new Search panel
-        new SearchPanel(opts, true)
-      } else {
-        //otherwise, mean the return of search has no values, so we can show an empty results
-        GUI.outputDataPlace(Promise.resolve({ data: [] }));
-        data = [];
-      }
+    /* Used by the following plugins: "cadastre" ************************************/
+    const has_values = Object.keys((data.data[0] || {}).data || {}).length > 0;
+    // has search response (values) → show panel
+    if (has_values && 'search' === state.return) {
+      await GUI.closeContent();
+      new SearchPanel(Object.assign((data.data[0] || {}).data, { child: true }), true); // TODO: remove "child: true" it from core
     }
+    // no search response (values) → show an empty result
+    if (!has_values && 'search' === state.return) {
+      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      data = [];
+    }
+    /********************************************************************************/
 
-    // auto zoom to query (not pagination)
-    if (show && !state.paginate && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
+    // auto zoom to query (response)
+    if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
@@ -261,5 +271,5 @@ async function doSearch({
 
   state.searching = false;
 
-  return parsed ? parsed : data;
+  return parsed || data;
 }

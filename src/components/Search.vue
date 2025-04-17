@@ -12,9 +12,9 @@
 
     <!-- SAVED SEARCHES (from g3w-admin) -->
     <li
-      v-for       = "search in state.searches"
-      class       = "menu-item"
-      @click.stop = "showPanel(search)"
+      v-for  = "search in state.searches"
+      class  = "menu-item"
+      @click = "showPanel(search)"
     >
       <i :class = "$fa('empty-circle')"></i>
       <span>{{ search.name }}</span>

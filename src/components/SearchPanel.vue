@@ -10,6 +10,7 @@
   >
     <bar-loader :loading = "state.searching || loading || reload"/>
     <h4><b>{{ state.title }}</b></h4>
+
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
       <helpdiv message="sdk.search.help_filter"/>
       <button
@@ -146,14 +147,19 @@
           </div>
 
         </div>
-        <!-- @since 3.11.0 -->
+
+        <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
           <input
             id        = "g3w-search-filter"
             class     = "magic-checkbox"
             v-model   = "autofilter"
-            type      = "checkbox"/>
-            <label for = "g3w-search-filter" v-t = "'sdk.search.autofilter'"></label>
+            type      = "checkbox"
+          />
+          <label for = "g3w-search-filter" v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'">
+            {{ $t('sdk.search.autofilter') }}
+            <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
+          </label>
         </div>
 
         <!-- SEARCH BUTTON -->
@@ -188,6 +194,7 @@
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
+  import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import resizeMixin                           from 'mixins/resize';
   import { t }                                 from 'g3w-i18n';
 
@@ -226,9 +233,17 @@
         return this.state.forminputs.reduce((bool, i) => bool || i.loading, false);
       },
 
+      /**
+       * @TODO make use only of "this.state.search_layers" instead
+       */
+      search_layers() {
+        return [].concat(getRelationLayerById(this.state.search_1n_relationid) || [], this.state.search_layers);
+      },
+
       filterlayers() {
-        return (ApplicationState.tokens.filtertoken && this.state.search_layers.filter(l => l.getFilterToken()) || []);
-      }
+        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getFilterToken()) || [];
+      },
+
     },
 
     methods: {
@@ -236,13 +251,7 @@
       * @since 3.11.0
       */
       clearFilters() {
-        this.filterlayers.forEach(l => {
-          if (this.state.paginate) {
-            l.clearSelectionFids()
-          } else {
-            l.toggleFilterToken();
-          }
-        })
+        this.filterlayers.forEach(l => l.getFilterToken() && l.deleteFilterToken());
       },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
@@ -527,7 +536,7 @@
 
         this.clearSelect2();
         try {
-          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)))
+          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)));
         } catch(e) {
           console.warn(e);
         }
@@ -547,7 +556,7 @@
       //Listen change filtertoken on layer
       //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
       //because when create a new filter with new rules, the filtertoken string doesn't change
-      this.state.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
+      this.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
     },
 
     async mounted() {
@@ -561,7 +570,7 @@
     },
 
     beforeDestroy() {
-      this.state.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs))
+      this.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
       this.clearSelect2();
     }
 
