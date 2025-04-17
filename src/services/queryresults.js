@@ -612,11 +612,16 @@ export default new (class QueryResultsService extends G3WObject {
     const has_filtertoken                 = !!layer.getFilterToken();
     try {
       //get layer pagination data
-      const data = await layer[method]({ ...params[index], page });
+      const data = await layer[method]({ ...params[index], page })
+      
       //set response data
       this.setQueryResponse({ ...data, query }, { add: false, update: true });
+      //set paginate base of change amount of features request changing select value on query result
+      this.state.query.pagination.paginate[index] = data.count > (data.data || [])[0].features.length;
+      //set filter pagination in case of all features are get from pagination
+      this.state.layers[index].filter.pagination  = this.state.layers[index].filter.active && this.state.query.pagination.paginate[index];
       //set the current page
-      this.state.query.pagination.current[index] = page;
+      this.state.query.pagination.current[index]  = page;
       //in the case of page size change
       const bool = layer.state.selection.active || has_filtertoken ;
       //get selection action
@@ -925,7 +930,6 @@ export default new (class QueryResultsService extends G3WObject {
             this.state.disabled = !layer.filter.pagination;
           }
         },
-
         // select feature
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
@@ -933,7 +937,7 @@ export default new (class QueryResultsService extends G3WObject {
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
-            show:    !(state.query.pagination && state.query.pagination.paginate[index]) // show action when pagination is set
+            show:    !layer.filter.pagination // show action when filter with pagination is not set
           }),
           // check feature selection
           init({ layer, feature, index, action } = {}) {
@@ -947,7 +951,7 @@ export default new (class QueryResultsService extends G3WObject {
             const feature_selected = layer_selected && (state.query.autofilter || catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
 
             // force feature selection (when no pagination and selection is due an autofilter search)
-            if (feature_selected && !catalog_layer.state.filter.pagination && !catalog_layer.hasSelectionFid(fid)) {
+            if (feature_selected && !catalog_layer.hasSelectionFid(fid)) {
               catalog_layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
               catalog_layer.includeSelectionFid(fid, false);
             }
@@ -961,8 +965,11 @@ export default new (class QueryResultsService extends G3WObject {
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
           change({ features }) {
-            this.state.show = !(state.query.pagination && state.query.pagination.paginate[index]); 
-            features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
+            //need to wait in case of pagination to listen change of pagination request and set pagination filter
+            setTimeout(() => {
+              this.state.show = !layer.filter.pagination; 
+              features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
+            })
           },
           cbk: throttle(this.addToSelection.bind(this))
         },
