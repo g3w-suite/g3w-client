@@ -34,6 +34,12 @@ export default class G3WObject extends EventEmitter {
   };
 
   set setters(value) {
+
+    // setters is an array strings → convert it into an object
+    if (Array.isArray(value)) {
+      value = value.reduce((setters, i) => Object.assign(setters, { [i]: this[i] }), {});
+    }
+
     this.___setters = value;
     if (value) {
       // all methods inside object "setters" of child class.
