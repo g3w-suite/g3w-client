@@ -80,42 +80,78 @@ export class FormService extends G3WObject {
 
     this.layer;
 
-    this.setters = {
-
-      setInitForm(opts = {}) {
-        this._setInitForm(opts);
-      },
-
-      setFormStructure(formStructure) {
-        this.state.formstructure = formStructure;
-      },
-
-      setFormFields(fields = []) {
-        this.state.fields = fields;
-        this.handleFieldsWithExpression(fields);
-      },
-
-      setupFields() {},
-
-      setFormData(fields = []) {
-        this.setFormFields(fields);
-      },
-
-      setField(field) {},
-
-      setState(state) {
-        this._setState(state);
-      },
-
-      addActionsForForm(actions) {},
-
-      postRender(element) {
-        // hook for listener to change DOM
-      },
-
-    };
+    this.setters = [
+      'setInitForm',
+      'setFormStructure',
+      'setFormFields',
+      'setupFields',
+      'setFormData',
+      'setField',
+      'setState',
+      'addActionsForForm',
+      'postRender',
+    ];
 
   }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setInitForm(opts = {}) {
+    this._setInitForm(opts);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setFormStructure(formStructure) {
+    this.state.formstructure = formStructure;
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setFormFields(fields = []) {
+    this.state.fields = fields;
+    this.handleFieldsWithExpression(fields);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setupFields() {}
+
+  /**
+   * @since 4.0.0. 
+   */
+  setFormData(fields = []) {
+    this.setFormFields(fields);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setField(field) {}
+
+  /**
+   * @since 4.0.0. 
+   */
+  setState(state) {
+    this._setState(state);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  addActionsForForm(actions) {}
+
+  /**
+   * @since 4.0.0. 
+   */
+  postRender(element) {
+    // hook for listener to change DOM
+  }
+
   init(opts = {}) {
     this._setInitForm(opts);
   }

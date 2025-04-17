@@ -378,9 +378,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
 
     this._BASE_LAYER = options._BASE_LAYER;
 
-    this.setters = {
-      change(){},
-    };
+    this.setters = ['change'];
 
     this.config.baselayer = config.baselayer || false;
     this.type             = Layer.LayerTypes.IMAGE;
@@ -581,6 +579,11 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       this._mapLayer = this;
     }
   }
+
+  /**
+   * @since 4.0.0
+   */
+  change() {}
 
   /**
    *
