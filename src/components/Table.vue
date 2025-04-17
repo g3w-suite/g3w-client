@@ -46,7 +46,7 @@
 
       <!-- TOGGLE FILTER -->
       <div
-        v-show             = "state.show_tools"
+        v-show             = "state.show_tools && !layer.state.filter.pagination && (layer.state.filter.active || !layer.selectionFids.has('__ALL__'))"
         class              = "skin-color action-button skin-tooltip-right"
         :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
@@ -247,7 +247,6 @@ export default {
       //in the case of autofilter with pagination need to get features to set selection
       if (layer.state.filter.active && !layer.selectionFids.has('__ALL__')) {
         this.state.selectAll = false;
-        this.selectAllRows();
       }
       layer.toggleFilterToken();
     },

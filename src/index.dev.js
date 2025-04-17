@@ -283,6 +283,98 @@ g3wsdk.gui.GUI.once('ready', () => {
   });
 });
 
+/**
+ * Custom search action: “Create from template”
+ */
+g3wsdk.gui.GUI.once('ready', async () => {
+  const SEARCH          = g3wsdk.gui.GUI.getComponent('search');
+  const SAVED_SEARCHES  = SEARCH.getInternalComponent().state.searches;
+  const CUSTOM_SEARCHES = JSON.parse(localStorage.getItem('custom-searches') || '[]');
+
+  SAVED_SEARCHES.unshift(...CUSTOM_SEARCHES);
+
+  SEARCH.actions.unshift({
+    id:      "widget-editor",
+    class:   `fa fa-laptop-code`,
+    tooltip: 'Create from template',
+    style: {
+      color:        '#ea9610',
+      padding:      '6px',
+      fontSize:     '1.2em',
+      borderRadius: '3px',
+      marginRight:  '5px',
+    },
+    fnc:     () => {
+      const dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */`
+          <dialog style>
+            <form method="dialog">
+              <label for="template_name" style="font-size: 1.25em;">Choose template</label>
+              <select name="template_name" class="form-control" style="margin-bottom: 1em;">
+                <option value="blank">---</option>
+                ${SAVED_SEARCHES.map(opt => /* html */`<option value="${opt.id}">${opt.name}</option>`).join('')}
+              </select>
+              <pre hidden style="margin-top: 1em;" contenteditable></pre>
+              <menu style="display: flex;justify-content: space-between;">
+                <button type="submit" value="cancel" class="btn btn-secondary">Cancel</button>
+                <button disabled type="submit" value="save" class="btn btn-success">Confirm</button>
+              </menu>
+            </form>
+          </dialog>
+        `.trim()
+      }).content.firstChild;
+
+      const select = dialog.querySelector('select');
+      const preview = dialog.querySelector('pre');
+
+      // preview script
+      select.addEventListener('change', async () => {
+        dialog.querySelector('[value=save]').disabled = ('blank' === select.value);
+        if (select.value !== 'blank') {
+          preview.textContent = JSON.stringify(
+            Object.assign({}, SAVED_SEARCHES.find(opt => select.value === opt.id.toString()), { id: `my-${CUSTOM_SEARCHES.length}` }),
+            null,
+            2
+          );
+        } else {
+          preview.textContent = '';
+        }
+        preview.hidden = !preview.textContent;
+      });
+      dialog.addEventListener('close', async () => {
+        const action = dialog.returnValue;
+        if ('save' === action && select.value) {
+          CUSTOM_SEARCHES.unshift(JSON.parse(preview.textContent));
+          SAVED_SEARCHES.unshift(JSON.parse(preview.textContent));
+          localStorage.setItem('custom-searches', JSON.stringify(CUSTOM_SEARCHES));
+          window.location.reload();
+        }
+        dialog.remove();
+      });
+      document.body.appendChild(dialog);
+      dialog.showModal();
+    },
+  });
+
+  document.querySelectorAll('#search > .treeview-menu > li').forEach((li, i) => {
+    if (i < CUSTOM_SEARCHES.length) {
+      li.insertAdjacentHTML('afterbegin', /* html */`<i
+        class          = "fa fa-trash"
+        style          = "color: red;"
+      ></i>`);
+      li.querySelector('.fa-circle').hidden = true;
+      li.querySelector('.fa-trash').addEventListener('click', e => {
+        e.stopPropagation(); 
+        CUSTOM_SEARCHES.splice(i, 1);
+        localStorage.setItem('custom-searches', JSON.stringify(CUSTOM_SEARCHES));
+        window.location.reload();
+      });
+    }
+  });
+
+});
+
+
 // run app (index.prod.js)
 require('./index.prod');
 
