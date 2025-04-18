@@ -54,7 +54,7 @@
                   {{ layer.title }}
                   <span v-if = "!layer.rawdata">
                     ({{
-                      canPaginate(index)
+                      canPaginate(layer)
                         ? (layer.features.length + ((state.query.pagination.current.at(index) - 1) * state.query.pagination.getData.params.at(index).page_size)) + ' - ' + state.query.pagination.counts[index]
                         : layer.features.length
                     }})
@@ -197,7 +197,7 @@
 
               <!-- PAGINATION -->
               <div
-                v-if       = "canPaginate(index) && state.query.pagination.page_sizes[index].length > 1"
+                v-if       = "canPaginate(layer) && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
@@ -685,16 +685,14 @@
       /**
        * @returns { boolean } whether can paginate layer results
        */
-      canPaginate(index) {
-        return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[index]);
+      canPaginate(layer) {
+        return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[this.state.layers.findIndex(l => l == layer)]);
       },
 
       /**
        * @returns { boolean } whehter can show "add to select" action
        */
       canSelect(layer) {
-        const index = this.state.layers.findIndex(l => l == layer);
-
         if (!layer.toc) {
           return false;
         }
@@ -719,7 +717,7 @@
           return false;
         }
 
-        if (!canPaginate(index) || (layer.selection.active && layer.filter.active)) {
+        if (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active)) {
           return true;
         }
 
