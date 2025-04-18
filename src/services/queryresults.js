@@ -1922,11 +1922,6 @@ export default new (class QueryResultsService extends G3WObject {
     
     // PROJECT LAYER
     if (!layer.external && catalog_layer.state.filter.active) {
-      await catalog_layer.createFilterToken();
-    }
-
-    // PROJECT LAYER
-    if (!layer.external && catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
         const i = feature ? index : idx; // index of feature to remove
         //get layer from query response that contains features reurned by query
@@ -1934,6 +1929,7 @@ export default new (class QueryResultsService extends G3WObject {
         delete action.state.toggled[i];
         // reset the index of action state (toggled)
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
+        console.log(query)
       });
     }
 
