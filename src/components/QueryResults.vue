@@ -119,19 +119,10 @@
                       :class = "g3wtemplate.getFontClass('plus-square')"
                     ></span>
                   </span>
+
+                  <!-- ADD TO SELECTION -->
                   <span
-                    v-if                    = "
-                      layer.toc &&
-                      layer.id !== '__g3w_marker' &&
-                      layer.features.length > 1 &&
-                      (layer.external
-                        || (
-                            layer.source
-                            && layer.source.type !== 'wms'
-                            && !canPaginate(index) || (layer.selection.active && layer.filter.active)
-                           )
-                      )
-                    "
+                    v-if                    = "canSelect(layer)"
                     @click.stop             = "addToSelection(layer)"
                     class                   = "action-button skin-tooltip-left"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
@@ -142,6 +133,7 @@
                       :class = "g3wtemplate.getFontClass('success')"
                     ></span>
                   </span>
+
                   <!-- Filter template tools -->
                   <template v-if = "!layer.external && layer.selection.active && !layer.filter.pagination">
                     <span
@@ -696,6 +688,43 @@
       canPaginate(index) {
         return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[index]);
       },
+
+      /**
+       * @returns { boolean } whehter can show "add to select" action
+       */
+      canSelect(layer) {
+        const index = this.state.layers.findIndex(l => l == layer);
+
+        if (!layer.toc) {
+          return false;
+        }
+
+        if ('__g3w_marker' === layer.id) {
+          return false;
+        }
+
+        if (layer.features.length <= 1) {
+          return false;
+        }
+
+        if (layer.external) {
+          return true;
+        }
+
+        if (!layer.source) {
+          return false;
+        }
+
+        if ('wms' === layer.source.type) {
+          return false;
+        }
+
+        if (!canPaginate(index) || (layer.selection.active && layer.filter.active)) {
+          return true;
+        }
+
+        return false;
+      }
 
       /**
        * @since v3.10.0
