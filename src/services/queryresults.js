@@ -933,7 +933,13 @@ export default new (class QueryResultsService extends G3WObject {
 
             /** @FIXME add description */
             if (undefined !== layer.selection.active) {
-              action.state.toggled[index] = feature.selection.selected || (layer.external ? action.state.toggled[index] : (catalog_layer.state.filter.active && null == catalog_layer.state.filter.current)); // active filter + no saved filter is set
+              action.state.toggled[index] = (
+                feature.selection.selected || (
+                  layer.external
+                    ? action.state.toggled[index]
+                    : (catalog_layer.state.filter.active && null == catalog_layer.state.filter.current)
+                  )
+              ); // active filter + no saved filter is set
             }
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
@@ -1828,7 +1834,7 @@ export default new (class QueryResultsService extends G3WObject {
     }
 
     // toggle selection
-    features.forEach((f, i) => {
+    layer.features.forEach((f, i) => {
       if (!feature) {
         action.state.toggled[i] = !toggled;
       } else if (i === index) {
