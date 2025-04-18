@@ -120,10 +120,10 @@
                     ></span>
                   </span>
 
-                  <!-- ADD TO SELECTION -->
+                  <!-- TOGGLE LAYER SELECTION -->
                   <span
                     v-if                    = "canSelect(layer)"
-                    @click.stop             = "addToSelection(layer)"
+                    @click.stop             = "toggleSelection(layer)"
                     class                   = "action-button skin-tooltip-left"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
                     :class                  = "{'toggled': layer.selection.active}"
@@ -693,35 +693,10 @@
        * @returns { boolean } whehter can show "add to select" action
        */
       canSelect(layer) {
-        if (!layer.toc) {
-          return false;
-        }
-
-        if ('__g3w_marker' === layer.id) {
-          return false;
-        }
-
-        if (layer.features.length <= 1) {
-          return false;
-        }
-
-        if (layer.external) {
-          return true;
-        }
-
-        if (!layer.source) {
-          return false;
-        }
-
-        if ('wms' === layer.source.type) {
-          return false;
-        }
-
-        if (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active)) {
-          return true;
-        }
-
-        return false;
+        return (
+          GUI.getService('queryresults').getActionLayerById({ layer, id: 'selection' })
+          && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
+        );
       },
 
       /**
@@ -829,8 +804,8 @@
       layerHasFeatures(layer) {
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
-      addToSelection(layer) {
-        this.$options.service.addToSelection(layer);
+      toggleSelection(layer) {
+        this.$options.service.toggleSelection(layer);
       },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
