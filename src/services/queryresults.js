@@ -1922,16 +1922,12 @@ export default new (class QueryResultsService extends G3WObject {
     
     // PROJECT LAYER
     if (!layer.external && catalog_layer.state.filter.active) {
-      await catalog_layer.createFilterToken();
-    }
-
-    // reset features/action state (toggled)
-    if (!layer.external && catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
         const i = feature ? index : idx; // feature to remove
         layer.features.splice(i, 1);
         delete action.state.toggled[i];
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
+        console.log(query)
       });
     }
 
