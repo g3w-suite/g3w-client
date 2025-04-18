@@ -504,16 +504,19 @@ export default new (class QueryResultsService extends G3WObject {
    * @param options
    */
   setLayersData(layers = [], options = { add: false, update: false }) {
+    // sort layers as Catalog project layers (external layer always on bottom)
     if (false === options.add) {
-      // sort layers as Catalog project layers.
-      //external layer always on bottom
       layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
     }
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
-      //@since 3.11.0 check if a result comes from pagination
-      l.filter.pagination = l.filter.active && this.state.query.pagination && this.state.query.pagination.paginate[index];
-      options.add || options.update ? this.updateLayerResultFeatures(l, options.update) : this.state.layers.push(l)
+      // whether result comes from pagination
+      l.filter.pagination = l.filter.active && this.state.query?.pagination?.paginate?.at(index);
+      if (options.add || options.update) {
+        this.updateLayerResultFeatures(l, options.update);
+      } else {
+        this.state.layers.push(l);
+      }
     });
     this.setActionsForLayers(layers, { add: options.add, update: options.update });
     this.state.changed = true;
@@ -614,64 +617,6 @@ export default new (class QueryResultsService extends G3WObject {
    */
   removeFeatureLayerFromResult(layer, feature) {
     this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
-  }
-
-  /**
-   * @since 3.11.0
-   * Load pagination data
-   * @param index
-   * @param page
-   * @param page_size
-   * @param query
-   */
-  async loadPaginationData(index, page, page_size, query) {
-    //In the case of first autofilter request in pagination request, remove it from
-    if (this.state.query.autofilter && this.state.query.pagination.paginate[index]) {
-      this.state.query.autofilter = false;
-      this.state.query.pagination.getData.params.forEach(p => delete p.autofilter);
-    }
-    if (page_size) {
-      this.state.query.pagination.getData.params[index].page_size = page_size;
-    } //set page size
-    //get config from getData object set by pagination method
-    const { layers = [], method, params } = this.state.query.pagination.getData;
-    const layer                           = layers[index];
-    //check if layer has filter
-    const has_filtertoken                 = !!layer.getFilterToken();
-    try {
-      //get layer pagination data
-      const data = await layer[method]({ ...params[index], page })
-      
-      //set response data
-      this.setQueryResponse({ ...data, query }, { add: false, update: true });
-      //set paginate base of change amount of features request changing select value on query result
-      this.state.query.pagination.paginate[index] = data.count > (data.data || [])[0].features.length;
-      //set filter pagination in case of all features are get from pagination
-      this.state.layers[index].filter.pagination  = this.state.layers[index].filter.active && this.state.query.pagination.paginate[index];
-      //set the current page
-      this.state.query.pagination.current[index]  = page;
-      //in the case of page size change
-      const bool = layer.state.selection.active || has_filtertoken ;
-      //get selection action
-      const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
-      this.state.layers[index].features.forEach((f, i) => {
-        if (bool && !f.selection.selected && layer.isGeoLayer() && f.geometry) {
-          const fid = this._getFeatureId(f, this.state.layers[index].external);
-          (layer.addOlSelectionFeature({ id: fid, feature:f })).selected = true;
-          layer.includeSelectionFid(fid, false);
-        }
-        f.selection.selected    = bool;
-        action.state.toggled[i] = bool;
-      })
-      layer.state.filter.active    = bool;
-      layer.state.selection.active = bool;
-      //in the case of layer with geometry, zoom to features
-      if (this.state.layers[index].hasgeometry) {
-        this.highLightLayerFeatures(this.state.layers[index]);
-      }
-    } catch(e) {
-      console.warn(e);
-    }
   }
 
   /**
