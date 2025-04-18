@@ -724,7 +724,7 @@
         }
 
         return false;
-      }
+      },
 
       /**
        * @since v3.10.0
