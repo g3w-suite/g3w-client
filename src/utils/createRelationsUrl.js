@@ -9,14 +9,10 @@ export function createRelationsUrl({
   relation       = {},
   fid,
   type       = 'data', // <editing, data, xls>
-  formatter = 1,
-  page      , //@since 3.11.2
-  page_size,  //@since 3.11.2
-  ordering,   //@since 3.11.3
 }) {
   return `${ApplicationState.project.getLayerById(
-    undefined === relation.father
-      ? (layer.id === relation.referencedLayer ? relation.referencingLayer : relation.referencedLayer)
-      : (layer.id === relation.father          ? relation.child            : relation.father)
-  ).getUrl(type)}?relationonetomany=${relation.id}|${sanitizeFidFeature(fid)}&formatter=${formatter}${page ? '&page=' + page: ''}${page_size ? '&page_size=' + page_size: ''} ${ordering ? '&ordering=' + ordering: ''}`;
+      undefined === relation.father
+        ? (layer.id === relation.referencedLayer ? relation.referencingLayer : relation.referencedLayer)
+        : (layer.id === relation.father          ? relation.child            : relation.father)
+    ).getUrl(type)}?relationonetomany=${relation.id}|${sanitizeFidFeature(fid)}`;
 }

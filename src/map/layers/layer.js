@@ -202,7 +202,11 @@ const Providers = {
               contentType: 'application/json',
             })
           } else if (is_defined(options.filter.fid)) { // fid filter
-            response = await XHR.get({ url: createRelationsUrl(options.filter.fid) });
+            response = await XHR.post({
+              url:         createRelationsUrl(options.filter.fid),
+              contentType: 'application/json',
+              data:        JSON.stringify({ formatter: 1 }),
+            });
           } else if (options.filter.field) {
             response = await XHR.post({
               url:         this._layer.getUrl('editing') + params,
