@@ -690,7 +690,7 @@
       },
 
       /**
-       * @returns { boolean } whehter can show "add to select" action
+       * @returns { boolean } whether can show "add to select" action
        */
       canSelect(layer) {
         return (
