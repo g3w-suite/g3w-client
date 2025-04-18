@@ -53,7 +53,7 @@
                   </span>
                   {{ layer.title }}
                   <template v-show = "!layer.rawdata">
-                    <span v-if = "state.query && state.query.pagination && state.query.pagination.paginate[index]"
+                    <span v-if = "isPaginate(index)"
                       class  = "query-layer-feature-count"
                     >({{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }})
                     </span>
@@ -131,7 +131,7 @@
                         || (
                             layer.source
                             && layer.source.type !== 'wms'
-                            && !(state.query && state.query.pagination && state.query.pagination.paginate[index]) || (layer.selection.active && layer.filter.active)
+                            && !isPaginate(index) || (layer.selection.active && layer.filter.active)
                            )
                       )
                     "
@@ -208,7 +208,7 @@
 
               <!-- PAGINATION -->
               <section
-                v-if       = "state.query && state.query.pagination && state.query.pagination.paginate[index] && state.query.pagination.page_sizes[index].length > 1"
+                v-if       = "isPaginate(in) && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
@@ -664,6 +664,10 @@
 
     },
     methods: {
+      //@sice 4.0.0 check if results for the layer is paginate
+      isPaginate(index) {
+        return this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[index];
+      },
 
       /**
        * @since v3.10.0
