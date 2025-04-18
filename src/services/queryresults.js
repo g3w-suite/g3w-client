@@ -1927,16 +1927,11 @@ export default new (class QueryResultsService extends G3WObject {
 
     // PROJECT LAYER
     if (!layer.external) {
-      fids.forEach((fid, idx) => {
-        const _layer = (
-          catalog_layer.state.filter.active &&
-          !catalog_layer.hasSelectionFid(fid) &&
-          catalog_layer.getSelectionFids().size > 0 &&
-          query.getState().layers.find(l => l.id === catalog_layer.getId())
-        );
-        if (_layer) {
-          const i = feature ? idx : index; // index of feature to remove
-          _layer.features.splice(i, 1);
+      fids.forEach((_, idx) => {
+        if (catalog_layer.state.filter.active) {
+          const i = feature ? index : idx; // index of feature to remove
+          //get layer from query response that contains features reurned by query
+          query.getState().layers.find(l => l.id === catalog_layer.getId()).features.splice(i, 1);
           delete action.state.toggled[i];
           // reset the index of action state (toggled)
           action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
