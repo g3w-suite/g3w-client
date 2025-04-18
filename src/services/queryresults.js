@@ -1927,7 +1927,6 @@ export default new (class QueryResultsService extends G3WObject {
         layer.features.splice(i, 1);
         delete action.state.toggled[i];
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
-        console.log(query)
       });
     }
 
