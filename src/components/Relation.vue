@@ -5,7 +5,6 @@
 
 <template>
   <div
-    v-if   = "table"
     class  = "query-relation"
     ref    = "relation"
     :class = "isMobile() ? 'mobile' : null"
@@ -31,7 +30,6 @@
         <b class = "relation-tile skin-color"> {{ relation.name }} </b>
 
       </div>
-
       <div
         v-if  = "table.rows.length"
         class = "relations-table-tools"
@@ -39,148 +37,146 @@
 
         <!-- DOWNLOAD BUTTON -->
         <span
-          v-if                    = "downloadButton"
+          v-if                    = "download.formats.length"
           v-download
           class                   = "action-button-icon action-button"
           :class                  = "[
             $fa('download'),
-            { 'toggled-white': downloadButton.toggled },
+            { 'toggled-white': download.toggled },
           ]"
-          @click.stop             = "downloadButton.handler"
-          v-t-tooltip:left.create = "downloadButton.tooltip">
+          @click.stop             = "download.handler"
+          v-t-tooltip:left.create = "download.formats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${this.download.formats[0]}`">
         </span>
 
         <!-- SHOW CHART BUTTON -->
         <span
-          v-if                      = "showChartButton"
+          v-if                      = "chart.button"
           class                     = "action-button-icon action-button"
           :class                    = "[
             $fa('chart'),
-            chart ? 'toggled-white' : '',
+            chart.toggled ? 'toggled-white' : '',
           ]"
-          @click.stop               = "showChart"
+          @click.stop               = "chart.handler"
           v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'">
         </span>
 
       </div>
     </div>
-
     <div
-      v-if  = "table.rows.length"
-      ref   = "wrapper"
-      class = "relation-wrapper"
+      v-if       = "!norelations" 
+      ref        = "wrapper"
+      class      = "relation-wrapper"
+      v-disabled = "!table.get_data"
     >
-
       <div
         id     = "table_content"
         ref    = "content"
         :style = "{
-          width:       chart ? '70%' : '100%',
-          marginRight: chart ? '8px' : '3px',
+          width:       chart.toggled ? '70%' : '100%',
+          marginRight: chart.toggled ? '8px' : '3px',
           position:    'relative',
         }"
       >
-        <div
-          v-if  = "headercomponent"
-          class = "header-component"
-        >
-          <component
-            :is     = "headercomponent"
-            :layer  = "downloadLayer.state"
-            :config = "downloadLayer.config"
-          />
-        </div>
+        <downloadformats
+          v-if    = "download.toggled"
+          class   = "header-component"
+          :layer  = "download.layer"
+          :config = "download.config"
+        />
+
         <table
-          ref   = "table"
-          class = "hover relationtable table table-striped row-border compact nowrap"
+          ref       = "table"
+          class     = "hover relationtable table table-striped row-border compact nowrap"
         >
           <thead>
             <tr style = "height: 0! important;">
               <th
                 v-if   = "showTools"
                 :style = "{
-                  minWidth: this.showTools * 30 + 'px',
+                  minWidth: showTools * 30 + 'px',
                   padding:  '0 !important',
                 }"
               ></th>
-              <th v-for = "column in table.columns">{{ column }}</th>
+              <th v-for = "c in table.columns">{{ c.label }}</th>
+            </tr>
+            <tr>
+              <th v-if   = "showTools"></th>
+              <th v-for = "(c, i) in table.columns">
+                <input
+                  type         = "text"
+                  class        = "form-control column-search"
+                  @keyup       = "changeColumn($event, i)"
+                  :placeholder = "c.name"
+                  :value       = "c.search"
+                  :title       = "'search by ' + c.name"
+                />
+              </th>
             </tr>
           </thead>
-
-          <tbody>
-          <tr
-            v-for  = "(row, index) in table.rows"
-            :key   = "table.rows_fid[index]"
-            :class = "{
-              'selected': table.rowFormStructure === row,
-            }"
-          >
-            <td
-              v-if  = "showTools"
-              class = "table-tools"
+          <tbody id = "table_body_attributes" hidden></tbody>
+          <tbody ref = "table_body">
+            
+            <tr
+              v-for  = "(row, index) in table.rows"
+              :key   = "table.rows_fid[index]"
             >
-              <span
-                v-if                     = "table.features[index].geometry"
-                @click.stop              = "zoomToGeometry(table.features[index].geometry)"
-                class                    = "action-button row-form skin-color"
-                v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
-                :class                   = "$fa('marker')"
-              ></span>
-              <span
-                v-if                     = "table.formStructure"
-                @click.stop              = "showFormStructureRow({
-                  title:   table.title,
-                  layerid: table.layerId,
-                  feature: table.features[index],
-                  fields:  table.fields.map((field, i) => Object.assign(field, { value: row[i], query: true, input: { type: `${getFieldType(field)}` } })),
-                  tabs:    table.formStructure
-                  })"
-                v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
-                class                    = "action-button row-form skin-color"
-                :class                   = "$fa('table')"
-              ></span>
-              <span
-                v-if                     = "isEditable"
-                @click.stop              = "editFeature(index)"
-                class                    = "action-button row-form skin-color"
-                v-t-tooltip:right.create = "'Edit'"
-                :class                   = "$fa('pencil')"
-              ></span>
-            </td>
-            <td v-for = "value in row">
-              <field :state = "{value:value}"/>
-            </td>
-          </tr>
+              <td
+                v-if  = "showTools"
+                class = "table-tools"
+              >
+                <span
+                  v-if                     = "table.features[index].geometry"
+                  @click.stop              = "zoomToGeometry(table.features[index].geometry)"
+                  class                    = "action-button row-form skin-color"
+                  v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
+                  :class                   = "$fa('marker')"
+                ></span>
+                <span
+                  v-if                     = "table.formStructure"
+                  @click.stop              = "showFormStructure(row, index)"
+                  v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
+                  class                    = "action-button row-form skin-color"
+                  :class                   = "$fa('table')"
+                ></span>
+                <span
+                  v-if                     = "isEditable"
+                  @click.stop              = "editFeature(index)"
+                  class                    = "action-button row-form skin-color"
+                  v-t-tooltip:right.create = "'Edit'"
+                  :class                   = "$fa('pencil')"
+                ></span>
+              </td>
+              <td v-for = "value in row.slice(1)">
+                <field :state = "{value:value}"/>
+              </td>
+            </tr>
 
           </tbody>
 
         </table>
-
       </div>
 
       <div
-        v-show          = "chart"
+        v-show          = "chart.toggled"
         class           = "skin-border-color lighten"
         style           = "border-style: solid; border-width: 0 1px 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;"
         @mousedown.stop = "onChartResize"
       ></div>
 
       <div
-        v-show   = "chart"
+        v-show   = "chart.toggled"
         id       = "chart_content"
         ref      = "chart"
-        :style   = "{ width: chart ? '30%' : '0' }"
+        :style   = "{ width: chart.toggled ? '30%' : '0' }"
       ></div>
 
     </div>
-
     <div
       v-else
       class = "dataTables_scrollBody"
     >
       <span v-t = "'sdk.relations.no_relations_found'"></span>
     </div>
-
   </div>
 
 </template>
@@ -193,12 +189,11 @@
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
   import GUI                                      from 'services/gui';
-  import { fieldsMixin, resizeMixin }             from 'mixins';
   import { VM }                                   from 'g3w-eventbus';
   import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
+  import { debounce }                             from 'utils/debounce';
   import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
-  import { XHR }                                  from 'utils/XHR';
   import { createRelationsUrl }                   from 'utils/createRelationsUrl';
   import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
   import { saveBlob }                             from 'utils/saveBlob';
@@ -220,28 +215,53 @@
       chartRelationIds:  { default: [] }
     },
 
-    mixins: [fieldsMixin, resizeMixin],
-
     components: {
       Field,
+      'downloadformats': DownloadFormats,
     },
 
     data() {
+      const layer  = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
       return {
-        fields:          null,
-        chart:           false,
-        headercomponent: null,
-        downloadButton:  null,
-        downloadLayer:  {
-          state:  null,
-          config: { downloads: [] },
+
+        /**
+         * @since 4.0.0 chart state (action button)
+         */
+        chart: {
+          toggled: false,
+          button: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
         },
 
         /**
-         * @since 3.11.2
+         * @since 4.0.0 download state (action button)
+         */
+        download: {
+          formats: layer.getDownloadableFormats().filter(f => 'pdf' !== f), // filter out pdf because already includes all features
+          layer:   null,
+          toggled: false,
+          config:  { downloads: [] }
+        },
+
+        /**
+         * @since 4.0.0 whether relation layer is editable
+         */
+        isEditable: layer.isEditable() && !layer.isInEditing(),
+
+        /**
+         * @since 3.11.2 table state
          */
         table: {
-          rows: [],
+          title:         layer.getName() || layer.getTitle(),
+          formStructure: layer.getLayerEditingFormStructure(),
+          features:      [],
+          //@TODO
+          // Take in account code from 3.11 that check features attributes due settings of field visible
+          /*const attrs = Object.keys(features[0] ? features[0].attributes : {});
+          const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
+          */
+          columns:       layer.getTableHeaders(),
+          rows:          [],
+          rows_fid:      [],  
         },
 
         /**
@@ -250,9 +270,9 @@
         nmRelation: ApplicationState.project.getRelationById(this.relation.nmRelationId),
 
         /**
-         * @since 3.11.2
+         * @since 4.0.0 whether to show table (inital request)
          */
-        showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
+        norelations: false,
       };
     },
 
@@ -272,16 +292,11 @@
 
     watch: {
 
-      async chart(){
+      async norelations() {
         await this.$nextTick();
         this.resize();
       },
-
-      async headercomponent() {
-        await this.$nextTick();
-        this.resize();
-      },
-
+      
     },
 
     methods: {
@@ -302,220 +317,82 @@
       },
 
       /**
-       * @param opts     - settings used for render new table
-       * @param prevOpts - settings used for render old table
-       *  
-       * @returns { Promise<void> }
+       * @param opts
+       * 
+       * @returns DataTable pagination
+       * 
+       * @since 4.0.0
        */
-      async createTable(opts, prevOpts = {}) {
-
+      async getData(opts = {}) {
         try {
-
           GUI.setLoadingContent(true);
+          GUI.disableContent(true);
 
-          // Destroy previous table
-          if (this.$table) {
-            this.$table.destroy(true);
-            this.$table     = null;
-            this.table.rows = [];
-            await this.$nextTick();
-          }
+          // get relations from server
+          const response = await (await fetch(createRelationsUrl({
+              layer:    this.layer,
+              fid:      this.feature.attributes[G3W_FID],
+              relation: this.relation,
+            }), {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+              page:      (opts.start ? opts.start/opts.length : 0) + 1, // get current page
+              page_size: opts.length,
+              formatter: 1,
+              ordering:  opts.order.length ? `${'desc' === opts.order[0].dir ? '-' : ''}${this.table.columns[opts.order[0].column - Number(!!this.showTools)].name}` : undefined,
+              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}`).join('|and,') || undefined,
+            }),
+          })).json();
 
-          try {
+          // extract features attributes
+          let features = (response?.vector?.data?.features || []).map(f => ({
+            id:         f.id,
+            geometry:   f.geometry,
+            attributes: Object.assign(f.properties, { [G3W_FID]: f.id }),
+          }));
 
-            const changed = (opts.page_size !== prevOpts.page_size || opts.start !== prevOpts.start);
-
-            // merge options: (defaults + old + new) 
-            opts = {
-              /** @type { "desc" | "asc" | "current" } column order */
-              sort: 'asc',
-              /** @type { string | undefined } parameter sent to server ("-" = descending ) only if user has already clicked on a column to sort data */
-              ordering: undefined,
-              start: 0,
-              sort_column: 0,
-              order: [],
-              ...prevOpts,
-              ...opts
-            };
-
-
-            // check if ordering is asked by user by click on a column
-            if (opts.ordering && changed) {
-              opts.sort = opts.order[0].dir; // in case of change page, get last sorting of column
-            }
-
-            // in case of sort columns is not a previous column
-            if (opts.ordering && !changed && opts.order[0].column !== opts.sort_column) {
-              opts.sort = 'asc';
-            }
-
-            // invert sort
-            if (opts.ordering && !changed && opts.order[0].column === opts.sort_column) {
-              opts.sort = ('desc' === opts.sort ? 'asc' : 'desc');
-            }
-
-            // in case of set ordering (field sort) or not set ordering (start time)
-            if (opts.ordering || opts.order.length) {
-              opts.ordering = `${'desc' === opts.sort ? '-' : ''}${this.table.fields[opts.order[0].column - Number(!!this.showTools)].name}`;
-            }
-
-            /** @type { number } current column index */
-            opts.sort_column = opts.ordering && (this.table.fields.findIndex(({ name }) => ('desc' === opts.sort ? opts.ordering.slice(1) : opts.ordering) === name) + Number(!!this.showTools) ); //need to add 1 if threa are some 
-            
-            // Get relations from server
-            const response = await XHR.get({
-              url: createRelationsUrl({
-                layer:     this.layer,
-                fid:       this.feature.attributes[G3W_FID],
-                relation:  this.relation,
-                page:      opts.page,
-                page_size: opts.page_size,
-                ordering:  opts.ordering,
-              })
-            }); 
-
-            //extract features attributes, Array, and digest for table
-            let features = (response.result && response.vector && response.vector.data) ? (response.vector.data.features || []).map(f => {
-              f.properties[G3W_FID] = f.id;
-              return {
-                geometry:   f.geometry,
-                attributes: f.properties,
-                id:         f.id,
-              };
-            }) : [];
-
-            // handle NM relations
-            const NM = this.nmRelation && (features || []).length && await DataRouterService.getData('search:features', {
+          // handle NM relations
+          if (this.nmRelation && features.length) {
+            features = (await DataRouterService.getData('search:features', {
               inputs: {
                 layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
                 filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),
-                formatter: 1, // set formatter to
+                formatter: 1,
               },
               outputs: null
-            });
-
-            if (NM && NM.data && NM.data[0] && Array.isArray(NM.data[0].features)) {
-              features = NM.data[0].features.map(f => ({
-                id:         f.getId(),
-                geometry:   f.getGeometry(),
-                attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
-              }));
-            }
-
-            // build relation table
-            const layer = ApplicationState.project.getLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
-            const attrs = Object.keys(features[0] ? features[0].attributes : {});
-            const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
-
-            this.table = {
-              count:            response.result && response.vector.count,
-              features,
-              columns:          cols.map(c => c.label),
-              rows:             features.map(r => cols.map(c => r.attributes[c.name])),
-              rows_fid:         features.map(r => r.attributes[G3W_FID]),
-              fields:           cols.length ? cols : null,
-              formStructure:    layer.getLayerEditingFormStructure(),
-              rowFormStructure: null,
-              layerId:          layer.getId(),
-              title:            layer.getName() || layer.getTitle(), //@since 3.11.0
-            };
-          } catch(e) {
-            this.table = { rows: [] };
-            console.warn(e);
+            })?.data?.[0]?.features || []).map(f => ({
+              id:         f.getId(),
+              geometry:   f.getGeometry(),
+              attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
+            }));
           }
 
-          if (0 === this.table.rows.length) {
-            return;
-          }
+          this.table.features = features;
+          this.table.rows     = features.map(f => [null].concat(this.table.columns.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; })))
+          this.table.rows_fid = features.map(r => r.attributes[G3W_FID]);
 
-          const layer     = getCatalogLayerById(this.table.layerId);
-
-          this.isEditable = layer.isEditable() && !layer.isInEditing();
-
-          //@since 3.11.0 Need to filter pdf because it can be possible download only single feature pdf, not all layer features
-          const downloadformats = layer.getDownloadableFormats().filter(f => 'pdf' !== f);
-
-          /** @FIXME add description */
-          if (downloadformats.length > 0) {
-            this.downloadButton = {
-              toggled: false,
-              tooltip: downloadformats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-              handler: downloadformats.length > 1
-                ? async () => {
-                    this.downloadButton.toggled         = !this.downloadButton.toggled;
-                    this.downloadLayer.state            = this.downloadLayer.state || layer.state;
-                    this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length
-                      ? this.downloadLayer.config.downloads
-                      : downloadformats.map(format => ({
-                          id: format,
-                          format,
-                          cbk: () => {
-                            this.saveRelation(layer.getDownloadUrl(format));
-                            this.headercomponent = null;
-                          },
-                          download: true,
-                        })
-                    );
-                    this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-                  }
-                : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
-            }
-          }
-
-          VM.$on('reload-relations', () => { this.reloadLayout(); });
-
-          this.showChart = throttle(async () => {
-            this.chart = !this.chart;
-            await this.$nextTick();
-            this.chartContainer = this.chartContainer ||  $('#chart_content');
-            this.chart 
-              ? GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chartContainer, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] })
-              : GUI.getService('queryresults').hideChart(this.chartContainer)
-          });
-
-          await this.$nextTick();
-
-          SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
-
-          this.relation.title = this.relation.name;
-
-          if ('ONE' !== this.relation.type) {
-            //check if you need to get data pagination from server or use all features
-            const data_from_server = this.table.rows.length < this.table.count;
-            this.$table = $(this.$refs.table).DataTable({
-              autoWidth:      false,
-              bLengthChange:  true,
-              dom:            'ltip',
-              columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
-              order:          [].concat(opts.ordering ? [ opts.sort_column, opts.sort] : []),
-              lengthMenu:     PAGELENGTHS,
-              pageLength:     opts.page_size,
-              displayStart:   opts.start,
-              responsive:     true,
-              scrollResize:   true,
-              scrollCollapse: true,
-              scrollX:        true,
-              deferLoading:   data_from_server && this.table.count,
-              serverSide:     data_from_server,
-              ajax: data_from_server ? newOpts => {
-                this.createTable({
-                  ...newOpts,
-                  page:       1 + (0 !== newOpts.start ? newOpts.start/newOpts.length : 0),
-                  page_size: newOpts.length,
-                }, opts);
-              } : null,
-            });
-            this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-          }
-
-          // resize after popping child relation
-          GUI.on('pop-content', () => setTimeout(() => this.resize()));
-
-          this.resize();
+          return {
+            data:            this.table.rows,
+            recordsFiltered: response?.vector?.count ?? 0,
+            recordsTotal:    response?.vector?.count ?? 0,
+            filter:          features.map(f => f.id)
+          };
         } catch(e) {
           console.warn(e);
+          return {
+            data:            [],
+            recordsFiltered: 0,
+            recordsTotal:    0,
+          };
         } finally {
+          // first request
+          if (!this.table.get_data) {
+            this.norelations = 0 === this.table.rows.length;
+            this.table.get_data = true;
+          }
           GUI.setLoadingContent(false);
+          GUI.disableContent(false);
         }
       },
 
@@ -532,7 +409,7 @@
         const table      = $(this.$refs.relation).find('div.dataTables_scrollBody');
         table.height(
           $(".content").height()
-          - this.tableHeaderHeight
+          - $('.query-relation  div.dataTables_scrollHeadInner').height()
           - $('.content_breadcrumb')                       .outerHeight()
           - $('.navbar')                                   .outerHeight()
           - $('.close-panel-block')                        .outerHeight()
@@ -542,7 +419,9 @@
           - $('.dataTables_scrollHead').last()             .outerHeight()
         );
 
-        this.reloadLayout();
+        if (this.$table) {
+          this.$table.columns.adjust();
+        }
       },
 
       /**
@@ -551,13 +430,19 @@
        async saveRelation(type) {
         ApplicationState.download = true;
         try {
-          const response = await fetch(createRelationsUrl(Object.assign({
+          const response = await fetch(createRelationsUrl({
               layer:    this.layer,
               fid:      this.feature.attributes[G3W_FID],
               relation: this.relation,
-            }, { type })), {
-              headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
-              signal:  AbortSignal.timeout(TIMEOUT),
+              type
+            }), {
+            method:  'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
+            },
+            body: JSON.stringify({ formatter: 1 }),
+            signal: AbortSignal.timeout(TIMEOUT),
           });
 
           if (!response?.ok) {
@@ -569,46 +454,45 @@
           } catch(e) {
             console.warn(e);
             GUI.showUserMessage({
-              type: 'alert',
-              message: e || 'info.server_error',
+              type:     'alert',
+              message:  e || 'info.server_error',
               closable: true,
             });
           }
 
           ApplicationState.download = false;
-          this.downloadButton.toggled = false;
+          this.download.toggled     = false;
       },
 
       /**
-       * @param event
        * @param row
-       *
-       * @returns { Promise<void> }
+       * @param index
        */
-      async showFormStructureRow({ title, layerid, feature, fields, tabs } = {}) {
+      async showFormStructure(row, index) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
               data: () => ({
-                layerid,
-                feature,
-                fields,
-                formStructure: tabs,
+                layerid:       this.table.layerId,
+                feature:       this.table.features[index],
+                fields:        this.table.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${require('gui/fields/fieldsservice').getType(c)}` } })),
+                formStructure: this.table.formStructure,
               }),
               template: /* html */`
                 <div class="queryresults-wrapper">
                   <div class ="queryresults-container">
                     <table ref="table" class="table">
                       <tbody>
-                      <tr class="featurebox-body">
-                        <td>
-                          <tabs
-                            :layerid = "layerid"
-                            :feature = "feature"
-                            :fields  = "fields"
-                            :tabs    = "formStructure" />
-                        </td>
-                      </tr>
+                        <tr class="featurebox-body">
+                          <td>
+                            <tabs
+                              :layerid = "layerid"
+                              :feature = "feature"
+                              :fields  = "fields"
+                              :tabs    = "formStructure"
+                            />
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -623,7 +507,7 @@
           push:       true,
           showgoback: true,
           closable:   false,
-          title, //@since 3.11.0
+          title:      this.table.title,
         });
       },
 
@@ -635,20 +519,11 @@
           .getService('queryresults')
           .editFeature({
             layer: {
-              id:         this.table.layerId,
-              attributes: this.table.fields,
+              id:         this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer,
+              attributes: this.table.columns,
             },
             feature: this.table.features[index],
           });
-      },
-
-      /**
-       * @FIXME add description
-       */
-      reloadLayout() {
-        if (this.$table) {
-          this.$table.columns.adjust();
-        }
       },
 
       /**
@@ -671,15 +546,95 @@
 
     },
 
-    beforeCreate() {
-      this.delayType = 'debounce';
+    created() {
+      this.resize = debounce(this.resize.bind(this));
+      GUI.on('resize', this.resize);
     },
 
-    async created() {
-      await this.createTable({
-        page:      1,
-        page_size: PAGELENGTHS[0],
+    async mounted() {
+      console.log(this.table.columns);
+      const layer = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
+
+      await this.$nextTick();
+
+      SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
+      this.relation.title = this.relation.name;
+
+      /** @FIXME add description */
+      if (this.download.formats.length) {
+        this.download.layer = layer.state;
+        this.download.config.downloads = this.download.formats.map(format => ({
+          id: format,
+          format,
+          cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
+          download: true,
+        }));
+        this.download.handler = async () => {
+          if (1 == this.download.formats.length) {
+            this.saveRelation(layer.getDownloadUrl(this.download.formats[0]));
+          } else {
+            this.download.toggled = !this.download.toggled;
+          }
+          this.resize();
+        };
+      }
+
+      VM.$on('reload-relations', () => { this.$table?.columns?.adjust(); });
+
+      this.chart.handler = throttle(async () => {
+        this.chart.toggled = !this.chart.toggled;
+        await this.$nextTick();
+        this.chart.container = this.chart.container ||  $('#chart_content');
+        if (this.chart.toggled) {
+          GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
+        } else {
+          GUI.getService('queryresults').hideChart(this.chart.container)
+        }
+        this.resize();
       });
+      
+      if ('ONE' !== this.relation.type) {
+        this.$table = $(this.$refs.table).DataTable({
+          autoWidth:      false,
+          bLengthChange:  true,
+          dom:            'ltip',
+          bSortCellsTop:  true,
+          columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
+          order:          [],
+          lengthMenu:     PAGELENGTHS,
+          pageLength:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
+          responsive:     true,
+          scrollResize:   true,
+          scrollCollapse: true,
+          scrollX:        true,
+          serverSide:     true,
+          ajax: debounce(async (opts, cb) => {
+            cb(await this.getData(opts));
+            await this.$nextTick();
+            // initial request
+            if (this.norelations) {
+              this.$table.destroy(true);
+              this.$table = null;
+            } else {
+              this.$table.columns.adjust();
+            }
+          }),
+        });
+
+        this.changeColumn = debounce((e, i) => {
+          const value = e.target.value.trim();
+          this.table.columns[i].search = value;
+          this.$table.columns(i).search(value).draw();
+        });
+      }
+
+      // resize after popping child relation
+      GUI.on('pop-content', () => setTimeout(() => this.resize()));
+
+      // hide datatable rows → show only our custom "table_body"
+      document.getElementById('table_body_attributes').remove();
+
+      this.resize();
     },
 
     /**
@@ -690,12 +645,14 @@
         this.$table.destroy();
         this.$table = null;
       }
-      if (this.chartContainer) {
-        this.$emit('hide-chart', this.chartContainer);
-        this.chartContainer    = null;
+      if (this.chart.container) {
+        this.$emit('hide-chart', this.chart.container);
+        this.chart.container = null;
       }
-      this.tableHeaderHeight = null;
+      //reset columns search attribute to reset search
+      this.table.columns.forEach(c => delete c.search); 
       GUI.off('pop-content', this.resize);
+      GUI.off('resize', this.resize);
     },
 
   };
@@ -765,6 +722,10 @@
     font-size: 1.1em;
     display: flex;
     justify-content: space-between;
+  }
+  .form-control.column-search {
+    font-style: italic;
+    font-weight: normal;
   }
 </style>
 
