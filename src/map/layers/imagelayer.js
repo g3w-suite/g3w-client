@@ -373,7 +373,7 @@ class ImageLayer extends Layer {
   
   constructor(config = {}, options = {}) {
 
-    super(config, Object.assign(opts, { _GEOMIXIN: true }));
+    super(config, Object.assign(options, { _GEOMIXIN: true }));
 
     this._BASE_LAYER = options._BASE_LAYER;
 
