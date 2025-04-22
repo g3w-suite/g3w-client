@@ -154,15 +154,15 @@ export class LayersStore extends G3WObject {
     /**@since v3.10.3 order TOC */
     if (options.TOC_ORDER && this.state.layerstree) {
       // get all siblings children layers id
-      let nodeIds = [];
+      let nodes = [];
       let traverse = tree => {
         tree.nodes.forEach(n => {
-          if (n.id) { nodeIds.push(n.id) }
+          if (n.id) { nodes.push(n.id) }
           else { traverse(n) }
         });
       };
       traverse(this.state.layerstree[0]);
-      return nodeIds.map(id => layers.find(l => id === l.getId())).filter(id => id);
+      return nodes.map(id => layers.find(l => id === l.getId())).filter(id => id);
     }
 
     return layers;
