@@ -10,25 +10,27 @@ import {
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
   G3W_FID,
-}                                from 'g3w-constants';
-import ApplicationState          from 'store/application';
-import DataRouterService         from 'services/data';
-import GUI                       from 'services/gui';
-import G3WObject                 from 'g3w-object';
-import { promisify, $promisify } from 'utils/promisify';
-import { saveBlob }              from 'utils/saveBlob';
-import { XHR }                   from 'utils/XHR';
-import { prompt }                from 'utils/prompt';
-import Table                     from 'components/Table.vue';
+}                                 from 'g3w-constants';
+import G3WObject                  from 'g3w-object';
+import { t }                      from 'g3w-i18n';
+import ApplicationState           from 'store/application';
+import Projections                from 'store/projections';
+import DataRouterService          from 'services/data';
+import GUI                        from 'services/gui';
 
-import { ResponseParser }        from 'utils/parsers';
-import { get_legend_params }     from 'utils/get_legend_params';
-import { createRelationsUrl }    from 'utils/createRelationsUrl';
-import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
+import Table                      from 'components/Table.vue';
 
+import { promisify, $promisify }  from 'utils/promisify';
+import { saveBlob }               from 'utils/saveBlob';
+import { XHR }                    from 'utils/XHR';
+import { prompt }                 from 'utils/prompt';
+import { ResponseParser }         from 'utils/parsers';
+import { get_legend_params }      from 'utils/get_legend_params';
+import { createRelationsUrl }     from 'utils/createRelationsUrl';
+import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 
-import { Feature }               from 'map/layers/feature';
-import { t }                     from 'g3w-i18n';
+import { Feature }                from 'map/layers/feature';
 
 const is_defined = d => undefined !== d;
 
@@ -869,6 +871,108 @@ class Layer extends G3WObject {
       wms: null // at the moment only wms data from server
     };
 
+    this.legendCategories = {};
+
+    // Features that contain
+    this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
+
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @deprecated please refactor your code in order to rely only on parent constructor instead (ie. `super()`).
+   *
+   * @since 4.0.0
+   */
+  setup(config = {}, options = {}) {
+    console.log(config, options);
+
+    if (!this.config) {
+      console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
+      return;
+    }
+
+    /** @TODO use `this.state.geolayer` instead? (hacky way to distinguish old "geo-mixin.js" instances) */
+    this._GEOMIXIN = true;
+  
+    Object.assign(this.config, {
+      map_crs:      options.project.getProjection().getCode(),
+      multilayerid: config.multilayer,
+      projection:   config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs)) : undefined,
+      attributions: config.attributions ? config.attributions : undefined,
+    });
+  
+    // state extend of layer setting geolayer property to true
+    // and adding information of bbox
+    Object.assign(this.state, {
+      geolayer:             "NoGeometry" !== config.geometrytype,
+      legend: {
+        url:     null,
+        loading: false,
+        error:   false,
+        /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
+        show:    true,
+        /** used when categories changed (checkbox on TOC) and legend is on TAB */
+        change:  false,
+      },
+      external:             config.source?.external     || false,
+      bbox:                 config.bbox                 || null,
+      visible:              config.visible              || false,
+      checked:              config.visible              || false,
+      epsg:                 config.crs.epsg,
+      hidden:               config.hidden               || false,
+      scalebasedvisibility: config.scalebasedvisibility || false,
+      minscale:             config.minscale,
+      maxscale:             config.maxscale,
+      ows_method:           config.ows_method,
+  
+      /**
+       * @type {boolean}
+       */
+      exclude_from_legend: ('boolean' === typeof config.exclude_from_legend) ? config.exclude_from_legend : true,
+  
+      /**
+       * Has more than one category's legend
+       * 
+       * @type {boolean}
+       */
+      categories: false,
+  
+      /**
+       * Toggle legend item state (expandend or collapsed) in catalog layers (TOC)
+       * 
+       * @type {number}
+       *
+       * @since v3.8
+       */
+      expanded: config.expanded,
+  
+      /**
+       * Layer opacity
+       * 
+       * @type {number} opacity range = [0, 100]
+       * 
+       * @since v3.8
+       */
+      opacity: config.opacity || 100,
+    });
+  
+  
+    // sanitize source url
+    if (config?.source?.url) {
+      const url = new URL(this.config.source.url);
+      // reserved WMS params
+      ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
+        const params = [p.toUpperCase(), p.toLowerCase()];
+        for (let i = 0; i < 2; i++) {
+          if (url.searchParams.get(params[i])) {
+            this.config.source.url = this.config.source.url.replace(`${params[i]}=${url.searchParams.get(params[i])}`, '');
+            break;
+          }
+        }
+      });
+    }
   }
 
   /******************************************************************************************
@@ -1122,10 +1226,10 @@ class Layer extends G3WObject {
   setFilter(bool = false) {
     this.state.filter.active     = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
-      this.hideOlSelectionFeatures();
+      GUI.getService('map').toggleSelection(false, this.state.id); // hide selection features (open layers)
     }
     if (this.isGeoLayer() && !this.state.filter.active) {
-      this.updateMapOlSelectionFeatures();
+      this.#updateMapOlSelectionFeatures(); // update selection features (open layers)
     }
   }
 
@@ -1181,16 +1285,14 @@ class Layer extends G3WObject {
       return;
     }
 
-    const layer = this;
-
     prompt({
       label: t('layer_selection_filter.tools.savefilter'),
-      value: layer.state.filter.current ? layer.state.filter.current.name : '' ,
+      value: this.state.filter.current?.name || '',
       callback: async(name) => {
 
         /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved> */
         const response = await XHR.get({
-          url:    layer.providers['filtertoken']._layer.getUrl('filtertoken'),
+          url:    this.providers['filtertoken']._layer.getUrl('filtertoken'),
           params: { mode: 'save', name } }
         );
 
@@ -1199,7 +1301,7 @@ class Layer extends G3WObject {
           return;
         }
 
-        let filter = layer.state.filters.find(f => response.data.fid === f.fid);
+        let filter = this.state.filters.find(f => response.data.fid === f.fid);
       
         // add saved filter to filters array
         if (undefined === filter) {
@@ -1207,23 +1309,29 @@ class Layer extends G3WObject {
             fid:  response.data.fid, //get fid
             name: response.data.name //get name
           }
-          layer.state.filters.push(filter);
+          this.state.filters.push(filter);
         }
 
-        layer.state.filter.current = filter; // set current filter
-        layer.setFilter(false);              // set to false
-        layer.getSelection().active = false; // reset selection to false
-        layer.selectionFids.clear();         // clear current fids
-      
-        //in the case of geolayer
-        if (layer.isGeoLayer()) {
-          //remove selection feature from map
-          layer.setOlSelectionFeatures();
+        this.state.filter.current = filter; // set current filter
+        this.setFilter(false);              // set to false
+        this.getSelection().active = false; // reset selection to false
+        this.selectionFids.clear();         // clear current fids
+
+        // remove selection feature from map
+        if (this.isGeoLayer()) {
+          Object
+            .values(this.olSelectionFeatures)
+            .forEach(feat => {
+              //remove selection feature
+              if (feat.added) {
+                GUI.getService('map').setSelectionFeatures('remove', { feature: feat.feature });
+              }
+              feat.added    = false;
+              feat.selected = false;
+            });
         }
-      
-        //emit unselectionall
-        layer.emit('unselectionall', layer.getId());
-      
+
+        this.emit('unselectionall', this.getId());
       },
     });
 
@@ -1381,11 +1489,10 @@ class Layer extends G3WObject {
     this.selectionFids.clear();
     this.selectionFids.add(SELECTION.ALL);
 
-    /** @TODO add description */
+    // select all features (open layers)
     if (this.isGeoLayer()) {
-      //set all features selected
       Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = true);
-      this.updateMapOlSelectionFeatures();
+      this.#updateMapOlSelectionFeatures();
     }
 
     /** @TODO add description */
@@ -1413,9 +1520,18 @@ class Layer extends G3WObject {
     else if (selection.has(SELECTION.ALL)) { selection.delete(SELECTION.ALL); }
     else if (selection.size > 0)           { selection.add(SELECTION.EXCLUDE); }
 
-    /** @TODO add description */
+    // invert selection (state)
     if (this.isGeoLayer()) {
-      this.setInversionOlSelectionFeatures();
+      const map = GUI.getService('map');
+      Object
+        .values(this.olSelectionFeatures)
+        .forEach(f => {
+          f.selected = !f.selected;
+          if (f.selected !== f.added) {
+            map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+            f.added = f.selected;
+          }
+        });
     }
 
     /** In the case of tocken filter active create */
@@ -1472,9 +1588,11 @@ class Layer extends G3WObject {
     /** @TODO add description */
     if (!is_excluded && !this.isSelectionActive()) { this.setSelection(true) }
 
-    /** @TODO add description */
-    if (this.isGeoLayer()) {
-      this.setOlSelectionFeatureByFid(fid, is_excluded ? 'remove' : 'add');
+    // update selection (state)
+    if (this.isGeoLayer() && this.olSelectionFeatures[fid]?.feature) {
+      this.olSelectionFeatures[fid].selected          = !is_excluded;
+      this.olSelectionFeatures[fid].feature.__layerId = (!is_excluded && !this.olSelectionFeatures[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+      this.#updateMapOlSelectionFeatures();
     }
 
     /** @TODO add description */
@@ -1524,10 +1642,13 @@ class Layer extends G3WObject {
       this.setselectionFidsAll();
     }
 
+    const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
 
-    if (this.isGeoLayer()) {
-      // whether fid is excluded from selection
-      this.setOlSelectionFeatureByFid(fid, selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid)  ? 'remove' : 'add');
+    // update selection (state)
+    if (this.isGeoLayer() && this.olSelectionFeatures[fid]?.feature) {
+      this.olSelectionFeatures[fid].selected          = !is_excluded;
+      this.olSelectionFeatures[fid].feature.__layerId = (!is_excluded && !this.olSelectionFeatures[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+      this.#updateMapOlSelectionFeatures();
     }
 
     /** If there is a filterActive */
@@ -1576,11 +1697,10 @@ class Layer extends G3WObject {
    */
   async clearSelectionFids() {
     this.selectionFids.clear();
-    // remove selected feature on a map
+    // unselect all features (open layers)
     if (this.isGeoLayer()) {
-      //set all features unselected
       Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = false);
-      this.updateMapOlSelectionFeatures();
+      this.#updateMapOlSelectionFeatures();
     }
     // set selection false
     await this.setSelection(false);
@@ -2184,15 +2304,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * Set disabled
-   *
-   * @param bool
-   */
-  setDisabled(bool) {
-    this.state.disabled = bool;
-  }
-
-  /**
    * @returns {boolean} whether it is disabled
    */
   isDisabled() {
@@ -2204,15 +2315,6 @@ class Layer extends G3WObject {
    */
   isVisible() {
     return this.state.visible;
-  }
-
-  /**
-   * Set visibility
-   *
-   * @param bool
-   */
-  setVisible(bool) {
-    this.state.visible = bool;
   }
 
   /**
@@ -2588,6 +2690,409 @@ class Layer extends G3WObject {
    */
   openAttributeTable(opts = {}) {
     new (Vue.extend(Table))({ ...opts, layerId: this.state.id });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * Set layer categories legend
+   * 
+   * @param { Array } categories
+   * 
+   * @since 4.0.0
+   */
+  setCategories(categories = []) {
+    this.legendCategories[this.getCurrentStyle().name] = categories;
+    //set categories state attribute to true only if exist at least a rule key
+    this.state.categories = (categories || []).filter(category => category.ruleKey).length > 0;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns legend categories of layer
+   * 
+   * @param { Array } categories
+   * 
+   * @since 4.0.0
+   */
+  getCategories() {
+    return this.legendCategories[this.getCurrentStyle().name];
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Clear all categories
+   *
+   * @since 4.0.0
+   */
+  clearCategories() {
+    this.legendCategories = {};
+    this.state.categories = false;
+  }
+
+  /**
+   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * Get OpenLayer selection feature by feature id
+   * 
+   * @param id
+   * 
+   * @since 4.0.0
+   */
+  getOlSelectionFeature(id) {
+    return this.olSelectionFeatures[id];
+  }
+
+  /**
+   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  addOlSelectionFeature({ id, feature: feat } = {}) {
+    //create a new ol feature
+    const feature = new ol.Feature(feat.geometry);
+    feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
+    Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
+    this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
+      feature,
+      added:    false,
+      selected: false, /** @since 3.9.9 */
+    };
+    return this.olSelectionFeatures[id];
+  }
+
+  /**
+   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Show all selection features
+   *
+   * @since 4.0.0
+   */
+  #updateMapOlSelectionFeatures() {
+    const map = GUI.getService('map');
+    // Loop `added` features (selected)
+    Object
+      .values(this.olSelectionFeatures)
+      .forEach(f => {
+        if (f.selected !== f.added) {
+          map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+          f.added = f.selected;
+        }
+      });
+    // Ensures selection layer is always visible on map
+    map.toggleSelection(
+      !this.state.filter.active && Object.values(this.olSelectionFeatures).some(f => f.selected),
+      this.state.id
+    );
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Set layer legend item `checked` state (TOC)
+   *
+   * @param { boolean } bool
+   *
+   * @since 4.0.0
+   */
+  setChecked(bool) {
+    this.state.checked = bool;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @returns { boolean } whether layer legend item is checked (TOC)
+   *
+   * @since 4.0.0
+   */
+  isChecked() {
+    return this.state.checked;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @param { Boolean } bool
+   * 
+   * @returns {*} whether visiblitity is disabled (based on scalevisibility) and checked on toc
+   *
+   * @since 4.0.0
+   */
+  setVisible(bool) {
+    if (!this._GEOMIXIN) {
+      return this.state.visible = bool;
+    }
+    //get current visibility
+    const visible  = this.state.visible;
+    // set visibility bool and is checked
+    this.state.visible = bool && this.isChecked();
+    //Check if change the visibility
+    if (visible !== this.state.visible) {
+      this.change();
+    }
+    return this.state.visible;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  isPrintable({ scale } = {}) {
+    // find out if layer and all parents are checked
+    let checked = this.isChecked();
+    if (checked) {
+      let parentGroup = this.state.parentGroup;
+      //loop from bottom to top
+      while(checked && parentGroup) {
+        checked     = checked && parentGroup.checked;
+        parentGroup = parentGroup.parentGroup;
+      }
+    }
+    return checked
+      && (
+        !this.state.scalebasedvisibility
+        || (scale >= this.state.maxscale && scale <= this.state.minscale)
+      );
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns style for layer
+   *
+   * @since 4.0.0
+   */
+  getStyles() {
+    return this.config.source.external ? this.config.source.styles : this.config.styles;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getStyle() {
+    return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(s => s.current).name : '';
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns { number } transparency property
+   *
+   * @since 4.0.0
+   */
+  getOpacity() {
+    return this.state.opacity;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Change the current style of layer
+   *
+   * @param name
+   * 
+   * @returns { Boolean }
+   *
+   * @since 4.0.0
+   */
+  setCurrentStyle(name) {
+    const changed = !(this.config.styles.find(s => name === s.name).current);
+    this.config.styles.forEach(s => s.current = name === s.name);
+    return changed;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getCurrentStyle() {
+    return this.config.styles.find(s => s.current);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Disable layer by check scalevisibility configuration value
+   *
+   * @param resolution
+   * @param mapUnits
+   *
+   * @since 4.0.0
+   */
+  setDisabled(resolution, mapUnits = 'm') {
+    if (!this._GEOMIXIN) {
+      return this.state.disabled = resolution;
+    }
+
+    if (this.state.scalebasedvisibility) {
+      const mapScale      = getScaleFromResolution(resolution, mapUnits);
+      this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
+      this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
+      // needed to check if call setVisible is change disable property
+      // looping through parentfolter checked
+      let setVisible = true;
+      let parentGroup = this.state.parentGroup;
+      while (parentGroup) {
+        setVisible  = setVisible && parentGroup.checked;
+        parentGroup = parentGroup.parentGroup;
+      }
+      if (setVisible) {
+        this.setVisible(!this.state.disabled);
+      }
+      // change toc highlight property based on disabled otr not
+      if (this.isFilterable()) {
+        this.setTocHighlightable(!this.state.disabled);
+      }
+    } else {
+      this.state.disabled = false;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getMultiLayerId() {
+    return this.config.multilayerid;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getGeometryType() {
+    return this.config.geometrytype;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getOwsMethod() {
+    return this.config.ows_method;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  setProjection(crs = {}) {
+    this.config.projection = Projections.get(crs);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getProjection() {
+    return this.config.projection;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getEpsg() {
+    return this.config.crs.epsg;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getCrs() {
+    return this.config.projection ? this.config.projection.getCode() : null;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getMapCrs() {
+    return this.config.map_crs;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  isCached() {
+    return this.config.cache_url && '' !== this.config.cache_url;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getCacheUrl() {
+    // mapproxy provider → cache_url already contains "{z}/{x}/{-y}.png"
+    if (this.isCached() && this.config.cache_provider && 'mapproxy' === this.config.cache_provider) {
+      return this.config.cache_url;
+    }
+    if (this.isCached()) {
+      return `${this.config.cache_url}/{z}/{x}/{y}.png`;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns whether layer has inverted axis
+   * 
+   * @since 4.0.0
+   */
+  hasAxisInverted() {
+    const projection      = this.getProjection();
+    const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
+    return axisOrientation.substr(0, 2) === 'ne';
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @virtual method need to be implemented by subclasses
+   * 
+   * @since 4.0.0
+   */
+  getMapLayer() {
+    console.log('overwrite by single layer')
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @param projection
+   * 
+   * @since 4.0.0
+   */
+  setMapProjection(projection) {
+    this._mapProjection = projection;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getMapProjection() {
+    return this._mapProjection;
   }
 
 }

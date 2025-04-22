@@ -8,14 +8,13 @@ import GUI                            from 'services/gui';
 import { isPointGeometryType }        from 'utils/isPointGeometryType';
 import { isLineGeometryType }         from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }      from 'utils/isPolygonGeometryType';
-import GeoLayerMixin                  from 'map/layers/geo-mixin'
 import { $promisify, promisify }      from 'utils/promisify';
 
 
 import { Layer }          from 'map/layers/layer';
 import { TableLayer }     from 'map/layers/tablelayer';
 
-export class VectorLayer extends GeoLayerMixin(TableLayer) {
+export class VectorLayer extends TableLayer {
 
   constructor(config = {}, opts = {}) {
     super(config, opts);

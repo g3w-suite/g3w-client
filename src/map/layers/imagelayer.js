@@ -7,7 +7,6 @@ import { DOTS_PER_INCH }      from 'g3w-constants';
 import G3WObject              from 'g3w-object';
 import ApplicationState       from 'store/application';
 import Projections            from 'store/projections';
-import GeoLayerMixin          from 'map/layers/geo-mixin';
 import { Layer }              from 'map/layers/layer';
 import { VectorLayer }        from 'map/layers/vectorlayer';
 import { get_legend_params }  from 'utils/get_legend_params';
@@ -370,7 +369,7 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
  * @param config.wms_use_layer_ids
  * @param config.styles
  */
-class ImageLayer extends GeoLayerMixin(Layer) {
+class ImageLayer extends Layer {
   
   constructor(config = {}, options = {}) {
 

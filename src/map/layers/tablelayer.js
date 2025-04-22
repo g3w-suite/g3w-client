@@ -175,7 +175,11 @@ export class TableLayer extends Layer {
           if (layer.isGeoLayer()) {
             commitItems.update.forEach(({ id, geometry } = {}) => {
               if (layer.getOlSelectionFeature(id)) {
-                layer.updateOlSelectionFeature({id, geometry});
+                const selected = layer.getOlSelectionFeature(id);
+                if (selected) {
+                  selected.feature = geometry;
+                  GUI.getService('map').setSelectionFeatures('update', { feature: geometry });
+                }
               }
             });
           }
