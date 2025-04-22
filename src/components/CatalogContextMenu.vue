@@ -605,7 +605,10 @@
 
       canShowWmsUrl(layerId) {
         const layer = getCatalogLayerById(layerId);
-        return layer && !layer.isType('table') && !!layer.getFullWmsUrl();
+        const wms_url = ApplicationState.project.state.metadata.wms_url;
+        return layer && !layer.isType('table') && !!(wms_url && !this.isExternalWMS()
+          ? wms_url
+          : this.getWmsUrl());
       },
 
       canShowWfsUrl(layerId) {
@@ -626,11 +629,15 @@
       },
 
       getWmsUrl(layerId) {
-        return getCatalogLayerById(layerId).getCatalogWmsUrl();
+        const wms_url = ApplicationState.project.state.metadata.wms_url;
+        const layer = getCatalogLayerById(layerId);
+        return wms_url && !layer.isExternalWMS()
+          ? wms_url
+          : `${layer.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities`;
       },
 
       getWfsUrl(layerId) {
-        return getCatalogLayerById(layerId).getCatalogWfsUrl();
+        return `${getCatalogLayerById(layerId).getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
       },
 
       /**
@@ -640,7 +647,7 @@
        * @since 3.10.0
        */
       getWfs3Url(layerId) {
-        return getCatalogLayerById(layerId).getCatalogWfs3Url();
+        return `${getCatalogLayerById(layerId).getWfsUrl()}wfs3/`;
       },
 
       /**

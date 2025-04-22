@@ -284,7 +284,7 @@ class RasterLayer extends G3WObject {
 
   setupCustomMapParamsToLegendUrl(params = {}) {
     if ('XYZ' !== this.config.type) {
-      [].concat(this.layer || this.layers).forEach(l => l.setMapParamstoLegendUrl(params));
+      [].concat(this.layer || this.layers).forEach(l => Object.assign(this.customParams, params));
     }
   }
 
@@ -625,10 +625,6 @@ class ImageLayer extends Layer {
     return ["QGIS", "Mapserver", "Geoserver", "OGC"].includes(this.config.servertype);
   }
 
-  isLayerProjectionASMapProjection() {
-    return this.config.crs.epsg === this.config.map_crs;
-  }
-
   getCrs() {
     return this.config.crs.epsg;
   }
@@ -655,7 +651,7 @@ class ImageLayer extends Layer {
 
     return (
         source && (
-        ('map' !== type || (this.isExternalWMS() && this.isLayerProjectionASMapProjection())) &&
+        ('map' !== type || (this.isExternalWMS() && this.config.crs.epsg === this.config.map_crs)) &&
         ('legend' !== type || source.external)
       )
     );
@@ -697,7 +693,7 @@ class ImageLayer extends Layer {
   }
 
   useProxy() {
-    return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats();
+    return this.isExternalWMS() && this.config.crs.epsg === this.config.map_crs && this.getInfoFormats();
   }
 
   getWMSInfoLayerName() {
@@ -712,68 +708,12 @@ class ImageLayer extends Layer {
       : this.getName();
   }
 
-  getStringBBox() {
-    const { minx, miny, maxx, maxy } = this.config.bbox;
-    return `${minx},${miny},${maxx},${maxy}`;
-  }
-
   isWfsActive() {
     return Array.isArray(this.config.ows) && this.config.ows.some(t => 'WFS' === t);
   }
 
-  /**
-   * Get wms url of the layer
-   */
-  getFullWmsUrl() {
-    const { wms_url } = ApplicationState.project.state.metadata;
-
-    /** @FIXME add description */
-    if (wms_url && !this.isExternalWMS()) {
-      return wms_url;
-    }
-
-    return this.getWmsUrl();
-  }
-
-  /**
-   * Get WMS url (used by Catalog Layer Menu) 
-   */
-  getCatalogWmsUrl() {
-    const { wms_url } = ApplicationState.project.state.metadata;
-
-    /** @FIXME add description */
-    if (wms_url && !this.isExternalWMS()) {
-      return wms_url;
-    }
-
-    return `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities`;
-  }
-
-  /**
-   * Get WFS url (used by Catalog Layer Menu)  
-   */
-  getCatalogWfsUrl(){
-    return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
-  }
-
-  /**
-   * Get WFS 3 url (used by Catalog Layer Menu)
-   * @since 3.10.0
-   * @return { String } url
-   */
-  getCatalogWfs3Url() {
-    return `${this.getWfsUrl()}wfs3/`;
-  }
-
   getWfsUrl() {
-    const { wms_url } = ApplicationState.project.state.metadata;
-
-    /** @FIXME add description */
-    if (wms_url) {
-      return wms_url;
-    }
-
-    return this.config.wmsUrl;
+    return ApplicationState.project.state.metadata.wms_url || this.config.wmsUrl;
   }
 
   /**
@@ -786,7 +726,7 @@ class ImageLayer extends Layer {
     const is_qgis = (
       "QGIS" === this.getServerType()
       && this.isExternalWMS()
-      && this.isLayerProjectionASMapProjection()
+      && this.config.crs.epsg === this.config.map_crs
     );
 
     /** @FIXME add description */
@@ -800,10 +740,6 @@ class ImageLayer extends Layer {
     }
 
     return url;
-  }
-
-  getIconUrlFromLegend() {
-    return this.getLegendUrl({ layertitle: false });
   }
 
   /**
@@ -921,14 +857,6 @@ class ImageLayer extends Layer {
     }
 
     return `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.filter(p => p).join('&')}`;
-  }
-
-  setMapParamstoLegendUrl({ bbox, crs }) {
-    this.customParams = { ...this.customParams, bbox, crs };
-  }
-
-  getWfsCapabilities() {
-    return this.config.wfscapabilities || 1 === this.config.capabilities;
   }
 
   getMapLayer(options = {}, extraParams) {
