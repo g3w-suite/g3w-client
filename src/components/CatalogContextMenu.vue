@@ -606,9 +606,9 @@
       canShowWmsUrl(layerId) {
         const layer = getCatalogLayerById(layerId);
         const wms_url = ApplicationState.project.state.metadata.wms_url;
-        return layer && !layer.isType('table') && !!(wms_url && !this.isExternalWMS()
+        return layer && !layer.isType('table') && !!(wms_url && !layer.isExternalWMS()
           ? wms_url
-          : this.getWmsUrl());
+          : layer.getWmsUrl());
       },
 
       canShowWfsUrl(layerId) {
