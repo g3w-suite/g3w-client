@@ -733,7 +733,7 @@ class Layer extends G3WObject {
       infoformat:         this.getInfoFormat(),
       infoformats:        this.config.infoformats || [],
       projectLayer:       true,
-      geolayer:           config.geometrytype && "NoGeometry" !== config.geometrytype,
+      geolayer:           "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
       visible:            !!config.visible,
       tochighlightable:   false,
