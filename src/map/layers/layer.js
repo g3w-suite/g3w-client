@@ -505,9 +505,6 @@ class Layer extends G3WObject {
 
     super();
 
-    /** @TODO use `this.state.geolayer` instead? (hacky way to distinguish old "geo-mixin.js" instances) */
-    this._GEOMIXIN = !!options._GEOMIXIN;
-
     //get current project object
     const project   = options.project || ApplicationState.project;
     const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
@@ -939,18 +936,13 @@ class Layer extends G3WObject {
     // Features that contain
     this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
 
-    // sanitize source url
+    // sanitize source url (ie. discard any reserved WMS params)
     if (config?.source?.url) {
       const url = new URL(this.config.source.url);
-      // reserved WMS params
       ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
-        const params = [p.toUpperCase(), p.toLowerCase()];
-        for (let i = 0; i < 2; i++) {
-          if (url.searchParams.get(params[i])) {
-            this.config.source.url = this.config.source.url.replace(`${params[i]}=${url.searchParams.get(params[i])}`, '');
-            break;
-          }
-        }
+        this.config.source.url = this.config.source.url
+          .replace(`${p.toUpperCase()}=${url.searchParams.get(p.toUpperCase())}`, '')
+          .replace(`${p.toLowerCase()}=${url.searchParams.get(p.toLowerCase())}`, '');
       });
     }
   }
@@ -2802,9 +2794,6 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   setVisible(bool) {
-    if (!this._GEOMIXIN) {
-      return this.state.visible = bool;
-    }
     //get current visibility
     const visible  = this.state.visible;
     // set visibility bool and is checked
@@ -2907,7 +2896,8 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   setDisabled(resolution, mapUnits = 'm') {
-    if (!this._GEOMIXIN) {
+
+    if ('boolean' === typeof resolution) {
       return this.state.disabled = resolution;
     }
 

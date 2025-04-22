@@ -373,16 +373,12 @@ class ImageLayer extends Layer {
   
   constructor(config = {}, options = {}) {
 
-    super(config, Object.assign(options, { _GEOMIXIN: true }));
+    super(config, options);
 
-    this._BASE_LAYER = options._BASE_LAYER;
-
-    this.setters = ['change'];
-
-    this.config.baselayer = config.baselayer || false;
-    this.type             = Layer.LayerTypes.IMAGE;
-    this.legendUrl        = null;
-    this.customParams     = {};
+    this._BASE_LAYER  = options._BASE_LAYER;
+    this.setters      = ['change'];
+    this.type         = Layer.LayerTypes.IMAGE;
+    this.customParams = {};
 
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
@@ -924,12 +920,7 @@ class ImageLayer extends Layer {
       ]; 
     }
 
-    // discard nullish parameters (without a value)
-    url_params = url_params.filter(p => p)
-
-    this.legendUrl = `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.join('&')}`;
-
-    return this.legendUrl;
+    return `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.filter(p => p).join('&')}`;
   }
 
   setMapParamstoLegendUrl({ bbox, crs }) {

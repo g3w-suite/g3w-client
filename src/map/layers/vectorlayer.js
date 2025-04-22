@@ -17,7 +17,7 @@ import { TableLayer }     from 'map/layers/tablelayer';
 export class VectorLayer extends TableLayer {
 
   constructor(config = {}, opts = {}) {
-    super(config, Object.assign(opts, { _GEOMIXIN: true }));
+    super(config, opts);
     this._mapLayer = null; // later that will be added to the map
     this.type      = Layer.LayerTypes.VECTOR;
   }

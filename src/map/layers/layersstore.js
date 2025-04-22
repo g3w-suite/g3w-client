@@ -7,23 +7,26 @@ import G3WObject          from 'g3w-object';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 export class LayersStore extends G3WObject {
+
   constructor(config = {}) {
     super();
+
     this.config = {
       id:         config.id || Date.now(),
       projection: config.projection,
       extent:     config.extent,
       initextent: config.initextent,
       wmsUrl:     config.wmsUrl,
-      //set catalogable property
-      catalog: (true === config.catalog || false === config.catalog) ? config.catalog : true
+      catalog:    config.catalog ?? true
     };
+
     this.state = {
-      //useful to build layerstree
       layerstree: [],
-      relations:  null // useful to build a tree of relations
+      relations:  null
     };
-    this._isQueryable = (true === config.queryable || false === config.queryable ) ? config.queryable : true;
+
+    this._isQueryable = config.queryable ?? true;
+
     this._layers = this.config.layers || {};
 
     this.setters = [
@@ -52,19 +55,19 @@ export class LayersStore extends G3WObject {
    * @since 4.0.0 
    */
   addLayer(layer) {
-    this._addLayer(layer);
+    this._layers[layer.getId()] = layer;
   }
 
   /**
    * @since 4.0.0 
    */
-  removeLayer(id) {
-    this._removeLayer(id);
+  removeLayer(layer) {
+    delete this._layers[layer.getId()];
   }
 
   isQueryable() {
     return this._isQueryable;
-  };
+  }
 
   /**
    *
@@ -72,33 +75,25 @@ export class LayersStore extends G3WObject {
    */
   setQueryable(bool) {
     this._isQueryable = !!bool;
-  };
+  }
 
   showOnCatalog() {
     return this.config.catalog;
-  };
+  }
 
   setOptions(config = {}) {
     this.config = config;
-  };
+  }
 
   getId() {
     return this.config.id;
-  };
-
-  _addLayer(layer) {
-    this._layers[layer.getId()] = layer;
-  };
-
-  _removeLayer(layer) {
-    delete this._layers[layer.getId()];
-  };
+  }
 
   removeLayers() {
     Object
       .entries(this._layers)
       .forEach(([_, layer]) => this.removeLayer(layer))
-  };
+  }
 
   getLayersDict(filter = {}, options = {}) {
 
@@ -158,97 +153,77 @@ export class LayersStore extends G3WObject {
 
     /**@since v3.10.3 order TOC */
     if (options.TOC_ORDER && this.state.layerstree) {
-      return this._getAllSiblingsChildrenLayersId(this.state.layerstree[0])
-        .filter(id => layers.find(l => id === l.getId()))
-        .map(id => layers.find(l => id === l.getId()))
+      // get all siblings children layers id
+      let nodeIds = [];
+      let traverse = tree => {
+        tree.nodes.forEach(n => {
+          if (n.id) { nodeIds.push(n.id) }
+          else { traverse(n) }
+        });
+      };
+      traverse(this.state.layerstree[0]);
+      return nodeIds.map(id => layers.find(l => id === l.getId())).filter(id => id);
     }
 
     return layers;
-  };
+  }
 
-// return layers array
+  // return layers array
   getLayers(filter = {}, options = {}) {
     return Object.values(this.getLayersDict(filter, options));
-  };
+  }
 
   getBaseLayers() {
     return this.getLayersDict({ BASELAYER: true });
-  };
+  }
 
   getLayerById(id) {
     return this.getLayersDict()[id];
-  };
+  }
 
   getLayerByName(name) {
     return this._layers.find(l => name === l.getName());
-  };
+  }
 
   getLayerAttributes(id) {
     return this.getLayerById(id).getAttributes();
-  };
+  }
 
   getLayerAttributeLabel(id, name) {
     return this.getLayerById(id).getAttributeLabel(name);
-  };
+  }
 
   getGeoLayers() {
     return this.getLayers({ GEOLAYER: true })
-  };
-
-  _getAllSiblingsChildrenLayersId(layerstree) {
-    let nodeIds = [];
-    let traverse = layerstree => {
-      layerstree.nodes.forEach(n => {
-        if (n.id) { nodeIds.push(n.id) }
-        else { traverse(n) }
-      });
-    };
-    traverse(layerstree);
-    return nodeIds;
-  };
-
-  _getAllParentLayersId(layerstree, node) {
-    let nodeIds = [];
-    let traverse = layerstree => {
-      layerstree.nodes.forEach(n => {
-        if (n.id) {
-          nodeIds.push(n.id);
-        }
-      });
-    };
-
-    traverse({ nodes: layerstree.nodes.filter(n => node !== n) });
-
-    return nodeIds;
-  };
+  }
 
   selectLayer(id, selected) {
     this.setLayerSelected(id, selected);
-  };
+  }
 
   getProjection() {
     return this.config.projection;
-  };
+  }
 
   getExtent() {
     return this.config.extent;
-  };
+  }
 
   getInitExtent() {
     return this.config.initextent;
-  };
+  }
 
   getWmsUrl() {
     return this.config.wmsUrl;
-  };
+  }
 
   removeLayersTree() {
     this.state.layerstree.splice(0, this.state.layerstree.length);
-  };
+  }
 
   getLayersTree() {
     return this.state.layerstree;
-  };
+  }
 
   /**
    * Set layersstree of layers inside the layersstore
@@ -280,7 +255,7 @@ export class LayersStore extends G3WObject {
       this._traverseLayersTree(layerstree, rootGroup);
       this.state.layerstree.splice(0, 0, rootGroup); // at the end
     }
-  };
+  }
 
   /**
    * Used by external plugins to build layerstree
@@ -327,7 +302,7 @@ export class LayersStore extends G3WObject {
 
     // setLayerstree
     this.setLayersTree(layerstree, groupName, options.expanded);
-  };
+  }
 
   /**
    * @since 3.8.0
@@ -363,7 +338,7 @@ export class LayersStore extends G3WObject {
         layerstree.push(lightlayer);
       }
     });
-  };
+  }
 
   /**
    * @since 3.8.0
@@ -389,7 +364,7 @@ export class LayersStore extends G3WObject {
       //SET PARENT GROUP
       nodes[index].parentGroup = parentGroup;
     });
-  };
+  }
 
   /**
    * @since 3.8.0
@@ -431,7 +406,7 @@ export class LayersStore extends G3WObject {
     if (group.parentGroup && false === group.parentGroup.root) {
       this._setLayersTreeGroupBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
     }
-  };
+  }
 
 }
 
