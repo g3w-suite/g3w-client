@@ -1000,8 +1000,9 @@ class Layer extends G3WObject {
   getDownloadableFormats()  { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
 
   /**
+   * @returns { boolean } whether at least one layer has a download format not equal to pdf
+   * 
    * @since 3.11.7  
-   * @returns { Boolean } Return true if at least one layer has a download format not equal to pdf
    */
   hasDowloadableRelations() { 
     return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
