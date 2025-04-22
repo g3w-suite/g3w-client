@@ -1844,7 +1844,7 @@ export default new (class QueryResultsService extends G3WObject {
     });
 
     // handle pagination
-    if (!feature && toggled) {
+    if (!layer.external && !feature && toggled) {
       catalog_layer.clearSelectionFids();
       return;
     }
@@ -1852,6 +1852,45 @@ export default new (class QueryResultsService extends G3WObject {
     // ensure "layer.selection.features" is defined
     if (layer.external && undefined === layer.selection.features) {
       layer.selection.features = [];
+    }
+
+    if (layer.external && !feature) {
+
+      layer.selection.active = !toggled;
+      
+      layer.features.forEach(feature => {
+        feature.selection.selected = layer.selection.active;   
+        //check if already selected feature is add
+        let selected_feature = layer.selection.features.find(f => feature.id === f.getId());
+
+        //if found add/remove from map
+        if (selected_feature) {
+          GUI.getService('map').setSelectionFeatures(
+            layer.selection.active ? 'add' : 'remove',
+            { feature: selected_feature }
+          );
+        }
+
+        //If not yet added
+        if (!selected_feature) {
+          //create new feature
+          const feat = new ol.Feature(feature.geometry);
+          feat.setId(feature.id);
+          Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+          layer.selection.features.push(
+            Object.assign(feat, {
+            __layerId: layer.id,
+            selection: layer.selection.active,
+          }));
+
+          GUI.getService('map').setSelectionFeatures(
+            layer.selection.active ? 'add' : 'remove',
+            { feature: feat }
+          );
+        }
+      });
+    
+      return;
     }
 
     const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
