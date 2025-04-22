@@ -808,6 +808,7 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
+        "QGIS arcgisfeatureserver",
       ].includes(layerType) && createProvider('g3w', this),
 
       filtertoken: [
@@ -839,6 +840,7 @@ class Layer extends G3WObject {
           'QGIS vector-tile',
           'QGIS vectortile',
           'QGIS arcgismapserver',
+          'QGIS arcgisfeatureserver', //@since 4.0.0
           'QGIS mdal',
           'OGC wms',
         ].includes(layerType)) {
@@ -858,6 +860,7 @@ class Layer extends G3WObject {
         'QGIS ogr',
         'QGIS delimitedtext',
         'QGIS wfs',
+        "QGIS arcgisfeatureserver",
       ].includes(layerType) && createProvider('qgis', this),
 
     };

@@ -241,6 +241,7 @@ export async function getProject(gid, options = {}) {
       "QGIS oracle",
       "QGIS ogr",
       "QGIS mdal",
+      "QGIS arcgisfeatureserver",
     ].includes(layerType)) {
       return new ImageLayer(config, { project });
     }
