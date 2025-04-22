@@ -44,7 +44,7 @@ export class VectorLayer extends TableLayer {
 
     this._mapLayer = new G3WObject;
 
-    const _g3w_geojson = 'G3WSUITE geojson' === `${config.servertype} ${config.source?.type}`;
+    const _g3w_geojson = 'G3WSUITE geojson' === `${this.config.servertype} ${this.config.source?.type}`;
     
     const style = _g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
 
