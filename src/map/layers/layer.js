@@ -738,7 +738,7 @@ class Layer extends G3WObject {
       projectLayer:       true,
       geolayer:           config.geometrytype && "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
-      visible:            config.visible || false,
+      visible:            !!config.visible,
       tochighlightable:   false,
 
       /** state of if is in editing (setted by editing plugin) */
@@ -768,14 +768,14 @@ class Layer extends G3WObject {
       /** @type { string } since 3.10.0 */
       name:               config.name,
 
-      /** @type { boolean } since 3.10.0 */
+      /** @type { number } legend item state (expandend or collapsed) in catalog layers (TOC) (since 3.10.0) */
       expanded:           config.expanded,
 
       /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
       toc:                'boolean' === typeof config.toc ? config.toc: true,
 
       /** @since 4.0.0 */
-      legend: this._GEOMIXIN && {
+      legend: {
         url:     null,
         loading: false,
         error:   false,
@@ -786,13 +786,10 @@ class Layer extends G3WObject {
       },
 
       /** @since 4.0.0 */
-      external:             !!(this._GEOMIXIN && config.source?.external),
+      external:             config.source && config.source.external,
 
       /** @since 4.0.0 */
       bbox:                 config.bbox || null,
-
-      /** @since 4.0.0 */
-      visible:              !!config.visible,
 
       /** @since 4.0.0 */
       checked:              !!config.visible,
@@ -820,10 +817,7 @@ class Layer extends G3WObject {
   
       /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
       categories: false,
-  
-      /** @type { number } legend item state (expandend or collapsed) in catalog layers (TOC) (since 3.8) */
-      expanded: config.expanded,
-  
+    
       /** @type {number} opacity range = [0, 100] (since 3.8) */
       opacity: config.opacity || 100,
     };

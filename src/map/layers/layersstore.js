@@ -378,7 +378,7 @@ export class LayersStore extends G3WObject {
       if (undefined !== node.id) {
         nodes[index] = this.getLayerById(node.id).getState();
         // pass bbox and epsg of layer
-        if (undefined !== nodes[index].bbox) {
+        if (nodes[index].bbox) {
           this._setLayersTreeGroupBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
         }
       }
