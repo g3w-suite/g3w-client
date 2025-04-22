@@ -789,7 +789,7 @@ class Layer extends G3WObject {
       external:             config.source && config.source.external,
 
       /** @since 4.0.0 */
-      bbox:                 config.bbox || null,
+      bbox:                 config.bbox,
 
       /** @since 4.0.0 */
       checked:              !!config.visible,
