@@ -373,7 +373,7 @@ class ImageLayer extends Layer {
   
   constructor(config = {}, options = {}) {
 
-    super(config, options);
+    super(config, Object.assign(opts, { _GEOMIXIN: true }));
 
     this._BASE_LAYER = options._BASE_LAYER;
 
@@ -383,8 +383,6 @@ class ImageLayer extends Layer {
     this.type             = Layer.LayerTypes.IMAGE;
     this.legendUrl        = null;
     this.customParams     = {};
-
-    this.setup(config, options);
 
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2

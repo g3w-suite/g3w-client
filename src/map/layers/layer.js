@@ -93,7 +93,7 @@ const Providers = {
 
         // in case not alphanumeric layer set projection
         if (!is_table) {
-          this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+          this._projections.map = ApplicationState.project.getProjection() || this._projections.layer;
         }
 
         const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
@@ -274,7 +274,7 @@ const Providers = {
       const dy   = resolution * size[1] / 2;
       const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
-      const projection = this._layer.getMapProjection() || this._layer.getProjection();
+      const projection = ApplicationState.project.getProjection() || this._layer.getProjection();
       const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
       const url    = layers[0].getQueryUrl();
@@ -381,7 +381,7 @@ const Providers = {
         MAXFEATURES:  opts.feature_count ?? 10,
         TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
         OUTPUTFORMAT: layers[0].getInfoFormat(),
-        SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
+        SRSNAME:      (opts.reproject ? layers[0].getProjection() : ApplicationState.project.getProjection()).getCode(),
         FILTER:       'all' !== filter.type ? `(${(
           new ol.format.WFS().writeGetFeature({
             featureTypes: [''], //v3.11.0 @TODO need to check https://openlayers.org/en/v5.3.0/apidoc/module-ol_format_WFS-WFS.html#writeGetFeature
@@ -417,7 +417,7 @@ const Providers = {
             const data = ResponseParser.get(layers[0].getInfoFormat())({
               response,
               projections: {
-                map:   this._layer.getMapProjection(),
+                map:   ApplicationState.project.getProjection(),
                 layer: (opts.reproject ? this._layer.getProjection() : null)
               },
               layers,
@@ -470,7 +470,7 @@ const Providers = {
             layer:    this._layer,
             features: ResponseParser.get('g3w-vector/json')(
               response.vector && response.vector.data || {},
-              { projections: { map: this._layer.getMapProjection() || this._layer.getProjection(), layer: null }})
+              { projections: { map: ApplicationState.project.getProjection() || this._layer.getProjection(), layer: null }})
               .map(f => { f.set(G3W_FID, f.getId()); return f; }) //set g3w_fid to have G3W_FID property,
           })
          } else {
@@ -504,6 +504,9 @@ class Layer extends G3WObject {
   constructor(config = {}, options = {}) {
 
     super();
+
+    /** @TODO use `this.state.geolayer` instead? (hacky way to distinguish old "geo-mixin.js" instances) */
+    this._GEOMIXIN = !!options._GEOMIXIN;
 
     //get current project object
     const project   = options.project || ApplicationState.project;
@@ -550,6 +553,10 @@ class Layer extends G3WObject {
       ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
       /** @deprecated since 3.10.0. Will be removed in v.4.x. */
       search_endpoint: 'api',
+      map_crs:      options.project?.getProjection()?.getCode(),
+      multilayerid: config.multilayer,
+      projection:   config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : Projections.get(config.crs)) : undefined,
+      attributions: config.attributions,
     });
     
 
@@ -729,14 +736,17 @@ class Layer extends G3WObject {
       infoformat:         this.getInfoFormat(),
       infoformats:        this.config.infoformats || [],
       projectLayer:       true,
-      geolayer:           false,
+      geolayer:           config.geometrytype && "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
       visible:            config.visible || false,
       tochighlightable:   false,
+
       /** state of if is in editing (setted by editing plugin) */
       inediting:          false,
+
       /** Reactive selection attribute */
       selection:          { active: false },
+
       /** Reactive filter attribute */
       filter: {
         active:     false,
@@ -745,18 +755,77 @@ class Layer extends G3WObject {
         /** @since v3.11.0 **/
         pagination: false,
       },
+
       /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
       filters:            config.filters || [],
+
       /** @type {number} since 3.8.0 */
       featurecount:       config.featurecount,
+
       /** @type { boolean | Object<number, number> } since 3.8.0 */
       stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
+
       /** @type { string } since 3.10.0 */
       name:               config.name,
+
       /** @type { boolean } since 3.10.0 */
       expanded:           config.expanded,
+
       /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
       toc:                'boolean' === typeof config.toc ? config.toc: true,
+
+      /** @since 4.0.0 */
+      legend: this._GEOMIXIN && {
+        url:     null,
+        loading: false,
+        error:   false,
+        /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
+        show:    true,
+        /** used when categories changed (checkbox on TOC) and legend is on TAB */
+        change:  false,
+      },
+
+      /** @since 4.0.0 */
+      external:             !!(this._GEOMIXIN && config.source?.external),
+
+      /** @since 4.0.0 */
+      bbox:                 config.bbox || null,
+
+      /** @since 4.0.0 */
+      visible:              !!config.visible,
+
+      /** @since 4.0.0 */
+      checked:              !!config.visible,
+
+      /** @since 4.0.0 */
+      epsg:                 config.crs.epsg,
+
+      /** @since 4.0.0 */
+      hidden:               !!config.hidden,
+
+      /** @since 4.0.0 */
+      scalebasedvisibility: !!config.scalebasedvisibility,
+
+      /** @since 4.0.0 */
+      minscale:             config.minscale,
+
+      /** @since 4.0.0 */
+      maxscale:             config.maxscale,
+
+      /** @since 4.0.0 */
+      ows_method:           config.ows_method,
+  
+      /** @type { boolean } since 4.0.0 */
+      exclude_from_legend: ('boolean' === typeof config.exclude_from_legend) ? config.exclude_from_legend : true,
+  
+      /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
+      categories: false,
+  
+      /** @type { number } legend item state (expandend or collapsed) in catalog layers (TOC) (since 3.8) */
+      expanded: config.expanded,
+  
+      /** @type {number} opacity range = [0, 100] (since 3.8) */
+      opacity: config.opacity || 100,
     };
 
     /**
@@ -876,89 +945,6 @@ class Layer extends G3WObject {
     // Features that contain
     this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
 
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * @deprecated please refactor your code in order to rely only on parent constructor instead (ie. `super()`).
-   *
-   * @since 4.0.0
-   */
-  setup(config = {}, options = {}) {
-    console.log(config, options);
-
-    if (!this.config) {
-      console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
-      return;
-    }
-
-    /** @TODO use `this.state.geolayer` instead? (hacky way to distinguish old "geo-mixin.js" instances) */
-    this._GEOMIXIN = true;
-  
-    Object.assign(this.config, {
-      map_crs:      options.project.getProjection().getCode(),
-      multilayerid: config.multilayer,
-      projection:   config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs)) : undefined,
-      attributions: config.attributions ? config.attributions : undefined,
-    });
-  
-    // state extend of layer setting geolayer property to true
-    // and adding information of bbox
-    Object.assign(this.state, {
-      geolayer:             "NoGeometry" !== config.geometrytype,
-      legend: {
-        url:     null,
-        loading: false,
-        error:   false,
-        /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
-        show:    true,
-        /** used when categories changed (checkbox on TOC) and legend is on TAB */
-        change:  false,
-      },
-      external:             config.source?.external     || false,
-      bbox:                 config.bbox                 || null,
-      visible:              config.visible              || false,
-      checked:              config.visible              || false,
-      epsg:                 config.crs.epsg,
-      hidden:               config.hidden               || false,
-      scalebasedvisibility: config.scalebasedvisibility || false,
-      minscale:             config.minscale,
-      maxscale:             config.maxscale,
-      ows_method:           config.ows_method,
-  
-      /**
-       * @type {boolean}
-       */
-      exclude_from_legend: ('boolean' === typeof config.exclude_from_legend) ? config.exclude_from_legend : true,
-  
-      /**
-       * Has more than one category's legend
-       * 
-       * @type {boolean}
-       */
-      categories: false,
-  
-      /**
-       * Toggle legend item state (expandend or collapsed) in catalog layers (TOC)
-       * 
-       * @type {number}
-       *
-       * @since v3.8
-       */
-      expanded: config.expanded,
-  
-      /**
-       * Layer opacity
-       * 
-       * @type {number} opacity range = [0, 100]
-       * 
-       * @since v3.8
-       */
-      opacity: config.opacity || 100,
-    });
-  
-  
     // sanitize source url
     if (config?.source?.url) {
       const url = new URL(this.config.source.url);
@@ -2065,7 +2051,7 @@ class Layer extends G3WObject {
 
       // vector layer
       if ('table' !== provider._layer.getType()) {
-        provider._projections.map = provider._layer.getMapProjection() || provider._projections.layer;
+        provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;
       }
 
       if (raw)                           { return response }
@@ -3059,9 +3045,7 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   hasAxisInverted() {
-    const projection      = this.getProjection();
-    const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
-    return axisOrientation.substr(0, 2) === 'ne';
+    return 'ne' === (this.getProjection().getAxisOrientation ? this.getProjection().getAxisOrientation() : "enu").substr(0, 2);
   }
 
   /**
@@ -3073,26 +3057,6 @@ class Layer extends G3WObject {
    */
   getMapLayer() {
     console.log('overwrite by single layer')
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * @param projection
-   * 
-   * @since 4.0.0
-   */
-  setMapProjection(projection) {
-    this._mapProjection = projection;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * @since 4.0.0
-   */
-  getMapProjection() {
-    return this._mapProjection;
   }
 
 }

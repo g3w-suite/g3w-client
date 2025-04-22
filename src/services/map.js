@@ -1427,9 +1427,6 @@ class MapService extends G3WObject {
     // map layers: geolayers exclude baselayers and eventually vector layers
     const layers = getMapLayersByFilter({ BASELAYER: false, VECTORLAYER: false });
 
-    // set map projection on each layer
-    layers.forEach(l => l.setMapProjection(this.getProjection()));
-
     //store incremental value for qtimesriable layer with same multilayer id
     const cache     = {};
     const mapLayers = [];
@@ -1472,7 +1469,7 @@ class MapService extends G3WObject {
     // vector layers
     const vlayers = getMapLayersByFilter({ VECTORLAYER: true });
     // set map projection on each layer
-    vlayers.forEach(l => { l.setMapProjection(this.getProjection()); this.addLayerToMap(l.getMapLayer()) })
+    vlayers.forEach(l => this.addLayerToMap(l.getMapLayer()));
 
     // set default layers order
     const map = this.getMap();
@@ -1533,7 +1530,6 @@ class MapService extends G3WObject {
    * Used by the following plugins: "cdu"
    */
   createMapLayer(layer) {
-    layer.setMapProjection(this.getProjection());
     const mapLayer = layer.getMapLayer({
       id:         `layer_${layer.getMultiLayerId()}`,
       projection:  this.getProjection()
