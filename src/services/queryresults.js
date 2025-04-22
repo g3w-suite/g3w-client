@@ -1825,7 +1825,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     const action        = query.getActionLayerById({ layer, id: 'selection' });
     const index         = (layer.features || []).findIndex(f => f == feature);
-    const toggled       = Object.values(action.state.toggled).every(toggled => toggled);
+    const toggled       = layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
