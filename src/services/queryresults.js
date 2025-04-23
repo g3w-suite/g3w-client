@@ -1891,14 +1891,16 @@ export default new (class QueryResultsService extends G3WObject {
 
     //Case of external layer and clicked on feature
     if (layer.external && feature) {
-      //get feature id
-      const id             = feature.id;
-      let selection_feature = catalog_layer.selection.features.find(f => id === f.getId())
+      let selection_feature = catalog_layer.selection.features.find(f => feature.id === f.getId())
       // create selection feature for external if not yet added
       if (!selection_feature) {
+        //create OL feature
         selection_feature = new ol.Feature(feature.geometry);
-        selection_feature.setId(id); //need to set unque id
+        //need to set unque id
+        selection_feature.setId(feature.id); 
+        //set proprieties from feature attributes
         Object.keys(feature.attributes).forEach(attr => selection_feature.set(attr, feature.attributes[attr]));
+        //add feature to selection layer features
         catalog_layer.selection.features.push(
             Object.assign(selection_feature, {
             __layerId: catalog_layer.id,
@@ -1910,6 +1912,7 @@ export default new (class QueryResultsService extends G3WObject {
       // selection based on action
       selection_feature.selection.selected = action.state.toggled[index];
 
+      //handle map selection layer adding or remove feature based on selection boolean value
       GUI.getService('map').setSelectionFeatures(
         selection_feature.selection.selected ? 'add' : 'remove',
         { feature: selection_feature }
@@ -1921,11 +1924,12 @@ export default new (class QueryResultsService extends G3WObject {
       return;
     }
 
+    //get fids (unique id) of features
     const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
 
     fids.forEach((fid, i) => {
-
-      const is_selected = !layer.external && (catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
+      //get selection value
+      const is_selected = catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid);
 
       // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
       if (!is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
@@ -1952,22 +1956,24 @@ export default new (class QueryResultsService extends G3WObject {
         catalog_layer.excludeSelectionFid(fid, false);
       }
 
-      
     });
 
     // PROJECT LAYER
     if (catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
-        const i = feature ? index : idx; // feature to remove
+        const i = feature ? index : idx; // index of feature to remove
         layer.features.splice(i, 1);
+        //delete also related action toggled element
         delete action.state.toggled[i];
+        //Reset toggled state based on features 
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
       });
     }
 
+    //remove Highlight geometry layer fetures
     GUI.getService('map').clearHighlightGeometry();
     
-    // PROJECT LAYER
+    // PROJECT LAYER - In case of single layer and no features, remove layer
     if (1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
       query.getState().layers.splice(0);
     }
