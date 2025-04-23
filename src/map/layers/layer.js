@@ -1630,40 +1630,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @param { Array }   fids
-   * @param { boolean } createToken since 3.9.0
-   * 
-   * @returns { Promise<void> }
-   */
-  async includeSelectionFids(fids = [], createToken = true) {
-    // pass false because eventually token filter creation needs to be called after
-    fids.forEach(fid => this.includeSelectionFid(fid, false));
-
-    /** @TODO add description */
-    if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
-    }
-  }
-
-  /**
-   * Exclude fids from selection
-   * 
-   * @param { Array }   fids
-   * @param { boolean } createToken since 3.9.0
-   * 
-   * @returns { Promise<void> }
-   */
-  async excludeSelectionFids(fids = [], createToken = true) {
-    //pass false because eventually token filter creation needs to be called after
-    fids.forEach(fid => this.excludeSelectionFid(fid, false));
-
-    /** @TODO add description */
-    if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
-    }
-  }
-
-  /**
    * Clear selection
    */
   async clearSelectionFids() {
@@ -2494,32 +2460,17 @@ class Layer extends G3WObject {
   }
 
   /**
-   * Return if it is possible to show table of attribute
-   *
-   * @returns {boolean}
+   * @returns { boolean } whether is possible to show attributes table 
    */
   canShowTable() {
-    if (this.config.not_show_attributes_table || this.isBaseLayer()) {
-      return false;
-    }
-
-    if (
-      "QGIS" === this.getServerType()
-      && ["postgres", "oracle", "wfs", "ogr", "mssql", "spatialite"].includes(this.config.source.type)
-      && this.isQueryable()
-    ) {
-      return this.getTableFields().length > 0;
-    }
-    
-    if ("G3WSUITE" === this.getServerType() && "geojson" === this.get('source').type) {
-      return true
-    }
-
-    if ("G3WSUITE" !== this.getServerType() && this.isFilterable()) {
-      return true;
-    }
-
-    return false;
+    return (
+      !this.config.not_show_attributes_table && !this.isBaseLayer() && 
+      (
+        (this.isQueryable() && this.getTableFields().length > 0 && ["QGIS postgres", "QGIS oracle", "QGIS wfs", "QGIS ogr", "QGIS mssql", "QGIS spatialite"].includes(`${this.getServerType()} ${this.config.source.type}`))
+        || ("G3WSUITE geojson" === `${this.getServerType()} ${this.get('source').type}`)
+        || (this.isFilterable() && "G3WSUITE" !== this.getServerType())
+      )
+    );
   }
 
   /**

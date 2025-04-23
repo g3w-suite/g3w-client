@@ -1893,9 +1893,6 @@ export default new (class QueryResultsService extends G3WObject {
 
     const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
 
-    const include_fids = []; // fids to include
-    const exclude_fids = []; // fids to exclude
-
     fids.forEach((fid, i) => {
 
       const is_selected = !layer.external && (catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
@@ -1917,12 +1914,12 @@ export default new (class QueryResultsService extends G3WObject {
   
       // add
       if (!layer.external && !feature && !toggled && !is_selected) {
-        include_fids.push(fid);
+        catalog_layer.includeSelectionFid(fid, false);
       }
   
       // remove
       if (!layer.external && !feature && toggled) {
-        exclude_fids.push(fid);
+        catalog_layer.excludeSelectionFid(fid, false);
       }
 
       // Set feature used in selection tool action
@@ -1951,12 +1948,6 @@ export default new (class QueryResultsService extends G3WObject {
       }
     });
 
-    // PROJECT LAYER
-    if (!layer.external) {
-      catalog_layer.includeSelectionFids(include_fids, false);
-      catalog_layer.excludeSelectionFids(exclude_fids, false);
-    }
-    
     // PROJECT LAYER
     if (!layer.external && catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
