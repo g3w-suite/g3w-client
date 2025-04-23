@@ -769,7 +769,7 @@ class Layer extends G3WObject {
       expanded:           config.expanded,
 
       /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
-      toc:                'boolean' === typeof config.toc ? config.toc: true,
+      toc:                config.toc ?? true,
 
       /** @since 4.0.0 */
       legend: {
@@ -810,7 +810,7 @@ class Layer extends G3WObject {
       ows_method:           config.ows_method,
   
       /** @type { boolean } since 4.0.0 */
-      exclude_from_legend: ('boolean' === typeof config.exclude_from_legend) ? config.exclude_from_legend : true,
+      exclude_from_legend: config.exclude_from_legend ?? true,
   
       /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
       categories: false,
