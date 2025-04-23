@@ -2957,6 +2957,20 @@ class Layer extends G3WObject {
     console.log('overwrite by single layer')
   }
 
+  /**
+   * @returns { boolean | *} whether request need to use `layer.id` or `layer.name`
+   */
+  isWmsUseLayerIds() {
+    return this.config.wms_use_layer_ids;
+  }
+  
+  /**
+   * @returns { string } wms layer name for wms request
+   */
+  getWMSLayerName() {
+    return this.isWmsUseLayerIds() ? this.getId() : this.getName()
+  }
+
 }
 
 /******************************************************************************************
