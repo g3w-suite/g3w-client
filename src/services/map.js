@@ -2372,7 +2372,7 @@ class MapService extends G3WObject {
     const extent   = ('vector' === type && layer.getSource().getExtent()) || [];
 
     // add id value
-    features.forEach((f, i) => f.setId(i));
+    features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`)); //set id with prefix of layer id
 
     if (features.length) {
       externalLayer.geometryType = features[0].getGeometry().getType();
