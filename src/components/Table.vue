@@ -242,7 +242,7 @@ export default {
      * @return { Boolean } In case of filter without pagination active
      */
     show_on_active_filter() {
-      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.selectionFids.has('__ALL__'));
+      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
     },
 
     /** @since 3.10.0 */
@@ -264,7 +264,7 @@ export default {
      */
     toggleFilterToken(layer) {
       //in the case of autofilter with pagination need to get features to set selection
-      if (layer.state.filter.active && !layer.selectionFids.has('__ALL__')) {
+      if (layer.state.filter.active && !layer.state.selectionFids.has('__ALL__')) {
         this.state.selectAll = false;
       }
       layer.toggleFilterToken();

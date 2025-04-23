@@ -505,21 +505,28 @@ class Layer extends G3WObject {
 
     super();
 
-    //get current project object
+    // get current project
     const project   = options.project || ApplicationState.project;
     const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
     const vectorUrl = config.baselayer ? '' : project.state.vectorurl;
     const rasterUrl = config.baselayer ? '' : project.state.rasterurl;
 
-    // assign some attributes
+    // default layer style (layerstree)
+    const defaultstyle = config.styles && config.styles.find(s => s.current).name;
 
-    this.config = Object.assign(config, {
+    /**
+     * Global state
+     * 
+     * @TODO simplify further, some propertiy names seems to be duplicated
+     * 
+     */
+    this.config = this.state = Object.assign(config, {
       id:        config.id || 'Layer',
       title:     config.title || config.name,
       download:  !!config.download,
-      geolayer:  false,
       baselayer: !!config.baselayer,
       fields:    config.fields || {},
+
       // URLs to get various type of data
       urls:      {
         query: config.infourl || config.wmsUrl,
@@ -546,14 +553,120 @@ class Layer extends G3WObject {
             pdf:         `/html2pdf/`,
           })
       },
+
       /** Custom parameters based on a project qgis version */
       ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
+
       /** @deprecated since 3.10.0. Will be removed in v.4.x. */
       search_endpoint: 'api',
-      map_crs:      options.project?.getProjection()?.getCode(),
-      multilayerid: config.multilayer,
-      projection:   config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : Projections.get(config.crs)) : undefined,
-      attributions: config.attributions,
+
+      map_crs:            options.project?.getProjection()?.getCode(),
+      multilayerid:       config.multilayer,
+      projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : Projections.get(config.crs)) : undefined,
+      attributions:       config.attributions,
+      selected:           config.selected || false,
+      disabled:           config.disabled || false,
+      metadata:           config.metadata,
+      removable:          config.removable || false,
+      source:             config.source,
+      styles:             config.styles,
+      defaultstyle,
+      infoformats:        config.infoformats || [],
+      projectLayer:       true,
+      geolayer:           "NoGeometry" !== config.geometrytype,
+      attributetable:     { pageLength: null },
+      visible:            !!config.visible,
+      tochighlightable:   false,
+
+      /** state of if is in editing (setted by editing plugin) */
+      inediting:          false,
+
+      /** Reactive selection attribute */
+      selection:          { active: false },
+
+      /** Open layer features (key = fid, value = feature object) */
+      ol_selection: {},
+
+      /** selections feature `fids` */
+      selectionFids: new Set(),
+
+      /** Reactive filter attribute */
+      filter: {
+        active:     false,
+        /** @since 3.9.0 whether filter is set from a previously saved filter */
+        current:    null,
+        /** @since v3.11.0 **/
+        pagination: false,
+      },
+
+      /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
+      filters:            config.filters || [],
+
+      /** @type {number} since 3.8.0 */
+      featurecount:       config.featurecount,
+
+      /** @type { boolean | Object<number, number> } since 3.8.0 */
+      stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
+
+      /** @type { string } since 3.10.0 */
+      name:               config.name,
+
+      /** @type { number } legend item state (expandend or collapsed) in catalog layers (TOC) (since 3.10.0) */
+      expanded:           config.expanded,
+
+      /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
+      toc:                config.toc ?? true,
+
+      /** @since 4.0.0 */
+      legend: {
+        url:     null,
+        loading: false,
+        error:   false,
+        /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
+        show:    true,
+        /** used when categories changed (checkbox on TOC) and legend is on TAB */
+        change:  false,
+        categories: {},
+      },
+
+      /** @type { boolean } since 4.0.0 */
+      exclude_from_legend: config.exclude_from_legend ?? true,
+
+      /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
+      categories: false,
+
+      /** @since 4.0.0 */
+      external:             config.source && config.source.external,
+
+      /** @since 4.0.0 */
+      bbox:                 config.bbox,
+
+      /** @since 4.0.0 */
+      checked:              !!config.visible,
+
+      /** @since 4.0.0 */
+      epsg:                 config.crs.epsg,
+
+      /** @since 4.0.0 */
+      hidden:               !!config.hidden,
+
+      /** @since 4.0.0 */
+      scalebasedvisibility: !!config.scalebasedvisibility,
+
+      /** @since 4.0.0 */
+      minscale:             config.minscale,
+
+      /** @since 4.0.0 */
+      maxscale:             config.maxscale,
+
+      /** @since 4.0.0 */
+      ows_method:           config.ows_method,
+   
+      /** @type {number} opacity range = [0, 100] (since 3.8) */
+      opacity: config.opacity || 100,
+
+      /** cached proxy params (eg. external wms server) */
+      proxyData: { wms: null },
     });
     
 
@@ -712,117 +825,11 @@ class Layer extends G3WObject {
 
     this._relations._reloadRelationsInfo();
 
-    // dinamic layer values useful for layerstree
-    const defaultstyle = config.styles && config.styles.find(s => s.current).name;
-
-    /**
-     * @TODO make it simpler, `this.config` and `this.state` are essentially duplicated data
-     */
-    this.state = {
-      id:                 config.id,
-      title:              config.title,
-      selected:           config.selected || false,
-      disabled:           config.disabled || false,
-      metadata:           config.metadata,
+    Object.assign(this.config, {
       openattributetable: this.canShowTable(),
-      removable:          config.removable || false,
       downloadable:       this.isDownloadable(),
-      source:             config.source,
-      styles:             config.styles,
-      defaultstyle,
       infoformat:         this.getInfoFormat(),
-      infoformats:        this.config.infoformats || [],
-      projectLayer:       true,
-      geolayer:           "NoGeometry" !== config.geometrytype,
-      attributetable:     { pageLength: null },
-      visible:            !!config.visible,
-      tochighlightable:   false,
-
-      /** state of if is in editing (setted by editing plugin) */
-      inediting:          false,
-
-      /** Reactive selection attribute */
-      selection:          { active: false },
-
-      /** Reactive filter attribute */
-      filter: {
-        active:     false,
-        /** @since 3.9.0 whether filter is set from a previously saved filter */
-        current:    null,
-        /** @since v3.11.0 **/
-        pagination: false,
-      },
-
-      /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
-      filters:            config.filters || [],
-
-      /** @type {number} since 3.8.0 */
-      featurecount:       config.featurecount,
-
-      /** @type { boolean | Object<number, number> } since 3.8.0 */
-      stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
-
-      /** @type { string } since 3.10.0 */
-      name:               config.name,
-
-      /** @type { number } legend item state (expandend or collapsed) in catalog layers (TOC) (since 3.10.0) */
-      expanded:           config.expanded,
-
-      /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
-      toc:                config.toc ?? true,
-
-      /** @since 4.0.0 */
-      legend: {
-        url:     null,
-        loading: false,
-        error:   false,
-        /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
-        show:    true,
-        /** used when categories changed (checkbox on TOC) and legend is on TAB */
-        change:  false,
-      },
-
-      /** @since 4.0.0 */
-      external:             config.source && config.source.external,
-
-      /** @since 4.0.0 */
-      bbox:                 config.bbox,
-
-      /** @since 4.0.0 */
-      checked:              !!config.visible,
-
-      /** @since 4.0.0 */
-      epsg:                 config.crs.epsg,
-
-      /** @since 4.0.0 */
-      hidden:               !!config.hidden,
-
-      /** @since 4.0.0 */
-      scalebasedvisibility: !!config.scalebasedvisibility,
-
-      /** @since 4.0.0 */
-      minscale:             config.minscale,
-
-      /** @since 4.0.0 */
-      maxscale:             config.maxscale,
-
-      /** @since 4.0.0 */
-      ows_method:           config.ows_method,
-  
-      /** @type { boolean } since 4.0.0 */
-      exclude_from_legend: config.exclude_from_legend ?? true,
-  
-      /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
-      categories: false,
-    
-      /** @type {number} opacity range = [0, 100] (since 3.8) */
-      opacity: config.opacity || 100,
-    };
-
-    /**
-     * Store all selections feature `fids`
-     */
-    this.selectionFids = new Set();
+    });
 
     // referred to (layersstore);
     this._layersstore = config.layersstore || null;
@@ -923,18 +930,6 @@ class Layer extends G3WObject {
       ].includes(layerType) && createProvider('qgis', this),
 
     };
-
-    /**
-     * Store last proxy params (useful for repeat request info formats for wms external layer)
-     */
-    this.proxyData = {
-      wms: null // at the moment only wms data from server
-    };
-
-    this.legendCategories = {};
-
-    // Features that contain
-    this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
 
     // sanitize source url (ie. discard any reserved WMS params)
     if (config?.source?.url) {
@@ -1202,7 +1197,7 @@ class Layer extends G3WObject {
       GUI.getService('map').toggleSelection(false, this.state.id); // hide selection features (open layers)
     }
     if (this.isGeoLayer() && !this.state.filter.active) {
-      this.#updateMapOlSelectionFeatures(); // update selection features (open layers)
+      this.#updateOlSelection(); // update selection features (open layers)
     }
   }
 
@@ -1254,7 +1249,7 @@ class Layer extends G3WObject {
   saveFilter() {
 
     // skip when ..
-    if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
+    if (!this.providers['filtertoken'] || !this.state.selectionFids.size > 0) {
       return;
     }
 
@@ -1288,12 +1283,12 @@ class Layer extends G3WObject {
         this.state.filter.current = filter; // set current filter
         this.setFilter(false);              // set to false
         this.getSelection().active = false; // reset selection to false
-        this.selectionFids.clear();         // clear current fids
+        this.state.selectionFids.clear();   // clear current fids
 
         // remove selection feature from map
         if (this.isGeoLayer()) {
           Object
-            .values(this.olSelectionFeatures)
+            .values(this.state.ol_selection)
             .forEach(feat => {
               //remove selection feature
               if (feat.added) {
@@ -1406,7 +1401,7 @@ class Layer extends G3WObject {
     try {
 
       const provider  = this.providers['filtertoken'];
-      const selection = this.selectionFids;
+      const selection = this.state.selectionFids;
 
       // skip when no filter token provider is set or selectionFids is empty
       if (!provider || !selection.size > 0) {
@@ -1459,13 +1454,13 @@ class Layer extends G3WObject {
    * @TODO add description
    */
   setSelectionFidsAll() {
-    this.selectionFids.clear();
-    this.selectionFids.add(SELECTION.ALL);
+    this.state.selectionFids.clear();
+    this.state.selectionFids.add(SELECTION.ALL);
 
     // select all features (open layers)
     if (this.isGeoLayer()) {
-      Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = true);
-      this.#updateMapOlSelectionFeatures();
+      Object.values(this.state.ol_selection).forEach(feat => feat.selected = true);
+      this.#updateOlSelection();
     }
 
     /** @TODO add description */
@@ -1479,14 +1474,14 @@ class Layer extends G3WObject {
    * @returns {Set<any>} stored selection `fids` 
    */
   getSelectionFids() {
-    return this.selectionFids;
+    return this.state.selectionFids;
   }
 
   /**
    * Invert current selection fids
    */
   invertSelectionFids() {
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     /** @TODO add description */
     if (selection.has(SELECTION.EXCLUDE))  { selection.delete(SELECTION.EXCLUDE); }
@@ -1497,7 +1492,7 @@ class Layer extends G3WObject {
     if (this.isGeoLayer()) {
       const map = GUI.getService('map');
       Object
-        .values(this.olSelectionFeatures)
+        .values(this.state.ol_selection)
         .forEach(f => {
           f.selected = !f.selected;
           if (f.selected !== f.added) {
@@ -1521,7 +1516,7 @@ class Layer extends G3WObject {
    * @returns {boolean}
    */
   hasSelectionFid(fid) {
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     /** In case contain selection ALL, mean all features selected */
     if (selection.has(SELECTION.ALL)) { return true }
@@ -1544,7 +1539,7 @@ class Layer extends G3WObject {
    */
   async includeSelectionFid(fid, createToken = true) {
 
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     // whether fid is excluded from selection
     const is_excluded = selection.has(SELECTION.EXCLUDE) && selection.has(fid);
@@ -1562,10 +1557,10 @@ class Layer extends G3WObject {
     if (!is_excluded && !this.isSelectionActive()) { this.setSelection(true) }
 
     // update selection (state)
-    if (this.isGeoLayer() && this.olSelectionFeatures[fid]?.feature) {
-      this.olSelectionFeatures[fid].selected          = !is_excluded;
-      this.olSelectionFeatures[fid].feature.__layerId = (!is_excluded && !this.olSelectionFeatures[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
-      this.#updateMapOlSelectionFeatures();
+    if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
+      this.state.ol_selection[fid].selected          = !is_excluded;
+      this.state.ol_selection[fid].feature.__layerId = (!is_excluded && !this.state.ol_selection[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+      this.#updateOlSelection();
     }
 
     /** @TODO add description */
@@ -1585,7 +1580,7 @@ class Layer extends G3WObject {
    */
   async excludeSelectionFid(fid, createToken = true) {
 
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     /**In case all features are selected or no features are selected */
     if (selection.has(SELECTION.ALL) || 0 === selection.size) {
@@ -1618,10 +1613,10 @@ class Layer extends G3WObject {
     const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
 
     // update selection (state)
-    if (this.isGeoLayer() && this.olSelectionFeatures[fid]?.feature) {
-      this.olSelectionFeatures[fid].selected          = !is_excluded;
-      this.olSelectionFeatures[fid].feature.__layerId = (!is_excluded && !this.olSelectionFeatures[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
-      this.#updateMapOlSelectionFeatures();
+    if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
+      this.state.ol_selection[fid].selected          = !is_excluded;
+      this.state.ol_selection[fid].feature.__layerId = (!is_excluded && !this.state.ol_selection[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+      this.#updateOlSelection();
     }
 
     /** If there is a filterActive */
@@ -1669,11 +1664,11 @@ class Layer extends G3WObject {
    * Clear selection
    */
   async clearSelectionFids() {
-    this.selectionFids.clear();
+    this.state.selectionFids.clear();
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
-      Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = false);
-      this.#updateMapOlSelectionFeatures();
+      Object.values(this.state.ol_selection).forEach(feat => feat.selected = false);
+      this.#updateOlSelection();
     }
     // set selection false
     await this.setSelection(false);
@@ -1687,7 +1682,7 @@ class Layer extends G3WObject {
    * Proxy params data
    */
   getProxyData(type) {
-    return type ? this.proxyData[type] : this.proxyData;
+    return type ? this.state.proxyData[type] : this.state.proxyData;
   }
 
   /**
@@ -1697,7 +1692,7 @@ class Layer extends G3WObject {
    * @param data
    */
   setProxyData(type, data = {}) {
-    this.proxyData[type] = data;
+    this.state.proxyData[type] = data;
   }
 
   /**
@@ -1706,7 +1701,7 @@ class Layer extends G3WObject {
    * @param type
    */
   clearProxyData(type) {
-    this.proxyData[type] = null;
+    this.state.proxyData[type] = null;
   }
 
   /**
@@ -1741,10 +1736,10 @@ class Layer extends G3WObject {
   changeProxyDataAndReloadFromServer(type = 'wms', changes = {}) {
     Object.keys(changes).forEach(c => {
       Object.keys(changes[c]).forEach(p => {
-        this.proxyData[type][c][p] = changes[c][p];
+        this.state.proxyData[type][c][p] = changes[c][p];
       })
     });
-    return this.getDataProxyFromServer(type, this.proxyData[type]);
+    return this.getDataProxyFromServer(type, this.state.proxyData[type]);
   }
 
   /**
@@ -2661,7 +2656,7 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   setCategories(categories = []) {
-    this.legendCategories[this.getCurrentStyle().name] = categories;
+    this.state.legend.categories[this.getCurrentStyle().name] = categories;
     //set categories state attribute to true only if exist at least a rule key
     this.state.categories = (categories || []).filter(category => category.ruleKey).length > 0;
   }
@@ -2676,7 +2671,7 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   getCategories() {
-    return this.legendCategories[this.getCurrentStyle().name];
+    return this.state.legend.categories[this.getCurrentStyle().name];
   }
 
   /**
@@ -2687,7 +2682,7 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   clearCategories() {
-    this.legendCategories = {};
+    this.state.legend.categories = {};
     this.state.categories = false;
   }
 
@@ -2701,7 +2696,7 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   getOlSelectionFeature(id) {
-    return this.olSelectionFeatures[id];
+    return this.state.ol_selection[id];
   }
 
   /**
@@ -2714,12 +2709,12 @@ class Layer extends G3WObject {
     const feature = new ol.Feature(feat.geometry);
     feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
     Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
-    this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
+    this.state.ol_selection[id] = this.state.ol_selection[id] || {
       feature,
       added:    false,
       selected: false, /** @since 3.9.9 */
     };
-    return this.olSelectionFeatures[id];
+    return this.state.ol_selection[id];
   }
 
   /**
@@ -2729,11 +2724,11 @@ class Layer extends G3WObject {
    *
    * @since 4.0.0
    */
-  #updateMapOlSelectionFeatures() {
+  #updateOlSelection() {
     const map = GUI.getService('map');
     // Loop `added` features (selected)
     Object
-      .values(this.olSelectionFeatures)
+      .values(this.state.ol_selection)
       .forEach(f => {
         if (f.selected !== f.added) {
           map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
@@ -2742,7 +2737,7 @@ class Layer extends G3WObject {
       });
     // Ensures selection layer is always visible on map
     map.toggleSelection(
-      !this.state.filter.active && Object.values(this.olSelectionFeatures).some(f => f.selected),
+      !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected),
       this.state.id
     );
   }
@@ -2980,15 +2975,6 @@ class Layer extends G3WObject {
    *
    * @since 4.0.0
    */
-  getMapCrs() {
-    return this.config.map_crs;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * @since 4.0.0
-   */
   isCached() {
     return this.config.cache_url && '' !== this.config.cache_url;
   }
@@ -3006,17 +2992,6 @@ class Layer extends G3WObject {
     if (this.isCached()) {
       return `${this.config.cache_url}/{z}/{x}/{y}.png`;
     }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   * 
-   * @returns whether layer has inverted axis
-   * 
-   * @since 4.0.0
-   */
-  hasAxisInverted() {
-    return 'ne' === (this.getProjection().getAxisOrientation ? this.getProjection().getAxisOrientation() : "enu").substr(0, 2);
   }
 
   /**

@@ -1883,11 +1883,11 @@ class MapService extends G3WObject {
    * @since 3.11.0
    */
   toggleSelection(visible = true, layerId) {
+    const selection = this.defaultsLayers.selectionLayer;
     //take in account that of layer id is specified, need to set only
     // features related to layer visible or not
     if (layerId) {
-      this.defaultsLayers
-        .selectionLayer.getSource()
+      selection.getSource()
         .getFeatures()
         .filter(f => layerId === f.__layerId)
         .forEach(f => f.setStyle(visible ? createSelectedStyle({
@@ -1896,7 +1896,7 @@ class MapService extends G3WObject {
           fill:         true
         }): new ol.style.Style(null)))
     } else {
-      this.defaultsLayers.selectionLayer.setVisible(visible);
+      selection.setVisible(visible);
     }
   }
 

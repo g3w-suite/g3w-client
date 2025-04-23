@@ -1850,9 +1850,7 @@ export default new (class QueryResultsService extends G3WObject {
     }
 
     // ensure "layer.selection.features" is defined
-    if (layer.external && undefined === layer.selection.features) {
-      layer.selection.features = [];
-    }
+    layer.selection.features = layer.selection.features || [];
 
     if (layer.external && !feature) {
 
