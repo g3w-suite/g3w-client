@@ -679,11 +679,7 @@ class ImageLayer extends Layer {
   }
 
   getWFSLayerName() {
-    return (
-      (this.config.infolayer && '' !== this.config.infolayer)
-        ? this.config.infolayer
-        : this.getName()
-    ).replace(/\s/g, '_').replaceAll( ':', '-' );
+    return (this.config.infolayer || this.getName()).replace(/\s/g, '_').replaceAll( ':', '-' );
   }
 
   useProxy() {
