@@ -243,6 +243,7 @@ export default class InteractionControl extends ol.control.Control {
 
     // create tool
     if (toggledTool) {
+      console.warn('[G3W-CLIENT] this.toggledTool is deprecated');
       this.createControlTool(toggledTool);
     }
 
