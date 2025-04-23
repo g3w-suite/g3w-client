@@ -651,6 +651,11 @@ class ImageLayer extends Layer {
     );
   }
 
+  /**
+   * Overwrite method from Layer. Specific to WMS layers
+   * @param {*} param0 
+   * @returns 
+   */
   getWMSLayerName({ type = 'map' } = {}) {
     const { source }   = this.config || ({ source: {} });
     const source_layer = source.layers || source.layer;
