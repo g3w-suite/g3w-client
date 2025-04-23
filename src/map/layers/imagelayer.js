@@ -637,12 +637,6 @@ class ImageLayer extends Layer {
     return this.isExternalWMS() && "arcgismapserver" === this.config.source.type;
   }
 
-  _getBaseLayerName() {
-    return this.isWmsUseLayerIds()
-      ? this.getId()
-      : this.getName();
-  }
-
   /**
    * @since 3.9.0
    */
@@ -666,7 +660,7 @@ class ImageLayer extends Layer {
       return source_layer;
     }
 
-    return this._getBaseLayerName();
+    return this.config.wms_use_layer_ids ? this.getId() : this.getName();
   }
 
   /**
@@ -699,13 +693,11 @@ class ImageLayer extends Layer {
   getWMSInfoLayerName() {
     return this.useProxy()
       ? this.getSource().layers
-      : this._getBaseLayerName();
+      : (this.config.wms_use_layer_ids ? this.getId() : this.getName());
   }
 
   getPrintLayerName() {
-    return this.isWmsUseLayerIds()
-      ? this.getId()
-      : this.getName();
+    return this.config.wms_use_layer_ids ? this.getId() : this.getName();
   }
 
   isWfsActive() {

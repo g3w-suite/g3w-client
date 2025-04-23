@@ -90,7 +90,7 @@ export class VectorLayer extends TableLayer {
   
     if (!olStyle && isPolygonGeometryType(this.getGeometryType())) {
       olStyle =  new ol.style.Style({
-        stroke: new ol.style.Stroke({ color: '#000000', width: 1 }),
+        stroke: new ol.style.Stroke({ color: '#000', width: 1 }),
         fill:   new ol.style.Fill({ color: this.getColor() }),
       });
       this._mapLayer._olLayer.setOpacity(0.6);

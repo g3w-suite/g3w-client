@@ -1801,20 +1801,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @returns { string } wms layer name for wms request
-   */
-  getWMSLayerName() {
-    return this.isWmsUseLayerIds() ? this.getId() : this.getName()
-  }
-
-  /**
-   * @returns { boolean | *} whether request need to use `layer.id` or `layer.name`
-   */
-  isWmsUseLayerIds() {
-    return this.config.wms_use_layer_ids;
-  }
-
-  /**
    * @returns {*|null} source type of layer
    */
   getSourceType() {
@@ -2386,7 +2372,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getQueryLayerOrigName() {
-    return this.state.infolayer && '' !== this.config.infolayer ? this.config.infolayer :  this.config.origname;
+    return this.config?.infolayer || this.config.origname;
   }
 
   /**
