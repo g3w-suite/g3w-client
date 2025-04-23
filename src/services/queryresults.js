@@ -30,7 +30,6 @@ import { getCatalogLayerById }                  from 'utils/getCatalogLayerById'
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
 import { t }                                    from 'g3w-i18n';
-import se from 'locales/se';
 
 function _setRelationField(node) {
   if (node.nodes) {
@@ -1839,7 +1838,6 @@ export default new (class QueryResultsService extends G3WObject {
       if (!feature) {
         action.state.toggled[i] = !toggled;
       } else if (i === index) {
-        console.log(i)
         action.state.toggled[i] = !action.state.toggled[i];
       }
       f.selection.selected = action.state.toggled[i];
