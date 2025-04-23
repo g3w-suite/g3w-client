@@ -1821,10 +1821,10 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 4.0.0
    */
   async toggleSelection(layer, feature) {
-    const query = GUI.getService('queryresults');
-
-    const action        = query.getActionLayerById({ layer, id: 'selection' });
-    const index         = (layer.features || []).findIndex(f => f == feature);
+    
+    const query         = GUI.getService('queryresults'); //get query service
+    const action        = query.getActionLayerById({ layer, id: 'selection' }); //get selction action
+    const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
@@ -1852,83 +1852,71 @@ export default new (class QueryResultsService extends G3WObject {
     // ensure "layer.selection.features" is defined
     layer.selection.features = layer.selection.features || [];
 
+    //Case of external layer and cliecked on selection aat layer lavel, no feature is passed
     if (layer.external && !feature) {
 
+      //set selection to all features
       layer.selection.active = !toggled;
       
+      //Loop through all features
       layer.features.forEach(feature => {
-        //feature unique id
+        //get feature unique id
         const id = feature.id;
-
-        feature.selection.selected = layer.selection.active;   
         //check if already selected feature is add
-        let selected_feature = layer.selection.features.find(f => id === f.getId());
-
-        //if found add/remove from map
-        if (selected_feature) {
-          GUI.getService('map').setSelectionFeatures(
-            layer.selection.active ? 'add' : 'remove',
-            { feature: selected_feature }
-          );
-        }
-
+        let selected_feature       = layer.selection.features.find(f => id === f.getId());
         //If not yet added
         if (!selected_feature) {
           //create new feature
-          const feat = new ol.Feature(feature.geometry);
-          feat.setId(id);
-          Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+          selected_feature = new ol.Feature(feature.geometry);
+          selected_feature.setId(id);
+          Object.keys(feature.attributes).forEach(attr => selected_feature.set(attr, feature.attributes[attr]));
           layer.selection.features.push(
-            Object.assign(feat, {
+            Object.assign(selected_feature, {
             __layerId: layer.id,
             selection: { selected: layer.selection.active },
           }));
-
-          GUI.getService('map').setSelectionFeatures(
-            layer.selection.active ? 'add' : 'remove',
-            { feature: feat }
-          );
         }
+        //set current selection selected attribute  
+        selected_feature.selection.selected = layer.selection.active;
+        //add remove selection feature
+        GUI.getService('map').setSelectionFeatures(
+          layer.selection.active ? 'add' : 'remove',
+          { feature: selected_feature }
+        );
 
-        if(selected_feature) {
-          selected_feature.selection.selected = layer.selection.active;
-        }
       });
     
       return;
     }
 
+    //Case of external layer and clicked on feature
     if (layer.external && feature) {
       //get feature id
-      const id    = feature.id;
-      //get index of action based on feature
-      const index = catalog_layer.features.findIndex(f => f.id === id);
+      const id             = feature.id;
+      let selection_feature = catalog_layer.selection.features.find(f => id === f.getId())
       // create selection feature for external if not yet added
-      if (!catalog_layer.selection.features.find(f => id === f.getId())) {
-        const feat = new ol.Feature(feature.geometry);
-        feat.setId(id); //need to set unque id
-        Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+      if (!selection_feature) {
+        selection_feature = new ol.Feature(feature.geometry);
+        selection_feature.setId(id); //need to set unque id
+        Object.keys(feature.attributes).forEach(attr => selection_feature.set(attr, feature.attributes[attr]));
         catalog_layer.selection.features.push(
-            Object.assign(feat, {
+            Object.assign(selection_feature, {
             __layerId: catalog_layer.id,
             selection: { selected: true }, //set default true because if not set means that is clicked on selection
           })
         );
       }
-      // get selection feature
-      const f = catalog_layer.selection.features.find(f => id === f.getId());
+      
       // selection based on action
-      f.selection.selected = action.state.toggled[index];
+      selection_feature.selection.selected = action.state.toggled[index];
 
       GUI.getService('map').setSelectionFeatures(
-        f.selection.selected ? 'add' : 'remove',
-        { feature: f }
+        selection_feature.selection.selected ? 'add' : 'remove',
+        { feature: selection_feature }
       );
 
       // set selection property (external layer)
-      if (layer.external) {
-        catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
-      }
+      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
       
       return;
     }
