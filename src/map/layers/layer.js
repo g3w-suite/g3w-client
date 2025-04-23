@@ -2730,13 +2730,11 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   setVisible(bool) {
-    //get current visibility
     const visible  = this.state.visible;
-    // set visibility bool and is checked
     this.state.visible = bool && this.isChecked();
-    //Check if change the visibility
+    // emit 'change' event
     if (visible !== this.state.visible) {
-      this.change();
+      this.change?.();
     }
     return this.state.visible;
   }
