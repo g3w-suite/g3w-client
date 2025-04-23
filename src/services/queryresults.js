@@ -30,6 +30,7 @@ import { getCatalogLayerById }                  from 'utils/getCatalogLayerById'
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
 import { t }                                    from 'g3w-i18n';
+import se from 'locales/se';
 
 function _setRelationField(node) {
   if (node.nodes) {
@@ -1838,6 +1839,7 @@ export default new (class QueryResultsService extends G3WObject {
       if (!feature) {
         action.state.toggled[i] = !toggled;
       } else if (i === index) {
+        console.log(i)
         action.state.toggled[i] = !action.state.toggled[i];
       }
       f.selection.selected = action.state.toggled[i];
@@ -1857,9 +1859,12 @@ export default new (class QueryResultsService extends G3WObject {
       layer.selection.active = !toggled;
       
       layer.features.forEach(feature => {
+        //feature unique id
+        const id = feature.id;
+
         feature.selection.selected = layer.selection.active;   
         //check if already selected feature is add
-        let selected_feature = layer.selection.features.find(f => feature.id === f.getId());
+        let selected_feature = layer.selection.features.find(f => id === f.getId());
 
         //if found add/remove from map
         if (selected_feature) {
@@ -1873,12 +1878,12 @@ export default new (class QueryResultsService extends G3WObject {
         if (!selected_feature) {
           //create new feature
           const feat = new ol.Feature(feature.geometry);
-          feat.setId(feature.id);
+          feat.setId(id);
           Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
           layer.selection.features.push(
             Object.assign(feat, {
             __layerId: layer.id,
-            selection: layer.selection.active,
+            selection: { selected: layer.selection.active },
           }));
 
           GUI.getService('map').setSelectionFeatures(
@@ -1886,8 +1891,47 @@ export default new (class QueryResultsService extends G3WObject {
             { feature: feat }
           );
         }
+
+        if(selected_feature) {
+          selected_feature.selection.selected = layer.selection.active;
+        }
       });
     
+      return;
+    }
+
+    if (layer.external && feature) {
+      //get feature id
+      const id    = feature.id;
+      //get index of action based on feature
+      const index = catalog_layer.features.findIndex(f => f.id === id);
+      // create selection feature for external if not yet added
+      if (!catalog_layer.selection.features.find(f => id === f.getId())) {
+        const feat = new ol.Feature(feature.geometry);
+        feat.setId(id); //need to set unque id
+        Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+        catalog_layer.selection.features.push(
+            Object.assign(feat, {
+            __layerId: catalog_layer.id,
+            selection: { selected: true }, //set default true because if not set means that is clicked on selection
+          })
+        );
+      }
+      // get selection feature
+      const f = catalog_layer.selection.features.find(f => id === f.getId());
+      // selection based on action
+      f.selection.selected = action.state.toggled[index];
+
+      GUI.getService('map').setSelectionFeatures(
+        f.selection.selected ? 'add' : 'remove',
+        { feature: f }
+      );
+
+      // set selection property (external layer)
+      if (layer.external) {
+        catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
+      }
+      
       return;
     }
 
@@ -1898,58 +1942,35 @@ export default new (class QueryResultsService extends G3WObject {
       const is_selected = !layer.external && (catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
 
       // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
-      if (!layer.external && !is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
+      if (!is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
         catalog_layer.addOlSelectionFeature({ id: fid, feature: features[i] });
       }
     
       // exclude
-      if (!layer.external && feature && is_selected) {
+      if (feature && is_selected) {
         catalog_layer.excludeSelectionFid(fid);
       }
 
       // include
-      if (!layer.external && feature && !is_selected) {
+      if (feature && !is_selected) {
         catalog_layer.includeSelectionFid(fid);
       }
   
       // add
-      if (!layer.external && !feature && !toggled && !is_selected) {
+      if (!feature && !toggled && !is_selected) {
         catalog_layer.includeSelectionFid(fid, false);
       }
   
       // remove
-      if (!layer.external && !feature && toggled) {
+      if (!feature && toggled) {
         catalog_layer.excludeSelectionFid(fid, false);
       }
 
-      // Set feature used in selection tool action
-      if (layer.external && !catalog_layer.selection.features.some(f => f.getId() === fid)) {
-        let feat = features[i];
-        if (features[i].geometry) {
-          feat = new ol.Feature(features[i].geometry);
-          feat.setId(fid);
-        }
-        Object.keys(features[i].attributes).forEach(attr => feat.set(attr, features[i].attributes[attr]));
-        catalog_layer.selection.features.push(
-            Object.assign(feat, {
-            __layerId: catalog_layer.id,
-            selection: features[i].selection,
-          })
-        );
-      }
-
-      //check if feature is already select or feature is already removed (no selected)
-      // add external layer selection (on map)
-      if (layer.external && !((!feature && !toggled && features[i].selection.selected) || (!feature && toggled && !features[i].selection.selected))) {
-        GUI.getService('map').setSelectionFeatures(
-          features[i].selection.selected ? 'add' : 'remove',
-          { feature: catalog_layer.selection.features.find(f => fid === f.getId()) }
-        );
-      }
+      
     });
 
     // PROJECT LAYER
-    if (!layer.external && catalog_layer.state.filter.active) {
+    if (catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
         const i = feature ? index : idx; // feature to remove
         layer.features.splice(i, 1);
@@ -1958,19 +1979,11 @@ export default new (class QueryResultsService extends G3WObject {
       });
     }
 
+    GUI.getService('map').clearHighlightGeometry();
+    
     // PROJECT LAYER
-    if (!layer.external) {
-      GUI.getService('map').clearHighlightGeometry();
-    }
-
-    // PROJECT LAYER
-    if (!layer.external && 1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
+    if (1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
       query.getState().layers.splice(0);
-    }
-
-    // set selection property (external layer)
-    if (layer.external) {
-      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
     }
 
   }
