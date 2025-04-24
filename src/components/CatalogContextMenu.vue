@@ -992,12 +992,15 @@
         }
 
       },
+
       /**
-       * @since 3.11.7
        * Check if layer has relation with download format activated
+       * 
+       * @since 3.11.7
        */
        hasDowloadableRelations() {
-        return getCatalogLayerById(this.layer.id).hasDowloadableRelations();
+        const layer = getCatalogLayerById(this.layer.id);
+        return layer && layer.hasDowloadableRelations();
       }
 
     },
