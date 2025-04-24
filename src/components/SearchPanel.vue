@@ -249,7 +249,7 @@
       * @since 3.11.0
       */
       clearFilters() {
-        this.filterlayers.forEach(l => l.getFilterToken() && l.deleteFilterToken());
+        this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
       },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
