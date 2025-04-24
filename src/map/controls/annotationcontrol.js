@@ -133,7 +133,7 @@ export class AnnotationControl extends InteractionControl {
                     type                      = "radio"
                     :value                    = "shape"
                     v-model                   = "type"
-                    @click                    = "type = type === shape ? null : shape;"
+                    @click                    = "type = (type === shape && shape);"
                     :class                    = "[type === shape && 'skin-background-color']"
                     :style                    = "{
                       appearance: 'none',
