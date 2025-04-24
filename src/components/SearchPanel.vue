@@ -190,6 +190,7 @@
     SEARCH_ALLVALUE,
   }                                            from 'g3w-constants';
   import ApplicationState                      from 'store/application';
+  import GUI                                   from 'services/gui';    
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
@@ -250,6 +251,8 @@
       */
       clearFilters() {
         this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
+        //@since 4.0.0 close content
+        GUI.closeContent();
       },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
