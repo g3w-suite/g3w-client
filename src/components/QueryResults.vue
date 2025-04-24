@@ -53,7 +53,8 @@
                   </span>
                   {{ layer.title }}
                   <template v-show = "!layer.rawdata">
-                    <span v-if = "state.query.pagination"
+                    <span 
+                      v-if   = "state.query.pagination && state.query.pagination.counts[index] > layer.features.length"
                       class  = "query-layer-feature-count"
                     >({{ layer.features.length + ((state.query.pagination.current[index] - 1) * getCurrentPagSize(index))}} - {{ state.query.pagination.counts[index] }})
                     </span>
