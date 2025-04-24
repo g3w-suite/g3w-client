@@ -105,7 +105,7 @@ export class AnnotationControl extends InteractionControl {
     this._interactions.modify.on('modifystart', this.#onModifyStart.bind(this));
     this._interactions.modify.on('modifyend',   this.#onModifyEnd.bind(this));
 
-    const self = this;
+    const CONTROL = this;
 
     // toolbox (interactions)
     this.on('toggled', ({ toggled }) => {
@@ -148,19 +148,19 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
                 <!-- SHAPES ACTIONS -->
-                <div v-if = "feature || (null === type && ids.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
+                <div v-if = "feature || (!type && ids.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
                   <button :class = "$fa('list')"     @click = "showAll"  style = "background:none; border: none;" :hidden = "!feature || !ids.length"></button>
                   <button :class = "$fa('download')" @click = "download" style = "background:none; border: none;"></button>
                   <button :class = "$fa('trash')"    @click = "remove"   style = "background:none; border: none;"></button>
                 </div>
 
                 <!-- SHAPES SAVED -->
-                <div v-if   = "null === feature && null === type && ids.length > 0">
+                <div v-if   = "!feature && !type && ids.length > 0">
                   <button 
-                    v-for       = "item in ids" :key = "item.id" 
-                    @click.stop = "editFeature(item.id)"
-                    class       = "btn"
-                    style       = "width: 100%; margin: 3px; border: solid 1px #ccc"
+                    v-for  = "item in ids"
+                    :key   = "item.id" 
+                    @click = "editFeature(item.id)"
+                    style  = "width: 100%; margin: 3px; border: solid 1px #ccc"
                   >{{ item.text }}</button>
                 </div>
 
@@ -361,9 +361,6 @@ export class AnnotationControl extends InteractionControl {
               },
             },  
             methods: {
-              toggleType(type) {
-                this.type = type === this.type ? null : type;
-              },
               getShapeIconUrl(type){
                 return `${window.initConfig.urls.clienturl}/images/${({
                   Point:      'mActionText',
@@ -378,26 +375,28 @@ export class AnnotationControl extends InteractionControl {
                 this.type = null;
                 this.feature.selected = false;
                 this.feature = null;
-                self._layer.changed();
+                CONTROL._layer.changed();
               },
               onChangeColor(color) {
                 this.style.color = `${color.rgba.r}, ${color.rgba.g}, ${color.rgba.b}`;
               },
-              remove:      () => {
-                if (this._annotation.feature) {
-                  this._layer.getSource().removeFeature(this._annotation.feature);
+              remove() {
+                if (this.feature) {
+                  CONTROL._layer.getSource().removeFeature(this.feature);
                 } else {
-                  this._layer.getSource().clear();
+                  CONTROL._layer.getSource().clear();
                 }
-                this._annotation.feature = null;
+                this.feature = null;
               },
-              editFeature: id => { this.editFeature(this._layer.getSource().getFeatureById(id)); },
-              download:    () =>  {
+              editFeature(id) {
+                CONTROL.editFeature(CONTROL._layer.getSource().getFeatureById(id));
+              },
+              download() {
                 ApplicationState.download = true;
                 saveBlob(new Blob([new TextEncoder().encode(
                   JSON.stringify(
                     (new ol.format.GeoJSON()).writeFeaturesObject(
-                      this._annotation.feature ? [this._annotation.feature] : this._layer.getSource().getFeatures(),
+                      this.feature ? [this.feature] : CONTROL._layer.getSource().getFeatures(),
                       { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()}
                     )
                   )
@@ -406,16 +405,24 @@ export class AnnotationControl extends InteractionControl {
               },
             },
             watch: {
-              type: t => this.changeType(t),
+              type(t) {
+                CONTROL.changeType(t)
+              },
               text(t)             { 
                 this.feature.set('text', t);
                 this.ids.find(({ id }) => this.feature.getId() === id).text = t;
                 if (this.feature.get('show_text')) {
-                  self._layer.changed();
+                  CONTROL._layer.changed();
                 } 
               },
-              show_text(b) { this.feature.set('show_text', b); self._layer.changed(); },
-              show_info(b) { this.feature.set('show_info', b); self._layer.changed(); },
+              show_text(b) {
+                this.feature.set('show_text', b);
+                CONTROL._layer.changed();
+              },
+              show_info(b) {
+                this.feature.set('show_info', b);
+                CONTROL._layer.changed();
+              },
               style: {
                 deep: true,
                 handler(style) {
@@ -428,40 +435,40 @@ export class AnnotationControl extends InteractionControl {
                       rotation: Number(style.rotation) * (Math.PI / 180)
                     }));
                   }
-                  self._layer.changed();
+                  CONTROL._layer.changed();
                 },
               },
-              // Handle meausure geometry
+              // Handle measure geometry
               constraints: {
                 deep: true,
                 handler(constraints) {
-                  if (!self._interaction) {
+                  if (!CONTROL._interaction) {
                     return;
                   }
                   if (constraints.circle) {
-                    self._interaction.radius = constraints.circle.radius * constraints.circle.unit;
+                    CONTROL._interaction.radius = constraints.circle.radius * constraints.circle.unit;
                   }
                   if (constraints.line) {
-                    self._interaction.length = constraints.line.length * constraints.line.unit;
+                    CONTROL._interaction.length = constraints.line.length * constraints.line.unit;
                   }
                   if (constraints.rectangle) {
-                    self._interaction.width  = constraints.rectangle.width;
-                    self._interaction.height = constraints.rectangle.height;
+                    CONTROL._interaction.width  = constraints.rectangle.width;
+                    CONTROL._interaction.height = constraints.rectangle.height;
                   }
                 },
               },
             }, 
             created() {
               // layer has annotations
-              if (self._layer.getSource().getFeatures().length > 0) {
-                self.changeType();
+              if (CONTROL._layer.getSource().getFeatures().length > 0) {
+                CONTROL.changeType();
               }
             },
             beforeDestroy() { 
-              self.changeType();
+              CONTROL.changeType();
               // unselect all features
-              self._layer.getSource().getFeatures().forEach(f => f.selected = false);
-              self._layer.changed();
+              CONTROL._layer.getSource().getFeatures().forEach(f => f.selected = false);
+              CONTROL._layer.changed();
             }
           }
         }
