@@ -56,12 +56,11 @@ import { MeasureInteraction }                      from 'map/controls/measurecon
 //MIXINS
 import Mixins                                      from 'mixins';
 
-import { createMeasureTooltip }                    from 'utils/createMeasureTooltip';
-import { removeMeasureTooltip }                    from 'utils/removeMeasureTooltip';
-import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
-import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
-import { ResponseParser }                          from 'utils/parsers';
-import { $promisify }                              from 'utils/promisify';
+import { createMeasureTooltip, removeMeasureTooltip } from 'utils/createMeasureTooltip';
+import { getResolutionFromScale }                     from 'utils/getResolutionFromScale';
+import { getScaleFromResolution }                     from 'utils/getScaleFromResolution';
+import { ResponseParser }                             from 'utils/parsers';
+import { $promisify }                                 from 'utils/promisify';
 
 import G3WObject                                   from 'g3w-object';
 import Panel                                       from 'g3w-panel';
