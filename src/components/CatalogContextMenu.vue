@@ -998,7 +998,7 @@
         if (this.isExternalWMSLayer(this.layer)) {
           const layer = GUI.getService('map').getLayerById(this.layer.id);
           if (layer) {
-            layer.setOpacity(this.layer.opacity);
+            layer.setOpacity(Number(this.layer.opacity));
             GUI.getService('map').emit('change-layer-opacity', { id: this.layer.id, opacity: this.layer.opacity });
           }
         } else {
