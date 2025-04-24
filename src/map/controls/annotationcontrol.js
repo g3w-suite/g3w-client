@@ -1,6 +1,6 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/measuercontrol.js@v3.10.2
- * @since 3.11.0
+ * @file
+ * @since 4.0.0
  */
 import { Compact as ColorPicker } from 'vue-color';
 
@@ -30,6 +30,7 @@ export class AnnotationControl extends InteractionControl {
     super({
       ...opts,
       name:     'annotation',
+      tipLabel:    "sdk.mapcontrols.annotation.title",
       clickmap: true,
       enabled:  true,
     });
@@ -150,7 +151,7 @@ export class AnnotationControl extends InteractionControl {
                 <div v-if = "feature || (!type && ids.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
                   <button :class = "$fa('list')"     @click = "showAll"  style = "background:none; border: none;" :hidden = "!feature || !ids.length"></button>
                   <button :class = "$fa('download')" @click = "download" style = "background:none; border: none;"></button>
-                  <button :class = "$fa('trash')"    @click = "remove"   style = "background:none; border: none;"></button>
+                  <button :class = "$fa('trash')"    @click = "remove"   style = "background:none; border: none; color: red;"></button>
                 </div>
 
                 <!-- SHAPES SAVED -->
@@ -258,20 +259,18 @@ export class AnnotationControl extends InteractionControl {
                   </select> 
                 </div>
 
-                <hr v-if = "feature" style = "margin: 5px; 0 border:0;">
-
                 <!-- SHAPE LABEL -->
-                <div v-if = "feature" class = "form-group"> 
-                  <input 
-                    class   = "form-control" 
-                    type    = "text" 
-                    v-model = "text"
-                  />
-                </div>
+                <input
+                  v-if    = "feature" 
+                  class   = "form-control" 
+                  type    = "text" 
+                  v-model = "text"
+                  style   = "display: block; margin: 5px; 0 border:0;"
+                />
 
                 <!-- SHAPE LABEL (rotation) -->
-                <div v-if = "feature && 'Text' === feature.get('type')">
-                  <label for = "rotation">Rotation</label>
+                <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
+                  Rotation
                   <input 
                     type    = "range" 
                     name    = "rotation" 
@@ -280,19 +279,18 @@ export class AnnotationControl extends InteractionControl {
                     max     = "180" 
                     v-model = "style.rotation"
                   />
-                </div>
+                </label>
 
                 <!-- SHAPE COLOR -->
-                <div v-if = "feature && 'Text' !== feature.get('type')" style = "margin-bottom: 10px;">
-                  <color-picker
-                    ref                 = "color_picker"
-                    :value              = "picker_color"
-                    @click.prevent.stop = ""
-                    @hook:beforeDestroy = "() => $refs.color_picker.$off()"
-                    @input              = "onChangeColor"
-                    style               = "width: 100%"
-                  />
-                </div>
+                <color-picker
+                  v-if                = "feature && 'Text' !== feature.get('type')"
+                  ref                 = "color_picker"
+                  :value              = "picker_color"
+                  @click.prevent.stop = ""
+                  @hook:beforeDestroy = "() => $refs.color_picker.$off()"
+                  @input              = "onChangeColor"
+                  style               = "width: 100%; margin: 10px 0;"
+                />
 
                 <!-- SHAPE RADIUS (point) -->
                 <div v-if = "feature && 'Point' === feature.get('type')">
@@ -338,17 +336,17 @@ export class AnnotationControl extends InteractionControl {
                   <label>
                     <input 
                       name    = "feature-text"
-                      class   = "form-control" 
-                      v-model = "show_text"
                       type    = "checkbox"
+                      v-model = "show_text"
+                      style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
                     /> Show Text
                   </label>
                   <label :hidden = "'Text' === feature.get('type')">
                     <input 
                       name    = "feature-info"
-                      class   = "form-control" 
                       type    = "checkbox" 
                       v-model = "show_info"
+                      style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
                     /> Info
                   </label>
                 </div>
@@ -462,9 +460,14 @@ export class AnnotationControl extends InteractionControl {
               if (this.layer.getSource().getFeatures().length > 0) {
                 CONTROL.changeType();
               }
+              CONTROL.getMap().addInteraction(CONTROL._interactions.select);
+              CONTROL.getMap().addInteraction(CONTROL._interactions.modify);
+              CONTROL._interactions.select.setActive(true);
             },
             beforeDestroy() { 
               CONTROL.changeType();
+              CONTROL.getMap().removeInteraction(CONTROL._interactions.select);
+              CONTROL.getMap().removeInteraction(CONTROL._interactions.modify);
               // unselect all features
               this.layer.getSource().getFeatures().forEach(f => f.selected = false);
               this.layer.changed();
@@ -518,10 +521,8 @@ export class AnnotationControl extends InteractionControl {
 
     if (!type) {
       this.getMap().removeInteraction(this._interaction);
-      this.getMap().removeInteraction(this._interactions.select);
-      this.getMap().removeInteraction(this._interactions.modify);
 
-      this._interactions.select.setActive(false);
+      this._interactions.select.setActive(true);
 
       Object.assign(this._annotation, {
         constraints: {
@@ -545,16 +546,7 @@ export class AnnotationControl extends InteractionControl {
       return;
     }
 
-    const interactions = this.getMap().getInteractions().getArray();
-
-    if (!interactions.find(i => i == this._interactions.select)) {
-      this.getMap().addInteraction(this._interactions.select);
-      this._interactions.select.setActive(true);
-    }
-
-    if (!interactions.find(i => i == this._interactions.modify)) {
-      this.getMap().addInteraction(this._interactions.modify);
-    }
+    this._interactions.select.setActive(false);
 
     if (this._interaction) {
       this.getMap().removeInteraction(this._interaction);
@@ -568,9 +560,6 @@ export class AnnotationControl extends InteractionControl {
 
     if ('Rectangle' === type) {
       this._interaction = new ol.interaction.DragBox();
-      this._interaction.on('boxstart', this.#onBoxStart.bind(this));
-      this._interaction.on('boxdrag', this.#onBoxDrag.bind(this));
-      this._interaction.on('boxend', this.#onBoxEnd.bind(this));
     }
 
     if (['Point', 'LineString', 'Polygon', 'Circle', 'Text'].includes(type)) {
@@ -581,9 +570,13 @@ export class AnnotationControl extends InteractionControl {
         style:            this.#onDrawStyle.bind(this),
         finishCondition:  this.#onDrawFinish.bind(this)
       });
-      this._interaction.on('drawstart', this.#onDrawStart.bind(this));
-      this._interaction.on('drawend', this.#onDrawEnd.bind(this));
     }
+
+    this._interaction.on('boxstart',  this.#onBoxStart.bind(this));
+    this._interaction.on('boxdrag',   this.#onBoxDrag.bind(this));
+    this._interaction.on('boxend',    this.#onBoxEnd.bind(this));
+    this._interaction.on('drawstart', this.#onDrawStart.bind(this));
+    this._interaction.on('drawend',   this.#onDrawEnd.bind(this));
 
     if (this._interaction && this._annotation.feature) {
       this._annotation.feature.selected = false;
@@ -745,7 +738,7 @@ export class AnnotationControl extends InteractionControl {
 
   #onDrawEnd(e) {
     if ('Circle' === this._annotation.type) {
-      e.feature.set('endCoordinates', e.feature.getGeometry().getClosestPoint(this._interaction._endCoordinates));
+      e.feature.set('endCoordinates', e.feature.getGeometry().getClosestPoint(this._annotation.endCoordinates));
     }
 
     Object.assign(this._interaction, {
@@ -798,26 +791,26 @@ export class AnnotationControl extends InteractionControl {
   #onDrawStyle(feature, resolution) {
 
     if ('Circle' === this._annotation.type && 'Point' === feature.getGeometry().getType() && !this._interaction.geometry) {
-      this._interaction._endCoordinates = feature.getGeometry().getCoordinates()
+      this._annotation.endCoordinates = feature.getGeometry().getCoordinates()
     }
 
     if ('Circle' === this._annotation.type && 'Point' === feature.getGeometry().getType() && this._interaction.geometry) {
-      this._interaction._endCoordinates = this._interaction.geometry.getClosestPoint(feature.getGeometry().getCoordinates());
-      feature.getGeometry().setCoordinates(this._interaction._endCoordinates);
+      this._annotation.endCoordinates = this._interaction.geometry.getClosestPoint(feature.getGeometry().getCoordinates());
+      feature.getGeometry().setCoordinates(this._annotation.endCoordinates);
     }
 
     if ('Circle' === this._annotation.type && 'Circle' === feature.getGeometry().getType()) {
-      this._interaction._endCoordinates = feature.getGeometry().getClosestPoint(this._interaction._endCoordinates);
-      feature.set('endCoordinates', this._interaction._endCoordinates);
+      this._annotation.endCoordinates = feature.getGeometry().getClosestPoint(this._annotation.endCoordinates);
+      feature.set('endCoordinates', this._annotation.endCoordinates);
       return this.#style(this._annotation.type)(feature)
     }
 
     if ('LineString' === this._annotation.type && this._interaction.length && 'Point' === feature.getGeometry().getType() && this._interaction.geometry) {
-      feature.getGeometry().setCoordinates(this._interaction.geometry.getLastCoordinate())
+      feature.getGeometry().setCoordinates(this._interaction.geometry.getCoordinates()[0].at(-1))
     }
 
     if ('Polygon' === this._annotation.type && this._interaction.length && 'Point' === feature.getGeometry().getType() && this._interaction.geometry) {
-      feature.getGeometry().setCoordinates(this._interaction.geometry.getCoordinates()[0][this._interaction.geometry.getCoordinates()[0].length - 2])
+      feature.getGeometry().setCoordinates(this._interaction.geometry.getCoordinates()[0].at(-2))
     }
 
     if ('Polygon' === this._annotation.type && this._interaction.length && 'LineString' === feature.getGeometry().getType()) {
@@ -833,7 +826,7 @@ export class AnnotationControl extends InteractionControl {
   }
 
   #onDrawFinish(e) {
-    this._interaction._endCoordinates = e.coordinate;
+    this._annotation.endCoordinates = e.coordinate;
     return true;
   }
 
