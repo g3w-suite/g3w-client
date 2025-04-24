@@ -244,20 +244,21 @@
                   >…</li>
 
                   <li>
-                    <button
-                      v-if = "state.query.pagination.counts[index] > layer.features.length"
-                      v-for= "page in (
-                      (state.query.pagination.pages[index] < 4 || state.query.pagination.current[index] < 3)
-                        ? Array.from(Array(state.query.pagination.pages[index] - 2).keys()).slice(0, 2).map(i => i + 2)
-                        : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
-                        ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
-                        : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
-                      )"
-                      class       = "btn"
-                      :class      = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
-                      @click.stop = "changePage(index, page)"
+                    <template v-if = "state.query.pagination.pages[index] > 1 && state.query.pagination.counts[index] > layer.features.length">
+                      <button
+                        v-for= "page in (
+                        (state.query.pagination.pages[index] < 4 || state.query.pagination.current[index] < 3)
+                          ? Array.from(Array(state.query.pagination.pages[index] - 2).keys()).slice(0, 2).map(i => i + 2)
+                          : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
+                          ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
+                          : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
+                        )"
+                        class       = "btn"
+                        :class      = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
+                        @click.stop = "changePage(index, page)"
                       >{{ page }}
-                    </button>
+                      </button>
+                    </template>
                   </li>
 
                   <!-- ELLIPSIS SEPARATOR -->
@@ -997,6 +998,9 @@
           // set paginate base of change amount of features request changing select value on query result
           query.pagination.paginate[index] = data.count > (data.data || [])[0].features.length;
 
+          // set new number of pages
+          query.pagination.pages[index]    = Math.ceil(data.count / page_size);
+
           // set filter pagination in case of all features are get from pagination
           layers[index].filter.pagination  = layers[index].filter.active && query.pagination.paginate[index];
 
@@ -1091,7 +1095,7 @@
 #g3w-queryresults-pagination {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   margin-top: 15px;
   flex-wrap: wrap;
   margin-left: 10px;
