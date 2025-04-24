@@ -603,7 +603,7 @@ export class AnnotationControl extends InteractionControl {
 
     // set id and default properties values of new feature
     feature.setId(DEFAULTS.fid); 
-    feature.set('text', `${this._annotation.type} ${DEFAULTS.fid++}`); 
+    feature.set('text', `${this._annotation.type} ${DEFAULTS.fid}`); 
     feature.set('show_text', false);
     feature.set('info', '');
     feature.set('show_info', false);
@@ -639,6 +639,9 @@ export class AnnotationControl extends InteractionControl {
 
     this._annotation.ids.push({ id: DEFAULTS.fid, text: feature.get('text') }); // Add feature to features list
     this._interactions.select.getFeatures().push(feature);                      // add current feature to selection to modify it
+
+    //Increment fid
+    DEFAULTS.fid++
 
   }
 
