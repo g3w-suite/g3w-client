@@ -223,8 +223,9 @@ export async function getProject(gid, options = {}) {
     ].includes(layerType)) {
       return new TableLayer(config, { project });
     }
-    // GEOLAYER with no crs exclude from layer list
-    if (l.geolayer && !config.crs) {
+
+    //no crs exclude from layer list
+    if (config.geometrytype && 'NoGeometry' !== config.geometrytype && !config.crs) {
       return [];
     }
 
