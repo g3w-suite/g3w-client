@@ -82,8 +82,8 @@ export class AnnotationControl extends InteractionControl {
 
     // add features
     this._annotation.layer.getSource().addFeatures(features)
-    this._annotation.getSource().on('addfeature',    this.#onAddFeature.bind(this));
-    this._annotation.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
+    this._annotation.layer.getSource().on('addfeature',    this.#onAddFeature.bind(this));
+    this._annotation.layer.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
     
     this._interactions.select = new ol.interaction.Select({
       layers: [this._annotation.layer],
