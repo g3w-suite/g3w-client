@@ -343,7 +343,7 @@ export class AnnotationControl extends InteractionControl {
                       type    = "checkbox"
                     /> Show Text
                   </label>
-                  <label :hidden = "'Text' !== feature.get('type')">
+                  <label :hidden = "'Text' === feature.get('type')">
                     <input 
                       name    = "feature-info"
                       class   = "form-control" 
