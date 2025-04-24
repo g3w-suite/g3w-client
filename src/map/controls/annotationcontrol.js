@@ -34,10 +34,9 @@ export class AnnotationControl extends InteractionControl {
       enabled:  true,
     });
 
-    this._layer = new ol.layer.Vector({ source: new ol.source.Vector() });
-
     /** Annotation data */
     this._annotation = {
+      layer:        new ol.layer.Vector({ source: new ol.source.Vector() }),
       type:         null,
       ids:           [],
       /** annotation feature to edit */
@@ -82,12 +81,12 @@ export class AnnotationControl extends InteractionControl {
     });
 
     // add features
-    this._layer.getSource().addFeatures(features)
-    this._layer.getSource().on('addfeature',    this.#onAddFeature.bind(this));
-    this._layer.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
+    this._annotation.layer.getSource().addFeatures(features)
+    this._annotation.getSource().on('addfeature',    this.#onAddFeature.bind(this));
+    this._annotation.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
     
     this._interactions.select = new ol.interaction.Select({
-      layers: [this._layer],
+      layers: [this._annotation.layer],
       style:  feature => this.#style(feature.get('type'))(feature)
     });
     
@@ -375,28 +374,28 @@ export class AnnotationControl extends InteractionControl {
                 this.type = null;
                 this.feature.selected = false;
                 this.feature = null;
-                CONTROL._layer.changed();
+                this.layer.changed();
               },
               onChangeColor(color) {
                 this.style.color = `${color.rgba.r}, ${color.rgba.g}, ${color.rgba.b}`;
               },
               remove() {
                 if (this.feature) {
-                  CONTROL._layer.getSource().removeFeature(this.feature);
+                  this.layer.getSource().removeFeature(this.feature);
                 } else {
-                  CONTROL._layer.getSource().clear();
+                  this.layer.getSource().clear();
                 }
                 this.feature = null;
               },
               editFeature(id) {
-                CONTROL.editFeature(CONTROL._layer.getSource().getFeatureById(id));
+                CONTROL.editFeature(this.layer.getSource().getFeatureById(id));
               },
               download() {
                 ApplicationState.download = true;
                 saveBlob(new Blob([new TextEncoder().encode(
                   JSON.stringify(
                     (new ol.format.GeoJSON()).writeFeaturesObject(
-                      this.feature ? [this.feature] : CONTROL._layer.getSource().getFeatures(),
+                      this.feature ? [this.feature] : this.layer.getSource().getFeatures(),
                       { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()}
                     )
                   )
@@ -412,16 +411,16 @@ export class AnnotationControl extends InteractionControl {
                 this.feature.set('text', t);
                 this.ids.find(({ id }) => this.feature.getId() === id).text = t;
                 if (this.feature.get('show_text')) {
-                  CONTROL._layer.changed();
+                  this.layer.changed();
                 } 
               },
               show_text(b) {
                 this.feature.set('show_text', b);
-                CONTROL._layer.changed();
+                this.layer.changed();
               },
               show_info(b) {
                 this.feature.set('show_info', b);
-                CONTROL._layer.changed();
+                this.layer.changed();
               },
               style: {
                 deep: true,
@@ -435,40 +434,40 @@ export class AnnotationControl extends InteractionControl {
                       rotation: Number(style.rotation) * (Math.PI / 180)
                     }));
                   }
-                  CONTROL._layer.changed();
+                  this.layer.changed();
                 },
               },
               // Handle measure geometry
               constraints: {
                 deep: true,
                 handler(constraints) {
-                  if (!CONTROL._interaction) {
+                  if (!CONTROL.getInteraction()) {
                     return;
                   }
                   if (constraints.circle) {
-                    CONTROL._interaction.radius = constraints.circle.radius * constraints.circle.unit;
+                    CONTROL.getInteraction().radius = constraints.circle.radius * constraints.circle.unit;
                   }
                   if (constraints.line) {
-                    CONTROL._interaction.length = constraints.line.length * constraints.line.unit;
+                    CONTROL.getInteraction().length = constraints.line.length * constraints.line.unit;
                   }
                   if (constraints.rectangle) {
-                    CONTROL._interaction.width  = constraints.rectangle.width;
-                    CONTROL._interaction.height = constraints.rectangle.height;
+                    CONTROL.getInteraction().width  = constraints.rectangle.width;
+                    CONTROL.getInteraction().height = constraints.rectangle.height;
                   }
                 },
               },
             }, 
             created() {
               // layer has annotations
-              if (CONTROL._layer.getSource().getFeatures().length > 0) {
+              if (this.layer.getSource().getFeatures().length > 0) {
                 CONTROL.changeType();
               }
             },
             beforeDestroy() { 
               CONTROL.changeType();
               // unselect all features
-              CONTROL._layer.getSource().getFeatures().forEach(f => f.selected = false);
-              CONTROL._layer.changed();
+              this.layer.getSource().getFeatures().forEach(f => f.selected = false);
+              this.layer.changed();
             }
           }
         }
@@ -478,7 +477,7 @@ export class AnnotationControl extends InteractionControl {
 
   setMap(map) {
     super.setMap(map);
-    map.addLayer(this._layer);
+    map.addLayer(this._annotation.layer);
   }
 
   /**
@@ -577,7 +576,7 @@ export class AnnotationControl extends InteractionControl {
     if (['Point', 'LineString', 'Polygon', 'Circle', 'Text'].includes(type)) {
       this._interaction = new ol.interaction.Draw({
         type:             'Text' === type ? 'Point': type,
-        source:           this._layer.getSource(),
+        source:           this._annotation.layer.getSource(),
         geometryFunction: 'Point' !== type && this.#onDrawGeometry.bind(this),
         style:            this.#onDrawStyle.bind(this),
         finishCondition:  this.#onDrawFinish.bind(this)
@@ -589,7 +588,7 @@ export class AnnotationControl extends InteractionControl {
     if (this._interaction && this._annotation.feature) {
       this._annotation.feature.selected = false;
       this._annotation.feature          = null;
-      this._layer.changed();
+      this._annotation.layer.changed();
     }
 
     if (this._interaction) {
@@ -689,7 +688,7 @@ export class AnnotationControl extends InteractionControl {
    
     // redraw layer only if feature has show_info to true
     if (this._annotation.feature.get('show_info')) {
-      this._layer.changed();
+      this._annotation.layer.changed();
     }
   }
 
@@ -852,7 +851,7 @@ export class AnnotationControl extends InteractionControl {
   }
 
   #onBoxEnd({ coordinate }) {
-    this._layer.getSource().addFeature(new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([this._interaction._startC, this._interaction.endC || coordinate]))));
+    this._annotation.layer.getSource().addFeature(new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([this._interaction._startC, this._interaction.endC || coordinate]))));
     this._annotation.constraints.rectangle.width = this._annotation.constraints.rectangle.height = 0;
     this._annotation.constraints.rectangle.wunit = this._annotation.constraints.rectangle.hunit  = 1;
   }
