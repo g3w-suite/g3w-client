@@ -224,7 +224,7 @@ export async function getProject(gid, options = {}) {
       return new TableLayer(config, { project });
     }
 
-    //no crs exclude from layer list
+    //@since 4.0.0 no crs exclude from layer list
     if (config.geometrytype && 'NoGeometry' !== config.geometrytype && !config.crs) {
       return [];
     }
