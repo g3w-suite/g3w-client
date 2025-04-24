@@ -987,7 +987,7 @@
           const has_filtertoken = !!layer.getFilterToken();
 
           // get layer pagination data
-          const data = await layer[method]({ ...params[index], page })
+          const data = await layer[method]({ ...params[index], page });
           
           // set response data
           this.$options.service.setQueryResponse(

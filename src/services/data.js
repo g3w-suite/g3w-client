@@ -291,7 +291,7 @@ export default {
           pages:         params.page && counts.map(count => Math.ceil(count / params.page_size)), //set number of pages
           current:       params.page && counts.map(() => params.page), //current page
           page_sizes,    //Array contains a number of features that want get with pagination
-          current_sizes: counts.map(() => page_sizes[0][0]), // @since 3.11.8 current page size how many features are get
+          current_sizes: counts.map((_, i) => page_sizes[i][0]), // @since 3.11.8 current page size how many features are get
           counts,
           paginate,
           //Object contains info for do another request by another part of code
