@@ -98,7 +98,7 @@ export class AnnotationControl extends InteractionControl {
 
     // monkey patch: "ol.interaction.Modify~handleDragEvent"
     this._interactions.modify.handleDragEvent = new Proxy(this._interactions.modify.handleDragEvent, {
-      apply: (cb, ctx, args) => { this.#onDrag(...args); return Reflect.apply(cb, ctx, args); },
+      apply: (cb, ctx, args) => { Reflect.apply(cb, ctx, args); return this.#onDrag(...args); },
     });
 
     this._interactions.select.on('select',      this.#onSelectInteraction.bind(this));
