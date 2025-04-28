@@ -149,9 +149,9 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPES ACTIONS -->
                 <div v-if = "feature || (!type && ids.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
-                  <button :class = "$fa('list')"     @click = "showAll"  style = "background:none; border: none;" :hidden = "!feature || !ids.length"></button>
-                  <button :class = "$fa('download')" @click = "download" style = "background:none; border: none;"></button>
-                  <button :class = "$fa('trash')"    @click = "remove"   style = "background:none; border: none; color: red;"></button>
+                  <button :class = "$fa('list')"     @click.stop = "showAll"  style = "background:none; border: none;" :hidden = "!feature || !ids.length"></button>
+                  <button :class = "$fa('download')" @click.stop = "download" style = "background:none; border: none;"></button>
+                  <button :class = "$fa('trash')"    @click.stop = "remove"   style = "background:none; border: none; color: red;"></button>
                 </div>
 
                 <!-- SHAPES SAVED -->
@@ -333,7 +333,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE INFO -->
                 <div v-if="feature" style = "display: flex; justify-content: space-between;">
-                  <label>
+                  <label :hidden = "'Text' === feature.get('type')">
                     <input 
                       name    = "feature-text"
                       type    = "checkbox"
@@ -369,9 +369,9 @@ export class AnnotationControl extends InteractionControl {
                 })[type]}.svg`;
               },
               showAll() {
-                this.type = null;
+                this.type             = null;
                 this.feature.selected = false;
-                this.feature = null;
+                this.feature          = null;
                 this.layer.changed();
               },
               onChangeColor(color) {
@@ -405,12 +405,15 @@ export class AnnotationControl extends InteractionControl {
               type(t) {
                 CONTROL.changeType(t)
               },
-              text(t)             { 
-                this.feature.set('text', t);
-                this.ids.find(({ id }) => this.feature.getId() === id).text = t;
-                if (this.feature.get('show_text')) {
-                  this.layer.changed();
-                } 
+              text(t) { 
+                //@TODO Check why if showAll, also text
+                if (this.feature) {
+                  this.feature.set('text', t);
+                  this.ids.find(({ id }) => this.feature.getId() === id).text = t;
+                  if (this.feature.get('show_text')) {
+                    this.layer.changed();
+                  } 
+                }
               },
               show_text(b) {
                 this.feature.set('show_text', b);
@@ -566,7 +569,7 @@ export class AnnotationControl extends InteractionControl {
       this._interaction = new ol.interaction.Draw({
         type:             'Text' === type ? 'Point': type,
         source:           this._annotation.layer.getSource(),
-        geometryFunction: 'Point' !== type && this.#onDrawGeometry.bind(this),
+        geometryFunction: !['Point', 'Text'].includes(type) && this.#onDrawGeometry.bind(this),
         style:            this.#onDrawStyle.bind(this),
         finishCondition:  this.#onDrawFinish.bind(this)
       });
@@ -597,7 +600,7 @@ export class AnnotationControl extends InteractionControl {
     // set id and default properties values of new feature
     feature.setId(DEFAULTS.fid); 
     feature.set('text', `${this._annotation.type} ${DEFAULTS.fid}`); 
-    feature.set('show_text', false);
+    feature.set('show_text', 'Text' === this._annotation.type);
     feature.set('info', '');
     feature.set('show_info', false);
     feature.set('type', this._annotation.type);
@@ -607,8 +610,7 @@ export class AnnotationControl extends InteractionControl {
       feature.set('center', feature.getGeometry().getCenter());
     }
 
-    feature.setStyle(this.#style(this._annotation.type));
-    
+    // set default style
     Object.assign(this._annotation.style, {
       color:    DEFAULTS.color,
       radius:   DEFAULTS.radius,
@@ -617,13 +619,18 @@ export class AnnotationControl extends InteractionControl {
       rotation: DEFAULTS.rotation,
     });
 
+    //set style property of feature
+    feature.set('style', Object.assign(feature.get('style') || {}, this._annotation.style));
+
+    //set feature style
+    feature.setStyle(this.#style(this._annotation.type));
+
     this._annotation.show_text      = 'Text' === this._annotation.type;
     this._annotation.show_info      = false;
 
-    feature.selected          = true;
+    //selected feature
+    feature.selected                = true;
 
-    feature.set('style', Object.assign(feature.get('style') || {}, this._annotation.style));
-    
     Object.assign(this._annotation, {
       feature,                   // current feature
       text: feature.get('text'), // current text (for input value)
@@ -635,7 +642,6 @@ export class AnnotationControl extends InteractionControl {
     //set current annotation feature
     this._annotation.feature = feature;
 
-    
     //Increment fid
     DEFAULTS.fid++
 
