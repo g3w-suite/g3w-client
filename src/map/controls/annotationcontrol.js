@@ -98,7 +98,7 @@ export class AnnotationControl extends InteractionControl {
 
     // monkey patch: "ol.interaction.Modify~handleDragEvent"
     this._interactions.modify.handleDragEvent = new Proxy(this._interactions.modify.handleDragEvent, {
-      apply: (cb, ctx, args) => { this.#onDrag(...args); return cb(...args); },
+      apply: (cb, ctx, args) => { this.#onDrag(...args); return Reflect.apply(cb, ctx, args); },
     });
 
     this._interactions.select.on('select',      this.#onSelectInteraction.bind(this));
@@ -633,6 +633,10 @@ export class AnnotationControl extends InteractionControl {
     this._annotation.ids.push({ id: DEFAULTS.fid, text: feature.get('text') }); // Add feature to features list
     this._interactions.select.getFeatures().push(feature);                      // add current feature to selection to modify it
 
+    //set current annotation feature
+    this._annotation.feature = feature;
+
+    
     //Increment fid
     DEFAULTS.fid++
 
@@ -713,8 +717,8 @@ export class AnnotationControl extends InteractionControl {
       }
     }
     if ('Circle' === this._annotation.feature.get('type')) {
-      feature.set('radius', this._annotation.feature.getGeometry().getRadius());
-      feature.set('center', this._annotation.feature.getGeometry().getCenter());
+      this._annotation.feature.set('radius', this._annotation.feature.getGeometry().getRadius());
+      this._annotation.feature.set('center', this._annotation.feature.getGeometry().getCenter());
     }
   }
 
