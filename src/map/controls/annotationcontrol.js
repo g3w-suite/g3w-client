@@ -499,6 +499,8 @@ export class AnnotationControl extends InteractionControl {
     // no feature = unselected
     if (!feature) {
       this._annotation.feature = null;
+      //set type null to show list
+      this._annotation.type    = null;
       return;
     };
 
@@ -641,6 +643,12 @@ export class AnnotationControl extends InteractionControl {
 
     //set current annotation feature
     this._annotation.feature = feature;
+
+    //Reomve create feature interaction
+    this.getMap().removeInteraction(this._interaction);
+
+    //set active interaction
+    this._interactions.select.setActive(true);
 
     //Increment fid
     DEFAULTS.fid++
