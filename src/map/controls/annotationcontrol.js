@@ -133,7 +133,7 @@ export class AnnotationControl extends InteractionControl {
                     type                      = "radio"
                     :value                    = "shape"
                     v-model                   = "type"
-                    @click                    = "type = (type === shape && shape);"
+                    @click.stop               = "type = type === shape ? null : shape"
                     :class                    = "[type === shape && 'skin-background-color']"
                     :style                    = "{
                       appearance: 'none',
@@ -627,7 +627,6 @@ export class AnnotationControl extends InteractionControl {
     Object.assign(this._annotation, {
       feature,                   // current feature
       text: feature.get('text'), // current text (for input value)
-      type: null,                // stop to draw. Reset type
     });
 
     this._annotation.ids.push({ id: DEFAULTS.fid, text: feature.get('text') }); // Add feature to features list
