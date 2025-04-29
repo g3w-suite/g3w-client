@@ -507,7 +507,6 @@
               input.value = value;
             }
             
-           
           }
 
           //remove value  
