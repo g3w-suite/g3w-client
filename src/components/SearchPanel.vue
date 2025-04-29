@@ -486,10 +486,13 @@
         SELECTS.push(select2);
 
         select2.on('select2:select select2:unselecting', e => {
-        
+
+          //Add/Change value
+
           if ('select2:select' === e.type || has_autocomplete) {
             const value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
 
+            
             if (is_multiple && input.value.find(v => value === v)) {
               input.value = input.value.filter(v => value !== v);
             }
@@ -504,10 +507,23 @@
               input.value = value;
             }
             
-            this.changeInput(input);
-
+           
           }
-      });
+
+          //remove value  
+          if ('select2:unselecting' === e.type && is_multiple) {
+            input.value = input.value.filter(v => e.params?.args?.data?.id !== v);
+            //If we remove all values, we set the SEARCH_ALLVALUE
+            if (0 === input.value.length) {
+              input.value = [SEARCH_ALLVALUE];
+            }
+          }
+
+          this.changeInput(input);
+
+
+        }
+      );
 
         // trigger select2 change on input value change
         this.$watch(() => input.value, async (value, oldVal) => {
