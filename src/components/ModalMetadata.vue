@@ -74,7 +74,6 @@
             <!-- LAYERS METADATA -->
             <div id="metadata_layers" class = "tab-pane fade">
               <div v-for = "layer in groups.layers.layers.value" class = "row-info">
-
                 <h4
                   @click       = "showHideInfo"
                   class        = "layer_header"
@@ -307,7 +306,6 @@
     data() {
       const project = ApplicationState.project.getState();
       const version = window.initConfig.version.split('-')[0].split('.');
-
       return {
         customcredits: false,
         powered_by:    window.initConfig.powered_by,
@@ -319,8 +317,10 @@
           layers:  [ 'layers' ],
         }).reduce((g, [name, fields]) => {
           g[name] = fields.reduce((f, field) => {
-            const value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
+            let value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
             if (value) {
+              //In case of layers that has geometry and no epsg, filter according to filter of project layers
+              if ('layers' === field) { value = value.filter(l => 'NoGeometry' !== l.geometry && l.crs && l.crs.epsg) } 
               f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
             }
             return f;

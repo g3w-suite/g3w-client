@@ -28,9 +28,9 @@ const PROJECTS = {};
  */
 function crsToCrsObject(crs) {
 
-  /** @FIXME add description */
-  if ([undefined, null].includes(crs)) {
-    return crs;
+  /**If not defined crs or nno epsg is set (exmaple epsg: 0) return null */
+  if ([undefined, null].includes(crs) || (crs && !crs.epsg)) {
+    return null;
   }
 
   /** @FIXME add description */
@@ -38,6 +38,7 @@ function crsToCrsObject(crs) {
     crs.epsg = normalizeEpsg(crs.epsg);
     return crs;
   }
+
 
   return {
     epsg:         normalizeEpsg(crs),
@@ -223,6 +224,11 @@ export async function getProject(gid, options = {}) {
       return new TableLayer(config, { project });
     }
 
+    //@since 4.0.0 no crs exclude from layer list
+    if (config.geometrytype && 'NoGeometry' !== config.geometrytype && !config.crs) {
+      return [];
+    }
+
     // VECTOR LAYERS
     if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
       return new VectorLayer(config, { project });
@@ -241,6 +247,7 @@ export async function getProject(gid, options = {}) {
       "QGIS oracle",
       "QGIS ogr",
       "QGIS mdal",
+      "QGIS arcgisfeatureserver",
     ].includes(layerType)) {
       return new ImageLayer(config, { project });
     }

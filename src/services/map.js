@@ -1430,9 +1430,6 @@ class MapService extends G3WObject {
     // map layers: geolayers exclude baselayers and eventually vector layers
     const layers = getMapLayersByFilter({ BASELAYER: false, VECTORLAYER: false });
 
-    // set map projection on each layer
-    layers.forEach(l => l.setMapProjection(this.getProjection()));
-
     //store incremental value for qtimesriable layer with same multilayer id
     const cache     = {};
     const mapLayers = [];
@@ -1475,7 +1472,7 @@ class MapService extends G3WObject {
     // vector layers
     const vlayers = getMapLayersByFilter({ VECTORLAYER: true });
     // set map projection on each layer
-    vlayers.forEach(l => { l.setMapProjection(this.getProjection()); this.addLayerToMap(l.getMapLayer()) })
+    vlayers.forEach(l => this.addLayerToMap(l.getMapLayer()));
 
     // set default layers order
     const map = this.getMap();
@@ -1537,7 +1534,6 @@ class MapService extends G3WObject {
    * Used by the following plugins: "cdu"
    */
   createMapLayer(layer) {
-    layer.setMapProjection(this.getProjection());
     const mapLayer = layer.getMapLayer({
       id:         `layer_${layer.getMultiLayerId()}`,
       projection:  this.getProjection()
@@ -1891,11 +1887,11 @@ class MapService extends G3WObject {
    * @since 3.11.0
    */
   toggleSelection(visible = true, layerId) {
+    const selection = this.defaultsLayers.selectionLayer;
     //take in account that of layer id is specified, need to set only
     // features related to layer visible or not
     if (layerId) {
-      this.defaultsLayers
-        .selectionLayer.getSource()
+      selection.getSource()
         .getFeatures()
         .filter(f => layerId === f.__layerId)
         .forEach(f => f.setStyle(visible ? createSelectedStyle({
@@ -1904,7 +1900,7 @@ class MapService extends G3WObject {
           fill:         true
         }): new ol.style.Style(null)))
     } else {
-      this.defaultsLayers.selectionLayer.setVisible(visible);
+      selection.setVisible(visible);
     }
   }
 
@@ -2129,11 +2125,21 @@ class MapService extends G3WObject {
   removeExternalLayer(name) {
     const layer = this.getLayerByName(name);
     const type = layer._type || 'vector';
+    
 
     GUI.getService('queryresults').unregisterVectorLayer(layer);
     GUI.getService('catalog').removeExternalLayer({ name, type });
 
     this.viewer.map.removeLayer(layer);
+    /**@since v4.0.0 */
+    if ('vector' === type) {  
+      const id = layer.get('id');
+      //remove eventually selection feature belong to layer
+      this.defaultsLayers.selectionLayer.getSource()
+        .getFeatures()
+        .filter(f => id === f.__layerId)
+        .forEach(f => this.defaultsLayers.selectionLayer.getSource().removeFeature(f));
+    }
 
     if ('vector' === type) {
       this._keyEvents.unwatches[name].forEach(unWatch => unWatch());
@@ -2370,7 +2376,7 @@ class MapService extends G3WObject {
     const extent   = ('vector' === type && layer.getSource().getExtent()) || [];
 
     // add id value
-    features.forEach((f, i) => f.setId(i));
+    features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`)); //set id with prefix of layer id
 
     if (features.length) {
       externalLayer.geometryType = features[0].getGeometry().getType();
