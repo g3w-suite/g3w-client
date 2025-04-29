@@ -76,7 +76,7 @@
   import ApplicationState            from 'store/application';
   import ClickMixin                  from 'mixins/click';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-
+  import { XHR }                     from 'utils/XHR';
 
   export default {
     name: "catalog-layer-legend",
@@ -237,6 +237,9 @@
         this.loading = false;
       },
 
+      /**
+       * @param { boolean } all true = no bbox no filter (just all referred to)
+       */
       async setLayerCategories(all=false) {
         try {
           const projectLayer = this.getProjectLayer();
@@ -245,7 +248,16 @@
           if (all && categories) { // check if exist current layer categories
             this.categories = categories;
           } else {
-            const { nodes = [] } = await projectLayer.getLegendGraphic({ all });
+            const { nodes = [] } = await XHR.get({
+              url: projectLayer.getLegendUrl(
+                window.initConfig.layout?.legend,
+                {
+                  categories: true,
+                  format:     'application/json', // request format (icon and label of each category)
+                  all,
+                }
+              )
+            });
             if (all) { // case of all categories
               this._setAllLayerCategories(nodes);
             } else {

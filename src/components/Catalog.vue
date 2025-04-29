@@ -520,6 +520,9 @@ export default {
                 })).blob());
           } catch (e) {
             console.warn(e);
+          } finally {
+            //set loading to false
+            obj.loading = false;
           }
         }
       }

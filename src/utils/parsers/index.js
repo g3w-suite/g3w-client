@@ -210,7 +210,7 @@ export const ResponseParser = {
           // sanitize layer name (removes: whitespaces, quotes, parenthesis, slashes)
           if (response) {
             response = layers.reduce((acc, layer, i) => {
-              let id = (wms && layer.isWmsUseLayerIds() ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
+              let id = (wms && layer.config.wms_use_layer_ids ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
               if (!wms) {
                 id = id.replace(/[/\\]+/g, '').replaceAll(':', '-');
               }
@@ -310,12 +310,14 @@ export const ResponseParser = {
   
               // transform features
               if (is_reprojected) {
-                feats.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
+                //filter feature with geometry
+                feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
               }
   
               // inverted axis --> reverse features coordinates
               if ('ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
-                feats.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+                //filter feature with geometry
+                feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
               }
   
               // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
