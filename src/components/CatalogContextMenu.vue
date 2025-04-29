@@ -605,7 +605,10 @@
 
       canShowWmsUrl(layerId) {
         const layer = getCatalogLayerById(layerId);
-        return layer && !layer.isType('table') && !!layer.getFullWmsUrl();
+        const wms_url = ApplicationState.project.state.metadata.wms_url;
+        return layer && !layer.isType('table') && !!(wms_url && !layer.isExternalWMS()
+          ? wms_url
+          : layer.getWmsUrl());
       },
 
       canShowWfsUrl(layerId) {
@@ -626,11 +629,15 @@
       },
 
       getWmsUrl(layerId) {
-        return getCatalogLayerById(layerId).getCatalogWmsUrl();
+        const wms_url = ApplicationState.project.state.metadata.wms_url;
+        const layer = getCatalogLayerById(layerId);
+        return wms_url && !layer.isExternalWMS()
+          ? wms_url
+          : `${layer.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities`;
       },
 
       getWfsUrl(layerId) {
-        return getCatalogLayerById(layerId).getCatalogWfsUrl();
+        return `${getCatalogLayerById(layerId).getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
       },
 
       /**
@@ -640,7 +647,7 @@
        * @since 3.10.0
        */
       getWfs3Url(layerId) {
-        return getCatalogLayerById(layerId).getCatalogWfs3Url();
+        return `${getCatalogLayerById(layerId).getWfsUrl()}wfs3/`;
       },
 
       /**
@@ -991,7 +998,7 @@
         if (this.isExternalWMSLayer(this.layer)) {
           const layer = GUI.getService('map').getLayerById(this.layer.id);
           if (layer) {
-            layer.setOpacity(this.layer.opacity);
+            layer.setOpacity(Number(this.layer.opacity));
             GUI.getService('map').emit('change-layer-opacity', { id: this.layer.id, opacity: this.layer.opacity });
           }
         } else {
@@ -1003,12 +1010,15 @@
         }
 
       },
+
       /**
-       * @since 3.11.7
        * Check if layer has relation with download format activated
+       * 
+       * @since 3.11.7
        */
        hasDowloadableRelations() {
-        return getCatalogLayerById(this.layer.id).hasDowloadableRelations();
+        const layer = getCatalogLayerById(this.layer.id);
+        return layer && layer.hasDowloadableRelations();
       }
 
     },
