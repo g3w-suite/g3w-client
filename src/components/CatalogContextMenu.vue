@@ -842,20 +842,12 @@
       },
 
       setLayerStyle(index) {
-        let changed = false;
-        this.layer.styles.forEach((style, i) => {
-          if (i === index) {
-            this.layer_style = style.name;
-            changed = !style.current;
-            style.current = true;
-          } else {
-            style.current = false;
-          }
-        });
-        const layer = changed && getCatalogLayerById(this.layer.id);
-        if (layer) {
+
+        this.layer_style = this.layer.styles[index].name;
+        const layer      = getCatalogLayerById(this.layer.id)
+        //return true if changed
+        if (layer.changeCurrentStyle(this.layer_style)) {
           VM.$emit('layer-change-style', { layerId: this.layer.id, style: this.layer_style });
-          layer.change();
         }
         this.closeMenu();
       },

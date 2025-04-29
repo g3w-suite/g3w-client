@@ -539,7 +539,8 @@ class Layer extends G3WObject {
               unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
             },
             /** @since 3.8.0 */
-            featurecount: project.getUrl('featurecount'),
+            featurecount:         project.getUrl('featurecount'),
+            editorformstructure : project.getUrl('editorformstructure'),
             /** @since 3.10.0 */
             pdf:         `/html2pdf/`,
           })
@@ -2552,6 +2553,52 @@ class Layer extends G3WObject {
    * 
    * @returns { Promise<Object | void>}
    * 
+   * Change featurecount and editor form structure for a specific style
+   * 
+   * @since 4.0.0
+   */
+  async changeCurrentStyle(style) {
+    try {
+      await this.getStyleFeatureCount(style);
+      await this.getStyleEditorFormStructure(style);
+      //set current style. return true if change
+      const changed = this.setCurrentStyle(style);
+      //In case of change need to call change function
+      if (changed) { this.change();}
+      return changed
+    } catch(e) {
+      console.warn(e);
+      //return false. A request to get feature count or editor form structure failed is not resolved
+      return false;
+    }
+  }
+
+  /**
+   * Get editor from structure for a specific style
+   * @param {String} style 
+   */
+  async getStyleEditorFormStructure(style) {
+    try {
+      const { result, data } = await XHR.post({
+        url:          `${this.config.urls.editorformstructure}${this.getId()}/`,
+        data:         JSON.stringify({ style }),
+        contentType: 'application/json'
+      });
+      if (result) {
+        this.config.editor_form_structure = data;
+        return this.config.editor_form_structure;
+      }
+    } catch(e) {
+      console.warn(e);
+      throw e;
+    }
+  }
+
+  /**
+   * @param style
+   * 
+   * @returns { Promise<Object | void>}
+   * 
    * @since 3.8.0
    */
   async getStyleFeatureCount(style) {
@@ -2567,12 +2614,13 @@ class Layer extends G3WObject {
           contentType: 'application/json'
         });
         this.state.stylesfeaturecount[style] = (true === result ? data : {});
+        return this.state.stylesfeaturecount[style];
       } catch(e) {
-        cansole.warn(e);
+        console.warn(e);
         this.state.stylesfeaturecount[style] = {};
+        throw e;
       }
-    }
-    return this.state.stylesfeaturecount[style];
+    };
   }
 
   /**

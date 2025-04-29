@@ -223,8 +223,8 @@
         try {
           // check if style is passed on options and if the style is changed on this layer
           if (undefined !== options.style && options.layerId === this.layer.id) {
-            await this.setLayerCategories(true);                              // Get all layer categories.
-            await this.getProjectLayer().getStyleFeatureCount(options.style); // Get style feature count.
+            await this.setLayerCategories(true);
+            await this.getProjectLayer().changeCurrentStyle(options.style);             // Get style config (featurecount, editing_form_structure).
             this.currentstyle = options.style;                                // Set current style.
             if (this.dynamic) {                                               // If filter layer legend by map content is set,
               await this.setLayerCategories(false);                           // toggle categories.

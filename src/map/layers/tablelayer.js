@@ -65,20 +65,21 @@ export class TableLayer extends Layer {
             vector,
             constraints = {},
             capabilities,
+            style,
           } = await promisify(this.getProvider('data').getConfig(opts));
-
-          await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
+          
+            await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
             // add editing configurations
-
             this.config.editing = {
-              fields:       vector.fields || [],
-              format:       vector.format,
+              fields:                      vector.fields || [],
+              format:                      vector.format,
               constraints,
-              capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
-              form:         { perc: null },                                                      // set editing form `perc` to null at beginning
-              style:        vector.style,                                                        // get vector layer style
-              geometrytype: vector.geometrytype,                                                 // whether is a vector layer,
-              visible:      (vector.editing || { visible: true }).visible,                       //@since 3.11.0 let know if layer should be editable directly (true) or through relation layer (false)
+              capabilities:                capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
+              form:                        { perc: null },                                                      // set editing form `perc` to null at beginning
+              style:                       vector.style,                                                        // get vector layer style
+              geometrytype:                vector.geometrytype,                                                 // whether is a vector layer,
+              visible:                     (vector.editing || { visible: true }).visible,                       //@since 3.11.0 let know if layer should be editable directly (true) or through relation layer (false)
+              layer_style:                 (vector.editing || { layer_style: null }).layer_style,               // @since v4.0.0 check if has a layer style to for editing form
             };
 
             if (vector.style) {                              // set vector layer color 
