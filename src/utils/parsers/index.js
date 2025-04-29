@@ -310,12 +310,14 @@ export const ResponseParser = {
   
               // transform features
               if (is_reprojected) {
-                feats.forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
+                //filter feature with geometry
+                feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
               }
   
               // inverted axis --> reverse features coordinates
               if ('ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
-                feats.forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+                //filter feature with geometry
+                feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
               }
   
               // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
