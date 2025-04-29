@@ -99,7 +99,12 @@ export function SearchPanel(opts = {}, show = false) {
 
       const input = state.forminputs[i];
 
-      const no_value = input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value);
+      /**@since v4.0.0 set array value for in (only for SelectBox) */
+      if ('in' === input.operator) {
+        input.value = [].concat(input.value);
+      }
+
+      const no_value = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
 
       // set key-values for select
       input.values = [
@@ -192,7 +197,7 @@ async function doSearch({
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
           layer:   state.search_layers,
-          inputs:  state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+          inputs:  state.forminputs.filter(input => !([].concat(input.value).find(v => [null, undefined, SEARCH_ALLVALUE].includes(v))) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
         }),
         queryUrl,
         formatter: 1,

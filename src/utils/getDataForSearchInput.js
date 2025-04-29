@@ -39,9 +39,8 @@ export async function getDataForSearchInput({ state, field, suggest }) {
 getDataForSearchInput.field = ({ state, field, fields = [] } = {}) => {
   field        = state.forminputs.find(i => i.attribute === field);            // current input
   const parent = state.forminputs.find(i => i.attribute === field.dependance); // current input dependance (parent field)
-
   // get all values (un-filtered)
-  if (!parent || SEARCH_ALLVALUE === parent.value) {
+  if (!parent || [].concat(parent.value).find(v => v === SEARCH_ALLVALUE)) {
     return (fields || []).join() || undefined;
   }
 
