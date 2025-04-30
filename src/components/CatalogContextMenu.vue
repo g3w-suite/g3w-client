@@ -851,11 +851,8 @@
       setLayerStyle(index) {
 
         this.layer_style = this.layer.styles[index].name;
-        const layer      = getCatalogLayerById(this.layer.id)
-        //return true if changed
-        if (layer.changeCurrentStyle(this.layer_style)) {
-          VM.$emit('layer-change-style', { layerId: this.layer.id, style: this.layer_style });
-        }
+        //change layer style
+        getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style)
         this.closeMenu();
       },
 
@@ -892,9 +889,9 @@
        */
       async deleteFilter(fid) {
         const layer  = getCatalogLayerById(this.layer.id);
-        const change = fid === this.layer.fid;
-        // skip when ..
+        // No found catalog layer
         if (!layer) { return }
+        const change = fid === this.layer.fid;
         await layer.deleteFilterToken(fid);
         if (change) { layer.change() }
 

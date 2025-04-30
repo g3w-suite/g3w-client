@@ -55,7 +55,7 @@
         >
           <span>{{category.title}}</span>
           <span
-            v-if = "showfeaturecount && 'undefined' !== typeof category.ruleKey"
+            v-if = "showfeaturecount && undefined !== category.ruleKey"
             style = "font-weight: bold"
           >
             [{{layer.stylesfeaturecount[currentstyle][category.ruleKey]}}]
@@ -213,7 +213,7 @@
        *
        * @since 3.8.0
        */
-      async onChangeLayerLegendStyle(options={}) {
+      async onChangeLayerLegendStyle(options = {}) {
         this.loading = true;
 
         if (this.externallegend) {
@@ -221,14 +221,10 @@
         }
 
         try {
-          // check if style is passed on options and if the style is changed on this layer
-          if (undefined !== options.style && options.layerId === this.layer.id) {
-            await this.setLayerCategories(true);
-            await this.getProjectLayer().changeCurrentStyle(options.style);             // Get style config (featurecount, editing_form_structure).
-            this.currentstyle = options.style;                                // Set current style.
-            if (this.dynamic) {                                               // If filter layer legend by map content is set,
-              await this.setLayerCategories(false);                           // toggle categories.
-            }
+          await this.setLayerCategories(true);
+          this.currentstyle = options.style;                                // Set current style.
+          if (this.dynamic) {    
+            await this.setLayerCategories(false);                           // toggle categories.
           }
         } catch(e) {
           console.warn('Error while changing layer style', e)
@@ -240,7 +236,7 @@
       /**
        * @param { boolean } all true = no bbox no filter (just all referred to)
        */
-      async setLayerCategories(all=false) {
+      async setLayerCategories(all = false) {
         try {
           const projectLayer = this.getProjectLayer();
           const categories   = projectLayer.getCategories();
@@ -296,26 +292,25 @@
       /**
        * @since 3.8.0
        */
-      _updateLayerCategories(nodes, categories) {
-        const projectLayer = this.getProjectLayer();
+      _updateLayerCategories(nodes = [], categories = []) {
+        this.getProjectLayer().setCategories(categories);
 
-        projectLayer.setCategories(categories);
         this.categories = categories;
 
         // case to update current categories
-        if (nodes.length) {
-          nodes.forEach(({icon, title, symbols = []}) => {
+        if (nodes.length > 0) {
+          nodes.forEach(({ icon, title, symbols = [] }) => {
             if (icon) {
-              symbols = [{icon, title}];
+              symbols = [{ icon, title }];
             }
-            categories.forEach(category  => {
-              const findSymbol = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
-              const disabled = undefined !== category.checked  ? category.checked : true;
-              category.disabled = disabled && undefined === findSymbol;
+            categories.forEach(c  => {
+              const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
+              const disabled    = undefined === c.checked  || c.checked;
+              c.disabled        = disabled && undefined === findSymbol;
             });
           })
         } else {
-          categories.forEach(category => category.disabled = (undefined !== category.checked ? category.checked : true));
+          categories.forEach(c => c.disabled = (undefined === c.checked) || c.checked);
         }
       },
 
@@ -399,7 +394,7 @@
       this.mapReady = false;
 
       // listen to layer change style event
-      VM.$on('layer-change-style', this.onChangeLayerLegendStyle);
+      this.getProjectLayer().onafter('change', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
@@ -410,7 +405,8 @@
     },
 
     beforeDestroy() {
-      VM.$off('layer-change-style', this.onChangeLayerLegendStyle);
+      //remove change event on legend
+      this.getProjectLayer().un('change', this.onChangeLayerLegendStyle);
     },
 
   }
