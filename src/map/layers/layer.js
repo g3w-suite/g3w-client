@@ -2565,18 +2565,20 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   async changeCurrentStyle(style) {
-    try {
-      await this.getStyleFeatureCount(style);
-      await this.getStyleEditorFormStructure(style);
-      //set current style. return true if change
-      const changed = this.setCurrentStyle(style);
-      //In case of change need to call change function
-      if (changed) { this.change();}
-      return changed
-    } catch(e) {
-      console.warn(e);
-      //return false. A request to get feature count or editor form structure failed is not resolved
-      return false;
+    //check if style is current set on layer. If not change
+    if (!(this.config.styles.find(s => style === s.name) || {}).current) {
+      try {
+        //get feature count for a specific style
+        await this.getStyleFeatureCount(style);
+        //get editor form structure for a specific style
+        await this.getStyleEditorFormStructure(style);
+        //set as current the style passed
+        this.config.styles.forEach(s => s.current = style === s.name);
+        //In case of change need to call change function
+        this.change() 
+      } catch(e) {
+        console.warn(e);    
+      }
     }
   }
 
@@ -2621,13 +2623,15 @@ class Layer extends G3WObject {
           contentType: 'application/json'
         });
         this.state.stylesfeaturecount[style] = (true === result ? data : {});
-        return this.state.stylesfeaturecount[style];
       } catch(e) {
         console.warn(e);
         this.state.stylesfeaturecount[style] = {};
         throw e;
       }
     };
+    //set current feature count to change
+    this.state.featurecount = this.state.stylesfeaturecount[style];
+    return this.state.stylesfeaturecount[style]
   }
 
   /**
@@ -2839,23 +2843,6 @@ class Layer extends G3WObject {
    */
   getOpacity() {
     return this.state.opacity;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * Change the current style of layer
-   *
-   * @param name
-   * 
-   * @returns { Boolean }
-   *
-   * @since 4.0.0
-   */
-  setCurrentStyle(name) {
-    const changed = !(this.config.styles.find(s => name === s.name).current);
-    this.config.styles.forEach(s => s.current = name === s.name);
-    return changed;
   }
 
   /**
