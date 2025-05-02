@@ -24,6 +24,7 @@ import * as MultiLineString from 'ol/geom/MultiLineString';
 import * as MultiPolygon    from 'ol/geom/MultiLineString';
 import * as has             from 'ol/has';
 import * as interaction     from 'ol/interaction';
+import { createBox }        from 'ol/interaction/Draw';
 import * as layer           from 'ol/layer';
 import * as loadingstrategy from 'ol/loadingstrategy';
 import * as Observable      from 'ol/Observable';
@@ -124,7 +125,7 @@ globalThis.ol = Object.assign({}, ol, {
                                                 MultiPolygon:    Object.assign(geom.MultiPolygon, MultiPolygon)
                                               }),
   has,
-  interaction: Object.assign({}, interaction, { RotateFeature }),
+  interaction: Object.assign({}, interaction, { RotateFeature, Draw: Object.assign(interaction.Draw, createBox) }), // on editing plugin new ol.interaction.Draw({ type: 'Circle', source: this._vectorLayer.getSource(), geometryFunction: ol.interaction.Draw.createBox() });
   layer,
   loadingstrategy,
   proj:        Object.assign({}, proj,        { proj4: proj4ol, projections, Units, }),
