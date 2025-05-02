@@ -58,7 +58,7 @@
             v-if = "showfeaturecount && undefined !== category.ruleKey"
             style = "font-weight: bold"
           >
-            [{{layer.stylesfeaturecount[currentstyle][category.ruleKey]}}]
+            [{{layer.featurecount[category.ruleKey]}}]
           </span>
         </span>
 
@@ -72,7 +72,6 @@
 
 <script>
   import GUI                         from 'services/gui';
-  import { VM }                      from 'g3w-eventbus';
   import ApplicationState            from 'store/application';
   import ClickMixin                  from 'mixins/click';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
@@ -191,7 +190,6 @@
 
       showHideLayerCategory(index) {
         this.categories[index].checked = !this.categories[index].checked;
-        this.getProjectLayer().change();
         if ('tab' === this.legendplace) {
           this.layer.legend.change = true;
         } else if (this.categories[index].checked && this.mapReady) {
