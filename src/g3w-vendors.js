@@ -145,7 +145,7 @@ globalThis.ol = Object.assign({}, ol, {
   format:      Object.assign({}, format,      { filter }),
   geom:        Object.assign({}, geom,        { Polygon: Object.assign(geom.Polygon, Polygon) }),
   has,
-  interaction: Object.assign({}, interaction, { Draw: Object.assign(interaction.Draw, createBox) }), //on editing plugin new ol.interaction.Draw({ type: 'Circle', source: this._vectorLayer.getSource(), geometryFunction: ol.interaction.Draw.createBox() });
+  interaction: Object.assign({}, interaction, { Draw: Object.assign(interaction.Draw, { createBox }) }), //on editing plugin new ol.interaction.Draw({ type: 'Circle', source: this._vectorLayer.getSource(), geometryFunction: ol.interaction.Draw.createBox() });
   layer,
   loadingstrategy,
   proj:        Object.assign({}, proj,        { proj4: proj4ol, projections, Units, }),
