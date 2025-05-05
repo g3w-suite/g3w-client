@@ -128,7 +128,7 @@ export class AnnotationControl extends InteractionControl {
           body: {
             data: () => this._annotation,
             template: /* html */ `
-              <div style="width: 100%; padding: 5px;">
+              <div style="width: 100%; padding: 5px; max-height: 80vh; overflow-y: auto;">
 
                 <!-- SHAPE TYPES -->
                 <div style = "display: flex; justify-content: space-between; flex-flow: wrap; margin-bottom: 5px;">
@@ -165,7 +165,7 @@ export class AnnotationControl extends InteractionControl {
                     v-for  = "feat in features"
                     :key   = "feat.getId()" 
                     @click = "editFeature(feat)"
-                    style  = "width: 100%; margin: 3px; border: solid 1px #ccc"
+                    style  = "width: 100%; margin: 3px 0; border: solid 1px #ccc"
                   >{{ feat.get('text') }}</button>
                 </div>
 
@@ -270,7 +270,7 @@ export class AnnotationControl extends InteractionControl {
                   class   = "form-control" 
                   type    = "text" 
                   v-model = "text"
-                  style   = "display: block; margin: 5px; 0 border:0;"
+                  style   = "display: block; margin: 5px 0; 0 border:0;"
                 />
 
                 <!-- SHAPE LABEL (rotation) -->
