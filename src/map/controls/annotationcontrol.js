@@ -2,7 +2,6 @@
  * @file
  * @since 4.0.0
  */
-import { Compact as ColorPicker } from 'vue-color';
 
 import ApplicationState           from 'store/application';
 import GUI                        from 'services/gui';
@@ -14,7 +13,7 @@ import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
 const DEFAULTS = {
   /** Incremental number to unique identify id feature */
   fid:       1,
-  color:     '244, 78, 59',
+  color:     'rgb(244, 78, 59)',
   radius:    8,
   width:     3,
   opacity:   0.5,
@@ -120,7 +119,6 @@ export class AnnotationControl extends InteractionControl {
         closable:  false,
         hooks: {
           body: {
-            components: { ColorPicker },
             data: () => this._annotation,
             template: /* html */ `
               <div style="width: 100%; padding: 5px;">
@@ -149,9 +147,9 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPES ACTIONS -->
                 <div v-if = "feature || (!type && ids.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
-                  <button :class = "$fa('list')"     @click.stop = "showAll"  style = "background:none; border: none;" :hidden = "!feature || !ids.length"></button>
-                  <button :class = "$fa('download')" @click.stop = "download" style = "background:none; border: none;"></button>
-                  <button :class = "$fa('trash')"    @click.stop = "remove"   style = "background:none; border: none; color: red;"></button>
+                  <button :class = "$fa('list')"     @click.stop = "showAll"  style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !ids.length"></button>
+                  <button :class = "$fa('download')" @click.stop = "download" style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Download'"></button>
+                  <button :class = "$fa('trash')"    @click.stop = "remove"   style = "background:none; border: none; color: red;" v-t-tooltip:bottom.create = "'Remove'"></button>
                 </div>
 
                 <!-- SHAPES SAVED -->
@@ -282,15 +280,31 @@ export class AnnotationControl extends InteractionControl {
                 </label>
 
                 <!-- SHAPE COLOR -->
-                <color-picker
-                  v-if                = "feature && 'Text' !== feature.get('type')"
-                  ref                 = "color_picker"
-                  :value              = "picker_color"
-                  @click.prevent.stop = ""
-                  @hook:beforeDestroy = "() => $refs.color_picker.$off()"
-                  @input              = "onChangeColor"
-                  style               = "width: 100%; margin: 10px 0;"
-                />
+                <div
+                  v-if  = "feature && 'Text' !== feature.get('type')"
+                  style = "display: flex; justify-content: space-between; flex-flow: wrap; margin-bottom: 10px; gap: 5px; justify-content: center;"
+                >
+                  <input
+                    v-for                     = "color in [
+                      'rgb(77, 77, 77)', 'rgb(153, 153, 153)', 'rgb(255, 255, 255)', 'rgb(244, 78, 59)', 'rgb(254, 146, 0)', 'rgb(252, 220, 0)', 'rgb(219, 223, 0)', 'rgb(164, 221, 0)', 'rgb(104, 204, 202)', 'rgb(115, 216, 255)', 'rgb(174, 161, 255)', 'rgb(253, 161, 255)',
+                      'rgb(51, 51, 51)', 'rgb(128, 128, 128)', 'rgb(204, 204, 204)', 'rgb(211, 49, 21)', 'rgb(226, 115, 0)', 'rgb(252, 196, 0)', 'rgb(176, 188, 0)', 'rgb(104, 188, 0)', 'rgb(22, 165, 165)',  'rgb(0, 156, 224)',   'rgb(123, 100, 255)', 'rgb(250, 40, 255)',
+                      'rgb(0, 0, 0)',    'rgb(102, 102, 102)', 'rgb(179, 179, 179)', 'rgb(159, 5, 0)',   'rgb(196, 81, 0)',  'rgb(251, 158, 0)', 'rgb(128, 137, 0)', 'rgb(25, 77, 51)',  'rgb(12, 121, 125)',  'rgb(0, 98, 177)',    'rgb(101, 50, 148)',  'rgb(171, 20, 158)',
+                    ]"
+                    v-t-tooltip:bottom.create = "color"
+                    type                      = "radio"
+                    :value                    = "color"
+                    @click.stop               = "style.color = color"
+                    :style                    = "{
+                      appearance: 'none',
+                      display:    'inline-block',
+                      width:      '20px',
+                      height:     '20px',
+                      border:     style.color == color ? 'solid' : '1px solid #ccc',
+                      cursor:     'pointer',
+                      background: color,
+                    }"
+                  />
+                </div>
 
                 <!-- SHAPE RADIUS (point) -->
                 <div v-if = "feature && 'Point' === feature.get('type')">
@@ -352,11 +366,6 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
               </div>`,
-            computed: {
-              picker_color() { 
-                return this.style.color.split(',').reduce((a, c, i) => { a[ 0 === i ? 'r' : 1 === i ? 'g' : 'b'] = Number(c); return a; } ,{ r: null, g: null, b: null }) 
-              },
-            },  
             methods: {
               getShapeIconUrl(type){
                 return `${window.initConfig.urls.clienturl}/images/${({
@@ -373,9 +382,6 @@ export class AnnotationControl extends InteractionControl {
                 this.feature.selected = false;
                 this.feature          = null;
                 this.layer.changed();
-              },
-              onChangeColor(color) {
-                this.style.color = `${color.rgba.r}, ${color.rgba.g}, ${color.rgba.b}`;
               },
               remove() {
                 if (this.feature) {
@@ -410,17 +416,19 @@ export class AnnotationControl extends InteractionControl {
                 if (this.feature) {
                   this.feature.set('text', t);
                   this.ids.find(({ id }) => this.feature.getId() === id).text = t;
-                  if (this.feature.get('show_text')) {
-                    this.layer.changed();
-                  } 
                 }
+                this.layer.changed();
               },
               show_text(b) {
-                this.feature.set('show_text', b);
+                if (this.feature) {
+                  this.feature.set('show_text', b);
+                }
                 this.layer.changed();
               },
               show_info(b) {
-                this.feature.set('show_info', b);
+                if (this.feature) {
+                  this.feature.set('show_info', b);
+                }
                 this.layer.changed();
               },
               style: {
@@ -930,7 +938,7 @@ export class AnnotationControl extends InteractionControl {
           stroke,
         }),
         image: new ol.style.Circle({
-          fill:   new ol.style.Fill({ color: `rgb(${feat.get('style')?.color})` }),
+          fill:   new ol.style.Fill({ color: feat.get('style')?.color }),
           radius: feat.get('style')?.radius,
         }),
       })
@@ -949,7 +957,7 @@ export class AnnotationControl extends InteractionControl {
             font,
             stroke,
           }),
-          stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: `rgb(${feat.get('style')?.color})` }),
+          stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
         }),
         feat.selected && new ol.style.Style({ image, geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates()) })
       ].filter(Boolean);
@@ -968,8 +976,8 @@ export class AnnotationControl extends InteractionControl {
             font,
             stroke,
           }),
-          stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: `rgb(${feat.get('style')?.color})` }),
-          fill:   new ol.style.Fill({ color: `rgba(${feat.get('style')?.color}, ${feat.get('style')?.opacity})` })
+          stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
+          fill:   new ol.style.Fill({ color: `rgba(${feat.get('style')?.color?.replace?.(/rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/g, '$1, $2, $3')}, ${feat.get('style')?.opacity})` })
         }),
         feat.selected && new ol.style.Style({ image, geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates()[0]) })
       ].filter(Boolean);
@@ -989,8 +997,8 @@ export class AnnotationControl extends InteractionControl {
             font,
             stroke,
           }),
-          stroke:   new ol.style.Stroke({ width: feat.get('style')?.width, color: `rgb(${feat.get('style')?.color})` }),
-          fill:     new ol.style.Fill({ color: `rgba(${feat.get('style')?.color}, ${feat.get('style')?.opacity})` }),
+          stroke:   new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
+          fill:     new ol.style.Fill({ color: `rgba(${feat.get('style')?.color?.replace?.(/rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/g, '$1, $2, $3')}, ${feat.get('style')?.opacity})` }),
           geometry: () => feat.get('modifyGeometry')?.geometry || feat.getGeometry()
         }),
         feat.selected && new ol.style.Style({ image, geometry: () => new ol.geom.MultiPoint((feat.get('modifyGeometry')?.geometry || feat.getGeometry()).getCoordinates()[0]) })
@@ -1012,8 +1020,8 @@ export class AnnotationControl extends InteractionControl {
             font,
             stroke,
           }),
-          stroke: new ol.style.Stroke({ width: feat.get('style')?.width || DEFAULTS.width, color: `rgb(${feat.get('style')?.color || '3, 169, 244'})` }),
-          fill:   new ol.style.Fill({ color: `rgba(${feat.get('style')?.color || '255, 255, 255'}, ${feat.get('style')?.opacity ?? 0.5})` })
+          stroke: new ol.style.Stroke({ width: feat.get('style')?.width || DEFAULTS.width, color: feat.get('style')?.color || 'rgb(3, 169, 244)' }),
+          fill:   new ol.style.Fill({ color: `rgba(${feat.get('style')?.color?.replace?.(/rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/g, '$1, $2, $3') || '255, 255, 255'}, ${feat.get('style')?.opacity ?? 0.5})` })
         }),
         feat.selected && feat.get('show_info') && new ol.style.Style({
           stroke:   new ol.style.Stroke({ color: '#FFFFFF', width: 6 }), 
@@ -1034,7 +1042,7 @@ export class AnnotationControl extends InteractionControl {
           }),
           ...(feat.get('show_info') || undefined === feat.get('show_info') 
             ? {
-                stroke:   new ol.style.Stroke({ color: `rgb(${feat.get('style')?.color || '3, 169, 244'})`, width: 3 }), 
+                stroke:   new ol.style.Stroke({ color: feat.get('style')?.color || 'rgb(3, 169, 244)', width: 3 }), 
                 geometry: f => new ol.geom.LineString([f.getGeometry().getCenter(), feat.get('endCoordinates')]) 
               } 
             : {}
