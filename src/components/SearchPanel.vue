@@ -440,7 +440,7 @@
 
         const numdigaut        = input.options.numdigaut;
         const has_autocomplete = 'autocompletefield' === input.type;
-        const is_multiple      = 'in' === input.operator; //@since 4.0.0 set multiple select2
+        const is_multiple      = 'in' === input.operator && !has_autocomplete; //@since 4.0.0 set multiple select2 only for select box
         const ajax             = has_autocomplete ? {
           delay: 500,
           transport: async (d, ok, ko) => {
@@ -485,6 +485,7 @@
             inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
           },
         });
+        console.log(select2)
 
         SELECTS.push(select2);
 
