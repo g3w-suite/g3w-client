@@ -129,9 +129,10 @@ export async function getProject(gid, options = {}) {
     state: PROJECTS[gid],
     /** project APIs */
     urls: {
-      map_themes:      `/${PROJECTS[gid].type}/api/prjtheme/${PROJECTS[gid].id}/`,
-      vector_data:     `${PROJECTS[gid].vectorurl}data/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
-      featurecount:    `${PROJECTS[gid].vectorurl}featurecount/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
+      map_themes:          `/${PROJECTS[gid].type}/api/prjtheme/${PROJECTS[gid].id}/`,
+      vector_data:         `${PROJECTS[gid].vectorurl}data/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
+      featurecount:        `${PROJECTS[gid].vectorurl}featurecount/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
+      editorformstructure: `${PROJECTS[gid].vectorurl}editorformstructure/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
     },
     _projection:            Projections.get(crsToCrsObject(PROJECTS[gid].crs)),
     _layersStore:           new LayersStore(),

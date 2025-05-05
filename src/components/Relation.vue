@@ -552,7 +552,6 @@
     },
 
     async mounted() {
-      console.log(this.table.columns);
       const layer = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
 
       await this.$nextTick();
