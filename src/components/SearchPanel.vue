@@ -440,7 +440,7 @@
 
         const numdigaut        = input.options.numdigaut;
         const has_autocomplete = 'autocompletefield' === input.type;
-        const is_multiple      = 'in' === input.operator && !has_autocomplete; //@since 4.0.0 set multiple select2 only for select box
+        const is_multiple      = 'in' === input.operator; //@since 4.0.0 set multiple select2 only for select box
         const ajax             = has_autocomplete ? {
           delay: 500,
           transport: async (d, ok, ko) => {
