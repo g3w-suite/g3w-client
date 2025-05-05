@@ -617,6 +617,8 @@ export default new (class QueryResultsService extends G3WObject {
       this.setQueryResponse({ ...data, query }, { add: false, update: true });
       //set the current page
       this.state.query.pagination.current[index] = page;
+      //@since 3.11.8 net numebr of pages
+      this.state.query.pagination.pages[index]   =  Math.ceil(data.count / page_size);
       //in the case of page size change
       const bool = layer.state.selection.active || has_filtertoken ;
       //get selection action

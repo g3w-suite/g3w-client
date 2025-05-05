@@ -2116,6 +2116,15 @@ class MapService extends G3WObject {
     GUI.getService('catalog').removeExternalLayer({ name, type });
 
     this.viewer.map.removeLayer(layer);
+    /**@since v4.0.0 */
+    if ('vector' === type) {  
+      const id = layer.get('id');
+      //remove eventually selection feature belong to layer
+      this.defaultsLayers.selectionLayer.getSource()
+        .getFeatures()
+        .filter(f => id === f.__layerId)
+        .forEach(f => this.defaultsLayers.selectionLayer.getSource().removeFeature(f));
+    }
 
     if ('vector' === type) {
       this._keyEvents.unwatches[name].forEach(unWatch => unWatch());
@@ -2352,7 +2361,7 @@ class MapService extends G3WObject {
     const extent   = ('vector' === type && layer.getSource().getExtent()) || [];
 
     // add id value
-    features.forEach((f, i) => f.setId(i));
+    features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`)); //set id with prefix of layer id
 
     if (features.length) {
       externalLayer.geometryType = features[0].getGeometry().getType();

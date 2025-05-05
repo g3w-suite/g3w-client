@@ -2540,6 +2540,8 @@ class Layer extends G3WObject {
           contentType: 'application/json'
         });
         this.state.stylesfeaturecount[style] = (true === result ? data : {});
+        //@v3.11.9 Need change features count to show it on TOC
+        this.state.featurecount              = this.state.stylesfeaturecount[style];
       } catch(e) {
         cansole.warn(e);
         this.state.stylesfeaturecount[style] = {};

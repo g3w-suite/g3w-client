@@ -58,7 +58,7 @@
             v-if = "showfeaturecount && 'undefined' !== typeof category.ruleKey"
             style = "font-weight: bold"
           >
-            [{{layer.stylesfeaturecount[currentstyle][category.ruleKey]}}]
+            [{{layer.featurecount[category.ruleKey]}}]
           </span>
         </span>
 
