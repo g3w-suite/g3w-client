@@ -485,7 +485,6 @@
             inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
           },
         });
-        console.log(select2)
 
         SELECTS.push(select2);
 
