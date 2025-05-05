@@ -548,7 +548,8 @@ class Layer extends G3WObject {
               unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
             },
             /** @since 3.8.0 */
-            featurecount: project.getUrl('featurecount'),
+            featurecount:         project.getUrl('featurecount'),
+            editorformstructure : project.getUrl('editorformstructure'),
             /** @since 3.10.0 */
             pdf:         `/html2pdf/`,
           })
@@ -2559,6 +2560,54 @@ class Layer extends G3WObject {
    * 
    * @returns { Promise<Object | void>}
    * 
+   * Change featurecount and editor form structure for a specific style
+   * 
+   * @since 4.0.0
+   */
+  async changeCurrentStyle(style) {
+    //check if style is current set on layer. If not change
+    if (!(this.config.styles.find(s => style === s.name) || {}).current) {
+      try {
+        //get feature count for a specific style
+        await this.getStyleFeatureCount(style);
+        //get editor form structure for a specific style
+        await this.getStyleEditorFormStructure(style);
+        //set as current the style passed
+        this.config.styles.forEach(s => s.current = style === s.name);
+        //In case of change need to call change function
+        this.change() 
+      } catch(e) {
+        console.warn(e);    
+      }
+    }
+  }
+
+  /**
+   * Get editor from structure for a specific style
+   * @param {String} style 
+   */
+  async getStyleEditorFormStructure(style) {
+    try {
+      const { result, data } = await XHR.post({
+        url:          `${this.config.urls.editorformstructure}${this.getId()}/`,
+        data:         JSON.stringify({ style }),
+        contentType: 'application/json'
+      });
+      if (result) {
+        this.config.editor_form_structure = data;
+        return this.config.editor_form_structure;
+      }
+    } catch(e) {
+      console.warn(e);
+      throw e;
+    }
+  }
+
+  /**
+   * @param style
+   * 
+   * @returns { Promise<Object | void>}
+   * 
    * @since 3.8.0
    */
   async getStyleFeatureCount(style) {
@@ -2575,11 +2624,14 @@ class Layer extends G3WObject {
         });
         this.state.stylesfeaturecount[style] = (true === result ? data : {});
       } catch(e) {
-        cansole.warn(e);
+        console.warn(e);
         this.state.stylesfeaturecount[style] = {};
+        throw e;
       }
-    }
-    return this.state.stylesfeaturecount[style];
+    };
+    //set current feature count to change
+    this.state.featurecount = this.state.stylesfeaturecount[style];
+    return this.state.stylesfeaturecount[style]
   }
 
   /**
@@ -2791,23 +2843,6 @@ class Layer extends G3WObject {
    */
   getOpacity() {
     return this.state.opacity;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * Change the current style of layer
-   *
-   * @param name
-   * 
-   * @returns { Boolean }
-   *
-   * @since 4.0.0
-   */
-  setCurrentStyle(name) {
-    const changed = !(this.config.styles.find(s => name === s.name).current);
-    this.config.styles.forEach(s => s.current = name === s.name);
-    return changed;
   }
 
   /**

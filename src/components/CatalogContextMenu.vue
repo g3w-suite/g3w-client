@@ -849,21 +849,10 @@
       },
 
       setLayerStyle(index) {
-        let changed = false;
-        this.layer.styles.forEach((style, i) => {
-          if (i === index) {
-            this.layer_style = style.name;
-            changed = !style.current;
-            style.current = true;
-          } else {
-            style.current = false;
-          }
-        });
-        const layer = changed && getCatalogLayerById(this.layer.id);
-        if (layer) {
-          VM.$emit('layer-change-style', { layerId: this.layer.id, style: this.layer_style });
-          layer.change();
-        }
+
+        this.layer_style = this.layer.styles[index].name;
+        //change layer style
+        getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style)
         this.closeMenu();
       },
 
@@ -900,9 +889,9 @@
        */
       async deleteFilter(fid) {
         const layer  = getCatalogLayerById(this.layer.id);
-        const change = fid === this.layer.fid;
-        // skip when ..
+        // No found catalog layer
         if (!layer) { return }
+        const change = fid === this.layer.fid;
         await layer.deleteFilterToken(fid);
         if (change) { layer.change() }
 
