@@ -10,20 +10,10 @@ import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
 
-const DEFAULTS = {
-  /** Incremental number to unique identify id feature */
-  fid:       1,
-  color:     'rgb(244, 78, 59)',
-  radius:    8,
-  width:     3,
-  opacity:   0.5,
-  rotation:  0,
-  circle:    { radius: 0, unit: 1 },
-  line:      { length: 0, unit: 1 },
-  rectangle: { width:  0, wunit:  1, height: 0, hunit:  1 }
-};
-
 export class AnnotationControl extends InteractionControl {
+
+  /** Incremental counter for added features */
+  static FID = 1;
 
   constructor(opts = {}) {
     super({
@@ -41,16 +31,16 @@ export class AnnotationControl extends InteractionControl {
       /** annotation feature to edit */
       feature:       null,
       style: {
-        color:    DEFAULTS.color,
-        width:    DEFAULTS.width,
-        radius:   DEFAULTS.radius,
-        opacity:  DEFAULTS.opacity,
-        rotation: DEFAULTS.rotation,
+        color:    'rgb(244, 78, 59)',
+        width:    3,
+        radius:   8,
+        opacity:  0.5,
+        rotation: 0,
       },
       constraints: {
-        circle:    {...DEFAULTS.circle},
-        line:      {...DEFAULTS.line},
-        rectangle: {...DEFAULTS.rectangle},
+        circle:    { radius: 0, unit: 1 },
+        line:      { length: 0, unit: 1 },
+        rectangle: { width:  0, wunit: 1, height: 0, hunit: 1 },
       },
       text:          '',
       show_text:     false,
@@ -75,7 +65,7 @@ export class AnnotationControl extends InteractionControl {
       if ('Circle' === f.get('type')) {
         f.setGeometry(new ol.geom.Circle(f.get('center'), Number(f.get('radius'))));
       }
-      DEFAULTS.fid = Math.max(DEFAULTS.fid, f.getId()) + 1; // increment counter from added feautures
+      AnnotationControl.FID = Math.max(AnnotationControl.FID, f.getId()) + 1; // increment counter from added feautures
       f.setStyle(this.#style(f.get('type')));
     });
 
@@ -107,7 +97,7 @@ export class AnnotationControl extends InteractionControl {
       apply: (cb, ctx, args) => { Reflect.apply(cb, ctx, args); return this.#onDrag(...args); },
     });
 
-    this._interactions.select.on('select',      this.#onSelectInteraction.bind(this));
+    this._interactions.select.on('select',      e => this.editFeature(e.selected[0]));
     this._interactions.modify.on('modifystart', this.#onModifyStart.bind(this));
     this._interactions.modify.on('modifyend',   this.#onModifyEnd.bind(this));
 
@@ -131,7 +121,7 @@ export class AnnotationControl extends InteractionControl {
               <div style="width: 100%; padding: 5px; max-height: 80vh; overflow-y: auto;">
 
                 <!-- SHAPE TYPES -->
-                <div style = "display: flex; justify-content: space-between; flex-flow: wrap; margin-bottom: 5px;">
+                <div style = "display: flex; justify-content: space-between; flex-flow: wrap; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee;">
                   <input
                     v-for                     = "shape in ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text']"
                     v-t-tooltip:bottom.create = "shape"
@@ -150,13 +140,6 @@ export class AnnotationControl extends InteractionControl {
                       background: 'url(' + getShapeIconUrl(shape) + ') no-repeat center',
                     }"
                   />
-                </div>
-
-                <!-- SHAPES ACTIONS -->
-                <div v-if = "feature || (!type && features.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
-                  <button :class = "$fa('list')"     @click.stop = "showAll"  style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !features.length"></button>
-                  <button :class = "$fa('download')" @click.stop = "download" style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Download'"></button>
-                  <button :class = "$fa('trash')"    @click.stop = "remove"   style = "background:none; border: none; color: red;" v-t-tooltip:bottom.create = "'Remove'"></button>
                 </div>
 
                 <!-- SHAPES SAVED -->
@@ -372,9 +355,16 @@ export class AnnotationControl extends InteractionControl {
                   </label>
                 </div>
 
+                <!-- SHAPES ACTIONS -->
+                <div v-if = "feature || (!type && features.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
+                  <button :class = "$fa('download')"   @click.stop = "download" style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'Download'"></button>
+                  <button :class = "$fa('trash')"      @click.stop = "remove"   style = "background:none; border: none; color: red; margin-right: auto;" v-t-tooltip:bottom.create = "'Remove'"></button>
+                  <button :class = "$fa('arrow-left')" @click.stop = "showAll"  style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !features.length"></button>
+                </div>
+
               </div>`,
             computed: {
-              /** get only saved features related to current PID */
+              /** retrieve saved features related to current PID */
               features() {
                 return this.layer.getSource().getFeatures().filter(f => [undefined, ApplicationState.project.getId()].includes(f.get('pid')));
               },
@@ -424,24 +414,20 @@ export class AnnotationControl extends InteractionControl {
               type(t) {
                 CONTROL.changeType(t)
               },
-              text(t) { 
-                //@TODO Check why if showAll, also text
+              text(t) {
                 if (this.feature) {
                   this.feature.set('text', t);
                 }
-                this.layer.changed();
               },
               show_text(b) {
                 if (this.feature) {
                   this.feature.set('show_text', b);
                 }
-                this.layer.changed();
               },
               show_info(b) {
                 if (this.feature) {
                   this.feature.set('show_info', b);
                 }
-                this.layer.changed();
               },
               style: {
                 deep: true,
@@ -455,7 +441,6 @@ export class AnnotationControl extends InteractionControl {
                       rotation: Number(style.rotation) * (Math.PI / 180)
                     }));
                   }
-                  this.layer.changed();
                 },
               },
               // Handle measure geometry
@@ -493,7 +478,6 @@ export class AnnotationControl extends InteractionControl {
               CONTROL.getMap().removeInteraction(CONTROL._interactions.modify);
               // unselect all features
               this.layer.getSource().getFeatures().forEach(f => f.selected = false);
-              this.layer.changed();
             }
           }
         }
@@ -551,16 +535,16 @@ export class AnnotationControl extends InteractionControl {
 
       Object.assign(this._annotation, {
         constraints: {
-          circle:    { ...DEFAULTS.circle },
-          line:      { ...DEFAULTS.line },
-          rectangle: { ...DEFAULTS.rectangle }
+          circle:    { radius: 0, unit: 1 },
+          line:      { length: 0, unit: 1 },
+          rectangle: { width:  0, wunit: 1, height: 0, hunit: 1 }
         },
         style: {
-          color:    DEFAULTS.color,
-          width:    DEFAULTS.width,
-          radius:   DEFAULTS.radius,
-          opacity:  DEFAULTS.opacity,
-          rotation: DEFAULTS.rotation,
+          color:    'rgb(244, 78, 59)',
+          width:    3,
+          radius:   8,
+          opacity:  0.5,
+          rotation: 0,
         },
         type:      null,
         feature:   null,
@@ -579,7 +563,7 @@ export class AnnotationControl extends InteractionControl {
     }  
 
     if (this._measureTooltip) {
-      this._measureTooltip.remove()
+      this._measureTooltip.remove();
       this._measureTooltip = null;
     }
 
@@ -620,9 +604,9 @@ export class AnnotationControl extends InteractionControl {
     this._interactions.select.getFeatures().clear();
 
     // set id and default properties values of new feature
-    feature.setId(DEFAULTS.fid); 
+    feature.setId(AnnotationControl.FID); 
     feature.set('pid', ApplicationState.project.getId());
-    feature.set('text', `${this._annotation.type} ${DEFAULTS.fid}`); 
+    feature.set('text', `${this._annotation.type} ${AnnotationControl.FID}`); 
     feature.set('show_text', 'Text' === this._annotation.type);
     feature.set('info', '');
     feature.set('show_info', false);
@@ -635,11 +619,11 @@ export class AnnotationControl extends InteractionControl {
 
     // set default style
     Object.assign(this._annotation.style, {
-      color:    DEFAULTS.color,
-      radius:   DEFAULTS.radius,
-      width:    DEFAULTS.width,
-      opacity:  DEFAULTS.opacity,
-      rotation: DEFAULTS.rotation,
+      color:    'rgb(244, 78, 59)',
+      radius:   8,
+      width:    3,
+      opacity:  0.5,
+      rotation: 0,
     });
 
     //set style property of feature
@@ -671,11 +655,7 @@ export class AnnotationControl extends InteractionControl {
     this._interactions.select.setActive(true);
 
     //Increment fid
-    DEFAULTS.fid++;
-  }
-
-  #onSelectInteraction(e) {
-    this.editFeature(e.selected[0]);
+    AnnotationControl.FID++;
   }
 
   #onDrag(e) {
@@ -715,9 +695,7 @@ export class AnnotationControl extends InteractionControl {
     }
    
     // redraw layer only if feature has show_info to true
-    if (this._annotation.feature.get('show_info')) {
-      this._annotation.layer.changed();
-    }
+    this._annotation.layer.changed();
   }
 
   /**
@@ -777,7 +755,7 @@ export class AnnotationControl extends InteractionControl {
       radius:   null,
       length:   null,
       geometry: null,
-    })
+    });
   }
 
   /**
@@ -1016,7 +994,7 @@ export class AnnotationControl extends InteractionControl {
       return feat => [
         // stroke selection
         feat.selected && new ol.style.Style({
-          stroke: new ol.style.Stroke({ width: (feat.get('style')?.width || DEFAULTS.width) + 3, color: '#FFF' }),
+          stroke: new ol.style.Stroke({ width: (feat.get('style')?.width || 3) + 3, color: '#FFF' }),
         }),
         // circle style
         new ol.style.Style({
@@ -1027,7 +1005,7 @@ export class AnnotationControl extends InteractionControl {
             font,
             stroke,
           }),
-          stroke: new ol.style.Stroke({ width: feat.get('style')?.width || DEFAULTS.width, color: feat.get('style')?.color || 'rgb(3, 169, 244)' }),
+          stroke: new ol.style.Stroke({ width: feat.get('style')?.width || 3, color: feat.get('style')?.color || 'rgb(3, 169, 244)' }),
           fill:   new ol.style.Fill({ color: `rgba(${feat.get('style')?.color?.replace?.(/rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/g, '$1, $2, $3') || '255, 255, 255'}, ${feat.get('style')?.opacity ?? 0.5})` })
         }),
         feat.selected && feat.get('show_info') && new ol.style.Style({
