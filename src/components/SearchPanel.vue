@@ -321,7 +321,16 @@
 
             const cached = d.dvalues[filter];
 
-            d.value  = 'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            // In case of in operator
+            if ( 'in' === d.operator && ['selectfield', 'autocompletefield'].includes(d.type)) {
+              d.value  = [SEARCH_ALLVALUE];
+            }
+
+            //In case of no in operator
+            if ( 'in' !== d.operator) {
+              d.value  =  'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            }
+
             d.values = Array.from(new Set([                                       // ensure uniques values
               ...(!has_autocomplete(d) && !is_empty(value) ? [d.values[0]] : []), // get first value (ALL_VALUE)
               ...(!has_autocomplete(d) && is_empty(value) ? d._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
