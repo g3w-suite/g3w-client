@@ -29,7 +29,7 @@ export class AnnotationControl extends InteractionControl {
     super({
       ...opts,
       name:     'annotation',
-      tipLabel:    "sdk.mapcontrols.annotation.title",
+      tipLabel:  "sdk.mapcontrols.annotation.title",
       clickmap: true,
       enabled:  true,
     });
@@ -38,7 +38,6 @@ export class AnnotationControl extends InteractionControl {
     this._annotation = {
       layer:        new ol.layer.Vector({ source: new ol.source.Vector() }),
       type:         null,
-      ids:           [],
       /** annotation feature to edit */
       feature:       null,
       style: {
@@ -65,11 +64,11 @@ export class AnnotationControl extends InteractionControl {
 
     this._interactions = {};
 
-    // load saved annotations (from server)
+    // load saved annotations from local storage (TODO: load it from server config?)
     const features = (new ol.format.GeoJSON({
       dataProjection:    GUI.getService('map').getEpsg(),
       featureProjection: GUI.getService('map').getEpsg()
-    })).readFeatures(opts.annotations || { type: "FeatureCollection", features: [] });
+    })).readFeatures((localStorage.getItem('annotations') ? JSON.parse(localStorage.getItem('annotations')) : opts.annotations) || { type: "FeatureCollection", features: [] });
 
     // set styles
     features.forEach(f => {
@@ -82,8 +81,16 @@ export class AnnotationControl extends InteractionControl {
 
     // add features
     this._annotation.layer.getSource().addFeatures(features)
-    this._annotation.layer.getSource().on('addfeature',    this.#onAddFeature.bind(this));
-    this._annotation.layer.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
+    this._annotation.layer.getSource().on('addfeature', this.#onAddFeature.bind(this));
+    // this._annotation.layer.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
+
+    // update local storage
+    this._annotation.layer.on('change', () => {
+      localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
+        this._annotation.layer.getSource().getFeatures(),
+        { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
+      )));
+    });
     
     this._interactions.select = new ol.interaction.Select({
       layers: [this._annotation.layer],
@@ -146,20 +153,20 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
                 <!-- SHAPES ACTIONS -->
-                <div v-if = "feature || (!type && ids.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
-                  <button :class = "$fa('list')"     @click.stop = "showAll"  style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !ids.length"></button>
+                <div v-if = "feature || (!type && features.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-bottom: 1px solid #eee; border-top: 1px solid #eee; padding: 10px 0; margin: 10px 0;">
+                  <button :class = "$fa('list')"     @click.stop = "showAll"  style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !features.length"></button>
                   <button :class = "$fa('download')" @click.stop = "download" style = "background:none; border: none;"             v-t-tooltip:bottom.create = "'Download'"></button>
                   <button :class = "$fa('trash')"    @click.stop = "remove"   style = "background:none; border: none; color: red;" v-t-tooltip:bottom.create = "'Remove'"></button>
                 </div>
 
                 <!-- SHAPES SAVED -->
-                <div v-if   = "!feature && !type && ids.length > 0">
+                <div v-if   = "!feature && !type && features.length > 0">
                   <button 
-                    v-for  = "item in ids"
-                    :key   = "item.id" 
-                    @click = "editFeature(item.id)"
+                    v-for  = "feat in features"
+                    :key   = "feat.getId()" 
+                    @click = "editFeature(feat)"
                     style  = "width: 100%; margin: 3px; border: solid 1px #ccc"
-                  >{{ item.text }}</button>
+                  >{{ feat.get('text') }}</button>
                 </div>
 
                 <!-- SHAPE CONSTRAINT: “Segment length (line)” -->
@@ -293,7 +300,7 @@ export class AnnotationControl extends InteractionControl {
                     v-t-tooltip:bottom.create = "color"
                     type                      = "radio"
                     :value                    = "color"
-                    @click.stop               = "style.color = color"
+                    v-model                   = "style.color"
                     :style                    = "{
                       appearance: 'none',
                       display:    'inline-block',
@@ -366,6 +373,12 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
               </div>`,
+            computed: {
+              /** get only saved features related to current PID */
+              features() {
+                return this.layer.getSource().getFeatures().filter(f => [undefined, ApplicationState.project.getId()].includes(f.get('pid')));
+              },
+            },
             methods: {
               getShapeIconUrl(type){
                 return `${window.initConfig.urls.clienturl}/images/${({
@@ -391,8 +404,8 @@ export class AnnotationControl extends InteractionControl {
                 }
                 this.feature = null;
               },
-              editFeature(id) {
-                CONTROL.editFeature(this.layer.getSource().getFeatureById(id));
+              editFeature(feat) {
+                CONTROL.editFeature(feat);
               },
               download() {
                 ApplicationState.download = true;
@@ -415,7 +428,6 @@ export class AnnotationControl extends InteractionControl {
                 //@TODO Check why if showAll, also text
                 if (this.feature) {
                   this.feature.set('text', t);
-                  this.ids.find(({ id }) => this.feature.getId() === id).text = t;
                 }
                 this.layer.changed();
               },
@@ -609,6 +621,7 @@ export class AnnotationControl extends InteractionControl {
 
     // set id and default properties values of new feature
     feature.setId(DEFAULTS.fid); 
+    feature.set('pid', ApplicationState.project.getId());
     feature.set('text', `${this._annotation.type} ${DEFAULTS.fid}`); 
     feature.set('show_text', 'Text' === this._annotation.type);
     feature.set('info', '');
@@ -646,8 +659,7 @@ export class AnnotationControl extends InteractionControl {
       text: feature.get('text'), // current text (for input value)
     });
 
-    this._annotation.ids.push({ id: DEFAULTS.fid, text: feature.get('text') }); // Add feature to features list
-    this._interactions.select.getFeatures().push(feature);                      // add current feature to selection to modify it
+    this._interactions.select.getFeatures().push(feature); // add current feature to selection to modify it
 
     //set current annotation feature
     this._annotation.feature = feature;
@@ -659,12 +671,7 @@ export class AnnotationControl extends InteractionControl {
     this._interactions.select.setActive(true);
 
     //Increment fid
-    DEFAULTS.fid++
-
-  }
-
-  #onRemoveFeature({ feature }) {
-    this._annotation.ids = this._annotation.ids.filter(({ id }) => id !== feature.getId() )
+    DEFAULTS.fid++;
   }
 
   #onSelectInteraction(e) {
