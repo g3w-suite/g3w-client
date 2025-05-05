@@ -418,16 +418,19 @@ export class AnnotationControl extends InteractionControl {
                 if (this.feature) {
                   this.feature.set('text', t);
                 }
+                this.layer.changed();
               },
               show_text(b) {
                 if (this.feature) {
                   this.feature.set('show_text', b);
                 }
+                this.layer.changed();
               },
               show_info(b) {
                 if (this.feature) {
                   this.feature.set('show_info', b);
                 }
+                this.layer.changed();
               },
               style: {
                 deep: true,
@@ -441,6 +444,7 @@ export class AnnotationControl extends InteractionControl {
                       rotation: Number(style.rotation) * (Math.PI / 180)
                     }));
                   }
+                  this.layer.changed();
                 },
               },
               // Handle measure geometry
@@ -478,6 +482,7 @@ export class AnnotationControl extends InteractionControl {
               CONTROL.getMap().removeInteraction(CONTROL._interactions.modify);
               // unselect all features
               this.layer.getSource().getFeatures().forEach(f => f.selected = false);
+              this.layer.changed();
             }
           }
         }
