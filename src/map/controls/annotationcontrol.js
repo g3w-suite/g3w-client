@@ -120,6 +120,16 @@ export class AnnotationControl extends InteractionControl {
             template: /* html */ `
               <div style="width: 100%; padding: 5px; max-height: 80vh; overflow-y: auto;">
 
+                <!-- DOCS URL -->
+                <a
+                  :href  = "'https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#map-controls'"
+                  target = "_blank"
+                  style  = "position: absolute;inset: 1em 1em auto auto;"
+                  title  = "Docs"
+                >
+                  <i :class = "$fa('external-link')"></i>
+                </a>
+
                 <!-- SHAPE TYPES -->
                 <div style = "display: flex; justify-content: space-between; flex-flow: wrap; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee;">
                   <input
@@ -148,8 +158,16 @@ export class AnnotationControl extends InteractionControl {
                     v-for  = "feat in features"
                     :key   = "feat.getId()" 
                     @click = "editFeature(feat)"
-                    style  = "width: 100%; margin: 3px 0; border: solid 1px #ccc"
-                  >{{ feat.get('text') }}</button>
+                    :style="{
+                      width:      '100%',
+                      margin:     '3px 0',
+                      border:     'solid 1px #ccc',
+                      padding:    '5px',
+                      background: 'url(' + getShapeIconUrl(feat.get('type')) + ') 5px center no-repeat',
+                    }"
+                  >
+                    {{ feat.get('text') }}
+                  </button>
                 </div>
 
                 <!-- SHAPE CONSTRAINT: “Segment length (line)” -->
@@ -360,6 +378,7 @@ export class AnnotationControl extends InteractionControl {
                   <button :class = "$fa('download')"   @click.stop = "download" style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'Download'"></button>
                   <button :class = "$fa('trash')"      @click.stop = "remove"   style = "background:none; border: none; color: red; margin-right: auto;" v-t-tooltip:bottom.create = "'Remove'"></button>
                   <button :class = "$fa('arrow-left')" @click.stop = "showAll"  style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !features.length"></button>
+                  <button :class = "$fa('close')"      @click.stop = "close"    style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'close'"    :hidden = "feature || !features.length"></button>
                 </div>
 
               </div>`,
@@ -408,6 +427,9 @@ export class AnnotationControl extends InteractionControl {
                   )
                 )], { type: "application/json;charset=utf-8" }), 'annotation');
                 ApplicationState.download = false;
+              },
+              close() {
+                CONTROL.toggle(false);
               },
             },
             watch: {
