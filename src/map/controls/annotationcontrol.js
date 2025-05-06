@@ -665,6 +665,9 @@ export class AnnotationControl extends InteractionControl {
     // clear eventually selected feature
     this._interactions.select.getFeatures().clear();
 
+    this._annotation.type  = this._annotation.type || feature.get('type');
+    this._annotation.style = this._annotation.style || feature.get('style');
+
     // set id and default properties values of new feature
     feature.setId(AnnotationControl.FID); 
     feature.set('pid', ApplicationState.project.getId());
