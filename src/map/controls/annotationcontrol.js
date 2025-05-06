@@ -1120,11 +1120,11 @@ export class AnnotationControl extends InteractionControl {
   showUploadModal() {
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
-        <dialog style="width: 400px;">
-          <form method="dialog" style="display: flex; flex-direction: column; gap: 10px;">
+        <dialog>
+          <form method="dialog">
             <label for="file_input" style="font-size: 1.25em;">Upload a JSON File</label>
-            <input id="file_input" type="file" accept="application/json" style="margin-bottom: 1em;" />
-            <pre id="file_preview" hidden style="margin-top: 1em; padding: 10px; border: 1px solid #ccc; height: 150px; overflow-y: auto; background: #f9f9f9;" contenteditable></pre>
+            <input id="file_input" type="file" accept="application/json" style="margin: 1em 0;" />
+            <pre id="file_preview" hidden style="margin-top: 1em;" contenteditable></pre>
             <menu style="display: flex; justify-content: space-between;">
               <button type="submit" value="cancel" class="btn btn-secondary">Cancel</button>
               <button id="confirm_button" disabled type="submit" value="confirm" class="btn btn-success">Confirm</button>
