@@ -383,11 +383,11 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPES ACTIONS -->
                 <div style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
                   <button :class = "$fa('link')"          @click.stop = "share"    style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Share'"    :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Import'"   :hidden = "feature || type"></button>
+                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Import'"   :hidden = "feature"></button>
                   <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Export'"   :hidden = "!features.length || (type && !feature)"></button>
                   <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'Remove'"   :hidden = "!features.length || (type && !feature)"></button>
                   <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'Show all'" :hidden = "!type && !feature"></button>
-                  <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    :hidden = "feature || type"></button>
+                  <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    :hidden = "feature || (type && !feature)"></button>
                 </div>
 
               </div>`,
@@ -410,8 +410,10 @@ export class AnnotationControl extends InteractionControl {
               },
               showAll() {
                 this.type             = null;
-                this.feature.selected = false;
-                this.feature          = null;
+                if (this.feature) {
+                  this.feature.selected = false;
+                  this.feature          = null;
+                }
                 this.layer.changed();
               },
               remove() {
