@@ -54,11 +54,18 @@ export class AnnotationControl extends InteractionControl {
 
     this._interactions = {};
 
-    // load saved annotations from local storage (TODO: load it from server config?)
+    // load saved annotations from: URL search params, local storage, or server config
     const features = (new ol.format.GeoJSON({
       dataProjection:    GUI.getService('map').getEpsg(),
       featureProjection: GUI.getService('map').getEpsg()
-    })).readFeatures((localStorage.getItem('annotations') ? JSON.parse(localStorage.getItem('annotations')) : opts.annotations) || { type: "FeatureCollection", features: [] });
+    })).readFeatures({
+      type: "FeatureCollection",
+      features: [
+        ...(JSON.parse((new URLSearchParams(window.location.search)).get('annotations') || null)?.features || []),
+        ...(JSON.parse(localStorage.getItem('annotations') || null)?.features           || []),
+        ...(opts?.annotations?.features                                                 || [])
+      ]
+    });
 
     // set styles
     features.forEach(f => {
@@ -374,11 +381,13 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
                 <!-- SHAPES ACTIONS -->
-                <div v-if = "feature || (!type && features.length > 0)" style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('download')"   @click.stop = "download" style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'Download'"></button>
-                  <button :class = "$fa('trash')"      @click.stop = "remove"   style = "background:none; border: none; color: red; margin-right: auto;" v-t-tooltip:bottom.create = "'Remove'"></button>
-                  <button :class = "$fa('arrow-left')" @click.stop = "showAll"  style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'Show all'" :hidden = "!feature || !features.length"></button>
-                  <button :class = "$fa('close')"      @click.stop = "close"    style = "background:none; border: none;"                                 v-t-tooltip:bottom.create = "'close'"    :hidden = "feature || !features.length"></button>
+                <div style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
+                  <button :class = "$fa('link')"          @click.stop = "share"    style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Share'"    :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Import'"   :hidden = "feature || type"></button>
+                  <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Export'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'Remove'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'Show all'" :hidden = "!type && !feature"></button>
+                  <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    :hidden = "feature || type"></button>
                 </div>
 
               </div>`,
@@ -406,6 +415,9 @@ export class AnnotationControl extends InteractionControl {
                 this.layer.changed();
               },
               remove() {
+                if (!this.feature && !confirm('Delete all annotations?')) {
+                  return;
+                }
                 if (this.feature) {
                   this.layer.getSource().removeFeature(this.feature);
                 } else {
@@ -416,6 +428,9 @@ export class AnnotationControl extends InteractionControl {
               editFeature(feat) {
                 CONTROL.editFeature(feat);
               },
+              upload(){
+                CONTROL.showUploadModal();
+              },
               download() {
                 ApplicationState.download = true;
                 saveBlob(new Blob([new TextEncoder().encode(
@@ -423,13 +438,18 @@ export class AnnotationControl extends InteractionControl {
                     (new ol.format.GeoJSON()).writeFeaturesObject(
                       this.feature ? [this.feature] : this.layer.getSource().getFeatures(),
                       { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()}
-                    )
+                    ),
+                    null,
+                    2
                   )
                 )], { type: "application/json;charset=utf-8" }), 'annotation');
                 ApplicationState.download = false;
               },
               close() {
                 CONTROL.toggle(false);
+              },
+              share() {
+                document.querySelector('.nav-embedmap').click();
               },
             },
             watch: {
@@ -509,6 +529,19 @@ export class AnnotationControl extends InteractionControl {
           }
         }
       });
+    });
+
+    // Listen for #share_modal open event
+    $(document).on('show.bs.modal', '#share_modal', () => {
+      const url = new URL($('#share_modal input').val());
+      const annotations = this._annotation.layer.getSource().getFeatures();
+      if (annotations.length) {
+        url.searchParams.set('annotations', new ol.format.GeoJSON().writeFeatures(this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(), {
+          dataProjection: GUI.getService('map').getEpsg(),
+          featureProjection: GUI.getService('map').getEpsg()
+        }));
+      }
+      $('#share_modal input').val(url.toString());
     });
   }
 
@@ -1076,5 +1109,62 @@ export class AnnotationControl extends InteractionControl {
 
   }
 
+  /**
+   * Open a dialog to upload a JSON file and add annotations to the map.
+   */
+  showUploadModal() {
+    const dialog = Object.assign(document.createElement('template'), {
+      innerHTML: /* html */`
+        <dialog style="width: 400px;">
+          <form method="dialog" style="display: flex; flex-direction: column; gap: 10px;">
+            <label for="file_input" style="font-size: 1.25em;">Upload a JSON File</label>
+            <input id="file_input" type="file" accept="application/json" style="margin-bottom: 1em;" />
+            <pre id="file_preview" hidden style="margin-top: 1em; padding: 10px; border: 1px solid #ccc; height: 150px; overflow-y: auto; background: #f9f9f9;" contenteditable></pre>
+            <menu style="display: flex; justify-content: space-between;">
+              <button type="submit" value="cancel" class="btn btn-secondary">Cancel</button>
+              <button id="confirm_button" disabled type="submit" value="confirm" class="btn btn-success">Confirm</button>
+            </menu>
+          </form>
+        </dialog>
+      `.trim()
+    }).content.firstChild;
+
+    const input   = dialog.querySelector('#file_input');
+    const preview = dialog.querySelector('#file_preview');
+    const confirm = dialog.querySelector('#confirm_button');
+
+    input.addEventListener('change', async e => {
+      if (e.target.files[0]) {
+        try {
+          preview.textContent = JSON.stringify(JSON.parse(await e.target.files[0].text()), null, 2); // Validate JSON
+          preview.hidden = false;
+          confirm.disabled = false;
+        } catch (e) {
+          console.warn(e);
+          alert('Invalid JSON file. Please upload a valid JSON.');
+          preview.hidden = true;
+          confirm.disabled = true;
+        }
+      }
+    });
+
+    dialog.addEventListener('close', () => {
+      if (dialog.returnValue === 'confirm') {
+        try {
+          this._annotation.layer.getSource().addFeatures((new ol.format.GeoJSON({
+            dataProjection:    GUI.getService('map').getEpsg(),
+            featureProjection: GUI.getService('map').getEpsg()
+          })).readFeatures(JSON.parse(preview.textContent)));
+        } catch (e) {
+          console.warn(e);
+          alert('Failed to add annotations. Please check the JSON content.');
+        }
+      }
+      dialog.remove();
+    });
+
+    document.body.appendChild(dialog);
+    dialog.showModal();
+  }
 
 }
