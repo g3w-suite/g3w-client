@@ -199,7 +199,7 @@ async function doSearch({
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
           layer:   state.search_layers,
-          inputs:  state.forminputs.filter(input => !([].concat(input.value).find(v => [null, undefined, SEARCH_ALLVALUE].includes(v))) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+          inputs:  state.forminputs.filter(input => [].concat(input.value).find(v => ![null, undefined, SEARCH_ALLVALUE].includes(v) && '' !== input.value.toString().trim())), // Filter input by NONVALIDVALUES
         }),
         queryUrl,
         formatter: 1,
