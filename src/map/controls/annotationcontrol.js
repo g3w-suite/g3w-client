@@ -79,7 +79,6 @@ export class AnnotationControl extends InteractionControl {
     // add features
     this._annotation.layer.getSource().addFeatures(features)
     this._annotation.layer.getSource().on('addfeature', this.#onAddFeature.bind(this));
-    // this._annotation.layer.getSource().on('removefeature', this.#onRemoveFeature.bind(this));
 
     // update local storage
     this._annotation.layer.on('change', () => {
@@ -842,9 +841,7 @@ export class AnnotationControl extends InteractionControl {
     if ('LineString' === this._annotation.type) {
       geometry = geometry || new ol.geom.LineString([]);
       if (this._interaction.length) {
-        coords.push(
-          ...(this._interaction.length ? this.#updateLength(coords.splice(-2), this._interaction.length) : []
-        ));
+        coords.push(...this.#updateLength(coords.splice(-2), this._interaction.length));
       } 
       geometry.setCoordinates(coords);
     }
@@ -852,8 +849,7 @@ export class AnnotationControl extends InteractionControl {
     if ('Polygon' === this._annotation.type) {
       geometry = geometry || new ol.geom.Polygon([]);
       if (this._interaction.length) {
-        const segment = coords[0].splice(-2);
-        coords[0].push(...this.#updateLength(segment, this._interaction.length));
+        coords[0].push(...this.#updateLength(coords[0].splice(-2), this._interaction.length));
         coords = [coords[0]];
       }
       geometry.setCoordinates([[...coords[0], coords[0][0]]]);
