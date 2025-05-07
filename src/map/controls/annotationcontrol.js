@@ -475,6 +475,21 @@ export class AnnotationControl extends InteractionControl {
                 }
                 this.layer.changed();
               },
+              /**
+               * Hange add remove annotation feature for modify purpose
+               * @param {Feature} f 
+               */
+              feature: f => {
+                //In case of feature and no select features (no added to selected)
+                if (f && 0 === this._interactions.select.getFeatures().getArray().length) {
+                  this._interactions.select.getFeatures().push(f);
+                }
+                //In case of no feature and select has features 
+                if (!f && this._interactions.select.getFeatures().getArray().length) {
+                  this._interactions.select.getFeatures().clear();
+                }
+                this._interactions.modify.setActive(!!f);
+              },
               style: {
                 deep: true,
                 handler(style) {
@@ -576,6 +591,7 @@ export class AnnotationControl extends InteractionControl {
       show_info: feature.get('show_info'),
     });
 
+
     this._annotation.style.color = feature.get('style').color;
 
     feature.selected = true;
@@ -588,12 +604,12 @@ export class AnnotationControl extends InteractionControl {
    * @param { string } type 
    */
   changeType(type) {
-
     if (!type) {
       this.getMap().removeInteraction(this._interaction);
 
+      //active selection
       this._interactions.select.setActive(true);
-
+  
       Object.assign(this._annotation, {
         constraints: {
           circle:    { radius: 0, unit: 1 },
