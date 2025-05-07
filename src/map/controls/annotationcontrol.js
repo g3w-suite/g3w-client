@@ -80,13 +80,13 @@ export class AnnotationControl extends InteractionControl {
     this._annotation.layer.getSource().addFeatures(features)
     this._annotation.layer.getSource().on('addfeature', this.#onAddFeature.bind(this));
 
-    // update local storage
-    this._annotation.layer.on('change', () => {
-      localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
-        this._annotation.layer.getSource().getFeatures(),
-        { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
-      )));
-    });
+    // // update local storage
+    // this._annotation.layer.on('change', () => {
+    //   localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
+    //     this._annotation.layer.getSource().getFeatures(),
+    //     { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
+    //   )));
+    // });
     
     this._interactions.select = new ol.interaction.Select({
       layers: [this._annotation.layer],
@@ -744,7 +744,7 @@ export class AnnotationControl extends InteractionControl {
     this._annotation.feature.set('endCoordinates', e.coordinate);
 
     // get current feature in modify
-    const geom = 'Rectangle' === this._annotation.feature.get('type') && this._annotation.feature.get('modifyGeometry');
+    const geom   = 'Rectangle' === this._annotation.feature.get('type') && this._annotation.feature.get('modifyGeometry');
     const coords = geom && this._annotation.feature.getGeometry().getCoordinates()[0];
 
     /**
@@ -784,7 +784,8 @@ export class AnnotationControl extends InteractionControl {
    * Handle modify start (eg. for rectangles)
    */
   #onModifyStart(e) {
-    if (['LineString', 'Polygon', 'Circle'].includes(this._annotation.feature.get('type'))) {
+    if (['LineString', 'Polygon', 'Circle', 'Rectangle'].includes(this._annotation.feature.get('type'))) {
+      this._measureTooltip && this._measureTooltip.remove();
       this._measureTooltip = createMeasureTooltip({ map: this._interactions.modify.getMap(), feature: this._annotation.feature });
     }
     if ('Rectangle' === this._annotation.feature.get('type')) {
@@ -930,18 +931,24 @@ export class AnnotationControl extends InteractionControl {
     this.width           = Number(this._annotation.constraints.rectangle.width);
     this.height          = Number(this._annotation.constraints.rectangle.height);
     if (this.width > 0 && this.height > 0) {
-      this.width  = this.width  * this._annotation.constraints.rectangle.wunit;
-      this.height = this.height * this._annotation.constraints.rectangle.hunit;
+      this.width             = this.width  * this._annotation.constraints.rectangle.wunit;
+      this.height            = this.height * this._annotation.constraints.rectangle.hunit;
       this._interaction.endC = [this._interaction._startC[0] + (this._interaction._startC[0] > e.coordinate[0] ?  -1 : 1) * this.width, this._interaction._startC[1] + (this._interaction._startC[1] > e.coordinate[1] ? -1 : 1)* this.height];
-      //Draw box with set dimension (width, height)
-      this._interaction.box_.setPixels(this.getMap().getPixelFromCoordinate(this._interaction._startC), this.getMap().getPixelFromCoordinate(this._interaction.endC));
     }
+    const geometry         = ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([this._interaction._startC, e.coordinate ]));
+    if (!this._interaction.feature_) {
+      this._interaction.feature_ = new ol.Feature(geometry);
+      this._measureTooltip       = createMeasureTooltip({ map: this._interaction.getMap(), feature: this._interaction.feature_ });
+    }
+    this._interaction.feature_.getGeometry().setCoordinates(geometry.getCoordinates());
   }
 
   #onBoxEnd({ coordinate }) {
     this._annotation.layer.getSource().addFeature(new ol.Feature(ol.geom.Polygon.fromExtent(ol.extent.boundingExtent([this._interaction._startC, this._interaction.endC || coordinate]))));
     this._annotation.constraints.rectangle.width = this._annotation.constraints.rectangle.height = 0;
     this._annotation.constraints.rectangle.wunit = this._annotation.constraints.rectangle.hunit  = 1;
+    //remove property
+    delete this._interaction.feature_;
   }
 
   /**
@@ -1177,7 +1184,7 @@ export class AnnotationControl extends InteractionControl {
             dataProjection:    GUI.getService('map').getEpsg(),
             featureProjection: GUI.getService('map').getEpsg()
           })).readFeatures(JSON.parse(preview.textContent)));
-        } catch (e) {
+        } catch(e) {
           console.warn(e);
           alert('Failed to add annotations. Please check the JSON content.');
         }
