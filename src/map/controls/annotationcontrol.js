@@ -488,6 +488,13 @@ export class AnnotationControl extends InteractionControl {
                 if (!f && this._interactions.select.getFeatures().getArray().length) {
                   this._interactions.select.getFeatures().clear();
                 }
+
+                //remove eventally measure tooltip
+                if (this._measureTooltip) {
+                  this._measureTooltip.remove();
+                  this._measureTooltip = null;
+                };
+
                 this._interactions.modify.setActive(!!f);
               },
               style: {
@@ -639,11 +646,6 @@ export class AnnotationControl extends InteractionControl {
       this._interaction = null;
     }  
 
-    if (this._measureTooltip) {
-      this._measureTooltip.remove();
-      this._measureTooltip = null;
-    }
-
     if ('Rectangle' === type) {
       this._interaction = new ol.interaction.DragBox();
     }
@@ -782,6 +784,9 @@ export class AnnotationControl extends InteractionControl {
    * Handle modify start (eg. for rectangles)
    */
   #onModifyStart(e) {
+    if (['LineString', 'Polygon', 'Circle'].includes(this._annotation.feature.get('type'))) {
+      this._measureTooltip = createMeasureTooltip({ map: this._interactions.modify.getMap(), feature: this._annotation.feature });
+    }
     if ('Rectangle' === this._annotation.feature.get('type')) {
       this._annotation.feature.set(
         'modifyGeometry',
@@ -922,8 +927,8 @@ export class AnnotationControl extends InteractionControl {
   }
 
   #onBoxDrag(e) {
-    this.width  = Number(this._annotation.constraints.rectangle.width);
-    this.height = Number(this._annotation.constraints.rectangle.height);
+    this.width           = Number(this._annotation.constraints.rectangle.width);
+    this.height          = Number(this._annotation.constraints.rectangle.height);
     if (this.width > 0 && this.height > 0) {
       this.width  = this.width  * this._annotation.constraints.rectangle.wunit;
       this.height = this.height * this._annotation.constraints.rectangle.hunit;
