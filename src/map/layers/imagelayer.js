@@ -284,7 +284,7 @@ class RasterLayer extends G3WObject {
 
   setupCustomMapParamsToLegendUrl(params = {}) {
     if ('XYZ' !== this.config.type) {
-      [].concat(this.layer || this.layers).forEach(l => Object.assign(this.customParams, params));
+      [].concat(this.layer || this.layers).forEach(l => Object.assign(l.customParams, params));
     }
   }
 
