@@ -836,7 +836,7 @@
           : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.includes(attribute.type));
         // TODO: find a clever way to handle geocoding results..
-        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.info_result_number_fields, attributes.length);
+        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.max_preview_fields, attributes.length);
         return _attributes.slice(0, end);
       },
       attributesSubsetLength(layer) {
@@ -1039,7 +1039,7 @@
     watch: {
       async 'state.layers'(layers = []) {
         layers.forEach(layer => {
-          if (layer.attributes.length <= layer.info_result_number_fields && !layer.hasImageField) {
+          if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
           }
           layer.features.forEach(feature => {

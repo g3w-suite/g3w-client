@@ -492,7 +492,7 @@ export default new (class QueryResultsService extends G3WObject {
           rawdata:                   rawdata  || null,
           error:                     error    || '',
           toc:                       external || layer.state.toc, //@since v3.10.0
-          info_result_number_fields: layer.state?.info_result_number_fields || 3, //@since 4.0.0 
+          max_preview_fields:        layer.state?.max_preview_fields || 3, //@since 4.0.0 
         };
       });
     this.setLayersData(layers, options);
