@@ -425,6 +425,7 @@ export class AnnotationControl extends InteractionControl {
                   this.layer.getSource().clear();
                 }
                 this.feature = null;
+                this.type    = null;
               },
               editFeature(feat) {
                 CONTROL.editFeature(feat);
