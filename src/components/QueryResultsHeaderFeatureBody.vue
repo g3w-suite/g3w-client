@@ -17,9 +17,10 @@
 
       <g3w-image
         v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
-        :state    = "getLayerField({layer, feature, fieldName: attribute.name})"/>
-      <span v-else v-html = "feature.attributes[attribute.name]"></span>
+        :state    = "getLayerField({layer, feature, fieldName: attribute.name})"
+      />
 
+      <span v-else v-html = "feature.attributes[attribute.name]"></span>
     </td>
     <td v-if="!hasLayerOneFeature(layer)">
     </td>
