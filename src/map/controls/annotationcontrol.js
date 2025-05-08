@@ -80,13 +80,13 @@ export class AnnotationControl extends InteractionControl {
     this._annotation.layer.getSource().addFeatures(features)
     this._annotation.layer.getSource().on('addfeature', this.#onAddFeature.bind(this));
 
-    // // update local storage
-    // this._annotation.layer.on('change', () => {
-    //   localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
-    //     this._annotation.layer.getSource().getFeatures(),
-    //     { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
-    //   )));
-    // });
+    // update local storage
+    this._annotation.layer.on('change', () => {
+      localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
+        this._annotation.layer.getSource().getFeatures(),
+        { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
+      )));
+    });
     
     this._interactions.select = new ol.interaction.Select({
       layers: [this._annotation.layer],
