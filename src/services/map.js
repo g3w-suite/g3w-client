@@ -851,12 +851,12 @@ class MapService extends G3WObject {
       const map  = this.getMap();
       const size = (map && map.getSize().filter(v => v > 0)) || null;
       const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : this.project.state.initextent;
-      this.getMapLayers().forEach(l => l.setupCustomMapParamsToLegendUrl) && l.setupCustomMapParamsToLegendUrl({
+      this.getMapLayers().forEach(l => l.setupCustomMapParamsToLegendUrl && l.setupCustomMapParamsToLegendUrl({
         crs: this.getEpsg(),
         // in the case of axis orientation inverted if it needs to invert the axis
-        bbox: map.getView().getProjection().getAxisOrientation() === "neu" ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
-      });
-      this.emit('change-map-legend-params')
+        bbox: "neu" === map.getView().getProjection().getAxisOrientation()  ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
+      }));
+      this.emit('change-map-legend-params');
     }
   }
 
