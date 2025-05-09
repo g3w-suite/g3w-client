@@ -201,7 +201,7 @@ export async function getProject(gid, options = {}) {
   // Layer factory: instance each layer and add to layersstore
   project._layersStore.addLayers(project.getLayers().flatMap(l => {
     const config = Object.assign(l, {
-      crs:               crsToCrsObject(l.crs),
+      crs:               crsToCrsObject(l.crs || project.state.crs), // @v4.0 Fix In case of missing layer crs, set project crs
       projection:        l.crs ? Projections.get(l.crs) : project._projection,
       ows_method:        project.state.ows_method,
       wms_use_layer_ids: project.state.wms_use_layer_ids,
