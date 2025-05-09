@@ -925,6 +925,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .queryresults-container .field_value :is(.field_link, img):focus                              { box-shadow: none; }
 .queryresults-container .field_value .field_link                                              { border-radius: 5px; min-width: 50px; font-weight: bold; }
 .queryresults-container .field_value .field_link:hover                                        { color:#FFF; }
+.queryresults-container .attribute .field_value                                               { margin: auto !important; }
 .queryresults-container .queryresults table thead tr th.centered                              { text-align: center; }
 .queryresults-container .queryresults table thead tr th.collapsed                             { width: 30px; max-width: 30px; }
 .queryresults-container .queryresults table tbody tr.g3w-feature-result-action-tools .g3w-download-formats-content        { display: flex; justify-content: flex-start; }
