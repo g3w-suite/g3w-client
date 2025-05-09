@@ -9,8 +9,7 @@
       <img
         v-for       = "(img, i) in images"
         class       = "img-responsive"
-        style       = "max-height:50px"
-        alt         = ""
+        style       = "max-height: 50px;"
         @click.stop = "showGallery(i)"
         :src        = "img.src"
       />
