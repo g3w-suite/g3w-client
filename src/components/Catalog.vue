@@ -323,7 +323,7 @@ export default {
       showlegend:       false,
       backgroundLegend: ApplicationState.gui.layout.app.legend && ApplicationState.gui.layout.app.legend.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
       currentBaseLayer: null,
-      activeTab:        'layers',
+      activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
     }
   },
