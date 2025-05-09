@@ -399,7 +399,7 @@ export class AnnotationControl extends InteractionControl {
             methods: {
               getShapeIconUrl(type){
                 return `${window.initConfig.urls.clienturl}/images/${({
-                  Point:      'mActionText',
+                  Point:      'mActionAddPoint',
                   LineString: 'mActionAddPolyline',
                   Polygon:    'mActionAddPolygon',
                   Circle:     'mActionAddBasicCircle',
