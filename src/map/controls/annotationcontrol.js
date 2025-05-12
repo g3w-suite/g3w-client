@@ -555,6 +555,9 @@ export class AnnotationControl extends InteractionControl {
       });
     });
 
+    //Listen set-layer-zindex so annotation layer i set over all layers
+    GUI.getService('map').on('set-layer-zindex', ({ zindex }) => this._annotation.layer.setZIndex(zindex + 1))
+
     // Listen for #share_modal open event
     $(document).on('show.bs.modal', '#share_modal', () => {
       const url = new URL($('#share_modal input').val());
