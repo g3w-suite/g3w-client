@@ -87,10 +87,10 @@
         type          = "button"
         id            = "show-markers-results"
         class         = "btn skin-background-color"
-        @click.stop   = "() => showMarkerResults(undefined, true)"
+        @click.stop   = "() => toggleSidebar(true)"
         title         = "Toggle sidebar panel"
       >
-      <code :style = "{ opacity: results_panel_open ? 0.5 : undefined }">
+      <code :style = "{ opacity: is_sidebar_open ? 0.5 : undefined }">
         {{ features.length > 99 ? '99+' : features.length }}
       </code>
       </button>
@@ -294,8 +294,6 @@ export default {
       results:            [],
       /** @since 3.9.0 */
       disabled:           false, // disabled boolean control
-      /** @since 3.9.0 */
-      results_panel_open: false, // @TODO make use of `GUI.isSomething()`
     };
   },
 
@@ -365,6 +363,10 @@ export default {
      */
     placeholder() {
       return ApplicationState.language && t('mapcontrols.geocoding.placeholder');
+    },
+
+    is_sidebar_open() {
+      return GUI.getCurrentContent();
     },
 
   },
@@ -597,7 +599,7 @@ export default {
 
       // show remaining results or close panel
       if (!is_clearing) {
-        this.showMarkerResults(undefined, 0 === this.features.length);
+        this.toggleSidebar(0 === this.features.length);
       }
 
     },
@@ -633,7 +635,7 @@ export default {
           LAYER.getSource().addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
-          this.showMarkerResults([feature]);
+          this.toggleSidebar([feature]);
         }
       } catch (e) {
         console.warn(e);
@@ -643,19 +645,19 @@ export default {
     /**
      * Show markers on query results panel
      * 
-     * @since 3.9.0
+     * @since 4.0.0
      */
-    async showMarkerResults(features, toggle = false) {
-      if (this.results_panel_open && toggle) {
+    async toggleSidebar(features) {
+      const toggle = typeof features === 'boolean' ? features : false;
+      if (this.is_sidebar_open && toggle) {
         GUI.closeContent();
         return;
       }
       // check if is already an open right panel
-      if (GUI.getCurrentContent()) {
+      if (this.is_sidebar_open) {
         await GUI.closeContent();
       }
       GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: features || LAYER.getSource().getFeatures() }] });
-      this.results_panel_open = true;
     },
 
     /**
@@ -716,10 +718,6 @@ export default {
 
     // register vector layer for query results
     queryresults.registerVectorLayer(LAYER);
-
-    /** @TODO delegate check for `is_results_panel_open` to an external queryresults or gui method */
-    GUI.on('closecontent',    () => { this.results_panel_open = false; })
-    GUI.onafter('setContent', () => { if (this.results_panel_open) this.results_panel_open = false; });
 
     queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
       if (LAYER.get('id') === layer.id) {
@@ -785,16 +783,6 @@ export default {
     });
 
   },
-
-  /**
-   * DEBUG 
-   */
-  // async mounted() {
-  //   await this.$nextTick();
-  //   const q = document.querySelector.bind(document);
-  //   q('#gcd-input-query').value = /*'via sallustio 10'*/ /*'becca'*/ 'cafe';
-  //   q('#gcd-search').click();
-  // },
 
   destroyed() {
     GUI.getService('queryresults').unregisterVectorLayer(LAYER);
