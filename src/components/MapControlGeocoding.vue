@@ -111,16 +111,16 @@
           item.__no_results ? 'gcd-noresult' : '',
           item.__selected   ? 'selected' : '',
         ]"
-        :key         = "item.__uid"
-        @click.stop = "onItemClick($event, item)"
+        :key        = "item.__uid"
+        @click.stop = "onItemClick(item)"
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
-        <div
+        <span
           v-if  = "item.__heading"
           style = "display: flex; justify-content: space-between; padding: 5px"
         >
           <span style="color: #FFF; font-weight: bold">{{ item.label }}</span>
-        </div>
+        </span>
         <!-- NO RESULTS -->
         <span
           v-else-if = "item.__no_results"
@@ -128,10 +128,10 @@
         ></span>
         <!-- NO RESULTS -->
         <template v-else>
-          <span
+          <i
             style       = "color: #000; padding: 5px;"
             :class      = "$fa(item.__selected ? 'check' : 'uncheck')">
-          </span>
+          </i>
           <i
             v-if        = "'road' === item.__icon"
             class       = "fa fa-road"
@@ -145,33 +145,14 @@
             width      = "24"
             height     = "24"
           />
-          <!-- TODO: remove outer link (which is used only for styling purposes..) -->
-          <a href = "" draggable = "false">
-            <div
-              v-if  = "item.type"
-              class = "gcd-type"
-            >{{ item.type }}</div>
-            <div
-              v-if  = "item.name"
-              class = "gcd-name"
-            >{{ item.name }}</div>
-            <div
-              v-if  = "item.address_name"
-              class = "gcd-road"
-            >{{ item.address_name }}</div>
-            <div
-              v-if  = "item.address_road || item.address_building || item.address_house_number"
-              class = "gcd-road"
-            >{{ item.address_building }} {{ item.address_road }} {{ item.address_house_number }}</div>
-            <div
-              v-if  = "item.address_city || item.address_town || item.address_village"
-              class = "gcd-city"
-            >{{ item.address_postcode }} {{ item.address_city }} {{ item.address_town }} {{ item.address_village }}</div>
-            <div
-              v-if  = "item.address_state || item.address_country"
-              class = "gcd-country"
-            >{{ item.address_state }} {{ item.address_country }}</div>
-          </a>
+          <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000; cursor: pointer;">
+            <span v-if  = "item.type"                                                                class = "gcd-type">{{ item.type }}</span>
+            <span v-if  = "item.name"                                                                class = "gcd-name">{{ item.name }}</span>
+            <span v-if  = "item.address_name"                                                        class = "gcd-road">{{ item.address_name }}</span>
+            <span v-if  = "item.address_road  || item.address_building || item.address_house_number" class = "gcd-road">{{ item.address_building }} {{ item.address_road }} {{ item.address_house_number }}</span>
+            <span v-if  = "item.address_city  || item.address_town     || item.address_village"      class = "gcd-city">{{ item.address_postcode }} {{ item.address_city }} {{ item.address_town }} {{ item.address_village }}</span>
+            <span v-if  = "item.address_state || item.address_country"                               class = "gcd-country">{{ item.address_state }} {{ item.address_country }}</span>
+          </span>
         </template>
       </li>
     </ul>
@@ -230,6 +211,26 @@ Object
       script.async = true;
       document.head.appendChild(script);
   });
+
+/**
+ * CUSTOM GEOCODING PROVIDER: "qes"
+ */
+window.initConfig.mapcontrols.geocoding.providers['qes'] = {
+  label: window.location.host,
+  icon:  'poi',
+  fetch: async (opts) => ({
+    provider: 'qes',
+    results:
+    (
+      await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}` })
+    ).results.map(result => ({
+      name:  result.attributes.name || result.feature_id,
+      type:  result.layer_name,
+      qes:   result,
+    })),
+  }),
+  fetch_geom: async item => (await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}vector/api/editing/qdjango/${g3wsdk.core.ApplicationState.project.getId()}/${item.qes_layer_id}/?fids=${item.qes_feature_id}` })).vector.data.features[0].geometry,
+};
 
 /**
  * Search results layer (pushpin marker)
@@ -604,26 +605,32 @@ export default {
     /**
      * @since 3.9.0
      */
-    onItemClick(evt, item) {
-      if (!item.lat || !item.lon) {
-        return;
-      }
-      evt.preventDefault();
+    async onItemClick(item) {
       try {
-        const source = LAYER.getSource();
+        let feature;
+
+        if (PROVIDERS[item.provider]?.fetch_geom) {
+          const geometry = await PROVIDERS[item.provider].fetch_geom(item);
+          feature = new ol.Feature({ geometry: (new ol.format.GeoJSON()).readGeometry(geometry) });
+        }
+
+        if ((!item.lat || !item.lon) && !feature) {
+          return;
+        }
+
         // in case of already add marker
-        if (source.getFeatureById(item.__uid)) {
+        if (LAYER.getSource().getFeatureById(item.__uid)) {
           this._removeItem(item.__uid);
         } else {
           // add feature marker and zoom on it
           const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
-          const feature = new ol.Feature({
+          feature = feature || new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
             ..._item, 
           });
           // set id of the feature
           feature.setId(__uid);
-          source.addFeature(feature);
+          LAYER.getSource().addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
           this.showMarkerResults([feature]);
@@ -695,14 +702,13 @@ export default {
   created() {
 
     const queryresults = GUI.getService('queryresults');
-    const mapService   = GUI.getService('map');
-    const map          = mapService.getMap();
+    const map          = GUI.getService('map');
 
     /** @TODO keep layer on top when adding an external layer ? (wms, vector, ...) */
-    map.addLayer(LAYER);
+    map.getMap().addLayer(LAYER);
 
     //register change z-index layer position when new layer is added (ex wms or vector)
-    mapService.on('set-layer-zindex', ({layer, zindex}) => {
+    map.on('set-layer-zindex', ({layer, zindex}) => {
       if (layer.get('id') !== LAYER.get('id')) {
         LAYER.setZIndex(zindex+1);
       }
@@ -797,148 +803,6 @@ export default {
 };
 </script>
 
-<style scoped>
-  li:not(.skin-background-color) {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  li.gcd-icon-road .gcd-name,
-  li.gcd-icon-road .gcd-type,
-  li.gcd-icon-road .gcd-icon,
-  li.gcd-icon-poi .gcd-road,
-  li.gcd-icon-poi .gcd-city,
-  li.gcd-icon-poi .gcd-country {
-    display: none;
-  }
-
-  #gcd-search {
-    z-index: 1;
-    width: 2.5em;
-    height: 100%;
-    border-radius: 0;
-    background-color: var(--skin-color, #fff);
-  }
-
-  #gcd-trash,
-  #show-markers-results,
-  #markers-visibility-layer {
-    z-index: 1;
-    border-radius: 0 !important;
-    color: #FFF;
-    border-left: 1px solid #fff;
-  }
-
-  #gcd-trash {
-    color: #f00;
-  }
-
-  #gcd-input-query {
-    font-weight: bold;
-  }
-
-  .gcd-txt-reset::after {
-    content: "\d7";
-    display: inline-block;
-    font-weight: bold;
-    font-size: 2em;
-    cursor: pointer;
-    color: var(--skin-color);
-  }
-
-  .gcd-txt-reset {
-    z-index: 1;
-    width: 2.5em;
-    height: 100%;
-    line-height: 100%;
-    border: none;
-    background-color: transparent;
-    display: inline-block;
-    vertical-align: middle;
-    outline: 0;
-    cursor: pointer;
-  }
-
-  .gcd-txt-input:focus {
-    outline: none;
-  }
-
-  .gcd-txt-input {
-    z-index: 1;
-    border: 0;
-    width: 100%;
-    height: 100%;
-    padding: 5px 5px 5px 5px;
-    text-indent: 6px;
-    background-color: transparent;
-    font-family: inherit;
-    font-size: 1em;
-  }
-
-  .gcd-txt-control {
-    position: relative;
-    display: flex;
-    justify-content: flex-end;
-    height: 41px;
-    background-color: #fff;
-    overflow: hidden;
-    border-radius: 2px;
-    width: 100%;
-    border: 2px solid var(--skin-color)
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .gcd-road {
-    font-size: 0.875em;
-    font-weight: 500;
-  }
-
-  .gcd-city {
-    font-size: 1em;
-    font-weight: bold;
-  }
-
-  .gcd-country {
-    font-size: 0.75em;
-  }
-
-  .gcd-spin::after {
-    animation: spin .7s linear infinite;
-  }
-
-  .gcd-hidden {
-    display: none !important;
-  }
-
-  li.skin-background-color {
-    position: sticky;
-    top: 0;
-  }
-
-  li.selected {
-    background-color: #f7fabf !important;
-  }
-
-  li.gcd-noresult:hover {
-    background-color: transparent !important;
-  }
-
-  li.gcd-noresult {
-    font-weight: bold;
-    color: #384247;
-    margin: 10px;
-    border-bottom: 0 !important;
-  }
-</style>
-
 <style>
   /* Geocoder */
   .ol-geocoder {
@@ -987,14 +851,148 @@ export default {
     margin-bottom: 0;
   }
 
-  .ol-geocoder > ul > li > a {
-    display: block;
-    text-decoration: none;
-    padding: 3px 5px;
-    color: #000;
+  .ol-geocoder > ul > li:last-child {
+    border-bottom: 0 !important;
   }
 
-  .ol-geocoder > ul > li:last-child {
+  .ol-geocoder li:not(.skin-background-color) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ol-geocoder li.gcd-icon-road .gcd-name,
+  .ol-geocoder li.gcd-icon-road .gcd-type,
+  .ol-geocoder li.gcd-icon-road .gcd-icon,
+  .ol-geocoder li.gcd-icon-poi .gcd-road,
+  .ol-geocoder li.gcd-icon-poi .gcd-city,
+  .ol-geocoder li.gcd-icon-poi .gcd-country {
+    display: none;
+  }
+
+  .ol-geocoder #gcd-search {
+    z-index: 1;
+    width: 2.5em;
+    height: 100%;
+    border-radius: 0;
+    background-color: var(--skin-color, #fff);
+  }
+
+  .ol-geocoder #gcd-trash,
+  .ol-geocoder #show-markers-results,
+  .ol-geocoder #markers-visibility-layer {
+    z-index: 1;
+    border-radius: 0 !important;
+    color: #FFF;
+    border-left: 1px solid #fff;
+  }
+
+  .ol-geocoder #gcd-trash {
+    color: #f00;
+  }
+
+  .ol-geocoder #gcd-input-query {
+    font-weight: bold;
+  }
+
+  .ol-geocoder .gcd-txt-reset::after {
+    content: "\d7";
+    display: inline-block;
+    font-weight: bold;
+    font-size: 2em;
+    cursor: pointer;
+    color: var(--skin-color);
+  }
+
+  .ol-geocoder .gcd-txt-reset {
+    z-index: 1;
+    width: 2.5em;
+    height: 100%;
+    line-height: 100%;
+    border: none;
+    background-color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    outline: 0;
+    cursor: pointer;
+  }
+
+  .ol-geocoder .gcd-txt-input:focus {
+    outline: none;
+  }
+
+  .ol-geocoder .gcd-txt-input {
+    z-index: 1;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    padding: 5px 5px 5px 5px;
+    text-indent: 6px;
+    background-color: transparent;
+    font-family: inherit;
+    font-size: 1em;
+  }
+
+  .ol-geocoder .gcd-txt-control {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    height: 41px;
+    background-color: #fff;
+    overflow: hidden;
+    border-radius: 2px;
+    width: 100%;
+    border: 2px solid var(--skin-color)
+  }
+
+  @keyframes ol-geocoder-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .ol-geocoder .gcd-road {
+    font-size: 0.875em;
+    font-weight: 500;
+  }
+
+  .ol-geocoder .gcd-city {
+    font-size: 1em;
+    font-weight: bold;
+  }
+
+  .ol-geocoder .gcd-country {
+    font-size: 0.75em;
+  }
+
+  .ol-geocoder .gcd-spin::after {
+    animation: ol-geocoder-spin .7s linear infinite;
+  }
+
+  .ol-geocoder .gcd-hidden {
+    display: none !important;
+  }
+
+  .ol-geocoder li.skin-background-color {
+    position: sticky;
+    top: 0;
+  }
+
+  .ol-geocoder li.selected {
+    background-color: #f7fabf !important;
+  }
+
+  .ol-geocoder li.gcd-noresult:hover {
+    background-color: transparent !important;
+  }
+
+  .ol-geocoder li.gcd-noresult {
+    font-weight: bold;
+    color: #384247;
+    margin: 10px;
     border-bottom: 0 !important;
   }
 </style>
