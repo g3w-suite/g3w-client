@@ -635,7 +635,7 @@ export default {
           LAYER.getSource().addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
-          this.toggleSidebar([feature]);
+          this.toggleSidebar(feature);
         }
       } catch (e) {
         console.warn(e);
@@ -647,9 +647,8 @@ export default {
      * 
      * @since 4.0.0
      */
-    async toggleSidebar(features) {
-      const toggle = typeof features === 'boolean' ? features : false;
-      if (this.is_sidebar_open && toggle) {
+    async toggleSidebar(feature) {
+      if (this.is_sidebar_open && 'boolean' === typeof feature && feature) {
         GUI.closeContent();
         return;
       }
@@ -657,7 +656,7 @@ export default {
       if (this.is_sidebar_open) {
         await GUI.closeContent();
       }
-      GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: features || LAYER.getSource().getFeatures() }] });
+      GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: [feature] || LAYER.getSource().getFeatures() }] });
     },
 
     /**
