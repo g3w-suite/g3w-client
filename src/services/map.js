@@ -1038,7 +1038,7 @@ class MapService extends G3WObject {
                 name: 'addlayer',
                 onSetMap(e) {
                   if ('after' === e.setter) {
-                    $(this.element).on('click', () => this.showAddLayerModal());
+                    $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());
                   }
                 }
               }));
