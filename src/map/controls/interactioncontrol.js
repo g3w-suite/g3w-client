@@ -137,8 +137,6 @@ export default class InteractionControl extends ol.control.Control {
 
     this._toggled                 = false;
 
-    this._toggled                 = false;
-
     this._interactionClassOptions = options.interactionClassOptions;
 
     /** @since 3.11.0 */

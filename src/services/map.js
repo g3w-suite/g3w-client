@@ -480,10 +480,18 @@ class MapService extends G3WObject {
     id,
     visible,
     add     = true,
-    toggled = false,
     options = {},
   } = {}) {
-    const control = new InteractionControl({ toggled, ...options });
+    // BACKCOMP v3.x
+    if ('string' !== typeof type) {
+      id           = type.id;
+      visible      = type.visible;
+      add          = type.add ?? true;
+      options      = type.options ?? {};
+      options.name = options.name || options.id;
+      type         = id;
+    }
+    const control = new InteractionControl(options);
     this.addControl(id || type, type, control, add, visible ?? control?.isVisible?.());
     return control;
   }
@@ -628,6 +636,12 @@ class MapService extends G3WObject {
    * @param visible
    */
   addControl(id, type, control, addToMapControls = true, visible = true) {
+
+    // BACKCOMP v3.x
+    if ('string' !== typeof type ) {
+      [id, type, control, addToMapControls, visible] = [id, id, type, control ?? true, addToMapControls ?? true];
+    }
+
     this.viewer.map.addControl(control);
 
     control.on('toggled', e => this.emit('mapcontrol:toggled', e));
@@ -838,36 +852,46 @@ class MapService extends G3WObject {
       .forEach(([type, config = {}]) => {
         switch (type) {
           case 'zoom':
-            this.addControl('zoom', 'zoom', new InteractionControl({ ol: new ol.control.Zoom() }));
+            this.createMapControl({
+              id: 'zoom',
+              options: {
+                ol: new ol.control.Zoom()
+              }
+            });
             break;
 
           case 'zoombox':
             if (!isMobile.any) {
-              this.addControl('zoombox', 'zoombox', new InteractionControl({
-                name:             'zoombox',
-                tipLabel:         'Zoom to box',
-                interactionClass: ol.interaction.DragBox,
-                cursorClass:      'ol-crosshair',
-                onSetMap({ setter, map }) {
-                  if ('after' === setter) {
-                    // zoom box
-                    this._startCoordinate = null;
-                    this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
-                    this._interaction.on('boxend',   e => {
-                      this.dispatchEvent({ type: 'zoomend', extent: ol.extent.boundingExtent([this._startCoordinate, e.coordinate]) });
+              this.createMapControl({
+                id: 'zoombox',
+                options: {
+                  tipLabel:         'Zoom to box',
+                  interactionClass: ol.interaction.DragBox,
+                  cursorClass:      'ol-crosshair',
+                  onSetMap({ setter, map }) {
+                    if ('after' === setter) {
+                      // zoom box
                       this._startCoordinate = null;
-                    });
-                  }
+                      this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
+                      this._interaction.on('boxend',   e => {
+                        this.dispatchEvent({ type: 'zoomend', extent: ol.extent.boundingExtent([this._startCoordinate, e.coordinate]) });
+                        this._startCoordinate = null;
+                      });
+                    }
+                  },
                 }
-              }));
+              });
               this.getMapControlByType('zoombox').on('zoomend', (e) => this.viewer.fit(e.extent) );
             }
             break;
 
           case 'zoomtoextent':
-            this.addControl('zoomtoextent', 'zoomtoextent', new InteractionControl({
-              ol: new ol.control.ZoomToExtent({ extent: this.project.state.initextent })
-            }));
+            this.createMapControl({
+              id: 'zoomtoextent',
+              options: {
+                ol: new ol.control.ZoomToExtent({ extent: this.project.state.initextent })
+              }
+            });
             break;
 
           case 'mouseposition':
@@ -878,14 +902,16 @@ class MapService extends G3WObject {
               const coordinateFormat = (epsg, coords) => 'EPSG:4326' === epsg
                 ? ol.coordinate.format(ol.proj.transform(coords, mapEpsg, 'EPSG:4326'), `\u00A0Lng: {x}, Lat: {y}\u00A0\u00A0 [EPSG:4326]\u00A0`, 4)
                 : ol.coordinate.format(coords, `\u00A0${degrees ? 'Lng' : 'X'}: {x}, ${degrees ? 'Lat' : 'Y'}: {y}\u00A0\u00A0 [${epsg}]\u00A0`, degrees ? 4 : 2);
-              this.addControl('mouseposition', 'mouseposition', Object.assign((new ol.control.MousePosition({
+              this.addControl('mouseposition', Object.assign((new ol.control.MousePosition({
                 coordinateFormat: coordinateFormat.bind(null, mapEpsg),
                 undefinedHTML:    false,
                 projection:       this.getCrs(),
                 target:           'mouse-position-control'})
               ), { offline: true }), false);
               if ('EPSG:4326' !== mapEpsg) {
-                this.getMapControlByType('mouseposition').on('change:epsg', e => this.getMapControlByType('mouseposition').setCoordinateFormat(coordinateFormat.bind(null, e.epsg)));
+                this.getMapControlByType('mouseposition').on('change:epsg',
+                  e => this.getMapControlByType('mouseposition').setCoordinateFormat(coordinateFormat.bind(null, e.epsg))
+                );
               }
             }
             break;
@@ -896,7 +922,7 @@ class MapService extends G3WObject {
               if (this.getMapControlByType('screenshot')) {
                 this.getMapControlByType('screenshot').addType(type)
               } else {
-                this.addControl('screenshot', 'screenshot', new ScreenshotControl({
+                this.addControl('screenshot', new ScreenshotControl({
                     types:   [type],
                     layers:  [...MAP.layers.getLayers(), ...this._layers.external],
                   })
@@ -906,7 +932,7 @@ class MapService extends G3WObject {
             break;
 
           case 'scale':
-            this.addControl('scale', 'scale', new ScaleControl({
+            this.addControl('scale', new ScaleControl({
               coordinateFormat: ol.coordinate.createStringXY(4),
               projection:       this.getCrs(),
               isMobile:         isMobile.any
@@ -914,39 +940,41 @@ class MapService extends G3WObject {
             break;
 
           case 'query':
-            this.addControl('query', 'query', new InteractionControl({
-              toggled:          true,
-              offline:          false,
-              name:             "query",
-              tipLabel:         "sdk.mapcontrols.query.tooltip",
-              clickmap:         true,
-              interactionClass: PickCoordinatesInteraction,
-              cursorClass:      'ol-help',
-              onSetMap({ map, setter }) {
-                this.runQuery = this.runQuery || (async ({ coordinates }) => {
-                  GUI.closeSideBar();
-                  try {
-                    const project = ApplicationState.project;
-                    await DataRouterService.getData('query:coordinates', {
-                      inputs: {
-                        coordinates,
-                        feature_count:         project.state.feature_count || 5,
-                        query_point_tolerance: project.getQueryPointTolerance(),
-                        multilayers:           [].concat(project.state.querymultilayers).includes(this.name),
-                      }
-                    });
-                  } catch(e) {
-                    console.warn('Error running spatial query: ', e)
+            this.createMapControl({
+              id: 'query',
+              options: {
+                toggled:          true,
+                offline:          false,
+                tipLabel:         "sdk.mapcontrols.query.tooltip",
+                clickmap:         true,
+                interactionClass: PickCoordinatesInteraction,
+                cursorClass:      'ol-help',
+                onSetMap({ map, setter }) {
+                  this.runQuery = this.runQuery || (async ({ coordinates }) => {
+                    GUI.closeSideBar();
+                    try {
+                      const project = ApplicationState.project;
+                      await DataRouterService.getData('query:coordinates', {
+                        inputs: {
+                          coordinates,
+                          feature_count:         project.state.feature_count || 5,
+                          query_point_tolerance: project.getQueryPointTolerance(),
+                          multilayers:           [].concat(project.state.querymultilayers).includes(this.name),
+                        }
+                      });
+                    } catch(e) {
+                      console.warn('Error running spatial query: ', e)
+                    }
+                  });
+                  this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
+                  if ('after' === setter) {
+                    this.getInteraction().on('picked', throttle(async evt => {
+                      this.dispatchEvent({ type: 'picked', coordinates: evt.coordinate });
+                    }));
                   }
-                });
-                this.setEventKey({ eventType: 'picked', eventKey: this.on('picked', this.runQuery) });
-                if ('after' === setter) {
-                  this.getInteraction().on('picked', throttle(async evt => {
-                    this.dispatchEvent({ type: 'picked', coordinates: evt.coordinate });
-                  }));
                 }
               }
-            }));
+            });
             break;
 
           case 'querybypolygon':
@@ -957,53 +985,63 @@ class MapService extends G3WObject {
               if (this.getMapControlByType('queryby')) {
                 this.getMapControlByType('queryby').addType(type)
               } else {
-                this.addControl('queryby', 'queryby', new QueryBy({ types: [type] }));
+                this.addControl('queryby', new QueryBy({ types: [type] }));
               }
             }
             break;
 
           case 'streetview':
-            this.addControl('streetview', 'streetview', new StreetViewControl());
+            this.addControl('streetview', new StreetViewControl());
             break;
 
           case 'scaleline':
-            this.addControl('scaleline', 'scaleline', new InteractionControl({ ol: new ol.control.ScaleLine(), position: 'br' }), false);
+            this.createMapControl({
+              id: 'scaleline',
+              add: false,
+              options: {
+                ol: new ol.control.ScaleLine(),
+                position: 'br',
+              }
+            });
             break;
 
           case 'overview':
             if (!isMobile.any && window.initConfig.overviewproject) {
               getProject(window.initConfig.overviewproject)
                 .then(project => {
-                  this.addControl('overview', 'overview', new InteractionControl({
-                    ol: new ol.control.OverviewMap({
-                      view:          new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })), // hardcoded
-                      collapsed:     false,
-                      className:     'ol-overviewmap ol-custom-overviewmap',
-                      collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                      label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                      layers:        Object
-                        .entries(
-                          // group layer by multilayerId
-                          project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false })
-                            .reduce((group, l) => {
-                              const id = l.getMultiLayerId();
-                              group[id] = group[id] || [];
-                              group[id].push(l);
-                              return group;
-                            }, {}) || []
-                        ).map(([id, layers]) => {
-                          const mapLayer = new RasterLayer({
-                            url:   project.state.WMSUrl,
-                            id:    `overview_layer_${id}`,
-                            tiled: layers[0].state.tiled,
-                          });
-                          layers.reverse().forEach(l => mapLayer.addLayer(l));
-                          return mapLayer.getOLLayer(true);
-                        }).reverse()
-                    }),
-                    position: 'bl',
-                  }), false);
-
+                  this.createMapControl({
+                    id: 'overview',
+                    add: false,
+                    options: {
+                      ol: new ol.control.OverviewMap({
+                        view:          new ol.View(this._calculateViewOptions({ project, width: 200, height: 150 })), // hardcoded
+                        collapsed:     false,
+                        className:     'ol-overviewmap ol-custom-overviewmap',
+                        collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                        label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                        layers:        Object
+                          .entries(
+                            // group layer by multilayerId
+                            project.getLayersStore().getLayers({ GEOLAYER: true, BASELAYER: false })
+                              .reduce((group, l) => {
+                                const id = l.getMultiLayerId();
+                                group[id] = group[id] || [];
+                                group[id].push(l);
+                                return group;
+                              }, {}) || []
+                          ).map(([id, layers]) => {
+                            const mapLayer = new RasterLayer({
+                              url:   project.state.WMSUrl,
+                              id:    `overview_layer_${id}`,
+                              tiled: layers[0].state.tiled,
+                            });
+                            layers.reverse().forEach(l => mapLayer.addLayer(l));
+                            return mapLayer.getOLLayer(true);
+                          }).reverse()
+                      }),
+                      position: 'bl',
+                    }
+                  })
                   /** @since 3.10.0 Move another bottom left map controls bottom to a left of overview control**/
                   document.querySelector('.g3w-map-controls-left-bottom').style.left = '230px';
                   const observer = new MutationObserver((mutations) => {
@@ -1020,28 +1058,35 @@ class MapService extends G3WObject {
             break;
 
           case 'geocoding':
-            this.addControl('geocoding', 'geocoding', new InteractionControl({
-              element: (new (Vue.extend(MapControlGeocoding))({ propsData: config })).$mount().$el,
-              offline: false
-            }), false);
+            this.createMapControl({
+              id: 'geocoding',
+              add: false,
+              options: {
+                element: (new (Vue.extend(MapControlGeocoding))({ propsData: config })).$mount().$el,
+                offline: false,
+              },
+            });
             break;
 
           case 'geolocation':
-            this.addControl('geolocation', 'geolocation', new GeolocationControl());
+            this.addControl('geolocation', new GeolocationControl());
             this.getMapControlByType('geolocation').on('click', throttle(e => this.showMarker(e.coordinates)));
             break;
 
+          case 'addlayer':
           case 'addlayers':
             if (!isMobile.any) {
-              this.addControl('addlayers', 'addlayers', new InteractionControl({
-                tipLabel: "sdk.mapcontrols.addlayer.tooltip",
-                name: 'addlayer',
-                onSetMap(e) {
-                  if ('after' === e.setter) {
-                    $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());
+              this.createMapControl({
+                id: 'addlayer',
+                options: {
+                  tipLabel: "sdk.mapcontrols.addlayer.tooltip",
+                  onSetMap(e) {
+                    if ('after' === e.setter) {
+                      $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());
+                    }
                   }
-                }
-              }));
+                },
+              });
             }
             break;
 
@@ -1051,7 +1096,7 @@ class MapService extends G3WObject {
               if (this.getMapControlByType('measure')) {
                 this.getMapControlByType('measure').addType(type)
               } else {
-                this.addControl('measure', 'measure', new MeasureControl({
+                this.addControl('measure', new MeasureControl({
                   name: "measure",
                   tipLabel: 'sdk.mapcontrols.measures.title',
                   types: [type],
@@ -1068,10 +1113,14 @@ class MapService extends G3WObject {
            * @since 3.8.0
            */
           case 'zoomhistory':
-            this.addControl('zoomhistory', 'zoomhistory', new InteractionControl({
-              element: (new (Vue.extend(MapControlZoomHistory))()).$mount().$el, tipLabel: "sdk.mapcontrols.addlayer.tooltip" }),
-              false
-            );
+            this.createMapControl({
+              id: 'zoomhistory',
+              add: false,
+              options: {
+                element:  (new (Vue.extend(MapControlZoomHistory))()).$mount().$el,
+                tipLabel: "sdk.mapcontrols.addlayer.tooltip",
+              }
+            })
             $('.g3w-map-controls-left-bottom').append(this.getMapControlByType('zoomhistory').element);
             break;  
 
