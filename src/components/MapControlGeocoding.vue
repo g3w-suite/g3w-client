@@ -631,10 +631,9 @@ export default {
           feature = feature || new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
           });
-          //add properties
-          feature.setProperties(properties);
           // set id of the feature
           feature.setId(__uid);
+          feature.setProperties(properties);
           LAYER.getSource().addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
