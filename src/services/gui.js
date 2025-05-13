@@ -951,8 +951,7 @@ export default new (class GUI extends G3WObject {
 
     // content is open → remove content
     if (open) {
-      const contents = this.getComponent('contents');
-      contents.setOpen(false);
+      this.getComponent('contents').setOpen(false);
       _clearContents();
     }
 
