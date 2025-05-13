@@ -87,7 +87,7 @@
         type          = "button"
         id            = "show-markers-results"
         class         = "btn skin-background-color"
-        @click.stop   = "() => toggleSidebar(true)"
+        @click.stop   = "toggleSidebar"
         title         = "Toggle sidebar panel"
       >
       <code :style = "{ opacity: is_sidebar_open ? 0.5 : undefined }">
@@ -374,20 +374,6 @@ export default {
   methods: {
 
     /**
-     * Remove marker from map
-     * 
-     * @since 3.9.0
-     */
-    _hideMarker() {
-      // clear layer features marker
-      LAYER.getSource().clear();
-      // force layer visibilty to true
-      if (false === this.is_layer_visible) {
-        this.toggleLayerVisibility();
-      }
-    },
-
-    /**
      * Toggle marker layer visibility
      *
      * @since 3.9.0
@@ -411,7 +397,8 @@ export default {
 
     clearMarkers() {
       is_clearing = true;
-      this._hideMarker();
+      LAYER.getSource().clear(); // clear layer features marker
+      LAYER.setVisible(true);    // force layer visibilty to true
       // set false to add
       this.results.forEach(i => i.__selected = false);
       const layer = GUI.getService('queryresults').getState().layers.find(l => l.id === LAYER.get('id'));
@@ -594,12 +581,15 @@ export default {
 
       // no markers are on the map
       if (0 === this.features.length) {
-        this._hideMarker();
+        LAYER.getSource().clear(); // clear layer features marker
+        LAYER.setVisible(true);    // force layer visibilty to true
       }
 
       // show remaining results or close panel
       if (!is_clearing) {
-        this.toggleSidebar(0 === this.features.length);
+        GUI.closeContent().then(() => {
+          GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: LAYER.getSource().getFeatures() }] });
+        });
       }
 
     },
@@ -635,7 +625,8 @@ export default {
           LAYER.getSource().addFeature(feature);
           GUI.getService('map').zoomToFeatures([feature])
           item.__selected = true;
-          this.toggleSidebar(feature);
+          await GUI.closeContent();
+          GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: [feature] }] });
         }
       } catch (e) {
         console.warn(e);
@@ -647,16 +638,13 @@ export default {
      * 
      * @since 4.0.0
      */
-    async toggleSidebar(feature) {
-      if (this.is_sidebar_open && 'boolean' === typeof feature && feature) {
+    toggleSidebar() {
+      const features = LAYER.getSource().getFeatures();
+      if (!this.is_sidebar_open && features.length) {
+        GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features }] });
+      } else {
         GUI.closeContent();
-        return;
       }
-      // check if is already an open right panel
-      if (this.is_sidebar_open) {
-        await GUI.closeContent();
-      }
-      GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: [feature] || LAYER.getSource().getFeatures() }] });
     },
 
     /**
