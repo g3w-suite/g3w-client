@@ -551,12 +551,10 @@ export default new (class GUI extends G3WObject {
 
   // show results info/search
   showQueryResults(title, results) {
-    const queryresults = this.getComponent('queryresults').getService();
-
-    queryresults.clearState();
+    this.getService('queryresults').clearState();
 
     if (results) {
-      queryresults.setQueryResponse(results);
+      this.getService('queryresults').setQueryResponse(results);
     }
 
     // show contextual content
@@ -569,7 +567,7 @@ export default new (class GUI extends G3WObject {
       perc:       isMobile.any ? 100 : undefined,
     });
 
-    return queryresults;
+    return this.getService('queryresults');
   }
 
   /**
