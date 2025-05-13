@@ -601,11 +601,13 @@ export default {
       try {
         let feature;
 
+        // lazy load item geometry
         if (PROVIDERS[item.provider]?.fetch_geom) {
           const geometry = await PROVIDERS[item.provider].fetch_geom(item);
           feature = new ol.Feature({ geometry: (new ol.format.GeoJSON()).readGeometry(geometry) });
         }
 
+        // skip invalid items (ie. no geometry)
         if ((!item.lat || !item.lon) && !feature) {
           return;
         }
