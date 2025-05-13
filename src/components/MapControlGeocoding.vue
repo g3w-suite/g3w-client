@@ -112,6 +112,7 @@
           item.__selected   ? 'selected' : '',
         ]"
         :key        = "item.__uid"
+        :style      = "{ cursor: !item.__heading && 'pointer' }"
         @click.stop = "!item.__heading && onItemClick(item)" 
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
@@ -145,7 +146,7 @@
             style       = "color:black"
             aria-hidden = "true"
           ></i>
-          <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000; cursor: pointer;">
+          <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000;">
             <span v-if  = "item.type"                                                                class = "gcd-type">{{ item.type }}</span>
             <span v-if  = "item.name"                                                                class = "gcd-name">{{ item.name }}</span>
             <span v-if  = "item.address_name"                                                        class = "gcd-road">{{ item.address_name }}</span>
