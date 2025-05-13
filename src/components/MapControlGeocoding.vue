@@ -132,19 +132,19 @@
             style       = "color: #000; padding: 5px;"
             :class      = "$fa(item.__selected ? 'check' : 'uncheck')">
           </i>
-          <i
-            v-if        = "'road' === item.__icon"
-            class       = "fa fa-road"
-            style       = "color:black"
-            aria-hidden = "true"
-          ></i>
           <img
-            v-else-if  = "'poi' === item.__icon"
+            v-if  = "'poi' === item.__icon"
             class      = "gcd-icon"
             src        = "/static/client/images/pushpin.svg"
             width      = "24"
             height     = "24"
           />
+          <i
+            v-else-if   = "undefined !== item.__icon"
+            :class      = "`fa fa-${item.__icon}`"
+            style       = "color:black"
+            aria-hidden = "true"
+          ></i>
           <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000; cursor: pointer;">
             <span v-if  = "item.type"                                                                class = "gcd-type">{{ item.type }}</span>
             <span v-if  = "item.name"                                                                class = "gcd-name">{{ item.name }}</span>
@@ -217,9 +217,9 @@ Object
  */
 window.initConfig.mapcontrols.geocoding.providers['qes'] = {
   label: window.location.host,
-  icon:  'poi',
   fetch: async (opts) => ({
     provider: 'qes',
+    icon:     'layer-group',
     results:
     (
       await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}` })
@@ -817,7 +817,7 @@ export default {
   .ol-geocoder > ul {
     border-radius: 3px !important;
     width: 100%;
-    max-height: 200px;
+    max-height: 65vh;
     padding: 0;
     margin-top: 3px;
     background-color: white;
