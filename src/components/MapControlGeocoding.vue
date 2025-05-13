@@ -173,6 +173,7 @@ import { isPointGeometryType }          from 'utils/isPointGeometryType';
 import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
 import { getCatalogLayers }             from 'utils/getCatalogLayers';
+import { createSelectedStyle }          from 'utils/createSelectedStyle';
 import { t }                            from 'g3w-i18n';
 
 /**
@@ -257,7 +258,9 @@ const LAYER = new ol.layer.Vector({
           })
         })
       })
-    } else {
+    }
+    
+    if (isPointGeometryType(feature.getGeometry().getType())) {
       return [
         // pusphin icon
         new ol.style.Style({
@@ -277,6 +280,12 @@ const LAYER = new ol.layer.Vector({
           })
         })
       ];
+    } else {
+      return createSelectedStyle({
+        geometryType: feature.getGeometry().getType(),
+        color:        'orange',
+        fill:         false,
+      })
     }
   }
 });
@@ -603,8 +612,8 @@ export default {
 
         // lazy load item geometry
         if (PROVIDERS[item.provider]?.fetch_geom) {
-          const geometry = await PROVIDERS[item.provider].fetch_geom(item);
-          feature = new ol.Feature({ geometry: (new ol.format.GeoJSON()).readGeometry(geometry) });
+    
+          feature = new ol.Feature({ geometry: (new ol.format.GeoJSON()).readGeometry(await PROVIDERS[item.provider].fetch_geom(item))});
         }
 
         // skip invalid items (ie. no geometry)
@@ -617,11 +626,12 @@ export default {
           this._removeItem(item.__uid);
         } else {
           // add feature marker and zoom on it
-          const { __uid, __icon, __selected, ..._item } = item; // exclude internal properties
+          const { __uid, __icon, __selected, ...properties } = item; // exclude internal properties
           feature = feature || new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
-            ..._item, 
           });
+          //add properties
+          feature.setProperties(properties);
           // set id of the feature
           feature.setId(__uid);
           LAYER.getSource().addFeature(feature);
