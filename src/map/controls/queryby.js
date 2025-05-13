@@ -443,7 +443,7 @@ export class QueryBy extends InteractionControl {
       clickmap: true,
     });
 
-    GUI.getService('map').addControl(type, control, false, false);
+    GUI.getService('map').addControl(type, control, false);
 
     control._interaction.on('change:active', e => {
       //set current cursor class on map

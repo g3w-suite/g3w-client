@@ -478,21 +478,18 @@ class MapService extends G3WObject {
 
   createMapControl(type, {
     id,
-    visible,
     add     = true,
     options = {},
   } = {}) {
     // BACKCOMP v3.x
     if ('string' !== typeof type) {
       id           = type.id;
-      visible      = type.visible;
       add          = type.add ?? true;
       options      = type.options ?? {};
-      options.name = options.name || options.id;
       type         = id;
     }
-    const control = new InteractionControl(options);
-    this.addControl(id || type, type, control, add, visible ?? control?.isVisible?.());
+    const control = new InteractionControl({ name: id, ...options });
+    this.addControl(id || type, control, add);
     return control;
   }
 
@@ -635,7 +632,7 @@ class MapService extends G3WObject {
    * @param addToMapControls
    * @param visible
    */
-  addControl(id, type, control, addToMapControls = true, visible = true) {
+  addControl(id, type, control, addToMapControls = true, visible = control?.isVisible?.() ?? true) {
 
     // BACKCOMP v3.x
     if ('string' !== typeof type ) {
