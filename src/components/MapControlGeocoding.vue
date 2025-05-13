@@ -112,7 +112,7 @@
           item.__selected   ? 'selected' : '',
         ]"
         :key        = "item.__uid"
-        @click.stop = "onItemClick(item)"
+        @click.stop = "!item.__heading && onItemClick(item)" 
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
         <span
