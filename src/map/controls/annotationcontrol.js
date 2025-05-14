@@ -646,6 +646,9 @@ export class AnnotationControl extends InteractionControl {
     if (!type) {
       this.getMap().removeInteraction(this._interaction);
 
+      //remove eventually tooltip
+      this._measureTooltip && this._measureTooltip.remove();
+
       //active selection
       this._interactions.select.setActive(true);
   
