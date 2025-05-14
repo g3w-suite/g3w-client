@@ -116,12 +116,10 @@
         @click.stop = "!item.__heading && onItemClick(item)" 
       >
         <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
-        <span
+        <b
           v-if  = "item.__heading"
-          style = "display: flex; justify-content: space-between; padding: 5px"
-        >
-          <span style="color: #FFF; font-weight: bold">{{ item.label }}</span>
-        </span>
+          style = "padding: 5px; color: #FFF;"
+        >{{ item.label }}</b>
         <!-- NO RESULTS -->
         <span
           v-else-if = "item.__no_results"
