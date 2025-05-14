@@ -132,7 +132,7 @@
             :class      = "$fa(item.__selected ? 'check' : 'uncheck')">
           </i>
           <img
-            v-if  = "'poi' === item.__icon"
+            v-if  = "['poi', 'point'].includes(item.__icon)"
             class      = "gcd-icon"
             src        = "/static/client/images/pushpin.svg"
             width      = "24"
@@ -141,7 +141,7 @@
           <i
             v-else-if   = "undefined !== item.__icon"
             :class      = "`fa fa-${item.__icon}`"
-            style       = "color:black"
+            style       = "color: black"
             aria-hidden = "true"
           ></i>
           <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000;">
@@ -526,13 +526,16 @@ export default {
 
             // results
             p.value.results.forEach(item => {
-              this.results.push(flattenObject({
-                ...item,
+              const { geometry, ...properties} = item;  
+              const obj = flattenObject({
+                ...properties,
                 provider:   p.value.provider,
                 __uid:      getUniqueDomId(),
-                __icon:     this.providers[p.value.provider].icon || p.value.icon,
+                __icon:     geometry?.type?.toLowerCase() || this.providers[p.value.provider].icon || p.value.icon,
                 __selected: false,
-              }));
+              });
+              obj.__geometry = geometry; //add geometry eventually
+              this.results.push(obj);
             });
 
           });
@@ -617,19 +620,27 @@ export default {
         }
 
         // skip invalid items (ie. no geometry)
-        if ((!item.lat || !item.lon) && !feature) {
+        if ((!item.lat || !item.lon || !item.__geometry) && !feature) {
           return;
         }
-
+        
         // in case of already add marker
         if (LAYER.getSource().getFeatureById(item.__uid)) {
           this._removeItem(item.__uid);
         } else {
           // add feature marker and zoom on it
-          const { __uid, __icon, __selected, ...properties } = item; // exclude internal properties
-          feature = feature || new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
-          });
+          const { __uid, __icon, __selected, __geometry, ...properties } = item; // exclude internal properties
+          // create a new feature using geometry
+          if (!feature && __geometry && __geometry.type) {
+            feature = new ol.Feature({ geometry: new ol.geom[__geometry.type](ol.proj.transform(__geometry.coordinates, 'EPSG:4326', GUI.getService('map').getEpsg())) });
+          }
+          // create a new feature using coordinates lat lon
+          if (!feature && !__geometry) {
+            feature = new ol.Feature({
+              geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
+            });
+          }
+        
           // set id of the feature
           feature.setId(__uid);
           feature.setProperties(properties);
