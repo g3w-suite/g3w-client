@@ -55,6 +55,8 @@ export class AnnotationControl extends InteractionControl {
 
     this._interactions = {};
 
+    this._upload       = false; //import features from upload json file
+
     // load saved annotations from: URL search params, local storage, or server config
     const features = (new ol.format.GeoJSON({
       dataProjection:    GUI.getService('map').getEpsg(),
@@ -698,6 +700,17 @@ export class AnnotationControl extends InteractionControl {
   }
 
   #onAddFeature({ feature }) { 
+    //No need to handle on add features from import 
+    if (this._upload) {
+      //In case of Circle type annotation, need to build the geometry
+      if ('Circle' === feature.get('type') ) {
+        feature.setGeometry(new ol.geom.Circle(feature.get('center'), Number(feature.get('radius'))));
+      }
+      //set feature style
+      feature.setStyle(this.#style(feature.get('type')));
+      return;
+    }
+    
     // clear eventually selected feature
     this._interactions.select.getFeatures().clear();
 
@@ -728,6 +741,7 @@ export class AnnotationControl extends InteractionControl {
       fontsize: 15,
     });
 
+  
     //set style property of feature
     feature.set('style', Object.assign(feature.get('style') || {}, this._annotation.style));
 
@@ -1200,10 +1214,16 @@ export class AnnotationControl extends InteractionControl {
     dialog.addEventListener('close', () => {
       if (dialog.returnValue === 'confirm') {
         try {
+          //set upload true
+          this._upload = true;
+          
           this._annotation.layer.getSource().addFeatures((new ol.format.GeoJSON({
             dataProjection:    GUI.getService('map').getEpsg(),
             featureProjection: GUI.getService('map').getEpsg()
           })).readFeatures(JSON.parse(preview.textContent)));
+          
+          //set upload false
+          this._upload = false;
         } catch(e) {
           console.warn(e);
           alert('Failed to add annotations. Please check the JSON content.');
