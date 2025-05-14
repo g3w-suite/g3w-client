@@ -216,7 +216,7 @@ Object
  * CUSTOM GEOCODING PROVIDER: "qes"
  */
 window.initConfig.mapcontrols.geocoding.providers['qes'] = {
-  label: window.location.host,
+  label: `Project (${window.location.host})`,
   fetch: async (opts) => ({
     provider: 'qes',
     icon:     'layer-group',
