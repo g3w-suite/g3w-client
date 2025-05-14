@@ -31,12 +31,13 @@ export class AnnotationControl extends InteractionControl {
       /** annotation feature to edit */
       feature:       null,
       style: {
-        color:    'rgb(244, 78, 59)',
-        width:    3,
-        radius:   8,
-        opacity:  0.5,
-        rotation: 0,
-        fontsize: 15,
+        color:     'rgb(244, 78, 59)',
+        width:     3,
+        radius:    8,
+        opacity:   0.5,
+        rotation:  0,
+        fontsize:  15,
+        direction: null, //for linestring
       },
       constraints: {
         circle:    { radius: 0, unit: 1 },
@@ -360,6 +361,15 @@ export class AnnotationControl extends InteractionControl {
                     v-model = "style.width"
                   />
                 </div>
+                <!-- LINE DIRECTION (line) -->
+                <div v-if = "feature && 'LineString' === feature.get('type')">
+                  <label>Direction</label>
+                  <select class = "form-control" style = "margin-bottom: 5px;" v-model = "style.direction">
+                    <option :value = "null">---</option>
+                    <option value  = "forward">Forward</option>
+                    <option value  = "backward">Backward</option>  
+                  </select>   
+                </div>
 
                 <!-- SHAPE OPACITY -->
                 <div v-if = "feature && ['Polygon', 'Rectangle' , 'Circle'].includes(feature.get('type'))">
@@ -519,11 +529,12 @@ export class AnnotationControl extends InteractionControl {
                   if (this.feature) {
                     this.feature.set('style', Object.assign(this.feature.get('style') || {}, {
                       color:    style.color,
-                      width:    Number(style.width),
-                      radius:   Number(style.radius),
-                      opacity:  Number(style.opacity),
-                      rotation: Number(style.rotation) * (Math.PI / 180),
-                      fontsize: Number(style.fontsize),
+                      width:     Number(style.width),
+                      radius:    Number(style.radius),
+                      opacity:   Number(style.opacity),
+                      rotation:  Number(style.rotation) * (Math.PI / 180),
+                      fontsize:  Number(style.fontsize),
+                      direction: style.direction,
                     }));
                   }
                   this.layer.changed();
@@ -619,7 +630,8 @@ export class AnnotationControl extends InteractionControl {
     });
 
 
-    this._annotation.style.color = feature.get('style').color;
+    this._annotation.style.color     = feature.get('style').color;
+    this._annotation.style.direction = feature.get('style').direction;
 
     feature.selected = true;
     feature.changed();
@@ -644,12 +656,13 @@ export class AnnotationControl extends InteractionControl {
           rectangle: { width:  0, wunit: 1, height: 0, hunit: 1 }
         },
         style: {
-          color:    'rgb(244, 78, 59)',
-          width:    3,
-          radius:   8,
-          opacity:  0.5,
-          rotation: 0,
-          fontsize: 15,
+          color:     'rgb(244, 78, 59)',
+          width:     3,
+          radius:    8,
+          opacity:   0.5,
+          rotation:  0,
+          fontsize:  15,
+          direction: null,
         },
         type:      null,
         feature:   null,
@@ -733,12 +746,13 @@ export class AnnotationControl extends InteractionControl {
 
     // set default style
     Object.assign(this._annotation.style, {
-      color:    'rgb(244, 78, 59)',
-      radius:   8,
-      width:    3,
-      opacity:  0.5,
-      rotation: 0,
-      fontsize: 15,
+      color:     'rgb(244, 78, 59)',
+      radius:    8,
+      width:     3,
+      opacity:   0.5,
+      rotation:  0,
+      fontsize:  15,
+      direction: null, 
     });
 
   
@@ -1067,7 +1081,26 @@ export class AnnotationControl extends InteractionControl {
           }),
           stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
         }),
-        feat.selected && new ol.style.Style({ image, geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates()) })
+        feat.selected && new ol.style.Style({ image, geometry: f => new ol.geom.MultiPoint(f.getGeometry().getCoordinates()) }),
+        ...(feat.get('style')?.direction ? (() => {
+          const styles = [];
+          feat.getGeometry().forEachSegment((start, end) => {
+            const dx       = end[0] - start[0];
+            const dy       = end[1] - start[1];
+            styles.push(new ol.style.Style({
+              geometry: new ol.geom.Point('forward' === feat.get('style')?.direction ? end : start),
+              image: new ol.style.RegularShape({
+                fill: new ol.style.Fill({ color: feat.get('style')?.color }),
+                points: 3,
+                radius: 8,
+                displacement: [-8 * 0.8, 0],
+                rotation: -Math.atan2(dy, dx),
+                angle: ('forward' === feat.get('style')?.direction ? 1 : -1) * Math.PI / 2 // rotate 90°
+              })
+            }));
+          })
+          return styles;
+        })() : [])
       ].filter(Boolean);
     }
 
