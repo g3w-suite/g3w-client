@@ -1096,7 +1096,7 @@ export class AnnotationControl extends InteractionControl {
                 fill: new ol.style.Fill({ color: feat.get('style')?.color }),
                 points: 3,
                 radius: 8,
-                displacement: [-8 * 0.8, 0],
+                displacement: [0, 0],
                 rotation: -Math.atan2(dy, dx),
                 angle: ('forward' === feat.get('style')?.direction ? 1 : -1) * Math.PI / 2 // rotate 90°
               })
