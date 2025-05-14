@@ -224,9 +224,10 @@ window.initConfig.mapcontrols.geocoding.providers['qes'] = {
     (
       await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}` })
     ).results.map(result => ({
-      name:  result.attributes.name || result.feature_id,
-      type:  result.layer_name,
-      qes:   result,
+      layer_id:  result.layer_id, //layer
+      name:      result.attributes.name || result.feature_id,
+      type:      result.layer_name,
+      qes:       result,
     })),
   }),
   fetch_geom: async item => (await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}vector/api/editing/qdjango/${g3wsdk.core.ApplicationState.project.getId()}/${item.qes_layer_id}/?fids=${item.qes_feature_id}` })).vector.data.features[0].geometry,
@@ -707,8 +708,8 @@ export default {
     map.getMap().addLayer(LAYER);
 
     //register change z-index layer position when new layer is added (ex wms or vector)
-    map.on('set-layer-zindex', ({layer, zindex}) => {
-      if (layer.get('id') !== LAYER.get('id')) {
+    map.on('set-layer-zindex', ({layer, zindex }) => {
+      if (layer.get('id') !== LAYER.get('id') && LAYER.getZIndex() < zindex) {
         LAYER.setZIndex(zindex+1);
       }
     })
@@ -727,7 +728,8 @@ export default {
 
       const layer = layers.find(l => LAYER.get('id') === l.id);
 
-      if (!layer) {
+      //exit in case of no g3w_marker layer of features coming from elastich search (project layers)
+      if (!layer || layer?.features.find(f => 'qes' === f?.attributes?.provider)) {
         return;
       }
 
