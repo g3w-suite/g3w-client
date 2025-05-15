@@ -495,7 +495,7 @@ export default {
       try {
         GUI.setLoadingContent(true);
 
-        const data = await promisify(this.layer.getDataTable(params || {}));
+        const data    = await promisify(this.layer.getDataTable(params || {}));
         const is_valid = this.layer.isGeoLayer() && data.features;
 
         if (is_valid && !params) {
@@ -536,28 +536,29 @@ export default {
       search    = { value: null },
     } = {}) {
 
-      // reset features before a load
-      GUI.setLoadingContent(true);
-
       this.layer.setAttributeTablePageLength(length);
 
       // If no headers are set, exit
       if (0 === this.state.headers.length) {
         return {
-          data: [],
-          recordsTotal: 0,
+          data:            [],
+          recordsTotal:    0,
           recordsFiltered: 0
         };
       }
 
+      //remove all features on each request
       this.state.features.splice(0);
+
+      await this.$nextTick();
+
 
       if (0 === order.length) {
         order.push({ column: 1, dir: 'asc', });
       }
 
       this.search = {
-        field:     columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',') || undefined,
+        field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|and' : ''}`).join(',') || undefined,
         page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
@@ -577,9 +578,17 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
-            if (this.layer.isGeoLayer() && f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            //hase geometry layer and feature has geometry
+            const has_geometry = this.layer.isGeoLayer() && f.geometry;
+            
+            if ( has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+              f.selected = this.state.selectAll;
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+              if (f.selected) {
+                this.layer.includeSelectionFid(f.id)
+              };
             }
+
             return {
               id:         f.id,
               selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id), //@since 3.11.0 in case of filter token from pagination
@@ -603,9 +612,7 @@ export default {
         console.warn(e);
         GUI.notify.error(t("info.server_error"));
         return Promise.reject(e);
-      } finally {
-        GUI.setLoadingContent(false);
-      }
+      } 
     },
 
     unSelectAll() {
@@ -706,6 +713,7 @@ export default {
     //set data table
     const table = $(this.$refs.attribute_table).DataTable({
       ajax: debounce(async (opts, cb) => {
+        GUI.disableContent(true);
         try {
           // disable table content to avoid clicking on table during loading of new data
           GUI.disableContent(true);
