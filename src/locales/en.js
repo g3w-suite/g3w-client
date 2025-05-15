@@ -472,6 +472,7 @@ export default {
     change_session: "Change Session",
     component: "Generic Component",
     search: "Search",
+    alerts: "Alerts",
     no_results: "No results found",
     print: "Print",
     create_print: "Create Print",

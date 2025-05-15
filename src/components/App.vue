@@ -51,7 +51,7 @@
         >
           <a
             :href          = "item.url || '#'"
-            @click         = "oncCustomItemClick($event, item)"
+            @click         = "onCustomItemClick($event, item)"
             :target        = "item.target"
             data-placement = "bottom"
             data-toggle    = "tooltip"
@@ -269,18 +269,11 @@
         <li id="metadata" class="treeview sidebaritem">
           <a
             href           = "#"
-            style          = "display: flex; justify-content: space-between; align-items: center;"
-            data-placement = "right"
-            class          = "skin-tooltip-right"
-            data-container = "body"
-            v-t-tooltip    = "'sdk.metadata.title'"
             data-toggle    = "modal"
             data-target    = "#modal-metadata"
           >
-            <div>
-              <i :class="$fa('file')" style="color: #fff;"></i>
-              <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
-            </div>
+            <i :class="$fa('file')" style="color: #fff;"></i>
+            <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
           </a>
         </li>
 
@@ -517,10 +510,7 @@
 import CookieLaw          from 'vue-cookie-law';
 import Teleport           from 'vue2-teleport';
 
-import {
-  LOCAL_ITEM_IDS,
-  VIEWPORT
-}                         from 'g3w-constants';
+import { VIEWPORT }       from 'g3w-constants';
 import ApplicationState   from 'store/application';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
@@ -544,18 +534,6 @@ export default {
   name: 'app',
 
   data() {
-    const custom_links = (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean)
-
-    custom_links.unshift({
-      id:     'credits',
-      type:   'metadata',
-      target: '#metadata_credits',
-      icon:   'far fa-question-circle',
-      title:  'Credits',
-    });
-
-    custom_links.forEach(l => !l.id && (l.id = getUniqueDomId()));
-
     return {
       iframe:                false,
       language:              null,
@@ -564,7 +542,7 @@ export default {
       state:                 ApplicationState.viewport,
       updatePreviousTitle:   false,
       header:                t('main navigation'),
-      custom_links,
+      custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
     }
   },
 
@@ -755,7 +733,11 @@ export default {
     /**
      * @since 3.11.0
      */
-    oncCustomItemClick(e, item) {
+    onCustomItemClick(e, item) {
+      if (item.onclick) {
+        e.preventDefault();
+        return item.onclick();
+      }
       if (!['modal', 'metadata'].includes(item.type)) {
         return;
       }
@@ -778,7 +760,7 @@ export default {
       $('#custom_modal').modal('show');
       $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
     },
-    
+
     showEmbedModal() {
       const url = new URL(location.href);
       url.searchParams.set('map_extent', GUI.getService('map').getMapExtent().toString());
@@ -799,80 +781,6 @@ export default {
       `);
       $('#share_modal').modal('show');
       $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
-    },
-
-    /**
-     * Display dialog messages on a first page load (on app bootstrap).
-     * 
-     * @since 3.8.0
-     */
-    async initDialogMessages() {
-      const messages = ApplicationState.project.state.messages;
-      
-      // no messages to show
-      if (!messages) {
-        return;
-      }
-
-      const pid = ApplicationState.project.getId();
-
-      for (let i = 0; i < messages.items.length; i++) {
-        const message = messages.items[i];
-        const item    = window.localStorage.getItem(LOCAL_ITEM_IDS.MESSAGES.id);
-        const data    = (item ? JSON.parse(item) : undefined) || LOCAL_ITEM_IDS.MESSAGES.value;
-        data[pid]     = data[pid] || []
-
-        // check if a current project has already messages stored
-        if (undefined !== data[pid].find(id => id === message.id)) {
-          continue
-        }
-
-        // create "Do Not Show Again" component
-        const doNotShowAgainVueComponent = new (Vue.extend({
-          data: () => ({ id: getUniqueDomId(), checked: false }),
-          template: /* html */ `
-            <div style="display: flex; margin-top: 10px;">
-              <input :id="id"  v-model="checked" class="magic-checkbox" type="checkbox" />
-              <label :for="id" v-t="'dont_show_again'"/>
-            </div>`
-        }));
-    
-        // create content message div
-        const content = document.createElement('div');
-        // create dom element message from body html string from server
-        content.append(...(new DOMParser()).parseFromString(message.body, 'text/html').body.childNodes);
-        // append input don't show again checkbox vue component
-        content.append(doNotShowAgainVueComponent.$mount().$el);
-
-        // show a modal window
-        await new Promise((resolve) => {
-          GUI.showModalDialog({
-            title:       message.title,
-            message:     content,
-            size:        'large',
-            closeButton: false,
-            className:   `g3w-modal-project-message ${Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]}`,
-            buttons: {
-              close: {
-                label: t('close'),
-                className: 'btn-secondary',
-                callback: () => {
-                  // update locale storage if "Do Not Show Again" checkbox is checked 
-                  try {
-                    if (doNotShowAgainVueComponent.checked) {
-                      data[pid].push(message.id);
-                      window.localStorage.setItem(LOCAL_ITEM_IDS.MESSAGES.id, JSON.stringify(data));
-                    }
-                  } catch(e) {
-                    console.warn(e);
-                  }
-                  resolve();
-                }
-              },
-            }
-          })
-        })
-      }
     },
 
     /**
@@ -1014,17 +922,11 @@ export default {
 
   watch: {
 
-    'language'(language, cl) {
+    language(language, cl) {
       if (cl) {
         i18next.changeLanguage(language);
-        /**
-         * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
-         */
-        ApplicationState.lng      = language;
         ApplicationState.language = language;
-        const pathArray           = window.location.pathname.split('/');
-        pathArray[1]              = language;
-        history.replaceState(null, null, pathArray.join('/'));
+        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? language : part).join('/'));
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     },
@@ -1036,11 +938,6 @@ export default {
   },
 
   async mounted() {
-
-    // check if show Project messages when app is mounted
-    this.initDialogMessages();
-
-    await this.$nextTick();
 
     this.language = this.appconfig.user.i18n;
 
@@ -1071,11 +968,6 @@ export default {
 </script>
 
 <style>
-  .g3w-modal-project-message.Info .modal-header     { background-color: #0073b7; }
-  .g3w-modal-project-message.Warning .modal-header  { background-color: #e99611; }
-  .g3w-modal-project-message.Error .modal-header    { background-color: #dd4b39; }
-  .g3w-modal-project-message.Critical .modal-header { background-color: #605ca8; }
-  .g3w-modal-project-message h4.modal-title         { color: #FFF !important; }
   .nav-lang .select2-container--default .select2-selection--single {
     background: none;
     border: none;

@@ -359,20 +359,10 @@ export const FONT_AWESOME_ICONS = {
  * @type {Object<string, LocalItem>}
  * 
  * @since v3.8
+ * 
+ * @deprecated since 4.0.0. Please handle "localStorage" items by yourself.
  */
-export const LOCAL_ITEM_IDS = {
-
-  MESSAGES: {
-    id:   'MESSAGES',
-    value: {}
-  },
-
-  SPATIALBOOKMARKS: {
-    id:    'SPATIALBOOKMARKS',
-    value: {}
-  },
-
-};
+export const LOCAL_ITEM_IDS = {};
 
 /**
  * List of Open Layers spatial methods used to find features

@@ -472,6 +472,7 @@ export default {
     change_session: "Cambia Sessione",
     component: "Componente Generico",
     search: "Ricerche",
+    alerts: 'Avvisi',
     no_results: "Nessun risultato trovato",
     print: "Stampa",
     create_print: "Crea Stampa",
