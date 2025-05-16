@@ -344,7 +344,9 @@ export const FONT_AWESOME_ICONS = {
   copyright:        'fa fa-copyright',
   /** @since 3.11.0 **/
   "forward":        'fas fa-angle-double-right',
-  "backward":       'fas fa-angle-double-left'
+  "backward":       'fas fa-angle-double-left',
+  //@since 3.12.0 **/
+  "annotation":     'fas fa-font', 
 };
 
 /**

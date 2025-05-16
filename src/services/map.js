@@ -26,6 +26,7 @@ import { StreetViewControl }                from 'map/controls/streetviewcontrol
 import { ScaleControl }                     from 'map/controls/scalecontrol';
 import { ScreenshotControl }                from 'map/controls/screenshotcontrol';
 import { MeasureControl }                   from 'map/controls/measurecontrol';
+import { AnnotationControl }                from 'map/controls/annotationcontrol';
 import DataRouterService                    from 'services/data';
 import ApplicationService                   from 'services/application';
 import GUI                                  from 'services/gui';
@@ -136,6 +137,7 @@ const CONTROLS = {
   'scale':              ScaleControl,
   'onclick':            InteractionControl,
   'screenshot':         ScreenshotControl,
+  'annotation':         AnnotationControl,
 };
 
 /**
@@ -753,7 +755,6 @@ class MapService extends G3WObject {
     if (addToMapControls && !visible) {
       control.element.style.display = "none";
     }
-
     if (addToMapControls) {
       $('.g3w-map-controls').append(control.element);
     }
@@ -850,12 +851,12 @@ class MapService extends G3WObject {
       const map  = this.getMap();
       const size = (map && map.getSize().filter(v => v > 0)) || null;
       const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : this.project.state.initextent;
-      this.getMapLayers().forEach(l => l.setupCustomMapParamsToLegendUrl) && l.setupCustomMapParamsToLegendUrl({
+      this.getMapLayers().forEach(l => l.setupCustomMapParamsToLegendUrl && l.setupCustomMapParamsToLegendUrl({
         crs: this.getEpsg(),
         // in the case of axis orientation inverted if it needs to invert the axis
-        bbox: map.getView().getProjection().getAxisOrientation() === "neu" ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
-      });
-      this.emit('change-map-legend-params')
+        bbox: "neu" === map.getView().getProjection().getAxisOrientation()  ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
+      }));
+      this.emit('change-map-legend-params');
     }
   }
 
@@ -1138,13 +1139,15 @@ class MapService extends G3WObject {
               }
             }
             break;
-
+          case 'annotation':
+            this.createMapControl(type, {});
+            break;  
           /**
            * @since 3.8.0
            */
           case 'zoomhistory':
             $('.g3w-map-controls-left-bottom').append(this.createMapControl(type, { add: false }).element);
-            break;
+            break;  
 
         }
     });
@@ -1473,6 +1476,7 @@ class MapService extends G3WObject {
 
     // set default layers order
     const map = this.getMap();
+
     map.addLayer(this.defaultsLayers.mapcenter);
     map.addLayer(this.defaultsLayers.selectionLayer);
     map.addLayer(this.defaultsLayers.highlightLayer);
