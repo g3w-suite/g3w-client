@@ -378,23 +378,26 @@ export default {
         await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
       }
 
+      //filter columns 
       if (filter) {
         // in case of select all true
         if (this.state.selectAll) {
           if (this.state.allfeatures > this.state.featurescount) {
-            this.state.features.splice(0);
+            await this.layer.clearSelectionFids();
+            //need to set true after clear selction ids
+            this.state.selectAll = true;
             const features = await this.getFeatures({
               field: this.search.field
             });
+            this.state.features.splice(0);
+            await this.$nextTick();
             features.forEach(f => {
               const has_geometry = this.layer.isGeoLayer() && f.geometry;
-              f.selected = this.state.selectAll;
-              if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+              f.selected = true;
+              if (has_geometry) {
                 this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-                if (f.selected) {
-                  this.layer.includeSelectionFid(f.id)
-                };
               }
+              this.layer.includeSelectionFid(f.id);
               this.state.features.push({
                 id:         f.id,
                 selected:   f.selected, //@since 3.11.0 in case of filter token from pagination
@@ -517,6 +520,7 @@ export default {
 
     async getFeatures(params) {
       try {
+        GUI.disableContent(true);
         GUI.setLoadingContent(true);
 
         const data    = await promisify(this.layer.getDataTable(params || {}));
@@ -538,6 +542,7 @@ export default {
         return Promise.reject();
       } finally {
         GUI.setLoadingContent(false);
+        GUI.disableContent(false);
       }
     },
 
@@ -559,6 +564,8 @@ export default {
       columns   = [],
       search    = { value: null },
     } = {}) {
+      GUI.setLoadingContent(true);
+      GUI.disableContent(true);
 
       this.layer.setAttributeTablePageLength(length);
 
@@ -641,7 +648,10 @@ export default {
         console.warn(e);
         GUI.notify.error(t("info.server_error"));
         return Promise.reject(e);
-      } 
+      } finally {
+        GUI.setLoadingContent(false);
+        GUI.disableContent(false);
+      }
     },
 
     unSelectAll() {
