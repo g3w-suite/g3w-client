@@ -73,7 +73,7 @@
             <input
               type       = "checkbox"
               id         = "attribute_table_select_all_rows"
-              :checked   = "state.selectAll"
+              :checked   = "state.selectAll && state.features.length > 0"
               class      = "magic-checkbox"
             />
             <label for = "attribute_table_select_all_rows" @click.capture.stop.prevent = "selectAllRows">&nbsp;</label>
@@ -368,6 +368,8 @@ export default {
       // set inverse of selectAll
       this.state.selectAll = !this.state.selectAll;
 
+      await this.$nextTick();
+
       const filter         = this.filter.length > 0;
 
       if (!filter) {
@@ -379,14 +381,36 @@ export default {
       if (filter) {
         // in case of select all true
         if (this.state.selectAll) {
-          this.state
-            .features
-            .filter(f => this.filter.includes(f.id))
-            .forEach(f => {
-              f.selected = true;
-              this.layer.includeSelectionFid(f.id);
+          if (this.state.allfeatures > this.state.featurescount) {
+            this.state.features.splice(0);
+            const features = await this.getFeatures({
+              field: this.search.field
             });
-
+            features.forEach(f => {
+              const has_geometry = this.layer.isGeoLayer() && f.geometry;
+              f.selected = this.state.selectAll;
+              if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+                this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+                if (f.selected) {
+                  this.layer.includeSelectionFid(f.id)
+                };
+              }
+              this.state.features.push({
+                id:         f.id,
+                selected:   f.selected, //@since 3.11.0 in case of filter token from pagination
+                attributes: f.attributes || f.properties,
+                geometry:   has_geometry || undefined
+              });
+            })
+          } else {
+            this.state
+              .features
+              .filter(f => this.filter.includes(f.id))
+              .forEach(f => {
+                f.selected = true;
+                this.layer.includeSelectionFid(f.id);
+              });
+          }  
         } else {
           this.state.features.forEach(f => f.selected = false);
           this.layer.clearSelectionFids();
@@ -581,12 +605,16 @@ export default {
             //hase geometry layer and feature has geometry
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
-            if ( has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
               f.selected = this.state.selectAll;
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
               if (f.selected) {
                 this.layer.includeSelectionFid(f.id)
               };
+            }
+
+            if (has_geometry && this.layer.getOlSelectionFeature(f.id)) {
+              f.selected = true;
             }
 
             return {
@@ -599,7 +627,8 @@ export default {
         );
 
         this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.state.features.every(f => f.selected);
+        //set selectAll
+        this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
         return {
           // DataTable pagination
           data: this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
