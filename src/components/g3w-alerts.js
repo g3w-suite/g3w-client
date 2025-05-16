@@ -33,7 +33,7 @@ async function _showAlertsManager() {
   const data     = JSON.parse(window.localStorage.getItem('MESSAGES') || '{}');
   const dialog = Object.assign(document.createElement('template'), {
     innerHTML: /* html */`
-      <dialog class="project-messages">
+      <dialog id="project-messages" popover="manual">
         <h4 style="margin: 0; padding: .5em; color: #FFF; background-color: #212c31">${t('alerts')}</h4>
         <form method="dialog">
           <table style="user-select:none;width:100%;">
@@ -61,14 +61,17 @@ async function _showAlertsManager() {
             </tbody>
           </table>
           <menu style="display: flex; justify-content: end;">
-            <button type="submit" value="close" class="btn btn-secondary">${messages.items.find(message => !data[pid].some(id => id === message.id)) ? t('show') : t('close')}</button>
+            <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-messages">${messages.items.find(message => !data[pid].some(id => id === message.id)) ? t('show') : t('close')}</button>
           </menu>
         </form>
       </dialog>
     `.trim()
   }).content.firstChild;
 
-  dialog.addEventListener('close', () => {
+  dialog.addEventListener('toggle', e => {
+    if (e.newState === "open") {
+      return;
+    }
     dialog.remove();
     _showAlerts();
   });
@@ -76,7 +79,7 @@ async function _showAlertsManager() {
   _makeDraggable(dialog);
 
   document.body.appendChild(dialog);
-  dialog.showModal();
+  dialog.showPopover();
 
   // Handle checkbox click event
   dialog.querySelectorAll('[name^="dont_show_again_"]').forEach(checkbox => checkbox.addEventListener('click', e => {
@@ -137,7 +140,7 @@ async function _showAlerts() {
 
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
-        <dialog class="project-message">
+        <dialog id="project-message" popover="manual">
           <h4 style="margin: 0; padding: .5em; color: #FFF; background-color: ${({ Info: '#0073b7', Warning: '#e99611', Error: '#605ca8', Critical: '#605ca8', })[Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]]};">${message.title}</h4>
           <form method="dialog">
             ${message.body}
@@ -145,7 +148,7 @@ async function _showAlerts() {
               <label style="display: block; width: fit-content;">
                 <input type="checkbox" name="dont_show_again" /> ${t('dont_show_again')}
               </label>
-              <button type="submit" value="close" class="btn btn-secondary">${t('close')}</button>
+              <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-message">${t('close')}</button>
             </menu>
           </form>
         </dialog>
@@ -154,7 +157,10 @@ async function _showAlerts() {
 
     // wait for modal close
     const { promise, resolve } = Promise.withResolvers();
-    dialog.addEventListener('close', async () => {
+    dialog.addEventListener('toggle', async e => {
+      if (e.newState === "open") {
+        return;
+      }
       // update locale storage if "Do Not Show Again" checkbox is checked 
       try {
         if (dialog.querySelector('input[name="dont_show_again"]').checked) {
@@ -172,7 +178,7 @@ async function _showAlerts() {
     _makeDraggable(dialog);
 
     document.body.appendChild(dialog);
-    dialog.showModal();
+    dialog.showPopover();
     await promise;
   }
 

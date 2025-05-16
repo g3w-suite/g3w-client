@@ -112,7 +112,7 @@ abbr[title], abbr[data-original-title]      { cursor: help; }
 address                                     { margin-bottom: 20px; font-style: normal; line-height: 1.42857143; }
 dialog                                      { border-width: 0; animation: slide-down 0.3s ease-out; min-width: min(50vw, 350px); box-shadow: 0 0 1px; }
 dialog::backdrop                            { background-color: rgb(0, 0, 0, .5); }
-dialog menu                                 { padding: 0; }
+dialog[popover=manual]::backdrop            { opacity: .25; }
 dialog > form > menu                        { background: #fff; position:sticky; bottom:0; margin: 0; padding: 10px 0; }
 dialog:has(> form)                          { padding: 0; }
 dialog form                                 { padding: 14px; }
