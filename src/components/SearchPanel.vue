@@ -251,6 +251,15 @@
       */
       clearFilters() {
         this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
+        //@since v4.0 reset all form values after clear
+        this.state.forminputs.forEach(i => {
+          if (['selectfield','autocompletefield'].includes(i.type)) {
+            i.value = 'in' === i.operator ? [i.values[0].value] : i.values[0].value; //set all or first value
+          } else {
+            i.value = null;
+          }
+          this.changeInput(i);
+        })
         //@since 4.0.0 close content
         GUI.closeContent();
       },
