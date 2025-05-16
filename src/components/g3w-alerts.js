@@ -68,10 +68,7 @@ async function _showAlertsManager() {
     `.trim()
   }).content.firstChild;
 
-  dialog.addEventListener('toggle', e => {
-    if (e.newState === "open") {
-      return;
-    }
+  dialog.addEventListener('close', () => {
     dialog.remove();
     _showAlerts();
   });
@@ -157,10 +154,7 @@ async function _showAlerts() {
 
     // wait for modal close
     const { promise, resolve } = Promise.withResolvers();
-    dialog.addEventListener('toggle', async e => {
-      if (e.newState === "open") {
-        return;
-      }
+    dialog.addEventListener('close', async e => {
       // update locale storage if "Do Not Show Again" checkbox is checked 
       try {
         if (dialog.querySelector('input[name="dont_show_again"]').checked) {
@@ -195,6 +189,20 @@ async function _showAlerts() {
  * Make draggle a `<dialog>` element
  */
 function _makeDraggable(dialog) {
+
+  dialog.addEventListener('toggle', async e => {
+    if (e.newState === "closed") {
+      dialog.dispatchEvent(new Event('close'));
+    }
+  });
+
+  // close popover on ESC
+  dialog.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      dialog?.hidePopover?.();
+    }
+  });
+
   // draggable element
   dialog.addEventListener('mousedown', e => {
     const rect          = dialog.getBoundingClientRect();
