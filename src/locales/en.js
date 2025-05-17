@@ -378,6 +378,18 @@ export default {
         zoomhistory: {
           zoom_last: "Zoom Last",
           zoom_next: "Zoom Next"
+        },
+        annotation: {
+          title: 'Annotation',
+          tooltip: 'Create Annotation',
+          types: {
+            'Point':      'Point',
+            'LineString': 'Line',
+            'Polygon':    'Polygon',
+            'Rectangle':  'Rectangle',
+            'Circle':     'Circle',
+            'Text':       'Text'
+          }
         }
       },
       relations: {

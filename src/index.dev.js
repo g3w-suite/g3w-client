@@ -355,7 +355,7 @@ g3wsdk.gui.GUI.once('ready', async () => {
     fnc:     () => {
       const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */`
-          <dialog style>
+          <dialog>
             <form method="dialog">
               <label for="template_name" style="font-size: 1.25em;">Choose template</label>
               <select name="template_name" class="form-control" style="margin-bottom: 1em;">
