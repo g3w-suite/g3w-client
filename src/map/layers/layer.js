@@ -186,7 +186,6 @@ const Providers = {
         try {
 
           let response;
-          console.log(params)
           if (!options.filter) {
             response = await XHR.post({
               url:         this._layer.getUrl('editing'),
