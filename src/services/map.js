@@ -26,6 +26,7 @@ import { StreetViewControl }                from 'map/controls/streetviewcontrol
 import { ScaleControl }                     from 'map/controls/scalecontrol';
 import { ScreenshotControl }                from 'map/controls/screenshotcontrol';
 import { MeasureControl }                   from 'map/controls/measurecontrol';
+import { AnnotationControl }                from 'map/controls/annotationcontrol';
 import DataRouterService                    from 'services/data';
 import ApplicationService                   from 'services/application';
 import GUI                                  from 'services/gui';
@@ -1105,7 +1106,9 @@ class MapService extends G3WObject {
               }
             }
             break;
-
+          case 'annotation':
+            this.addControl('annotation', new AnnotationControl());
+            break;  
           /**
            * @since 3.8.0
            */
