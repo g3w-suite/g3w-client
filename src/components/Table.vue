@@ -368,56 +368,64 @@ export default {
       // set inverse of selectAll
       this.state.selectAll = !this.state.selectAll;
 
+      //Wait change on DOM element
       await this.$nextTick();
 
+      //Check if has columns filter
       const filter         = this.filter.length > 0;
 
+      //In case of no filter and selectAll and not all getAll features from server
+      if (!filter && this.state.selectAll && !this.getAll) {
+        //get all features of a layer
+        await this.getFeatures(); 
+      }
+
+      //In case of no filter
       if (!filter) {
-        if (!this.getAll) { await this.getFeatures() }
+        //set selected attribute of each feature
         this.state.features.forEach(f => f.selected = this.state.selectAll)
+        //clear or set all selection to simplify filter tocker request creation
         await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
       }
 
-      //filter columns 
-      if (filter) {
-        // in case of select all true
-        if (this.state.selectAll) {
-          if (this.state.allfeatures > this.state.featurescount) {
-            await this.layer.clearSelectionFids();
-            //need to set true after clear selction ids
-            this.state.selectAll = true;
-            const features = await this.getFeatures({
-              field: this.search.field
-            });
-            this.state.features.splice(0);
-            await this.$nextTick();
-            features.forEach(f => {
-              const has_geometry = this.layer.isGeoLayer() && f.geometry;
-              f.selected = true;
-              if (has_geometry) {
-                this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-              }
-              this.layer.includeSelectionFid(f.id);
-              this.state.features.push({
-                id:         f.id,
-                selected:   f.selected, //@since 3.11.0 in case of filter token from pagination
-                attributes: f.attributes || f.properties,
-                geometry:   has_geometry || undefined
-              });
-            })
-          } else {
-            this.state
-              .features
-              .filter(f => this.filter.includes(f.id))
-              .forEach(f => {
-                f.selected = true;
-                this.layer.includeSelectionFid(f.id);
-              });
-          }  
-        } else {
-          this.state.features.forEach(f => f.selected = false);
-          this.layer.clearSelectionFids();
-        }
+      //In case of filter columns
+      if (filter && this.state.selectAll && this.state.allfeatures > this.state.featurescount) {
+        await this.layer.clearSelectionFids();
+        //need to set true after clear selction ids
+        this.state.selectAll = true;
+        //reset features
+        this.state.features.splice(0);
+        await this.$nextTick();
+        (await this.getFeatures({ field: this.search.field }) || [])
+          .forEach(f => {
+            const has_geometry = this.layer.isGeoLayer() && f.geometry;
+            f.selected = this.state.selectAll;
+            if (has_geometry) {
+              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+            }
+            this.layer.includeSelectionFid(f.id);
+            this.state.features.push({
+              id:         f.id,
+              selected:   f.selected, //@since 3.11.0 in case of filter token from pagination
+              attributes: f.attributes || f.properties,
+              geometry:   has_geometry || undefined
+          });
+        })
+      }
+
+      if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
+        this.state
+          .features
+          .filter(f => this.filter.includes(f.id))
+          .forEach(f => {
+            f.selected = true;
+            this.layer.includeSelectionFid(f.id);
+          });
+      }
+
+      if (filter && !this.state.selectAll) {
+        this.state.features.forEach(f => f.selected = false);
+        await this.layer.clearSelectionFids();
       }
 
       this.state.show_tools = this.state.features.some(f => f.selected);
@@ -493,8 +501,8 @@ export default {
      */
     select(feature) {
       //invert selected of feature
-      feature.selected = !feature.selected;
-
+      feature.selected     = !feature.selected;
+      //check if all rows are selected
       this.state.selectAll = this.state.features.every(f => f.selected);
 
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
@@ -523,7 +531,7 @@ export default {
         GUI.disableContent(true);
         GUI.setLoadingContent(true);
 
-        const data    = await promisify(this.layer.getDataTable(params || {}));
+        const data     = await promisify(this.layer.getDataTable(params || {}));
         const is_valid = this.layer.isGeoLayer() && data.features;
 
         if (is_valid && !params) {
@@ -704,8 +712,9 @@ export default {
    */
   async created() {
 
+    this.currentFilter = null
     // bind context on event listeners
-    this.unSelectAll  = this.unSelectAll.bind(this);
+    this.unSelectAll   = this.unSelectAll.bind(this);
     // this.changeFilter = this.changeFilter.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
@@ -748,14 +757,13 @@ export default {
     //resolve data from server
     let pResolve;
     //store columns index value search
-    let filterColumns = {};
+    const filterColumns = {};
     //set data table
     const table = $(this.$refs.attribute_table).DataTable({
       ajax: debounce(async (opts, cb) => {
         GUI.disableContent(true);
         try {
-          // disable table content to avoid clicking on table during loading of new data
-          GUI.disableContent(true);
+          
           const data = await this.getData(opts);
           cb(data);
           this.disableSelectAll = 0 === this.state.features.length;
@@ -765,8 +773,6 @@ export default {
         } catch(e) {
           console.warn(e);
         }
-        //enable table data content after get data
-        GUI.disableContent(false);
       }, 800),
       bSortCellsTop:  true,
       columns:        this.state.headers,
