@@ -28,13 +28,17 @@ ApplicationService.on('ready', function() {
  * Notification center (ie. mark elements as read/unread)
  */
 async function _showAlertsManager() {
+  if (document.querySelector('dialog#project-messages')) {
+    return;
+  }
   const pid      = ApplicationState.project.getId();
   const messages = ApplicationState.project.state.messages;
   const data     = JSON.parse(window.localStorage.getItem('MESSAGES') || '{}');
+  const edit_url = ApplicationState.project.getState()?.edit_url || '';
   const dialog = Object.assign(document.createElement('template'), {
     innerHTML: /* html */`
       <dialog id="project-messages" popover="manual">
-        <h4 style="margin: 0; padding: .5em; color: #FFF; background-color: #212c31">${t('alerts')}</h4>
+        <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${t('alerts')}</h4>
         <form method="dialog">
           <table style="user-select:none;width:100%;">
             <thead>
@@ -51,8 +55,8 @@ async function _showAlertsManager() {
                       <input name="dont_show_again_${message.id}" type="checkbox" ${data[pid].some(id => id === message.id) ? 'checked' : ''}>
                     </label>
                   </td>
-                  <td style="width: 20px;" ${ApplicationState.project.getState().edit_url ? '' : 'hidden'}>
-                    <a href="${ApplicationState.project.getState().edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" title="Edit in admin">
+                  <td style="width: 20px;" ${edit_url ? '' : 'hidden'}>
+                    <a href="${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" title="Edit in admin">
                       <i class="far fa-edit"></i>
                     </a>
                   </td>
@@ -138,7 +142,7 @@ async function _showAlerts() {
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <dialog id="project-message" popover="manual">
-          <h4 style="margin: 0; padding: .5em; color: #FFF; background-color: ${({ Info: '#0073b7', Warning: '#e99611', Error: '#605ca8', Critical: '#605ca8', })[Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]]};">${message.title}</h4>
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: ${({ Info: '#0073b7', Warning: '#e99611', Error: '#605ca8', Critical: '#605ca8', })[Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]]};">${message.title}</h4>
           <form method="dialog">
             ${message.body}
             <menu style="display: flex;justify-content: space-between;">
@@ -190,6 +194,10 @@ async function _showAlerts() {
  */
 function _makeDraggable(dialog) {
 
+  dialog.style.maxWidth  = '90vw';
+  dialog.style.maxHeight = '90vh';
+  dialog.style.resize    = "both";
+
   dialog.addEventListener('toggle', async e => {
     if (e.newState === "closed") {
       dialog.dispatchEvent(new Event('close'));
@@ -197,20 +205,21 @@ function _makeDraggable(dialog) {
   });
 
   // close popover on ESC
-  dialog.addEventListener('keydown', e => {
+  document.addEventListener('keydown', function onEscape(e) {
     if (e.key === 'Escape') {
       dialog?.hidePopover?.();
+      document.removeEventListener('keydown', onEscape);
     }
   });
 
   // draggable element
   dialog.addEventListener('mousedown', e => {
     const rect          = dialog.getBoundingClientRect();
-    const is_backdrop   = (
-      e.clientY < rect.top ||
+    const is_backdrop = (
+      e.clientY < rect.top - 20 ||
       e.clientY > rect.top + rect.height ||
       e.clientX < rect.left ||
-      e.clientX > rect.left + rect.width
+      e.clientX > rect.left + rect.width - 20
     );
     const is_interactive = ['label', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i));
     if (is_backdrop || is_interactive) {
