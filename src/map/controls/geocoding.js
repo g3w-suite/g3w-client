@@ -1,179 +1,31 @@
-<!--
-  @file need some inspiration for other geocoding providers?
+/**
+ * @file ORIGINAL SOURCE: src/components/MapControlGeocoding.vue@v3.11.10
+ * 
+ * need some inspiration for other geocoding providers?
+ * 
+ * 👉 https://github.com/Dominique92/ol-geocoder
+ * 👉 https://github.com/perliedman/leaflet-control-geocoder
+ * 
+ * @since 4.0.0
+ */
 
-  👉 https://github.com/Dominique92/ol-geocoder
-  👉 https://github.com/perliedman/leaflet-control-geocoder
+import GUI                            from 'services/gui';
+import ApplicationState               from 'store/application';
+import PluginsRegistry                from 'store/plugins';
+import Projections                    from 'store/projections';
+import { getUniqueDomId }             from 'utils/getUniqueDomId';
+import { flattenObject }              from 'utils/flattenObject';
+import { addZValue }                  from 'utils/addZValue';
+import { isPointGeometryType }        from 'utils/isPointGeometryType';
+import { convertSingleMultiGeometry } from 'utils/convertSingleMultiGeometry';
+import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
+import { createSelectedStyle }        from 'utils/createSelectedStyle';
+import { t }                          from 'g3w-i18n';
 
-  @since 3.9.0
--->
-<template>
-  <div
-    v-if   = "has_providers"
-    :class = "[ 'ol-geocoder', { 'g3w-disabled': disabled }]"
-  >
-
-    <div class = "gcd-txt-control">
-
-      <!-- INPUT SEARCH -->
-      <input
-        ref             = "input"
-        type            = "text"
-        id              = "gcd-input-query"
-        autocomplete    = "off"
-        class           = "gcd-txt-input"
-        @keyup          = "onQuery"
-        @input          = "onValue"
-        :placeholder    = "placeholder"
-      />
-
-      <!-- RESET SEARCH -->
-      <button
-        ref         = "reset"
-        type        = "button"
-        id          = "gcd-input-reset"
-        class       = "gcd-txt-reset gcd-hidden"
-        @click.stop = "onReset"
-        title       = "Reset search"
-      ></button>
-
-      <!-- SUBMIT SEARCH -->
-      <button
-        type            = "button"
-        id              = "gcd-search"
-        class           = "btn"
-        @click.stop     = "() => query($refs.input.value)"
-        title           = "Submit search"
-      >
-        <i
-          :class      = "$fa('search')"
-          style       = "color: #fff"
-          aria-hidden = "true"
-        ></i>
-      </button>
-
-      <!-- CLEAR MARKERS SELECTION --->
-      <button
-        v-if="features.length > 0"
-        type            = "button"
-        id              = "gcd-trash"
-        class           = "btn skin-background-color"
-        @click.stop     = "clearMarkers"
-        title           = "Clear markers selection"
-      >
-        <i
-          :class      = "$fa('trash')"
-          aria-hidden = "true"
-        ></i>
-      </button>
-
-      <!-- TOGGLE MARKERS VISIBLITY -->
-      <button
-        v-if          = "features.length > 0"
-        type          = "button"
-        id            = "markers-visibility-layer"
-        class         = "btn skin-background-color"
-        @click.stop   = "toggleLayerVisibility"
-        title         = "Toggle markers visibility"
-      >
-        <i
-        :class      = "$fa(is_layer_visible ? 'eye-close': 'eye')"
-        aria-hidden = "true"
-        ></i>
-      </button>
-
-      <!-- TOGGLE SIDEBAR PANEL -->
-      <button
-        v-if          = "features.length > 0"
-        type          = "button"
-        id            = "show-markers-results"
-        class         = "btn skin-background-color"
-        @click.stop   = "toggleSidebar"
-        title         = "Toggle sidebar panel"
-      >
-      <code :style = "{ opacity: is_sidebar_open ? 0.5 : undefined }">
-        {{ features.length > 99 ? '99+' : features.length }}
-      </code>
-      </button>
-
-    </div>
-
-    <!-- SEARCH RESULTS -->
-    <ul
-      ref   = "result"
-      class = "gcd-txt-result"
-    >
-      <li
-        v-for   = "(item, i) in results"
-        :class  = "[
-          item.provider,
-          item.__icon       ? 'gcd-icon-' + item.__icon : '',
-          item.__heading    ? 'skin-background-color' : '',
-          item.__no_results ? 'gcd-noresult' : '',
-          item.__selected   ? 'selected' : '',
-        ]"
-        :key        = "item.__uid"
-        :style      = "{ cursor: !item.__heading && 'pointer' }"
-        @click.stop = "!item.__heading && onItemClick(item)" 
-      >
-        <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
-        <b
-          v-if  = "item.__heading"
-          style = "padding: 5px; color: #FFF;"
-        >{{ item.label }}</b>
-        <!-- NO RESULTS -->
-        <span
-          v-else-if = "item.__no_results"
-          v-t       = "'mapcontrols.geocoding.noresults'"
-        ></span>
-        <!-- NO RESULTS -->
-        <template v-else>
-          <i
-            style       = "color: #000; padding: 5px;"
-            :class      = "$fa(item.__selected ? 'check' : 'uncheck')">
-          </i>
-          <img
-            v-if  = "['poi', 'point'].includes(item.__icon)"
-            class      = "gcd-icon"
-            src        = "/static/client/images/pushpin.svg"
-            width      = "24"
-            height     = "24"
-          />
-          <i
-            v-else-if   = "undefined !== item.__icon"
-            :class      = "`fa fa-${item.__icon}`"
-            style       = "color: black"
-            aria-hidden = "true"
-          ></i>
-          <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000;">
-            <span v-if  = "item.type"                                                                class = "gcd-type">{{ item.type }}</span>
-            <span v-if  = "item.name"                                                                class = "gcd-name">{{ item.name }}</span>
-            <span v-if  = "item.address_name"                                                        class = "gcd-road">{{ item.address_name }}</span>
-            <span v-if  = "item.address_road  || item.address_building || item.address_house_number" class = "gcd-road">{{ item.address_building }} {{ item.address_road }} {{ item.address_house_number }}</span>
-            <span v-if  = "item.address_city  || item.address_town     || item.address_village"      class = "gcd-city">{{ item.address_postcode }} {{ item.address_city }} {{ item.address_town }} {{ item.address_village }}</span>
-            <span v-if  = "item.address_state || item.address_country"                               class = "gcd-country">{{ item.address_state }} {{ item.address_country }}</span>
-          </span>
-        </template>
-      </li>
-    </ul>
-
-  </div>
-</template>
-
-<script>
-import GUI                              from 'services/gui';
-import ApplicationState                 from 'store/application';
-import QueryResultsActionChooseLayer    from 'components/QueryResultsActionChooseLayer.vue';
-import PluginsRegistry                  from 'store/plugins';
-import Projections                      from 'store/projections';
-import { getUniqueDomId }               from 'utils/getUniqueDomId';
-import { flattenObject }                from 'utils/flattenObject';
-import { addZValue }                    from 'utils/addZValue';
-import { isPointGeometryType }          from 'utils/isPointGeometryType';
-import { convertSingleMultiGeometry }   from 'utils/convertSingleMultiGeometry';
-import { getCatalogLayerById }          from 'utils/getCatalogLayerById';
-import { getCatalogLayers }             from 'utils/getCatalogLayers';
-import { createSelectedStyle }          from 'utils/createSelectedStyle';
-import { t }                            from 'g3w-i18n';
+/**
+ * CUSTOM GEOCODING PROVIDER: "qes"
+ */
+window.initConfig.mapcontrols.geocoding.providers['qes'] = {};
 
 /**
  * Provider definitions.
@@ -213,110 +65,211 @@ Object
   });
 
 /**
- * CUSTOM GEOCODING PROVIDER: "qes"
- */
-window.initConfig.mapcontrols.geocoding.providers['qes'] = {
-  label: `Project (${window.location.host})`,
-  fetch: async (opts) => ({
-    provider: 'qes',
-    icon:     'layer-group',
-    results:
-    (
-      await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}` })
-    ).results.map(result => ({
-      layer_id:  result.layer_id, //layer
-      name:      result.attributes.name || result.feature_id,
-      type:      result.layer_name,
-      qes:       result,
-    })),
-  }),
-  fetch_geom: async item => (await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}vector/api/editing/qdjango/${g3wsdk.core.ApplicationState.project.getId()}/${item.qes_layer_id}/?fids=${item.qes_feature_id}` })).vector.data.features[0].geometry,
-};
-
-/**
  * Search results layer (pushpin marker)
- *
- * @TODO move to parent `Control` class? (duplicated also in GEOLOCATION CONTROL)
  */
 const LAYER = new ol.layer.Vector({
   id: '__g3w_marker',
   name: 'Geocoding',
   source: new ol.source.Vector(),
-  style(feature) { // set style function to check if a coordinate search or a search from provider
+  style(feature) {
+    // this is a coordinate search
     if ('__g3w_marker_coordinates' === feature.getId()) {
       return new ol.style.Style({
         text: new ol.style.Text({
-          offsetY: -15, //move marker icon on base point coordinate and not center
-          text: '\uf3c5',
-          font: '900 3em "Font Awesome 5 Free"',
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 3
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 0,0, 0.7)'
-          })
+          offsetY: -15,
+          text:    '\uf3c5',
+          font:    '900 3em "Font Awesome 5 Free"',
+          stroke:  new ol.style.Stroke({ color: 'red', width: 3 }),
+          fill:    new ol.style.Fill({ color: 'rgba(255, 0,0, 0.7)' })
         })
       })
     }
-    
+    // search result from provider 
     if (isPointGeometryType(feature.getGeometry().getType())) {
       return [
         // pusphin icon
         new ol.style.Style({
-          image: new ol.style.Icon({
-            opacity: 1,
-            src: '/static/client/images/pushpin.svg',
-            scale: 0.8
-          }),
+          image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/pushpin.svg', scale: 0.8 }),
         }),
         // increase clickable icon area (invisible buffer)
         new ol.style.Style({
-          image: new ol.style.RegularShape({
-            stroke: new ol.style.Stroke({ color: [0, 0, 0, 0] }),
-            points: 4,
-            radius: 50,
-            angle: Math.PI / 4
-          })
+          image: new ol.style.RegularShape({ stroke: new ol.style.Stroke({ color: [0, 0, 0, 0] }), points: 4, radius: 50, angle: Math.PI / 4 })
         })
       ];
-    } else {
-      return createSelectedStyle({
-        geometryType: feature.getGeometry().getType(),
-        color:        'orange',
-        fill:         false,
-      })
     }
+    return createSelectedStyle({
+      geometryType: feature.getGeometry().getType(),
+      color:        'orange',
+      fill:         false,
+    });
   }
 });
 
-/**
- * Setted to true while running `clearMarkers()`
- */
-let is_clearing = false;
-
-export default {
-
+const GEOCODER = new (Vue.extend({
   data() {
     return {
       /** @since 3.9.0 */
-      results:            [],
+      results:   [],
       /** @since 3.9.0 */
-      disabled:           false, // disabled boolean control
+      disabled:  false, // disabled boolean control
+      providers: PROVIDERS,
+      /** true = while running `clearMarkers()` */
+      is_clearing: false,
     };
   },
 
-  props: {
+  template: /* html */`
+    <div
+      v-if   = "has_providers"
+      :class = "[ 'ol-geocoder', { 'g3w-disabled': disabled }]"
+    >
 
-    /**
-     * @since 3.9.0
-     */
-    providers: {
-      type:     Object, // {nominatim: {url:<url>, bing:{url:<url}}}
-      default:  {}
-    },
+      <div class = "gcd-txt-control">
 
-  },
+        <!-- INPUT SEARCH -->
+        <input
+          ref             = "input"
+          type            = "text"
+          id              = "gcd-input-query"
+          autocomplete    = "off"
+          class           = "gcd-txt-input"
+          @keyup          = "onQuery"
+          @input          = "onValue"
+          :placeholder    = "placeholder"
+        />
+
+        <!-- RESET SEARCH -->
+        <button
+          ref         = "reset"
+          type        = "button"
+          id          = "gcd-input-reset"
+          class       = "gcd-txt-reset gcd-hidden"
+          @click.stop = "onReset"
+          title       = "Reset search"
+        ></button>
+
+        <!-- SUBMIT SEARCH -->
+        <button
+          type            = "button"
+          id              = "gcd-search"
+          class           = "btn"
+          @click.stop     = "() => query($refs.input.value)"
+          title           = "Submit search"
+        >
+          <i
+            :class      = "$fa('search')"
+            style       = "color: #fff"
+            aria-hidden = "true"
+          ></i>
+        </button>
+
+        <!-- CLEAR MARKERS SELECTION --->
+        <button
+          v-if="features.length > 0"
+          type            = "button"
+          id              = "gcd-trash"
+          class           = "btn skin-background-color"
+          @click.stop     = "clearMarkers"
+          title           = "Clear markers selection"
+        >
+          <i
+            :class      = "$fa('trash')"
+            aria-hidden = "true"
+          ></i>
+        </button>
+
+        <!-- TOGGLE MARKERS VISIBLITY -->
+        <button
+          v-if          = "features.length > 0"
+          type          = "button"
+          id            = "markers-visibility-layer"
+          class         = "btn skin-background-color"
+          @click.stop   = "toggleLayerVisibility"
+          title         = "Toggle markers visibility"
+        >
+          <i
+          :class      = "$fa(is_layer_visible ? 'eye-close': 'eye')"
+          aria-hidden = "true"
+          ></i>
+        </button>
+
+        <!-- TOGGLE SIDEBAR PANEL -->
+        <button
+          v-if          = "features.length > 0"
+          type          = "button"
+          id            = "show-markers-results"
+          class         = "btn skin-background-color"
+          @click.stop   = "toggleSidebar"
+          title         = "Toggle sidebar panel"
+        >
+        <code :style = "{ opacity: is_sidebar_open ? 0.5 : undefined }">
+          {{ features.length > 99 ? '99+' : features.length }}
+        </code>
+        </button>
+
+      </div>
+
+      <!-- SEARCH RESULTS -->
+      <ul
+        ref   = "result"
+        class = "gcd-txt-result"
+      >
+        <li
+          v-for   = "(item, i) in results"
+          :class  = "[
+            item.provider,
+            item.__icon       ? 'gcd-icon-' + item.__icon : '',
+            item.__heading    ? 'skin-background-color' : '',
+            item.__no_results ? 'gcd-noresult' : '',
+            item.__selected   ? 'selected' : '',
+          ]"
+          :key        = "item.__uid"
+          :style      = "{ cursor: !item.__heading && 'pointer' }"
+          @click.stop = "!item.__heading && onItemClick(item)" 
+        >
+          <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
+          <b
+            v-if  = "item.__heading"
+            style = "padding: 5px; color: #FFF;"
+          >{{ item.label }}</b>
+          <!-- NO RESULTS -->
+          <span
+            v-else-if = "item.__no_results"
+            v-t       = "'mapcontrols.geocoding.noresults'"
+          ></span>
+          <!-- NO RESULTS -->
+          <template v-else>
+            <i
+              style       = "color: #000; padding: 5px;"
+              :class      = "$fa(item.__selected ? 'check' : 'uncheck')">
+            </i>
+            <img
+              v-if  = "['poi', 'point'].includes(item.__icon)"
+              class      = "gcd-icon"
+              src        = "/static/client/images/pushpin.svg"
+              width      = "24"
+              height     = "24"
+            />
+            <i
+              v-else-if   = "undefined !== item.__icon"
+              :class      = "'fa fa-' + item.__icon"
+              style       = "color: black"
+              aria-hidden = "true"
+            ></i>
+            <span style="display: flex; flex-direction: column; padding: 3px 5px; color: #000;">
+              <span v-if  = "item.type"                                                                class = "gcd-type">{{ item.type }}</span>
+              <span v-if  = "item.name"                                                                class = "gcd-name">{{ item.name }}</span>
+              <span v-if  = "item.address_name"                                                        class = "gcd-road">{{ item.address_name }}</span>
+              <span v-if  = "item.address_road  || item.address_building || item.address_house_number" class = "gcd-road">{{ item.address_building }} {{ item.address_road }} {{ item.address_house_number }}</span>
+              <span v-if  = "item.address_city  || item.address_town     || item.address_village"      class = "gcd-city">{{ item.address_postcode }} {{ item.address_city }} {{ item.address_town }} {{ item.address_village }}</span>
+              <span v-if  = "item.address_state || item.address_country"                               class = "gcd-country">{{ item.address_state }} {{ item.address_country }}</span>
+            </span>
+          </template>
+        </li>
+      </ul>
+
+    </div>
+  `,
 
   computed: {
 
@@ -405,7 +358,7 @@ export default {
     },
 
     clearMarkers() {
-      is_clearing = true;
+      this.is_clearing = true;
       LAYER.getSource().clear(); // clear layer features marker
       LAYER.setVisible(true);    // force layer visibilty to true
       // set false to add
@@ -415,26 +368,26 @@ export default {
       if (layer) {
         layer.features.forEach(f => GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f));
       }
-      is_clearing = false;
+      this.is_clearing = false;
     },
 
     /**
-     * Clear all
-     *
-     * @since 3.9.0
-     */
+      * Clear all
+      *
+      * @since 3.9.0
+      */
     clear() {
       this.clearResults();
       this.clearMarkers();
     },
 
     /**
-     * Run geocoding request
-     *
-     * @param { string } q query string in this format: "XCoord,YCoord,EPSGCode"
-     *
-     * @since 3.9.0
-     */
+      * Run geocoding request
+      *
+      * @param { string } q query string in this format: "XCoord,YCoord,EPSGCode"
+      *
+      * @since 3.9.0
+      */
     async query(q) {
 
       const map = GUI.getService('map');
@@ -546,8 +499,8 @@ export default {
     },
 
     /**
-     * @since 3.9.0
-     */
+      * @since 3.9.0
+      */
     onQuery(evt) {
       if ('Enter' === evt.key || 13 === evt.which || 13 === evt.keyCode) {
         evt.preventDefault();
@@ -556,15 +509,15 @@ export default {
     },
 
     /**
-     * @since 3.9.0
-     */
+      * @since 3.9.0
+      */
     onValue(e) {
       this.$refs.reset.classList.toggle("gcd-hidden",0 === e.target.value.trim().length);
     },
 
     /**
-     * @since 3.9.0
-     */
+    * @since 3.9.0
+    */
     onReset() {
       this.$refs.input.focus();
       this.$refs.input.value = '';
@@ -573,10 +526,10 @@ export default {
     },
 
     /**
-     * @param uid
-     * 
-     * @since 3.9.0
-     */
+    * @param uid
+    * 
+    * @since 3.9.0
+    */
     _removeItem(uid) {
       const item = (this.results || []).find(r => uid === r.__uid);
 
@@ -598,7 +551,7 @@ export default {
       }
 
       // show remaining results or close panel
-      if (!is_clearing) {
+      if (!this.is_clearing) {
         GUI.closeContent().then(() => {
           GUI.showQueryResults('Geocoding', { data: [{ layer: LAYER, features: LAYER.getSource().getFeatures() }] });
         });
@@ -607,8 +560,8 @@ export default {
     },
 
     /**
-     * @since 3.9.0
-     */
+    * @since 3.9.0
+    */
     async onItemClick(item) {
       try {
         let feature;
@@ -656,10 +609,10 @@ export default {
     },
 
     /**
-     * Show markers on query results panel
-     * 
-     * @since 4.0.0
-     */
+    * Show markers on query results panel
+    * 
+    * @since 4.0.0
+    */
     toggleSidebar() {
       const features = LAYER.getSource().getFeatures();
       if (!this.is_sidebar_open && features.length) {
@@ -670,10 +623,10 @@ export default {
     },
 
     /**
-     * Create new feature on selected Point/Multipoint layer
-     * 
-     * @since 3.9.0 
-     */
+    * Create new feature on selected Point/Multipoint layer
+    * 
+    * @since 3.9.0 
+    */
     async _editItem(layerId, feature) {
       const editing = PluginsRegistry.getPlugin('editing');
 
@@ -710,97 +663,172 @@ export default {
 
   },
 
-  created() {
+}))();
 
-    const queryresults = GUI.getService('queryresults');
-    const map          = GUI.getService('map');
+// wait for map ready
+GUI.once('ready', async () => {
+  const map          = GUI.getService('map');
+  const queryresults = GUI.getService('queryresults');
 
-    /** @TODO keep layer on top when adding an external layer ? (wms, vector, ...) */
-    map.getMap().addLayer(LAYER);
+  await (new Promise(res => map.once('setupcontrol:geocoding', res)));
 
-    //register change z-index layer position when new layer is added (ex wms or vector)
-    map.on('set-layer-zindex', ({layer, zindex }) => {
-      if (layer.get('id') !== LAYER.get('id') && LAYER.getZIndex() < zindex) {
-        LAYER.setZIndex(zindex+1);
-      }
-    })
+  map.addControl(
+    'geocoding',
+    Object.assign(new ol.control.Control({ element: GEOCODER.$mount().$el }), { offline: false }),
+    false
+  );
 
-    // register vector layer for query results
-    queryresults.registerVectorLayer(LAYER);
+  map.on('set-layer-zindex',                           _setLayerZindex);
+  queryresults.onafter('removeFeatureLayerFromResult', _removeFeatureLayerFromResult);
+  queryresults.onafter('addActionsForLayers',          _addActionsForLayers);
 
-    queryresults.onafter('removeFeatureLayerFromResult', (layer, feature) => {
-      if (LAYER.get('id') === layer.id) {
-        this._removeItem(feature.id);
-      }
-    });
+  // register vector layer
+  map.getMap().addLayer(LAYER);
+  queryresults.registerVectorLayer(LAYER);
+});
 
-    /** @TODO delegate attaching listener to addCurrentActionToolsLayer */
-    queryresults.onafter('addActionsForLayers', (actions, layers) => {
+/**
+ * Keep LAYER on top when adding an external layer (eg. wms, vector, ...)
+ */
+function _setLayerZindex({layer, zindex }) {
+  if (layer.get('id') !== LAYER.get('id') && LAYER.getZIndex() < zindex) {
+    LAYER.setZIndex(zindex+1);
+  }
+}
 
-      const layer = layers.find(l => LAYER.get('id') === l.id);
+/**
+ * Allow user to remove features from LAYER 
+ */
+function _removeFeatureLayerFromResult(layer, feature) {
+  if (LAYER.get('id') === layer.id) {
+    GEOCODER._removeItem(feature.id);
+  }
+}
 
-      //exit in case of no g3w_marker layer of features coming from elastich search (project layers)
-      if (!layer || layer?.features.find(f => 'qes' === f?.attributes?.provider)) {
-        return;
-      }
+/**
+ * Allow user to choose a project layer where to save selected features
+ */
+function _addActionsForLayers(actions, layers) {
 
-      // Get editing layers that has Point/MultiPoint Geometry type
-      const editablePointLayers =  getCatalogLayers({ EDITABLE: true, GEOLAYER: true })
-        .filter(l => isPointGeometryType(l.getGeometryType()))
-        .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
+  const queryresults = GUI.getService('queryresults');
 
-      // skip adding action icon when there is no editable layer
-      // or editing panel is open (layer is in editing)
-      if (editablePointLayers.find(l => l.inediting)) {
-        return;
-      }
+  const layer = layers.find(l => LAYER.get('id') === l.id);
 
-      // Add
-      queryresults.addCurrentActionToolsLayer({
-        id: QueryResultsActionChooseLayer.name,
-        layer,
-        action: {
-          id:         'choose_layer',
-          class:      GUI.getFontClass('pencil'),
-          state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
-          toggleable: true,
-          hint:       'Choose a layer',
-          cbk:        (layer, feature, action, index) => {
-            // skip layer choose when there is only a single editable layer
-            if (1 === editablePointLayers.length) {
-              this._editItem(editablePointLayers[0].id, feature);
-              return;
-            }
-            // let user choose an editable layer
-            action.state.toggled[index] = !action.state.toggled[index];
-            queryresults.setCurrentActionLayerFeatureTool({
-              layer,
-              index,
-              action,
-              component: (action.state.toggled[index] ? QueryResultsActionChooseLayer : null),
-            });
-          },
-        },
-        config: {
-          layers:   editablePointLayers,
-          icon:     'pencil',
-          label:    'mapcontrols.geocoding.choose_layer',
-          nolayers: 'mapcontrols.geocoding.nolayers',
-          cbk:      this._editItem,
-        },
-      });
-
-    });
-
-  },
-
-  destroyed() {
-    GUI.getService('queryresults').unregisterVectorLayer(LAYER);
+  // skip when no "g3w_marker" layer or features comes from an elastich search (project layers)
+  if (!layer || layer?.features?.some?.(f => 'qes' === f?.attributes?.provider)) {
+    return;
   }
 
-};
-</script>
+  // Get editing layers that has Point/MultiPoint Geometry type
+  const editable_point_layers = Object
+    .values(ApplicationState.catalog)
+    .flatMap(s => s.getLayers({ EDITABLE: true, GEOLAYER: true }))
+    .filter(l => isPointGeometryType(l.getGeometryType()))
+    .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));
 
+  // skip adding when there is no editable layer or  editing panel is open (ie. layer is in editing)
+  if (editable_point_layers.find(l => l.inediting)) {
+    return;
+  }
+
+  // Add "choose_layer" action
+  queryresults.state.actiontools['choose_layer'] = {
+    [layer.id]: {
+      layers:   editable_point_layers,
+      icon:     'pencil',
+      label:    'mapcontrols.geocoding.choose_layer',
+      nolayers: 'mapcontrols.geocoding.nolayers',
+      cbk:      GEOCODER._editItem,
+    }
+  };
+
+  actions[layer.id] = actions[layer.id] || [];
+  actions[layer.id].push({
+    id:         'choose_layer',
+    class:      GUI.getFontClass('pencil'),
+    state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
+    toggleable: true,
+    hint:       'Choose a layer',
+    cbk:        (layer, feature, action, index) => {
+      // skip layer choose when there is only a single editable layer
+      if (1 === editable_point_layers.length) {
+        GEOCODER._editItem(editable_point_layers[0].id, feature);
+        return;
+      }
+      // let user choose an editable layer
+      action.state.toggled[index] = !action.state.toggled[index];
+
+      const tools   = queryresults.state.currentactiontools[layer.id];        // get current action tools
+      const feats   = queryresults.state.currentactionfeaturelayer[layer.id];
+      feats[index]  = action.state.toggled[index] ? action : null;
+      tools[index]  = action.state.toggled[index] ? ({
+        name: 'choose_layer',
+        data:() => ({ layerId: null }),
+        props: {
+          feature: { type: Object },
+          config:  { type: Object, default: () => ({ icon: 'pencil', label: 'Choose a Layer', nolayers: 'No layers found', layers: [], cbk: () => {} }) },
+        },
+        template: /* html */ `
+          <section class = "action-choose-layer">
+            <label v-t = "config.label"></label>
+            <div
+              style               = "width: 100%; display: flex"
+              @click.prevent.stop = ""
+            >
+              <select
+                v-select2 = "'layerId'"
+                :search   = "false"
+                style     = "flex-grow: 1;"
+                class     = "form-control"
+                :disabled = "!has_layers"
+              >
+                <option
+                  v-for   = "layer in config.layers"
+                  :key    = "layer.id"
+                  :value  = "layer.id">
+                  <b>{{ layer.name }}</b>
+                </option>
+                <option v-if = "!has_layers" v-t = "config.nolayers"></option>
+              </select>
+              <button
+                v-if        = "has_layers"
+                style       = "border-radius: 0 3px 3px 0;"
+                class       = "btn skin-button"
+                @click.stop = "() => config.cbk(layerId, feature)"
+              >
+                <span :class = "g3wtemplate.getFontClass(config.icon)"></span>
+              </button>
+            </div>
+          </section>`,
+          computed: {
+            has_layers() {
+              return this.config.layers && this.config.layers.length > 0; 
+            },
+          },
+          created() {
+            if (this.has_layers) {
+              this.layerId = this.config.layers[0].id;
+            }
+          },
+      }) : null;                                      // set component
+
+      // need to check if pass component and
+      if (
+        tools[index] &&                   // if component is set
+        action.id !== feats[index].id &&  // same action
+        feats[index].toggleable           // check if toggleable
+      ) {
+        feats[index].state.toggled[index] = false;
+      }
+
+    },
+  });
+
+}
+
+document.head.insertAdjacentHTML(
+  'beforeend',
+  /* css */`
 <style>
   /* Geocoder */
   .ol-geocoder {
@@ -894,7 +922,7 @@ export default {
   }
 
   .ol-geocoder .gcd-txt-reset::after {
-    content: "\d7";
+    content: "\\d7";
     display: inline-block;
     font-weight: bold;
     font-size: 2em;
@@ -994,3 +1022,5 @@ export default {
     border-bottom: 0 !important;
   }
 </style>
+`
+);

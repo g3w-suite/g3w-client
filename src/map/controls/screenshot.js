@@ -1,12 +1,39 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/screenshotcontrol.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/screenshotcontrol.js@v3.11.10
+ * @since 4.0.0
  */
+
 import ApplicationState         from 'store/application';
 import GUI                      from 'services/gui';
 import { saveBlob }             from 'utils/saveBlob';
 import { sameOrigin }           from 'utils/sameOrigin';
 import InteractionControl       from 'map/controls/interactioncontrol';
+
+// wait for map ready
+GUI.once('ready', async () => {
+  if (isMobile.any) {
+    return;
+  }
+  const map = GUI.getService('map');
+  await Promise.any([
+    new Promise(res => map.once('setupcontrol:screenshot', res)),
+    new Promise(res => map.once('setupcontrol:geoscreenshot', res))
+  ]);
+  Object
+    .keys(window.initConfig.mapcontrols)
+    .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
+    .forEach(type => {
+      if (map.getMapControlByType('screenshot')) {
+        map.getMapControlByType('screenshot').addType(type)
+      } else {
+        map.addControl('screenshot', new ScreenshotControl({
+            types:   [type],
+            layers:  [...g3wsdk.core.map.MapLayersStoreRegistry.getLayers(), ...map._layers.external],
+          })
+        );
+      }
+    });
+});
 
 /**
  * @FIXME prevent tainted canvas error
@@ -22,7 +49,7 @@ import InteractionControl       from 'map/controls/interactioncontrol';
  * 
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
  */
-export class ScreenshotControl extends InteractionControl {
+class ScreenshotControl extends InteractionControl {
 
   constructor(opts = {}) {
     opts.layers = undefined === opts.layers ? []: opts.layers;

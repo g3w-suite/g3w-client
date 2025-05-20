@@ -51,7 +51,7 @@ import DataRouterService                           from 'services/data';
 import PluginsRegistry                             from 'store/plugins';
 import TaskService                                 from 'services/tasks';
 import GUI                                         from 'services/gui';
-import { MeasureInteraction }                      from 'map/controls/measurecontrol';
+import { MeasureInteraction }                      from 'map/controls/measure';
 
 //MIXINS
 import Mixins                                      from 'mixins';

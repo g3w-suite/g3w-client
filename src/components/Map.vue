@@ -205,10 +205,6 @@ export default {
       }
     },
 
-    showHideControls() {
-      this.service.getMapControls().forEach(c => "scaleline" !== c.type && c.control.showHide());
-    },
-
     showEmbedModal() {
       document.querySelector('.nav-embedmap').click();
     },

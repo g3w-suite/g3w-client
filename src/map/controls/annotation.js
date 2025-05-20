@@ -10,7 +10,14 @@ import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
 
-export class AnnotationControl extends InteractionControl {
+// wait for map ready
+GUI.once('ready', async () => {
+  const map = GUI.getService('map');
+  await (new Promise(res => map.once('setupcontrol:annotation', res)));
+  map.addControl('annotation', new AnnotationControl());
+});
+
+class AnnotationControl extends InteractionControl {
 
   /** Incremental counter for added features */
   static FID = 1;
@@ -826,7 +833,7 @@ export class AnnotationControl extends InteractionControl {
       }
       geom.geometry.setCoordinates([[c0, c1, c2, c3, c0]]);
     }
-   
+  
     // redraw layer only if feature has show_info to true
     this._annotation.layer.changed();
   }

@@ -2,6 +2,7 @@
  * @file
  * @since 3.11.0
  */
+
 import {
   GEOMETRY_TYPES,
   SPATIAL_METHODS
@@ -15,6 +16,30 @@ import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
+
+// wait for map ready
+GUI.once('ready', async () => {
+  if (isMobile.any) {
+    return;
+  }
+  const map = GUI.getService('map');
+  await Promise.any([
+    new Promise(res => map.once('setupcontrol:querybypolygon', res)),
+    new Promise(res => map.once('setupcontrol:querybbox', res)),
+    new Promise(res => map.once('setupcontrol:querybycircle', res)),
+    new Promise(res => map.once('setupcontrol:querybydrawpolygon', res)),
+  ]);
+  Object
+    .keys(window.initConfig.mapcontrols)
+    .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon'].includes(type))
+    .forEach(type => {
+      if (map.getMapControlByType('queryby')) {
+        map.getMapControlByType('queryby').addType(type)
+      } else {
+        map.addControl('queryby', new QueryBy({ types: [type] }));
+      }
+    });
+});
 
 const POLYGON_TYPES = [
   GEOMETRY_TYPES.POLYGON,

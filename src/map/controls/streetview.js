@@ -1,6 +1,6 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/streetviewcontrol.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/streetviewcontrol.js@v3.11.10
+ * @since 4.0.0
  */
 
 import ApplicationState           from 'store/application';
@@ -9,10 +9,14 @@ import { XHR }                    from 'utils/XHR';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
 
+// wait for map ready
+GUI.once('ready', async () => {
+  const map = GUI.getService('map');
+  await (new Promise(res => map.once('setupcontrol:streetview', res)));
+  map.addControl('streetview', new StreetViewControl());
+});
 
-const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
-
-export class StreetViewControl extends InteractionControl {
+class StreetViewControl extends InteractionControl {
   constructor(opts = {}) {
 
     super({
@@ -34,7 +38,7 @@ export class StreetViewControl extends InteractionControl {
 
     if (this.key) {
       XHR.get({
-        url: `${GoogleStreetViewApiUrl}streetview`,
+        url: `https://maps.googleapis.com/maps/api/streetview`,
         params: {
           location: 0,
           size:     '456x456',
@@ -44,7 +48,7 @@ export class StreetViewControl extends InteractionControl {
     }
 
     // get script
-    $script(`${GoogleStreetViewApiUrl}js?${this.key ? 'key=' + this.key : '' }`);
+    $script(`https://maps.googleapis.com/maps/api/js?${this.key ? 'key=' + this.key : '' }`);
 
     /***/
 
