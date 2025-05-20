@@ -674,8 +674,10 @@ class Layer extends G3WObject {
 
       /** cached proxy params (eg. external wms server) */
       proxyData: { wms: null },
+
+      /** @since 4.0.0 @type {number } number of preview fields on result */
+      max_preview_fields: config.max_preview_fields, 
     });
-    
 
     const relations = project.getRelations().filter(r => [r.referencedLayer, r.referencingLayer].includes(this.getId()));
 

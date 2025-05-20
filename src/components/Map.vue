@@ -97,13 +97,9 @@
         <div
           id                     = "permalink"
           v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
-            class       = "skin-color-dark"
-            :class      = "{
-              [$fa('link')]:   !urlCopied,
-              [$fa('success')]: urlCopied,
-            }"
-            @click.stop = "createCopyMapExtentUrl">
-        </div>
+          :class                 = "$fa('link') + ' skin-color-dark'"
+          @click.stop            = "showEmbedModal"
+        ></div>
 
         <!-- SCALE CONTROL -->
         <div id = "scale-control"></div>
@@ -136,7 +132,6 @@
 
 <script>
 import ApplicationState from 'store/application';
-import { copyUrl }      from 'utils/copyUrl';
 import { waitFor }      from 'utils/waitFor';
 
 export default {
@@ -214,12 +209,8 @@ export default {
       this.service.getMapControls().forEach(c => "scaleline" !== c.type && c.control.showHide());
     },
 
-    createCopyMapExtentUrl() {
-      const url = new URL(location.href);
-      url.searchParams.set('map_extent', this.service.getMapExtent().toString());
-      copyUrl(url.toString());
-      this.urlCopied = !this.urlCopied;
-      setTimeout(() => this.urlCopied = false, 5000);
+    showEmbedModal() {
+      document.querySelector('.nav-embedmap').click();
     },
 
     switchMapsCoordinateTo4326() {
