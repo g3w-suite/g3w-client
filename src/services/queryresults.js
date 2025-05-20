@@ -926,6 +926,8 @@ export default new (class QueryResultsService extends G3WObject {
             const feature_selected      = layer.external ? feature.selection.selected : (project_layer.state.filter.active || project_layer.hasSelectionFid(fid));
             //get selection of feature
             action.state.toggled[index] = feature_selected;
+            //set layer selection based on feature selection
+            layer.selection.active     = (0 === index || layer.selection.active) && feature_selected;
             if (project_layer && feature_selected && !project_layer.hasSelectionFid(fid)) {
               project_layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
               project_layer.includeSelectionFid(fid, false);
@@ -1838,9 +1840,6 @@ export default new (class QueryResultsService extends G3WObject {
       return;
     }
 
-    //check if all features ar selected
-    const selected_all = Object.values(action.state.toggled).every(t => t);
-
     // ensure "layer.selection.features" is defined
     layer.selection.features = layer.selection.features || [];
 
@@ -1915,7 +1914,7 @@ export default new (class QueryResultsService extends G3WObject {
       );
 
       // set selection property (external layer)
-      catalog_layer.selection.active = selected_all;
+      catalog_layer.selection.active = Object.values(action.state.toggled).every(t => t);;
       
       return;
     }
@@ -1955,7 +1954,7 @@ export default new (class QueryResultsService extends G3WObject {
     });
 
     //set layer selection state
-    catalog_layer.state.selection.active = selected_all;
+    
     
     // PROJECT LAYER
     if (catalog_layer.state.filter.active) {
@@ -1968,6 +1967,8 @@ export default new (class QueryResultsService extends G3WObject {
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
       });
     }
+
+    catalog_layer.state.selection.active = Object.values(action.state.toggled).every(t => t);
 
     //remove Highlight geometry layer fetures
     GUI.getService('map').clearHighlightGeometry();
