@@ -486,7 +486,7 @@ export default new (class QueryResultsService extends G3WObject {
           relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
           hasdownloadablerelations:  !external && layer.hasDowloadableRelations(), //@since 3.11.7
           filter:                    (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
+          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: false},
           title:                     (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
           atlas:                     this._atlas.filter(a => a.atlas.qgs_layer_id === id),
           rawdata:                   rawdata  || null,
@@ -910,7 +910,7 @@ export default new (class QueryResultsService extends G3WObject {
           class:    GUI.getFontClass('success'),
           hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
           state:    Vue.observable({
-            toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}),
+            toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
             show:    !layer.filter.pagination // show action when filter with pagination is not set
           }),
           // check feature selection
@@ -918,29 +918,17 @@ export default new (class QueryResultsService extends G3WObject {
             if (!feature) {
               return console.trace('Invalid feature');
             }
-
-            const layer_selected   = !layer.external && undefined !== layer.selection.active;
-            const catalog_layer    = layer_selected && getCatalogLayerById(layer.id);
-            const fid              = feature.attributes[G3W_FID] || feature.id;
-            const feature_selected = layer_selected && (state.query.autofilter || catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid));
-
-            // force feature selection (when no pagination and selection is due an autofilter search)
-            if (feature_selected && !catalog_layer.hasSelectionFid(fid)) {
-              catalog_layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
-              catalog_layer.includeSelectionFid(fid, false);
-            }
-
-            feature.selection.selected = layer_selected ? feature_selected : feature.selection.selected;
-
-            /** @FIXME add description */
-            if (undefined !== layer.selection.active) {
-              action.state.toggled[index] = (
-                feature.selection.selected || (
-                  layer.external
-                    ? action.state.toggled[index]
-                    : (catalog_layer.state.filter.active && null == catalog_layer.state.filter.current)
-                  )
-              ); // active filter + no saved filter is set
+            //check if a project layer (not external)
+            const project_layer         = getCatalogLayerById(layer.id);
+            //get id fo feature
+            const fid                   = feature.attributes[G3W_FID] || feature.id;
+            //check if feature is selected
+            const feature_selected      = layer.external ? feature.selection.selected : (project_layer.state.filter.active || project_layer.hasSelectionFid(fid));
+            //get selection of feature
+            action.state.toggled[index] = feature_selected;
+            if (project_layer && feature_selected && !project_layer.hasSelectionFid(fid)) {
+              project_layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
+              project_layer.includeSelectionFid(fid, false);
             }
           },
           /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
@@ -1850,6 +1838,9 @@ export default new (class QueryResultsService extends G3WObject {
       return;
     }
 
+    //check if all features ar selected
+    const selected_all = Object.values(action.state.toggled).every(t => t);
+
     // ensure "layer.selection.features" is defined
     layer.selection.features = layer.selection.features || [];
 
@@ -1892,7 +1883,12 @@ export default new (class QueryResultsService extends G3WObject {
 
     //Case of external layer and clicked on feature
     if (layer.external && feature) {
-      let selection_feature = catalog_layer.selection.features.find(f => feature.id === f.getId())
+      let selection_feature = catalog_layer.selection.features.find(f => feature.id === f.getId());
+      //case already added, toggle selection based on action toogle state
+      if (selection_feature) {
+        // selection based on action
+        selection_feature.selection.selected = action.state.toggled[index];
+      }
       // create selection feature for external if not yet added
       if (!selection_feature) {
         //create OL feature
@@ -1909,10 +1905,9 @@ export default new (class QueryResultsService extends G3WObject {
           })
         );
       }
-      
-      // selection based on action
-      selection_feature.selection.selected = action.state.toggled[index];
 
+      
+    
       //handle map selection layer adding or remove feature based on selection boolean value
       GUI.getService('map').setSelectionFeatures(
         selection_feature.selection.selected ? 'add' : 'remove',
@@ -1920,7 +1915,7 @@ export default new (class QueryResultsService extends G3WObject {
       );
 
       // set selection property (external layer)
-      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
+      catalog_layer.selection.active = selected_all;
       
       return;
     }
@@ -1959,6 +1954,9 @@ export default new (class QueryResultsService extends G3WObject {
 
     });
 
+    //set layer selection state
+    catalog_layer.state.selection.active = selected_all;
+    
     // PROJECT LAYER
     if (catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
