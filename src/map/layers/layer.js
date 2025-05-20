@@ -1634,10 +1634,13 @@ class Layer extends G3WObject {
    * Clear selection
    */
   async clearSelectionFids() {
+    //clear all selection fids from set
     this.state.selectionFids.clear();
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
+      //set false selection
       Object.values(this.state.ol_selection).forEach(feat => feat.selected = false);
+      //update selection
       this.#updateOlSelection();
     }
     // set selection false
