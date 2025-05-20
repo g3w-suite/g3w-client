@@ -5,7 +5,6 @@
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
-import { removeMeasureTooltip }    from 'utils/removeMeasureTooltip';
 import { t }                       from 'g3w-i18n';
 
 export class MeasureInteraction extends ol.interaction.Draw {
@@ -29,8 +28,6 @@ export class MeasureInteraction extends ol.interaction.Draw {
     });
 
     this._helpTooltip;
-    this._measureTooltipElement;
-    this._measureTooltip;
     this._featureGeometryChangelistener;
     this._poinOnMapMoveListener;
     this._helpTooltipElement;
@@ -63,10 +60,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._layer.getSource().clear();
     this._clearMessagesAndListeners();
     if (this._map) {
-      removeMeasureTooltip({
-        map: this._map,
-        ...this.measureTooltip
-      });
+      this.measureTooltip.remove();
       this.measureTooltip = null;
       this._map.removeLayer(this._layer);
     }
@@ -76,7 +70,6 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._feature = null;
     // unset tooltip so that a new one can be created
     if (this._map) {
-      this._measureTooltipElement        = null;
       this._helpTooltipElement.innerHTML = '';
 
       this._helpTooltipElement.classList.add('hidden');
@@ -130,7 +123,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
 
     // create measure tooltip
     if (this.measureTooltip) {
-      removeMeasureTooltip({ ...this.measureTooltip, map: this._map })
+      this.measureTooltip.remove();
     }
 
     this.measureTooltip = createMeasureTooltip({ map: this._map, feature: this._feature });
