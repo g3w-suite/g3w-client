@@ -839,7 +839,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-custom-overviewmap button span                                     { font-size: 15px; font-weight: bold; position: absolute; margin: -6px; }
 .ol-custom-overviewmap .ol-overviewmap-map                             { border: none; height: 150px; width: 200px; }
 .ol-custom-overviewmap.ol-collapsed                                    { border: 0; }
-.ol-control-tl                                                         { top: 7px;     left: 7px; }
+.ol-control-tl                                                         { top: 0;     left: 7px; }
 .ol-control-bl                                                         { bottom: 40px; left: 7px; }
 .ol-control-tr                                                         { top: 7px;     right: 7px; }
 .ol-control-br                                                         { bottom: 7px;  right: 7px; min-height: 20px; }
