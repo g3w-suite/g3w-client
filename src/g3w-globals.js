@@ -28,6 +28,8 @@ import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
+import { waitFor }                                 from 'utils/waitFor';
+
 //used by editing plugin
 import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
@@ -144,6 +146,7 @@ const g3wsdk = {
       toRawType,
       createFilterFormInputs,
       noop,
+      waitFor,
     },
     geoutils: {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
