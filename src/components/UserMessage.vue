@@ -173,9 +173,14 @@
             warning: { backgroundColor: "#f29e1d", color: "#FFF" },
             alert:   { backgroundColor: "#c34943", color: "#FFF" },
             tool:    {
+              margin:          'unset',
+              top:             'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : 'unset',
+              right:           'unset',
+              bottom:          'unset',
+              left:            'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : 'unset',
+              border:          'none',
               backgroundColor: "#FFF",
               color:           "#222d32",
-              "z-index":       100,
               marginLeft:      document.body.classList.contains('sidebar-collapse') ? '5px' : '40px',
             },
             loading: {
@@ -197,6 +202,9 @@
         return this.isMobile() && !GUI.isSidebarVisible();
       },
       closeUserMessage() {
+        if (this.$el.popover) {
+          this.$el.hidePopover();
+        }
         this.$emit('close-usermessage')
       },
       hideShow() {}
@@ -207,6 +215,8 @@
     },
     async mounted() {
       if ('tool' === this.type) {
+        this.$el.popover = 'manual';
+        this.$el.showPopover();
         dragElement(this.$refs.user_message);
         this.observer = new MutationObserver((mutations) => {
           mutations.forEach(mutation => {
@@ -233,6 +243,12 @@
     }
   }
 </script>
+
+<style>
+  #g3w-view-map {
+    anchor-name: --g3w-view-map; 
+  }
+</style>
 
 <style scoped>
   .usermessage-content {
