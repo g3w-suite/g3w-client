@@ -22,13 +22,25 @@
       (
         await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}` })
       ).results.map(result => ({
-        layer_id:  result.layer_id,
-        name:      result.attributes.name || result.feature_id,
-        type:      result.layer_name,
-        qes:       result,
+        layer_id:   result.layer_id,
+        feature_id: result.feature_id,
+        name:       result.attributes.name,
+        type:       result.layer_name,
       })),
     }),
-    fetch_geom: async item => (await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}vector/api/editing/qdjango/${g3wsdk.core.ApplicationState.project.getId()}/${item.qes_layer_id}/?fids=${item.qes_feature_id}` })).vector.data.features[0].geometry,
+    fetch_geom: async item => {
+      await g3wsdk.core.data.DataRouterService.getData('search:fids', {
+        inputs: {
+          layer: g3wsdk.core.catalog.CatalogLayersStoresRegistry.getLayerById(item.layer_id),
+          fids:  [item.feature_id]
+        },
+        outputs: { show: true }
+      });
+    }
   });
 
 })();
+
+document.head.insertAdjacentHTML('beforeend', /* css */`<style>
+  .qes input[type="checkbox"] { display: none; }
+</style>`);
