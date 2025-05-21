@@ -19,9 +19,18 @@ export default {
       }
       _el.setAttribute('data-container',"body");
       $(_el)
-        .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true })
-        // hide tooltip on mobile after click
-        .on('shown.bs.tooltip', () => { ApplicationState.ismobile && setTimeout(()=>$(_el).tooltip('hide'), 600) });
+        .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true, })
+        .on('shown.bs.tooltip', function() {
+          // show tooltip as "popover" (ie. always on top over other DOM elements) 
+          const tip = $(_el).data('bs.tooltip').tip()[0];
+          tip.popover = 'manual';
+          tip.style.margin = tip.style.border = tip.style.background= 'unset';
+          tip.showPopover();
+          // hide tooltip on mobile after click
+          if (ApplicationState.ismobile) {
+            setTimeout(()=>$(_el).tooltip('hide'), 600)
+          }
+        });
     }
     watch({
       el: _el,
