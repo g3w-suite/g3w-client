@@ -550,7 +550,7 @@ export default {
       },
       geocoding: {
         choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",
-        placeholder: "Indirizzo ...",
+        placeholder: "Cerca",
         nolayers: "Nessun layer di punti modificabile trovato in questo progetto",
         noresults: "Nessun risultato",
         notresponseserver: "Il server non risponde"
