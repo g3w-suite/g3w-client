@@ -20,7 +20,7 @@
       icon:     'layer-group',
       results:
       (
-        await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}` })
+        await g3wsdk.core.utils.XHR.get({ url: `${initConfig.baseurl}qes/api/search/${g3wsdk.core.ApplicationState.project.getId()}/?q=${opts.query}&in_bbox=${opts.extent}` })
       ).results.map(result => ({
         layer_id:   result.layer_id,
         feature_id: result.feature_id,
