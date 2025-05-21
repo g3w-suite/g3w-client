@@ -171,25 +171,23 @@
 
         <!-- LANGUAGE SWITCHER -->
         <li v-if = "languages" class="nav-lang">
-          <select
-            v-select2          = "'language'"
-            class              = "form-control"
-            :templateSelection = "templateResultLanguages"
-            :templateResult    = "templateResultLanguages"
-            :dropdownAutoWidth = "true"
-            :dropdownParent    = "dropdownParent"
-            v-model            = "language"
-            style              = "cursor:pointer; width: 130px;"
-          >
-            <option
-              v-for     = "lang in languages"
-              :key      = "lang[0]"
-              :value    = "lang[0]"
-              :selected = "lang[0] === language && 'selected'"
-            >
-              {{ lang[1] }}
-            </option>
-          </select>
+          <button type="button" popovertarget="language-popover" style="display: flex; gap:5px;">
+            <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" />
+            {{ languages.find(l => l[0] === language).at(1) }} ▾
+          </button>
+          <dialog id="language-popover" popover>
+            <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+              <label
+                v-for     = "lang in languages"
+                :key      = "lang[0]"
+                style     = "cursor:pointer; text-align: left;"
+              >
+                <input type="radio" :value="lang[0]" v-model="language" :checked="lang[0] === language" @change="$event.target.closest('dialog').hidePopover()" style="pointer-events:none;margin-right: 8px;">
+                <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" />
+                <span style="margin-left: 5px;">{{ lang[1] }}</span> 
+              </label>
+            </form>
+          </dialog>
         </li>
 
       </ul>
@@ -582,7 +580,7 @@ export default {
   computed: {
 
     languages() {
-      const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
+      const languages = (Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || []).sort((a, b) => a[0].localeCompare(b[0]));
       return languages.length > 1 && languages;
     },
 
@@ -736,21 +734,6 @@ export default {
   },
 
   methods: {
-
-    /**
-     * Language switcher item template (select2)
-     * 
-     * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
-     */
-     templateResultLanguages(state) {
-      if (!state.id) { return state.text }
-      return $(/*html*/`
-        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
-          <img src="${this.urls.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
-          <span style="margin-left: 5px;">${state.text}</span> 
-        </span>`
-      );
-    },
 
     /**
      * @since 3.11.0
@@ -1015,6 +998,9 @@ export default {
   watch: {
 
     'language'(language, cl) {
+      if (!language) {
+        return;
+      }
       if (cl) {
         i18next.changeLanguage(language);
         /**
