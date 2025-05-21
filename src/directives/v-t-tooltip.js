@@ -9,6 +9,14 @@ import { t, tPlugin }              from 'g3w-i18n';
 
 const attr = 'g3w-v-t-tooltip-id';
 
+// show tooltip as "popover" (ie. always on top over other DOM elements) 
+$(document).on('shown.bs.tooltip', function (e) {
+  const tip = $(e.target).data('bs.tooltip').tip()[0];
+  tip.popover = 'manual';
+  tip.style.margin = tip.style.border = tip.style.background= 'unset';
+  tip.showPopover();
+});
+
 export default {
   bind(_el, binding) {
     // Automatically create tooltip
@@ -21,11 +29,6 @@ export default {
       $(_el)
         .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true, })
         .on('shown.bs.tooltip', function() {
-          // show tooltip as "popover" (ie. always on top over other DOM elements) 
-          const tip = $(_el).data('bs.tooltip').tip()[0];
-          tip.popover = 'manual';
-          tip.style.margin = tip.style.border = tip.style.background= 'unset';
-          tip.showPopover();
           // hide tooltip on mobile after click
           if (ApplicationState.ismobile) {
             setTimeout(()=>$(_el).tooltip('hide'), 600)
