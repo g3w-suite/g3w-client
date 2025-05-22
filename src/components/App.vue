@@ -171,19 +171,20 @@
 
         <!-- LANGUAGE SWITCHER -->
         <li v-if = "languages" class="nav-lang">
-          <button type="button" popovertarget="language-popover" style="display: flex; gap:5px;">
-            <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" />
-            {{ languages.find(l => l[0] === language).at(1) }} ▾
+          <button type="button" popovertarget="nav-lang-popover" style="display: flex; gap:5px;">
+            <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width="24" height="16" alt="" />
+            {{ languages.find(l => l[0] === language).at(1) }}
+            <i class="triangle" style="margin-top: 8px;"></i>
           </button>
-          <dialog id="language-popover" popover>
-            <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+          <dialog id="nav-lang-popover" popover>
+            <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
               <label
                 v-for     = "lang in languages"
                 :key      = "lang[0]"
                 style     = "cursor:pointer; text-align: left;"
               >
-                <input type="radio" :value="lang[0]" v-model="language" :checked="lang[0] === language" @change="$event.target.closest('dialog').hidePopover()" style="pointer-events:none;margin-right: 8px;">
-                <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" />
+                <input type="radio" :value="lang[0]" v-model="language" @change="$event.target.closest('dialog').hidePopover()" style="pointer-events:none;margin-right: 8px;">
+                <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" :alt="lang[0].toLowerCase()" />
                 <span style="margin-left: 5px;">{{ lang[1] }}</span> 
               </label>
             </form>
@@ -1134,8 +1135,8 @@ export default {
   .user-footer .btn-default:not(:hover) { background-color: transparent; }
   .nav-user > .dropdown-menu            { padding: 1px 0 0 0; border: 1px solid #aaaaaa; border-top-width: 0; border-radius: 0; margin-top: 0 }
 
-  .nav-user .triangle                   { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
-  .nav-user.open .triangle              { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
+  i.triangle                            { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
+  .open i.triangle                      { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
 
   #menu-toggler                         { display:none }
   .navbar-toggler                       { color: #fff; margin: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; }
