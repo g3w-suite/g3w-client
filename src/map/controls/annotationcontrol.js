@@ -583,7 +583,11 @@ export class AnnotationControl extends InteractionControl {
     GUI.getService('map').on('set-layer-zindex', ({ zindex }) => this._annotation.layer.setZIndex(zindex + 1))
 
     ApplicationService.onbefore('createPermalink', (data = {}) => {
-      data.annotations = JSON.parse(new ol.format.GeoJSON().writeFeatures(this._annotation.layer.getSource().getFeatures()));
+      const features = this._annotation.layer.getSource().getFeatures();
+      //add annotations only if added 
+      if (features.length > 0) {
+        data.annotations = JSON.parse(new ol.format.GeoJSON().writeFeatures(features));
+      }
     });
   }
 
