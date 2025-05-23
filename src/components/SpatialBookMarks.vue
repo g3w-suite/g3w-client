@@ -129,7 +129,6 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS }   from 'g3w-constants';
   import ApplicationState     from 'store/application'
   import GUI                  from 'services/gui';
   import Projections          from 'store/projections';
@@ -137,10 +136,7 @@
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
   import { t }                from 'g3w-i18n';
 
-  const item = window.localStorage.getItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
-  const SPATIAL_BOOKMARKS_LOCALITEMS = item ? JSON.parse(item) : undefined;
-
-  export default {
+    export default {
 
     /** @since 3.8.6 */
     name: 'spatial-bookmarks',
@@ -150,11 +146,10 @@
     },
 
     data() {
-      const project = ApplicationState.project;
-
-      if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
-        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = [];
-      }
+      const gid             = ApplicationState.project.getId();
+      const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
+      SAVED_BOOKMARKS[gid]  = SAVED_BOOKMARKS[gid] || [];
+      window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
 
       return {
 
@@ -175,11 +170,11 @@
          */
 
         project: {
-          bookmarks: project.state.bookmarks || []
+          bookmarks: ApplicationState.project.state.bookmarks || []
         },
 
         user: {
-          bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]
+          bookmarks: SAVED_BOOKMARKS[gid]
         },
 
         addbookmarkinput: {
@@ -231,12 +226,10 @@
       },
 
       saveUserBookMarks() {
-        SPATIAL_BOOKMARKS_LOCALITEMS[ApplicationState.project.getId()] = this.user.bookmarks;
-        try {
-          window.localStorage.setItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id, JSON.stringify(SPATIAL_BOOKMARKS_LOCALITEMS));
-        } catch(e) {
-          console.warn(e);
-        }
+        const gid             = ApplicationState.project.getId();
+        const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
+        SAVED_BOOKMARKS[gid]  = this.user.bookmarks || [];
+        window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
       },
 
       showAddForm() {
