@@ -70,13 +70,9 @@
         </tr>
         <tr>
           <th v-disabled = "disableSelectAll">
-            <input
-              type       = "checkbox"
-              id         = "attribute_table_select_all_rows"
-              :checked   = "state.selectAll && state.features.length > 0"
-              class      = "magic-checkbox"
-            />
-            <label for = "attribute_table_select_all_rows" @click.capture.stop.prevent = "selectAllRows">&nbsp;</label>
+            <label @click = "selectAllRows">
+              <input type = "checkbox" :checked = "state.selectAll && state.features.length > 0" />
+            </label>
           </th>
           <th v-for = "(header, i) in state.headers" v-if = "i > 0">
             <input
@@ -107,14 +103,12 @@
           <!-- ORIGINAL SOURCE: src/components/TableSelectRow.vue@3.9.3 -->
           <td>
             <div style = "display: flex">
-              <input
-                v-if     = "show_on_active_filter"
-                type     = "checkbox"
-                :id      = "get_check_id(true)"
-                :checked = "feature.selected"
-                class    = "magic-checkbox"
-              />
-              <label :for = "get_check_id(false)" @click.capture.stop.prevent = "select(feature)"></label>
+              <label
+                v-if   = "show_on_active_filter"
+                @click = "select(feature)"
+              >
+                <input type = "checkbox" :checked = "feature.selected" />
+              </label>
                <i
                 @click.stop            = "openForm(feature)"
                 v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
@@ -160,7 +154,6 @@ import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
-import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { t }                       from 'g3w-i18n';
@@ -306,13 +299,6 @@ export default {
       } catch (e) {
        console.warn(e); 
       }
-    },
-
-    get_check_id(cache) {
-      if (cache) {
-        this.get_check_id.cached_id = getUniqueDomId();
-      }
-      return this.get_check_id.cached_id
     },
 
     async getDataFromBBOX() {
@@ -905,9 +891,6 @@ export default {
   } */
   #layer_attribute_table > tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
-  }
-  label[for="attribute_table_select_all_rows"] {
-    margin-bottom: 0 !important;
   }
 </style>
 
