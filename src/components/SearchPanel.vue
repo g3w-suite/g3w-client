@@ -150,14 +150,8 @@
 
         <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
-          <input
-            id        = "g3w-search-filter"
-            class     = "magic-checkbox"
-            v-model   = "autofilter"
-            type      = "checkbox"
-          />
-          <label for = "g3w-search-filter" v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'">
-            {{ $t('sdk.search.autofilter') }}
+          <label v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'">
+            <input type = "checkbox" v-model = "autofilter" />
             <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
           </label>
         </div>

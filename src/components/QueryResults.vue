@@ -578,8 +578,7 @@
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
   import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
   import GUI                         from 'services/gui';
-
-  const MAX_SUBSET_LENGTH           = 3;
+  
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth      = 10;
   const HEADERTYPESFIELD            = [
@@ -837,7 +836,7 @@
           : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.includes(attribute.type));
         // TODO: find a clever way to handle geocoding results..
-        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
+        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.max_preview_fields, attributes.length);
         return _attributes.slice(0, end);
       },
       attributesSubsetLength(layer) {
@@ -1040,7 +1039,7 @@
     watch: {
       async 'state.layers'(layers = []) {
         layers.forEach(layer => {
-          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) {
+          if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
           }
           layer.features.forEach(feature => {

@@ -11,13 +11,12 @@
           :id        = "ids[index]"
           :name      = "name"
           :value     = "value.value"
-          style      = "width:100%"
           :tabIndex  = "tabIndex"
           v-disabled = "!editable"
           :class     = "{'input-error-validation' : notvalid}"
-          class      = "magic-radio"
           v-model    = "radio_value"
-          type       = "radio">
+          type       = "radio"
+        />
         <label :for = "ids[index]">{{ value.key }}</label>
       </span>
     </div>
