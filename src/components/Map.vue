@@ -97,8 +97,8 @@
         <div
           id                     = "permalink"
           v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
-          :class                 = "$fa('link') + ' skin-color-dark'"
-          @click.stop            = "showEmbedModal"
+          :class                 = "`${$fa('share-alt')} skin-color-dark`"
+          @click.stop            = "createPermalink"
         ></div>
 
         <!-- SCALE CONTROL -->
@@ -209,7 +209,7 @@ export default {
       this.service.getMapControls().forEach(c => "scaleline" !== c.type && c.control.showHide());
     },
 
-    showEmbedModal() {
+    async createPermalink() {
       document.querySelector('.nav-embedmap').click();
     },
 

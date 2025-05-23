@@ -4,6 +4,7 @@
  */
 
 import ApplicationState           from 'store/application';
+import ApplicationService         from 'services/application';
 import GUI                        from 'services/gui';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import { saveBlob }               from 'utils/saveBlob';
@@ -406,7 +407,6 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPES ACTIONS -->
                 <div style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('link')"          @click.stop = "share"    style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Share'"    :hidden = "!features.length || (type && !feature)"></button>
                   <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Import'"   :hidden = "feature"></button>
                   <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Export'"   :hidden = "!features.length || (type && !feature)"></button>
                   <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'Remove'"   :hidden = "!features.length || (type && !feature)"></button>
@@ -474,9 +474,6 @@ export class AnnotationControl extends InteractionControl {
               },
               close() {
                 CONTROL.toggle(false);
-              },
-              share() {
-                document.querySelector('.nav-embedmap').click();
               },
             },
             watch: {
@@ -585,17 +582,8 @@ export class AnnotationControl extends InteractionControl {
     //Listen set-layer-zindex so annotation layer i set over all layers
     GUI.getService('map').on('set-layer-zindex', ({ zindex }) => this._annotation.layer.setZIndex(zindex + 1))
 
-    // Listen for #share_modal open event
-    $(document).on('show.bs.modal', '#share_modal', () => {
-      const url = new URL($('#share_modal input').val());
-      const annotations = this._annotation.layer.getSource().getFeatures();
-      if (annotations.length) {
-        url.searchParams.set('annotations', new ol.format.GeoJSON().writeFeatures(this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(), {
-          dataProjection: GUI.getService('map').getEpsg(),
-          featureProjection: GUI.getService('map').getEpsg()
-        }));
-      }
-      $('#share_modal input').val(url.toString());
+    ApplicationService.onbefore('createPermalink', (data = {}) => {
+      data.annotations = JSON.parse(new ol.format.GeoJSON().writeFeatures(this._annotation.layer.getSource().getFeatures()));
     });
   }
 

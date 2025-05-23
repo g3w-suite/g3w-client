@@ -130,11 +130,11 @@
 
               <!-- SHARE URL -->
               <a
-                href   = "#"
-                @click = "showEmbedModal"
-                class  = "nav-embedmap btn btn-default btn-flat skin-color"
+                href        = "#"
+                @click.stop = "createPermalink"
+                class       = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
+                <b v-t="'embed_map'"></b><i :class = "$fa('share-alt')"></i>
               </a>
 
               <!-- CHANGE MAP -->
@@ -522,6 +522,7 @@ import {
   VIEWPORT
 }                         from 'g3w-constants';
 import ApplicationState   from 'store/application';
+import ApplicationService from 'services/application';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
 import GUI                from 'services/gui';
@@ -779,26 +780,38 @@ export default {
       $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
     },
     
-    showEmbedModal() {
-      const url = new URL(location.href);
-      url.searchParams.set('map_extent', GUI.getService('map').getMapExtent().toString());
+    /**
+     * 
+     */
+    async createPermalink() {
+      //need to pass an empty object because all listeners of createPermalink
+      //setters, can add own attribute to share object
+      try {
+        const permalink_code = await ApplicationService.createPermalink({}); 
+        const url = new URL(location.href);
+        url.searchParams.set('permalink_code', permalink_code);
 
-      $('body').append(/* html */`
-        <div id = "share_modal" class = "modal fade" tabindex="-1">
-          <div class = "modal-dialog">
-            <div class  = "modal-content">
-              <div class = "modal-header">
-                <h4 style = "font-weight: bold" class = "modal-title">${this.$t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
-              </div>
-              <div class="form-group modal-body">
-                <input readonly value="${url.toString()}" onfocus="event.target.select()" class="form-control" />
-                <button onclick="event.target.previousElementSibling.focus() || document.execCommand('copy') && $('#share_modal').modal('hide')" class="form-control btn btn-success">${ this.$t('sdk.tooltips.copy_map_extent_url') }</button>
-              </div>
+        $('body').append(/* html */`
+          <div id = "share_modal" class = "modal fade" tabindex="-1">
+            <div class = "modal-dialog">
+              <div class  = "modal-content">
+                <div class = "modal-header">
+                  <h4 style = "font-weight: bold" class = "modal-title">${this.$t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
+                </div>
+                <div class="form-group modal-body">
+                  <input readonly value = "${ url.toString() }" onfocus="event.target.select()" class="form-control" />
+                  <button onclick="event.target.previousElementSibling.focus() || document.execCommand('copy') && $('#share_modal').modal('hide')" class="form-control btn btn-success">${ this.$t('sdk.tooltips.copy_map_extent_url') }</button>
+                </div>
+            </div>
           </div>
-        </div>
-      `);
-      $('#share_modal').modal('show');
-      $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
+        `);
+        $('#share_modal').modal('show');
+        $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
+      } catch(e) {
+        console.warn(e);
+        GUI.userMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
+      }
+      
     },
 
     /**

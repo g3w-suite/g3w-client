@@ -4,6 +4,7 @@
  */
 
 import G3WObject          from 'g3w-object';
+import ApplicationState	  from 'store/application'; 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 export class LayersStore extends G3WObject {
@@ -27,9 +28,9 @@ export class LayersStore extends G3WObject {
 
     this._isQueryable = config.queryable ?? true;
 
-    this._layers = this.config.layers || {};
+    this._layers      = this.config.layers || {};
 
-    this.setters = [
+    this.setters      = [
       'setLayerSelected',
       'addLayers',
       'addLayer',
@@ -223,6 +224,68 @@ export class LayersStore extends G3WObject {
 
   getLayersTree() {
     return this.state.layerstree;
+  }
+
+  /**
+  
+   * @since 4.0.0 Get difference between start layersstree project with current
+   * @returns Array of changes
+   */
+  getDiffLayersTree() {
+
+    const layerstrees = [];
+
+    const getDiff = (obj1, obj2) => {
+      const diff = Object.keys(obj1).reduce((a, k) => {
+        //exclude id and name attribute, add only some attributes are chenged
+        if (!['name', 'id'].includes(k) && undefined !== obj2[k] && obj1[k] !== obj2[k]) {
+          a[k] = obj1[k];
+        }
+        return a;
+       }, {});
+
+
+      if (Object.keys(diff).length  > 0) {
+        diff[obj1.id ? 'id' : 'name'] = obj1.id || obj1.name;
+        if (obj1.id) {
+          diff.checked = obj1.checked; // need to add checked
+        }
+      }
+      return diff;
+    }
+
+    const traverse = (nodes, onodes, tree) => {
+      nodes.forEach((node, i) => {      
+        //in the case of a layer node
+        if (undefined !== node.id) {
+          //attributes of layer node element
+          tree.push(getDiff(['id', 'name', 'expanded', 'checked', 'visible'].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {}), onodes[i]));
+        }
+        //in the case of group node
+        if (Array.isArray(node.nodes)) {
+          //attributes of group element
+          const group = getDiff( ['name', 'checked', 'expanded', 'mutually-exclusive'].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {}), onodes[i]);
+          group.nodes = [];
+          traverse(node.nodes, onodes[i].nodes, group.nodes);
+          group.nodes = group.nodes.filter(n => Object.keys(n).length > 0 && (!n.nodes || n.node.length > 0));
+          if (0 === group.nodes.length) {
+            delete group.nodes;
+          }
+          if (Object.keys(group).length > 0) {
+            group.name = node.name; //in case of changes nodes, set name of group
+          }
+          tree.push(group); // only if has changes
+        }
+      });
+    };
+    // loop through child nodes and return structure layerstree diff only
+    traverse(
+      this.state.layerstree[0].nodes, //current state of layerstrees
+      ApplicationState.project.state.layerstree,  //original project layerstree
+      layerstrees
+    );
+      
+		return layerstrees.filter(lt => Object.keys(lt).length > 0); //filter only changes 
   }
 
   /**
