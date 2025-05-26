@@ -260,17 +260,12 @@ export default new (class GUI extends G3WObject {
 
   addComponent(component, placeholder, options={}) {
     let register = true;
-    if (placeholder && Object.keys(SERVICES).indexOf(placeholder) > -1) {
-      // add component to the sidebar and set position inside the sidebar
-      if ('sidebar' === placeholder) {
-        if (!isMobile.any || false !== component.mobile) {
-          ApplicationState.sidebar.components.push(component);
-          (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
-        }
-        register = true;
-      } else if (SERVICES[placeholder]) {
-        register = SERVICES[placeholder].addComponents([component], options);
-      }
+    // add component to the sidebar and set position inside the sidebar
+    if ('sidebar' === placeholder && (!isMobile.any || false !== component.mobile)) {
+      ApplicationState.sidebar.components.push(component);
+      (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
+    } else if ('sidebar' !== placeholder && SERVICES[placeholder]) {
+      register = SERVICES[placeholder].addComponents([component], options);
     }
     if (register) {
       this.setComponent(component);
@@ -881,7 +876,7 @@ export default new (class GUI extends G3WObject {
       style:        undefined === opts.style ? {} : opts.style,
       headertools:  undefined === opts.headertools ? [] : opts.headertools,
       showgoback:   undefined === opts.showgoback  || opts.showgoback,
-      contentsdata: this.getComponent('contents').contentsdata,
+      contentsdata: ApplicationState.contentsdata,
     });
 
     // call show view (in this case content (other is map)
@@ -980,7 +975,7 @@ export default new (class GUI extends G3WObject {
       return Promise.reject();
     }
 
-    const data = this.getComponent('contents').contentsdata.at(-2);
+    const data = ApplicationState.contentsdata.at(-2);
     const opts = data.options;
 
     Object.assign(ApplicationState.viewport.content, {
@@ -988,7 +983,7 @@ export default new (class GUI extends G3WObject {
       split:        undefined !== opts.split       ? opts.split       : null,
       closable:     undefined !== opts.closable    ? opts.closable    : true,
       backonclose:  undefined !== opts.backonclose ? opts.backonclose : true,
-      contentsdata: this.getComponent('contents').contentsdata,
+      contentsdata: ApplicationState.contentsdata,
       style:        undefined !== opts.style       ? opts.style       : {},
       headertools:  undefined !== opts.headertools ? opts.headertools : [],
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
@@ -1019,7 +1014,7 @@ export default new (class GUI extends G3WObject {
 
     this._layout('pop-content');
 
-    return this.getComponent('contents').contentsdata.at(-1);
+    return ApplicationState.contentsdata.at(-1);
   }
 
   isSidebarVisible() {
