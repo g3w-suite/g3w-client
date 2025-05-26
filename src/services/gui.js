@@ -962,10 +962,10 @@ export default new (class GUI extends G3WObject {
           permalink_data: {
             ...params,
             layerstree:     layerstrees.length > 0 ? layerstrees: undefined,
-            initextent:      GUI.getService('map').getMapExtent(),
+            initextent:      this.getService('map').getMapExtent(),
             lng:             ApplicationState.language,
             initbaselayer:   ApplicationState.baseLayerId || undefined,                    // current base layer
-            toc_tab_default: GUI.getComponent('catalog').getInternalComponent().activeTab, // take in account change tab
+            toc_tab_default: this.getComponent('catalog').getInternalComponent().activeTab, // take in account change tab
           }
         }),
         contentType: 'application/json'

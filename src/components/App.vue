@@ -763,8 +763,6 @@ export default {
     },
 
     async showEmbedModal() {
-      //need to pass an empty object because all listeners of createPermalink
-      //setters, can add own attribute to share object
       try {
         const permalink_code = await GUI.getPermalink({}); 
         const url = new URL(location.href);
@@ -788,7 +786,7 @@ export default {
         $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
       } catch(e) {
         console.warn(e);
-        GUI.userMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
       }
     },
 
