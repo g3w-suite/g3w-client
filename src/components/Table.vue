@@ -351,50 +351,45 @@ export default {
      */
     async selectAllRows() {
 
-      // set inverse of selectAll
+      // inverse selection (all)
       this.state.selectAll = !this.state.selectAll;
 
-      //Wait change on DOM element
+      // wait for DOM changes
       await this.$nextTick();
 
-      //Check if has columns filter
-      const filter         = this.filter.length > 0;
+      // check if has columns filter
+      const filter = this.filter.length > 0;
 
-      //In case of no filter and selectAll and not all getAll features from server
+      // get all features when any kind of filter is unset
       if (!filter && this.state.selectAll && !this.getAll) {
-        //get all features of a layer
         await this.getFeatures(); 
       }
 
-      //In case of no filter
+      // no filter
       if (!filter) {
-        //set selected attribute of each feature
-        this.state.features.forEach(f => f.selected = this.state.selectAll)
-        //clear or set all selection to simplify filter tocker request creation
-        await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
+        this.state.features.forEach(f => f.selected = this.state.selectAll)                      // select each feature
+        await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids'](); // toggle selection (filter token)
       }
 
-      //In case of filter columns
+      // column filter
       if (filter && this.state.selectAll && this.state.allfeatures > this.state.featurescount) {
-        await this.layer.clearSelectionFids();
-        //need to set true after clear selction ids
-        this.state.selectAll = true;
-        //reset features
-        this.state.features.splice(0);
-        await this.$nextTick();
+        await this.layer.clearSelectionFids();                                                   // clear selection ids
+        this.state.selectAll = true;                                                             // force selectAll
+        this.state.features.splice(0);                                                           // reset features
+        await this.$nextTick();                                                                  // wait for DOM changes
         (await this.getFeatures({ field: this.search.field }) || [])
           .forEach(f => {
-            const has_geometry = this.layer.isGeoLayer() && f.geometry;
+            const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
             f.selected = this.state.selectAll;
-            if (has_geometry) {
+            if (geometry) {
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
             }
             this.layer.includeSelectionFid(f.id);
             this.state.features.push({
               id:         f.id,
-              selected:   f.selected, //@since 3.11.0 in case of filter token from pagination
+              selected:   f.selected,                                                            // whether filter token comes from a pagination
               attributes: f.attributes || f.properties,
-              geometry:   has_geometry || undefined
+              geometry
           });
         })
       }
