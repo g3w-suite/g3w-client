@@ -66,7 +66,7 @@ export class AnnotationControl extends InteractionControl {
     })).readFeatures({
       type: "FeatureCollection",
       features: [
-        ...(JSON.parse((new URLSearchParams(window.location.search)).get('annotations') || null)?.features || []),
+        ...(ApplicationState.project.state.annotations?.features || []),
         ...(JSON.parse(localStorage.getItem('annotations') || null)?.features           || []),
         ...(opts?.annotations?.features                                                 || [])
       ]
