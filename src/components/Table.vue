@@ -230,17 +230,14 @@ export default {
   },
   
   computed: {
+
     /**
-     * @since 4.0.0 
-     * @return { Boolean } In case of filter without pagination active
+     * @returns { Boolean } In case of filter without pagination active
+     * 
+     * @since 4.0.0
      */
     show_on_active_filter() {
       return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
-    },
-
-    /** @since 3.10.0 */
-    has_features() {
-      return !!this.state.features.length;
     },
 
     current_layout() {
@@ -252,11 +249,12 @@ export default {
   methods: {
 
     /**
-     * @since v3.11.0
      * @param layer
+     * 
+     * @since 3.11.0
      */
     toggleFilterToken(layer) {
-      //in the case of autofilter with pagination need to get features to set selection
+      // get selection features in case of autofilter + pagination
       if (layer.state.filter.active && !layer.state.selectionFids.has('__ALL__')) {
         this.state.selectAll = false;
       }
@@ -330,25 +328,17 @@ export default {
         this.map_bbox.cb  = null;
       }
     },
-    /**
-    * @since 3.10.0
-    */
-    checkSelectAll() {
+
+    async inverseSelection() {
+      // get all features
+      if (!this.getAll) {
+        await this.getFeatures()
+      }
+      this.state.features.forEach(f => f.selected = !f.selected);
+      this.layer.invertSelectionFids();
       this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
     },
 
-    async inverseSelection() {
-      //need to get all features
-      if (!this.getAll) { await this.getFeatures() }
-      this.state.features.forEach(f => f.selected = !f.selected);
-      this.layer.invertSelectionFids();
-      //set selectAll checkbox
-      this.checkSelectAll();
-    },
-
-    /**
-     * Called when a selected feature is checked
-     */
     async selectAllRows() {
 
       // inverse selection (all)
@@ -394,6 +384,7 @@ export default {
         })
       }
 
+      /** @FIXME add description */
       if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
         this.state
           .features
@@ -404,6 +395,7 @@ export default {
           });
       }
 
+      /** @FIXME add description */
       if (filter && !this.state.selectAll) {
         this.state.features.forEach(f => f.selected = false);
         await this.layer.clearSelectionFids();
@@ -481,16 +473,10 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
-      //invert selected of feature
-      feature.selected     = !feature.selected;
-      //check if all rows are selected
-      this.state.selectAll = this.state.features.every(f => f.selected);
-
+      feature.selected      = !feature.selected;                                                // inverse selected feature
+      this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-
-      /** Show tools based on selected state */
-      this.state.show_tools = this.layer.getSelectionFids().size > 0;
-
+      this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
     },
 
     async resize() {
@@ -558,7 +544,7 @@ export default {
 
       this.layer.setAttributeTablePageLength(length);
 
-      // If no headers are set, exit
+      // no headers are set
       if (0 === this.state.headers.length) {
         return {
           data:            [],
@@ -567,7 +553,7 @@ export default {
         };
       }
 
-      //remove all features on each request
+      // reset features
       this.state.features.splice(0);
 
       await this.$nextTick();
@@ -598,7 +584,6 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
-            //hase geometry layer and feature has geometry
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
             if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
@@ -615,7 +600,7 @@ export default {
 
             return {
               id:         f.id,
-              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id), //@since 3.11.0 in case of filter token from pagination
+              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id),
               attributes: f.attributes || f.properties,
               geometry:   this.layer.isGeoLayer() && f.geometry || undefined
             };
@@ -623,15 +608,13 @@ export default {
         );
 
         this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        //set selectAll
         this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
+
         return {
-          // DataTable pagination
-          data: this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
+          data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
           recordsFiltered: data.count,
           recordsTotal:    data.count,
-          filter:          this.state.features.map(f => f.id)
-
+          filter:          this.state.features.map(f => f.id),
         };
       } catch(e) {
         console.warn(e);
@@ -649,31 +632,13 @@ export default {
       this.state.selectAll  = false;
     },
 
-    /**
-     * @param { Object } opts
-     * @param { string } opts.type
-     * 
-     * @fires redraw when `opts.type` in_bbox filter (or not select all)
-     */
-    // async changeFilter({ type } = {}) {
-
-    //   if (false === (type === 'in_bbox' || !this.layer.getSelectionFids().has(SELECTION.ALL))) {
-    //     return;
-    //   }
-
-    //   // force redraw
-    //   /** @TODO use "table.ajax.reload()"" instead? */
-    //   const table = $(this.$refs.attribute_table).DataTable();
-    //   table.rows.add([]);     // substitute data
-    //   table.draw(false);      // redraw
-    //   table.columns.adjust(); // adjust column
-    // },
-
     onGUIContent(opts = {}) {
       this.has_map = (100 !== opts.perc);
     },
+
     /**
      * Reload data from server
+     * 
      * @since 3.10.0
      */
     filterChangeHandler() {
@@ -694,16 +659,15 @@ export default {
   async created() {
 
     this.currentFilter = null
-    // bind context on event listeners
-    this.unSelectAll   = this.unSelectAll.bind(this);
-    // this.changeFilter = this.changeFilter.bind(this);
+
+    this.unSelectAll  = this.unSelectAll.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
     GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.filterChangeHandler);
 
-    GUI.closeSideBar(); // close other sidebar components
+    GUI.closeSideBar();
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
     this.current_layout.rightpanel.height = 55;
@@ -714,11 +678,10 @@ export default {
         service:           { state: this.state },
         internalComponent: this,
       }),
-      // perc: undefined !== this.$options.perc ? this.$options.perc : 55,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getTitle(),
-      text:  true, /**@since 3.11.0 */
+      text:  true,
     });
 
     if (this.isMobile()) {
@@ -727,7 +690,8 @@ export default {
   },
 
   async mounted() {
-    // disable any previous active map control
+  
+    // un-toggle map controls
     this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
     if (this.last_map_control) {
         this.last_map_control.control.toggle();
@@ -735,20 +699,23 @@ export default {
     this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
-    //resolve data from server
-    let pResolve;
-    //store columns index value search
+
+    // resolve data from server
+    let resolve;
+    // store columns index value search
     const filterColumns = {};
-    //set data table
+
+    // set data table
     const table = $(this.$refs.attribute_table).DataTable({
       ajax: debounce(async (opts, cb) => {
         GUI.disableContent(true);
         try {
-          
           const data = await this.getData(opts);
           cb(data);
           this.disableSelectAll = 0 === this.state.features.length;
-          if (pResolve) { pResolve(data.filter) }
+          if (resolve) {
+            resolve(data.filter);
+          }
           await this.$nextTick();
           table.columns.adjust();
         } catch(e) {
@@ -776,7 +743,9 @@ export default {
       table.one('draw', async() => {
         filterColumns[i]      = value;
         this.disableSelectAll = 0 === this.state.features.length;
-        this.filter           = Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [];
+        this.filter           = Object.values(filterColumns).find(f => f)
+          ? await (new Promise(res => resolve = res))
+          : [];
       })
       table.columns(i).search(value).draw();
     });
@@ -797,6 +766,7 @@ export default {
   },
 
   async beforeDestroy() {
+
     // restore any previous active map control
     if (this.last_map_control && !this.last_map_control.control.isToggled()) {
      this.last_map_control.control.toggle();
@@ -833,7 +803,6 @@ export default {
 </script>
 
 <style>
-
 #open_attribute_table {
   margin-top: 5px;
 }
@@ -881,9 +850,6 @@ export default {
     width: 100%;
     user-select: none;
   }
-  /* #layer_attribute_table > tbody > tr {
-    cursor: pointer;
-  } */
   #layer_attribute_table > tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
   }
