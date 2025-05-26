@@ -259,7 +259,7 @@ export class LayersStore extends G3WObject {
         //in the case of a layer node
         if (undefined !== node.id) {
           //attributes of layer node element
-          tree.push(getDiff(['id', 'name', 'expanded', 'checked', 'visible'].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {}), onodes[i]));
+          tree.push(getDiff(['id', 'name', 'expanded', 'visible'].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {}), onodes[i]));
         }
         //in the case of group node
         if (Array.isArray(node.nodes)) {
