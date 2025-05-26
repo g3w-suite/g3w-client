@@ -25,7 +25,7 @@ const ApplicationService   = new G3WObject({
 							data:         JSON.stringify({
 								            	permalink_data: {
 																...params,
-																layerstrees:     layerstrees.length > 0 ? layerstrees: undefined, //exclude no
+																layerstree:     layerstrees.length > 0 ? layerstrees: undefined, //exclude no
 																initextent:      GUI.getService('map').getMapExtent(), //map_extent
 																lng:             ApplicationState.language, //language
 																initbaselayer:   ApplicationState.baseLayerId || undefined, //current base layer
