@@ -169,14 +169,12 @@ const Providers = {
       });
 
       return $promisify(async () => {
-
-        params = new URLSearchParams(params || {}).toString();
-        params = (params ? '?' : '') + params;
-
         // read mode
         if (!options.editing) {
-          const { vector } = await XHR.get({
-            url: this._layer.getUrl('data') + params,
+          const { vector } = await XHR.post({
+            url:         this._layer.getUrl('data'),
+            data:        JSON.stringify(params),
+            contentType: 'application/json',
           });
           return {
             data: vector.data,
@@ -188,16 +186,17 @@ const Providers = {
         try {
 
           let response;
-
           if (!options.filter) {
             response = await XHR.post({
-              url:         this._layer.getUrl('editing') + params,
+              url:         this._layer.getUrl('editing'),
+              data:        JSON.stringify(params),
               contentType: 'application/json',
             });
           } else if (is_defined(options.filter.bbox)) { // bbox filter
             response = await XHR.post({
-              url:  this._layer.getUrl('editing') + params,
+              url:  this._layer.getUrl('editing'),
               data: JSON.stringify({
+                ...params,
                 in_bbox:     options.filter.bbox.join(','),
                 filtertoken: this._layer.getFilterToken(),
               }),
@@ -211,22 +210,29 @@ const Providers = {
             });
           } else if (options.filter.field) {
             response = await XHR.post({
-              url:         this._layer.getUrl('editing') + params,
-              data:        JSON.stringify(options.filter),
+              url:         this._layer.getUrl('editing'),
+              data:        JSON.stringify({ 
+                ...params,
+                ...options.filter,
+              }),
               contentType: 'application/json',
             })
           } else if (is_defined(options.filter.fids)) {
-            response = await XHR.get({
-              url:    this._layer.getUrl('editing') + params,
-              params: options.filter
+            response = await XHR.post({
+              url:    this._layer.getUrl('editing'),
+              data:   JSON.stringify({
+                ...params,
+                ...options.filter,
+              })
             })
           } else if (is_defined(options.filter.nofeatures)) {
             response = await XHR.post({
-              url:  this._layer.getUrl('editing') + params,
+              url:  this._layer.getUrl('editing'),
               data: JSON.stringify({
+                ...params,
                 field: `${options.filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
               }),
-              contentType: 'application/json'
+              contentType: 'application/json',
             })
           }
 
