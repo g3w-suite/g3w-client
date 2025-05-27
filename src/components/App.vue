@@ -134,7 +134,7 @@
                 @click = "showEmbedModal"
                 class  = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
+                <b v-t="'embed_map'"></b><i :class = "$fa('share-alt')"></i>
               </a>
 
               <!-- CHANGE MAP -->
