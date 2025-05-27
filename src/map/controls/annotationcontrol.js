@@ -584,7 +584,7 @@ export class AnnotationControl extends InteractionControl {
     });
 
     //Listen set-layer-zindex so annotation layer i set over all layers
-    GUI.getService('map').on('set-layer-zindex', ({ zindex }) => this._annotation.layer.setZIndex(zindex + 1))
+    GUI.getService('map').on('set-layer-zindex', ({ zindex }) => zindex > this._annotation.layer.getZIndex() && this._annotation.layer.setZIndex(zindex + 1))
 
     GUI.onbefore('getPermalink', (data = {}) => {
       const features = this._annotation.layer.getSource().getFeatures();
