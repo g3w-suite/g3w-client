@@ -1988,10 +1988,7 @@ class Layer extends G3WObject {
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
-      const response = field                                                                    // check `field` parameter
-        ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
-        : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
-
+      const response =  await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}); // since g3w-admin@v3.7
       // vector layer
       if ('table' !== provider._layer.getType()) {
         provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;
