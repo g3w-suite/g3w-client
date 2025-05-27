@@ -115,7 +115,6 @@ export function SearchPanel(opts = {}, show = false) {
 
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
 
-
       //In case of search with autofilter that return no data, need to setup select input to all
       if (1 === input.values.length && SEARCH_ALLVALUE === input.values[0].value && ['selectfield', 'autocompletefield'].includes(input.type)) {
         input.value = 'in' === input.operator ? [SEARCH_ALLVALUE] : SEARCH_ALLVALUE; // set default value for select
