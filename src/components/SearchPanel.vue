@@ -150,8 +150,9 @@
 
         <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
-          <label v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'">
-            <input type = "checkbox" v-model = "autofilter" />
+          <label v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'" style="display: block;">
+            <input type = "checkbox" v-model = "autofilter" style="margin:0;" />
+            <span v-t="'sdk.search.autofilter'"></span>
             <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
           </label>
         </div>
