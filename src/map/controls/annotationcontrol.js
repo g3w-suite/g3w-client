@@ -65,7 +65,7 @@ export class AnnotationControl extends InteractionControl {
     })).readFeatures({
       type: "FeatureCollection",
       features: [
-        ...(JSON.parse((new URLSearchParams(window.location.search)).get('annotations') || null)?.features || []),
+        ...(ApplicationState.project.state.annotations?.features                        || []),
         ...(JSON.parse(localStorage.getItem('annotations') || null)?.features           || []),
         ...(opts?.annotations?.features                                                 || [])
       ]
@@ -585,17 +585,11 @@ export class AnnotationControl extends InteractionControl {
     //Listen set-layer-zindex so annotation layer i set over all layers
     GUI.getService('map').on('set-layer-zindex', ({ zindex }) => this._annotation.layer.setZIndex(zindex + 1))
 
-    // Listen for #share_modal open event
-    $(document).on('show.bs.modal', '#share_modal', () => {
-      const url = new URL($('#share_modal input').val());
-      const annotations = this._annotation.layer.getSource().getFeatures();
-      if (annotations.length) {
-        url.searchParams.set('annotations', new ol.format.GeoJSON().writeFeatures(this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(), {
-          dataProjection: GUI.getService('map').getEpsg(),
-          featureProjection: GUI.getService('map').getEpsg()
-        }));
+    GUI.onbefore('getPermalink', (data = {}) => {
+      const features = this._annotation.layer.getSource().getFeatures();
+      if (features.length > 0) {
+        data.annotations = JSON.parse(new ol.format.GeoJSON().writeFeatures(features));
       }
-      $('#share_modal input').val(url.toString());
     });
   }
 

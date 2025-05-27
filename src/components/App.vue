@@ -761,26 +761,8 @@ export default {
       $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
     },
 
-    showEmbedModal() {
-      const url = new URL(location.href);
-      url.searchParams.set('map_extent', GUI.getService('map').getMapExtent().toString());
-
-      $('body').append(/* html */`
-        <div id = "share_modal" class = "modal fade" tabindex="-1">
-          <div class = "modal-dialog">
-            <div class  = "modal-content">
-              <div class = "modal-header">
-                <h4 style = "font-weight: bold" class = "modal-title">${this.$t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
-              </div>
-              <div class="form-group modal-body">
-                <input readonly value="${url.toString()}" onfocus="event.target.select()" class="form-control" />
-                <button onclick="event.target.previousElementSibling.focus() || document.execCommand('copy') && $('#share_modal').modal('hide')" class="form-control btn btn-success">${ this.$t('sdk.tooltips.copy_map_extent_url') }</button>
-              </div>
-          </div>
-        </div>
-      `);
-      $('#share_modal').modal('show');
-      $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
+    async showEmbedModal() {
+      await GUI.getPermalink({});
     },
 
     /**

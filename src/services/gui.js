@@ -2,6 +2,7 @@ import { VIEWPORT }              from 'g3w-constants';
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
+import { t }                     from 'g3w-i18n';
 
 import ApplicationState          from 'store/application';
 
@@ -13,121 +14,25 @@ import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 
-/** store legacy frontend components */
-const COMPONENTS = {};
-
-/* service know by the applications (standard) */
-const SERVICES = {
-  navbar:   null,
-  sidebar:  null,
-  viewport: null,
-};
-
-function setViewSizes() {
-  const state = ApplicationState.viewport;
-
-  const viewportWidth  = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
-  const viewportHeight = $(document).innerHeight() - $('.navbar').innerHeight();
-  // assign all width and height of the view to primary view (map)
-  let primaryWidth;
-  let primaryHeight;
-  let secondaryWidth;
-  let secondaryHeight;
-  // percentage of secondary view (content)
-  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`];
-  const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === state.split ? 'width': 'height'];
-  const scale = (state.secondaryPerc !== 100 && !is_fullview ? content_perc : 100) / 100;
-  if ('h' === state.split) {
-    secondaryWidth  = state.secondaryVisible ? Math.max((viewportWidth * scale), VIEWPORT.resize.content.min) : 0;
-    secondaryHeight = viewportHeight;
-    primaryWidth    = viewportWidth - secondaryWidth;
-    primaryHeight   = viewportHeight;
-  } else {
-    secondaryWidth  = viewportWidth;
-    secondaryHeight = state.secondaryVisible ? Math.max((viewportHeight * scale), VIEWPORT.resize.content.min) : 0;
-    primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
-    primaryHeight   = viewportHeight - secondaryHeight;
-  }
-  state[state.primaryView]                              .sizes.width  = primaryWidth;
-  state[state.primaryView]                              .sizes.height = primaryHeight;
-  state['map' === state.primaryView ? 'content' : 'map'].sizes.width  = secondaryWidth;
-  state['map' === state.primaryView ? 'content' : 'map'].sizes.height = secondaryHeight;
-}
-
-/**
- * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
- */
-function getReducedSizes() {
-  const contentEl = $('.content');
-  let reducedWidth  = 0;
-  let reducedHeight = 0;
-  const sideBarToggleEl = $('.sidebar-aside-toggle');
-  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h' ? 'width' : 'height'}_100`];
-  if (contentEl && ApplicationState.viewport.secondaryVisible && is_fullview) {
-    if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
-      const toggleWidth = sideBarToggleEl.outerWidth();
-      contentEl.css('padding-left', toggleWidth + 5);
-      reducedWidth = (toggleWidth - 5);
-    }
-  } else {
-    const toggleWidth = sideBarToggleEl.outerWidth();
-    contentEl.css('padding-left', ApplicationState.viewport.secondaryPerc === 100 ? toggleWidth + 5 : 15);
-  }
-  return {
-    reducedWidth,
-    reducedHeight
-  }
-}
-
-/** clear all stacks */
-async function _clearContents() {
-  await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
-    if (d.content instanceof Component || d.content instanceof Panel) {
-      await promisify(d.content.unmount());
-    } else {
-      $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
-    }
-  }));
-  ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
-}
-
-/**
- * Convert error to user message showed
- * @param error
- * @returns {string}
- */
-function errorToMessage(error) {
-  const type = toRawType(error);
-
-  if ('Error' === type) {
-    return `CLIENT - ${error.message}`;
-  }
-
-  if ('Object' === type && error.responseJSON && false === error.responseJSON.result) {
-    const e = error.responseJSON.error;
-    return `${(e.code || '').toUpperCase()} ${e.data || ''} ${e.message || '' }`;
-  }
-
-  if ('Object' === type && error.responseText) {
-    return error.responseText;
-  }
-
-  if ('Array' === type) {
-    return error.map(e => errorToMessage(e)).join(' ');
-  }
-
-  return error || 'server_error';
-}
-
-// API della GUI.
-// methods have been defined by application
-// app should call GUI.ready() when GUI is ready
 export default new (class GUI extends G3WObject {
+
+  /** store legacy frontend components */
+  #COMPONENTS = {}
+
+  /* service know by the applications (standard) */
+  #SERVICES = {
+    navbar:   null,
+    sidebar:  null,
+    viewport: null,
+  }
 
   constructor(opts) {
     super(opts);
 
-    this.setters = ['setContent'];
+    this.setters = [
+      'setContent',
+      'getPermalink'
+    ];
 
     this.isready           = false;
 
@@ -264,8 +169,8 @@ export default new (class GUI extends G3WObject {
     if ('sidebar' === placeholder && (!isMobile.any || false !== component.mobile)) {
       ApplicationState.sidebar.components.push(component);
       (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
-    } else if ('sidebar' !== placeholder && SERVICES[placeholder]) {
-      register = SERVICES[placeholder].addComponents([component], options);
+    } else if ('sidebar' !== placeholder && this.#SERVICES[placeholder]) {
+      register = this.#SERVICES[placeholder].addComponents([component], options);
     }
     if (register) {
       this.setComponent(component);
@@ -282,17 +187,17 @@ export default new (class GUI extends G3WObject {
 
   setComponent(component) {
     const id = component.getId();
-    if (undefined === COMPONENTS[id]) {
-      COMPONENTS[id] = component;
+    if (undefined === this.#COMPONENTS[id]) {
+      this.#COMPONENTS[id] = component;
     }
   }
 
   getComponent(id) {
-    return COMPONENTS[id];
+    return this.#COMPONENTS[id];
   }
 
   getComponents() {
-    return COMPONENTS;
+    return this.#COMPONENTS;
   }
 
   ready() {
@@ -472,7 +377,7 @@ export default new (class GUI extends G3WObject {
       console.warn(e);
       this.showUserMessage({
         type:        'alert',
-        message:     errorToMessage(e),
+        message:     this.#errorToMessage(e),
         textMessage: true
       });
       //@scince 3.11.0 emit error-output-data
@@ -836,7 +741,7 @@ export default new (class GUI extends G3WObject {
     const state = ApplicationState.viewport;
     const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
     rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    this._layoutComponents();
+    this.#layoutComponents();
   }
 
   /**
@@ -880,13 +785,13 @@ export default new (class GUI extends G3WObject {
     });
 
     // call show view (in this case content (other is map)
-    this._showView('content', opts);
+    this.#showView('content', opts);
 
     const contents = this.getComponent('contents');
     
     // whether to clean the stack every time, sure to have just one component.
     if (!opts.push) {
-      await _clearContents();
+      await this.#clearContents();
     }
 
     const content = opts.content;
@@ -928,7 +833,7 @@ export default new (class GUI extends G3WObject {
 
     contents.setOpen(true);
 
-    this._layoutComponents(event);
+    this.#layoutComponents(event);
   }
 
   // hide content
@@ -950,12 +855,12 @@ export default new (class GUI extends G3WObject {
     if (open) {
       const contents = this.getComponent('contents');
       contents.setOpen(false);
-      _clearContents();
+      this.#clearContents();
     }
 
     // close secondary view
     if (open && 'map' === state.primaryView) {
-      await _clearContents();
+      await this.#clearContents();
       state.secondaryPerc = 0;
     }
 
@@ -989,7 +894,7 @@ export default new (class GUI extends G3WObject {
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
     });
 
-    this._showView('content', data.options);
+    this.#showView('content', data.options);
 
     if (ApplicationState.contentsdata.length <= 0) {
       return;
@@ -1045,10 +950,169 @@ export default new (class GUI extends G3WObject {
     }
   }
 
+  /**
+   * Create permalink url
+   * 
+   * @param {Object} data
+   *  
+   * @since 4.0.0
+   */
+  async getPermalink(params = {}) {
+
+    if (this.getPermalink.loading) {
+      return;
+    }
+
+    this.getPermalink.loading = true;
+
+    // get difference between start layersstree project with current
+    let layerstrees = [];
+
+    const traverse = (nodes, onodes, tree) => {
+      nodes.forEach((node, i) => {
+        let diff;
+
+        const id   = node.id;
+        const name = node.name;
+
+        let obj = undefined !== node.id
+          ? ({                                           // a layer node
+            id:       node.id,
+            name:     node.name,
+            expanded: node.expanded,
+            visible:  node.visible
+          })
+          : ({                                           // a group node
+            name:                 node.name,
+            checked:              node.checked,
+            expanded:             node.expanded,
+            'mutually-exclusive': node['mutually-exclusive']
+          });
+
+        // get diff
+        if (undefined !== node.id || Array.isArray(node.nodes)) {
+          // exclude id and name attribute, add only some attributes are chenged
+          diff = Object.keys(obj).reduce((acc, attr) => Object.assign(acc,
+            undefined !== onodes[i][attr] && obj[attr] !== onodes[i][attr]
+              ? { [attr]: obj[attr] }
+              : {}
+          ), {});
+        }
+
+        if (Object.keys(diff || {}).length  > 0) {
+          diff[id ? 'id' : 'name'] = id || name;
+        }
+
+        // handle recursion (group node)
+        if (Array.isArray(node.nodes)) {
+          diff.nodes = [];
+          traverse(node.nodes, onodes[i].nodes, diff.nodes);
+          diff.nodes = diff.nodes.filter(n => Object.keys(n).length > 0 && (!n.nodes || n.node.length > 0));
+        }
+
+        if (Array.isArray(node.nodes) && 0 === diff.nodes.length) {
+          delete diff.nodes;
+        }
+
+        // set name of group
+        if (Array.isArray(node.nodes) && Object.keys(diff || {}).length > 0) {
+          diff.name = node.name;
+        }
+
+        // only if has changes
+        if (diff && Object.keys(diff || {}).length  > 0) {
+          tree.push(diff);
+        }
+      });
+      return layerstrees;
+    };
+
+    // loop through child nodes and return structure layerstree diff only
+    layerstrees = traverse(
+      ApplicationState.project.getLayersStore().state.layerstree[0].nodes, //current state of layerstrees
+      ApplicationState.project.state.layerstree,                           //original project layerstree
+      layerstrees
+    );
+
+    const url     = new URL(window.location.href);
+    const uparams = Array.from(url.searchParams.entries());
+
+    let response = await (await fetch('/api/embed/', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        permalink_data: {
+          ...params,
+          layerstree:     layerstrees.length > 0 ? layerstrees : undefined,
+          initextent:      this.getService('map').getMapExtent(),
+          lng:             ApplicationState.language,
+          initbaselayer:   ApplicationState.baseLayerId || undefined,                     // current base layer
+          toc_tab_default: this.getComponent('catalog').getInternalComponent().activeTab, // take in account change tab
+          original_url:    url,
+        }
+      }),
+    })).json();
+
+    const permalink_code = response?.data?.permalink_code;
+
+    const dialog = Object.assign(document.createElement('template'), {
+      innerHTML: /* html */`
+        <dialog id="share_modal">
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
+          <form method="dialog">
+            <input readonly value = "${ url.toString() }" onfocus="event.target.select()" class="form-control mt-2" id="embed-link" />
+            <label style="margin: 1em 0;" ${uparams.length ? '' : 'hidden' }>
+              <input type="checkbox" data-key="permalink_code" checked>
+              Generate permalink
+            </label>
+            <div id="embed-params" style="border-top: thin solid #ccc;padding: 1em 0;" hidden>
+              <span>Choose params to share</span>
+              <div style="display: flex;gap: 1em;">
+                ${uparams.map(([key, value]) => /* html */`<label><input type="checkbox" data-key="${key}" checked> ${key}</label>`).join('')}
+              </div>
+            </div>
+            <menu style="display: flex; justify-content: end;">
+              <button type="submit" onclick="document.querySelector('#embed-link').focus() || document.execCommand('copy')" class="form-control btn btn-success mt-2">${ t('sdk.tooltips.copy_map_extent_url') }</button>
+            </menu>
+          </form>
+        </dialog>
+      `.trim()
+    }).content.firstChild;
+
+    // generate permalink
+    const generate = () => {
+      let search;
+      const eparams = dialog.querySelector('#embed-params');
+      const elink   = dialog.querySelector('#embed-link');
+      if (dialog.querySelector('input[type="checkbox"][data-key="permalink_code"]').checked) {
+        eparams.hidden = true;
+        elink.value = url.origin + '/api/embed/' + permalink_code + '/';
+      } else {
+        eparams.hidden = false;
+        search = Array
+          .from(eparams.querySelectorAll('input[type="checkbox"]:checked'))
+          .map(c => `${encodeURIComponent(c.getAttribute('data-key'))}=${encodeURIComponent(url.searchParams.get(c.getAttribute('data-key')))}`)
+          .join('&');
+        elink.value = url.origin + url.pathname + (search ? `?${search}` : '');
+      }
+      
+    };
+
+    generate();
+
+    dialog.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener('change', generate));
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+      this.getPermalink.loading = false;
+    });
+    document.body.appendChild(dialog);
+    dialog.showModal();
+  }
+
   // manage all layout logic
   // viewName: map or content
   //options.  percentage , splitting title etc ..
-  async _showView(viewName, options = {}) {
+  async #showView(viewName, options = {}) {
     const state = ApplicationState.viewport;
 
     const {
@@ -1072,7 +1136,7 @@ export default new (class GUI extends G3WObject {
 
     // close secondary view
     if ('map' === state.primaryView) {
-      await _clearContents();
+      await this.#clearContents();
       state.secondaryPerc = 0;
     }
 
@@ -1088,14 +1152,14 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  _layoutComponents(event = null) {
+  #layoutComponents(event = null) {
     requestAnimationFrame(() => {
-      const reducesdSizes = getReducedSizes();
+      const reducesdSizes = this.#getReducedSizes();
       const reducedWidth  = reducesdSizes.reducedWidth || 0;
       const reducedHeight = reducesdSizes.reducedHeight || 0;
 
       // for each component
-      setViewSizes();
+      this.#setViewSizes();
 
       this.getService('map').layout({
         width:  ApplicationState.viewport.map.sizes.width - reducedWidth,
@@ -1132,9 +1196,108 @@ export default new (class GUI extends G3WObject {
    * main layout function
    */
   _layout(event = null) {
-    getReducedSizes();
-    setViewSizes();
-    this._layoutComponents(event);
+    this.#getReducedSizes();
+    this.#setViewSizes();
+    this.#layoutComponents(event);
+  }
+
+  /**
+   * Convert error to user message showed
+   * 
+   * @param error
+   * @returns {string}
+   */
+  #errorToMessage(error) {
+    const type = toRawType(error);
+
+    if ('Error' === type) {
+      return `CLIENT - ${error.message}`;
+    }
+
+    if ('Object' === type && error.responseJSON && false === error.responseJSON.result) {
+      const e = error.responseJSON.error;
+      return `${(e.code || '').toUpperCase()} ${e.data || ''} ${e.message || '' }`;
+    }
+
+    if ('Object' === type && error.responseText) {
+      return error.responseText;
+    }
+
+    if ('Array' === type) {
+      return error.map(e => this.#errorToMessage(e)).join(' ');
+    }
+
+    return error || 'server_error';
+  }
+
+  /**
+   * clear all stacks
+   */
+  async #clearContents() {
+    await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
+      if (d.content instanceof Component || d.content instanceof Panel) {
+        await promisify(d.content.unmount());
+      } else {
+        $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
+      }
+    }));
+    ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
+   */
+  #getReducedSizes() {
+    const contentEl = $('.content');
+    let reducedWidth  = 0;
+    let reducedHeight = 0;
+    const sideBarToggleEl = $('.sidebar-aside-toggle');
+    const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h' ? 'width' : 'height'}_100`];
+    if (contentEl && ApplicationState.viewport.secondaryVisible && is_fullview) {
+      if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
+        const toggleWidth = sideBarToggleEl.outerWidth();
+        contentEl.css('padding-left', toggleWidth + 5);
+        reducedWidth = (toggleWidth - 5);
+      }
+    } else {
+      const toggleWidth = sideBarToggleEl.outerWidth();
+      contentEl.css('padding-left', ApplicationState.viewport.secondaryPerc === 100 ? toggleWidth + 5 : 15);
+    }
+    return {
+      reducedWidth,
+      reducedHeight
+    }
+  }
+
+  #setViewSizes() {
+    const state = ApplicationState.viewport;
+
+    const viewportWidth  = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
+    const viewportHeight = $(document).innerHeight() - $('.navbar').innerHeight();
+    // assign all width and height of the view to primary view (map)
+    let primaryWidth;
+    let primaryHeight;
+    let secondaryWidth;
+    let secondaryHeight;
+    // percentage of secondary view (content)
+    const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`];
+    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === state.split ? 'width': 'height'];
+    const scale = (state.secondaryPerc !== 100 && !is_fullview ? content_perc : 100) / 100;
+    if ('h' === state.split) {
+      secondaryWidth  = state.secondaryVisible ? Math.max((viewportWidth * scale), VIEWPORT.resize.content.min) : 0;
+      secondaryHeight = viewportHeight;
+      primaryWidth    = viewportWidth - secondaryWidth;
+      primaryHeight   = viewportHeight;
+    } else {
+      secondaryWidth  = viewportWidth;
+      secondaryHeight = state.secondaryVisible ? Math.max((viewportHeight * scale), VIEWPORT.resize.content.min) : 0;
+      primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
+      primaryHeight   = viewportHeight - secondaryHeight;
+    }
+    state[state.primaryView]                              .sizes.width  = primaryWidth;
+    state[state.primaryView]                              .sizes.height = primaryHeight;
+    state['map' === state.primaryView ? 'content' : 'map'].sizes.width  = secondaryWidth;
+    state['map' === state.primaryView ? 'content' : 'map'].sizes.height = secondaryHeight;
   }
 
 });
