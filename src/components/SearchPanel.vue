@@ -362,14 +362,21 @@
             /** @TODO use `getDataForSearchInput` instead ? */
 
             try {
-              const data = await state.search_layers[0].getFilterData({
-                fformatter: d.attribute,
-                ordering:   d.attribute,
-                field:      filter,
-              });
-
-              //@since 3.11.0 first array value is value, second is key
-              data.data = (data.data || []).map(([value, key]) => ({ key, value }));
+              // get data for all searchable layers
+              const data = (
+                await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
+                  fformatter: d.attribute,
+                  ordering:   d.attribute,
+                  field:      filter,
+                })))
+              )
+              .filter(d => 'fulfilled' === d.status)
+              .reduce((acc, d, i) => 0 === i
+                ? acc.concat(d.value.data || [])                                                       // for first layer get all uninques values 
+                : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
+                [] 
+              )
+              .map(([value, key]) => ({ key, value }));      
 
               // case value map
               if (!d.dependance_strict && 'selectfield' === d.type) {
@@ -378,7 +385,7 @@
 
               // set key value for select (!valuemap && !valuerelation)
               if (1 === d.values.length) {
-                d.values.push(...data.data);
+                d.values.push(...data);
               }
 
               // exclude first element (ALL_VALUE)
