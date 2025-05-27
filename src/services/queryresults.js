@@ -273,9 +273,9 @@ export default new (class QueryResultsService extends G3WObject {
           error:                     error    || '',
           toc:                       external || layer.state.toc, //@since v3.10.0
         };
-      });
-    this.setLayersData(layers, options);
-  }
+        });
+        this.setLayersData(layers, options);
+      },
 
       /**
        * Setter method called when adding layer and feature for response
@@ -1801,32 +1801,30 @@ export default new (class QueryResultsService extends G3WObject {
    * 
    * @since 3.9.0
    */
-  async addToSelection(layer, feature, action, index) {
-    const query = GUI.getService('queryresults');
+  async addToSelection(layer, feature) {
+    const query         = GUI.getService('queryresults'); //get query service
+    const action        = query.getActionLayerById({ layer, id: 'selection' }); //get selction action
+    const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
+    const toggled       = layer.selection.active; 
+    const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
+    const features      = [].concat(feature || layer.features || []);
 
-    // true = when you click on the top "selection" icon (above of each layer result)
-    const layer_selection = undefined === feature && undefined === action && undefined === index;
-    const _action         = layer_selection ? query.getActionLayerById({ layer, id: 'selection' }) : action;
-    const toggled         = layer_selection && Object.values(_action.state.toggled).every(toggled => toggled);
-    const catalog_layer   = (layer_selection && layer.external) || (query.state.layers.find(l => l.id === layer.id) || {}).external ? layer : getCatalogLayerById(layer.id);
-    const features        = layer_selection ? (layer.features || []) : [feature];
-
-    // toggle selection (all features of a layer)
-    if (layer_selection) {
-      layer.features.forEach((f, i) => {
-        _action.state.toggled[i] = !toggled;
-        f.selection.selected     = _action.state.toggled[i];
-      });
+    if (!features.length) {
+      return console.warn('no features');
     }
 
-    // toggle selection (on a single feature)
-    if (!layer_selection) {
-      _action.state.toggled[index] = !_action.state.toggled[index];
-      feature.selection.selected   = _action.state.toggled[index];
-    }
+    // toggle selection
+    layer.features.forEach((f, i) => {
+      if (!feature) {
+        action.state.toggled[i] = !toggled;
+      } else if (i === index) {
+        action.state.toggled[i] = !action.state.toggled[i];
+      }
+      f.selection.selected = action.state.toggled[i];
+    });
 
     // handle pagination
-    if (toggled && layer_selection) {
+    if (!layer.external && !feature && toggled) {
       catalog_layer.clearSelectionFids();
       return;
     }
@@ -1901,54 +1899,30 @@ export default new (class QueryResultsService extends G3WObject {
       const is_selected = catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid);
 
       // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
-      if (!layer.external && !is_selected && feature && feature.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
-        catalog_layer.addOlSelectionFeature({ id: fid, feature });
+      if (!is_selected && features[i] && features[i].geometry && !catalog_layer.getOlSelectionFeature(fid)) {
+        catalog_layer.addOlSelectionFeature({ id: fid, feature: features[i] });
       }
     
       // exclude
-      if (!layer.external && !layer_selection && is_selected) {
+      if (feature && is_selected) {
         catalog_layer.excludeSelectionFid(fid);
       }
 
       // include
-      if (!layer.external && !layer_selection && !is_selected) {
+      if (feature && !is_selected) {
         catalog_layer.includeSelectionFid(fid);
       }
   
       // add
-      if (!layer.external && layer_selection && !toggled && !is_selected) {
-        include_fids.push(fid);
+      if (!feature && !toggled && !is_selected) {
+        catalog_layer.includeSelectionFid(fid, false);
       }
   
       // remove
-      if (!layer.external && layer_selection && toggled) {
-        exclude_fids.push(fid);
+      if (!feature && toggled) {
+        catalog_layer.excludeSelectionFid(fid, false);
       }
 
-      // Set feature used in selection tool action
-      if (layer.external && !catalog_layer.selection.features.some(f => f.getId() === fid)) {
-        let feat = feature;
-        if (feature.geometry) {
-          feat = new ol.Feature(feature.geometry);
-          feat.setId(fid);
-        }
-        Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
-        catalog_layer.selection.features.push(
-            Object.assign(feat, {
-            __layerId: catalog_layer.id,
-            selection: feature.selection,
-          })
-        );
-      }
-
-      //check if feature is already select or feature is already removed (no selected)
-      // add external layer selection (on map)
-      if (layer.external && !((layer_selection && !toggled && feature.selection.selected) || (layer_selection && toggled && !feature.selection.selected))) {
-        GUI.getService('map').setSelectionFeatures(
-          feature.selection.selected ? 'add' : 'remove',
-          { feature: catalog_layer.selection.features.find(f => fid === f.getId()) }
-        );
-      }
     });
 
     // set layer selection state
@@ -1974,11 +1948,6 @@ export default new (class QueryResultsService extends G3WObject {
     // PROJECT LAYER - In case of single layer and no features, remove layer
     if (1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
       query.getState().layers.splice(0);
-    }
-
-    // set selection property (external layer)
-    if (layer.external) {
-      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
     }
 
   }
