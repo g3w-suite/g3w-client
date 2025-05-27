@@ -360,24 +360,9 @@
             // set undefined because if it has a subscribed input with valuerelations widget
 
             /** @TODO use `getDataForSearchInput` instead ? */
-
             try {
               // get data for all searchable layers
-              const data = (
-                await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
-                  fformatter: d.attribute,
-                  ordering:   d.attribute,
-                  field:      filter,
-                })))
-              )
-              .filter(d => 'fulfilled' === d.status)
-              .reduce((acc, d, i) => 0 === i
-                ? acc.concat(d.value.data || [])                                                       // for first layer get all uninques values 
-                : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
-                [] 
-              )
-              .map(([value, key]) => ({ key, value }));      
-
+              const data = await getDataForSearchInput({ state, field: d.attribute, filter });
               // case value map
               if (!d.dependance_strict && 'selectfield' === d.type) {
                 d._values.push(...d.values);

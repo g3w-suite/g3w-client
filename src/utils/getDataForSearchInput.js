@@ -3,7 +3,7 @@ import { SEARCH_ALLVALUE }      from 'g3w-constants';
 /**
  * @returns { Array } of unique values from field
  */
-export async function getDataForSearchInput({ state, field, suggest }) {
+export async function getDataForSearchInput({ state, field, filter, suggest }) {
 
   try {
     // get unique value from each layers
@@ -12,7 +12,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         suggest,
         fformatter: field,
         ordering:   field,
-        field: getDataForSearchInput.field({
+        field:      filter || getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
           field:  suggest ? field : (state.forminputs.find(i => field === i.attribute) || {}).dependance || field,
