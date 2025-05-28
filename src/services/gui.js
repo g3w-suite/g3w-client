@@ -976,18 +976,18 @@ export default new (class GUI extends G3WObject {
         const name = node.name;
 
         let obj = undefined !== node.id
-          ? ({                                           // a layer node
+          ? {                                           // a layer node
             id:       node.id,
             name:     node.name,
             expanded: node.expanded,
             visible:  node.visible
-          })
-          : ({                                           // a group node
+          }
+          : {                                           // a group node
             name:                 node.name,
             checked:              node.checked,
             expanded:             node.expanded,
             'mutually-exclusive': node['mutually-exclusive']
-          });
+          };
 
         // get diff
         if (undefined !== node.id || Array.isArray(node.nodes)) {
@@ -1099,6 +1099,12 @@ export default new (class GUI extends G3WObject {
     };
 
     generate();
+
+    dialog.addEventListener("click", e => {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
 
     dialog.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener('change', generate));
     dialog.addEventListener('close', () => {
