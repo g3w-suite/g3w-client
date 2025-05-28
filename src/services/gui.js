@@ -859,7 +859,7 @@ export default new (class GUI extends G3WObject {
     }
 
     // close secondary view
-    if (open && 'map' === state.primaryView) {
+    if (open) {
       await this.#clearContents();
       state.secondaryPerc = 0;
     }
@@ -1122,14 +1122,14 @@ export default new (class GUI extends G3WObject {
     const state = ApplicationState.viewport;
 
     const {
-      perc = viewName == state.primaryView ? 100 : 50,
+      perc = viewName == 'map' ? 100 : 50,
       split = 'h'
     } = options;
 
-    state[viewName].aside = viewName == state.primaryView ? (undefined === options.aside ? false : options.aside) : true;
+    state[viewName].aside = viewName == 'map' ? (undefined === options.aside ? false : options.aside) : true;
 
     //calculate the content
-    const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
+    const secondaryPerc = viewName == 'map' ? 100 - perc : perc;
 
     //show Secondary View content only if more than 0
     if (secondaryPerc > 0)  {
@@ -1141,11 +1141,8 @@ export default new (class GUI extends G3WObject {
     }
 
     // close secondary view
-    if ('map' === state.primaryView) {
-      await this.#clearContents();
-      state.secondaryPerc = 0;
-    }
-
+    await this.#clearContents();
+    state.secondaryPerc = 0;
     state.secondaryVisible = false;
 
     this._layout();
@@ -1159,119 +1156,72 @@ export default new (class GUI extends G3WObject {
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
   _layout(event = null) {
-    const state  = ApplicationState.viewport;
-    const layout = ApplicationState.gui.layout;
-
-    const content = $('.content');
-    const toggler = $('.sidebar-aside-toggle');
-    const reduce  = { W: 0, H: 0 };
-
-    // assign all width and height of the view to primary view (map)
-    let primW, primH, secW, secH;
-
-    let is_full = layout[layout.__current].rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-
-    if (is_full && state.secondaryVisible && toggler?.is(':visible')) {
-      reduce.W = (toggler?.outerWidth() ?? 5) - 5;
-      content?.css('padding-left', reduce.W + 10);
-    }
-    
-    if (!is_full) {
-      content?.css('padding-left', state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15);
-    }
-
-    let viewW = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
-    let viewH = $(document).innerHeight() - $('.navbar').innerHeight();
-
-    // percentage of secondary view (content)
-    let scale = state.secondaryPerc !== 100 && !layout[layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`]
-      ? (layout[layout.__current].rightpanel['h' === state.split ? 'width': 'height'] / 100)
-      : 1;
-
-    if ('h' === state.split) {
-      secW  = state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0;
-      secH  = viewH;
-      primW = viewW - secW;
-      primH = viewH;
-    } else {
-      secW  = viewW;
-      secH  = state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0;
-      primW = state.secondaryVisible && scale === 1 ? 0 : viewW;
-      primH = viewH - secH;
-    }
-
-    Object.assign(state[state.primaryView].sizes,                               { width: primW, height: primH });
-    Object.assign(state['map' === state.primaryView ? 'content' : 'map'].sizes, { width: secW,  height: secH });
-
     requestAnimationFrame(() => {
-      reduce.W = reduce.H = 0;
 
-      is_full = layout[layout.__current].rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
+      const state  = ApplicationState.viewport;
+      const layout = ApplicationState.gui.layout;
 
-      if (is_full && state.secondaryVisible && toggler?.is(':visible')) {
-        reduce.W = (toggler?.outerWidth() ?? 5) - 5;
-        content?.css('padding-left', reduce.W + 10);
-      }
+      const content = $('.content');
+      const toggler = $('.sidebar-aside-toggle');
+      const viewW   = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
+      const viewH   = $(document).innerHeight() - $('.navbar').innerHeight();
 
-      if (!is_full) {
-        content?.css('padding-left', state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15);
-      }
+      const h_split = 'h' === state.split;
+      const v_split = 'v' === state.split;
+      const is_full = layout[layout.__current].rightpanel[h_split ? 'width_100' : 'height_100'];
 
-      // for each component
-
-      viewW = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
-      viewH = $(document).innerHeight() - $('.navbar').innerHeight();
-
-      // assign all width and height of the view to primary view (map)
+      content?.css('padding-left', is_full
+        ? (toggler?.is(':visible') ? ((toggler?.outerWidth() ?? 5) - 5 + 10) : toggler?.css('padding-left'))
+        : (state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15)
+      );
 
       // percentage of secondary view (content)
-      scale = state.secondaryPerc !== 100 && !layout[layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`]
-        ? (layout[layout.__current].rightpanel['h' === state.split ? 'width': 'height'] / 100)
+      const scale = state.secondaryPerc !== 100 && !is_full
+        ? (layout[layout.__current].rightpanel[h_split ? 'width': 'height'] / 100)
         : 1;
 
-      if ('h' === state.split) {
-        secW  = state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0;
-        secH  = viewH;
-        primW = viewW - secW;
-        primH = viewH;
-      } else {
-        secW  = viewW;
-        secH  = state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0;
-        primW = state.secondaryVisible && scale === 1 ? 0 : viewW;
-        primH = viewH - secH;
-      }
-
-      Object.assign(state[state.primaryView].sizes,                               { width: primW, height: primH });
-      Object.assign(state['map' === state.primaryView ? 'content' : 'map'].sizes, { width: secW,  height: secH });
-
-      this.getService('map').layout({
-        width:  state.map.sizes.width - reduce.W,
-        height: state.map.sizes.height - reduce.H
+      // resize "map"
+      Object.assign(state.map.sizes, {
+        width:  h_split ? (viewW - (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0)) : (state.secondaryVisible && scale === 1 ? 0 : viewW),
+        height: v_split ? (viewH - (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0)) : viewH,
       });
 
-      const parentWidth = state.content.sizes.width - reduce.W;
+      // resize "content"
+      Object.assign(state.content.sizes, {
+        width:  h_split ? (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0) : viewW,
+        height: v_split ? (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0) : viewH,
+      });
+
+      const reduce_w = (is_full && state.secondaryVisible && toggler?.is(':visible') && toggler?.outerWidth() || 5) - 5;
+
+      this.getService('map').layout({
+        width:  state.map.sizes.width - reduce_w,
+        height: state.map.sizes.height
+      });
 
       // Set layout of the content each time
-      Vue.nextTick(() => {                                                     // run only after that vue state is updated
-        const el = this.getComponent('contents').internalComponent.$el;
-        const height = el.parentElement.clientHeight                           // parent element is "g3w-view-content"
-          - ((el.parentElement.querySelector('.close-panel-block') || {}).offsetHeight || 0)
-          - ((el.parentElement.querySelector('.content_breadcrumb') || {}).offsetHeight || 0)
-          - 10;                                                                // margin 10 from bottom
-        el.style.height = height + 'px';
-        if (el.firstChild) {
-          el.firstChild.style.height = height + 'px';
+
+      const contents = $('#contents')[0];
+
+      contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
+        - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (contents.parentElement.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - 10 + 'px';
+
+      if (contents.children[0]) {
+        contents.children[0].style.height = contents.style.height;
+      }
+
+      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+        if ('function' == typeof d.content.layout) {  
+          d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
         }
-        ApplicationState.contentsdata.forEach(d => {                                // re-layout each component stored into the stack
-          if ('function' == typeof d.content.layout) {  
-            d.content.layout(parentWidth + 0.5, height);
-          }
-        })
       });
 
       if (event) {
-        setTimeout(() => { this.emit(event); })
+        this.emit(event);
       }
+
     });
   }
 

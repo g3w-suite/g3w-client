@@ -173,7 +173,6 @@ const STATE = Vue.observable({
    * @since 3.11.0
    */
   viewport: {
-    primaryView:  'map', // primary view (default)
     // percentage of secondary view
     secondaryPerc: 0, // setted to 0 at beginning (not visible)
     // used to store if content vertical or horizontal is  changed by resised
