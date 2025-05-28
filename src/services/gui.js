@@ -243,6 +243,11 @@ export default new (class GUI extends G3WObject {
       }
     });
 
+    // remove "permalink_code" from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('permalink_code');
+    window.history.replaceState(null, null, url);
+
     this.emit('ready');
     this.isready = true;
   }
