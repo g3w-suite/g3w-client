@@ -741,7 +741,7 @@ export default new (class GUI extends G3WObject {
     const state = ApplicationState.viewport;
     const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
     rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    this.#layoutComponents();
+    this._layout();
   }
 
   /**
@@ -833,7 +833,7 @@ export default new (class GUI extends G3WObject {
 
     contents.setOpen(true);
 
-    this.#layoutComponents(event);
+    this._layout(event);
   }
 
   // hide content
@@ -1058,7 +1058,7 @@ export default new (class GUI extends G3WObject {
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <dialog id="share_modal">
-          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fa fa-share-alt" style="margin-right: .5ch;"></i> ${t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
           <form method="dialog">
             <input readonly value = "${ url.toString() }" onfocus="event.target.select()" class="form-control mt-2" id="embed-link" />
             <label style="margin: 1em 0;" ${uparams.length ? '' : 'hidden' }>
@@ -1158,21 +1158,98 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  #layoutComponents(event = null) {
+  _layout(event = null) {
+    const state  = ApplicationState.viewport;
+    const layout = ApplicationState.gui.layout;
+
+    const content = $('.content');
+    const toggler = $('.sidebar-aside-toggle');
+    const reduce  = { W: 0, H: 0 };
+
+    // assign all width and height of the view to primary view (map)
+    let primW, primH, secW, secH;
+
+    let is_full = layout[layout.__current].rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
+
+    if (is_full && state.secondaryVisible && toggler?.is(':visible')) {
+      reduce.W = (toggler?.outerWidth() ?? 5) - 5;
+      content?.css('padding-left', reduce.W + 10);
+    }
+    
+    if (!is_full) {
+      content?.css('padding-left', state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15);
+    }
+
+    let viewW = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
+    let viewH = $(document).innerHeight() - $('.navbar').innerHeight();
+
+    // percentage of secondary view (content)
+    let scale = state.secondaryPerc !== 100 && !layout[layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`]
+      ? (layout[layout.__current].rightpanel['h' === state.split ? 'width': 'height'] / 100)
+      : 1;
+
+    if ('h' === state.split) {
+      secW  = state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0;
+      secH  = viewH;
+      primW = viewW - secW;
+      primH = viewH;
+    } else {
+      secW  = viewW;
+      secH  = state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0;
+      primW = state.secondaryVisible && scale === 1 ? 0 : viewW;
+      primH = viewH - secH;
+    }
+
+    Object.assign(state[state.primaryView].sizes,                               { width: primW, height: primH });
+    Object.assign(state['map' === state.primaryView ? 'content' : 'map'].sizes, { width: secW,  height: secH });
+
     requestAnimationFrame(() => {
-      const reducesdSizes = this.#getReducedSizes();
-      const reducedWidth  = reducesdSizes.reducedWidth || 0;
-      const reducedHeight = reducesdSizes.reducedHeight || 0;
+      reduce.W = reduce.H = 0;
+
+      is_full = layout[layout.__current].rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
+
+      if (is_full && state.secondaryVisible && toggler?.is(':visible')) {
+        reduce.W = (toggler?.outerWidth() ?? 5) - 5;
+        content?.css('padding-left', reduce.W + 10);
+      }
+
+      if (!is_full) {
+        content?.css('padding-left', state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15);
+      }
 
       // for each component
-      this.#setViewSizes();
+
+      viewW = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
+      viewH = $(document).innerHeight() - $('.navbar').innerHeight();
+
+      // assign all width and height of the view to primary view (map)
+
+      // percentage of secondary view (content)
+      scale = state.secondaryPerc !== 100 && !layout[layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`]
+        ? (layout[layout.__current].rightpanel['h' === state.split ? 'width': 'height'] / 100)
+        : 1;
+
+      if ('h' === state.split) {
+        secW  = state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0;
+        secH  = viewH;
+        primW = viewW - secW;
+        primH = viewH;
+      } else {
+        secW  = viewW;
+        secH  = state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0;
+        primW = state.secondaryVisible && scale === 1 ? 0 : viewW;
+        primH = viewH - secH;
+      }
+
+      Object.assign(state[state.primaryView].sizes,                               { width: primW, height: primH });
+      Object.assign(state['map' === state.primaryView ? 'content' : 'map'].sizes, { width: secW,  height: secH });
 
       this.getService('map').layout({
-        width:  ApplicationState.viewport.map.sizes.width - reducedWidth,
-        height: ApplicationState.viewport.map.sizes.height - reducedHeight
+        width:  state.map.sizes.width - reduce.W,
+        height: state.map.sizes.height - reduce.H
       });
 
-      const parentWidth = ApplicationState.viewport.content.sizes.width - reducedWidth;
+      const parentWidth = state.content.sizes.width - reduce.W;
 
       // Set layout of the content each time
       Vue.nextTick(() => {                                                     // run only after that vue state is updated
@@ -1196,15 +1273,6 @@ export default new (class GUI extends G3WObject {
         setTimeout(() => { this.emit(event); })
       }
     });
-  }
-
-  /**
-   * main layout function
-   */
-  _layout(event = null) {
-    this.#getReducedSizes();
-    this.#setViewSizes();
-    this.#layoutComponents(event);
   }
 
   /**
@@ -1248,62 +1316,6 @@ export default new (class GUI extends G3WObject {
       }
     }));
     ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
-   */
-  #getReducedSizes() {
-    const contentEl = $('.content');
-    let reducedWidth  = 0;
-    let reducedHeight = 0;
-    const sideBarToggleEl = $('.sidebar-aside-toggle');
-    const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h' ? 'width' : 'height'}_100`];
-    if (contentEl && ApplicationState.viewport.secondaryVisible && is_fullview) {
-      if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
-        const toggleWidth = sideBarToggleEl.outerWidth();
-        contentEl.css('padding-left', toggleWidth + 5);
-        reducedWidth = (toggleWidth - 5);
-      }
-    } else {
-      const toggleWidth = sideBarToggleEl.outerWidth();
-      contentEl.css('padding-left', ApplicationState.viewport.secondaryPerc === 100 ? toggleWidth + 5 : 15);
-    }
-    return {
-      reducedWidth,
-      reducedHeight
-    }
-  }
-
-  #setViewSizes() {
-    const state = ApplicationState.viewport;
-
-    const viewportWidth  = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
-    const viewportHeight = $(document).innerHeight() - $('.navbar').innerHeight();
-    // assign all width and height of the view to primary view (map)
-    let primaryWidth;
-    let primaryHeight;
-    let secondaryWidth;
-    let secondaryHeight;
-    // percentage of secondary view (content)
-    const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`];
-    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === state.split ? 'width': 'height'];
-    const scale = (state.secondaryPerc !== 100 && !is_fullview ? content_perc : 100) / 100;
-    if ('h' === state.split) {
-      secondaryWidth  = state.secondaryVisible ? Math.max((viewportWidth * scale), VIEWPORT.resize.content.min) : 0;
-      secondaryHeight = viewportHeight;
-      primaryWidth    = viewportWidth - secondaryWidth;
-      primaryHeight   = viewportHeight;
-    } else {
-      secondaryWidth  = viewportWidth;
-      secondaryHeight = state.secondaryVisible ? Math.max((viewportHeight * scale), VIEWPORT.resize.content.min) : 0;
-      primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
-      primaryHeight   = viewportHeight - secondaryHeight;
-    }
-    state[state.primaryView]                              .sizes.width  = primaryWidth;
-    state[state.primaryView]                              .sizes.height = primaryHeight;
-    state['map' === state.primaryView ? 'content' : 'map'].sizes.width  = secondaryWidth;
-    state['map' === state.primaryView ? 'content' : 'map'].sizes.height = secondaryHeight;
   }
 
 });
