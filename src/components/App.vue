@@ -762,7 +762,7 @@ export default {
     },
 
     async showEmbedModal() {
-      await GUI.getPermalink({});
+      await GUI.getPermalink(new URL(window.location.href), {});
     },
 
     /**

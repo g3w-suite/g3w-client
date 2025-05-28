@@ -953,11 +953,12 @@ export default new (class GUI extends G3WObject {
   /**
    * Create permalink url
    * 
-   * @param {Object} data
-   *  
+   * @param { URL }    url  "original_url" sent to server
+   * @param { Object } data "permalink_data" sent to server
+   *
    * @since 4.0.0
    */
-  async getPermalink(params = {}) {
+  async getPermalink(url, data) {
 
     if (this.getPermalink.loading) {
       return;
@@ -1034,7 +1035,6 @@ export default new (class GUI extends G3WObject {
       layerstrees
     );
 
-    const url     = new URL(window.location.href);
     const uparams = Array.from(url.searchParams.entries());
 
     let response = await (await fetch('/api/embed/', {
@@ -1042,7 +1042,7 @@ export default new (class GUI extends G3WObject {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         permalink_data: {
-          ...params,
+          ...data,
           layerstree:     layerstrees.length > 0 ? layerstrees : undefined,
           initextent:      this.getService('map').getMapExtent(),
           lng:             ApplicationState.language,
@@ -1163,7 +1163,7 @@ export default new (class GUI extends G3WObject {
 
       const content = $('.content');
       const toggler = $('.sidebar-aside-toggle');
-      const viewW   = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
+      const viewW   = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
       const viewH   = $(document).innerHeight() - $('.navbar').innerHeight();
 
       const h_split = 'h' === state.split;
