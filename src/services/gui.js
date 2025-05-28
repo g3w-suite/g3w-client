@@ -1067,8 +1067,8 @@ export default new (class GUI extends G3WObject {
             </label>
             <div id="embed-params" style="border-top: thin solid #ccc;padding: 1em 0;" hidden>
               <span>Choose params to share</span>
-              <div style="display: flex;gap: 1em;">
-                ${uparams.map(([key, value]) => /* html */`<label><input type="checkbox" data-key="${key}" checked> ${key}</label>`).join('')}
+              <div style="display: flex;gap: 1em;padding: 1em 0;">
+                ${uparams.map(([key, value]) => /* html */`<label title="${value}"><input type="checkbox" data-key="${key}" checked> ${key}</label>`).join('')}
               </div>
             </div>
             <menu style="display: flex; justify-content: end;">
