@@ -202,47 +202,13 @@ export default new (class GUI extends G3WObject {
   }
 
   ready() {
-    let drawing     = false;
-    let resizeFired = false;
-    function triggerResize() {
-      resizeFired = true;
-      drawResize();
-    }
-    /**
-     * function called from resize of browser windows (also open dev tool)
-     */
-    const drawResize = () => {
-      if (true === resizeFired ) {
-        resizeFired = false;
-        drawing = true;
-        this._layout('resize');
-        requestAnimationFrame(drawResize);
-      } else {
-        drawing = false;
-      }
-    };
-
     // SetSidebar width (used by components/Viewport.vue single file component)
-    ApplicationState.viewport.SIDEBARWIDTH = this.getSize({element:'sidebar', what:'width'});
-
-    this._layout();
+    ApplicationState.viewport.SIDEBARWIDTH = this.getSize({ element:'sidebar', what: 'width' });
 
     // resize della window
-    $(window).resize(() => {
-      // set resizedFired to true and execute drawResize if it's not already running
-      if (false === drawing) {
-        triggerResize();
-      }
-    });
+    $(window).resize(() => { requestAnimationFrame(() => { this._layout('resize'); }); });
 
-    // resize on main siedemar open close sidebar
-    $('.main-sidebar').on('transitionend', function (event) {
-      //be sure that is the main sidebar that is transitioned non his child
-      if (event.target === this) {
-        $(this).trigger('trans-end');
-        triggerResize();
-      }
-    });
+    this._layout();
 
     // remove "permalink_code" from URL
     const url = new URL(window.location);
@@ -1134,73 +1100,69 @@ export default new (class GUI extends G3WObject {
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
   _layout(event = null) {
-    requestAnimationFrame(() => {
+    const state  = ApplicationState.viewport;
+    const layout = ApplicationState.gui.layout;
 
-      const state  = ApplicationState.viewport;
-      const layout = ApplicationState.gui.layout;
+    const content = $('.content');
+    const toggler = $('.sidebar-aside-toggle');
+    const viewW   = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+    const viewH   = $(document).innerHeight() - $('.navbar').innerHeight();
 
-      const content = $('.content');
-      const toggler = $('.sidebar-aside-toggle');
-      const viewW   = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
-      const viewH   = $(document).innerHeight() - $('.navbar').innerHeight();
+    const h_split = 'h' === state.split;
+    const v_split = 'v' === state.split;
+    const is_full = layout[layout.__current].rightpanel[h_split ? 'width_100' : 'height_100'];
 
-      const h_split = 'h' === state.split;
-      const v_split = 'v' === state.split;
-      const is_full = layout[layout.__current].rightpanel[h_split ? 'width_100' : 'height_100'];
+    content?.css('padding-left', is_full
+      ? (toggler?.is(':visible') ? ((toggler?.outerWidth() ?? 5) - 5 + 10) : toggler?.css('padding-left'))
+      : (state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15)
+    );
 
-      content?.css('padding-left', is_full
-        ? (toggler?.is(':visible') ? ((toggler?.outerWidth() ?? 5) - 5 + 10) : toggler?.css('padding-left'))
-        : (state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15)
-      );
+    // percentage of secondary view (content)
+    const scale = state.secondaryPerc !== 100 && !is_full
+      ? (layout[layout.__current].rightpanel[h_split ? 'width': 'height'] / 100)
+      : 1;
 
-      // percentage of secondary view (content)
-      const scale = state.secondaryPerc !== 100 && !is_full
-        ? (layout[layout.__current].rightpanel[h_split ? 'width': 'height'] / 100)
-        : 1;
+    // size "map"
+    Object.assign(state.map.sizes, {
+      width:  h_split ? (viewW - (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0)) : (state.secondaryVisible && scale === 1 ? 0 : viewW),
+      height: v_split ? (viewH - (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0)) : viewH,
+    });
 
-      // resize "map"
-      Object.assign(state.map.sizes, {
-        width:  h_split ? (viewW - (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0)) : (state.secondaryVisible && scale === 1 ? 0 : viewW),
-        height: v_split ? (viewH - (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0)) : viewH,
-      });
+    // size "content"
+    Object.assign(state.content.sizes, {
+      width:  h_split ? (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0) : viewW,
+      height: v_split ? (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0) : viewH,
+    });
 
-      // resize "content"
-      Object.assign(state.content.sizes, {
-        width:  h_split ? (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0) : viewW,
-        height: v_split ? (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0) : viewH,
-      });
+    const reduce_w = (is_full && state.secondaryVisible && toggler?.is(':visible') && toggler?.outerWidth() || 5) - 5;
 
-      const reduce_w = (is_full && state.secondaryVisible && toggler?.is(':visible') && toggler?.outerWidth() || 5) - 5;
+    // resize "map"
+    this.getService('map').layout({
+      width:  state.map.sizes.width - reduce_w,
+      height: state.map.sizes.height
+    });
 
-      this.getService('map').layout({
-        width:  state.map.sizes.width - reduce_w,
-        height: state.map.sizes.height
-      });
+    // resize "content" (after vue state is updated)
+    Vue.nextTick(() => {
+      const contents  = $('#contents')[0];
+      const sidebar   = contents.parentElement.clientHeight; // ie. "g3w-view-content"
+      contents.style.height = sidebar.clientHeight - Array.from(sidebar.children).reduce((diff, el) => diff-=(el!==contents?el.offsetHeight:0), -10) + 'px';
 
-      // Set layout of the content each time
-
-      const contents = $('#contents')[0];
-
-      contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
-        - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (contents.parentElement.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - 10 + 'px';
-
-      if (contents.children[0]) {
+      if (contents.children[0]) {                                            // workaround for qplotly?
         contents.children[0].style.height = contents.style.height;
       }
 
       ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-        if ('function' == typeof d.content.layout) {  
+        if ('function' == typeof d.content.layout) {
           d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
         }
       });
-
-      if (event) {
-        this.emit(event);
-      }
-
     });
+
+    if (event) {
+      this.emit(event);
+    }
+
   }
 
   /**
