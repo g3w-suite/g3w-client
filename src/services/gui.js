@@ -1046,15 +1046,15 @@ export default new (class GUI extends G3WObject {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
-        permalink_data: {
+        url,
+        data: {
           ...data,
           layerstree:     layerstrees.length > 0 ? layerstrees : undefined,
           initextent:      this.getService('map').getMapExtent(),
           lng:             ApplicationState.language,
           initbaselayer:   ApplicationState.baseLayerId || undefined,                     // current base layer
           toc_tab_default: this.getComponent('catalog').getInternalComponent().activeTab, // take in account change tab
-          original_url:    url,
-        }
+        },
       }),
     })).json();
 
