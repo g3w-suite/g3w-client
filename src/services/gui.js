@@ -1190,17 +1190,15 @@ export default new (class GUI extends G3WObject {
         contents.children[0].style.height = contents.style.height;
       }
 
-      setTimeout(() => {
-        ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-          if ('function' == typeof d.content.layout) {  
-            d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
-          }
-        });
-
-        if (event) {
-          this.emit(event);
+      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+        if ('function' == typeof d.content.layout) {  
+          d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
         }
       });
+
+      if (event) {
+        this.emit(event);
+      }
 
     });
   }

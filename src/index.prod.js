@@ -705,7 +705,8 @@ $.ajaxSetup({
         try {
           // wait plugin dependencies before loading plugin
           await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
-          await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${Date.now()}`, false);
+          const modified = g3wsdk.core.project.ProjectsRegistry.getCurrentProject().getState().modified + '+' + new Date().toISOString().slice(0, 13);
+          await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${modified}`, false);
         } catch(e) {
           console.warn('[G3W-PLUGIN]', e);
           // remove loading plugin in case of error of dependencies
