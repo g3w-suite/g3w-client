@@ -648,8 +648,8 @@ class Layer extends G3WObject {
       /** @since 4.0.0 */
       bbox:                 config.bbox,
 
-      /** @since 4.0.0 */
-      checked:              !!config.visible,
+      /** @since 4.0.0 checked config attribute is passed by vector layer on editing */
+      checked:              config.checked ?? !!config.visible,
 
       /** @since 4.0.0 */
       epsg:                 config.crs.epsg,
