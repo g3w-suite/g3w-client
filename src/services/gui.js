@@ -13,6 +13,7 @@ import { toRawType }             from 'utils/toRawType';
 import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
+import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
 
 export default new (class GUI extends G3WObject {
 
@@ -1040,6 +1041,17 @@ export default new (class GUI extends G3WObject {
       layerstrees
     );
 
+    //store changes of layers attribute (default style etc..)
+    const layers = [];
+    ApplicationState.project.state.layers.forEach(l => {
+      if (getCatalogLayerById(l.id).config.styles.reduce((acc, s, i) => acc || s.current !== l.styles[i].current, false)) {
+        layers.push({
+          id: l.id,
+          styles: getCatalogLayerById(l.id).config.styles,
+        })
+      }
+    })
+
     const uparams = Array.from(url.searchParams.entries());
 
     let response = await (await fetch('/api/embed/', {
@@ -1049,11 +1061,12 @@ export default new (class GUI extends G3WObject {
         url,
         data: {
           ...data,
-          layerstree:     layerstrees.length > 0 ? layerstrees : undefined,
-          initextent:      this.getService('map').getMapExtent(),
-          lng:             ApplicationState.language,
-          initbaselayer:   ApplicationState.baseLayerId || undefined,                     // current base layer
-          toc_tab_default: this.getComponent('catalog').getInternalComponent().activeTab, // take in account change tab
+          layers:         layers.length > 0 ? layers: undefined, //layers configuration
+          layerstree:     layerstrees.length > 0 ? layerstrees : undefined, //layerstree on TOC
+          initextent:      this.getService('map').getMapExtent(), //current map extent
+          lng:             ApplicationState.language, //current launguage
+          initbaselayer:   ApplicationState.baseLayerId || undefined,// current base layer
+          toc_tab_default: ['baselayers', 'layers', 'legend'].includes(this.getComponent('catalog').getInternalComponent().activeTab) ? this.getComponent('catalog').getInternalComponent().activeTab : undefined, // take in account change tab
         },
       }),
     })).json();
