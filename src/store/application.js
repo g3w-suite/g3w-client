@@ -189,7 +189,6 @@ const STATE = Vue.observable({
         width:  0,
         height: 0
       },
-      aside: false
     },
     //content
     content: {
@@ -204,7 +203,6 @@ const STATE = Vue.observable({
         'h': { perc: 0 },
         'v': { perc: 0 }
       },
-      aside:        true,
       showgoback:   true,
       stack:        [], // array elements of stack contents
       closable:     true, // (x) is closable

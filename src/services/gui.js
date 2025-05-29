@@ -203,10 +203,13 @@ export default new (class GUI extends G3WObject {
 
   ready() {
     // SetSidebar width (used by components/Viewport.vue single file component)
-    ApplicationState.viewport.SIDEBARWIDTH = this.getSize({ element:'sidebar', what: 'width' });
+    ApplicationState.viewport.SIDEBARWIDTH = ApplicationState.sizes.sidebar.width;
 
     // resize della window
     $(window).resize(() => { requestAnimationFrame(() => { this._layout('resize'); }); });
+
+     // resize on main siedemar open close sidebar
+    $('.main-sidebar').on('transitionend', () => { requestAnimationFrame(() => { this._layout('resize'); }); });
 
     this._layout();
 
@@ -744,8 +747,10 @@ export default new (class GUI extends G3WObject {
     opts.push = opts.push || false;
     const event = opts.perc === 100 ? 'show-content-full' : 'show-content';
 
+    const state = ApplicationState.viewport;
+
     // set all content parameters
-    Object.assign(ApplicationState.viewport.content, {
+    Object.assign(state.content, {
       title:        opts.title,
       split:        undefined === opts.split       ? null : opts.split,
       closable:     undefined === opts.closable    || opts.closable,
@@ -756,8 +761,20 @@ export default new (class GUI extends G3WObject {
       contentsdata: ApplicationState.contentsdata,
     });
 
-    // call show view (in this case content (other is map)
-    this.#showView('content', opts);
+    if (opts.perc > 0)  {
+      // show secondary view
+      state.secondaryVisible = true;
+      state.split            = undefined !== opts.split ? opts.split : state.split;
+      state.secondaryPerc    = undefined !== opts.perc  ? opts.perc  : state.perc;
+      this._layout();
+    } else {
+      // close secondary view
+      await this.#clearContents();
+      state.secondaryPerc = 0;
+      state.secondaryVisible = false;
+      this._layout();
+      await Vue.nextTick();
+    }
 
     const contents = this.getComponent('contents');
     
@@ -852,10 +869,11 @@ export default new (class GUI extends G3WObject {
       return Promise.reject();
     }
 
-    const data = ApplicationState.contentsdata.at(-2);
-    const opts = data.options;
+    const data  = ApplicationState.contentsdata.at(-2);
+    const opts  = data.options;
+    const state = ApplicationState.viewport;
 
-    Object.assign(ApplicationState.viewport.content, {
+    Object.assign(state.content, {
       title:        opts.title,
       split:        undefined !== opts.split       ? opts.split       : null,
       closable:     undefined !== opts.closable    ? opts.closable    : true,
@@ -866,7 +884,20 @@ export default new (class GUI extends G3WObject {
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
     });
 
-    this.#showView('content', data.options);
+    if (opts.perc > 0)  {
+      // show secondary view
+      state.secondaryVisible = true;
+      state.split            = undefined !== opts.split ? opts.split : state.split;
+      state.secondaryPerc    = undefined !== opts.perc  ? opts.perc  : state.perc;
+      this._layout();
+    } else {
+      // close secondary view
+      await this.#clearContents();
+      state.secondaryPerc = 0;
+      state.secondaryVisible = false;
+      this._layout();
+      await Vue.nextTick();
+    }
 
     if (ApplicationState.contentsdata.length <= 0) {
       return;
@@ -1059,41 +1090,6 @@ export default new (class GUI extends G3WObject {
     dialog.showModal();
   }
 
-  // manage all layout logic
-  // viewName: map or content
-  //options.  percentage , splitting title etc ..
-  async #showView(viewName, options = {}) {
-    const state = ApplicationState.viewport;
-
-    const {
-      perc = viewName == 'map' ? 100 : 50,
-      split = 'h'
-    } = options;
-
-    state[viewName].aside = viewName == 'map' ? (undefined === options.aside ? false : options.aside) : true;
-
-    //calculate the content
-    const secondaryPerc = viewName == 'map' ? 100 - perc : perc;
-
-    //show Secondary View content only if more than 0
-    if (secondaryPerc > 0)  {
-      state.secondaryVisible = true;
-      state.split            = undefined !== split ? split : state.split;
-      state.secondaryPerc    = undefined !== perc  ? perc  : state.perc;
-      this._layout();
-      return;
-    }
-
-    // close secondary view
-    await this.#clearContents();
-    state.secondaryPerc = 0;
-    state.secondaryVisible = false;
-
-    this._layout();
-
-    await Vue.nextTick();
-  }
-
   /**
    * load components of viewport after right size setting
    * 
@@ -1134,27 +1130,34 @@ export default new (class GUI extends G3WObject {
       height: v_split ? (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0) : viewH,
     });
 
-    const reduce_w = (is_full && state.secondaryVisible && toggler?.is(':visible') && toggler?.outerWidth() || 5) - 5;
-
-    // resize "map"
-    this.getService('map').layout({
-      width:  state.map.sizes.width - reduce_w,
-      height: state.map.sizes.height
-    });
-
     // resize "content" (after vue state is updated)
     Vue.nextTick(() => {
-      const contents  = $('#contents')[0];
-      const sidebar   = contents.parentElement.clientHeight; // ie. "g3w-view-content"
-      contents.style.height = sidebar.clientHeight - Array.from(sidebar.children).reduce((diff, el) => diff-=(el!==contents?el.offsetHeight:0), -10) + 'px';
+      const reduce_w = (is_full && state.secondaryVisible && toggler?.is(':visible') && toggler?.outerWidth() || 5) - 5;
+
+      // resize "map"
+      this.getService('map').layout({
+        width:  state.map.sizes.width - reduce_w,
+        height: state.map.sizes.height
+      });
+
+      const contents = $('#contents')[0];
+
+      contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
+        - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (contents.parentElement.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - 10 + 'px';
 
       if (contents.children[0]) {                                            // workaround for qplotly?
         contents.children[0].style.height = contents.style.height;
       }
 
       ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-        if ('function' == typeof d.content.layout) {
-          d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
+        try {
+          if ('function' == typeof d.content.layout) {
+            d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
+          }
+        } catch (e) {
+          setTimeout(() => this._layout('resize'), 1000);
         }
       });
     });

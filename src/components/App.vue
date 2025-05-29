@@ -390,7 +390,7 @@
           </span>
         </section>
         <div
-          v-if  = "(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)"
+          v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
           class = "close-panel-block"
           style = "display: flex; justify-content: space-between"
         >
@@ -462,7 +462,7 @@
               ></i>
             </div>
             <span
-              v-if = "state.content.closable && state.content.aside"
+              v-if = "state.content.closable"
               @click = "closeContent"
               :class = "{'mobile': isMobile()}"
               class  = "action-button"
