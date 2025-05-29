@@ -972,87 +972,47 @@ export default new (class GUI extends G3WObject {
 
     this.getPermalink.loading = true;
 
+    const project = ApplicationState.project;
+    const uparams = Array.from(url.searchParams.entries());
+
     // get difference between start layersstree project with current
-    let layerstrees = [];
-
-    const traverse = (nodes, onodes, tree) => {
+    const traverse = (nodes, onodes, tree = []) => {
       nodes.forEach((node, i) => {
-        let diff;
-
-        const id   = node.id;
-        const name = node.name;
-
-        let obj = undefined !== node.id
-          ? {                                           // a layer node
-            id:       node.id,
-            name:     node.name,
-            expanded: node.expanded,
-            visible:  node.visible
-          }
-          : {                                           // a group node
-            name:                 node.name,
-            checked:              node.checked,
-            expanded:             node.expanded,
-            'mutually-exclusive': node['mutually-exclusive']
-          };
-
         // get diff
-        if (undefined !== node.id || Array.isArray(node.nodes)) {
-          // exclude id and name attribute, add only some attributes are chenged
-          diff = Object.keys(obj).reduce((acc, attr) => Object.assign(acc,
-            undefined !== onodes[i][attr] && obj[attr] !== onodes[i][attr]
-              ? { [attr]: obj[attr] }
-              : {}
-          ), {});
-        }
-
-        if (Object.keys(diff || {}).length  > 0) {
-          diff[id ? 'id' : 'name'] = id || name;
-        }
+        const diff = Object.keys(node).reduce((acc, attr) => Object.assign(acc,
+          undefined !== onodes[i][attr] && node[attr] !== onodes[i][attr]
+            ? { [attr]: node[attr] }
+            : {}
+        ), {});
 
         // handle recursion (group node)
         if (Array.isArray(node.nodes)) {
           diff.nodes = [];
           traverse(node.nodes, onodes[i].nodes, diff.nodes);
-          diff.nodes = diff.nodes.filter(n => Object.keys(n).length > 0 && (!n.nodes || n.node.length > 0));
-        }
-
-        if (Array.isArray(node.nodes) && 0 === diff.nodes.length) {
-          delete diff.nodes;
-        }
-
-        // set name of group
-        if (Array.isArray(node.nodes) && Object.keys(diff || {}).length > 0) {
-          diff.name = node.name;
+          diff.nodes = diff.nodes.filter(Boolean);
+          if (!diff.nodes.length) {
+            delete diff.nodes;
+          }
         }
 
         // only if has changes
-        if (diff && Object.keys(diff || {}).length  > 0) {
+        if (Object.keys(diff).length) {
+          diff[node.id ? 'id' : 'name'] = node.id || node.name;
           tree.push(diff);
         }
       });
-      return layerstrees;
+      return tree;
     };
 
-    // loop through child nodes and return structure layerstree diff only
-    layerstrees = traverse(
-      ApplicationState.project.getLayersStore().state.layerstree[0].nodes, //current state of layerstrees
-      ApplicationState.project.state.layerstree,                           //original project layerstree
-      layerstrees
-    );
+    const layers = project.state.layers.map(l => getCatalogLayerById(l.id).config.styles.some((s, i) => s.current !== l.styles[i].current) && ({
+      id: l.id,
+      styles: getCatalogLayerById(l.id).config.styles,
+    })).filter(Boolean);
 
-    //store changes of layers attribute (default style etc..)
-    const layers = [];
-    ApplicationState.project.state.layers.forEach(l => {
-      if (getCatalogLayerById(l.id).config.styles.reduce((acc, s, i) => acc || s.current !== l.styles[i].current, false)) {
-        layers.push({
-          id: l.id,
-          styles: getCatalogLayerById(l.id).config.styles,
-        })
-      }
-    })
-
-    const uparams = Array.from(url.searchParams.entries());
+    const layersstree = traverse(
+      project.getLayersStore().state.layerstree[0].nodes, // current state
+      project.state.layerstree,                           // original state
+    ).filter(Boolean);
 
     let response = await (await fetch('/api/embed/', {
       method:  'POST',
@@ -1061,12 +1021,12 @@ export default new (class GUI extends G3WObject {
         url,
         data: {
           ...data,
-          layers:         layers.length > 0 ? layers: undefined, //layers configuration
-          layerstree:     layerstrees.length > 0 ? layerstrees : undefined, //layerstree on TOC
-          initextent:      this.getService('map').getMapExtent(), //current map extent
-          lng:             ApplicationState.language, //current launguage
-          initbaselayer:   ApplicationState.baseLayerId || undefined,// current base layer
-          toc_tab_default: ['baselayers', 'layers', 'legend'].includes(this.getComponent('catalog').getInternalComponent().activeTab) ? this.getComponent('catalog').getInternalComponent().activeTab : undefined, // take in account change tab
+          initextent:      this.getService('map').getMapExtent(),            // current map extent
+          lng:             ApplicationState.language,                        // current launguage
+          initbaselayer:   ApplicationState.baseLayerId || undefined,        // current base layer
+          toc_tab_default: ['baselayers', 'layers', 'legend'].find(tab => tab === this.getComponent('catalog').getInternalComponent().activeTab), // take in account change tab
+          layers:          layers.length      ? layers      : undefined,     // layers configuration: store changes of layers attribute (default style etc..)
+          layerstree:      layersstree.length ? layersstree : undefined,     // layerstree on TOC: loop through child nodes and return structure layerstree diff only
         },
       }),
     })).json();
