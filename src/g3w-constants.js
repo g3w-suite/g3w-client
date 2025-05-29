@@ -182,17 +182,6 @@ export const SEARCH_ALLVALUE = '__G3W_ALL__';
 export const TIMEOUT = 60000;
 
 /**
- * @type {{resize: Object<string, { min: number }>}}
- * @since v3.5
- */
-export const VIEWPORT = {
-  resize: {
-    map:     { min: 200 },
-    content: { min: 200 },
-  }
-};
-
-/**
  * List of default Font Awesome classes for current project
  * 
  * @type {Object<string, string>}
@@ -423,6 +412,5 @@ export default {
   SEARCH_ALLVALUE,
   SPATIAL_METHODS,
   TIMEOUT,
-  VIEWPORT,
   PAGELENGTHS,
 };

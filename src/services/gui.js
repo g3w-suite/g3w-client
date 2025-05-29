@@ -1,4 +1,3 @@
-import { VIEWPORT }              from 'g3w-constants';
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
@@ -202,9 +201,6 @@ export default new (class GUI extends G3WObject {
   }
 
   ready() {
-    // SetSidebar width (used by components/Viewport.vue single file component)
-    ApplicationState.viewport.SIDEBARWIDTH = ApplicationState.sizes.sidebar.width;
-
     // resize della window
     $(window).resize(() => { requestAnimationFrame(() => { this._layout('resize'); }); });
 
@@ -712,13 +708,6 @@ export default new (class GUI extends G3WObject {
     return loading && new Promise((resolve) => setTimeout(resolve, 200))
   }
 
-  toggleFullViewContent() {
-    const state = ApplicationState.viewport;
-    const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
-    rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    this._layout();
-  }
-
   /**
    * @since 4.0.0 
    */
@@ -762,17 +751,12 @@ export default new (class GUI extends G3WObject {
     });
 
     if (opts.perc > 0)  {
-      // show secondary view
-      state.secondaryVisible = true;
-      state.split            = undefined !== opts.split ? opts.split : state.split;
-      state.secondaryPerc    = undefined !== opts.perc  ? opts.perc  : state.perc;
-      this._layout();
+      state.split = undefined !== opts.split ? opts.split : state.split;
+      this._layout(true);
     } else {
       // close secondary view
       await this.#clearContents();
-      state.secondaryPerc = 0;
-      state.secondaryVisible = false;
-      this._layout();
+      this._layout(false);
       await Vue.nextTick();
     }
 
@@ -828,8 +812,8 @@ export default new (class GUI extends G3WObject {
   // hide content
   hideContent(bool) {
     const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
-    ApplicationState.viewport.secondaryVisible = !bool;
-    this._layout('hide-content');
+    this._layout(!bool);
+    this.emit('hide-content');
     // return previous percentage
     return content_perc;
   }
@@ -842,20 +826,10 @@ export default new (class GUI extends G3WObject {
 
     // content is open → remove content
     if (open) {
-      const contents = this.getComponent('contents');
-      contents.setOpen(false);
-      this.#clearContents();
-    }
-
-    // close secondary view
-    if (open) {
+      this.getComponent('contents').setOpen(false);
       await this.#clearContents();
-      state.secondaryPerc = 0;
-    }
-
-    if (open) {
-      state.secondaryVisible = false;
-      this._layout('close-content');
+      this._layout(false);
+      this.emit('close-content');
       await Vue.nextTick();
     }
 
@@ -886,16 +860,12 @@ export default new (class GUI extends G3WObject {
 
     if (opts.perc > 0)  {
       // show secondary view
-      state.secondaryVisible = true;
       state.split            = undefined !== opts.split ? opts.split : state.split;
-      state.secondaryPerc    = undefined !== opts.perc  ? opts.perc  : state.perc;
-      this._layout();
+      this._layout(true);
     } else {
       // close secondary view
       await this.#clearContents();
-      state.secondaryPerc = 0;
-      state.secondaryVisible = false;
-      this._layout();
+      this._layout(false);
       await Vue.nextTick();
     }
 
@@ -917,8 +887,6 @@ export default new (class GUI extends G3WObject {
     Array
       .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
       .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-
-    ApplicationState.viewport.secondaryPerc    = data.options.perc;
 
     this._layout('pop-content');
 
@@ -947,7 +915,7 @@ export default new (class GUI extends G3WObject {
     ApplicationState.gui.sidebar.open = false;
   }
 
-  getSize ({ element, what }) {
+  getSize({ element, what }) {
     if (element && what) {
       return ApplicationState.sizes[element][what];
     }
@@ -1096,51 +1064,50 @@ export default new (class GUI extends G3WObject {
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
   _layout(event = null) {
+
+    // whether to show secondary (content)
+    if ('boolean' === typeof event) {
+      this._layout.secondary = event;
+    }
+    const sec =  this._layout.secondary;
+
     const state  = ApplicationState.viewport;
     const layout = ApplicationState.gui.layout;
 
-    const content = $('.content');
-    const toggler = $('.sidebar-aside-toggle');
-    const viewW   = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
-    const viewH   = $(document).innerHeight() - $('.navbar').innerHeight();
+    const contents = $('#contents')[0];
+    const viewW    = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+    const viewH    = $(document).innerHeight() - $('.navbar').innerHeight();
 
     const h_split = 'h' === state.split;
     const v_split = 'v' === state.split;
-    const is_full = layout[layout.__current].rightpanel[h_split ? 'width_100' : 'height_100'];
+    const panel   = layout[layout.__current].rightpanel;
+    const is_full = 'h' === state.split ? panel.width_100 : panel.height_100;
 
-    content?.css('padding-left', is_full
-      ? (toggler?.is(':visible') ? ((toggler?.outerWidth() ?? 5) - 5 + 10) : toggler?.css('padding-left'))
-      : (state.secondaryPerc === 100 ? toggler.outerWidth() + 5 : 15)
-    );
+    contents.parentElement.classList.toggle('full-size', is_full);
 
     // percentage of secondary view (content)
-    const scale = state.secondaryPerc !== 100 && !is_full
-      ? (layout[layout.__current].rightpanel[h_split ? 'width': 'height'] / 100)
-      : 1;
+    const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) / 100);
 
     // size "map"
     Object.assign(state.map.sizes, {
-      width:  h_split ? (viewW - (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0)) : (state.secondaryVisible && scale === 1 ? 0 : viewW),
-      height: v_split ? (viewH - (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0)) : viewH,
+      width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
+      height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
     });
 
     // size "content"
     Object.assign(state.content.sizes, {
-      width:  h_split ? (state.secondaryVisible ? Math.max((viewW * scale), VIEWPORT.resize.content.min) : 0) : viewW,
-      height: v_split ? (state.secondaryVisible ? Math.max((viewH * scale), VIEWPORT.resize.content.min) : 0) : viewH,
+      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
+      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
     });
 
     // resize "content" (after vue state is updated)
     Vue.nextTick(() => {
-      const reduce_w = (is_full && state.secondaryVisible && toggler?.is(':visible') && toggler?.outerWidth() || 5) - 5;
 
       // resize "map"
       this.getService('map').layout({
-        width:  state.map.sizes.width - reduce_w,
+        width:  state.map.sizes.width,
         height: state.map.sizes.height
       });
-
-      const contents = $('#contents')[0];
 
       contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
         - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
@@ -1154,9 +1121,10 @@ export default new (class GUI extends G3WObject {
       ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
         try {
           if ('function' == typeof d.content.layout) {
-            d.content.layout(state.content.sizes.width - reduce_w + 0.5, contents.style.height.replace('px',''));
+            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
           }
         } catch (e) {
+          console.warn(e);
           setTimeout(() => this._layout('resize'), 1000);
         }
       });

@@ -332,10 +332,9 @@
       >
 
         <div
-          v-show          = "showresize"
+          v-show          = "has_panel"
           id              = "resize-map-and-content"
-          @mousedown.stop = "resizeStart"
-          :style          = "{ cursor: 'v' === state.split ? 'ns-resize' : 'col-resize' }"
+          @mousedown.stop = "onResize"
           :class       = "`split-${state.split}`"
         ></div>
 
@@ -440,7 +439,6 @@
           >
             <component v-for = "tool in state.content.headertools" :is = "tool"/>
             <div
-              v-if   = "showresizeicon"
               style  = "
                 display: flex;
                 justify-content: space-between;
@@ -510,7 +508,6 @@
 import CookieLaw          from 'vue-cookie-law';
 import Teleport           from 'vue2-teleport';
 
-import { VIEWPORT }       from 'g3w-constants';
 import ApplicationState   from 'store/application';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
@@ -624,14 +621,9 @@ export default {
         .map(c => c.options.crumb);
     },
 
-    showresize() {
-      const layout = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
-      const currentPerc = layout[this.state.split === 'h' ? 'width' : 'height'];
-      return this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
-    },
-
-    showresizeicon() {
-      return 100 !== this.state.secondaryPerc;
+    has_panel() {
+      const panel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      return (panel.width_100 || panel.height_100) ? false : ('h' === this.state.split ? panel.width : panel.height) > 0;
     },
 
     usermessage() {
@@ -656,7 +648,7 @@ export default {
           width:         `${this.state.content.sizes.width}px`,
           height:        `${this.state.content.sizes.height}px`,
           zIndex:        1,
-          minHeight:     'v' === this.state.split ? `${VIEWPORT.resize.content.min}px` : null,
+          minHeight:     'v' === this.state.split ? '200px' : null,
           paddingTop:    '8px',
           paddingBottom: '8px',
         },
@@ -801,40 +793,51 @@ export default {
       GUI.closeUserMessage();
     },
 
-    wrapMoveFnc(e) {
-      this.moveFnc(e);
-    },
+    async onResize() {
+      const bar     = document.getElementById('resize-map-and-content');
+      const sidebar = document.getElementById('g3w-view-content');
+      let rect, dx, dy;
 
-    resizeStart() {
-      document.addEventListener('mousemove', this.wrapMoveFnc);
-      document.addEventListener('mouseup',   this.resizeStop, { once: true });
-    },
+      const mousemove = e => {
+        e.preventDefault();
+        rect = sidebar.getBoundingClientRect();
+        rect.width
+        dx   = e.pageX - rect.left - window.scrollX;
+        dy   = e.pageY - rect.top - window.scrollY;
+        Object.assign(bar.style, {
+          background: '#ccc',
+          right:  'h' === this.state.split ? -dx + 'px' : null,
+          bottom: 'v' === this.state.split ? -dy + 'px' : null,
+        });
+      };
 
-    async resizeStop() {
-      document.removeEventListener('mousemove', this.wrapMoveFnc);
-      await this.$nextTick();
-      GUI.emit('resize');
+      const mouseup = async e => {
+        document.removeEventListener('mousemove', mousemove);
+        Object.assign(bar.style, { background: null, right: null, bottom: null });
+        const panel  = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+        panel.width  = Math.max(
+          Math.round((200               / $('.content-wrapper').width())  * 100),
+          Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
+        );
+        panel.height = Math.max(
+          Math.round((200               / $('.content-wrapper').height()) * 100),
+          Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
+        );
+        GUI._layout('resize');
+      };
+
+      document.addEventListener('mousemove', mousemove);
+      document.addEventListener('mouseup', mouseup, { once: true });
     },
 
     resizeFull() {
-      GUI.toggleFullViewContent();
-      GUI.emit('resize');
-    },
-
-    moveFnc(e) {
-      e.preventDefault();
-      const size         = 'h' === this.state.split ? 'width' : 'height';
-      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('.navbar').height();
-      const viewPortSize = $(this.$el)[size]();
-      let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
-      const { content, map } = VIEWPORT.resize;
-      if (mapSize > viewPortSize - content.min) {
-        mapSize = viewPortSize -  content.min;
-      } else if ( mapSize < map.min) {
-        mapSize = map.min;
+      const state = ApplicationState.viewport;
+      const panel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      if ('h' === state.split) {
+        panel.width_100 = !panel.width_100;
+      } else {
+        panel.height_100 = !panel.height_100;
       }
-      ApplicationState.viewport.resized[this.state.split] = true;
-      ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === this.state.split ? 'width' : 'height'] = 100 - Math.round((mapSize / viewPortSize) * 100);
       GUI._layout('resize');
     },
 
