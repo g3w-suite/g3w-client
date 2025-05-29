@@ -73,7 +73,7 @@
             <input
               type       = "checkbox"
               id         = "attribute_table_select_all_rows"
-              :checked   = "state.selectAll"
+              :checked   = "state.selectAll && state.features.length > 0"
               class      = "magic-checkbox"
             />
             <label for = "attribute_table_select_all_rows" @click.capture.stop.prevent = "selectAllRows">&nbsp;</label>
@@ -226,9 +226,13 @@ export default {
   
   computed: {
 
-    /** @since 3.10.0 */
-    has_features() {
-      return !!this.state.features.length;
+    /**
+     * @returns { Boolean } In case of filter without pagination active
+     * 
+     * @since 4.0.0
+     */
+    show_on_active_filter() {
+      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
     },
 
     current_layout() {
@@ -240,12 +244,13 @@ export default {
   methods: {
 
     /**
-     * @since v3.11.0
      * @param layer
+     * 
+     * @since 3.11.0
      */
     toggleFilterToken(layer) {
-      //in the case of autofilter with pagination need to get features to set selection
-      if (layer.state.filter.active && !layer.selectionFids.has('__ALL__')) {
+      // get selection features in case of autofilter + pagination
+      if (layer.state.filter.active && !layer.state.selectionFids.has('__ALL__')) {
         this.state.selectAll = false;
       }
       layer.toggleFilterToken();
@@ -325,53 +330,77 @@ export default {
         this.map_bbox.cb  = null;
       }
     },
-    /**
-    * @since 3.10.0
-    */
-    checkSelectAll() {
+
+    async inverseSelection() {
+      // get all features
+      if (!this.getAll) {
+        await this.getFeatures()
+      }
+      this.state.features.forEach(f => f.selected = !f.selected);
+      this.layer.invertSelectionFids();
       this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
     },
 
-    async inverseSelection() {
-      //need to get all features
-      if (!this.getAll) { await this.getFeatures() }
-      this.state.features.forEach(f => f.selected = !f.selected);
-      this.layer.invertSelectionFids();
-      //set selectAll checkbox
-      this.checkSelectAll();
-    },
-
-    /**
-     * Called when a selected feature is checked
-     */
     async selectAllRows() {
 
-      // set inverse of selectAll
+      // inverse selection (all)
       this.state.selectAll = !this.state.selectAll;
 
-      const filter         = this.filter.length > 0;
+      // wait for DOM changes
+      await this.$nextTick();
 
-      if (!filter) {
-        if (!this.getAll) { await this.getFeatures() }
-        this.state.features.forEach(f => f.selected = this.state.selectAll)
-        await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
+      // check if has columns filter
+      const filter = this.filter.length > 0;
+
+      // get all features when any kind of filter is unset
+      if (!filter && this.state.selectAll && !this.getAll) {
+        await this.getFeatures(); 
       }
 
-      if (filter) {
-        // in case of select all true
-        if (this.state.selectAll) {
-          this.state
-            .features
-            .filter(f => this.filter.includes(f.id))
-            .forEach(f => {
-              f.selected = true;
-              this.layer.includeSelectionFid(f.id);
-            });
+      // no filter
+      if (!filter) {
+        this.state.features.forEach(f => f.selected = this.state.selectAll)                      // select each feature
+        await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids'](); // toggle selection (filter token)
+      }
 
-        } else {
-          this.state.features.forEach(f => f.selected = false);
-          this.layer.clearSelectionFids();
-        }
+      // column filter
+      if (filter && this.state.selectAll && this.state.allfeatures > this.state.featurescount) {
+        await this.layer.clearSelectionFids();                                                   // clear selection ids
+        this.state.selectAll = true;                                                             // force selectAll
+        this.state.features.splice(0);                                                           // reset features
+        await this.$nextTick();                                                                  // wait for DOM changes
+        (await this.getFeatures({ field: this.search.field }) || [])
+          .forEach(f => {
+            const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
+            f.selected = this.state.selectAll;
+            if (geometry) {
+              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+            }
+            this.layer.includeSelectionFid(f.id);
+            this.state.features.push({
+              id:         f.id,
+              selected:   f.selected,                                                            // whether filter token comes from a pagination
+              attributes: f.attributes || f.properties,
+              geometry
+          });
+        })
+      }
+
+      /** @FIXME add description */
+      if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
+        this.state
+          .features
+          .filter(f => this.filter.includes(f.id))
+          .forEach(f => {
+            f.selected = true;
+            this.layer.includeSelectionFid(f.id);
+          });
+      }
+
+      /** @FIXME add description */
+      if (filter && !this.state.selectAll) {
+        this.state.features.forEach(f => f.selected = false);
+        await this.layer.clearSelectionFids();
       }
 
       this.state.show_tools = this.state.features.some(f => f.selected);
@@ -446,16 +475,10 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
-      //invert selected of feature
-      feature.selected = !feature.selected;
-
-      this.state.selectAll = this.state.features.every(f => f.selected);
-
+      feature.selected      = !feature.selected;                                                // inverse selected feature
+      this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-
-      /** Show tools based on selected state */
-      this.state.show_tools = this.layer.getSelectionFids().size > 0;
-
+      this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
     },
 
     async resize() {
@@ -474,9 +497,10 @@ export default {
 
     async getFeatures(params) {
       try {
+        GUI.disableContent(true);
         GUI.setLoadingContent(true);
 
-        const data = await promisify(this.layer.getDataTable(params || {}));
+        const data     = await promisify(this.layer.getDataTable(params || {}));
         const is_valid = this.layer.isGeoLayer() && data.features;
 
         if (is_valid && !params) {
@@ -495,6 +519,7 @@ export default {
         return Promise.reject();
       } finally {
         GUI.setLoadingContent(false);
+        GUI.disableContent(false);
       }
     },
 
@@ -516,29 +541,32 @@ export default {
       columns   = [],
       search    = { value: null },
     } = {}) {
-
-      // reset features before a load
       GUI.setLoadingContent(true);
+      GUI.disableContent(true);
 
       this.layer.setAttributeTablePageLength(length);
 
-      // If no headers are set, exit
+      // no headers are set
       if (0 === this.state.headers.length) {
         return {
-          data: [],
-          recordsTotal: 0,
+          data:            [],
+          recordsTotal:    0,
           recordsFiltered: 0
         };
       }
 
+      // reset features
       this.state.features.splice(0);
+
+      await this.$nextTick();
+
 
       if (0 === order.length) {
         order.push({ column: 1, dir: 'asc', });
       }
 
       this.search = {
-        field:     columns.filter(c => c.search && c.search.value).map(c => `${c.name}|ilike|${c.search.value}|and`).join(',') || undefined,
+        field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|and' : ''}`).join(',') || undefined,
         page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
@@ -558,12 +586,23 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
-            if (this.layer.isGeoLayer() && f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            const has_geometry = this.layer.isGeoLayer() && f.geometry;
+            
+            if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+              f.selected = this.state.selectAll;
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+              if (f.selected) {
+                this.layer.includeSelectionFid(f.id)
+              };
             }
+
+            if (has_geometry && this.layer.getOlSelectionFeature(f.id)) {
+              f.selected = true;
+            }
+
             return {
               id:         f.id,
-              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id), //@since 3.11.0 in case of filter token from pagination
+              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id),
               attributes: f.attributes || f.properties,
               geometry:   this.layer.isGeoLayer() && f.geometry || undefined
             };
@@ -571,14 +610,13 @@ export default {
         );
 
         this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.state.features.every(f => f.selected);
+        this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
+
         return {
-          // DataTable pagination
-          data: this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
+          data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
           recordsFiltered: data.count,
           recordsTotal:    data.count,
-          filter:          this.state.features.map(f => f.id)
-
+          filter:          this.state.features.map(f => f.id),
         };
       } catch(e) {
         console.warn(e);
@@ -586,6 +624,7 @@ export default {
         return Promise.reject(e);
       } finally {
         GUI.setLoadingContent(false);
+        GUI.disableContent(false);
       }
     },
 
@@ -595,31 +634,13 @@ export default {
       this.state.selectAll  = false;
     },
 
-    /**
-     * @param { Object } opts
-     * @param { string } opts.type
-     * 
-     * @fires redraw when `opts.type` in_bbox filter (or not select all)
-     */
-    // async changeFilter({ type } = {}) {
-
-    //   if (false === (type === 'in_bbox' || !this.layer.getSelectionFids().has(SELECTION.ALL))) {
-    //     return;
-    //   }
-
-    //   // force redraw
-    //   /** @TODO use "table.ajax.reload()"" instead? */
-    //   const table = $(this.$refs.attribute_table).DataTable();
-    //   table.rows.add([]);     // substitute data
-    //   table.draw(false);      // redraw
-    //   table.columns.adjust(); // adjust column
-    // },
-
     onGUIContent(opts = {}) {
       this.has_map = (100 !== opts.perc);
     },
+
     /**
      * Reload data from server
+     * 
      * @since 3.10.0
      */
     filterChangeHandler() {
@@ -639,16 +660,16 @@ export default {
    */
   async created() {
 
-    // bind context on event listeners
+    this.currentFilter = null
+
     this.unSelectAll  = this.unSelectAll.bind(this);
-    // this.changeFilter = this.changeFilter.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
     GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.filterChangeHandler);
 
-    GUI.closeSideBar(); // close other sidebar components
+    GUI.closeSideBar();
 
     /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
     this.current_layout.rightpanel.height = 55;
@@ -659,11 +680,10 @@ export default {
         service:           { state: this.state },
         internalComponent: this,
       }),
-      // perc: undefined !== this.$options.perc ? this.$options.perc : 55,
       split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getTitle(),
-      text:  true, /**@since 3.11.0 */
+      text:  true,
     });
 
     if (this.isMobile()) {
@@ -672,7 +692,8 @@ export default {
   },
 
   async mounted() {
-    // disable any previous active map control
+  
+    // un-toggle map controls
     this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
     if (this.last_map_control) {
         this.last_map_control.control.toggle();
@@ -680,27 +701,28 @@ export default {
     this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
-    //resolve data from server
-    let pResolve;
-    //store columns index value search
-    let filterColumns = {};
-    //set data table
+
+    // resolve data from server
+    let resolve;
+    // store columns index value search
+    const filterColumns = {};
+
+    // set data table
     const table = $(this.$refs.attribute_table).DataTable({
       ajax: debounce(async (opts, cb) => {
+        GUI.disableContent(true);
         try {
-          // disable table content to avoid clicking on table during loading of new data
-          GUI.disableContent(true);
           const data = await this.getData(opts);
           cb(data);
           this.disableSelectAll = 0 === this.state.features.length;
-          if (pResolve) { pResolve(data.filter) }
+          if (resolve) {
+            resolve(data.filter);
+          }
           await this.$nextTick();
           table.columns.adjust();
         } catch(e) {
           console.warn(e);
         }
-        //enable table data content after get data
-        GUI.disableContent(false);
       }, 800),
       bSortCellsTop:  true,
       columns:        this.state.headers,
@@ -723,7 +745,9 @@ export default {
       table.one('draw', async() => {
         filterColumns[i]      = value;
         this.disableSelectAll = 0 === this.state.features.length;
-        this.filter           = Object.values(filterColumns).find(f => f) ? await (new Promise((resolve) => pResolve = resolve)) : [];
+        this.filter           = Object.values(filterColumns).find(f => f)
+          ? await (new Promise(res => resolve = res))
+          : [];
       })
       table.columns(i).search(value).draw();
     });
@@ -744,6 +768,7 @@ export default {
   },
 
   async beforeDestroy() {
+
     // restore any previous active map control
     if (this.last_map_control && !this.last_map_control.control.isToggled()) {
      this.last_map_control.control.toggle();
@@ -780,7 +805,6 @@ export default {
 </script>
 
 <style>
-
 #open_attribute_table {
   margin-top: 5px;
 }
@@ -828,9 +852,6 @@ export default {
     width: 100%;
     user-select: none;
   }
-  /* #layer_attribute_table > tbody > tr {
-    cursor: pointer;
-  } */
   #layer_attribute_table > tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
   }
