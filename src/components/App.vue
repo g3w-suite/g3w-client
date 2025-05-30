@@ -459,9 +459,18 @@
                 @click                    = "resizeFull"
               ></i>
             </div>
+            <i
+              :hidden="isMobile()"
+              style="margin-right: 1ch; cursor: pointer; scale:.9;"
+              :style = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              v-t-tooltip:bottom.create="'Dock to Bottom / Right'"
+              class="fa fa-external-link-alt"
+              @click ="splitContent"
+              ></i>
             <span
               v-if = "state.content.closable"
               @click = "closeContent"
+              v-t-tooltip:bottom.create="'close'"
               :class = "{'mobile': isMobile()}"
               class  = "action-button"
               style  = "display: flex; justify-content: center "
@@ -842,6 +851,15 @@ export default {
         panel.height_100 = !panel.height_100;
       }
       GUI._layout('resize');
+    },
+
+    /**
+     * @sine 4.0.0
+     */
+    splitContent() {
+      const split = GUI.getCurrentContent().options.split;
+      ApplicationState.viewport.split = GUI.getCurrentContent().options.split = 'v' === split ? 'h' : 'v';
+      GUI._layout('resize')
     },
 
     closePanel() {

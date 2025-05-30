@@ -753,8 +753,8 @@ export default {
     document.getElementById('g3w-table-toolbar').appendChild(fragment);
 
     // move "dataTables_info" and "dataTables_filter" before header action tools
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));  
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));  
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));
 
     // hide datatable rows → show only our custom "table_body"
     document.getElementById('table_body_attributes').remove();
