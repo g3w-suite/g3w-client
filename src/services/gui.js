@@ -1128,7 +1128,7 @@ export default new (class GUI extends G3WObject {
             d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
           }
         } catch (e) {
-          console.warn(e);
+          this.showUserMessage({ type: 'warning', message: e, autoclose: true });
           setTimeout(() => this._layout('resize'), 1000);
         }
       });
@@ -1138,6 +1138,7 @@ export default new (class GUI extends G3WObject {
       this.emit(event);
     }
 
+    window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
   }
 
   /**

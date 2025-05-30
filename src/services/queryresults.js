@@ -934,12 +934,10 @@ export default new (class QueryResultsService extends G3WObject {
           id:          'link_zoom_to_fid',
           class:       GUI.getFontClass('share-alt'),
           hint:        'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
-          hint_change: { hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change', duration: 1000 },
           cbk(layer, feature, action) {
             const url = new URL(location.href);
             url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
-            copyUrl(url.toString());
-            action.hint_changed = true;
+            GUI.getPermalink(url, {});
           }
         },
 

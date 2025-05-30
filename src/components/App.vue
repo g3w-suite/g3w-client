@@ -823,6 +823,9 @@ export default {
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
         );
+        if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
+          GUI.hideSidebar();
+        }
         GUI._layout('resize');
       };
 

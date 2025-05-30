@@ -669,16 +669,13 @@ export default {
 
     GUI.closeSideBar();
 
-    /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
-    this.current_layout.rightpanel.height = 55;
-
     GUI.showContent({
       content: new Component({
         id:                'openattributetable',
         service:           { state: this.state },
         internalComponent: this,
       }),
-      split: GUI.isMobile() ? 'h': 'v',
+      split: 'h',
       push: false,
       title: this.layer.getTitle(),
       text:  true,

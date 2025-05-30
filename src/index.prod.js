@@ -316,14 +316,14 @@ $.ajaxSetup({
     console.warn(e);
   }
 
-  // Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
-  initConfig.layout.rightpanel = Object.assign(
-    (initConfig.layout.rightpanel || {}),
+  const panel = JSON.parse(window.localStorage.getItem('SIDEBAR') || null) || initConfig.layout.rightpanel || {};
+  initConfig.layout.rightpanel = Object.assign({},
+    panel,
     {
-      width:          initConfig.layout.rightpanel.width  || 50, // ie. width == 50%
-      height:         initConfig.layout.rightpanel.height || 50, // ie. height == 50%
-      width_100:      false,
-      height_100:     false,
+      width:      panel.width  || 50, // ie. width == 50%
+      height:     panel.height || 50, // ie. height == 50%
+      width_100:  false,
+      height_100: false,
     }
   );
 

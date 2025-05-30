@@ -46,7 +46,7 @@ export class FormComponent extends Component {
 
   addFormComponents(c = []) { this.getService().addComponents(c); }
   addFormComponent(c)       { c && this.getService().addComponent(c); }
-  layout()                  { this.getInternalComponent().reloadLayout(); }
+  layout()                  { this.getInternalComponent()?.reloadLayout?.(); }
 
   /** @TODO check if superflous */
   mount(parent, append)     { return super.mount(parent, append).then(() => { GUI.setModal(true); }); }
