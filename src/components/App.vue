@@ -460,23 +460,20 @@
               ></i>
             </div>
             <i
-              :hidden="isMobile()"
               style="margin-right: 1ch; cursor: pointer; scale:.9;"
               :style = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              v-t-tooltip:bottom.create="'Dock to Bottom / Right'"
-              class="fa fa-external-link-alt"
+              v-t-tooltip:bottom.create="`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
+              class="action-button skin-color-dark fa fa-external-link-alt"
               @click ="splitContent"
-              ></i>
-            <span
+            ></i>
+            <i
               v-if = "state.content.closable"
               @click = "closeContent"
               v-t-tooltip:bottom.create="'close'"
               :class = "{'mobile': isMobile()}"
-              class  = "action-button"
+              class  = "action-button skin-color-dark fas fa-times"
               style  = "display: flex; justify-content: center "
-            >
-            <i class = "skin-color-dark" :class = "$fa('close')"></i>
-          </span>
+            ></i>
           </div>
         </div>
         <bar-loader :loading = "state.content.loading"/>
@@ -856,10 +853,11 @@ export default {
     /**
      * @sine 4.0.0
      */
-    splitContent() {
+    splitContent(e) {
       const split = GUI.getCurrentContent().options.split;
       ApplicationState.viewport.split = GUI.getCurrentContent().options.split = 'v' === split ? 'h' : 'v';
-      GUI._layout('resize')
+      e.target.setAttribute('data-original-title', `Dock ${'h' === split ? 'right' : 'bottom'}`);
+      GUI._layout('resize');
     },
 
     closePanel() {
