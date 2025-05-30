@@ -522,6 +522,7 @@ import GUI                from 'services/gui';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { promisify }      from 'utils/promisify';
 import { sameOrigin }     from 'utils/sameOrigin';
+import { debounce }       from 'utils/debounce';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
@@ -805,7 +806,7 @@ export default {
       const panel   = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
       let rect, dx, dy;
 
-      const mousemove = async e => {
+      const mousemove = debounce(e => {
         e.preventDefault();
         rect = sidebar.getBoundingClientRect();
         rect.width
@@ -826,7 +827,9 @@ export default {
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
         ), 90);
-      };
+        Object.assign(bar.style, { background: null, right: null, bottom: null });
+        GUI._layout('resize');
+      });
 
       const mouseup = async e => {
         document.removeEventListener('mousemove', mousemove);
