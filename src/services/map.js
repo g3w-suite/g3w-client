@@ -1198,6 +1198,11 @@ class MapService extends G3WObject {
       y:   parseFloat(search.get('y')),
     };
 
+    // remove some params from URL
+    const url = new URL(window.location);
+    ['zoom_to_fid', 'ztf'].forEach(s => url.searchParams.delete(s));
+    window.history.replaceState(null, null, url);
+
     if (this.viewer) {
       this.viewer.destroy();
     }
