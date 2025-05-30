@@ -819,14 +819,14 @@ export default {
           bottom: 'v' === this.state.split ? -dy + 'px' : null,
         });
 
-        panel.width  = Math.max(
+        panel.width  = Math.min(Math.max(
           Math.round((200               / $('.content-wrapper').width())  * 100),
           Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
-        );
-        panel.height = Math.max(
+        ), 90);
+        panel.height = Math.min(Math.max(
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
-        );
+        ), 90);
         Object.assign(bar.style, { background: null, right: null, bottom: null });
         GUI._layout('resize');
       });
