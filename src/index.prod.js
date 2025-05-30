@@ -291,11 +291,11 @@ $.ajaxSetup({
         ApplicationState.language,
         'translation',
         (await import(`${initConfig.urls.clienturl}locales/${ApplicationState.language}.js`)).default,
-        true,
+        false,
         true
       );
     } catch (e) {
-      GUI.showUserMessage({ type: 'warning', message: e, autoclose: true });
+      GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
     }
 
     //set form control class to filter
