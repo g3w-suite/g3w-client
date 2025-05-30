@@ -46,7 +46,7 @@ export class AnnotationControl extends InteractionControl {
       },
       text:          '',
       show_text:     false,
-      /** show info feature (cordinates, lenght, area, etc.) */
+      /** show info feature (cordinates, length, area, etc.) */
       show_info:     false,
     };
 
@@ -408,7 +408,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPES ACTIONS -->
                 <div style = "display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.import'"   :hidden = "feature"></button>
+                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.import'"   :hidden = "feature || type"></button>
                   <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.export'"   :hidden = "!features.length || (type && !feature)"></button>
                   <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.remove'"   :hidden = "!features.length || (type && !feature)"></button>
                   <section class = "annotations-close-back" style = "display: flex; gap: 5px; margin-left: auto;">
@@ -652,7 +652,7 @@ export class AnnotationControl extends InteractionControl {
       Object.assign(this._annotation, {
         constraints: {
           circle:    { radius: 0, unit: 1 },
-          line:      { lenght: 0, unit: 1 },
+          line:      { length: 0, unit: 1 },
           rectangle: { width:  0, wunit: 1, height: 0, hunit: 1 }
         },
         style: {
@@ -1000,7 +1000,7 @@ export class AnnotationControl extends InteractionControl {
   }
 
   /**
-   * Handle/Fix lenght segments (LineString or Polygon)
+   * Handle/Fix length segments (LineString or Polygon)
    */
   #updateLength(coords, length) {
     if (areCoordinatesEqual(coords[0], coords[1])) {
