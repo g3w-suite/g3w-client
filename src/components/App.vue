@@ -804,18 +804,14 @@ export default {
       const panel   = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
       let rect, dx, dy;
 
-      const mousemove = debounce(e => {
+      this.state.content.disabled = true;
+
+      const mousemove = e => {
         e.preventDefault();
         rect = sidebar.getBoundingClientRect();
         rect.width
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
-
-        Object.assign(bar.style, {
-          background: '#ccc',
-          right:  'h' === this.state.split ? -dx + 'px' : null,
-          bottom: 'v' === this.state.split ? -dy + 'px' : null,
-        });
 
         panel.width  = Math.min(Math.max(
           Math.round((200               / $('.content-wrapper').width())  * 100),
@@ -825,17 +821,16 @@ export default {
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
         ), 90);
-
-        Object.assign(bar.style, { background: null, right: null, bottom: null });
-
         GUI._layout('resize');
-      });
+      };
 
       const mouseup = async e => {
         document.removeEventListener('mousemove', mousemove);
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
         }
+        this.state.content.disabled = false;
+        GUI._layout('resize');
       };
 
       document.addEventListener('mousemove', mousemove);

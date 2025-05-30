@@ -1116,39 +1116,42 @@ export default new (class GUI extends G3WObject {
       height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
     });
 
-    // size "map"
-    Object.assign(state.map.sizes, {
-      width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
-      height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
-    });
+    if (!state.content.disabled) {
 
-    // resize "content" (after vue state is updated)
-    Vue.nextTick().then(() => {
-
-      // resize "map"
-      this.getService('map').layout({
-        width:  state.map.sizes.width,
-        height: state.map.sizes.height
+      // size "map"
+      Object.assign(state.map.sizes, {
+        width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
+        height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
       });
 
-      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-        try {
-          if ('function' == typeof d.content.layout) {
-            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+      // resize "content" (after vue state is updated)
+      Vue.nextTick().then(() => {
+
+        // resize "map"
+        this.getService('map').layout({
+          width:  state.map.sizes.width,
+          height: state.map.sizes.height
+        });
+
+        ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+          try {
+            if ('function' == typeof d.content.layout) {
+              d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+            }
+          } catch (e) {
+            this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+            setTimeout(() => this._layout('resize'), 1000);
           }
-        } catch (e) {
-          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-          setTimeout(() => this._layout('resize'), 1000);
-        }
+        });
+
       });
+      
+      if (event) {
+        this.emit(event);
+      }
 
-    });
-    
-    if (event) {
-      this.emit(event);
+      window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
     }
-
-    window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
   }
 
   /**
