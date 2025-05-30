@@ -270,26 +270,32 @@ $.ajaxSetup({
  */
 (async () => { try {
 
-  // lazy load i18n file
-  const en = (await import(`${initConfig.urls.clienturl}locales/en.js`)).default;
-  const _lang = (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default;
-
+  // lazy load i18n translations
   i18next
     .init({
         lng:         initConfig.user.i18n,
         ns:          'app',
         fallbackLng: 'en',
-        resources:    { en, [initConfig.user.i18n]: _lang }
+        resources:    {
+          en:                     (await import(`${initConfig.urls.clienturl}locales/en.js`)).default,
+          [initConfig.user.i18n]: (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default
+        }
     });
 
   addI18n(ApplicationState.i18n.plugins);
 
   (new Vue).$watch(() => ApplicationState.language, async () => {
 
-    // lazy load i18n file
+    // lazy load i18n translations
     try {
-      const _lang = (await import(`${initConfig.urls.clienturl}locales/${ApplicationState.language}.js`)).default;
-      i18next.addResourceBundle(ApplicationState.language, 'translation', _lang, true, true);
+      const _lang = ;
+      i18next.addResourceBundle(
+        ApplicationState.language,
+        'translation',
+        (await import(`${initConfig.urls.clienturl}locales/${ApplicationState.language}.js`)).default,
+        true,
+        true
+      );
     } catch (e) {
       GUI.showUserMessage({ type: 'warning', message: e, autoclose: true });
     }
