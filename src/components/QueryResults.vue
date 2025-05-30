@@ -1067,7 +1067,7 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool && !this.state.query.pagination?.paginate?.at(0)) {
+        if (bool && !this.state.query.pagination?.paginate?.at(0) && !this.state.layers[0].filter.active) {
           GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }

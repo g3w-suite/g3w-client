@@ -1201,7 +1201,7 @@ textarea.form-control                     { height: auto; }
 .select2-container--default .select2-results__option[aria-selected=true]                          { background-color: #ddd; }
 .select2-container--default .select2-results__option[aria-selected=true],
 .select2-container--default .select2-results__option[aria-selected=true]:hover                    { color: #444; }
-.select2-container--default .select2-selection--multiple                                          { border-radius: 0; }
+.select2-container--default .select2-selection--multiple                                          { border-radius: 0; color: black }
 .select2-container--default .select2-selection--multiple .select2-container--default:focus        { border-color: var(--skin-primary); }
 .select2-container--default.select2-container--focus .select2-selection--multiple                 { border-color: #d2d6de; }
 .select2-container--default .select2-selection--multiple .select2-selection__choice               { background-color: var(--skin-primary); border-color: hsl(from var(--skin-primary) h s calc(l - 5)); padding: 1px 10px; color: #fff; }
