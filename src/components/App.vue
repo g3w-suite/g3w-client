@@ -827,13 +827,14 @@ export default {
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
         ), 90);
+
         Object.assign(bar.style, { background: null, right: null, bottom: null });
+
         GUI._layout('resize');
       });
 
       const mouseup = async e => {
         document.removeEventListener('mousemove', mousemove);
-
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
         }
