@@ -223,7 +223,7 @@ export default new (class GUI extends G3WObject {
       if (contents.children[0]) {                                            // workaround for qplotly?
         contents.children[0].style.height = contents.style.height;
       }
-      contents.parentElement.style.padding = contents.children[0] ? '0 15px' : null;
+      contents.parentElement.style.padding = contents.children[0] ? '15px' : null;
       requestAnimationFrame(sidebarFix);
     };
     requestAnimationFrame(sidebarFix);
@@ -1101,7 +1101,8 @@ export default new (class GUI extends G3WObject {
     const h_split = 'h' === opts.split;
     const v_split = 'v' === opts.split;
 
-    content_wrapper.style.flexDirection = v_split? 'column' : 'row';
+    content_wrapper.style.flexDirection  = h_split ? 'row' : 'column';
+    content_wrapper.style.justifyContent = 'space-between';
 
     const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
 
@@ -1113,45 +1114,42 @@ export default new (class GUI extends G3WObject {
     // size "content"
     Object.assign(state.content.sizes, {
       width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
-      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
+      height: (v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH) + $('.navbar').innerHeight(),
     });
 
-    if (!state.content.disabled) {
+    // size "map"
+    Object.assign(state.map.sizes, {
+      width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
+      height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
+    });
 
-      // size "map"
-      Object.assign(state.map.sizes, {
-        width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
-        height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
+    // resize "content" (after vue state is updated)
+    Vue.nextTick().then(() => {
+
+      // resize "map"
+      this.getService('map').layout({
+        width:  state.map.sizes.width,
+        height: state.map.sizes.height
       });
 
-      // resize "content" (after vue state is updated)
-      Vue.nextTick().then(() => {
-
-        // resize "map"
-        this.getService('map').layout({
-          width:  state.map.sizes.width,
-          height: state.map.sizes.height
-        });
-
-        ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-          try {
-            if ('function' == typeof d.content.layout) {
-              d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
-            }
-          } catch (e) {
-            this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-            setTimeout(() => this._layout('resize'), 1000);
+      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+        try {
+          if ('function' == typeof d.content.layout) {
+            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
           }
-        });
-
+        } catch (e) {
+          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+          setTimeout(() => this._layout('resize'), 1000);
+        }
       });
-      
-      if (event) {
-        this.emit(event);
-      }
 
-      window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
+    });
+    
+    if (event) {
+      this.emit(event);
     }
+
+    window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
   }
 
   /**

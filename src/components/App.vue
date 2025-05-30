@@ -652,10 +652,6 @@ export default {
         content: {
           width:         `${this.state.content.sizes.width}px`,
           height:        `${this.state.content.sizes.height}px`,
-          zIndex:        1,
-          minHeight:     'v' === this.state.split ? '200px' : null,
-          paddingTop:    '8px',
-          paddingBottom: '8px',
         },
       }
     },
@@ -799,7 +795,6 @@ export default {
     },
 
     async onResize(e) {
-      const bar     = e.target;
       const sidebar = document.getElementById('g3w-view-content');
       const panel   = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
       let rect, dx, dy;
@@ -809,7 +804,7 @@ export default {
       const mousemove = e => {
         e.preventDefault();
         rect = sidebar.getBoundingClientRect();
-        rect.width
+
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
 
@@ -817,11 +812,26 @@ export default {
           Math.round((200               / $('.content-wrapper').width())  * 100),
           Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
         ), 90);
+
         panel.height = Math.min(Math.max(
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
         ), 90);
-        GUI._layout('resize');
+
+        const viewW = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+        const viewH = $(document).innerHeight() - $('.navbar').innerHeight();
+
+        const h_split = 'h' === this.state.split;
+        const v_split = 'v' === this.state.split;
+        
+        // percentage of secondary view (content)
+        const scale = (h_split ? panel.width : panel.height) /100;
+
+        // size "content"
+        Object.assign(this.state.content.sizes, {
+          width:  (h_split ?  (viewW * scale) : viewW),
+          height: (v_split ? (viewH * scale) : viewH) + $('.navbar').innerHeight(),
+        });
       };
 
       const mouseup = async e => {
