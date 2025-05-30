@@ -16,7 +16,6 @@ import {
 }                                  from 'g3w-constants';
 
 // core
-import translations                from 'locales';
 import ApplicationState            from 'store/application';
 import G3WObject                   from 'g3w-object';
 import Panel                       from 'g3w-panel';
@@ -258,41 +257,10 @@ ApplicationState.language = initConfig.user.i18n || 'en';
 // setup i18n
 (initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
 
-i18next
-  .init({
-      lng:         initConfig.user.i18n,
-      ns:          'app',
-      fallbackLng: 'en',
-      resources:    translations
-  });
-
-addI18n(ApplicationState.i18n.plugins);
-
 // set Accept-Language request header based on config language
 $.ajaxSetup({
   beforeSend: xhr => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
 });
-
-(new Vue).$watch(() => ApplicationState.language, () => {
-  //set form control class to filter
-  $.extend($.fn.dataTableExt.oStdClasses, {
-    "sFilterInput": "form-control search"
-  });
-  $.extend(true, $.fn.dataTable.defaults, {
-    "language": {
-      "sSearch": '',
-      "searchPlaceholder": t("dosearch"),
-      "sLengthMenu": t("dataTable.lengthMenu"),
-      "paginate": {
-        "previous": '«',
-        "next": '»',
-      },
-      "info": t("dataTable.info"),
-      "zeroRecords": t("dataTable.nodatafilterd"),
-      "infoFiltered": ''
-    }
-  });
-}, { immediate: true});
 
 /**
  * Application starting point
@@ -301,6 +269,50 @@ $.ajaxSetup({
  * and the applicationService instance that is useful to work with project API
  */
 (async () => { try {
+
+  // lazy load i18n file
+  const en = (await import(`${initConfig.urls.clienturl}locales/en.js`)).default;
+  const _lang = (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default;
+
+  i18next
+    .init({
+        lng:         initConfig.user.i18n,
+        ns:          'app',
+        fallbackLng: 'en',
+        resources:    { en, [initConfig.user.i18n]: _lang }
+    });
+
+  addI18n(ApplicationState.i18n.plugins);
+
+  (new Vue).$watch(() => ApplicationState.language, async () => {
+
+    // lazy load i18n file
+    try {
+      const _lang = (await import(`${initConfig.urls.clienturl}locales/${ApplicationState.language}.js`)).default;
+      i18next.addResourceBundle(ApplicationState.language, 'translation', _lang, true, true);
+    } catch (e) {
+      GUI.showUserMessage({ type: 'warning', message: e, autoclose: true });
+    }
+
+    //set form control class to filter
+    $.extend($.fn.dataTableExt.oStdClasses, {
+      "sFilterInput": "form-control search"
+    });
+    $.extend(true, $.fn.dataTable.defaults, {
+      "language": {
+        "sSearch": '',
+        "searchPlaceholder": t("dosearch"),
+        "sLengthMenu": t("dataTable.lengthMenu"),
+        "paginate": {
+          "previous": '«',
+          "next": '»',
+        },
+        "info": t("dataTable.info"),
+        "zeroRecords": t("dataTable.nodatafilterd"),
+        "infoFiltered": ''
+      }
+    });
+  }, { immediate: true});
 
   /** @since 3.8.0 */
   try {

@@ -358,6 +358,15 @@ gulp.task('geocoding-providers', function () {
 });
 
 /**
+ * Deploy geocoding providers (src/assets/locales)
+ */
+gulp.task('locales', function () {
+  return gulp.src(`./src/assets/locales/*`)
+    .pipe(flatten())
+    .pipe(gulp.dest(`${outputFolder}/static/client/locales/`));
+});
+
+/**
  * Symlink client plugins (admin, client, docker)
  */
 gulp.task('clone:plugins', function(done) {
@@ -449,7 +458,7 @@ gulp.task('build:plugins', async function() {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? gulp.series('build:app', gulp.parallel('fonts', 'cursors', 'images'))(done)
+   ? gulp.series('build:app', gulp.parallel('fonts', 'cursors', 'images', 'locales'))(done)
    : done();
 });
 
