@@ -435,7 +435,7 @@
           </div>
           <div
             class = "g3-content-header-action-tools"
-            style = "display: flex; align-items: center"
+            style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
           >
             <component v-for = "tool in state.content.headertools" :is = "tool"/>
             <div
@@ -448,7 +448,6 @@
                 margin-left: auto;
                 cursor: pointer;
               "
-              :style = "{ marginRight: state.content.closable ? '5px': '0px' }"
             >
               <i
                 v-if                      = "undefined !== state.split"
@@ -460,7 +459,7 @@
               ></i>
             </div>
             <i
-              style="margin-right: 1ch; cursor: pointer; scale:.9;"
+              style="cursor: pointer; scale:.9;"
               :style = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
               v-t-tooltip:bottom.create="`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
               class="action-button skin-color-dark fa fa-external-link-alt"
@@ -472,7 +471,6 @@
               v-t-tooltip:bottom.create="'close'"
               :class = "{'mobile': isMobile()}"
               class  = "action-button skin-color-dark fas fa-times"
-              style  = "display: flex; justify-content: center "
             ></i>
           </div>
         </div>
