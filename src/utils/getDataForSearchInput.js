@@ -3,7 +3,7 @@ import { SEARCH_ALLVALUE }      from 'g3w-constants';
 /**
  * @returns { Array } of unique values from field
  */
-export async function getDataForSearchInput({ state, field, suggest }) {
+export async function getDataForSearchInput({ state, field, filter, suggest }) {
 
   try {
     // get unique value from each layers
@@ -12,7 +12,7 @@ export async function getDataForSearchInput({ state, field, suggest }) {
         suggest,
         fformatter: field,
         ordering:   field,
-        field: getDataForSearchInput.field({
+        field:      filter || getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
           field:  suggest ? field : (state.forminputs.find(i => field === i.attribute) || {}).dependance || field,
@@ -39,15 +39,15 @@ export async function getDataForSearchInput({ state, field, suggest }) {
 getDataForSearchInput.field = ({ state, field, fields = [] } = {}) => {
   field        = state.forminputs.find(i => i.attribute === field);            // current input
   const parent = state.forminputs.find(i => i.attribute === field.dependance); // current input dependance (parent field)
-
   // get all values (un-filtered)
-  if (!parent || SEARCH_ALLVALUE === parent.value) {
+  if (!parent || [].concat(parent.value).find(v => v === SEARCH_ALLVALUE)) {
     return (fields || []).join() || undefined;
   }
 
   // filter by parent field
   if (undefined !== parent.value) {
-    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${encodeURI(parent.value)}` + (fields.length ? `|${parent.logicop}` : ''));
+    //Take in account in operator (array values)
+    fields.unshift(`${parent.attribute}|${parent.operator.toLowerCase()}|${'in' === parent.operator ? `(${[].concat(parent.value).map(v => encodeURIComponent(v)).join(',')})` : `${encodeURIComponent(parent.value)}`}` + (fields.length ? `|${parent.logicop}` : ''));
   }
 
   // recursion step

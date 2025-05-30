@@ -1642,10 +1642,13 @@ class Layer extends G3WObject {
    * Clear selection
    */
   async clearSelectionFids() {
+    //clear all selection fids from set
     this.state.selectionFids.clear();
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
+      //set false selection
       Object.values(this.state.ol_selection).forEach(feat => feat.selected = false);
+      //update selection
       this.#updateOlSelection();
     }
     // set selection false
@@ -1991,10 +1994,7 @@ class Layer extends G3WObject {
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
-      const response = field                                                                    // check `field` parameter
-        ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
-        : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
-
+      const response =  await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}); // since g3w-admin@v3.7
       // vector layer
       if ('table' !== provider._layer.getType()) {
         provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;

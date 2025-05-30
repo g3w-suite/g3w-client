@@ -41,7 +41,7 @@ export const FILTER_OPERATORS = {
   eq:       '=',
   gt:       '>',
   lt:       '<',
-  IN:       'IN',
+  in:        'IN',
   LIKE:     'LIKE',
   ILIKE:    'ILIKE',
   AND:      'AND',

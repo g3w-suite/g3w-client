@@ -1346,9 +1346,10 @@ class MapService extends G3WObject {
         layer:  e.element,
         zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
       });
-      if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
-      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.setZIndex(zindex + 1); }
-      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
+      //In case of add wms on bottom position, check current zindex of default layers that need to set on top of map layers
+      if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.getZIndex()      < zindex && this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
+      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.getZIndex() < zindex && this.defaultsLayers.highlightLayer.setZIndex(zindex + 1); }
+      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
     });
 
     this.viewer.map.getLayers().on('remove', e => {
