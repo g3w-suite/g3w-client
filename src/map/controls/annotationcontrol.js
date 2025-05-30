@@ -144,7 +144,7 @@ export class AnnotationControl extends InteractionControl {
                 <div style = "display: flex; justify-content: space-between; flex-flow: wrap; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee;">
                   <input
                     v-for                     = "shape in ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text']"
-                    v-t-tooltip:bottom.create = "shape"
+                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.types.' + shape"
                     type                      = "radio"
                     :value                    = "shape"
                     v-model                   = "type"
@@ -163,7 +163,7 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
                 <!-- SHAPES SAVED -->
-                <div v-if   = "!feature && !type && features.length > 0">
+                <div v-if = "!feature && !type && features.length > 0">
                   <button 
                     v-for  = "feat in features"
                     :key   = "feat.getId()" 
@@ -183,7 +183,7 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment length (line)” -->
                 <div v-if = "'LineString' === type && !feature" style="display: flex; align-items: end;">
                   <label style="margin: 0; width: 100%">
-                    Length
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -202,7 +202,7 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment length (polygon)” -->
                 <div v-if = "'Polygon' === type && !feature" style="display: flex; align-items: end;">
                   <label style="margin: 0; width: 100%">
-                    Length
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -221,7 +221,7 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment width (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
                   <label style="margin: 0; width: 100%">
-                    W Length
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.w_length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -240,7 +240,7 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment height (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
                   <label style="margin: 0; width: 100%">
-                    H Length
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.h_length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -259,7 +259,7 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Circle radius” -->
                 <div v-if = "'Circle' === type && !feature" style="display: flex; align-items: end;">
                   <label style="margin: 0; width: 100%">
-                    Radius
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.radius'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -286,7 +286,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE LABEL (rotation) -->
                 <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
-                  Rotation
+                  <span v-t = "'sdk.mapcontrols.annotation.inputs.rotation'"></span>
                   <input 
                     type    = "range" 
                     name    = "rotation" 
@@ -298,7 +298,7 @@ export class AnnotationControl extends InteractionControl {
                 </label>
 
                 <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
-                  Font Size
+                  <span v-t = "'sdk.mapcontrols.annotation.inputs.font_size'"></span>
                   <input 
                     type    = "range" 
                     name    = "fontsize" 
@@ -338,7 +338,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE RADIUS (point) -->
                 <div v-if = "feature && 'Point' === feature.get('type')">
-                  <label for = "radius">Radius</label>
+                  <label for = "radius" v-t = "'sdk.mapcontrols.annotation.inputs.radius'"></label>
                   <input 
                     type    = "range" 
                     name    = "radius" 
@@ -351,7 +351,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE STROKE WIDTH -->
                 <div v-if = "feature && ['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.get('type'))">
-                  <label for = "stroke">Stroke</label>
+                  <label for = "stroke" v-t = "'sdk.mapcontrols.annotation.inputs.stroke'"></label>
                   <input 
                     type    = "range" 
                     name    = "stroke" 
@@ -363,17 +363,17 @@ export class AnnotationControl extends InteractionControl {
                 </div>
                 <!-- LINE DIRECTION (line) -->
                 <div v-if = "feature && 'LineString' === feature.get('type')">
-                  <label>Direction</label>
+                  <label v-t = "'sdk.mapcontrols.annotation.inputs.direction'"></label>
                   <select class = "form-control" style = "margin-bottom: 5px;" v-model = "style.direction">
                     <option :value = "null">---</option>
-                    <option value  = "forward">Forward</option>
-                    <option value  = "backward">Backward</option>  
+                    <option value  = "forward" v-t = "'sdk.mapcontrols.annotation.inputs.f_direction'"></option>
+                    <option value  = "backward" v-t = "'sdk.mapcontrols.annotation.inputs.b_direction'"></option>  
                   </select>   
                 </div>
 
                 <!-- SHAPE OPACITY -->
                 <div v-if = "feature && ['Polygon', 'Rectangle' , 'Circle'].includes(feature.get('type'))">
-                  <label for = "opacity">Opacity</label>
+                  <label for = "opacity" v-t = "'sdk.mapcontrols.annotation.inputs.opacity'"></label>
                   <input 
                     type    = "range" 
                     name    = "opacity" 
@@ -392,7 +392,8 @@ export class AnnotationControl extends InteractionControl {
                       type    = "checkbox"
                       v-model = "show_text"
                       style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
-                    /> Show Text
+                    />
+                    <span v-t = "'sdk.mapcontrols.annotation.checkbox.show_text'" ></span>
                   </label>
                   <label :hidden = "'Text' === feature.get('type')">
                     <input 
@@ -400,17 +401,18 @@ export class AnnotationControl extends InteractionControl {
                       type    = "checkbox" 
                       v-model = "show_info"
                       style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
-                    /> Info
+                    />
+                    <span v-t = "'sdk.mapcontrols.annotation.checkbox.show_info'" ></span>
                   </label>
                 </div>
 
                 <!-- SHAPES ACTIONS -->
                 <div style = "display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Import'"   :hidden = "feature"></button>
-                  <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Export'"   :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'Remove'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.import'"   :hidden = "feature"></button>
+                  <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.export'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.remove'"   :hidden = "!features.length || (type && !feature)"></button>
                   <section class = "annotations-close-back" style = "display: flex; gap: 5px; margin-left: auto;">
-                    <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'Show all'" :hidden = "!type && !feature"></button>
+                    <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_all'" :hidden = "!type && !feature"></button>
                     <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    ></button>
                   </section>  
                 </div>
@@ -506,7 +508,7 @@ export class AnnotationControl extends InteractionControl {
                * Hange add remove annotation feature for modify purpose
                * @param {Feature} f 
                */
-              feature: f => {
+              feature: f => {               
                 //In case of feature and no select features (no added to selected)
                 if (f && 0 === this._interactions.select.getFeatures().getArray().length) {
                   this._interactions.select.getFeatures().push(f);
@@ -650,7 +652,7 @@ export class AnnotationControl extends InteractionControl {
       Object.assign(this._annotation, {
         constraints: {
           circle:    { radius: 0, unit: 1 },
-          line:      { length: 0, unit: 1 },
+          line:      { lenght: 0, unit: 1 },
           rectangle: { width:  0, wunit: 1, height: 0, hunit: 1 }
         },
         style: {
