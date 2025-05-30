@@ -223,6 +223,7 @@ export default new (class GUI extends G3WObject {
       if (contents.children[0]) {                                            // workaround for qplotly?
         contents.children[0].style.height = contents.style.height;
       }
+      contents.parentElement.style.padding = contents.children[0] ? '0 15px' : null;
       requestAnimationFrame(sidebarFix);
     };
     requestAnimationFrame(sidebarFix);
@@ -1075,7 +1076,7 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  async _layout(event = null) {
+  _layout(event = null) {
 
     // whether to show secondary (content)
     if ('boolean' === typeof event) {
@@ -1087,7 +1088,6 @@ export default new (class GUI extends G3WObject {
     const layout = ApplicationState.gui.layout;
 
     const contents        = document.querySelector('#contents');
-    const content         = document.querySelector('.content');
     const content_wrapper = document.querySelector('.content-wrapper');
     const viewW           = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
     const viewH           = $(document).innerHeight() - $('.navbar').innerHeight();
@@ -1105,18 +1105,16 @@ export default new (class GUI extends G3WObject {
 
     const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
 
-    contents.parentElement.classList.toggle('full-size', is_full);
-
     // percentage of secondary view (content)
     const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
+
+    contents.parentElement.classList.toggle('full-size', is_full);
+
     // size "content"
     Object.assign(state.content.sizes, {
       width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
       height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
     });
-
-    content.style.padding = (state.content.sizes.width > 0 && state.content.sizes.height > 0) ?  '0 10px' : '0';
-    contents.style.padding = (state.content.sizes.width > 0 && state.content.sizes.height > 0) ?  '0 15px' : '0';
 
     // size "map"
     Object.assign(state.map.sizes, {
@@ -1125,22 +1123,25 @@ export default new (class GUI extends G3WObject {
     });
 
     // resize "content" (after vue state is updated)
-    await Vue.nextTick();
-    // resize "map"
-    this.getService('map').layout({
-      width:  state.map.sizes.width,
-      height: state.map.sizes.height
-    });
+    Vue.nextTick().then(() => {
 
-    ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-      try {
-        if ('function' == typeof d.content.layout) {
-          d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+      // resize "map"
+      this.getService('map').layout({
+        width:  state.map.sizes.width,
+        height: state.map.sizes.height
+      });
+
+      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+        try {
+          if ('function' == typeof d.content.layout) {
+            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+          }
+        } catch (e) {
+          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+          setTimeout(() => this._layout('resize'), 1000);
         }
-      } catch (e) {
-        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-        setTimeout(() => this._layout('resize'), 1000);
-      }
+      });
+
     });
     
     if (event) {
