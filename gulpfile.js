@@ -358,7 +358,7 @@ gulp.task('geocoding-providers', function () {
 });
 
 /**
- * Deploy geocoding providers (src/assets/locales)
+ * Deploy i18n folder (src/assets/locales)
  */
 gulp.task('locales', function () {
   return gulp.src(`./src/assets/locales/*`)
