@@ -821,14 +821,14 @@ export default {
         document.removeEventListener('mousemove', mousemove);
         Object.assign(bar.style, { background: null, right: null, bottom: null });
         const panel  = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
-        panel.width  = Math.max(
+        panel.width  = Math.min(Math.max(
           Math.round((200               / $('.content-wrapper').width())  * 100),
           Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
-        );
-        panel.height = Math.max(
+        ), 90);
+        panel.height = Math.min(Math.max(
           Math.round((200               / $('.content-wrapper').height()) * 100),
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
-        );
+        ), 90);
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
         }
