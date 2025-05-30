@@ -11,7 +11,6 @@ import './g3w-globals';
 // constants
 import {
   FONT_AWESOME_ICONS,
-  LOCAL_ITEM_IDS,
   TIMEOUT,
 }                                  from 'g3w-constants';
 
@@ -390,18 +389,6 @@ $.ajaxSetup({
   if (ApplicationState.iframe) {
     IframePluginService.init({ project })
   }
-
-  // init local items
-  Object.keys(LOCAL_ITEM_IDS).forEach(id => {
-    try {
-      const item = window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
-      if (undefined === item) {
-        window.localStorage.setItem(id, JSON.stringify(LOCAL_ITEM_IDS[id].value));
-      }
-    } catch(e) {
-      console.warn(e);
-    }
-  });
 
   if (isMobile.any || (window.initConfig.layout || {}).iframe) {
     $('body').addClass('sidebar-collapse');
