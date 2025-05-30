@@ -214,6 +214,19 @@ export default new (class GUI extends G3WObject {
     url.searchParams.delete('permalink_code');
     window.history.replaceState(null, null, url);
 
+    const sidebarFix = () => {
+      const contents = $('#contents')[0];
+      contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
+        - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (contents.parentElement.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - 10 + 'px';
+      if (contents.children[0]) {                                            // workaround for qplotly?
+        contents.children[0].style.height = contents.style.height;
+      }
+      requestAnimationFrame(sidebarFix);
+    };
+    requestAnimationFrame(sidebarFix);
+
     this.emit('ready');
     this.isready = true;
   }
@@ -711,7 +724,7 @@ export default new (class GUI extends G3WObject {
   /**
    * @since 4.0.0 
    */
-  async setContent(options = {}) {
+  async setContent(opts = {}) {
     this.emit('opencontent', true);
 
     // close user message before set content
@@ -719,24 +732,22 @@ export default new (class GUI extends G3WObject {
       this.closeUserMessage();
     }
 
-    options.content     = options.content || null;
-    options.title       = options.title || "";
-    options.push        = (true === options.push || false === options.push) ? options.push : false;
-    options.perc        = isMobile.any ? 100 : options.perc;
-    options.split       = options.split || 'h';
-    options.backonclose = (true === options.backonclose || false === options.backonclose) ? options.backonclose : false;
-    options.showtitle   = (true === options.showtitle || false === options.showtitle) ? options.showtitle : true;
+    const state    = ApplicationState.viewport;
+    const panel    = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
 
-    const opts = options;
+    Object.assign(opts, {
+      content:     opts.content || null,
+      title:       opts.title || "",
+      push:        !!opts.push,
+      split:       opts.split || 'h',
+      perc:        opts.perc ?? (isMobile.any ? 100 : ('h' === state.split ? panel.width: panel.height)),
+      backonclose: !!opts.backonclose,
+      showtitle:   opts.showtitle ?? true,
+    });
 
-    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
-    opts.perc = opts.perc !== undefined ? opts.perc : content_perc;
-
-    // check if push is set
-    opts.push = opts.push || false;
-    const event = opts.perc === 100 ? 'show-content-full' : 'show-content';
-
-    const state = ApplicationState.viewport;
+    const is_full  = 100 === opts.perc;
+    const contents = this.getComponent('contents');
+    const content  = opts.content;
 
     // set all content parameters
     Object.assign(state.content, {
@@ -744,32 +755,24 @@ export default new (class GUI extends G3WObject {
       split:        undefined === opts.split       ? null : opts.split,
       closable:     undefined === opts.closable    || opts.closable,
       backonclose:  undefined === opts.backonclose || opts.backonclose,
-      style:        undefined === opts.style ? {} : opts.style,
+      style:        undefined === opts.style       ? {} : opts.style,
       headertools:  undefined === opts.headertools ? [] : opts.headertools,
       showgoback:   undefined === opts.showgoback  || opts.showgoback,
       contentsdata: ApplicationState.contentsdata,
     });
 
-    if (opts.perc > 0)  {
-      state.split = undefined !== opts.split ? opts.split : state.split;
-      this._layout(true);
-    } else {
-      // close secondary view
-      await this.#clearContents();
-      this._layout(false);
-      await Vue.nextTick();
-    }
+    state.split = opts.split;
 
-    const contents = this.getComponent('contents');
+    if (!opts.perc || !opts.push)  {
+      await this.#clearContents();
+    }
+   
+    Object.assign(opts, {
+      parent: contents.internalComponent.$el,
+      append: true
+    });
     
-    // whether to clean the stack every time, sure to have just one component.
-    if (!opts.push) {
-      await this.#clearContents();
-    }
-
-    const content = opts.content;
-    const _options = Object.assign(opts, { parent: contents.internalComponent.$el, append: true });
-    contents.parent = _options.parent;
+    contents.parent = opts.parent;
 
     // check the type of content:
 
@@ -777,12 +780,12 @@ export default new (class GUI extends G3WObject {
     if (content instanceof jQuery || 'string' === typeof content) {
       let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
       $(contents.parent).append(el);
-      ApplicationState.contentsdata.push({ content: el, options: _options });
+      ApplicationState.contentsdata.push({ content: el, options: opts });
       console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', ApplicationState.contentsdata.at(-1));
     }
 
     // Vue element
-    else if (content.mount && 'function' === typeof content.mount) {
+    else if ('function' === typeof content?.mount) {
       // Check a duplicate element by component id (if already exist)
       let id = ApplicationState.contentsdata.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
       if (-1 !== id) {
@@ -790,14 +793,14 @@ export default new (class GUI extends G3WObject {
         ApplicationState.contentsdata.splice(id, 1);
       }
       // Mount vue component
-      await promisify(content.mount(contents.parent, _options.append || false));
-      ApplicationState.contentsdata.push({ content, options: _options });
+      await promisify(content.mount(contents.parent, opts.append || false));
+      ApplicationState.contentsdata.push({ content, options: opts });
     }
 
     // DOM element
     else {
       contents.parent.appendChild(content);
-      ApplicationState.contentsdata.push({ content, options: _options });
+      ApplicationState.contentsdata.push({ content, options: opts });
     }
 
     Array
@@ -806,7 +809,11 @@ export default new (class GUI extends G3WObject {
 
     contents.setOpen(true);
 
-    this._layout(event);
+    this._layout(true);
+
+    await Vue.nextTick();
+
+    this._layout(is_full ? 'show-content-full' : 'show-content');
   }
 
   // hide content
@@ -858,16 +865,16 @@ export default new (class GUI extends G3WObject {
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
     });
 
-    if (opts.perc > 0)  {
-      // show secondary view
-      state.split            = undefined !== opts.split ? opts.split : state.split;
-      this._layout(true);
-    } else {
-      // close secondary view
+    state.split = opts.split ?? state.split;
+
+    if (!opts.perc)  {
       await this.#clearContents();
       this._layout(false);
-      await Vue.nextTick();
+    } else {
+      this._layout(true);
     }
+
+    await Vue.nextTick();
 
     if (ApplicationState.contentsdata.length <= 0) {
       return;
@@ -1077,16 +1084,22 @@ export default new (class GUI extends G3WObject {
     const contents = $('#contents')[0];
     const viewW    = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
     const viewH    = $(document).innerHeight() - $('.navbar').innerHeight();
+    const panel    = layout[layout.__current].rightpanel;
 
-    const h_split = 'h' === state.split;
-    const v_split = 'v' === state.split;
-    const panel   = layout[layout.__current].rightpanel;
-    const is_full = 'h' === state.split ? panel.width_100 : panel.height_100;
+    const opts = {
+      split: state.split,
+      ...(ApplicationState.contentsdata.at(-1)?.options || {}),
+    };
+
+    const h_split = 'h' === opts.split;
+    const v_split = 'v' === opts.split;
+
+    const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
     // percentage of secondary view (content)
-    const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) / 100);
+    const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     // size "map"
     Object.assign(state.map.sizes, {
@@ -1108,15 +1121,6 @@ export default new (class GUI extends G3WObject {
         width:  state.map.sizes.width,
         height: state.map.sizes.height
       });
-
-      contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
-        - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (contents.parentElement.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - 10 + 'px';
-
-      if (contents.children[0]) {                                            // workaround for qplotly?
-        contents.children[0].style.height = contents.style.height;
-      }
 
       ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
         try {
