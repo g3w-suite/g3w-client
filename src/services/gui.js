@@ -1081,10 +1081,12 @@ export default new (class GUI extends G3WObject {
     const state  = ApplicationState.viewport;
     const layout = ApplicationState.gui.layout;
 
-    const contents = $('#contents')[0];
-    const viewW    = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
-    const viewH    = $(document).innerHeight() - $('.navbar').innerHeight();
-    const panel    = layout[layout.__current].rightpanel;
+    const contents        = document.querySelector('#contents');
+    const content         = document.querySelector('.content');
+    const content_wrapper = document.querySelector('.content-wrapper');
+    const viewW           = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+    const viewH           = $(document).innerHeight() - $('.navbar').innerHeight();
+    const panel           = layout[layout.__current].rightpanel;
 
     const opts = {
       split: state.split,
@@ -1094,23 +1096,27 @@ export default new (class GUI extends G3WObject {
     const h_split = 'h' === opts.split;
     const v_split = 'v' === opts.split;
 
+    content_wrapper.style.flexDirection = v_split? 'column' : 'row';
+
     const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
     // percentage of secondary view (content)
     const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
+    // size "content"
+    Object.assign(state.content.sizes, {
+      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
+      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
+    });
+
+    content.style.padding = (state.content.sizes.width > 0 && state.content.sizes.height > 0) ?  '0 10px' : '0';
+    contents.style.padding = (state.content.sizes.width > 0 && state.content.sizes.height > 0) ?  '0 15px' : '0';
 
     // size "map"
     Object.assign(state.map.sizes, {
       width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
       height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
-    });
-
-    // size "content"
-    Object.assign(state.content.sizes, {
-      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
-      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
     });
 
     // resize "content" (after vue state is updated)

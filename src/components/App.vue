@@ -827,7 +827,7 @@ export default {
           Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
         );
         Object.assign(bar.style, { background: null, right: null, bottom: null });
-        await GUI._layout('resize');
+        GUI._layout('resize');
       };
 
       const mouseup = async e => {
