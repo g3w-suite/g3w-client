@@ -288,7 +288,6 @@ $.ajaxSetup({
 
     // lazy load i18n translations
     try {
-      const _lang = ;
       i18next.addResourceBundle(
         ApplicationState.language,
         'translation',
