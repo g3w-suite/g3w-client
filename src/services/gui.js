@@ -1070,7 +1070,7 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  _layout(event = null) {
+  async _layout(event = null) {
 
     // whether to show secondary (content)
     if ('boolean' === typeof event) {
@@ -1114,26 +1114,24 @@ export default new (class GUI extends G3WObject {
     });
 
     // resize "content" (after vue state is updated)
-    Vue.nextTick(() => {
-
-      // resize "map"
-      this.getService('map').layout({
-        width:  state.map.sizes.width,
-        height: state.map.sizes.height
-      });
-
-      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-        try {
-          if ('function' == typeof d.content.layout) {
-            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
-          }
-        } catch (e) {
-          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-          setTimeout(() => this._layout('resize'), 1000);
-        }
-      });
+    await Vue.nextTick();
+    // resize "map"
+    this.getService('map').layout({
+      width:  state.map.sizes.width,
+      height: state.map.sizes.height
     });
 
+    ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+      try {
+        if ('function' == typeof d.content.layout) {
+          d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+        }
+      } catch (e) {
+        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+        setTimeout(() => this._layout('resize'), 1000);
+      }
+    });
+    
     if (event) {
       this.emit(event);
     }

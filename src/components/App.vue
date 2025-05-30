@@ -799,40 +799,43 @@ export default {
       GUI.closeUserMessage();
     },
 
-    async onResize() {
-      const bar     = document.getElementById('resize-map-and-content');
+    async onResize(e) {
+      const bar     = e.target;
       const sidebar = document.getElementById('g3w-view-content');
+      const panel   = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
       let rect, dx, dy;
 
-      const mousemove = e => {
+      const mousemove = async e => {
         e.preventDefault();
         rect = sidebar.getBoundingClientRect();
         rect.width
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
+
         Object.assign(bar.style, {
           background: '#ccc',
           right:  'h' === this.state.split ? -dx + 'px' : null,
           bottom: 'v' === this.state.split ? -dy + 'px' : null,
         });
+
+        panel.width  = Math.max(
+          Math.round((200               / $('.content-wrapper').width())  * 100),
+          Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
+        );
+        panel.height = Math.max(
+          Math.round((200               / $('.content-wrapper').height()) * 100),
+          Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
+        );
+        Object.assign(bar.style, { background: null, right: null, bottom: null });
+        await GUI._layout('resize');
       };
 
       const mouseup = async e => {
         document.removeEventListener('mousemove', mousemove);
-        Object.assign(bar.style, { background: null, right: null, bottom: null });
-        const panel  = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
-        panel.width  = Math.min(Math.max(
-          Math.round((200               / $('.content-wrapper').width())  * 100),
-          Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
-        ), 90);
-        panel.height = Math.min(Math.max(
-          Math.round((200               / $('.content-wrapper').height()) * 100),
-          Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
-        ), 90);
+
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
         }
-        GUI._layout('resize');
       };
 
       document.addEventListener('mousemove', mousemove);
