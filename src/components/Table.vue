@@ -870,6 +870,6 @@ export default {
     opacity: 0.25;
   }  
   #open_attribute_table #layer_attribute_table_length {
-    padding-top: .755em;
+    padding-top: 5px;
   }
 </style>

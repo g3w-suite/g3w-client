@@ -217,7 +217,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
  **************************************************************************************/
 
 .wrapper         { height: 100%; width: 100%; overflow: hidden; }
-.content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); min-height: 100%; background-color: #ecf0f5; position: relative; overflow: hidden; }
+.content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); background-color: #ecf0f5; position: relative; overflow: hidden; }
 
 /* When opening the sidebar on small screens */
 @media (max-width: 767px) {
