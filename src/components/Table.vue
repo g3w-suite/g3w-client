@@ -675,7 +675,7 @@ export default {
         service:           { state: this.state },
         internalComponent: this,
       }),
-      split: 'h',
+      split: GUI.isMobile() ? 'h': 'v',
       push: false,
       title: this.layer.getTitle(),
       text:  true,
