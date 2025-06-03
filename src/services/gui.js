@@ -1114,7 +1114,7 @@ export default new (class GUI extends G3WObject {
     // size "content"
     Object.assign(state.content.sizes, {
       width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
-      height: (v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH) + $('.navbar').innerHeight(),
+      height: (v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH),
     });
 
     // size "map"
