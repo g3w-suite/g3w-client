@@ -50,13 +50,15 @@ export class AnnotationControl extends InteractionControl {
       show_info:     false,
     };
 
-    this._interaction = null;
+    this._interaction         = null;
 
-    this._measureTooltip = null;
+    this._measureTooltip      = null;
 
-    this._interactions = {};
+    this._interactions        = {};
 
-    this._upload       = false; //import features from upload json file
+    this._upload              = false; //import features from upload json file
+    //get current annotations save on local browser storage
+    const storage_annotations = JSON.parse(localStorage.getItem('annotations'))?.[ApplicationState.project.state.id];
 
     // load saved annotations from: URL search params, local storage, or server config
     const features = (new ol.format.GeoJSON({
@@ -66,7 +68,7 @@ export class AnnotationControl extends InteractionControl {
       type: "FeatureCollection",
       features: [
         ...(ApplicationState.project.state.annotations?.features                        || []),
-        ...(JSON.parse(localStorage.getItem('annotations') || null)?.features           || []),
+        ...((storage_annotations || null)?.features           || []),
         ...(opts?.annotations?.features                                                 || [])
       ]
     });
@@ -86,10 +88,13 @@ export class AnnotationControl extends InteractionControl {
 
     // update local storage
     this._annotation.layer.on('change', () => {
-      localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
-        this._annotation.layer.getSource().getFeatures(),
-        { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
-      )));
+      localStorage.setItem('annotations',  JSON.stringify(Object.assign(storage_annotations ?? {},
+        { [ApplicationState.project.state.id] : (new ol.format.GeoJSON()).writeFeaturesObject(
+            this._annotation.layer.getSource().getFeatures(),
+          { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
+          )
+        })
+      ));
     });
     
     this._interactions.select = new ol.interaction.Select({
