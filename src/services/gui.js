@@ -1071,11 +1071,6 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-    /**
-   * load components of viewport after right size setting
-   * 
-   * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
-   */
   _layout(event = null) {
 
     // whether to show secondary (content)

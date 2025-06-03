@@ -830,7 +830,7 @@ export default {
         // size "content"
         Object.assign(this.state.content.sizes, {
           width:  (h_split ?  (viewW * scale) : viewW),
-          height: (v_split ? (viewH * scale) : viewH) + $('.navbar').innerHeight(),
+          height: (v_split ? (viewH * scale) : viewH),
         });
       };
 
