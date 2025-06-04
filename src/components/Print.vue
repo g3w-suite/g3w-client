@@ -494,7 +494,7 @@ export default {
           const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
           const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
           const url       = store.getWmsUrl();
-          const params    = layers.length && new URLSearchParams(await GUI.getPrintParams({
+          const params    = layers.length && new URLSearchParams(GUI.getPrintParams({
             SERVICE:       'WMS',
             VERSION:       '1.3.0',
             REQUEST:       'GetPrint',

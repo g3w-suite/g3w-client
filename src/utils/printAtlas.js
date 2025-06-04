@@ -45,7 +45,7 @@ export async function printAtlas(opts = {}, method = 'GET') {
   return FETCH[method]({
     url:       store.getWmsUrl(),
     mime_type: 'application/pdf',
-    params:    await GUI.getPrintParams({
+    params:    GUI.getPrintParams({
       SERVICE:     'WMS',
       VERSION:     '1.3.0',
       REQUEST:     'GetPrintAtlas',
