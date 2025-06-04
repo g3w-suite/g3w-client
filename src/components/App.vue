@@ -819,7 +819,7 @@ export default {
         ), 90);
 
         const viewW = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
-        const viewH = $(document).innerHeight() - $('.navbar').innerHeight();
+        const viewH = $(window).height() - $(".navbar").height();
 
         const h_split = 'h' === this.state.split;
         const v_split = 'v' === this.state.split;
@@ -956,15 +956,6 @@ export default {
     await this.$nextTick();
 
     $('#startingspinner').remove();
-
-    // Fixes the layout height in case min-height fails.
-    const resize = function() {
-      $(".main-sidebar")    .css('height', $(window).height() - $(".navbar").height());
-      $('.g3w-sidebarpanel').css('height', $(window).height() - $(".navbar").height());
-    };
-
-    resize();
-    $(window, ".wrapper").resize(resize);
 
     this.iframe = ApplicationState.iframe;
 

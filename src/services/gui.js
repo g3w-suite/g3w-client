@@ -224,6 +224,12 @@ export default new (class GUI extends G3WObject {
         contents.children[0].style.height = contents.style.height;
       }
       contents.parentElement.style.padding = contents.children[0] ? '15px' : null;
+
+      const viewH = $(window).height() - $(".navbar").height();
+      $(".content-wrapper") .css('height', viewH);
+      $(".main-sidebar")    .css('height', viewH);
+      $('.g3w-sidebarpanel').css('height', viewH);
+
       requestAnimationFrame(sidebarFix);
     };
     requestAnimationFrame(sidebarFix);
@@ -1085,7 +1091,7 @@ export default new (class GUI extends G3WObject {
     const contents        = document.querySelector('#contents');
     const content_wrapper = document.querySelector('.content-wrapper');
     const viewW           = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
-    const viewH           = $(document).innerHeight() - $('.navbar').innerHeight();
+    const viewH           = $(window).height() - $(".navbar").height();
     const panel           = layout[layout.__current].rightpanel;
 
     const opts = {
@@ -1109,13 +1115,13 @@ export default new (class GUI extends G3WObject {
     // size "content"
     Object.assign(state.content.sizes, {
       width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
-      height: (v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH),
+      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
     });
 
     // size "map"
     Object.assign(state.map.sizes, {
-      width:  h_split ? (viewW - (sec ? Math.max((viewW * scale), 200) : 0)) : (sec && scale === 1 ? 0 : viewW),
-      height: v_split ? (viewH - (sec ? Math.max((viewH * scale), 200) : 0)) : viewH,
+      width:  viewW - (h_split ? state.content.sizes.width : 0),
+      height: viewH - (v_split ? state.content.sizes.height : 0),
     });
 
     // resize "content" (after vue state is updated)

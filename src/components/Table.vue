@@ -785,7 +785,7 @@ export default {
       });
     }
 
-    GUI.un('resize', this.this.resizeKey);
+    GUI.un('resize', this.resizeKey);
 
     document.querySelector('#g3w-view-content .dataTables_info').remove();
     document.querySelector('#g3w-view-content .dataTables_filter').remove();
