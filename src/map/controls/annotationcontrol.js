@@ -611,41 +611,44 @@ export class AnnotationControl extends InteractionControl {
       const features = this._annotation.layer.getSource().getFeatures();
       //@TODO convert based on https://github.com/g3w-suite/g3w-admin/pull/1112
       if (features.length > 0) {
-        params.ANNOTATIONS = JSON.stringify(
-          new ol.format.GeoJSON().writeFeatures(
-            this.#convertTo4326(features)
-            .map(f => {
-              //get style
-              const { color, width, radius, opacity, rotation, fontsize, direction } = f.get('style');
-              let label = '';
-              switch(f.get('type')) {
-                case 'Text':
-                  label = f.get('text');
-                  f.set('style', { rotation, fontsize });
-                  break;
-                case 'Point':
-                  label = `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`;
-                  f.set('style', { color, radius, fontsize });
-                  break;
-                case 'LineString':
-                  label = `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`;
-                  f.set('style', { color, width, fontsize, direction });
-                  break;
-                case 'Polygon':
-                case 'Rectangle':
-                  label = `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`;
-                  f.set('style', { color, width, fontsize, opacity });
-                  break;
-                case 'Circle':
-                  break;      
-              }
-              //remove text- Unused on print
-              f.unset('text');
-              //add label
-              f.set('label', label);
-              return f;
-            })
-          )
+        params.ANNOTATIONS = new ol.format.GeoJSON().writeFeatures(
+          this.#convertTo4326(features)
+          .map(f => {
+            //get style
+            const { color, width, radius, opacity, rotation, fontsize, direction } = f.get('style');
+            switch(f.get('type')) {
+              case 'Text':
+                f.set('label', f.get('text'));
+                f.set('style', { rotation, fontsize });
+                break;
+              case 'Point':
+                f.set('label', `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`);
+                f.set('style', { color, radius, fontsize });
+                break;
+              case 'LineString':
+                f.set('label', `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+                f.set('style', { color, width, fontsize, direction });
+                break;
+              case 'Polygon':
+              case 'Rectangle':
+                f.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+                f.set('style', { color, width, fontsize, opacity });
+                break;
+              case 'Circle':
+                f.set('label_center', `${f.get('show_text') && f.get('text') || ''}`);
+                f.set('label_radius', `${f.get('show_info')
+                  ? `${f.getGeometry().getRadius() > 100 
+                    ? (Math.round((f.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
+                    : (Math.round(f.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
+                  : ''
+                }`);
+                f.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
+                break;      
+            }
+            //remove text- Unused on print
+            f.unset('text');
+            return f;
+          })
         );
       }
     });
