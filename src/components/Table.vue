@@ -152,7 +152,6 @@ import ApplicationState            from 'store/application';
 import Field                       from 'components/FieldG3W.vue';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
-import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
@@ -183,8 +182,6 @@ function _createFeatureForSelection(f) {
 export default {
 
   name: "G3WTable",
-
-  mixins: [resizeMixin],
 
   components: {
     Field
@@ -647,16 +644,14 @@ export default {
 
   },
 
-  beforeCreate() {
-    this.delayType = 'debounce';
-  },
-
   /**
    * TableService Class
    * 
    * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
    */
   async created() {
+
+    this.resizeKey = GUI.on('resize', this.resize);
 
     this.currentFilter = null
 
@@ -693,7 +688,6 @@ export default {
     if (this.last_map_control) {
         this.last_map_control.control.toggle();
     }
-    this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
 
@@ -718,6 +712,7 @@ export default {
         } catch(e) {
           console.warn(e);
         }
+        this.resize()
       }, 800),
       bSortCellsTop:  true,
       columns:        this.state.headers,
@@ -736,6 +731,7 @@ export default {
     });
 
     this.changeColumn = debounce(async (e, i) => {
+      const table = $(this.$refs.attribute_table)
       const value = e.target.value.trim();
       table.one('draw', async() => {
         filterColumns[i]      = value;
@@ -789,7 +785,7 @@ export default {
       });
     }
 
-    GUI.un('setContent', this.setContentKey);
+    GUI.un('resize', this.this.resizeKey);
 
     document.querySelector('#g3w-view-content .dataTables_info').remove();
     document.querySelector('#g3w-view-content .dataTables_filter').remove();
