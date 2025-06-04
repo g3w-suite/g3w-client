@@ -729,11 +729,44 @@ export class AnnotationControl extends InteractionControl {
     if ('EPSG:4326' === epsg) {
       return features;
     }
+    return features.map(f => {
+      const _f = f.clone();
+      //In case of Circle need to conver center and endCoordinates
+      if ('Circle' === f.get('type')) {
+        _f.set('center', ol.proj.transform(_f.get('center'), epsg, 'EPSG:4326')) ;
+        _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), epsg, 'EPSG:4326'));
+      }
+      // In case of not Circle, transform geometry coordinates
+      if ('Circle' !== f.get('type')) {
+        _f.getGeometry().setCoordinates(ol.proj.transform(f.getGeometry().getCoordinates(), epsg, 'EPSG:4326'));
+      }
+      return _f;
+    })
+  }
+
+  /**
+   * Covert features from EPSG:4326 to Map projections 
+   * @param {*} features 
+   * @returns 
+   */
+  #convertFrom4326(features = []) {
+    const epsg = GUI.getService('map').getEpsg();
+    //in case of project map in 4326, retur features without transformation
+    if ('EPSG:4326' === epsg) {
+      return features;
+    }
 
     return features.map(f => {
       const _f = f.clone();
-      _f.getGeometry().setCoordinates(ol.proj.transform(f.getGeometry().getCoordinates(), epsg, 'EPSG:4326'));
-      //@TODO radius of Circle need to convert it
+      //In case of Circle need to conver center and endCoordinates
+      if ('Circle' === f.get('type')) {
+        _f.set('center', ol.proj.transform(_f.get('center'), 'EPSG:4326', epsg )) ;
+        _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), 'EPSG:4326', epsg ));
+      }
+      // In case of not Circle, transform geometry coordinates
+      if ('Circle' !== f.get('type')) {
+        _f.getGeometry().setCoordinates(ol.proj.transform(f.getGeometry().getCoordinates(), 'EPSG:4326',epsg));
+      }
       return _f;
     })
   }
@@ -1275,10 +1308,10 @@ export class AnnotationControl extends InteractionControl {
           //set upload true
           this._upload = true;
           
-          this._annotation.layer.getSource().addFeatures((new ol.format.GeoJSON({
+          this._annotation.layer.getSource().addFeatures(this.#convertFrom4326((new ol.format.GeoJSON({
             dataProjection:    'EPSG:4326',
             featureProjection: GUI.getService('map').getEpsg()
-          })).readFeatures(JSON.parse(preview.textContent)));
+          })).readFeatures(JSON.parse(preview.textContent))));
           
           //set upload false
           this._upload = false;
