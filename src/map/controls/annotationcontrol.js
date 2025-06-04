@@ -91,8 +91,9 @@ export class AnnotationControl extends InteractionControl {
       localStorage.setItem('annotations',  JSON.stringify(Object.assign(storage_annotations ?? {},
         { [ApplicationState.project.state.id] : (new ol.format.GeoJSON()).writeFeaturesObject(
             this._annotation.layer.getSource().getFeatures(),
-          { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
-          )
+            { 
+              dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()
+            })
         })
       ));
     });
@@ -466,13 +467,13 @@ export class AnnotationControl extends InteractionControl {
               upload(){
                 CONTROL.showUploadModal();
               },
-              download() {
+              download: () => {
                 ApplicationState.download = true;
                 saveBlob(new Blob([new TextEncoder().encode(
                   JSON.stringify(
                     (new ol.format.GeoJSON()).writeFeaturesObject(
-                      this.feature ? [this.feature] : this.layer.getSource().getFeatures(),
-                      { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()}
+                      this.#convertTo4326(this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures()),
+                      { featureProjection: 'EPSG:4326' }
                     ),
                     null,
                     2
@@ -715,6 +716,26 @@ export class AnnotationControl extends InteractionControl {
       this._interaction.setActive(true);
       this.getMap().addInteraction(this._interaction);
     }
+  }
+
+  /**
+   * Covert features from Map projections to EPSG:4326
+   * @param {*} features 
+   * @returns 
+   */
+  #convertTo4326(features = []) {
+    const epsg = GUI.getService('map').getEpsg();
+    //in case of project map in 4326, retur features without transformation
+    if ('EPSG:4326' === epsg) {
+      return features;
+    }
+
+    return features.map(f => {
+      const _f = f.clone();
+      _f.getGeometry().setCoordinates(ol.proj.transform(f.getGeometry().getCoordinates(), epsg, 'EPSG:4326'));
+      //@TODO radius of Circle need to convert it
+      return _f;
+    })
   }
 
   #onAddFeature({ feature }) { 
@@ -1249,13 +1270,13 @@ export class AnnotationControl extends InteractionControl {
     });
 
     dialog.addEventListener('close', () => {
-      if (dialog.returnValue === 'confirm') {
+      if ('confirm' === dialog.returnValue) {
         try {
           //set upload true
           this._upload = true;
           
           this._annotation.layer.getSource().addFeatures((new ol.format.GeoJSON({
-            dataProjection:    GUI.getService('map').getEpsg(),
+            dataProjection:    'EPSG:4326',
             featureProjection: GUI.getService('map').getEpsg()
           })).readFeatures(JSON.parse(preview.textContent)));
           
