@@ -217,13 +217,18 @@ export default new (class GUI extends G3WObject {
 
     const sidebarFix = () => {
       const contents = document.querySelector('#contents');
-      const panel = document.querySelector('#g3w-view-content');
-      contents.style.height = panel.clientHeight
+      const panel    = document.querySelector('#g3w-view-content');
+
+      contents.style.height = panel.offsetHeight
         - (panel.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0);
-      if (contents.children[0]) {                                            // workaround for qplotly?
+        - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
+
+        // workaround for qplotly?
+      if (contents.children[0]) {
         contents.children[0].style.height = contents.style.height;
       }
+
       panel.style.padding = contents.children[0] ? '15px' : null;
 
       const viewH = $(window).height() - $(".navbar").height();
