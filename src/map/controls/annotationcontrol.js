@@ -618,14 +618,16 @@ export class AnnotationControl extends InteractionControl {
       if (!features.length > 0) {
         return;
       }
-
       params.ANNOTATIONS = JSON.stringify(
-        new ol.format.GeoJSON().writeFeatures(
+        new ol.format.GeoJSON().writeFeaturesObject(
           this
           .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
           .map(f => {
             const feat = f.clone();
+            //need to se id  after clone
+            feat.setId(f.getId());
             feat.unset('text');
+            feat.unset('pid');
             feat.set('label', '');
 
             if ('Text' === f.get('type')) {
@@ -825,6 +827,8 @@ export class AnnotationControl extends InteractionControl {
     }
     return features.map(f => {
       const _f = f.clone();
+      //need to se id after clone
+      _f.setId(f.getId());
       if ('Circle' === f.get('type')) {
         _f.set('center', ol.proj.transform(_f.get('center'), fromEpsg, toEpsg));
         _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), fromEpsg, toEpsg));
