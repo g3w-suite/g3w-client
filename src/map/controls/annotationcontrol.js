@@ -624,7 +624,7 @@ export class AnnotationControl extends InteractionControl {
           .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
           .map(f => {
             const feat = f.clone();
-            //need to se id  after clone
+            //need to set id  after clone https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#clone
             feat.setId(f.getId());
             feat.unset('text');
             feat.unset('pid');
@@ -827,7 +827,7 @@ export class AnnotationControl extends InteractionControl {
     }
     return features.map(f => {
       const _f = f.clone();
-      //need to se id after clone
+      //need to set id after clone https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#clone
       _f.setId(f.getId());
       if ('Circle' === f.get('type')) {
         _f.set('center', ol.proj.transform(_f.get('center'), fromEpsg, toEpsg));
