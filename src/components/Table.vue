@@ -651,7 +651,7 @@ export default {
    */
   async created() {
 
-    this.resizeKey = GUI.on('resize', this.resize);
+    GUI.on('resize', this.resize);
 
     this.currentFilter = null
 
@@ -785,7 +785,7 @@ export default {
       });
     }
 
-    GUI.un('resize', this.resizeKey);
+    GUI.off('resize', this.resize);
 
     document.querySelector('#g3w-view-content .dataTables_info').remove();
     document.querySelector('#g3w-view-content .dataTables_filter').remove();
