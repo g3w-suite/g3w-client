@@ -476,7 +476,11 @@ export class AnnotationControl extends InteractionControl {
                 saveBlob(new Blob([new TextEncoder().encode(
                   JSON.stringify(
                     (new ol.format.GeoJSON()).writeFeaturesObject(
-                      this.#convertTo4326(this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures()),
+                      this.#proj(
+                        this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(),
+                        GUI.getService('map').getEpsg(),
+                        'EPSG:4326'
+                      ),
                       { featureProjection: 'EPSG:4326' }
                     ),
                     null,
@@ -613,37 +617,61 @@ export class AnnotationControl extends InteractionControl {
       if (features.length > 0) {
         params.ANNOTATIONS = JSON.stringify(
           new ol.format.GeoJSON().writeFeatures(
-            this.#convertTo4326(features)
+            this
+            .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
             .map(f => {
-              //get style
-              const { color, width, radius, opacity, rotation, fontsize, direction } = f.get('style');
-              let label = '';
-              switch(f.get('type')) {
-                case 'Text':
-                  label = f.get('text');
-                  f.set('style', { rotation, fontsize });
-                  break;
-                case 'Point':
-                  label = `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`;
-                  f.set('style', { color, radius, fontsize });
-                  break;
-                case 'LineString':
-                  label = `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`;
-                  f.set('style', { color, width, fontsize, direction });
-                  break;
-                case 'Polygon':
-                case 'Rectangle':
-                  label = `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`;
-                  f.set('style', { color, width, fontsize, opacity });
-                  break;
-                case 'Circle':
-                  break;      
+              const feat = f.clone();
+              feat.unset('text');
+              feat.set('label', '');
+
+              if ('Text' === f.get('type')) {
+                feat.set('label', f.get('text'));
+                feat.set('style', {
+                  rotation: f.get('style').rotation,
+                  fontsize: f.get('style').fontsize
+                });
               }
-              //remove text- Unused on print
-              f.unset('text');
-              //add label
-              f.set('label', label);
-              return f;
+
+              if ('Point' === f.get('type')) {
+                feat.set('label', `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`);
+                feat.set('style', {
+                  color:    f.get('style').color,
+                  radius:   f.get('style').radius,
+                  fontsize: f.get('style').fontsize,
+                });
+              }
+
+              if ('LineString' === f.get('type')) {
+                feat.set('label', `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+                feat.set('style', {
+                  color:     f.get('style').color,
+                  width:     f.get('style').width,
+                  fontsize:  f.get('style').fontsize,
+                  direction: f.get('style').direction,
+                });
+              }
+
+              if ('Polygon' === f.get('type')) {
+                feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+                feat.set('style', {
+                  color: f.get('style').color,
+                  width: f.get('style').width,
+                  fontsize: f.get('style').fontsize,
+                  opacity: f.get('style').opacity,
+                });
+              }
+
+              if ('Rectangle' === f.get('type')) {
+                feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+                feat.set('style', {
+                  color: f.get('style').color,
+                  width: f.get('style').width,
+                  fontsize: f.get('style').fontsize,
+                  opacity: f.get('style').opacity,
+                });
+              }
+
+              return feat;
             })
           )
         );
@@ -768,56 +796,29 @@ export class AnnotationControl extends InteractionControl {
   }
 
   /**
-   * Covert features from Map projections to EPSG:4326
-   * @param {*} features 
-   * @returns 
+   * Convert open layer features from/to EPSGs
+   * 
+   * @param { Array } features
+   * @param { string } fromEpsg
+   * @param { string } toEpsg
+   * 
+   * @returns { Array }
    */
-  #convertTo4326(features = []) {
-    const epsg = GUI.getService('map').getEpsg();
-    //in case of project map in 4326, retur features without transformation
-    if ('EPSG:4326' === epsg) {
+  #proj(features = [], fromEpsg, toEpsg) {
+    if (fromEpsg === toEpsg) {
       return features;
     }
     return features.map(f => {
       const _f = f.clone();
-      //In case of Circle need to conver center and endCoordinates
       if ('Circle' === f.get('type')) {
-        _f.set('center', ol.proj.transform(_f.get('center'), epsg, 'EPSG:4326')) ;
-        _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), epsg, 'EPSG:4326'));
+        _f.set('center', ol.proj.transform(_f.get('center'), fromEpsg, toEpsg));
+        _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), fromEpsg, toEpsg));
       }
-      // In case of not Circle, transform geometry coordinates
       if ('Circle' !== f.get('type')) {
-        _f.getGeometry().transform(epsg, 'EPSG:4326');
+        _f.getGeometry().transform(fromEpsg, toEpsg);
       }
       return _f;
-    })
-  }
-
-  /**
-   * Covert features from EPSG:4326 to Map projections 
-   * @param {*} features 
-   * @returns 
-   */
-  #convertFrom4326(features = []) {
-    const epsg = GUI.getService('map').getEpsg();
-    //in case of project map in 4326, retur features without transformation
-    if ('EPSG:4326' === epsg) {
-      return features;
-    }
-
-    return features.map(f => {
-      const _f = f.clone();
-      //In case of Circle need to conver center and endCoordinates
-      if ('Circle' === f.get('type')) {
-        _f.set('center', ol.proj.transform(_f.get('center'), 'EPSG:4326', epsg )) ;
-        _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), 'EPSG:4326', epsg ));
-      }
-      // In case of not Circle, transform geometry coordinates
-      if ('Circle' !== f.get('type')) {
-        _f.getGeometry().transform('EPSG:4326', epsg);
-      }
-      return _f;
-    })
+    });
   }
 
   #onAddFeature({ feature }) { 
@@ -1356,9 +1357,13 @@ export class AnnotationControl extends InteractionControl {
           //set upload true
           this._upload = true;
           
-          this._annotation.layer.getSource().addFeatures(this.#convertFrom4326((new ol.format.GeoJSON({
-            dataProjection:    'EPSG:4326'
-          })).readFeatures(JSON.parse(preview.textContent))));
+          this._annotation.layer.getSource().addFeatures(
+            this.#proj(
+              (new ol.format.GeoJSON({ dataProjection: 'EPSG:4326' })).readFeatures(JSON.parse(preview.textContent)),
+              'EPSG:4326',
+              GUI.getService('map').getEpsg()
+            )
+          );
           
           //set upload false
           this._upload = false;
