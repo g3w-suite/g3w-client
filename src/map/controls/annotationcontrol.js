@@ -62,7 +62,7 @@ export class AnnotationControl extends InteractionControl {
 
     this._upload              = false; //import features from upload json file
     //get current annotations save on local browser storage
-    const storage_annotations = JSON.parse(localStorage.getItem('annotations'))?.[ApplicationState.project.state.id];
+    const storage_annotations = JSON.parse(localStorage.getItem('annotations')) || {};
 
     // load saved annotations from: URL search params, local storage, or server config
     const features = (new ol.format.GeoJSON({
@@ -71,9 +71,9 @@ export class AnnotationControl extends InteractionControl {
     })).readFeatures({
       type: "FeatureCollection",
       features: [
-        ...(ApplicationState.project.state.annotations?.features                        || []),
-        ...((storage_annotations || null)?.features           || []),
-        ...(opts?.annotations?.features                                                 || [])
+        ...(ApplicationState.project.state.annotations?.features                                   || []),
+        ...((storage_annotations || null)?.[ApplicationState.project.state.id]?.features           || []),
+        ...(opts?.annotations?.features                                                            || [])
       ]
     });
 
@@ -92,7 +92,7 @@ export class AnnotationControl extends InteractionControl {
 
     // update local storage
     this._annotation.layer.on('change', () => {
-      localStorage.setItem('annotations',  JSON.stringify(Object.assign(storage_annotations ?? {},
+      localStorage.setItem('annotations',  JSON.stringify(Object.assign(storage_annotations,
         { [ApplicationState.project.state.id] : (new ol.format.GeoJSON()).writeFeaturesObject(
             this._annotation.layer.getSource().getFeatures(),
             { 
@@ -814,7 +814,7 @@ export class AnnotationControl extends InteractionControl {
       }
       // In case of not Circle, transform geometry coordinates
       if ('Circle' !== f.get('type')) {
-        _f.getGeometry().setCoordinates(ol.proj.transform(f.getGeometry().getCoordinates(), 'EPSG:4326',epsg));
+        _f.getGeometry().transform('EPSG:4326', epsg);
       }
       return _f;
     })
@@ -827,6 +827,8 @@ export class AnnotationControl extends InteractionControl {
       if ('Circle' === feature.get('type') ) {
         feature.setGeometry(new ol.geom.Circle(feature.get('center'), Number(feature.get('radius'))));
       }
+      //need to set id of feature
+      feature.setId(AnnotationControl.FID++);
       //set feature style
       feature.setStyle(this.#style(feature.get('type')));
       return;
@@ -1355,8 +1357,7 @@ export class AnnotationControl extends InteractionControl {
           this._upload = true;
           
           this._annotation.layer.getSource().addFeatures(this.#convertFrom4326((new ol.format.GeoJSON({
-            dataProjection:    'EPSG:4326',
-            featureProjection: GUI.getService('map').getEpsg()
+            dataProjection:    'EPSG:4326'
           })).readFeatures(JSON.parse(preview.textContent))));
           
           //set upload false
