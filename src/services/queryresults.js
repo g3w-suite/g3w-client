@@ -24,7 +24,6 @@ import { printAtlas }                           from 'utils/printAtlas';
 import { saveBlob }                             from 'utils/saveBlob';
 import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
-import { copyUrl }                              from 'utils/copyUrl';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 import { Layer }                                from 'map/layers/layer';

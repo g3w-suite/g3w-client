@@ -613,69 +613,84 @@ export class AnnotationControl extends InteractionControl {
     //Listen getPrintParams setter
     GUI.onbefore('getPrintParams', (params = {}) => {
       const features = this._annotation.layer.getSource().getFeatures();
-      //@TODO convert based on https://github.com/g3w-suite/g3w-admin/pull/1112
-      if (features.length > 0) {
-        params.ANNOTATIONS = JSON.stringify(
-          new ol.format.GeoJSON().writeFeatures(
-            this
-            .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
-            .map(f => {
-              const feat = f.clone();
-              feat.unset('text');
-              feat.set('label', '');
 
-              if ('Text' === f.get('type')) {
-                feat.set('label', f.get('text'));
-                feat.set('style', {
-                  rotation: f.get('style').rotation,
-                  fontsize: f.get('style').fontsize
-                });
-              }
-
-              if ('Point' === f.get('type')) {
-                feat.set('label', `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`);
-                feat.set('style', {
-                  color:    f.get('style').color,
-                  radius:   f.get('style').radius,
-                  fontsize: f.get('style').fontsize,
-                });
-              }
-
-              if ('LineString' === f.get('type')) {
-                feat.set('label', `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
-                feat.set('style', {
-                  color:     f.get('style').color,
-                  width:     f.get('style').width,
-                  fontsize:  f.get('style').fontsize,
-                  direction: f.get('style').direction,
-                });
-              }
-
-              if ('Polygon' === f.get('type')) {
-                feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
-                feat.set('style', {
-                  color: f.get('style').color,
-                  width: f.get('style').width,
-                  fontsize: f.get('style').fontsize,
-                  opacity: f.get('style').opacity,
-                });
-              }
-
-              if ('Rectangle' === f.get('type')) {
-                feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
-                feat.set('style', {
-                  color: f.get('style').color,
-                  width: f.get('style').width,
-                  fontsize: f.get('style').fontsize,
-                  opacity: f.get('style').opacity,
-                });
-              }
-
-              return feat;
-            })
-          )
-        );
+      // skip when no features
+      if (!features.length > 0) {
+        return;
       }
+
+      params.ANNOTATIONS = JSON.stringify(
+        new ol.format.GeoJSON().writeFeatures(
+          this
+          .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
+          .map(f => {
+            const feat = f.clone();
+            feat.unset('text');
+            feat.set('label', '');
+
+            if ('Text' === f.get('type')) {
+              feat.set('label', f.get('text'));
+              feat.set('style', {
+                rotation: f.get('style').rotation,
+                fontsize: f.get('style').fontsize
+              });
+            }
+
+            if ('Point' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:    f.get('style').color,
+                radius:   f.get('style').radius,
+                fontsize: f.get('style').fontsize,
+              });
+            }
+
+            if ('LineString' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:     f.get('style').color,
+                width:     f.get('style').width,
+                fontsize:  f.get('style').fontsize,
+                direction: f.get('style').direction,
+              });
+            }
+
+            if ('Polygon' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:    f.get('style').color,
+                width:    f.get('style').width,
+                fontsize: f.get('style').fontsize,
+                opacity:  f.get('style').opacity,
+              });
+            }
+
+            if ('Rectangle' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:    f.get('style').color,
+                width:    f.get('style').width,
+                fontsize: f.get('style').fontsize,
+                opacity:  f.get('style').opacity,
+              });
+            }
+
+            if ('Circle' === f.get('type')) {
+              f.set('label_center', `${f.get('show_text') && f.get('text') || ''}`);
+              f.set('label_radius', `${f.get('show_info')
+                ? `${f.getGeometry().getRadius() > 100 
+                  ? (Math.round((f.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
+                  : (Math.round(f.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
+                : ''
+              }`);
+              f.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
+            }
+
+            return feat;
+          })
+        )
+      );
+
     });
   }
 
