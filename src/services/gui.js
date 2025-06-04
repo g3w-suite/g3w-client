@@ -203,10 +203,10 @@ export default new (class GUI extends G3WObject {
 
   ready() {
     // resize della window
-    $(window).resize(() => { requestAnimationFrame(() => { this._layout('resize'); }); });
+    $(window).resize(() => { requestAnimationFrame(() => { this._layout(); }); });
 
      // resize on main siedemar open close sidebar
-    $('.main-sidebar').on('transitionend', () => { requestAnimationFrame(() => { this._layout('resize'); }); });
+    $('.main-sidebar').on('transitionend', () => { requestAnimationFrame(() => { this._layout(); }); });
 
     this._layout();
 
@@ -753,7 +753,6 @@ export default new (class GUI extends G3WObject {
       showtitle:   opts.showtitle ?? true,
     });
 
-    const is_full  = 100 === opts.perc;
     const contents = this.getComponent('contents');
     const content  = opts.content;
 
@@ -818,17 +817,12 @@ export default new (class GUI extends G3WObject {
     contents.setOpen(true);
 
     this._layout(true);
-
-    await Vue.nextTick();
-
-    this._layout(is_full ? 'show-content-full' : 'show-content');
   }
 
   // hide content
   hideContent(bool) {
     const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
     this._layout(!bool);
-    this.emit('hide-content');
     // return previous percentage
     return content_perc;
   }
@@ -844,7 +838,6 @@ export default new (class GUI extends G3WObject {
       this.getComponent('contents').setOpen(false);
       await this.#clearContents();
       this._layout(false);
-      this.emit('close-content');
       await Vue.nextTick();
     }
 
@@ -877,10 +870,9 @@ export default new (class GUI extends G3WObject {
 
     if (!opts.perc)  {
       await this.#clearContents();
-      this._layout(false);
-    } else {
-      this._layout(true);
     }
+
+    this._layout(!!opts.perc);
 
     await Vue.nextTick();
 
@@ -903,7 +895,7 @@ export default new (class GUI extends G3WObject {
       .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
       .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
 
-    this._layout('pop-content');
+    this._layout();
 
     return ApplicationState.contentsdata.at(-1);
   }
@@ -1082,12 +1074,13 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  _layout(event = null) {
+  _layout(param) {
 
     // whether to show secondary (content)
-    if ('boolean' === typeof event) {
-      this._layout.secondary = event;
+    if ('boolean' === typeof param) {
+      this._layout.secondary = param;
     }
+
     const sec =  this._layout.secondary;
 
     const state  = ApplicationState.viewport;
@@ -1119,8 +1112,8 @@ export default new (class GUI extends G3WObject {
 
     // size "content"
     Object.assign(state.content.sizes, {
-      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : viewW,
-      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : viewH,
+      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
+      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : (sec ? viewH : 0),
     });
 
     // size "map"
@@ -1145,15 +1138,13 @@ export default new (class GUI extends G3WObject {
           }
         } catch (e) {
           this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-          setTimeout(() => this._layout('resize'), 1000);
+          setTimeout(() => this._layout(), 1000);
         }
       });
 
     });
-    
-    if (event) {
-      this.emit(event);
-    }
+
+    this.emit('resize');
 
     window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
   }

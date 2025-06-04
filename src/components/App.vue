@@ -840,7 +840,7 @@ export default {
           GUI.hideSidebar();
         }
         this.state.content.disabled = false;
-        GUI._layout('resize');
+        GUI._layout();
       };
 
       document.addEventListener('mousemove', mousemove);
@@ -855,7 +855,7 @@ export default {
       } else {
         panel.height_100 = !panel.height_100;
       }
-      GUI._layout('resize');
+      GUI._layout();
     },
 
     /**
@@ -865,7 +865,7 @@ export default {
       const split = GUI.getCurrentContent().options.split;
       ApplicationState.viewport.split = GUI.getCurrentContent().options.split = 'v' === split ? 'h' : 'v';
       e.target.setAttribute('data-original-title', `Dock ${'h' === split ? 'right' : 'bottom'}`);
-      GUI._layout('resize');
+      GUI._layout();
     },
 
     closePanel() {
