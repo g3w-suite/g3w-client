@@ -507,7 +507,6 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .main-sidebar                             { position: fixed; }
 
  /* Content */
-.content                                  { min-height: 250px; }
 
 .btn                                      { border-radius: 3px; }
 .box-header                               { cursor: pointer; }
