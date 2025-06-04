@@ -494,7 +494,7 @@ export default {
           const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
           const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
           const url       = store.getWmsUrl();
-          const params    = layers.length && new URLSearchParams({
+          const params    = layers.length && new URLSearchParams(await GUI.getPrintParams({
             SERVICE:       'WMS',
             VERSION:       '1.3.0',
             REQUEST:       'GetPrint',
@@ -519,7 +519,7 @@ export default {
               ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
             }), {}),
             ...(this.state.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
-          }).toString();
+          })).toString();
 
           // force GET request for geopdf because qgiserver support only that method [QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)]
           const method = layers.length && ('geopdf' === this.state.format ? 'GET' : ApplicationState.project.state.ows_method);

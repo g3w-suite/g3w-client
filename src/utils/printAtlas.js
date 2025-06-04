@@ -1,4 +1,5 @@
 import ApplicationState from 'store/application';
+import GUI              from 'services/gui';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
@@ -38,13 +39,13 @@ import ApplicationState from 'store/application';
  * @param opts.download
  * @param { 'GET' | 'POST' } method
  */
-export function printAtlas(opts = {}, method = 'GET') {
+export async function printAtlas(opts = {}, method = 'GET') {
   const store = ApplicationState.project.getLayersStore();
-  const multi = opts.values.length > 1;
+  const multi = opts.values.length > 1; 
   return FETCH[method]({
     url:       store.getWmsUrl(),
     mime_type: 'application/pdf',
-    params:    {
+    params:    await GUI.getPrintParams({
       SERVICE:     'WMS',
       VERSION:     '1.3.0',
       REQUEST:     'GetPrintAtlas',
@@ -52,7 +53,7 @@ export function printAtlas(opts = {}, method = 'GET') {
       TEMPLATE:    opts.template,
       filtertoken: ApplicationState.tokens.filtertoken,
       DOWNLOAD:    opts.download ? 1 : undefined,
-    },
+    }),
   })
 }
 

@@ -31,7 +31,8 @@ export default new (class GUI extends G3WObject {
 
     this.setters = [
       'setContent',
-      'getPermalink'
+      'getPermalink',
+      'getPrintParams',
     ];
 
     this.isready           = false;
@@ -933,6 +934,10 @@ export default new (class GUI extends G3WObject {
     if (element && what) {
       return ApplicationState.sizes[element][what];
     }
+  }
+
+  getPrintParams(params = {}) {
+    return params;
   }
 
   /**

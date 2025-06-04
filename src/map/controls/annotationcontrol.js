@@ -594,10 +594,20 @@ export class AnnotationControl extends InteractionControl {
     //Listen set-layer-zindex so annotation layer i set over all layers
     GUI.getService('map').on('set-layer-zindex', ({ zindex }) => zindex > this._annotation.layer.getZIndex() && this._annotation.layer.setZIndex(zindex + 1))
 
+    //Listen getPermalink setter
     GUI.onbefore('getPermalink', (url, data) => {
       const features = this._annotation.layer.getSource().getFeatures();
       if (features.length > 0) {
         data.annotations = JSON.parse(new ol.format.GeoJSON().writeFeatures(features));
+      }
+    });
+
+    //Listen getPrintParams setter
+    GUI.onbefore('getPrintParams', (params = {}) => {
+      const features = this._annotation.layer.getSource().getFeatures();
+      //@TODO convert based on https://github.com/g3w-suite/g3w-admin/pull/1112
+      if (features.length > 0) {
+        params.ANNOTATIONS = JSON.stringify(this.#convertFrom4326(new ol.format.GeoJSON().writeFeatures(features)));
       }
     });
   }
