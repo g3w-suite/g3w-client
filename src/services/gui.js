@@ -215,15 +215,15 @@ export default new (class GUI extends G3WObject {
     window.history.replaceState(null, null, url);
 
     const sidebarFix = () => {
-      const contents = $('#contents')[0];
-      contents.style.height = contents.parentElement.clientHeight        // parent element is "g3w-view-content"
-        - (contents.parentElement.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (contents.parentElement.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - 10 + 'px';
+      const contents = document.querySelector('#contents');
+      const panel = document.querySelector('#g3w-view-content');
+      contents.style.height = panel.clientHeight
+        - (panel.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0);
       if (contents.children[0]) {                                            // workaround for qplotly?
         contents.children[0].style.height = contents.style.height;
       }
-      contents.parentElement.style.padding = contents.children[0] ? '15px' : null;
+      panel.style.padding = contents.children[0] ? '15px' : null;
 
       const viewH = $(window).height() - $(".navbar").height();
       $(".content-wrapper") .css('height', viewH);
