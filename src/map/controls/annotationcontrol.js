@@ -740,7 +740,6 @@ export class AnnotationControl extends InteractionControl {
     feature.set('pid', ApplicationState.project.getId());
     feature.set('text', `${this._annotation.type} ${AnnotationControl.FID}`); 
     feature.set('show_text', 'Text' === this._annotation.type);
-    feature.set('info', '');
     feature.set('show_info', false);
     feature.set('type', this._annotation.type);
 
