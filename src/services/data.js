@@ -337,7 +337,7 @@ export default {
         layer,
         features
       }],
-      query: { type: 'search' },
+      query: { type: 'search', fids },
     };
   },
 
