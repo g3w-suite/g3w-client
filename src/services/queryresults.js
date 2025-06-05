@@ -1563,9 +1563,9 @@ export default new (class QueryResultsService extends G3WObject {
 
     const { query = {} } = this.state;
 
-    const data = 'search' === query.type
-      ? { field: query.search.join() }                                // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
-      : { fids: features.filter(f => !(layer.filter || {}).active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
+    const data = 'search' === query.type && query.search
+      ? { field: query.search.join() }                           // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
+      : { fids: query.fids || features.filter(f => !(layer.filter || {}).active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',') }; // other query types ('point', 'polygon', 'bbox' ..)
     
     data.down_with_relations = down_with_relations; 
   
