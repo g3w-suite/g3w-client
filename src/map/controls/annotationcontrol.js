@@ -847,8 +847,16 @@ export class AnnotationControl extends InteractionControl {
       if ('Circle' === feature.get('type') ) {
         feature.setGeometry(new ol.geom.Circle(feature.get('center'), Number(feature.get('radius'))));
       }
-      //need to set id of feature
-      feature.setId(AnnotationControl.FID++);
+      //get id of uploaded feature
+      const id = Number(feature.getId());
+      //in case is not a number, set id
+      if (Number.isNaN(id)) {
+        feature.setId(AnnotationControl.FID++);
+      }
+      //In case is a number
+      if (!Number.isNaN(id) && AnnotationControl.FID <= id) {
+        AnnotationControl.FID = id + 1; 
+      }      
       //set feature style
       feature.setStyle(this.#style(feature.get('type')));
       return;
