@@ -13,6 +13,8 @@ import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
 //Methods used to get lengh and area oa a feature 
 const parse_length = len  => len > 100 ? (Math.round((len / 1000) * 100) / 100) +  ' km' : (Math.round(len * 100) / 100) + ' m';
 const parse_area   = area => area > 10000 ? (Math.round((area / 1000000) * 100) / 100) +  ' km²' : (Math.round(area * 100) / 100) + ' m²';
+//rgbToHex
+const rgbToHex = rgb => `#${rgb.slice(4,-1).split(',').map(x => (+x).toString(16).padStart(2,0)).join('')}`;
 
 export class AnnotationControl extends InteractionControl {
 
@@ -192,7 +194,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment length (line)” -->
                 <div v-if = "'LineString' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
+                  <label style = "margin: 0; width: 100%">
                     <span v-t = "'sdk.mapcontrols.annotation.inputs.length'"></span>
                     <input 
                       class   = "form-control"
@@ -211,7 +213,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment length (polygon)” -->
                 <div v-if = "'Polygon' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
+                  <label style = "margin: 0; width: 100%">
                     <span v-t = "'sdk.mapcontrols.annotation.inputs.length'"></span>
                     <input 
                       class   = "form-control"
@@ -230,7 +232,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment width (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
+                  <label style = "margin: 0; width: 100%">
                     <span v-t = "'sdk.mapcontrols.annotation.inputs.w_length'"></span>
                     <input 
                       class   = "form-control"
@@ -249,7 +251,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment height (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
+                  <label style = "margin: 0; width: 100%">
                     <span v-t = "'sdk.mapcontrols.annotation.inputs.h_length'"></span>
                     <input 
                       class   = "form-control"
@@ -268,7 +270,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Circle radius” -->
                 <div v-if = "'Circle' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
+                  <label style = "margin: 0; width: 100%">
                     <span v-t = "'sdk.mapcontrols.annotation.inputs.radius'"></span>
                     <input 
                       class   = "form-control"
@@ -643,7 +645,7 @@ export class AnnotationControl extends InteractionControl {
             if ('Point' === f.get('type')) {
               feat.set('label', `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`);
               feat.set('style', {
-                color:    f.get('style').color,
+                color:    rgbToHex(f.get('style').color),
                 radius:   f.get('style').radius,
                 fontsize: f.get('style').fontsize,
               });
@@ -652,7 +654,7 @@ export class AnnotationControl extends InteractionControl {
             if ('LineString' === f.get('type')) {
               feat.set('label', `${f.get('show_info') && (parse_length(f.getGeometry().getLength()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
-                color:     f.get('style').color,
+                color:     rgbToHex(f.get('style').color),
                 width:     f.get('style').width,
                 fontsize:  f.get('style').fontsize,
                 direction: f.get('style').direction,
@@ -662,7 +664,7 @@ export class AnnotationControl extends InteractionControl {
             if ('Polygon' === f.get('type')) {
               feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
-                color:    f.get('style').color,
+                color:    rgbToHex(f.get('style').color),
                 width:    f.get('style').width,
                 fontsize: f.get('style').fontsize,
                 opacity:  f.get('style').opacity,
@@ -672,7 +674,7 @@ export class AnnotationControl extends InteractionControl {
             if ('Rectangle' === f.get('type')) {
               feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry().getArea()) + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
-                color:    f.get('style').color,
+                color:    rgbToHex(f.get('style').color),
                 width:    f.get('style').width,
                 fontsize: f.get('style').fontsize,
                 opacity:  f.get('style').opacity,
@@ -688,6 +690,12 @@ export class AnnotationControl extends InteractionControl {
                 : ''
               }`);
               f.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
+              feat.set('style', {
+                color:    rgbToHex(f.get('style').color),
+                width:    f.get('style').width,
+                fontsize: f.get('style').fontsize,
+                opacity:  f.get('style').opacity,
+              });
             }
 
             return feat;
