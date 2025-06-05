@@ -169,14 +169,12 @@ const Providers = {
       });
 
       return $promisify(async () => {
-
-        params = new URLSearchParams(params || {}).toString();
-        params = (params ? '?' : '') + params;
-
         // read mode
         if (!options.editing) {
-          const { vector } = await XHR.get({
-            url: this._layer.getUrl('data') + params,
+          const { vector } = await XHR.post({
+            url:         this._layer.getUrl('data'),
+            data:        JSON.stringify(params),
+            contentType: 'application/json',
           });
           return {
             data: vector.data,
@@ -188,16 +186,17 @@ const Providers = {
         try {
 
           let response;
-
           if (!options.filter) {
             response = await XHR.post({
-              url:         this._layer.getUrl('editing') + params,
+              url:         this._layer.getUrl('editing'),
+              data:        JSON.stringify(params),
               contentType: 'application/json',
             });
           } else if (is_defined(options.filter.bbox)) { // bbox filter
             response = await XHR.post({
-              url:  this._layer.getUrl('editing') + params,
+              url:  this._layer.getUrl('editing'),
               data: JSON.stringify({
+                ...params,
                 in_bbox:     options.filter.bbox.join(','),
                 filtertoken: this._layer.getFilterToken(),
               }),
@@ -211,22 +210,29 @@ const Providers = {
             });
           } else if (options.filter.field) {
             response = await XHR.post({
-              url:         this._layer.getUrl('editing') + params,
-              data:        JSON.stringify(options.filter),
+              url:         this._layer.getUrl('editing'),
+              data:        JSON.stringify({ 
+                ...params,
+                ...options.filter,
+              }),
               contentType: 'application/json',
             })
           } else if (is_defined(options.filter.fids)) {
-            response = await XHR.get({
-              url:    this._layer.getUrl('editing') + params,
-              params: options.filter
+            response = await XHR.post({
+              url:    this._layer.getUrl('editing'),
+              data:   JSON.stringify({
+                ...params,
+                ...options.filter,
+              })
             })
           } else if (is_defined(options.filter.nofeatures)) {
             response = await XHR.post({
-              url:  this._layer.getUrl('editing') + params,
+              url:  this._layer.getUrl('editing'),
               data: JSON.stringify({
+                ...params,
                 field: `${options.filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
               }),
-              contentType: 'application/json'
+              contentType: 'application/json',
             })
           }
 
@@ -642,8 +648,8 @@ class Layer extends G3WObject {
       /** @since 4.0.0 */
       bbox:                 config.bbox,
 
-      /** @since 4.0.0 */
-      checked:              !!config.visible,
+      /** @since 4.0.0 checked config attribute is passed by vector layer on editing */
+      checked:              config.checked ?? !!config.visible,
 
       /** @since 4.0.0 */
       epsg:                 config.crs.epsg,
@@ -1636,10 +1642,13 @@ class Layer extends G3WObject {
    * Clear selection
    */
   async clearSelectionFids() {
+    //clear all selection fids from set
     this.state.selectionFids.clear();
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
+      //set false selection
       Object.values(this.state.ol_selection).forEach(feat => feat.selected = false);
+      //update selection
       this.#updateOlSelection();
     }
     // set selection false
@@ -1985,10 +1994,7 @@ class Layer extends G3WObject {
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
-      const response = field                                                                    // check `field` parameter
-        ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
-        : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
-
+      const response =  await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}); // since g3w-admin@v3.7
       // vector layer
       if ('table' !== provider._layer.getType()) {
         provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;

@@ -99,14 +99,26 @@ export function SearchPanel(opts = {}, show = false) {
 
       const input = state.forminputs[i];
 
-      const no_value = input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value);
+      /**@since v4.0.0 set array value for in (only for SelectBox) */
+      if ('in' === input.operator) {
+        input.value = [].concat(input.value);
+      }
 
+      const no_value = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                        // set `SEARCH_ALLVALUE` as first element
-        ...(no_value ? [] : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server (set empty in case of strict dependance)
-          )
+        ...('selectfield' === input.type 
+            // set `SEARCH_ALLVALUE` as first element and retrive input values from server (set empty in case of strict dependance)
+            ? [SEARCH_ALLVALUE].concat(no_value ? [] : await getDataForSearchInput({ state, field: input.attribute })) 
+            : []
+          ), 
+
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
+
+      //In case of search with autofilter that return no data, need to setup select input to all
+      if (1 === input.values.length && SEARCH_ALLVALUE === input.values[0].value && ['selectfield', 'autocompletefield'].includes(input.type)) {
+        input.value = 'in' === input.operator ? [SEARCH_ALLVALUE] : SEARCH_ALLVALUE; // set default value for select
+      };
 
       // there is a dependance
       if (input.dependance) {
@@ -192,7 +204,7 @@ async function doSearch({
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
           layer:   state.search_layers,
-          inputs:  state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+          inputs:  state.forminputs.filter(input => [].concat(input.value).find(v => ![null, undefined, SEARCH_ALLVALUE].includes(v) && '' !== input.value.toString().trim())), // Filter input by NONVALIDVALUES
         }),
         queryUrl,
         formatter: 1,

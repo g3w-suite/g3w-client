@@ -150,8 +150,9 @@
 
         <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
-          <label v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'">
-            <input type = "checkbox" v-model = "autofilter" />
+          <label v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'" style="display: block;">
+            <input type = "checkbox" v-model = "autofilter" style="margin:0;" />
+            <span v-t="'sdk.search.autofilter'"></span>
             <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
           </label>
         </div>
@@ -245,6 +246,15 @@
       */
       clearFilters() {
         this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
+        //@since v4.0 reset all form values after clear
+        this.state.forminputs.forEach(i => {
+          if (['selectfield','autocompletefield'].includes(i.type)) {
+            i.value = 'in' === i.operator ? [i.values[0].value] : i.values[0].value; //set all or first value
+          } else {
+            i.value = null;
+          }
+          this.changeInput(i);
+        })
         //@since 4.0.0 close content
         GUI.closeContent();
       },
@@ -276,7 +286,7 @@
         const state  = this.state;
         let value    = input.value;
 
-        const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+        const is_empty         = v => [].concat(v).find(v => [SEARCH_ALLVALUE, null, undefined].includes(v)) || '' === v.toString().trim(); // whether father input can search on subscribers
         const has_autocomplete = i => 'autocompletefield' === i.type;
 
         try {
@@ -293,7 +303,7 @@
 
           /** @TODO check if it has one reason to trim  */
           if (!['textfield', 'textField'].includes(input.type)) {
-            value = value.trim();
+            value = Array.isArray(value) ? value.map(v => v.trim()) : value.trim();
           }
 
           input.value = value;
@@ -305,14 +315,26 @@
             const filter = getDataForSearchInput.field({
               state,
               field,
-              fields: [SEARCH_ALLVALUE, undefined].includes(value)
+              fields: [].concat(value).find(v => [SEARCH_ALLVALUE, undefined].includes(v)) //consider in value Array
                 ? []
-                : [[].concat(value).map(v => `${field}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|OR,`)]
+                : ['in' === input.operator //@since 4.0.0 consider in operator
+                    ? `${field}|${input.operator}|(${[].concat(value).map( v => encodeURIComponent(v))})`
+                    : [].concat(value).map(v => `${field}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|OR,`)
+                  ]
             });
 
             const cached = d.dvalues[filter];
 
-            d.value  = 'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            // In case of in operator
+            if ( 'in' === d.operator && ['selectfield', 'autocompletefield'].includes(d.type)) {
+              d.value  = [SEARCH_ALLVALUE];
+            }
+
+            //In case of no in operator
+            if ( 'in' !== d.operator) {
+              d.value  =  'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            }
+
             d.values = Array.from(new Set([                                       // ensure uniques values
               ...(!has_autocomplete(d) && !is_empty(value) ? [d.values[0]] : []), // get first value (ALL_VALUE)
               ...(!has_autocomplete(d) && is_empty(value) ? d._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
@@ -338,17 +360,9 @@
             // set undefined because if it has a subscribed input with valuerelations widget
 
             /** @TODO use `getDataForSearchInput` instead ? */
-
             try {
-              const data = await state.search_layers[0].getFilterData({
-                fformatter: d.attribute,
-                ordering:   d.attribute,
-                field:      filter,
-              });
-
-              //@since 3.11.0 first array value is value, second is key
-              data.data = (data.data || []).map(([value, key]) => ({ key, value }));
-
+              // get data for all searchable layers
+              const data = await getDataForSearchInput({ state, field: d.attribute, filter });
               // case value map
               if (!d.dependance_strict && 'selectfield' === d.type) {
                 d._values.push(...d.values);
@@ -356,7 +370,7 @@
 
               // set key value for select (!valuemap && !valuerelation)
               if (1 === d.values.length) {
-                d.values.push(...data.data);
+                d.values.push(...data);
               }
 
               // exclude first element (ALL_VALUE)
@@ -431,6 +445,7 @@
 
         const numdigaut        = input.options.numdigaut;
         const has_autocomplete = 'autocompletefield' === input.type;
+        const is_multiple      = 'in' === input.operator; //@since 4.0.0 set multiple select2 only for select box
         const ajax             = has_autocomplete ? {
           delay: 500,
           transport: async (d, ok, ko) => {
@@ -455,6 +470,7 @@
           minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
           allowClear:         has_autocomplete,
           placeholder:        has_autocomplete ? '' : null,
+          multiple:           is_multiple, 
           /**
            * @param { Object } params
            * @param params.term the term that is used for searching
@@ -478,15 +494,48 @@
         SELECTS.push(select2);
 
         select2.on('select2:select select2:unselecting', e => {
+
+          //Add/Change value
+
           if ('select2:select' === e.type || has_autocomplete) {
-            input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
-            this.changeInput(input);
+            const value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
+
+            
+            if (is_multiple && input.value.find(v => value === v)) {
+              input.value = input.value.filter(v => value !== v);
+            }
+
+            if (is_multiple && !input.value.find(v => value === v)) {
+              //remove alway SEARCH_ALLVALUE value
+              input.value = input.value.filter(v => !(value === SEARCH_ALLVALUE) && SEARCH_ALLVALUE !== v);
+              input.value.push(value);
+            }
+
+            if (!is_multiple) {
+              input.value = value;
+            }
+            
           }
-        });
+
+          //remove value  
+          if ('select2:unselecting' === e.type && is_multiple) {
+            input.value = input.value.filter(v => e.params?.args?.data?.id !== v);
+            //If we remove all values, we set the SEARCH_ALLVALUE
+            if (0 === input.value.length) {
+              input.value = [SEARCH_ALLVALUE];
+            }
+          }
+
+          this.changeInput(input);
+
+
+        }
+      );
 
         // trigger select2 change on input value change
         this.$watch(() => input.value, async (value, oldVal) => {
-          if (value !== oldVal && SEARCH_ALLVALUE === value) {
+          //Need to convert to an array to consider 'in' operator type
+          if ((new Set([].concat(value))).difference((new Set([].concat(oldVal)))) || [].conact(value).find(v => SEARCH_ALLVALUE === v)) {
             select2.val(value).trigger('change');
           }
         });
