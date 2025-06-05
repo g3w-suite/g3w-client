@@ -690,14 +690,14 @@ export class AnnotationControl extends InteractionControl {
             }
 
             if ('Circle' === f.get('type')) {
-              f.set('label', `${f.get('show_text') && f.get('text') || ''}`);
-              f.set('label_radius', `${f.get('show_info')
+              feat.set('label', `${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label_radius', `${f.get('show_info')
                 ? `${f.getGeometry().getRadius() > 100 
                   ? (Math.round((f.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
                   : (Math.round(f.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
                 : ''
               }`);
-              f.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
+              feat.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
               feat.set('style', {
                 color:    rgbToHex(f.get('style').color),
                 width:    f.get('style').width,
