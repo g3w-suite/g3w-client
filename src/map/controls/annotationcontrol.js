@@ -9,21 +9,9 @@ import InteractionControl         from 'map/controls/interactioncontrol';
 import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
-
-//Methods used to get lengh and area oa a feature 
-const parse_length = (geom, epsg, units)  => {
-  const is_sphere  = 'EPSG:3857' === epsg || 'degrees' === units;
-  const len        = is_sphere ? ol.sphere.getLength(geom, { projection: epsg }) : geom.getLength();
-  return len > 100 ? (Math.round((len / 1000) * 100) / 100) +  ' km' : (Math.round(len * 100) / 100) + ' m';
-}
-const parse_area   = (geom, epsg, units) => {
-  const is_sphere  = 'EPSG:3857' === epsg || 'degrees' === units;
-  const area       = Math.round(is_sphere ? ol.sphere.getArea(geom, { projection: epsg }): geom.getArea());
-  return area > 10000 ? (Math.round((area / 1000000) * 100) / 100) +  ' km²' : (Math.round(area * 100) / 100) + ' m²';
-}
-//rgbToHex
-const rgbToHex = rgb => `#${rgb.slice(4,-1).split(',').map(x => (+x).toString(16).padStart(2,0)).join('')}`;
-
+import { getLength }              from 'utils/getLength';
+import { getArea }                from 'utils/getArea';
+import { rgbToHex }               from 'utils/rgbToHex';
 export class AnnotationControl extends InteractionControl {
 
   /** Incremental counter for added features */
@@ -660,7 +648,7 @@ export class AnnotationControl extends InteractionControl {
             }
 
             if ('LineString' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && (parse_length(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${f.get('show_info') && (getLength(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
                 color:     rgbToHex(f.get('style').color),
                 width:     f.get('style').width,
@@ -670,7 +658,7 @@ export class AnnotationControl extends InteractionControl {
             }
 
             if ('Polygon' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${f.get('show_info') && (getArea(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
                 color:    rgbToHex(f.get('style').color),
                 width:    f.get('style').width,
@@ -680,7 +668,7 @@ export class AnnotationControl extends InteractionControl {
             }
 
             if ('Rectangle' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && (parse_area(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${f.get('show_info') && (getArea(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
                 color:    rgbToHex(f.get('style').color),
                 width:    f.get('style').width,
@@ -1229,7 +1217,7 @@ export class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (parse_length(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (getLength(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:      `${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
@@ -1267,7 +1255,7 @@ export class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (parse_area(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (getArea(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:  `${feat.get('style')?.fontsize}px ${font_family}`,            
             stroke,
@@ -1288,7 +1276,7 @@ export class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (parse_area(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (getArea(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:      `${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
