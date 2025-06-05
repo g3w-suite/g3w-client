@@ -175,10 +175,10 @@ export class AnnotationControl extends InteractionControl {
                 <!-- SHAPES SAVED -->
                 <div v-if = "!feature && !type && features.length > 0">
                   <button 
-                    v-for  = "feat in features"
-                    :key   = "feat.getId()" 
-                    @click = "editFeature(feat)"
-                    :style="{
+                    v-for       = "feat in features"
+                    :key        = "feat.getId()" 
+                    @click.stop = "editFeature(feat)"
+                    :style = "{
                       width:      '100%',
                       margin:     '3px 0',
                       border:     'solid 1px #ccc',
@@ -628,6 +628,8 @@ export class AnnotationControl extends InteractionControl {
             feat.setId(f.getId());
             feat.unset('text');
             feat.unset('pid');
+            feat.unset('show_info');
+            feat.unset('show_text');
             feat.set('label', '');
 
             if ('Text' === f.get('type')) {
@@ -639,7 +641,7 @@ export class AnnotationControl extends InteractionControl {
             }
 
             if ('Point' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && `${`${f.getGeometry().getCoordinates()}`} \n` || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`);
               feat.set('style', {
                 color:    f.get('style').color,
                 radius:   f.get('style').radius,
@@ -678,7 +680,7 @@ export class AnnotationControl extends InteractionControl {
             }
 
             if ('Circle' === f.get('type')) {
-              f.set('label_center', `${f.get('show_text') && f.get('text') || ''}`);
+              f.set('label', `${f.get('show_text') && f.get('text') || ''}`);
               f.set('label_radius', `${f.get('show_info')
                 ? `${f.getGeometry().getRadius() > 100 
                   ? (Math.round((f.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
@@ -724,6 +726,7 @@ export class AnnotationControl extends InteractionControl {
       text:      feature.get('text'), 
       show_text: feature.get('show_text'),
       show_info: feature.get('show_info'),
+      style:     feature.get('style'),
     });
 
 
@@ -1188,7 +1191,8 @@ export class AnnotationControl extends InteractionControl {
       return feat => new ol.style.Style({
         text: new ol.style.Text({
           placement: 'point',
-          text:      `${feat.get('show_info') && `${`${feat.getGeometry().getCoordinates()}`} \n` || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+          offsetY:    -Number(feat.get('style')?.radius) - 10 + (feat.get('show_text') ? -10 : 0),
+          text:      `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`,
           fill,
           font:      `${feat.get('style')?.fontsize}px ${font_family}`,
           stroke,
