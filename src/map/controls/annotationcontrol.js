@@ -551,7 +551,7 @@ export class AnnotationControl extends InteractionControl {
                       width:     Number(style.width),
                       radius:    Number(style.radius),
                       opacity:   Number(style.opacity),
-                      rotation:  Number(style.rotation) * (Math.PI / 180),
+                      rotation:  Number(style.rotation),
                       fontsize:  Number(style.fontsize),
                       direction: style.direction,
                     }));
@@ -1186,7 +1186,7 @@ export class AnnotationControl extends InteractionControl {
       return feat => new ol.style.Style({  
         text: new ol.style.Text({
           text:      feat.get('text'),
-          rotation:  feat.get('style')?.rotation,
+          rotation:  feat.get('style')?.rotation * (Math.PI / 180),
           fill,
           font:  `${feat.get('style')?.fontsize}px ${font_family}`,
           placement: 'point',
