@@ -520,7 +520,6 @@ import GUI                from 'services/gui';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { promisify }      from 'utils/promisify';
 import { sameOrigin }     from 'utils/sameOrigin';
-import { debounce }       from 'utils/debounce';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';

@@ -14,9 +14,6 @@ import ApplicationState                         from 'store/application';
 
 import DataRouterService                        from 'services/data';
 
-import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
-import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
@@ -757,7 +754,6 @@ export default new (class QueryResultsService extends G3WObject {
 
     // loop results
     layers.forEach((layer, index) => {
-      const state = this.state;
       // eventually set layer action tool and need to be reactive
       this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
@@ -765,27 +761,6 @@ export default new (class QueryResultsService extends G3WObject {
       this.state.layersactions[layer.id]             = this.state.layersactions[layer.id] || [];
       const relations        = (this._relations[layer.id] || []).filter(r => 'MANY' === r.type);
       const chartRelationIds = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
-      // set actionstools configs
-      if (layer.downloads.length > 0) {
-        this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
-        this.state.actiontools.downloadformats[layer.id] = {
-          downloads: layer.downloads.map(format => ({
-            id:       `download_${format}_feature`,
-            download: true,
-            format,
-            class:    GUI.getFontClass(format),
-            hint:     `sdk.tooltips.download_${format}`,
-            cbk: (layer, feature, action, index, html, down_with_relations) => {
-              // un-toggle downloads action
-              this.downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
-              if ('polygon' !== this.state.query.type) {
-                const downloadsaction = this.state.layersactions[layer.id].find(a => 'downloads' === a.id);
-                downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
-              }
-            }
-          }))
-        };
-      }
 
       this.state.layersactions[layer.id].push(...([
 
@@ -858,23 +833,6 @@ export default new (class QueryResultsService extends G3WObject {
           cbk:      this.printAtlas.bind(this)
         },
 
-        // download features
-        layer.downloads.length > 0 && {
-          id:         'downloads',
-          download:   true,
-          class:      GUI.getFontClass('download'),
-          state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
-          toggleable: true,
-          hint:       'Downloads',
-          change({ features }) {
-            features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
-          },
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-          }
-        },
-
         // remove feature
         ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
           id:        'removefeaturefromresult',
@@ -895,6 +853,7 @@ export default new (class QueryResultsService extends G3WObject {
             this.state.disabled = !layer.filter.pagination;
           }
         },
+
         // select feature
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
@@ -1518,184 +1477,6 @@ export default new (class QueryResultsService extends G3WObject {
         }
       }
     });
-
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param layer
-   */
-  showLayerDownloadFormats(layer) {
-    layer.downloadformats.active = !layer.downloadformats.active;
-    this.setLayerActionTool({
-      layer,
-      component: layer.downloadformats.active ? DownloadFormats : null,
-      config: layer.downloadformats.active
-        ? {
-            ...this.state.actiontools.downloadformats[layer.id],
-            //for download layer need to filter pdf format because it works only for a single feature
-            downloads: this.state.actiontools.downloadformats[layer.id].downloads.filter(d => 'pdf' !== d.format)
-          }
-        : null
-    })
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param type
-   * @param layer
-   * @param features
-   * @param action
-   * @param index
-   * @param html
-   * @param down_with_relations
-   */
-  async downloadFeatures(type, layer, features = [], action, index, html, down_with_relations = 0) {
-
-    if (features && !Array.isArray(features)) {
-      features = [features];
-    }
-
-    const { query = {} } = this.state;
-
-    // filter out undefined properties
-    const data = Object.fromEntries(Object.entries({
-
-      down_with_relations,
-
-      // search results + pagination (see: https://github.com/g3w-suite/g3w-client/pull/743)
-      field: 'search' === query.type && query.search
-        ? query.search.join()
-        : undefined,
-
-      // other query types ('point', 'polygon', 'bbox' ..)
-      fids: 'search' !== query.type || !query.search
-        ? query.fids || features.filter(f => !layer.filter?.active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',')
-        : undefined,
-
-      // html element (pdf)
-      html: 'pdf' === type ? html : undefined,
-
-    }).filter(([_, v]) => v !== undefined));
-
-    /**
-     * A function that che be called in case of querybypolygon
-     *
-     * @param active
-     */
-    const runDownload = async (active = false) => {
-
-      if (features.length > 1) {
-        layer.downloadformats.active = active;
-        this.setLayerActionTool({ layer });
-      }
-
-      await GUI.downloadWrapper(
-        ({ layer, type, data } = {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
-        {
-          layer,
-          type,
-          data
-        }
-      );
-
-      const downloadsactions = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-
-      /** @FIXME add description */
-      if (features.length > 1 && undefined === downloadsactions) {
-        layer[type].active = false;
-        this.setLayerActionTool({ layer });
-      }
-
-      /** @FIXME add description */
-      if (features.length > 1 && undefined !== downloadsactions) {
-        layer.downloadformats.active = false;
-      }
-
-      /** @FIXME add description */
-      if (features.length <= 1 && undefined === downloadsactions) {
-        action.state.toggled[index] = false;
-      }
-
-      /** @FIXME add description */
-      if (features.length <= 1 && undefined !== downloadsactions) {
-        downloadsactions.state.toggled[index] = false;
-      }
-
-      /** @FIXME add description */
-      if (features.length <= 1) {
-        this.setCurrentActionLayerFeatureTool({ index, action, layer });
-      }
-    };
-
-    /** @FIXME add description */
-    if ('polygon' !== query.type) {
-      await runDownload();
-      return;
-    }
-
-    // check if multi-download if present
-    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-
-    const config = {
-      choices: [
-        {
-          id: getUniqueDomId(),
-          type: 'feature',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature.label',
-        },
-        {
-          id: getUniqueDomId(),
-          type: 'polygon',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
-        },
-      ],
-      // choose between only feature attribute or also polygon attribute
-      download: (type) => {
-        if ('polygon' === type) { // id type polygon add parameters to api download
-          data.sbp_qgs_layer_id = layer.id;
-          data.sbp_fid          = query.fid;
-        } else {                  // force to remove
-          delete data.sbp_fid;
-          delete data.sbp_qgs_layer_id;
-        }
-        runDownload(true)
-      }
-    };
-
-    /** @FIXME add description */
-    if (1 === features.length && undefined === downloadsactions) {
-      action.state.toggled[index] = true;
-    }
-
-    /** @FIXME add description */
-    if (1 === features.length) {
-      this.state.actiontools[QueryPolygonCsvAttributesComponent.name] = this.state.actiontools[layer.id] || {};
-      this.state.actiontools[QueryPolygonCsvAttributesComponent.name][layer.id] = config;
-      this.setCurrentActionLayerFeatureTool({
-        layer,
-        index,
-        action,
-        component: QueryPolygonCsvAttributesComponent,
-      });
-    }
-
-    /** @FIXME add description */
-    if (undefined === downloadsactions && 1 !== features.length) {
-      layer[type].active = !layer[type].active;
-    }
-
-    /** @FIXME add description */
-    if (1 !== features.length) {
-      const has_config = (downloadsactions || (layer[type].active && undefined === downloadsactions));
-      this.setLayerActionTool({
-        layer,
-        component: has_config ? QueryPolygonCsvAttributesComponent : null,
-        config:    has_config ? config : null,
-      });
-    }
 
   }
 
