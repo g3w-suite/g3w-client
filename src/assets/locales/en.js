@@ -389,6 +389,29 @@ export default {
             'Rectangle':  'Rectangle',
             'Circle':     'Circle',
             'Text':       'Text'
+          },
+          inputs: {
+            'radius':    'Radius',
+            'length':    'Length',
+            'w_length' : 'Width Length',
+            'h_length' : 'Height Length',
+            'rotation' : 'Rotation',
+            'font_size': 'Font Size',
+            'direction': 'Direction',
+            'f_direction': 'Forward',
+            'b_direction': 'Backward',
+            'opacity':   'Opacity',
+            'stroke':    'Stroke',
+          },
+          checkbox: {
+            'show_text': 'Show Text',
+            'show_info': 'Info'
+          },
+          actions: {
+            'export': 'Export',
+            'import': 'Import',
+            'remove': 'Remove',
+            'show_all': 'Show All,'
           }
         }
       },
@@ -458,7 +481,11 @@ export default {
           },
           download: {
             unknow: 'Download',
-            geotiff_map_extent: "GeoTiff (current view)"
+            geotiff_map_extent: "GeoTiff (current view)",
+            title: "Export features",
+            layer: "Layer",
+            include_relations: "Include relations in exported file?",
+            data_format: "Data Format"
           }
         }
       },

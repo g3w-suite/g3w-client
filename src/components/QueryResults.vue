@@ -577,6 +577,8 @@
   import { throttle }                from 'utils/throttle';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
   import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
+  import { downloadFeatures }        from 'utils/downloadFeatures';
+  import { showDownloadFormats }     from 'utils/downloadFeatures';
   import GUI                         from 'services/gui';
   
   const headerExpandActionCellWidth = 10;
@@ -772,10 +774,10 @@
         this.$options.service.printAtlas(layer);
       },
       showLayerDownloadFormats(layer) {
-        this.$options.service.showLayerDownloadFormats(layer);
+        showDownloadFormats(layer);
       },
       saveLayerResult(layer, type = "csv") {
-        this.$options.service.downloadFeatures(type, layer, layer.features);
+        downloadFeatures(type, layer, layer.features);
       },
       hasLayerOneFeature(layer) {
         return 1 === layer.features.length;

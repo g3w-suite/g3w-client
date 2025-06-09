@@ -152,7 +152,6 @@ import ApplicationState            from 'store/application';
 import Field                       from 'components/FieldG3W.vue';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
-import { resizeMixin }             from 'mixins';
 import { debounce }                from 'utils/debounce';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
@@ -183,8 +182,6 @@ function _createFeatureForSelection(f) {
 export default {
 
   name: "G3WTable",
-
-  mixins: [resizeMixin],
 
   components: {
     Field
@@ -484,8 +481,8 @@ export default {
       const table = this.$el.querySelector('div.dataTables_scrollBody');
       if (table) {
         table.style.height = GUI.isMobile() ? '100%' : (
-            ((document.querySelector('.content')                       || {}).clientHeight || 0) // table height
-          - ((this.$el.querySelector('div.dataTables_scrollHeadInner') || {}).clientHeight || 0) // table header height
+            (ApplicationState.viewport.content.sizes.height)                              // table height
+          - (this.$el.querySelector('div.dataTables_scrollHeadInner')?.clientHeight || 0) // table header height
           - 100
         ) + 'px';
       }
@@ -647,16 +644,14 @@ export default {
 
   },
 
-  beforeCreate() {
-    this.delayType = 'debounce';
-  },
-
   /**
    * TableService Class
    * 
    * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
    */
   async created() {
+
+    GUI.on('resize', this.resize);
 
     this.currentFilter = null
 
@@ -668,9 +663,6 @@ export default {
     this.layer.on('filtertokenchange', this.filterChangeHandler);
 
     GUI.closeSideBar();
-
-    /** @FIXME `perc` parameter is not honored by `GUI.showContent` */
-    this.current_layout.rightpanel.height = 55;
 
     GUI.showContent({
       content: new Component({
@@ -696,7 +688,6 @@ export default {
     if (this.last_map_control) {
         this.last_map_control.control.toggle();
     }
-    this.setContentKey = GUI.onafter('setContent', this.resize);
 
     await this.$nextTick();
 
@@ -721,6 +712,7 @@ export default {
         } catch(e) {
           console.warn(e);
         }
+        this.resize()
       }, 800),
       bSortCellsTop:  true,
       columns:        this.state.headers,
@@ -739,6 +731,7 @@ export default {
     });
 
     this.changeColumn = debounce(async (e, i) => {
+      const table = $(this.$refs.attribute_table)
       const value = e.target.value.trim();
       table.one('draw', async() => {
         filterColumns[i]      = value;
@@ -756,8 +749,8 @@ export default {
     document.getElementById('g3w-table-toolbar').appendChild(fragment);
 
     // move "dataTables_info" and "dataTables_filter" before header action tools
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));  
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));  
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));
 
     // hide datatable rows → show only our custom "table_body"
     document.getElementById('table_body_attributes').remove();
@@ -792,7 +785,7 @@ export default {
       });
     }
 
-    GUI.un('setContent', this.setContentKey);
+    GUI.off('resize', this.resize);
 
     document.querySelector('#g3w-view-content .dataTables_info').remove();
     document.querySelector('#g3w-view-content .dataTables_filter').remove();
@@ -873,6 +866,6 @@ export default {
     opacity: 0.25;
   }  
   #open_attribute_table #layer_attribute_table_length {
-    padding-top: .755em;
+    padding-top: 5px;
   }
 </style>

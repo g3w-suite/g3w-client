@@ -232,106 +232,10 @@
       <li
         v-if      = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
         :disabled = "ApplicationState.download"
-        ref       = "download_menu"
+        @click.prevent.stop = "showDownloadMenu(layer)"
       >
         <i :class = "$fa('download')"></i>
-        {{ $t('catalog_items.contextmenu.download') }}
-        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
-        <bar-loader :loading = "ApplicationState.download"/>
-        <ul class = "sub-contex-menu">
-          <div v-if = "hasDowloadableRelations()" style = "padding: 3px; border-bottom: 3px solid var(--skin-color)">
-            <input
-              id         = "g3w-layer-download-relations"
-              class      = "magic-checkbox"
-              v-model    = "down_with_relations" 
-              type       = "checkbox"/>
-              <label for = "g3w-layer-download-relations" v-t = "'sdk.relations.download_with_relations'"></label>
-          </div>
-
-          <!-- Download as GeoTIFF -->
-          <li
-            v-if                = "canDownload('GeoTIFF', layer.id)"
-            @click.prevent.stop = "download('GeoTIFF', layer.id)"
-            v-download
-          >
-            <i :class = "$fa('geotiff')"></i> {{ $t('GeoTiff') }}
-          </li>
-
-          <!-- Download as GeoTIFF -->
-          <li
-            v-if                = "canDownload('GeoTIFF', layer.id)"
-            @click.prevent.stop = "download('GeoTIFF', layer.id, true)"
-            v-download
-          >
-            <i :class = "$fa('geotiff')" style = "color:#777"></i>
-            <i :class = "$fa('crop')"    style = "position: absolute; left: -7px; bottom: 8px; font-size: 1.2em"></i>
-            {{ $t('sdk.catalog.menu.download.geotiff_map_extent') }}
-          </li>
-
-          <!-- Download as SHP -->
-          <li
-            v-if                = "canDownload('Shp', layer.id)"
-            @click.prevent.stop = "download('Shp', layer.id)"
-            v-download
-          >
-            <i :class = "$fa('shapefile')"></i> {{ $t('Shapefile') }}
-          </li>
-
-          <!-- Download as GPX -->
-          <li
-            v-if                = "canDownload('Gpx', layer.id)"
-            @click.prevent.stop = "download('Gpx', layer.id)"
-            v-download
-          >
-            <i :class = "$fa('gpx')"></i> {{ $t('GPX') }}
-          </li>
-
-          <!-- Download as Gpkg -->
-          <li
-            v-if                = "canDownload('Gpkg', layer.id)"
-            @click.prevent.stop = "download('Gpkg', layer.id)"
-            v-download
-          >
-            <i :class = "$fa('gpkg')"></i> {{ $t('GeoPackage') }}
-          </li>
-
-          <!-- Download as CSV -->
-          <li
-            v-if                = "canDownload('Csv', layer.id)"
-            @click.prevent.stop = "download('Csv', layer.id)"
-            v-download
-          >
-            <i :class = "$fa('csv')"></i> {{ $t('CSV') }}
-          </li>
-
-          <!-- Download as XLS -->
-          <li
-            v-if = "canDownload('Xls', layer.id)"
-            @click.prevent.stop = "download('Xls', layer.id)"
-            v-download
-          >
-            <i :class  = "$fa('xls')"></i> {{ $t('Excel') }}
-          </li>
-
-          <!-- Download an external layer (from a proxy file server) -->
-          <li
-            v-if                = "isExternalVectorLayer(layer) && layer.downloadUrl"
-            @click.prevent.stop = "downloadExternal(layer.downloadUrl)"
-            v-download
-          >
-            <i :class = "$fa('download')"></i> {{ $t('sdk.catalog.menu.download.unknow') }}
-          </li>
-
-          <!-- Download an external layer (shapefile) -->
-          <li
-            v-if                = "isExternalVectorLayer(layer) && !layer.downloadUrl"
-            @click.prevent.stop = "downloadExternalShapefile(layer)"
-            v-download
-          >
-            <i :class = "$fa('shapefile')"></i> {{ $t('Shapefile') }}
-          </li>
-
-        </ul>
+        {{ $t('Download') }}
       </li>
 
       <!-- OGC Service URLs -->
@@ -459,14 +363,12 @@
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
 
-  import { TIMEOUT }                   from 'g3w-constants';
   import { VM }                        from 'g3w-eventbus';
   import ApplicationState              from 'store/application';
   import GUI                           from 'services/gui';
-  import { saveBlob }                  from 'utils/saveBlob';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
+  import { downloadFeatures }          from 'utils/downloadFeatures';
   import { t }                         from 'g3w-i18n';
-  import shpwrite                      from '@mapbox/shp-write';
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
@@ -525,7 +427,6 @@
         left:                0,
         project_menu:        false,
         layer_menu:          false,
-        down_with_relations: false, //@since 3.11.7 download with relations
       };
     },
 
@@ -580,9 +481,14 @@
         await this.$nextTick();
         this.top = e.target.getBoundingClientRect().top - this.$refs['menu'].clientHeight + (e.target.clientHeight / 2);
         $('.click-to-copy[data-toggle="tooltip"]').tooltip();
-        // conditionally inline "download_menu" and "ogc_menu" when they contain a single item
-        [this.$refs.download_menu, this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
+        // conditionally inline "ogc_menu" when they contain a single item
+        [this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
         dragElement(this.$refs.menu);
+      },
+
+      showDownloadMenu(layer) {
+        downloadFeatures(undefined, layer);
+        this.closeMenu();
       },
 
       /**
@@ -591,7 +497,6 @@
       closeMenu() {
         this.layer_menu          = false;
         this.project_menu        = false;
-        this.down_with_relations = false;
       },
 
       onChangeColor(val) {
@@ -674,50 +579,6 @@
       },
 
       /**
-       * @param { string } format
-       * @param { string } layerId
-       * @param { boolean } map_extent
-       * @since 3.11.0
-       */
-      async download(format, layerId, map_extent = false) {
-        ApplicationState.download = true;
-        try {
-          await getCatalogLayerById(layerId)['get' + format]({
-            data: {
-                    ...(map_extent ? { map_extent: GUI.getService('map').getMapExtent().toString() } : {}),
-                    down_with_relations: Number(this.down_with_relations) // convert boolean to 0/1
-                  },
-          });
-        } catch (e) {
-          GUI.notify.error(t("info.server_error"));
-        }
-        ApplicationState.download = false;
-        this.closeMenu();
-      },
-
-      /**
-       * External download url
-       * 
-       * @since 3.8.3
-       */
-       async downloadExternal(url) {
-        ApplicationState.download = true;
-
-        const response = url && await fetch(url, {
-          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
-          signal:  AbortSignal.timeout(TIMEOUT),
-        });
-
-        if (!response?.ok) {
-          throw (await response.json()).message;
-        }
-
-        saveBlob(await response.blob(), (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(-1));
-
-        ApplicationState.download = false;
-      },
-
-      /**
        * @param { 'top', 'bottom' } position 
        */
       setLayerPosition(position) {
@@ -795,41 +656,6 @@
           return layer && 'NoGeometry' !== type && type || '';
         }
         return '';
-      },
-
-      /**
-       * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
-       * 
-       * @param layer
-       * @returns {Promise<void>}
-       */
-      async downloadExternalShapefile(layer) {
-        ApplicationState.download = true;
-        let features = GUI.getService('map').getLayerByName(layer.name).getSource().getFeatures();
-        const name = layer.name.split(`.${layer.type}`)[0];
-        const blob = await shpwrite.zip(
-          // GeoJSONFile
-          (new ol.format.GeoJSON()).writeFeaturesObject(features, { dataProjection: layer.crs, featureProjection: GUI.getService('map').getEpsg() || layer.crs }),
-          {
-            outputType:     "blob",
-            prj:            layer.crs,
-            folder:         name,
-            types: {
-              point:        name,
-              mulipoint:    name,
-              polygon:      name,
-              multipolygon: name,
-              line:         name,
-              polyline:     name,
-              multiline:    name,
-            }
-        });
-
-        saveBlob(blob, name);
-
-        await this.$nextTick();
-        ApplicationState.download = false;
-        this.closeMenu();
       },
 
       showAttributeTable(layerId) {
@@ -999,16 +825,6 @@
         }
 
       },
-
-      /**
-       * Check if layer has relation with download format activated
-       * 
-       * @since 3.11.7
-       */
-       hasDowloadableRelations() {
-        const layer = getCatalogLayerById(this.layer.id);
-        return layer && layer.hasDowloadableRelations();
-      }
 
     },
 

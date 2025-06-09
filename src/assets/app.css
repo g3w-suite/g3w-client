@@ -217,7 +217,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
  **************************************************************************************/
 
 .wrapper         { height: 100%; width: 100%; overflow: hidden; }
-.content-wrapper { transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); min-height: 100%; background-color: #ecf0f5; position: relative; overflow: hidden; }
+.content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); background-color: #ecf0f5; position: relative; overflow: hidden; }
 
 /* When opening the sidebar on small screens */
 @media (max-width: 767px) {
@@ -507,7 +507,6 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .main-sidebar                             { position: fixed; }
 
  /* Content */
-.content                                  { min-height: 250px; padding: 0 15px; margin-right: auto; margin-left: auto; }
 
 .btn                                      { border-radius: 3px; }
 .box-header                               { cursor: pointer; }
@@ -712,8 +711,13 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .g3w-view.map                                                                    { line-height: normal; display:inline-block; height:0; width:0; position: relative; }
 .g3w-view.map #resize-map-and-content                                            { position: absolute; z-index:4; user-select: none; }
 .g3w-view.map #resize-map-and-content:hover                                      { background-color: #ccc !important; }
-.g3w-view.map #resize-map-and-content.split-h                                    { width: 8px; height: 100%; cursor: col-resize; right:-7px; }
-.g3w-view.map #resize-map-and-content.split-v                                    { height: 8px; width: 100%; cursor: row-resize; bottom:-7px; }
+.g3w-view.map #resize-map-and-content.split-h                                    { cursor: col-resize; width: 11px; height: 100%; cursor: col-resize; right:-10px; }
+.g3w-view.map #resize-map-and-content.split-v                                    { cursor: ns-resize; height: 15px; width: 100%; cursor: row-resize; bottom:-14px; }
+.sidebar-mini:not(.sidebar-collapse) .g3w-view.content.full-size                 { padding-left: 45px !important; }
+
+.g3w-view.content                                                                { z-index: 1; }
+.g3w-view.content.split-h:not(.g3w-disabled)                                     { transition: width .3s ease-in-out; }
+.g3w-view.content.split-v:not(.g3w-disabled)                                     { transition: height .3s ease-in-out; }
 .g3w-view.content .preview                                                       { width: 100%; margin-top: 0; display:flex; align-items: center;}
 .g3w-view.content .preview .filename                                             { overflow: hidden; margin: 15px; font-weight: bold; }
 .g3w-view.content .preview .clearmedia                                           { cursor: pointer; margin-left: auto; }
@@ -1113,7 +1117,8 @@ textarea.form-control                     { height: auto; }
 .input-error-validation                                          { border: 2px solid red!important; }
 .error-input-message                                             { color: red; font-weight: bold; }
 
-.g3wform_footer                                                  { text-align: center; position: absolute; bottom: 0; margin: auto; width: 100%; background-color: #ededed; }
+.g3wform_content:last-of-type                                    { display: flex !important; flex-direction: column; }
+.g3wform_footer                                                  { text-align: center; position: sticky; bottom: 0; margin-top: auto; width: 100%; background-color: #ededed; }
 .g3wform_footer button                                           { font-weight: bold; margin: 5px; min-width: 80px; }
 .g3wform_header                                                  { display: flex; justify-content: space-between; background-color: #fff; }
 .g3wform_header .title                                           { flex-grow: 1; flex-shrink: 1; flex-basis: 0; padding: 5px; overflow: hidden; font-weight: bold; font-size: 1.4em; }

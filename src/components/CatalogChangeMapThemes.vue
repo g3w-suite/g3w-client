@@ -183,17 +183,6 @@ import ApplicationState   from 'store/application';
 import { XHR }            from 'utils/XHR';
 import { t }              from 'g3w-i18n';
 
-/**
- * Attributes to send to server of layerstrees object
- *
- * node (single layer): keys [id, name, showfeaturecount, visible]
- * group (Group) : keys [checked, expanded, mutually-exclusive, name, nodes]
- */
-const LAYERSTREES_ATTRIBUTES = {
-  node:  ['id', 'name', 'visible', 'expanded'],
-  group: ['name', 'checked', 'expanded', 'mutually-exclusive']
-}
-
 export default {
 
   name: "changemapthemes",
@@ -261,21 +250,31 @@ export default {
      */
     _getMapThemeParams() {
       const params   = { layerstree: [], styles: {} };
-      const treeItem = (type, node) => LAYERSTREES_ATTRIBUTES[type].reduce((acc, attr) => { acc[attr] = node[attr]; return acc; }, {});
       const traverse = (nodes, tree) => {
         nodes.forEach(node => {
-          //in the case of a layer
+          const item = undefined !== node.id
+            ? {                                           // a layer node
+              id:       node.id,
+              name:     node.name,
+              visible:  node.visible,
+              expanded: node.expanded,
+            }
+            : {                                           // a group node
+              name:                 node.name,
+              checked:              node.checked,
+              expanded:             node.expanded,
+              'mutually-exclusive': node['mutually-exclusive']
+            };
+          // handle recursion (group node)
+          if (Array.isArray(node.nodes)) {
+            item.nodes = [];
+            traverse(node.nodes, item.nodes);
+          }
+          // set style of layer
           if (undefined !== node.id) {
             params.styles[node.id] = node.styles.find(s => s.current).name; // get current layer style
-            tree.push(treeItem('node', node));
           }
-          //in the case of group
-          if (Array.isArray(node.nodes)) {
-            const group = treeItem('group', node)
-            group.nodes = [];
-            tree.push(group);
-            traverse(node.nodes, group.nodes);
-          }
+          tree.push(item);
         });
       };
 

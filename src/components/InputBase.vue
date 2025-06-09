@@ -14,7 +14,7 @@
       <label
         :for       = "state.name"
         v-disabled = "!editable"
-        class      = "col-sm-12 control-label"
+        class      = "control-label"
       >
         <span v-if = "state.i18nLabel" v-t = "state.label"></span>
         <span v-else>{{ state.label }}</span>
@@ -39,7 +39,7 @@
       <span v-t = "'sdk.relations.field'"></span>
     </div>
 
-    <div class = "col-sm-12">
+    <div class = "">
 
       <!-- SLOT LOADING -->
       <slot name = "loading">

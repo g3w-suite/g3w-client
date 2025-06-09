@@ -1,7 +1,7 @@
-import { VIEWPORT }              from 'g3w-constants';
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
+import { t }                     from 'g3w-i18n';
 
 import ApplicationState          from 'store/application';
 
@@ -12,122 +12,28 @@ import { toRawType }             from 'utils/toRawType';
 import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
+import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
 
-/** store legacy frontend components */
-const COMPONENTS = {};
-
-/* service know by the applications (standard) */
-const SERVICES = {
-  navbar:   null,
-  sidebar:  null,
-  viewport: null,
-};
-
-function setViewSizes() {
-  const state = ApplicationState.viewport;
-
-  const viewportWidth  = $('#app')[0].getBoundingClientRect().width - ($(".main-sidebar").length ? ($(".main-sidebar")[0].getBoundingClientRect().width + $(".main-sidebar").offset().left) : 0);
-  const viewportHeight = $(document).innerHeight() - $('.navbar').innerHeight();
-  // assign all width and height of the view to primary view (map)
-  let primaryWidth;
-  let primaryHeight;
-  let secondaryWidth;
-  let secondaryHeight;
-  // percentage of secondary view (content)
-  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${state.split === 'h'? 'width' : 'height'}_100`];
-  const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === state.split ? 'width': 'height'];
-  const scale = (state.secondaryPerc !== 100 && !is_fullview ? content_perc : 100) / 100;
-  if ('h' === state.split) {
-    secondaryWidth  = state.secondaryVisible ? Math.max((viewportWidth * scale), VIEWPORT.resize.content.min) : 0;
-    secondaryHeight = viewportHeight;
-    primaryWidth    = viewportWidth - secondaryWidth;
-    primaryHeight   = viewportHeight;
-  } else {
-    secondaryWidth  = viewportWidth;
-    secondaryHeight = state.secondaryVisible ? Math.max((viewportHeight * scale), VIEWPORT.resize.content.min) : 0;
-    primaryWidth    = state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
-    primaryHeight   = viewportHeight - secondaryHeight;
-  }
-  state[state.primaryView]                              .sizes.width  = primaryWidth;
-  state[state.primaryView]                              .sizes.height = primaryHeight;
-  state['map' === state.primaryView ? 'content' : 'map'].sizes.width  = secondaryWidth;
-  state['map' === state.primaryView ? 'content' : 'map'].sizes.height = secondaryHeight;
-}
-
-/**
- * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
- */
-function getReducedSizes() {
-  const contentEl = $('.content');
-  let reducedWidth  = 0;
-  let reducedHeight = 0;
-  const sideBarToggleEl = $('.sidebar-aside-toggle');
-  const is_fullview = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[`${ApplicationState.viewport.split === 'h' ? 'width' : 'height'}_100`];
-  if (contentEl && ApplicationState.viewport.secondaryVisible && is_fullview) {
-    if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
-      const toggleWidth = sideBarToggleEl.outerWidth();
-      contentEl.css('padding-left', toggleWidth + 5);
-      reducedWidth = (toggleWidth - 5);
-    }
-  } else {
-    const toggleWidth = sideBarToggleEl.outerWidth();
-    contentEl.css('padding-left', ApplicationState.viewport.secondaryPerc === 100 ? toggleWidth + 5 : 15);
-  }
-  return {
-    reducedWidth,
-    reducedHeight
-  }
-}
-
-/** clear all stacks */
-async function _clearContents() {
-  await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
-    if (d.content instanceof Component || d.content instanceof Panel) {
-      await promisify(d.content.unmount());
-    } else {
-      $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
-    }
-  }));
-  ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
-}
-
-/**
- * Convert error to user message showed
- * @param error
- * @returns {string}
- */
-function errorToMessage(error) {
-  const type = toRawType(error);
-
-  if ('Error' === type) {
-    return `CLIENT - ${error.message}`;
-  }
-
-  if ('Object' === type && error.responseJSON && false === error.responseJSON.result) {
-    const e = error.responseJSON.error;
-    return `${(e.code || '').toUpperCase()} ${e.data || ''} ${e.message || '' }`;
-  }
-
-  if ('Object' === type && error.responseText) {
-    return error.responseText;
-  }
-
-  if ('Array' === type) {
-    return error.map(e => errorToMessage(e)).join(' ');
-  }
-
-  return error || 'server_error';
-}
-
-// API della GUI.
-// methods have been defined by application
-// app should call GUI.ready() when GUI is ready
 export default new (class GUI extends G3WObject {
+
+  /** store legacy frontend components */
+  #COMPONENTS = {}
+
+  /* service know by the applications (standard) */
+  #SERVICES = {
+    navbar:   null,
+    sidebar:  null,
+    viewport: null,
+  }
 
   constructor(opts) {
     super(opts);
 
-    this.setters = ['setContent'];
+    this.setters = [
+      'setContent',
+      'getPermalink',
+      'getPrintParams',
+    ];
 
     this.isready           = false;
 
@@ -264,8 +170,8 @@ export default new (class GUI extends G3WObject {
     if ('sidebar' === placeholder && (!isMobile.any || false !== component.mobile)) {
       ApplicationState.sidebar.components.push(component);
       (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
-    } else if ('sidebar' !== placeholder && SERVICES[placeholder]) {
-      register = SERVICES[placeholder].addComponents([component], options);
+    } else if ('sidebar' !== placeholder && this.#SERVICES[placeholder]) {
+      register = this.#SERVICES[placeholder].addComponents([component], options);
     }
     if (register) {
       this.setComponent(component);
@@ -282,61 +188,57 @@ export default new (class GUI extends G3WObject {
 
   setComponent(component) {
     const id = component.getId();
-    if (undefined === COMPONENTS[id]) {
-      COMPONENTS[id] = component;
+    if (undefined === this.#COMPONENTS[id]) {
+      this.#COMPONENTS[id] = component;
     }
   }
 
   getComponent(id) {
-    return COMPONENTS[id];
+    return this.#COMPONENTS[id];
   }
 
   getComponents() {
-    return COMPONENTS;
+    return this.#COMPONENTS;
   }
 
   ready() {
-    let drawing     = false;
-    let resizeFired = false;
-    function triggerResize() {
-      resizeFired = true;
-      drawResize();
-    }
-    /**
-     * function called from resize of browser windows (also open dev tool)
-     */
-    const drawResize = () => {
-      if (true === resizeFired ) {
-        resizeFired = false;
-        drawing = true;
-        this._layout('resize');
-        requestAnimationFrame(drawResize);
-      } else {
-        drawing = false;
-      }
-    };
+    // resize della window
+    $(window).resize(() => { requestAnimationFrame(() => { this._layout(); }); });
 
-    // SetSidebar width (used by components/Viewport.vue single file component)
-    ApplicationState.viewport.SIDEBARWIDTH = this.getSize({element:'sidebar', what:'width'});
+     // resize on main siedemar open close sidebar
+    $('.main-sidebar').on('transitionend', () => { requestAnimationFrame(() => { this._layout(); }); });
 
     this._layout();
 
-    // resize della window
-    $(window).resize(() => {
-      // set resizedFired to true and execute drawResize if it's not already running
-      if (false === drawing) {
-        triggerResize();
-      }
-    });
+    // remove "permalink_code" from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('permalink_code');
+    window.history.replaceState(null, null, url);
 
-    // resize on main siedemar open close sidebar
-    $('.main-sidebar').on('transitionend', function (event) {
-      //be sure that is the main sidebar that is transitioned non his child
-      if (event.target === this) {
-        $(this).trigger('trans-end');
-        triggerResize();
+    const sidebarFix = () => {
+      const contents = document.querySelector('#contents');
+      const panel    = document.querySelector('#g3w-view-content');
+
+      contents.style.height = panel.offsetHeight
+        - (panel.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
+
+        // workaround for qplotly?
+      if (contents.children[0]) {
+        contents.children[0].style.height = contents.style.height;
       }
-    });
+
+      panel.style.padding = contents.children[0] ? '15px' : null;
+
+      const viewH = $(window).height() - $(".navbar").height();
+      $(".content-wrapper") .css('height', viewH);
+      $(".main-sidebar")    .css('height', viewH);
+      $('.g3w-sidebarpanel').css('height', viewH);
+
+      requestAnimationFrame(sidebarFix);
+    };
+    requestAnimationFrame(sidebarFix);
 
     this.emit('ready');
     this.isready = true;
@@ -472,7 +374,7 @@ export default new (class GUI extends G3WObject {
       console.warn(e);
       this.showUserMessage({
         type:        'alert',
-        message:     errorToMessage(e),
+        message:     this.#errorToMessage(e),
         textMessage: true
       });
       //@scince 3.11.0 emit error-output-data
@@ -830,17 +732,10 @@ export default new (class GUI extends G3WObject {
     return loading && new Promise((resolve) => setTimeout(resolve, 200))
   }
 
-  toggleFullViewContent() {
-    const state = ApplicationState.viewport;
-    const { rightpanel } = ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
-    rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`] = !rightpanel[`${state.split === 'h' ? 'width' : 'height'}_100`];
-    this._layoutComponents();
-  }
-
   /**
    * @since 4.0.0 
    */
-  async setContent(options = {}) {
+  async setContent(opts = {}) {
     this.emit('opencontent', true);
 
     // close user message before set content
@@ -848,48 +743,46 @@ export default new (class GUI extends G3WObject {
       this.closeUserMessage();
     }
 
-    options.content     = options.content || null;
-    options.title       = options.title || "";
-    options.push        = (true === options.push || false === options.push) ? options.push : false;
-    options.perc        = isMobile.any ? 100 : options.perc;
-    options.split       = options.split || 'h';
-    options.backonclose = (true === options.backonclose || false === options.backonclose) ? options.backonclose : false;
-    options.showtitle   = (true === options.showtitle || false === options.showtitle) ? options.showtitle : true;
+    const state    = ApplicationState.viewport;
+    const panel    = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
 
-    const opts = options;
+    Object.assign(opts, {
+      content:     opts.content || null,
+      title:       opts.title || "",
+      push:        !!opts.push,
+      split:       opts.split || 'h',
+      perc:        opts.perc ?? (isMobile.any ? 100 : ('h' === state.split ? panel.width: panel.height)),
+      backonclose: !!opts.backonclose,
+      showtitle:   opts.showtitle ?? true,
+    });
 
-    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
-    opts.perc = opts.perc !== undefined ? opts.perc : content_perc;
-
-    // check if push is set
-    opts.push = opts.push || false;
-    const event = opts.perc === 100 ? 'show-content-full' : 'show-content';
+    const contents = this.getComponent('contents');
+    const content  = opts.content;
 
     // set all content parameters
-    Object.assign(ApplicationState.viewport.content, {
+    Object.assign(state.content, {
       title:        opts.title,
       split:        undefined === opts.split       ? null : opts.split,
       closable:     undefined === opts.closable    || opts.closable,
       backonclose:  undefined === opts.backonclose || opts.backonclose,
-      style:        undefined === opts.style ? {} : opts.style,
+      style:        undefined === opts.style       ? {} : opts.style,
       headertools:  undefined === opts.headertools ? [] : opts.headertools,
       showgoback:   undefined === opts.showgoback  || opts.showgoback,
       contentsdata: ApplicationState.contentsdata,
     });
 
-    // call show view (in this case content (other is map)
-    this._showView('content', opts);
+    state.split = opts.split;
 
-    const contents = this.getComponent('contents');
-    
-    // whether to clean the stack every time, sure to have just one component.
-    if (!opts.push) {
-      await _clearContents();
+    if (!opts.perc || !opts.push)  {
+      await this.#clearContents();
     }
-
-    const content = opts.content;
-    const _options = Object.assign(opts, { parent: contents.internalComponent.$el, append: true });
-    contents.parent = _options.parent;
+   
+    Object.assign(opts, {
+      parent: contents.internalComponent.$el,
+      append: true
+    });
+    
+    contents.parent = opts.parent;
 
     // check the type of content:
 
@@ -897,12 +790,12 @@ export default new (class GUI extends G3WObject {
     if (content instanceof jQuery || 'string' === typeof content) {
       let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
       $(contents.parent).append(el);
-      ApplicationState.contentsdata.push({ content: el, options: _options });
+      ApplicationState.contentsdata.push({ content: el, options: opts });
       console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', ApplicationState.contentsdata.at(-1));
     }
 
     // Vue element
-    else if (content.mount && 'function' === typeof content.mount) {
+    else if ('function' === typeof content?.mount) {
       // Check a duplicate element by component id (if already exist)
       let id = ApplicationState.contentsdata.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
       if (-1 !== id) {
@@ -910,14 +803,14 @@ export default new (class GUI extends G3WObject {
         ApplicationState.contentsdata.splice(id, 1);
       }
       // Mount vue component
-      await promisify(content.mount(contents.parent, _options.append || false));
-      ApplicationState.contentsdata.push({ content, options: _options });
+      await promisify(content.mount(contents.parent, opts.append || false));
+      ApplicationState.contentsdata.push({ content, options: opts });
     }
 
     // DOM element
     else {
       contents.parent.appendChild(content);
-      ApplicationState.contentsdata.push({ content, options: _options });
+      ApplicationState.contentsdata.push({ content, options: opts });
     }
 
     Array
@@ -926,14 +819,13 @@ export default new (class GUI extends G3WObject {
 
     contents.setOpen(true);
 
-    this._layoutComponents(event);
+    this._layout(true);
   }
 
   // hide content
   hideContent(bool) {
     const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
-    ApplicationState.viewport.secondaryVisible = !bool;
-    this._layout('hide-content');
+    this._layout(!bool);
     // return previous percentage
     return content_perc;
   }
@@ -947,18 +839,8 @@ export default new (class GUI extends G3WObject {
     // content is open → remove content
     if (open) {
       this.getComponent('contents').setOpen(false);
-      _clearContents();
-    }
-
-    // close secondary view
-    if (open && 'map' === state.primaryView) {
-      await _clearContents();
-      state.secondaryPerc = 0;
-    }
-
-    if (open) {
-      state.secondaryVisible = false;
-      this._layout('close-content');
+      await this.#clearContents();
+      this._layout(false);
       await Vue.nextTick();
     }
 
@@ -972,10 +854,11 @@ export default new (class GUI extends G3WObject {
       return Promise.reject();
     }
 
-    const data = ApplicationState.contentsdata.at(-2);
-    const opts = data.options;
+    const data  = ApplicationState.contentsdata.at(-2);
+    const opts  = data.options;
+    const state = ApplicationState.viewport;
 
-    Object.assign(ApplicationState.viewport.content, {
+    Object.assign(state.content, {
       title:        opts.title,
       split:        undefined !== opts.split       ? opts.split       : null,
       closable:     undefined !== opts.closable    ? opts.closable    : true,
@@ -986,7 +869,15 @@ export default new (class GUI extends G3WObject {
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
     });
 
-    this._showView('content', data.options);
+    state.split = opts.split ?? state.split;
+
+    if (!opts.perc)  {
+      await this.#clearContents();
+    }
+
+    this._layout(!!opts.perc);
+
+    await Vue.nextTick();
 
     if (ApplicationState.contentsdata.length <= 0) {
       return;
@@ -1007,9 +898,7 @@ export default new (class GUI extends G3WObject {
       .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
       .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
 
-    ApplicationState.viewport.secondaryPerc    = data.options.perc;
-
-    this._layout('pop-content');
+    this._layout();
 
     return ApplicationState.contentsdata.at(-1);
   }
@@ -1036,48 +925,151 @@ export default new (class GUI extends G3WObject {
     ApplicationState.gui.sidebar.open = false;
   }
 
-  getSize ({ element, what }) {
+  getSize({ element, what }) {
     if (element && what) {
       return ApplicationState.sizes[element][what];
     }
   }
 
-  // manage all layout logic
-  // viewName: map or content
-  //options.  percentage , splitting title etc ..
-  async _showView(viewName, options = {}) {
-    const state = ApplicationState.viewport;
+  getPrintParams(params = {}) {
+    return params;
+  }
 
-    const {
-      perc = viewName == state.primaryView ? 100 : 50,
-      split = 'h'
-    } = options;
+  /**
+   * Create permalink url
+   * 
+   * @param { URL }    url  "original_url" sent to server
+   * @param { Object } data "permalink_data" sent to server
+   *
+   * @since 4.0.0
+   */
+  async getPermalink(url, data) {
 
-    state[viewName].aside = viewName == state.primaryView ? (undefined === options.aside ? false : options.aside) : true;
-
-    //calculate the content
-    const secondaryPerc = viewName == state.primaryView ? 100 - perc : perc;
-
-    //show Secondary View content only if more than 0
-    if (secondaryPerc > 0)  {
-      state.secondaryVisible = true;
-      state.split            = undefined !== split ? split : state.split;
-      state.secondaryPerc    = undefined !== perc  ? perc  : state.perc;
-      this._layout();
+    if (this.getPermalink.loading) {
       return;
     }
 
-    // close secondary view
-    if ('map' === state.primaryView) {
-      await _clearContents();
-      state.secondaryPerc = 0;
-    }
+    this.getPermalink.loading = true;
 
-    state.secondaryVisible = false;
+    const project = ApplicationState.project;
+    const uparams = Array.from(url.searchParams.entries());
 
-    this._layout();
+    // get difference between start layersstree project with current
+    const traverse = (nodes, onodes, tree = []) => {
+      nodes.forEach((node, i) => {
+        // get diff
+        const diff = Object.keys(node).reduce((acc, attr) => Object.assign(acc,
+          undefined !== onodes[i][attr] && node[attr] !== onodes[i][attr]
+            ? { [attr]: node[attr] }
+            : {}
+        ), {});
 
-    await Vue.nextTick();
+        // handle recursion (group node)
+        if (Array.isArray(node.nodes)) {
+          diff.nodes = [];
+          traverse(node.nodes, onodes[i].nodes, diff.nodes);
+          diff.nodes = diff.nodes.filter(Boolean);
+          if (!diff.nodes.length) {
+            delete diff.nodes;
+          }
+        }
+
+        // only if has changes
+        if (Object.keys(diff).length) {
+          diff[node.id ? 'id' : 'name'] = node.id || node.name;
+          tree.push(diff);
+        }
+      });
+      return tree;
+    };
+
+    const layers = project.state.layers.map(l => getCatalogLayerById(l.id).config.styles.some((s, i) => s.current !== l.styles[i].current) && ({
+      id: l.id,
+      styles: getCatalogLayerById(l.id).config.styles,
+    })).filter(Boolean);
+
+    const layersstree = traverse(
+      project.getLayersStore().state.layerstree[0].nodes, // current state
+      project.state.layerstree,                           // original state
+    ).filter(Boolean);
+
+    let response = await (await fetch('/api/embed/', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        url,
+        data: {
+          ...data,
+          initextent:      this.getService('map').getMapExtent(),            // current map extent
+          lng:             ApplicationState.language,                        // current launguage
+          initbaselayer:   ApplicationState.baseLayerId || undefined,        // current base layer
+          toc_tab_default: ['baselayers', 'layers', 'legend'].find(tab => tab === this.getComponent('catalog').getInternalComponent().activeTab), // take in account change tab
+          layers:          layers.length      ? layers      : undefined,     // layers configuration: store changes of layers attribute (default style etc..)
+          layerstree:      layersstree.length ? layersstree : undefined,     // layerstree on TOC: loop through child nodes and return structure layerstree diff only
+        },
+      }),
+    })).json();
+
+    const permalink_code = response?.data?.permalink_code;
+
+    const dialog = Object.assign(document.createElement('template'), {
+      innerHTML: /* html */`
+        <dialog id="share_modal">
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fa fa-share-alt" style="margin-right: .5ch;"></i> ${t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
+          <form method="dialog">
+            <input readonly value = "${ url.toString() }" onfocus="event.target.select()" class="form-control mt-2" id="embed-link" />
+            <label style="margin: 1em 0;" ${uparams.length ? '' : 'hidden' }>
+              <input type="checkbox" data-key="permalink_code" checked>
+              Generate permalink
+            </label>
+            <div id="embed-params" style="border-top: thin solid #ccc;padding: 1em 0;" hidden>
+              <span>Choose params to share</span>
+              <div style="display: flex;gap: 1em;padding: 1em 0;">
+                ${uparams.map(([key, value]) => /* html */`<label title="${value}"><input type="checkbox" data-key="${key}" checked> ${key}</label>`).join('')}
+              </div>
+            </div>
+            <menu style="display: flex; justify-content: end;">
+              <button type="submit" onclick="document.querySelector('#embed-link').focus() || document.execCommand('copy')" class="form-control btn btn-success mt-2">${ t('sdk.tooltips.copy_map_extent_url') }</button>
+            </menu>
+          </form>
+        </dialog>
+      `.trim()
+    }).content.firstChild;
+
+    // generate permalink
+    const generate = () => {
+      let search;
+      const eparams = dialog.querySelector('#embed-params');
+      const elink   = dialog.querySelector('#embed-link');
+      if (dialog.querySelector('input[type="checkbox"][data-key="permalink_code"]').checked) {
+        eparams.hidden = true;
+        elink.value = url.origin + '/api/embed/' + permalink_code + '/';
+      } else {
+        eparams.hidden = false;
+        search = Array
+          .from(eparams.querySelectorAll('input[type="checkbox"]:checked'))
+          .map(c => `${encodeURIComponent(c.getAttribute('data-key'))}=${encodeURIComponent(url.searchParams.get(c.getAttribute('data-key')))}`)
+          .join('&');
+        elink.value = url.origin + url.pathname + (search ? `?${search}` : '');
+      }
+      
+    };
+
+    generate();
+
+    dialog.addEventListener("click", e => {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
+
+    dialog.querySelectorAll('input[type="checkbox"]').forEach(c => c.addEventListener('change', generate));
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+      this.getPermalink.loading = false;
+    });
+    document.body.appendChild(dialog);
+    dialog.showModal();
   }
 
   /**
@@ -1085,53 +1077,121 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  _layoutComponents(event = null) {
-    requestAnimationFrame(() => {
-      const reducesdSizes = getReducedSizes();
-      const reducedWidth  = reducesdSizes.reducedWidth || 0;
-      const reducedHeight = reducesdSizes.reducedHeight || 0;
+  _layout(param) {
 
-      // for each component
-      setViewSizes();
+    // whether to show secondary (content)
+    if ('boolean' === typeof param) {
+      this._layout.secondary = param;
+    }
 
-      this.getService('map').layout({
-        width:  ApplicationState.viewport.map.sizes.width - reducedWidth,
-        height: ApplicationState.viewport.map.sizes.height - reducedHeight
-      });
+    const sec =  this._layout.secondary;
 
-      const parentWidth = ApplicationState.viewport.content.sizes.width - reducedWidth;
+    const state  = ApplicationState.viewport;
+    const layout = ApplicationState.gui.layout;
 
-      // Set layout of the content each time
-      Vue.nextTick(() => {                                                     // run only after that vue state is updated
-        const el = this.getComponent('contents').internalComponent.$el;
-        const height = el.parentElement.clientHeight                           // parent element is "g3w-view-content"
-          - ((el.parentElement.querySelector('.close-panel-block') || {}).offsetHeight || 0)
-          - ((el.parentElement.querySelector('.content_breadcrumb') || {}).offsetHeight || 0)
-          - 10;                                                                // margin 10 from bottom
-        el.style.height = height + 'px';
-        if (el.firstChild) {
-          el.firstChild.style.height = height + 'px';
-        }
-        ApplicationState.contentsdata.forEach(d => {                                // re-layout each component stored into the stack
-          if ('function' == typeof d.content.layout) {  
-            d.content.layout(parentWidth + 0.5, height);
-          }
-        })
-      });
+    const contents        = document.querySelector('#contents');
+    const content_wrapper = document.querySelector('.content-wrapper');
+    const viewW           = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+    const viewH           = $(window).height() - $(".navbar").height();
+    const panel           = layout[layout.__current].rightpanel;
 
-      if (event) {
-        setTimeout(() => { this.emit(event); })
-      }
+    const opts = {
+      split: state.split,
+      ...(ApplicationState.contentsdata.at(-1)?.options || {}),
+    };
+
+    const h_split = 'h' === opts.split;
+    const v_split = 'v' === opts.split;
+
+    content_wrapper.style.flexDirection  = h_split ? 'row' : 'column';
+    content_wrapper.style.justifyContent = 'space-between';
+
+    const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
+
+    // percentage of secondary view (content)
+    const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
+
+    contents.parentElement.classList.toggle('full-size', is_full);
+
+    // size "content"
+    Object.assign(state.content.sizes, {
+      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
+      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : (sec ? viewH : 0),
     });
+
+    // size "map"
+    Object.assign(state.map.sizes, {
+      width:  viewW - (h_split ? state.content.sizes.width : 0),
+      height: viewH - (v_split ? state.content.sizes.height : 0),
+    });
+
+    // resize "content" (after vue state is updated)
+    Vue.nextTick().then(() => {
+
+      // resize "map"
+      this.getService('map').layout({
+        width:  state.map.sizes.width,
+        height: state.map.sizes.height
+      });
+
+      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+        try {
+          if ('function' == typeof d.content.layout) {
+            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+          }
+        } catch (e) {
+          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+          setTimeout(() => this._layout(), 1000);
+        }
+      });
+    });
+
+    this.emit('resize');
+
+    window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
   }
 
   /**
-   * main layout function
+   * Convert error to user message showed
+   * 
+   * @param error
+   * @returns {string}
    */
-  _layout(event = null) {
-    getReducedSizes();
-    setViewSizes();
-    this._layoutComponents(event);
+  #errorToMessage(error) {
+    const type = toRawType(error);
+
+    if ('Error' === type) {
+      return `CLIENT - ${error.message}`;
+    }
+
+    if ('Object' === type && error.responseJSON && false === error.responseJSON.result) {
+      const e = error.responseJSON.error;
+      return `${(e.code || '').toUpperCase()} ${e.data || ''} ${e.message || '' }`;
+    }
+
+    if ('Object' === type && error.responseText) {
+      return error.responseText;
+    }
+
+    if ('Array' === type) {
+      return error.map(e => this.#errorToMessage(e)).join(' ');
+    }
+
+    return error || 'server_error';
+  }
+
+  /**
+   * clear all stacks
+   */
+  async #clearContents() {
+    await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
+      if (d.content instanceof Component || d.content instanceof Panel) {
+        await promisify(d.content.unmount());
+      } else {
+        $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
+      }
+    }));
+    ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
   }
 
 });

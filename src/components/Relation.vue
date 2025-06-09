@@ -198,8 +198,6 @@
   import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
   import { saveBlob }                             from 'utils/saveBlob';
 
-  let SIDEBARWIDTH;
-
   export default {
 
     /** @since 3.8.6 */
@@ -535,7 +533,7 @@
 
       onChartResize() {
         const move = e => {
-          const size                     = e.pageX+2 - ($('.sidebar-collapse').length ? 0 : SIDEBARWIDTH);
+          const size                     = e.pageX + 2 - $('.main-sidebar').width();
           this.$refs.content.style.width = `${size}px`;
           this.$refs.chart.style.width   = `${$(this.$refs.wrapper).width() - size - 10}px`;
         };
@@ -556,7 +554,6 @@
 
       await this.$nextTick();
 
-      SIDEBARWIDTH = GUI.getSize({ element:'sidebar', what:'width' });
       this.relation.title = this.relation.name;
 
       /** @FIXME add description */
