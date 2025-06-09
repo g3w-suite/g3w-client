@@ -385,7 +385,31 @@ export default {
             'Polygon':    'Poligono',
             'Rectangle':  'Rettangolo',
             'Circle':     'Cerchio',
-            'Text':       'Testo'
+            'Text':       'Testo',
+            
+          },
+          inputs: {
+            'radius':    'Raggio',
+            'length':    'Lunghezza',
+            'w_length' : 'Larghezza',
+            'h_length' : 'Altezza',
+            'rotation' : 'Rotazione',
+            'font_size': 'Dimensione Font',
+            'direction': 'Direzione',
+            'f_direction': 'Avanti',
+            'b_direction': 'Indietro',
+            'opacity':   'Opacità',
+            'stroke':    'Bordo',
+          },
+          checkbox: {
+            'show_text': 'Mostra Testo',
+            'show_info': 'Mostra Info'
+          },
+          actions: {
+            'export': 'Esporta',
+            'import': 'Importa',
+            'remove': 'Rimuovi',
+            'show_all': 'Mostra tutti',
           }
         }
       },
@@ -455,7 +479,11 @@ export default {
           },
           download: {
             unknow: "Scarica",
-            geotiff_map_extent: "GeoTiff (vista attuale)"
+            geotiff_map_extent: "GeoTiff (vista attuale)",
+            title: "Esporta",
+            layer: "Livello",
+            include_relations: "Includere le relazioni?",
+            data_format: "Formato"
           }
         }
       },

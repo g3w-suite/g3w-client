@@ -11,12 +11,10 @@ import './g3w-globals';
 // constants
 import {
   FONT_AWESOME_ICONS,
-  LOCAL_ITEM_IDS,
   TIMEOUT,
 }                                  from 'g3w-constants';
 
 // core
-import translations                from 'locales';
 import ApplicationState            from 'store/application';
 import G3WObject                   from 'g3w-object';
 import Panel                       from 'g3w-panel';
@@ -258,41 +256,10 @@ ApplicationState.language = initConfig.user.i18n || 'en';
 // setup i18n
 (initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
 
-i18next
-  .init({
-      lng:         initConfig.user.i18n,
-      ns:          'app',
-      fallbackLng: 'en',
-      resources:    translations
-  });
-
-addI18n(ApplicationState.i18n.plugins);
-
 // set Accept-Language request header based on config language
 $.ajaxSetup({
   beforeSend: xhr => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
 });
-
-(new Vue).$watch(() => ApplicationState.language, () => {
-  //set form control class to filter
-  $.extend($.fn.dataTableExt.oStdClasses, {
-    "sFilterInput": "form-control search"
-  });
-  $.extend(true, $.fn.dataTable.defaults, {
-    "language": {
-      "sSearch": '',
-      "searchPlaceholder": t("dosearch"),
-      "sLengthMenu": t("dataTable.lengthMenu"),
-      "paginate": {
-        "previous": '«',
-        "next": '»',
-      },
-      "info": t("dataTable.info"),
-      "zeroRecords": t("dataTable.nodatafilterd"),
-      "infoFiltered": ''
-    }
-  });
-}, { immediate: true});
 
 /**
  * Application starting point
@@ -301,6 +268,55 @@ $.ajaxSetup({
  * and the applicationService instance that is useful to work with project API
  */
 (async () => { try {
+
+  // lazy load i18n translations
+  i18next
+    .init({
+        lng:         initConfig.user.i18n,
+        ns:          'app',
+        fallbackLng: 'en',
+        resources:    {
+          en:                     (await import(`${initConfig.urls.clienturl}locales/en.js`)).default,
+          [initConfig.user.i18n]: (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default
+        }
+    });
+
+  addI18n(ApplicationState.i18n.plugins);
+
+  (new Vue).$watch(() => ApplicationState.language, async () => {
+
+    // lazy load i18n translations
+    try {
+      i18next.addResourceBundle(
+        ApplicationState.language,
+        'translation',
+        (await import(`${initConfig.urls.clienturl}locales/${ApplicationState.language}.js`)).default,
+        false,
+        true
+      );
+    } catch (e) {
+      GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+    }
+
+    //set form control class to filter
+    $.extend($.fn.dataTableExt.oStdClasses, {
+      "sFilterInput": "form-control search"
+    });
+    $.extend(true, $.fn.dataTable.defaults, {
+      "language": {
+        "sSearch": '',
+        "searchPlaceholder": t("dosearch"),
+        "sLengthMenu": t("dataTable.lengthMenu"),
+        "paginate": {
+          "previous": '«',
+          "next": '»',
+        },
+        "info": t("dataTable.info"),
+        "zeroRecords": t("dataTable.nodatafilterd"),
+        "infoFiltered": ''
+      }
+    });
+  }, { immediate: true});
 
   /** @since 3.8.0 */
   try {
@@ -316,14 +332,14 @@ $.ajaxSetup({
     console.warn(e);
   }
 
-  // Updates panels sizes when showing content (eg. bottom "Attribute Table" panel, right "Query Results" table)
-  initConfig.layout.rightpanel = Object.assign(
-    (initConfig.layout.rightpanel || {}),
+  const panel = JSON.parse(window.localStorage.getItem('SIDEBAR') || null) || initConfig.layout.rightpanel || {};
+  initConfig.layout.rightpanel = Object.assign({},
+    panel,
     {
-      width:          initConfig.layout.rightpanel.width  || 50, // ie. width == 50%
-      height:         initConfig.layout.rightpanel.height || 50, // ie. height == 50%
-      width_100:      false,
-      height_100:     false,
+      width:      panel.width  || 50, // ie. width == 50%
+      height:     panel.height || 50, // ie. height == 50%
+      width_100:  false,
+      height_100: false,
     }
   );
 
@@ -373,18 +389,6 @@ $.ajaxSetup({
   if (ApplicationState.iframe) {
     IframePluginService.init({ project })
   }
-
-  // init local items
-  Object.keys(LOCAL_ITEM_IDS).forEach(id => {
-    try {
-      const item = window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : undefined;
-      if (undefined === item) {
-        window.localStorage.setItem(id, JSON.stringify(LOCAL_ITEM_IDS[id].value));
-      }
-    } catch(e) {
-      console.warn(e);
-    }
-  });
 
   if (isMobile.any || (window.initConfig.layout || {}).iframe) {
     $('body').addClass('sidebar-collapse');
@@ -705,7 +709,8 @@ $.ajaxSetup({
         try {
           // wait plugin dependencies before loading plugin
           await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
-          await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${Date.now()}`, false);
+          const modified = g3wsdk.core.project.ProjectsRegistry.getCurrentProject().getState().modified + '+' + new Date().toISOString().slice(0, 13);
+          await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${modified}`, false);
         } catch(e) {
           console.warn('[G3W-PLUGIN]', e);
           // remove loading plugin in case of error of dependencies

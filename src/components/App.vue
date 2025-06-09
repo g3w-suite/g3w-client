@@ -134,7 +134,7 @@
                 @click = "showEmbedModal"
                 class  = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b v-t="'embed_map'"></b><i :class = "$fa('link')"></i>
+                <b v-t="'embed_map'"></b><i :class = "$fa('share-alt')"></i>
               </a>
 
               <!-- CHANGE MAP -->
@@ -332,10 +332,9 @@
       >
 
         <div
-          v-show          = "showresize"
+          v-show          = "has_panel"
           id              = "resize-map-and-content"
-          @mousedown.stop = "resizeStart"
-          :style          = "{ cursor: 'v' === state.split ? 'ns-resize' : 'col-resize' }"
+          @mousedown.stop = "onResize"
           :class       = "`split-${state.split}`"
         ></div>
 
@@ -390,7 +389,7 @@
           </span>
         </section>
         <div
-          v-if  = "(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)"
+          v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
           class = "close-panel-block"
           style = "display: flex; justify-content: space-between"
         >
@@ -436,11 +435,10 @@
           </div>
           <div
             class = "g3-content-header-action-tools"
-            style = "display: flex; align-items: center"
+            style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
           >
             <component v-for = "tool in state.content.headertools" :is = "tool"/>
             <div
-              v-if   = "showresizeicon"
               style  = "
                 display: flex;
                 justify-content: space-between;
@@ -450,7 +448,6 @@
                 margin-left: auto;
                 cursor: pointer;
               "
-              :style = "{ marginRight: state.content.closable ? '5px': '0px' }"
             >
               <i
                 v-if                      = "undefined !== state.split"
@@ -461,15 +458,20 @@
                 @click                    = "resizeFull"
               ></i>
             </div>
-            <span
-              v-if = "state.content.closable && state.content.aside"
+            <i
+              style="cursor: pointer; scale:.9;"
+              :style = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              v-t-tooltip:bottom.create="`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
+              class="action-button skin-color-dark fa fa-external-link-alt"
+              @click ="splitContent"
+            ></i>
+            <i
+              v-if = "state.content.closable"
               @click = "closeContent"
+              v-t-tooltip:bottom.create="'close'"
               :class = "{'mobile': isMobile()}"
-              class  = "action-button"
-              style  = "display: flex; justify-content: center "
-            >
-            <i class = "skin-color-dark" :class = "$fa('close')"></i>
-          </span>
+              class  = "action-button skin-color-dark fas fa-times"
+            ></i>
           </div>
         </div>
         <bar-loader :loading = "state.content.loading"/>
@@ -510,7 +512,6 @@
 import CookieLaw          from 'vue-cookie-law';
 import Teleport           from 'vue2-teleport';
 
-import { VIEWPORT }       from 'g3w-constants';
 import ApplicationState   from 'store/application';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
@@ -624,14 +625,9 @@ export default {
         .map(c => c.options.crumb);
     },
 
-    showresize() {
-      const layout = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
-      const currentPerc = layout[this.state.split === 'h' ? 'width' : 'height'];
-      return this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
-    },
-
-    showresizeicon() {
-      return 100 !== this.state.secondaryPerc;
+    has_panel() {
+      const panel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      return (panel.width_100 || panel.height_100) ? false : ('h' === this.state.split ? panel.width : panel.height) > 0;
     },
 
     usermessage() {
@@ -655,10 +651,6 @@ export default {
         content: {
           width:         `${this.state.content.sizes.width}px`,
           height:        `${this.state.content.sizes.height}px`,
-          zIndex:        1,
-          minHeight:     'v' === this.state.split ? `${VIEWPORT.resize.content.min}px` : null,
-          paddingTop:    '8px',
-          paddingBottom: '8px',
         },
       }
     },
@@ -761,26 +753,8 @@ export default {
       $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
     },
 
-    showEmbedModal() {
-      const url = new URL(location.href);
-      url.searchParams.set('map_extent', GUI.getService('map').getMapExtent().toString());
-
-      $('body').append(/* html */`
-        <div id = "share_modal" class = "modal fade" tabindex="-1">
-          <div class = "modal-dialog">
-            <div class  = "modal-content">
-              <div class = "modal-header">
-                <h4 style = "font-weight: bold" class = "modal-title">${this.$t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
-              </div>
-              <div class="form-group modal-body">
-                <input readonly value="${url.toString()}" onfocus="event.target.select()" class="form-control" />
-                <button onclick="event.target.previousElementSibling.focus() || document.execCommand('copy') && $('#share_modal').modal('hide')" class="form-control btn btn-success">${ this.$t('sdk.tooltips.copy_map_extent_url') }</button>
-              </div>
-          </div>
-        </div>
-      `);
-      $('#share_modal').modal('show');
-      $('#share_modal').on('hidden.bs.modal', () => $('#share_modal').remove());
+    async showEmbedModal() {
+      await GUI.getPermalink(new URL(window.location.href), {});
     },
 
     /**
@@ -819,41 +793,78 @@ export default {
       GUI.closeUserMessage();
     },
 
-    wrapMoveFnc(e) {
-      this.moveFnc(e);
-    },
+    async onResize(e) {
+      const sidebar = document.getElementById('g3w-view-content');
+      const panel   = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      let rect, dx, dy;
 
-    resizeStart() {
-      document.addEventListener('mousemove', this.wrapMoveFnc);
-      document.addEventListener('mouseup',   this.resizeStop, { once: true });
-    },
+      this.state.content.disabled = true;
 
-    async resizeStop() {
-      document.removeEventListener('mousemove', this.wrapMoveFnc);
-      await this.$nextTick();
-      GUI.emit('resize');
+      const mousemove = e => {
+        e.preventDefault();
+        rect = sidebar.getBoundingClientRect();
+
+        dx   = e.pageX - rect.left - window.scrollX;
+        dy   = e.pageY - rect.top - window.scrollY;
+
+        panel.width  = Math.min(Math.max(
+          Math.round((200               / $('.content-wrapper').width())  * 100),
+          Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
+        ), 90);
+
+        panel.height = Math.min(Math.max(
+          Math.round((200               / $('.content-wrapper').height()) * 100),
+          Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
+        ), 90);
+
+        const viewW = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+        const viewH = $(window).height() - $(".navbar").height();
+
+        const h_split = 'h' === this.state.split;
+        const v_split = 'v' === this.state.split;
+        
+        // percentage of secondary view (content)
+        const scale = (h_split ? panel.width : panel.height) /100;
+
+        // size "content"
+        Object.assign(this.state.content.sizes, {
+          width:  (h_split ?  (viewW * scale) : viewW),
+          height: (v_split ? (viewH * scale) : viewH),
+        });
+      };
+
+      const mouseup = async e => {
+        document.removeEventListener('mousemove', mousemove);
+        if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
+          GUI.hideSidebar();
+        }
+        this.state.content.disabled = false;
+        GUI._layout();
+      };
+
+      document.addEventListener('mousemove', mousemove);
+      document.addEventListener('mouseup', mouseup, { once: true });
     },
 
     resizeFull() {
-      GUI.toggleFullViewContent();
-      GUI.emit('resize');
+      const state = ApplicationState.viewport;
+      const panel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      if ('h' === state.split) {
+        panel.width_100 = !panel.width_100;
+      } else {
+        panel.height_100 = !panel.height_100;
+      }
+      GUI._layout();
     },
 
-    moveFnc(e) {
-      e.preventDefault();
-      const size         = 'h' === this.state.split ? 'width' : 'height';
-      const sidebarSize  = (size === 'width') ? $('.sidebar-collapse').length ? 0 : ApplicationState.viewport.SIDEBARWIDTH : $('.navbar').height();
-      const viewPortSize = $(this.$el)[size]();
-      let mapSize        = ('width' === size ? (e.pageX+2): (e.pageY+2)) - sidebarSize;
-      const { content, map } = VIEWPORT.resize;
-      if (mapSize > viewPortSize - content.min) {
-        mapSize = viewPortSize -  content.min;
-      } else if ( mapSize < map.min) {
-        mapSize = map.min;
-      }
-      ApplicationState.viewport.resized[this.state.split] = true;
-      ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === this.state.split ? 'width' : 'height'] = 100 - Math.round((mapSize / viewPortSize) * 100);
-      GUI._layout('resize');
+    /**
+     * @sine 4.0.0
+     */
+    splitContent(e) {
+      const split = GUI.getCurrentContent().options.split;
+      ApplicationState.viewport.split = GUI.getCurrentContent().options.split = 'v' === split ? 'h' : 'v';
+      e.target.setAttribute('data-original-title', `Dock ${'h' === split ? 'right' : 'bottom'}`);
+      GUI._layout();
     },
 
     closePanel() {
@@ -944,15 +955,6 @@ export default {
     await this.$nextTick();
 
     $('#startingspinner').remove();
-
-    // Fixes the layout height in case min-height fails.
-    const resize = function() {
-      $(".main-sidebar")    .css('height', $(window).height() - $(".navbar").height());
-      $('.g3w-sidebarpanel').css('height', $(window).height() - $(".navbar").height());
-    };
-
-    resize();
-    $(window, ".wrapper").resize(resize);
 
     this.iframe = ApplicationState.iframe;
 

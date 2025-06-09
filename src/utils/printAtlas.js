@@ -1,4 +1,5 @@
 import ApplicationState from 'store/application';
+import GUI              from 'services/gui';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
@@ -36,15 +37,14 @@ import ApplicationState from 'store/application';
  * @param opts.values
  * @param opts.template
  * @param opts.download
- * @param { 'GET' | 'POST' } method
  */
-export function printAtlas(opts = {}, method = 'GET') {
+export async function printAtlas(opts = {}) {
   const store = ApplicationState.project.getLayersStore();
-  const multi = opts.values.length > 1;
-  return FETCH[method]({
-    url:       store.getWmsUrl(),
-    mime_type: 'application/pdf',
-    params:    {
+  const multi = opts.values.length > 1; 
+  const response = await fetch(store.getWmsUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body:  new URLSearchParams(await GUI.getPrintParams({
       SERVICE:     'WMS',
       VERSION:     '1.3.0',
       REQUEST:     'GetPrintAtlas',
@@ -52,46 +52,18 @@ export function printAtlas(opts = {}, method = 'GET') {
       TEMPLATE:    opts.template,
       filtertoken: ApplicationState.tokens.filtertoken,
       DOWNLOAD:    opts.download ? 1 : undefined,
-    },
-  })
-}
+    }) || {}).toString(),
+  });
+    
+  if (!response.ok) {
+    //@TODO Need to translate
+    throw new Error(500 === response.status ? 'Internal Server Error' : 'Request Failed');
+  }
+  
+  return {
+    mime_type: 'application/pdf',
+    layers:    true,
+    url:       URL.createObjectURL(await response.blob()),
+  };
 
-const FETCH = {
-  /**
-   * @param { Object } opts
-   * @param opts.url
-   * @param opts.params
-   * @param opts.mime_type
-   * @return {Promise<{mime_type, layers: boolean, url: string}>}
-   */
-  async POST({ url, params = {}, mime_type }) {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body:  new URLSearchParams(params || {}).toString(),
-    });
-    if (!response.ok) {
-      //@TODO Need to translate
-      throw new Error(500 === response.status ? 'Internal Server Error' : 'Request Failed');
-    }
-    return {
-      mime_type,
-      layers: true,
-      url: URL.createObjectURL(await response.blob()),
-    };
-  },
-  /**
-   * @param { Object } opts
-   * @param opts.url
-   * @param opts.params
-   * @param opts.mime_type
-   * @return {Promise<unknown>}
-   */
-  async GET({url, params = {}, mime_type}) {
-    return {
-      url: `${url}?${ new URLSearchParams(params || {}).toString()}`,
-      layers: true,
-      mime_type
-    };
-  },
-};
+}

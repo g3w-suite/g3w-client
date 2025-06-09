@@ -97,7 +97,7 @@
         <div
           id                     = "permalink"
           v-t-tooltip:top.create = "'sdk.tooltips.copy_map_extent_url'"
-          :class                 = "$fa('link') + ' skin-color-dark'"
+          :class                 = "$fa('share-alt') + ' skin-color-dark'"
           @click.stop            = "showEmbedModal"
         ></div>
 

@@ -182,17 +182,6 @@ export const SEARCH_ALLVALUE = '__G3W_ALL__';
 export const TIMEOUT = 60000;
 
 /**
- * @type {{resize: Object<string, { min: number }>}}
- * @since v3.5
- */
-export const VIEWPORT = {
-  resize: {
-    map:     { min: 200 },
-    content: { min: 200 },
-  }
-};
-
-/**
  * List of default Font Awesome classes for current project
  * 
  * @type {Object<string, string>}
@@ -356,17 +345,6 @@ export const FONT_AWESOME_ICONS = {
  */
 
 /**
- * LOCAL ITEM IDS - used to store id used by application
- * 
- * @type {Object<string, LocalItem>}
- * 
- * @since v3.8
- * 
- * @deprecated since 4.0.0. Please handle "localStorage" items by yourself.
- */
-export const LOCAL_ITEM_IDS = {};
-
-/**
  * List of Open Layers spatial methods used to find features
  * 
  * @since 3.9.0
@@ -417,12 +395,10 @@ export default {
   GEOMETRY_FIELDS,
   GEOMETRY_TYPES,
   INCHES_PER_UNIT,
-  LOCAL_ITEM_IDS,
   PRINT_SCALES,
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
   SPATIAL_METHODS,
   TIMEOUT,
-  VIEWPORT,
   PAGELENGTHS,
 };

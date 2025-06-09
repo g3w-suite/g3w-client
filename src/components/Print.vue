@@ -494,7 +494,7 @@ export default {
           const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
           const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
           const url       = store.getWmsUrl();
-          const params    = layers.length && new URLSearchParams({
+          const params    = layers.length && new URLSearchParams(await GUI.getPrintParams({
             SERVICE:       'WMS',
             VERSION:       '1.3.0',
             REQUEST:       'GetPrint',
@@ -519,21 +519,16 @@ export default {
               ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
             }), {}),
             ...(this.state.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
-          }).toString();
+          })).toString();
 
-          // force GET request for geopdf because qgiserver support only that method [QGIS 3.34.6-Prizren 'Prizren' (623828f58c2)]
-          const method = layers.length && ('geopdf' === this.state.format ? 'GET' : ApplicationState.project.state.ows_method);
+      
+          response = await (fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+            body:  params,
+          }));
 
-          response = await ('GET' === method
-            ? Promise.resolve({ ok: true })
-            : fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-              body:  params,
-            })
-          );
-
-          this.state.url       = 'GET' === method ? `${url}?${params}` : URL.createObjectURL(await response.blob());
+          this.state.url       = URL.createObjectURL(await response.blob());
           this.state.layers    = !!response.ok;
           //after component mount
           this._page.getInternalComponent().$on('hook:mounted', () => this.state.loading = false);

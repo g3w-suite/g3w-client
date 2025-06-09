@@ -173,9 +173,6 @@ const STATE = Vue.observable({
    * @since 3.11.0
    */
   viewport: {
-    primaryView:  'map', // primary view (default)
-    // percentage of secondary view
-    secondaryPerc: 0, // setted to 0 at beginning (not visible)
     // used to store if content vertical or horizontal is  changed by resised
     resized: {
       start: false,
@@ -190,7 +187,6 @@ const STATE = Vue.observable({
         width:  0,
         height: 0
       },
-      aside: false
     },
     //content
     content: {
@@ -205,7 +201,6 @@ const STATE = Vue.observable({
         'h': { perc: 0 },
         'v': { perc: 0 }
       },
-      aside:        true,
       showgoback:   true,
       stack:        [], // array elements of stack contents
       closable:     true, // (x) is closable

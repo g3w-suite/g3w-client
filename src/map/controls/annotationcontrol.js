@@ -9,7 +9,9 @@ import InteractionControl         from 'map/controls/interactioncontrol';
 import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
-
+import { getLength }              from 'utils/getLength';
+import { getArea }                from 'utils/getArea';
+import { rgbToHex }               from 'utils/rgbToHex';
 export class AnnotationControl extends InteractionControl {
 
   /** Incremental counter for added features */
@@ -46,17 +48,19 @@ export class AnnotationControl extends InteractionControl {
       },
       text:          '',
       show_text:     false,
-      /** show info feature (cordinates, lenght, area, etc.) */
+      /** show info feature (cordinates, length, area, etc.) */
       show_info:     false,
     };
 
-    this._interaction = null;
+    this._interaction         = null;
 
-    this._measureTooltip = null;
+    this._measureTooltip      = null;
 
-    this._interactions = {};
+    this._interactions        = {};
 
-    this._upload       = false; //import features from upload json file
+    this._upload              = false; //import features from upload json file
+    //get current annotations save on local browser storage
+    const storage_annotations = JSON.parse(localStorage.getItem('annotations')) || {};
 
     // load saved annotations from: URL search params, local storage, or server config
     const features = (new ol.format.GeoJSON({
@@ -65,9 +69,9 @@ export class AnnotationControl extends InteractionControl {
     })).readFeatures({
       type: "FeatureCollection",
       features: [
-        ...(JSON.parse((new URLSearchParams(window.location.search)).get('annotations') || null)?.features || []),
-        ...(JSON.parse(localStorage.getItem('annotations') || null)?.features           || []),
-        ...(opts?.annotations?.features                                                 || [])
+        ...(ApplicationState.project.state.annotations?.features                                   || []),
+        ...((storage_annotations || null)?.[ApplicationState.project.state.id]?.features           || []),
+        ...(opts?.annotations?.features                                                            || [])
       ]
     });
 
@@ -86,10 +90,14 @@ export class AnnotationControl extends InteractionControl {
 
     // update local storage
     this._annotation.layer.on('change', () => {
-      localStorage.setItem('annotations', JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
-        this._annotation.layer.getSource().getFeatures(),
-        { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg() }
-      )));
+      localStorage.setItem('annotations',  JSON.stringify(Object.assign(storage_annotations,
+        { [ApplicationState.project.state.id] : (new ol.format.GeoJSON()).writeFeaturesObject(
+            this._annotation.layer.getSource().getFeatures(),
+            { 
+              dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()
+            })
+        })
+      ));
     });
     
     this._interactions.select = new ol.interaction.Select({
@@ -144,7 +152,7 @@ export class AnnotationControl extends InteractionControl {
                 <div style = "display: flex; justify-content: space-between; flex-flow: wrap; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee;">
                   <input
                     v-for                     = "shape in ['Point', 'LineString', 'Polygon', 'Circle', 'Rectangle', 'Text']"
-                    v-t-tooltip:bottom.create = "shape"
+                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.types.' + shape"
                     type                      = "radio"
                     :value                    = "shape"
                     v-model                   = "type"
@@ -163,12 +171,12 @@ export class AnnotationControl extends InteractionControl {
                 </div>
 
                 <!-- SHAPES SAVED -->
-                <div v-if   = "!feature && !type && features.length > 0">
+                <div v-if = "!feature && !type && features.length > 0">
                   <button 
-                    v-for  = "feat in features"
-                    :key   = "feat.getId()" 
-                    @click = "editFeature(feat)"
-                    :style="{
+                    v-for       = "feat in features"
+                    :key        = "feat.getId()" 
+                    @click.stop = "editFeature(feat)"
+                    :style = "{
                       width:      '100%',
                       margin:     '3px 0',
                       border:     'solid 1px #ccc',
@@ -182,8 +190,8 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment length (line)” -->
                 <div v-if = "'LineString' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
-                    Length
+                  <label style = "margin: 0; width: 100%">
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -201,8 +209,8 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment length (polygon)” -->
                 <div v-if = "'Polygon' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
-                    Length
+                  <label style = "margin: 0; width: 100%">
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -220,8 +228,8 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment width (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
-                    W Length
+                  <label style = "margin: 0; width: 100%">
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.w_length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -239,8 +247,8 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Segment height (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
-                    H Length
+                  <label style = "margin: 0; width: 100%">
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.h_length'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -258,8 +266,8 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE CONSTRAINT: “Circle radius” -->
                 <div v-if = "'Circle' === type && !feature" style="display: flex; align-items: end;">
-                  <label style="margin: 0; width: 100%">
-                    Radius
+                  <label style = "margin: 0; width: 100%">
+                    <span v-t = "'sdk.mapcontrols.annotation.inputs.radius'"></span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -286,7 +294,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE LABEL (rotation) -->
                 <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
-                  Rotation
+                  <span v-t = "'sdk.mapcontrols.annotation.inputs.rotation'"></span>
                   <input 
                     type    = "range" 
                     name    = "rotation" 
@@ -298,7 +306,7 @@ export class AnnotationControl extends InteractionControl {
                 </label>
 
                 <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
-                  Font Size
+                  <span v-t = "'sdk.mapcontrols.annotation.inputs.font_size'"></span>
                   <input 
                     type    = "range" 
                     name    = "fontsize" 
@@ -338,7 +346,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE RADIUS (point) -->
                 <div v-if = "feature && 'Point' === feature.get('type')">
-                  <label for = "radius">Radius</label>
+                  <label for = "radius" v-t = "'sdk.mapcontrols.annotation.inputs.radius'"></label>
                   <input 
                     type    = "range" 
                     name    = "radius" 
@@ -351,7 +359,7 @@ export class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE STROKE WIDTH -->
                 <div v-if = "feature && ['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.get('type'))">
-                  <label for = "stroke">Stroke</label>
+                  <label for = "stroke" v-t = "'sdk.mapcontrols.annotation.inputs.stroke'"></label>
                   <input 
                     type    = "range" 
                     name    = "stroke" 
@@ -363,17 +371,17 @@ export class AnnotationControl extends InteractionControl {
                 </div>
                 <!-- LINE DIRECTION (line) -->
                 <div v-if = "feature && 'LineString' === feature.get('type')">
-                  <label>Direction</label>
+                  <label v-t = "'sdk.mapcontrols.annotation.inputs.direction'"></label>
                   <select class = "form-control" style = "margin-bottom: 5px;" v-model = "style.direction">
                     <option :value = "null">---</option>
-                    <option value  = "forward">Forward</option>
-                    <option value  = "backward">Backward</option>  
+                    <option value  = "forward" v-t = "'sdk.mapcontrols.annotation.inputs.f_direction'"></option>
+                    <option value  = "backward" v-t = "'sdk.mapcontrols.annotation.inputs.b_direction'"></option>  
                   </select>   
                 </div>
 
                 <!-- SHAPE OPACITY -->
                 <div v-if = "feature && ['Polygon', 'Rectangle' , 'Circle'].includes(feature.get('type'))">
-                  <label for = "opacity">Opacity</label>
+                  <label for = "opacity" v-t = "'sdk.mapcontrols.annotation.inputs.opacity'"></label>
                   <input 
                     type    = "range" 
                     name    = "opacity" 
@@ -392,7 +400,8 @@ export class AnnotationControl extends InteractionControl {
                       type    = "checkbox"
                       v-model = "show_text"
                       style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
-                    /> Show Text
+                    />
+                    <span v-t = "'sdk.mapcontrols.annotation.checkbox.show_text'" ></span>
                   </label>
                   <label :hidden = "'Text' === feature.get('type')">
                     <input 
@@ -400,18 +409,20 @@ export class AnnotationControl extends InteractionControl {
                       type    = "checkbox" 
                       v-model = "show_info"
                       style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
-                    /> Info
+                    />
+                    <span v-t = "'sdk.mapcontrols.annotation.checkbox.show_info'" ></span>
                   </label>
                 </div>
 
                 <!-- SHAPES ACTIONS -->
-                <div style="display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('link')"          @click.stop = "share"    style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Share'"    :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Import'"   :hidden = "feature"></button>
-                  <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'Export'"   :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'Remove'"   :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'Show all'" :hidden = "!type && !feature"></button>
-                  <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    :hidden = "feature || (type && !feature)"></button>
+                <div style = "display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
+                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.import'"   :hidden = "feature || type"></button>
+                  <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.export'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.remove'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <section class = "annotations-close-back" style = "display: flex; gap: 5px; margin-left: auto;">
+                    <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_all'" :hidden = "!type && !feature"></button>
+                    <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    ></button>
+                  </section>  
                 </div>
 
               </div>`,
@@ -458,13 +469,17 @@ export class AnnotationControl extends InteractionControl {
               upload(){
                 CONTROL.showUploadModal();
               },
-              download() {
+              download: () => {
                 ApplicationState.download = true;
                 saveBlob(new Blob([new TextEncoder().encode(
                   JSON.stringify(
                     (new ol.format.GeoJSON()).writeFeaturesObject(
-                      this.feature ? [this.feature] : this.layer.getSource().getFeatures(),
-                      { dataProjection: GUI.getService('map').getEpsg(), featureProjection: GUI.getService('map').getEpsg()}
+                      this.#proj(
+                        this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(),
+                        GUI.getService('map').getEpsg(),
+                        'EPSG:4326'
+                      ),
+                      { featureProjection: 'EPSG:4326' }
                     ),
                     null,
                     2
@@ -505,7 +520,7 @@ export class AnnotationControl extends InteractionControl {
                * Hange add remove annotation feature for modify purpose
                * @param {Feature} f 
                */
-              feature: f => {
+              feature: f => {               
                 //In case of feature and no select features (no added to selected)
                 if (f && 0 === this._interactions.select.getFeatures().getArray().length) {
                   this._interactions.select.getFeatures().push(f);
@@ -532,7 +547,7 @@ export class AnnotationControl extends InteractionControl {
                       width:     Number(style.width),
                       radius:    Number(style.radius),
                       opacity:   Number(style.opacity),
-                      rotation:  Number(style.rotation) * (Math.PI / 180),
+                      rotation:  Number(style.rotation),
                       fontsize:  Number(style.fontsize),
                       direction: style.direction,
                     }));
@@ -583,19 +598,107 @@ export class AnnotationControl extends InteractionControl {
     });
 
     //Listen set-layer-zindex so annotation layer i set over all layers
-    GUI.getService('map').on('set-layer-zindex', ({ zindex }) => this._annotation.layer.setZIndex(zindex + 1))
+    GUI.getService('map').on('set-layer-zindex', ({ zindex }) => zindex > this._annotation.layer.getZIndex() && this._annotation.layer.setZIndex(zindex + 1))
 
-    // Listen for #share_modal open event
-    $(document).on('show.bs.modal', '#share_modal', () => {
-      const url = new URL($('#share_modal input').val());
-      const annotations = this._annotation.layer.getSource().getFeatures();
-      if (annotations.length) {
-        url.searchParams.set('annotations', new ol.format.GeoJSON().writeFeatures(this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(), {
-          dataProjection: GUI.getService('map').getEpsg(),
-          featureProjection: GUI.getService('map').getEpsg()
-        }));
+    //Listen getPermalink setter
+    GUI.onbefore('getPermalink', (url, data) => {
+      const features = this._annotation.layer.getSource().getFeatures();
+      if (features.length > 0) {
+        data.annotations = JSON.parse(new ol.format.GeoJSON().writeFeatures(features));
       }
-      $('#share_modal input').val(url.toString());
+    });
+
+    //Listen getPrintParams setter
+    GUI.onbefore('getPrintParams', (params = {}) => {
+      const features = this._annotation.layer.getSource().getFeatures();
+
+      // skip when no features
+      if (!features.length > 0) {
+        return;
+      }
+      params.ANNOTATIONS = JSON.stringify(
+        new ol.format.GeoJSON().writeFeaturesObject(
+          this
+          .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
+          .map(f => {
+            const feat = f.clone();
+            //need to set id  after clone https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#clone
+            feat.setId(f.getId());
+            feat.unset('text');
+            feat.unset('pid');
+            feat.unset('show_info');
+            feat.unset('show_text');
+            feat.set('label', '');
+
+            if ('Text' === f.get('type')) {
+              feat.set('label', f.get('text'));
+              feat.set('style', {
+                rotation: f.get('style').rotation,
+                fontsize: f.get('style').fontsize
+              });
+            }
+
+            if ('Point' === f.get('type')) {
+              feat.set('label', `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`);
+              feat.set('style', {
+                color:    rgbToHex(f.get('style').color),
+                radius:   f.get('style').radius,
+                fontsize: f.get('style').fontsize,
+              });
+            }
+
+            if ('LineString' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && (getLength(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:     rgbToHex(f.get('style').color),
+                width:     f.get('style').width,
+                fontsize:  f.get('style').fontsize,
+                direction: f.get('style').direction,
+              });
+            }
+
+            if ('Polygon' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && (getArea(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:    rgbToHex(f.get('style').color),
+                width:    f.get('style').width,
+                fontsize: f.get('style').fontsize,
+                opacity:  f.get('style').opacity,
+              });
+            }
+
+            if ('Rectangle' === f.get('type')) {
+              feat.set('label', `${f.get('show_info') && (getArea(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('style', {
+                color:    rgbToHex(f.get('style').color),
+                width:    f.get('style').width,
+                fontsize: f.get('style').fontsize,
+                opacity:  f.get('style').opacity,
+              });
+            }
+
+            if ('Circle' === f.get('type')) {
+              feat.set('label', `${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label_radius', `${f.get('show_info')
+                ? `${f.getGeometry().getRadius() > 100 
+                  ? (Math.round((f.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
+                  : (Math.round(f.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
+                : ''
+              }`);
+              feat.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
+              feat.set('style', {
+                color:    rgbToHex(f.get('style').color),
+                width:    f.get('style').width,
+                fontsize: f.get('style').fontsize,
+                opacity:  f.get('style').opacity,
+              });
+            }
+
+            return feat;
+          })
+        )
+      );
+
     });
   }
 
@@ -627,6 +730,7 @@ export class AnnotationControl extends InteractionControl {
       text:      feature.get('text'), 
       show_text: feature.get('show_text'),
       show_info: feature.get('show_info'),
+      style:     feature.get('style'),
     });
 
 
@@ -715,6 +819,34 @@ export class AnnotationControl extends InteractionControl {
     }
   }
 
+  /**
+   * Convert open layer features from/to EPSGs
+   * 
+   * @param { Array } features
+   * @param { string } fromEpsg
+   * @param { string } toEpsg
+   * 
+   * @returns { Array }
+   */
+  #proj(features = [], fromEpsg, toEpsg) {
+    if (fromEpsg === toEpsg) {
+      return features;
+    }
+    return features.map(f => {
+      const _f = f.clone();
+      //need to set id after clone https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#clone
+      _f.setId(f.getId());
+      if ('Circle' === f.get('type')) {
+        _f.set('center', ol.proj.transform(_f.get('center'), fromEpsg, toEpsg));
+        _f.set('endCoordinates', ol.proj.transform(_f.get('endCoordinates'), fromEpsg, toEpsg));
+      }
+      if ('Circle' !== f.get('type')) {
+        _f.getGeometry().transform(fromEpsg, toEpsg);
+      }
+      return _f;
+    });
+  }
+
   #onAddFeature({ feature }) { 
     //No need to handle on add features from import 
     if (this._upload) {
@@ -722,6 +854,16 @@ export class AnnotationControl extends InteractionControl {
       if ('Circle' === feature.get('type') ) {
         feature.setGeometry(new ol.geom.Circle(feature.get('center'), Number(feature.get('radius'))));
       }
+      //get id of uploaded feature
+      const id = Number(feature.getId());
+      //in case is not a number, set id
+      if (Number.isNaN(id)) {
+        feature.setId(AnnotationControl.FID++);
+      }
+      //In case is a number
+      if (!Number.isNaN(id) && AnnotationControl.FID <= id) {
+        AnnotationControl.FID = id + 1; 
+      }      
       //set feature style
       feature.setStyle(this.#style(feature.get('type')));
       return;
@@ -738,7 +880,6 @@ export class AnnotationControl extends InteractionControl {
     feature.set('pid', ApplicationState.project.getId());
     feature.set('text', `${this._annotation.type} ${AnnotationControl.FID}`); 
     feature.set('show_text', 'Text' === this._annotation.type);
-    feature.set('info', '');
     feature.set('show_info', false);
     feature.set('type', this._annotation.type);
 
@@ -1003,7 +1144,7 @@ export class AnnotationControl extends InteractionControl {
   }
 
   /**
-   * Handle/Fix lenght segments (LineString or Polygon)
+   * Handle/Fix length segments (LineString or Polygon)
    */
   #updateLength(coords, length) {
     if (areCoordinatesEqual(coords[0], coords[1])) {
@@ -1031,20 +1172,18 @@ export class AnnotationControl extends InteractionControl {
    * @returns an appropriate styling (open layers) for the provided shape type
    */
   #style(type) {
-
+    const epsg         = g3wsdk.core.ApplicationState.project.getProjection().getCode();
+    const units        = g3wsdk.core.ApplicationState.project.getProjection().getUnits();
     const fill         = new ol.style.Fill({ color : '#000' });
     const stroke       = new ol.style.Stroke({ color: '#FFF', width: 3 });
     const font_family  = 'Titillium Web';
     const image        = new ol.style.Circle({ radius: 5, stroke: new ol.style.Stroke({ color: '#000', width: 3 }) });
 
-    const parse_length = len  => len > 100 ? (Math.round((len / 1000) * 100) / 100) +  ' km' : (Math.round(len * 100) / 100) + ' m';
-    const parse_area   = area => area > 10000 ? (Math.round((area / 1000000) * 100) / 100) +  ' km²' : (Math.round(area * 100) / 100) + ' m²';
-
     if ('Text' === type) {
       return feat => new ol.style.Style({  
         text: new ol.style.Text({
           text:      feat.get('text'),
-          rotation:  feat.get('style')?.rotation,
+          rotation:  feat.get('style')?.rotation * (Math.PI / 180),
           fill,
           font:  `${feat.get('style')?.fontsize}px ${font_family}`,
           placement: 'point',
@@ -1057,7 +1196,8 @@ export class AnnotationControl extends InteractionControl {
       return feat => new ol.style.Style({
         text: new ol.style.Text({
           placement: 'point',
-          text:      `${feat.get('show_info') && `${`${feat.getGeometry().getCoordinates()}`} \n` || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+          offsetY:    -Number(feat.get('style')?.radius) - 10 + (feat.get('show_text') ? -10 : 0),
+          text:      `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`,
           fill,
           font:      `${feat.get('style')?.fontsize}px ${font_family}`,
           stroke,
@@ -1077,7 +1217,7 @@ export class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (parse_length(feat.getGeometry().getLength()) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (getLength(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:      `${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
@@ -1115,7 +1255,7 @@ export class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (parse_area(feat.getGeometry().getArea()) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (getArea(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:  `${feat.get('style')?.fontsize}px ${font_family}`,            
             stroke,
@@ -1136,7 +1276,7 @@ export class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (parse_area(feat.getGeometry().getArea()) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (getArea(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:      `${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
@@ -1248,15 +1388,18 @@ export class AnnotationControl extends InteractionControl {
     });
 
     dialog.addEventListener('close', () => {
-      if (dialog.returnValue === 'confirm') {
+      if ('confirm' === dialog.returnValue) {
         try {
           //set upload true
           this._upload = true;
           
-          this._annotation.layer.getSource().addFeatures((new ol.format.GeoJSON({
-            dataProjection:    GUI.getService('map').getEpsg(),
-            featureProjection: GUI.getService('map').getEpsg()
-          })).readFeatures(JSON.parse(preview.textContent)));
+          this._annotation.layer.getSource().addFeatures(
+            this.#proj(
+              (new ol.format.GeoJSON({ dataProjection: 'EPSG:4326' })).readFeatures(JSON.parse(preview.textContent)),
+              'EPSG:4326',
+              GUI.getService('map').getEpsg()
+            )
+          );
           
           //set upload false
           this._upload = false;
