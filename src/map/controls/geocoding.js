@@ -24,7 +24,9 @@ import { t }                          from 'g3w-i18n';
 /**
  * CUSTOM GEOCODING PROVIDER: "qes"
  */
-window.initConfig.mapcontrols.geocoding.providers['qes'] = {};
+if (window.initConfig.mapcontrols.geocoding) {
+  window.initConfig.mapcontrols.geocoding.providers['qes'] = {};
+}
 
 /**
  * Provider definitions.
