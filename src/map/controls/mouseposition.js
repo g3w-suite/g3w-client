@@ -11,7 +11,7 @@ GUI.once('ready', async () => {
     return;
   }
   const map = GUI.getService('map');
-  await (new Promise(res => map.once('setupcontrol:geolocation', res)));
+  await (new Promise(res => map.once('setupcontrol:mouseposition', res)));
   const degrees = 'degrees' === map.getProjection().getUnits();
   const mapEpsg = map.getEpsg();
   const coordinateFormat = (epsg, coords) => 'EPSG:4326' === epsg
