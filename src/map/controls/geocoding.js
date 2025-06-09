@@ -504,7 +504,7 @@ class GeocodingControl extends ol.control.Control {
       // lazy load item geometry
       if (PROVIDERS[item.provider]?.fetch_geom) {
         const geom = await PROVIDERS[item.provider].fetch_geom(item);
-        feature = geom && new ol.Feature({ geometry: (new ol.format.GeoJSON(geom)).readGeometry()});
+        feature = geom && new ol.Feature({ geometry: (new ol.format.GeoJSON()).readGeometry(geom) });
       }
 
       // skip invalid items (ie. no geometry)
