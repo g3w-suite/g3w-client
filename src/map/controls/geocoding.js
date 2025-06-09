@@ -22,13 +22,6 @@ import { debounce }                   from 'utils/debounce';
 import { t }                          from 'g3w-i18n';
 
 /**
- * CUSTOM GEOCODING PROVIDER: "qes"
- */
-if (window.initConfig.mapcontrols.geocoding) {
-  window.initConfig.mapcontrols.geocoding.providers['qes'] = {};
-}
-
-/**
  * Provider definitions.
  * 
  * @example adding a new provider → `my_custom_provider.js`:
