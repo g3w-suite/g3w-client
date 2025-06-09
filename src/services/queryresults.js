@@ -456,7 +456,7 @@ export default new (class QueryResultsService extends G3WObject {
             id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
             attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
             geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.state.selection.active) }, //@since 3.11.8 check if autofilter is set
+            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.state.selection.active)}, //@since 3.11.8 check if autofilter is set
             show:       true,
           })),
           hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -482,7 +482,7 @@ export default new (class QueryResultsService extends G3WObject {
           relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
           hasdownloadablerelations:  !external && layer.hasDowloadableRelations(), //@since 3.11.7
           filter:                    (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: false},
+          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: false },
           title:                     (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
           atlas:                     this._atlas.filter(a => a.atlas.qgs_layer_id === id),
           rawdata:                   rawdata  || null,
@@ -912,6 +912,8 @@ export default new (class QueryResultsService extends G3WObject {
 
       // In case of external layer don't listen to `selection` event
       if (layer.external && layer.toc && undefined !== layer.selection.active) {
+        //in case 
+        layer.selection.features = layer.selection.features || [];
         layer.features.forEach(f => f.selection = (layer.selection.features.find(s => f.id === s.getId()) || ({ selection: { selected: false }})).selection);
       } else if (!layer.external && layer.toc && undefined !== layer.selection.active) {
         const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
