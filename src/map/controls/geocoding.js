@@ -814,7 +814,7 @@ document.head.insertAdjacentHTML(
   .ol-geocoder .gcd-road                                               { font-size: 0.875em; font-weight: 500; }
   .ol-geocoder .gcd-city                                               { font-size: 1em; font-weight: bold; }
   .ol-geocoder .gcd-country                                            { font-size: 0.75em; }
-  .ol-geocoder .gcd-spin::after                                        { animation: ol-geocoder-spin .7s linear infinite; }
+  .ol-geocoder .gcd-spin                                               { animation: ol-geocoder-spin .7s linear infinite; }
   .ol-geocoder .gcd-hidden                                             { display: none !important; }
   .ol-geocoder li.skin-background-color                                { position: sticky; top: 0; }
   .ol-geocoder li:has(input[type="checkbox"]:checked)                  { background-color: #f7fabf !important; }
