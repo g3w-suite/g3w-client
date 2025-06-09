@@ -468,7 +468,7 @@ class GeocodingControl extends ol.control.Control {
       });
 
       this.element.querySelector('ul').insertAdjacentHTML('beforeend', /* html */`
-        <li style="position: sticky;bottom: 0;background: #fff;margin-bottom: -10px;">
+        <li style="position: sticky;bottom: 0;background: #fff;margin-bottom: -10px;" hidden>
           <label style="cursor: pointer;">
             <input type="checkbox" name="update_on_move" ${update_on_move ? 'checked' : ''}> Update results when map moves
           </label>
