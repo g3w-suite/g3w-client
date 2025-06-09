@@ -445,6 +445,7 @@ class GeocodingControl extends ol.control.Control {
           e.preventDefault();
           (li.querySelector('.search-tools') || li).click();
           this.element.querySelector('button[type="reset"]').click();
+          this.element.querySelector('input[type="search"]').blur();
         });
         this.element.querySelector('ul').append(tmp);
       });
@@ -459,6 +460,7 @@ class GeocodingControl extends ol.control.Control {
           GUI.showSidebar();
           action.fnc()
           this.element.querySelector('button[type="reset"]').click();
+          this.element.querySelector('input[type="search"]').blur();
         });
         this.element.querySelector('ul').insertAdjacentElement('beforeend', tmp);
       });
