@@ -481,8 +481,8 @@ export default {
       const table = this.$el.querySelector('div.dataTables_scrollBody');
       if (table) {
         table.style.height = GUI.isMobile() ? '100%' : (
-            ((document.querySelector('.content')                       || {}).clientHeight || 0) // table height
-          - ((this.$el.querySelector('div.dataTables_scrollHeadInner') || {}).clientHeight || 0) // table header height
+            (ApplicationState.viewport.content.sizes.height)                              // table height
+          - (this.$el.querySelector('div.dataTables_scrollHeadInner')?.clientHeight || 0) // table header height
           - 100
         ) + 'px';
       }

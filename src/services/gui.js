@@ -1146,7 +1146,6 @@ export default new (class GUI extends G3WObject {
           setTimeout(() => this._layout(), 1000);
         }
       });
-
     });
 
     this.emit('resize');
