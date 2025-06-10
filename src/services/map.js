@@ -60,6 +60,8 @@ const MAP = {
 
 class MapService extends G3WObject {
 
+  setupControl = {}
+
   constructor() {
 
     super();
@@ -821,11 +823,10 @@ class MapService extends G3WObject {
    * @since 4.0.0
    */
   async setupControls() {
-    Object
-      .entries(this?.config?.mapcontrols || {})
-      .forEach(([type, config = {}]) => {
-        this.emit('setupcontrol:' + type); // TODO: make use dynamic of imports instead of firing a custom event
-      });
+    for (const type of Object.keys(this?.config?.mapcontrols || {})) {
+      console.log(type);
+      this.setupControl[type](); // TODO: make use dynamic of imports instead of firing a custom event
+    }
     return this.getMapControls()
   }
 

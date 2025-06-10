@@ -11,31 +11,29 @@ import { t }                       from 'g3w-i18n';
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  await Promise.any([
-    new Promise(res => map.once('setupcontrol:length', res)),
-    new Promise(res => map.once('setupcontrol:area', res))
-  ]);
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['length', 'area'].includes(type))
-    .forEach(type => {
-      if (!isMobile.any && type in window.initConfig.mapcontrols) {
-        if (map.getMapControlByType('measure')) {
-          map.getMapControlByType('measure').addType(type)
-        } else {
-          map.addControl('measure', new MeasureControl({
-              name: "measure",
-              tipLabel: 'sdk.mapcontrols.measures.title',
-              types: [type],
-              interactionClassOptions: {
-                projection: map.getProjection(),
-                help:       `sdk.mapcontrols.measures.${type}.help`
-              }
-            })
-          );
+  map.setupControl.length = map.setupControl.area = function() {
+    Object
+      .keys(window.initConfig.mapcontrols)
+      .filter(type => ['length', 'area'].includes(type))
+      .forEach(type => {
+        if (!isMobile.any && type in window.initConfig.mapcontrols) {
+          if (map.getMapControlByType('measure')) {
+            map.getMapControlByType('measure').addType(type)
+          } else {
+            map.addControl('measure', new MeasureControl({
+                name: "measure",
+                tipLabel: 'sdk.mapcontrols.measures.title',
+                types: [type],
+                interactionClassOptions: {
+                  projection: map.getProjection(),
+                  help:       `sdk.mapcontrols.measures.${type}.help`
+                }
+              })
+            );
+          }
         }
-      }
-    });
+      });
+  };  
 });
 
 export class MeasureInteraction extends ol.interaction.Draw {

@@ -9,28 +9,26 @@ import GUI from 'services/gui';
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
 
-  await Promise.any([
-    new Promise(res => map.once('setupcontrol:addlayer', res)),
-    new Promise(res => map.once('setupcontrol:addlayers', res))
-  ]);
-
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['addlayers', 'addlayer'].includes(type))
-    .forEach(type => {
-      if (!isMobile.any && !map.getMapControlByType('addlayer')) {
-        map.createMapControl({
-          id: 'addlayer',
-          options: {
-            tipLabel: "sdk.mapcontrols.addlayer.tooltip",
-            onSetMap(e) {
-              if ('after' === e.setter) {
-                $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());
+  map.setupControl.addlayer = map.setupControl.addlayers = function () {
+    Object
+      .keys(window.initConfig.mapcontrols)
+      .filter(type => ['addlayers', 'addlayer'].includes(type))
+      .forEach(type => {
+        if (!isMobile.any && !map.getMapControlByType('addlayer')) {
+          map.createMapControl({
+            id: 'addlayer',
+            options: {
+              tipLabel: "sdk.mapcontrols.addlayer.tooltip",
+              onSetMap(e) {
+                if ('after' === e.setter) {
+                  $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());
+                }
               }
-            }
-          },
-        });
-      }
-    })
+            },
+          });
+        }
+      });
+  };
+
 });
 

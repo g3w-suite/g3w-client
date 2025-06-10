@@ -11,28 +11,26 @@ import InteractionControl       from 'map/controls/interactioncontrol';
 
 // wait for map ready
 GUI.once('ready', async () => {
-  if (isMobile.any) {
-    return;
-  }
   const map = GUI.getService('map');
-  await Promise.any([
-    new Promise(res => map.once('setupcontrol:screenshot', res)),
-    new Promise(res => map.once('setupcontrol:geoscreenshot', res))
-  ]);
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
-    .forEach(type => {
-      if (map.getMapControlByType('screenshot')) {
-        map.getMapControlByType('screenshot').addType(type)
-      } else {
-        map.addControl('screenshot', new ScreenshotControl({
-            types:   [type],
-            layers:  [...g3wsdk.core.map.MapLayersStoreRegistry.getLayers(), ...map._layers.external],
-          })
-        );
-      }
-    });
+  map.setupControl.screenshot = map.setupControl.geoscreenshot = function() {
+    if (isMobile.any) {
+      return;
+    }
+    Object
+      .keys(window.initConfig.mapcontrols)
+      .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
+      .forEach(type => {
+        if (map.getMapControlByType('screenshot')) {
+          map.getMapControlByType('screenshot').addType(type)
+        } else {
+          map.addControl('screenshot', new ScreenshotControl({
+              types:   [type],
+              layers:  [...g3wsdk.core.map.MapLayersStoreRegistry.getLayers(), ...map._layers.external],
+            })
+          );
+        }
+      });
+  };
 });
 
 /**

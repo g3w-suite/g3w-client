@@ -19,26 +19,22 @@ import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
 // wait for map ready
 GUI.once('ready', async () => {
-  if (isMobile.any) {
-    return;
-  }
   const map = GUI.getService('map');
-  await Promise.any([
-    new Promise(res => map.once('setupcontrol:querybypolygon', res)),
-    new Promise(res => map.once('setupcontrol:querybbox', res)),
-    new Promise(res => map.once('setupcontrol:querybycircle', res)),
-    new Promise(res => map.once('setupcontrol:querybydrawpolygon', res)),
-  ]);
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon'].includes(type))
-    .forEach(type => {
-      if (map.getMapControlByType('queryby')) {
-        map.getMapControlByType('queryby').addType(type)
-      } else {
-        map.addControl('queryby', new QueryBy({ types: [type] }));
-      }
-    });
+  map.setupControl.querybypolygon = map.setupControl.querybbox = map.setupControl.querybycircle = map.setupControl.querybydrawpolygon = function() {
+    if (isMobile.any) {
+      return;
+    }
+    Object
+      .keys(window.initConfig.mapcontrols)
+      .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon'].includes(type))
+      .forEach(type => {
+        if (map.getMapControlByType('queryby')) {
+          map.getMapControlByType('queryby').addType(type)
+        } else {
+          map.addControl('queryby', new QueryBy({ types: [type] }));
+        }
+      });
+  };
 });
 
 const POLYGON_TYPES = [

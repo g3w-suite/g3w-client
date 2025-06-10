@@ -12,12 +12,13 @@ import { t }                      from 'g3w-i18n';
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  await (new Promise(res => map.once('setupcontrol:scale', res)));
-  map.addControl('scale', new ScaleControl({
-    coordinateFormat: ol.coordinate.createStringXY(4),
-    projection:       map.getCrs(),
-    isMobile:         isMobile.any
-  }), false);
+  map.setupControl.scale = function() {
+    map.addControl('scale', new ScaleControl({
+      coordinateFormat: ol.coordinate.createStringXY(4),
+      projection:       map.getCrs(),
+      isMobile:         isMobile.any
+    }), false);
+  };
 });
 
 class ScaleControl extends ol.control.Control {

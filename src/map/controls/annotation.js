@@ -16,8 +16,9 @@ import { rgbToHex }               from 'utils/rgbToHex';
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  await (new Promise(res => map.once('setupcontrol:annotation', res)));
-  map.addControl('annotation', new AnnotationControl());
+  map.setupControl.annotation = function() {
+    map.addControl('annotation', new AnnotationControl());
+  }  
 });
 
 class AnnotationControl extends InteractionControl {

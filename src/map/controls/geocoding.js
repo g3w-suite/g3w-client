@@ -61,8 +61,9 @@ Object
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  await (new Promise(res => map.once('setupcontrol:geocoding', res)));
-  map.addControl('geocoding', new GeocodingControl(), false);
+  map.setupControl.geocoding = function() {
+    map.addControl('geocoding', new GeocodingControl(), false);
+  };
 });
 
 class GeocodingControl extends ol.control.Control {

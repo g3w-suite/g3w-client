@@ -12,8 +12,9 @@ import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteract
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  await (new Promise(res => map.once('setupcontrol:streetview', res)));
-  map.addControl('streetview', new StreetViewControl());
+  map.setupControl.streetview = function() {
+    map.addControl('streetview', new StreetViewControl());
+  };
 });
 
 class StreetViewControl extends InteractionControl {

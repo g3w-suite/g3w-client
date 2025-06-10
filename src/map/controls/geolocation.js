@@ -10,9 +10,10 @@ import { throttle }       from 'utils/throttle';
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  await (new Promise(res => map.once('setupcontrol:geolocation', res)));
-  map.addControl('geolocation', new GeolocationControl());
-  map.getMapControlByType('geolocation').on('click', throttle(e => map.showMarker(e.coordinates)));
+  map.setupControl.geolocation = function() {
+    map.addControl('geolocation', new GeolocationControl());
+    map.getMapControlByType('geolocation').on('click', throttle(e => map.showMarker(e.coordinates)));
+  };
 });
 
 class GeolocationControl extends InteractionControl {
