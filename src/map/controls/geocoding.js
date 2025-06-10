@@ -791,7 +791,7 @@ document.head.insertAdjacentHTML(
 <style>
   .ol-geocoder                                                         { width: 300px; margin-top: 3px; margin-left: 5px; --skin-color: #374146; }
   body:not(.sidebar-collapse) .ol-geocoder                             { margin-left: 40px; }
-  .ol-geocoder > ul                                                    { max-height: calc(100vh - 95px); overflow-x: hidden; overflow-y: auto; transition: max-height 300ms ease-in; padding: 0; margin:unset; inset:unset; background: #fff;border: 1px solid #ccc; width: 300px; min-width: 215px; }
+  .ol-geocoder > ul                                                    { max-height: 400px; overflow-x: hidden; overflow-y: auto; transition: max-height 300ms ease-in; padding: 0; margin:unset; inset:unset; background: #fff;border: 1px solid #ccc; width: 300px; min-width: 215px; }
   .ol-geocoder > ul:not([style*="left"])                               { position-anchor: --ol-geocoder-form; position-area: bottom; }
   .ol-geocoder > ul > li                                               { width: 100%; overflow: hidden; padding: 0; min-height: 30px; padding-left: 3px; border-bottom: 2px solid var(--skin-color); min-height: 20px; padding: 10px; }
   .ol-geocoder > ul > li:hover                                         { background-color: #eee; }
