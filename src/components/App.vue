@@ -317,9 +317,9 @@
           :type              = "usermessage.type"
           :icon-class        = "usermessage.iconClass"
         >
-          <template v-if="usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
-          <template v-if="usermessage.hooks.body"   slot = "body"><component   :is = "usermessage.hooks.body" /></template>
-          <template v-if="usermessage.hooks.footer" slot = "footer"><component :is = "usermessage.hooks.footer" /></template>
+          <template v-if = "usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
+          <template v-if = "usermessage.hooks.body"   slot = "body"><component   :is = "usermessage.hooks.body" /></template>
+          <template v-if = "usermessage.hooks.footer" slot = "footer"><component :is = "usermessage.hooks.footer" /></template>
         </user-message>
       </transition>
 
