@@ -824,7 +824,6 @@ class MapService extends G3WObject {
    */
   async setupControls() {
     for (const type of Object.keys(this?.config?.mapcontrols || {})) {
-      console.log(type);
       this.setupControl[type](); // TODO: make use dynamic of imports instead of firing a custom event
     }
     return this.getMapControls()
