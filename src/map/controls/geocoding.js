@@ -374,7 +374,7 @@ class GeocodingControl extends ol.control.Control {
               ...item,
               provider:   p.value.provider,
               __uid:      getUniqueDomId(),
-              __icon:     PROVIDERS[p.value.provider].icon || p.value.icon,
+              __icon:     item.icon || PROVIDERS[p.value.provider].icon || p.value.icon,
               __selected: false,
             });
             const raw = this.#filterPropsByPrefix(obj, obj.provider +  '_').extracted;
@@ -514,7 +514,7 @@ class GeocodingControl extends ol.control.Control {
       }
       
       // add feature marker and zoom on it
-      const { __uid, __icon, __selected, ...properties } = item; // exclude internal properties
+      const { __uid, __icon, __selected, icon, ...properties } = item; // exclude internal properties
 
       // fallback to point feature (lat, lon)
       feature = feature || new ol.Feature({
