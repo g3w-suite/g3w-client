@@ -161,20 +161,27 @@
         this.$emit('close-usermessage')
       },
     },
+    
     async mounted() {
       this.$el.showPopover();
       if ('tool' === this.type) {
         _makeDraggable(this.$el);
       }
-      this.observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-          if ("class" === mutation.attributeName) {
-            this.style.width      = 'small' === this.size ? this.style.width : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px');
-            this.style.marginLeft = 'small' === this.size ? (mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px') : null;
-          }
-        });
-      });
-      this.observer.observe(document.body, { attributes: true });
+      if (this.size === 'fullpage') {
+        this.uw = this.$watch(
+          () => g3wsdk.core.ApplicationState.viewport.map.sizes.width, 
+          (width) => this.style.width = `${width}px`
+        );
+      }
+      // this.observer = new MutationObserver(mutations => {
+      //   mutations.forEach(mutation => {
+      //     if ("class" === mutation.attributeName) {
+      //       this.style.width      = 'small' === this.size ? this.style.width : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px');
+      //       this.style.marginLeft = 'small' === this.size ? (mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px') : null;
+      //     }
+      //   });
+      // });
+      // this.observer.observe(document.body, { attributes: true });
       if (this.autoclose) {
         await this.$nextTick();
         const timer = setTimeout(() => {
@@ -184,6 +191,10 @@
       }
     },
     beforeDestroy() {
+      if (this.uw) {
+        this.uw();
+        this.uw = null;
+      }
       if (this.observer) {
         this.observer.disconnect();
         this.observer = null;
