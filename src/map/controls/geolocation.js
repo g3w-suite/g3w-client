@@ -113,7 +113,6 @@ class GeolocationControl extends InteractionControl {
         type:      'warning',
         title:     "mapcontrols.geolocation.error",
         message:   e.message,
-        autoclose: false
       });
 
       this.toggle(false);

@@ -85,7 +85,6 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
           data: () => ({ errors }),
         }
       },
-      autoclose: false,
     });
   }
 

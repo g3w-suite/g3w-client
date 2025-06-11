@@ -5,11 +5,11 @@
 
 <template>
   <div
-    class  = "usermessage-content"
-    :id    = "id"
-    :style = "style"
-    :class = "{'mobile': addClassMobile(), ['usermessage-' + type]: true}"
-    ref    = "user_message"
+    class   = "usermessage-content"
+    :id     = "id"
+    :style  = "style"
+    :class  = "{ ['usermessage-' + type]: true}"
+    popover = "manual"
   >
     <div
       v-if  = "showheader"
@@ -35,7 +35,7 @@
       </div>
       <div class = "usermessage-header-right">
         <div
-          v-if   = "!autoclose && closable"
+          v-if   = "closable"
           @click = "closeUserMessage"
         >
           <i class = "usermessage-header-right-item" :class = "$fa('close')"></i>
@@ -58,12 +58,11 @@
 </template>
 
 <script>
-  import GUI from 'services/gui';
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
-  function dragElement(el) {
+  function _makeDraggable(el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
     el.addEventListener('mousedown', function(e) {
       // skip dragging on form elements
@@ -109,12 +108,8 @@
         type:    String,
         default: null,
       },
-      position: {
-        type:    String,
-        default: "top"
-      },
       size: {
-        type:    String, // values [small, medium,fullpage]
+        type:    String, // values [small, fullpage]
         default: "fullpage"
       },
       message: {
@@ -129,13 +124,9 @@
         type:    Boolean,
         default: false
       },
-      draggable: {
-        type:    Boolean,
-        default: false
-      },
       duration: {
         type:    Number,
-        default: 2000
+        default: 3000
       },
       closable: {
         type:    Boolean,
@@ -148,47 +139,12 @@
       }
     },
     data() {
-      let [where, alignement] = this.position.split('-');
       return {
         style: {
-          ...(
-            'center' === where
-              ? { top: 0, bottom: 0, maxHeight: '20%' }
-              : { [where]: 50 }
-          ),
-          ...({
-            'center': { left: 0, right: 0, margin: 'auto' },
-            'right': { right:  0 },
-          }[alignement] || {}),
-          width: ({
-            'small':    '325px',
-            'medium':   '50%',
-            'fullpage': '100%'
-          })[alignement ? 'small' : this.size] || '100%',
-          /**
-           * Custom styles to handle different types of usermessage
-           */...({
-            success: { backgroundColor: "#62ac62", color: "#FFF" },
-            info:    { backgroundColor: "#44a0bb", color: "#FFF" },
-            warning: { backgroundColor: "#f29e1d", color: "#FFF" },
-            alert:   { backgroundColor: "#c34943", color: "#FFF" },
-            tool:    {
-              margin:          'unset',
-              top:             'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : 'unset',
-              right:           'unset',
-              bottom:          'unset',
-              left:            'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : 'unset',
-              border:          'none',
-              backgroundColor: "#FFF",
-              color:           "#222d32",
-              marginLeft:      document.body.classList.contains('sidebar-collapse') ? '5px' : '40px',
-            },
-            loading: {
-              backgroundColor: "#FFF",
-              color:           "#222d32",
-              fontWeight:      "bold",
-            },
-          })[this.type],
+          top:        'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : null,
+          left:       'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : null,
+          width:      'small' === this.size ? '325px' : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px'),
+          marginLeft: 'small' === this.size ? (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px') : null,
         }
       }
     },
@@ -198,40 +154,32 @@
       }
     },
     methods: {
-      addClassMobile() {
-        return this.isMobile() && !GUI.isSidebarVisible();
-      },
       closeUserMessage() {
         if (this.$el.popover) {
           this.$el.hidePopover();
         }
         this.$emit('close-usermessage')
       },
-      hideShow() {}
-    },
-    created() {
-      //@since 3.11.0. Get to eventually observe mutation
-      this.observe = null;
     },
     async mounted() {
+      this.$el.showPopover();
       if ('tool' === this.type) {
-        this.$el.popover = 'manual';
-        this.$el.showPopover();
-        dragElement(this.$refs.user_message);
-        this.observer = new MutationObserver((mutations) => {
-          mutations.forEach(mutation => {
-            if ("class" === mutation.attributeName) {
-              this.style.marginLeft = mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px';
-            }
-          });
-        });
-        this.observer.observe(document.body, {attributes: true});
+        _makeDraggable(this.$el);
       }
+      this.observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if ("class" === mutation.attributeName) {
+            this.style.width      = 'small' === this.size ? this.style.width : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px');
+            this.style.marginLeft = 'small' === this.size ? (mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px') : null;
+          }
+        });
+      });
+      this.observer.observe(document.body, { attributes: true });
       if (this.autoclose) {
         await this.$nextTick();
-        const timeout = setTimeout(() => {
+        const timer = setTimeout(() => {
           this.closeUserMessage();
-          clearTimeout(timeout)
+          clearTimeout(timer)
         }, this.duration)
       }
     },
@@ -251,26 +199,23 @@
 </style>
 
 <style scoped>
+
   .usermessage-content {
-    color: #FFFFFF;
-    z-index: 1000;
-    position: absolute;
+    color: #FFF;
     line-height: normal;
     padding: 3px;
     min-width: 250px;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
-    border-radius: 0 0 3px 3px;
+    border: unset;
+    inset: unset;
+    margin: unset;
   }
 
-  .usermessage-tool {
-    cursor: move;
-    position: fixed;
-  }
-
-  .usermessage-content.mobile {
-    padding: 0;
-    min-width: 100%;
-  }
+  .usermessage-success   { background-color: #62ac62; }
+  .usermessage-info      { background-color: #44a0bb; }
+  .usermessage-warning   { background-color: #f29e1d; }
+  .usermessage-alert     { background-color: #c34943; }
+  .usermessage-tool      { background-color: #FFF; color: #222d32; cursor: move; border: thin solid; }
+  .usermessage-loading   { background-color: #FFF; color: #222d32;  font-weight: bold; }
 
   .usermessage-header-content {
     display: flex;
@@ -286,18 +231,9 @@
     font-size: 1.3em;
   }
 
-  .usermessage-content.mobile .usermessage-header-icontype {
-    padding: 0 0 0 5px;
-    font-size: 1.1em;
-  }
-
   .usermessage-header-title, .usermessage-header-title h4 {
     font-weight: bold;
     text-align: center;
-  }
-
-  .usermessage-content.mobile  .usermessage-header-title h4 {
-    margin: 0;
   }
 
   .usermessage-header-subtitle {
