@@ -409,6 +409,7 @@ export default {
             'export': 'Esporta',
             'import': 'Importa',
             'remove': 'Rimuovi',
+            'show_hide': 'Mostra/Nascondi',
             'show_all': 'Mostra tutti',
           }
         }

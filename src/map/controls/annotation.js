@@ -426,12 +426,13 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPES ACTIONS -->
                 <div style = "display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('file-upload')"   @click.stop = "upload"   style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.import'"   :hidden = "feature || type"></button>
-                  <button :class = "$fa('file-download')" @click.stop = "download" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.export'"   :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "$fa('trash')"         @click.stop = "remove"   style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.remove'"   :hidden = "!features.length || (type && !feature)"></button>
-                  <section class = "annotations-close-back" style = "display: flex; gap: 5px; margin-left: auto;">
-                    <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_all'" :hidden = "!type && !feature"></button>
-                    <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    ></button>
+                  <button :class = "$fa('file-upload')"     @click.stop = "upload"          style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.import'"   :hidden = "feature || type"></button>
+                  <button :class = "$fa('file-download')"   @click.stop = "download"        style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.export'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "$fa('trash')"           @click.stop = "remove"          style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.remove'"   :hidden = "!features.length || (type && !feature)"></button>
+                  <section class = "annotations-close-back"                                 style = "display: flex; gap: 5px; margin-left: auto;">
+                    <button :class = "layer.isVisible() ? $fa('eye-close') : $fa('eye')"    @click.stop = "visible" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_hide'"   :hidden = "!features.length || feature"></button>
+                    <button :class = "$fa('arrow-left')"                                    @click.stop = "showAll"       style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_all'"    :hidden = "!type && !feature"></button>
+                    <button :class = "$fa('close')"                                         @click.stop = "close"         style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    ></button>
                   </section>  
                 </div>
 
@@ -443,7 +444,7 @@ class AnnotationControl extends InteractionControl {
               },
             },
             methods: {
-              getShapeIconUrl(type){
+              getShapeIconUrl(type) {
                 return `${window.initConfig.urls.clienturl}/images/${({
                   Point:      'mActionAddPoint',
                   LineString: 'mActionAddPolyline',
@@ -503,6 +504,9 @@ class AnnotationControl extends InteractionControl {
               share() {
                 document.querySelector('.nav-embedmap').click();
               },
+              visible() {
+                this.layer.setVisible(!this.layer.getVisible());
+              }
             },
             watch: {
               type(t) {
@@ -622,8 +626,8 @@ class AnnotationControl extends InteractionControl {
     GUI.onbefore('getPrintParams', (params = {}) => {
       const features = this._annotation.layer.getSource().getFeatures();
 
-      // skip when no features
-      if (!features.length > 0) {
+      // skip when no features or annotation layer is not visible
+      if (!features.length > 0 || !this._annotation.layer.isVisible()) {
         return;
       }
 
