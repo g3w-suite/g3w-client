@@ -527,6 +527,10 @@ export default {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
             body:  params,
           }));
+          
+          if ('200' !== response.status) {
+            throw new Error(response.statusText);
+          }
 
           this.state.url       = URL.createObjectURL(await response.blob());
           this.state.layers    = !!response.ok;
