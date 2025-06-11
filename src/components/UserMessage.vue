@@ -169,19 +169,18 @@
       }
       if (this.size === 'fullpage') {
         this.uw = this.$watch(
-          () => g3wsdk.core.ApplicationState.viewport.map.sizes.width, 
-          (width) => this.style.width = `${width}px`
+          ()    => g3wsdk.core.ApplicationState.viewport.map.sizes.width, 
+          width => this.style.width = 'fullpage' === this.size ? `${width}px`: this.style.width
         );
       }
-      // this.observer = new MutationObserver(mutations => {
-      //   mutations.forEach(mutation => {
-      //     if ("class" === mutation.attributeName) {
-      //       this.style.width      = 'small' === this.size ? this.style.width : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px');
-      //       this.style.marginLeft = 'small' === this.size ? (mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px') : null;
-      //     }
-      //   });
-      // });
-      // this.observer.observe(document.body, { attributes: true });
+      this.observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if ("class" === mutation.attributeName) {
+            this.style.marginLeft = 'small' === this.size ? (mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px') : null;
+          }
+        });
+      });
+      this.observer.observe(document.body, { attributes: true });
       if (this.autoclose) {
         await this.$nextTick();
         const timer = setTimeout(() => {
