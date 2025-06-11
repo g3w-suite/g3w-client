@@ -527,8 +527,6 @@ export default {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
             body:  params,
           }));
-
-          console.log(response)
           
           if (200 !== response.status) {
             throw new Error(response.statusText);
