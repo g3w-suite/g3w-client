@@ -430,9 +430,9 @@ class AnnotationControl extends InteractionControl {
                   <button :class = "$fa('file-download')"   @click.stop = "download"        style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.export'"   :hidden = "!features.length || (type && !feature)"></button>
                   <button :class = "$fa('trash')"           @click.stop = "remove"          style = "background:none; border: none; color: red;"        v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.remove'"   :hidden = "!features.length || (type && !feature)"></button>
                   <section class = "annotations-close-back"                                 style = "display: flex; gap: 5px; margin-left: auto;">
-                    <button :class = "layer.isVisible() ? $fa('eye-close') : $fa('eye')"    @click.stop = "visible" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_hide'"   :hidden = "!features.length || type || feature"></button>
-                    <button :class = "$fa('arrow-left')"                                    @click.stop = "showAll"       style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_all'"    :hidden = "!type && !feature"></button>
-                    <button :class = "$fa('close')"                                         @click.stop = "close"         style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"    ></button>
+                    <button :class = "layer.isVisible() ? $fa('eye-close') : $fa('eye')"    @click.stop = "visible" style = "background:none; border: none;"                    v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_hide'" :hidden = "!features.length || type || feature"></button>
+                    <button :class = "$fa('arrow-left')"                                    @click.stop = "showAll" style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'sdk.mapcontrols.annotation.actions.show_all'"  :hidden = "!type && !feature"></button>
+                    <button :class = "$fa('close')"                                         @click.stop = "close"   style = "background:none; border: none; margin-left: auto;" v-t-tooltip:bottom.create = "'close'"></button>
                   </section>  
                 </div>
 
