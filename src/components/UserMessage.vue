@@ -224,7 +224,7 @@
   .usermessage-info      { background-color: #44a0bb; }
   .usermessage-warning   { background-color: #f29e1d; }
   .usermessage-alert     { background-color: #c34943; }
-  .usermessage-tool      { background-color: #FFF; color: #222d32; cursor: move; border: thin solid; }
+  .usermessage-tool      { background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; }
   .usermessage-loading   { background-color: #FFF; color: #222d32;  font-weight: bold; }
 
   .usermessage-header-content {
