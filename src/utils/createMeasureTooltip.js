@@ -5,13 +5,13 @@ const degrees = (c1, c2) => parseInt(Math.atan2(c1[0] - c2[0], c1[1] - c2[1]) * 
 
 const formatted_area = area => 'nautical' === ApplicationState.map.unit
   ? `${area * 0.000000291553349598122862913947445759414840765222583489217190918463024037990567} nmi²`
-  : area > 1000000
+  : area > 10000
     ? `${round(area / 1000000)} km²`
     : `${round(area)} m²`;
 
 const formatted_length = length => 'nautical' === ApplicationState.map.unit
   ? `${length * 0.0005399568} nm`
-  : length > 1000
+  : length > 100
     ? `${round(length / 1000)} km`
     : `${round(length)} m`;
 
