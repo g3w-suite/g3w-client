@@ -88,9 +88,11 @@ export class MeasureInteraction extends ol.interaction.Draw {
   clear() {
     this._layer.getSource().clear();
     this._clearMessagesAndListeners();
-    if (this._map) {
+    if (this.measureTooltip) {
       this.measureTooltip.remove();
       this.measureTooltip = null;
+    }
+    if (this._map) {
       this._map.removeLayer(this._layer);
     }
   }
@@ -210,6 +212,11 @@ class MeasureControl extends InteractionControl {
    * @since 3.11.0
    */
   addType(type) {
+    // skip when already added
+    if (this.types.includes(type)) {
+      return;
+    }
+
     this.types.push(type);
 
     this._interactionClassOptions.geometryType = ({ area: 'Polygon', length: 'LineString' })[type];

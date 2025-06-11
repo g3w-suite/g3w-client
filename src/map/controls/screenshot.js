@@ -84,6 +84,11 @@ class ScreenshotControl extends InteractionControl {
    * @since 3.11.0
    */
   addType(type) {
+    // skip when already added
+    if (this.types.includes(type)) {
+      return;
+    }
+
     this.types.push(type);
 
     this.toggledTool = this.toggledTool || {
