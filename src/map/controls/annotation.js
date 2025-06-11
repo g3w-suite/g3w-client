@@ -9,9 +9,10 @@ import InteractionControl         from 'map/controls/interactioncontrol';
 import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { areCoordinatesEqual }    from 'utils/areCoordinatesEqual';
-import { getLength }              from 'utils/getLength';
-import { getArea }                from 'utils/getArea';
-import { rgbToHex }               from 'utils/rgbToHex';
+import { get_formatted_area }     from 'utils/createMeasureTooltip';
+import { get_formatted_length }   from 'utils/createMeasureTooltip';
+import { get_formatted_radius }   from 'utils/createMeasureTooltip';
+import { get_formatted_angle }    from 'utils/createMeasureTooltip';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -625,6 +626,9 @@ class AnnotationControl extends InteractionControl {
       if (!features.length > 0) {
         return;
       }
+
+      const toHex = rgb => `#${rgb.slice(4,-1).split(',').map(x => (+x).toString(16).padStart(2,0)).join('')}`
+
       params.ANNOTATIONS = JSON.stringify(
         new ol.format.GeoJSON().writeFeaturesObject(
           this
@@ -650,16 +654,16 @@ class AnnotationControl extends InteractionControl {
             if ('Point' === f.get('type')) {
               feat.set('label', `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`);
               feat.set('style', {
-                color:    rgbToHex(f.get('style').color),
+                color:    toHex(f.get('style').color),
                 radius:   f.get('style').radius,
                 fontsize: f.get('style').fontsize,
               });
             }
 
             if ('LineString' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && (getLength(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${f.get('show_info') && (get_formatted_length(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
-                color:     rgbToHex(f.get('style').color),
+                color:     toHex(f.get('style').color),
                 width:     f.get('style').width,
                 fontsize:  f.get('style').fontsize,
                 direction: f.get('style').direction,
@@ -667,9 +671,9 @@ class AnnotationControl extends InteractionControl {
             }
 
             if ('Polygon' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && (getArea(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${f.get('show_info') && (get_formatted_area(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
-                color:    rgbToHex(f.get('style').color),
+                color:    toHex(f.get('style').color),
                 width:    f.get('style').width,
                 fontsize: f.get('style').fontsize,
                 opacity:  f.get('style').opacity,
@@ -677,9 +681,9 @@ class AnnotationControl extends InteractionControl {
             }
 
             if ('Rectangle' === f.get('type')) {
-              feat.set('label', `${f.get('show_info') && (getArea(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
+              feat.set('label', `${f.get('show_info') && (get_formatted_area(f.getGeometry(), 'EPSG:4326', 'degrees') + '\n') || ''}${f.get('show_text') && f.get('text') || ''}`);
               feat.set('style', {
-                color:    rgbToHex(f.get('style').color),
+                color:    toHex(f.get('style').color),
                 width:    f.get('style').width,
                 fontsize: f.get('style').fontsize,
                 opacity:  f.get('style').opacity,
@@ -688,15 +692,10 @@ class AnnotationControl extends InteractionControl {
 
             if ('Circle' === f.get('type')) {
               feat.set('label', `${f.get('show_text') && f.get('text') || ''}`);
-              feat.set('label_radius', `${f.get('show_info')
-                ? `${f.getGeometry().getRadius() > 100 
-                  ? (Math.round((f.getGeometry().getRadius() / 1000) * 100) / 100) +  ' km' 
-                  : (Math.round(f.getGeometry().getRadius() * 100) / 100) + ' m'} \n` 
-                : ''
-              }`);
-              feat.set('label_angle',  `${f.get('show_info') && `${parseInt(Math.atan2(f.getGeometry().getCenter()[0] - f.get('endCoordinates')[0], f.getGeometry().getCenter()[1] - f.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`);
+              feat.set('label_radius', `${f.get('show_info') ? get_formatted_radius(f.getGeometry(), 'EPSG:4326', 'degrees') : ''}`);
+              feat.set('label_angle',  `${f.get('show_info') ? get_formatted_angle(f.getGeometry().getCenter(), f.get('endCoordinates')) : ''}`);
               feat.set('style', {
-                color:    rgbToHex(f.get('style').color),
+                color:    toHex(f.get('style').color),
                 width:    f.get('style').width,
                 fontsize: f.get('style').fontsize,
                 opacity:  f.get('style').opacity,
@@ -1181,8 +1180,8 @@ class AnnotationControl extends InteractionControl {
    * @returns an appropriate styling (open layers) for the provided shape type
    */
   #style(type) {
-    const epsg         = g3wsdk.core.ApplicationState.project.getProjection().getCode();
-    const units        = g3wsdk.core.ApplicationState.project.getProjection().getUnits();
+    const epsg         = ApplicationState.project.getProjection().getCode();
+    const units        = ApplicationState.project.getProjection().getUnits();
     const fill         = new ol.style.Fill({ color : '#000' });
     const stroke       = new ol.style.Stroke({ color: '#FFF', width: 3 });
     const font_family  = 'Titillium Web';
@@ -1226,7 +1225,7 @@ class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (getLength(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (get_formatted_length(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:      `${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
@@ -1264,7 +1263,7 @@ class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (getArea(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (get_formatted_area(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:  `${feat.get('style')?.fontsize}px ${font_family}`,            
             stroke,
@@ -1285,7 +1284,7 @@ class AnnotationControl extends InteractionControl {
         new ol.style.Style({
           text: new ol.style.Text({
             placement: 'point',
-            text:      `${feat.get('show_info') && (getArea(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
+            text:      `${feat.get('show_info') && (get_formatted_area(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill,
             font:      `${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
