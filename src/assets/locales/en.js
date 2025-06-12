@@ -411,7 +411,8 @@ export default {
             'export': 'Export',
             'import': 'Import',
             'remove': 'Remove',
-            'show_all': 'Show All,'
+            'show_hide': 'Show/Hide',
+            'show_all': 'Show All',
           }
         }
       },
