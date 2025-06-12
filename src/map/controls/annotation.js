@@ -499,7 +499,7 @@ class AnnotationControl extends InteractionControl {
                     null,
                     2
                   )
-                )], { type: "application/json;charset=utf-8" }), 'annotation');
+                )], { type: "application/json;charset=utf-8" }), 'annotation.json');
                 ApplicationState.download = false;
               },
               close() {
