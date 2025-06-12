@@ -319,7 +319,7 @@ export default {
         this.custom_theme.value = null;
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
       }
     },
 
@@ -348,7 +348,7 @@ export default {
         GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
       }
     },
 
@@ -380,7 +380,7 @@ export default {
           if (theme === this.active_theme) { this.active_theme = null;}
         } catch(e) {
           console.warn(e);
-          GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error', autoclose: false });
+          GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
         }
       });
     },

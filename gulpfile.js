@@ -503,6 +503,7 @@ gulp.task('dev', gulp.series(
   'check:node_modules',
   'clean:overrides',
   'clone:plugins',
+  'geocoding-providers',
   'build:client',
   )
 )

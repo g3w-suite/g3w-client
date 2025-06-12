@@ -12,7 +12,7 @@ import { t }              from 'g3w-i18n';
  * Custom navbar item: "alerts"
  */
 ApplicationService.on('ready', function() {
-  if (ApplicationState.project.state.messages) {
+  if (ApplicationState.project.state.messages?.items?.length) {
     initConfig.header_custom_links.unshift({
       id:     'alerts',
       icon:   'far fa-bell',

@@ -28,6 +28,8 @@ import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
+import { waitFor }                                 from 'utils/waitFor';
+
 //used by editing plugin
 import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
@@ -51,7 +53,7 @@ import DataRouterService                           from 'services/data';
 import PluginsRegistry                             from 'store/plugins';
 import TaskService                                 from 'services/tasks';
 import GUI                                         from 'services/gui';
-import { MeasureInteraction }                      from 'map/controls/measurecontrol';
+import { MeasureInteraction }                      from 'map/controls/measure';
 
 //MIXINS
 import Mixins                                      from 'mixins';
@@ -144,6 +146,7 @@ const g3wsdk = {
       toRawType,
       createFilterFormInputs,
       noop,
+      waitFor,
     },
     geoutils: {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),

@@ -306,13 +306,11 @@ g3wsdk.gui.GUI.once('ready', () => {
  */
 g3wsdk.gui.GUI.once('ready', () => {
   g3wsdk.gui.GUI.getService('map').once('ready', function() {
-    this.createMapControl('onclick',
-    {
+    this.createMapControl({
       id:            "OPENIFRAME",
       options: {
         add:         true,
         clickmap:    false,
-        name:        'OPENIFRAME',
         tipLabel:    'Open in iframe',
         customClass: 'fa fa-window-restore',
         onclick() {

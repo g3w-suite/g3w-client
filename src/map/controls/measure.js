@@ -1,11 +1,40 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/measuercontrol.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/measuercontrol.js@v3.11.10
+ * @since 4.0.0
  */
+
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { t }                       from 'g3w-i18n';
+
+// wait for map ready
+GUI.once('ready', async () => {
+  const map = GUI.getService('map');
+  map.setupControl.length = map.setupControl.area = function() {
+    Object
+      .keys(window.initConfig.mapcontrols)
+      .filter(type => ['length', 'area'].includes(type))
+      .forEach(type => {
+        if (!isMobile.any && type in window.initConfig.mapcontrols) {
+          if (map.getMapControlByType('measure')) {
+            map.getMapControlByType('measure').addType(type)
+          } else {
+            map.addControl('measure', new MeasureControl({
+                name: "measure",
+                tipLabel: 'sdk.mapcontrols.measures.title',
+                types: [type],
+                interactionClassOptions: {
+                  projection: map.getProjection(),
+                  help:       `sdk.mapcontrols.measures.${type}.help`
+                }
+              })
+            );
+          }
+        }
+      });
+  };  
+});
 
 export class MeasureInteraction extends ol.interaction.Draw {
 
@@ -59,9 +88,11 @@ export class MeasureInteraction extends ol.interaction.Draw {
   clear() {
     this._layer.getSource().clear();
     this._clearMessagesAndListeners();
-    if (this._map) {
+    if (this.measureTooltip) {
       this.measureTooltip.remove();
       this.measureTooltip = null;
+    }
+    if (this._map) {
       this._map.removeLayer(this._layer);
     }
   }
@@ -138,7 +169,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
 }
 
 
-export class MeasureControl extends InteractionControl {
+class MeasureControl extends InteractionControl {
 
   constructor(opts = {}) {
     super({
@@ -181,6 +212,11 @@ export class MeasureControl extends InteractionControl {
    * @since 3.11.0
    */
   addType(type) {
+    // skip when already added
+    if (this.types.includes(type)) {
+      return;
+    }
+
     this.types.push(type);
 
     this._interactionClassOptions.geometryType = ({ area: 'Polygon', length: 'LineString' })[type];

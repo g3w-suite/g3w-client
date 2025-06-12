@@ -1,13 +1,27 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/scalecontrol.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/scalecontrol.js@v3.11.10
+ * @since 4.0.0
  */
+
+import GUI                        from 'services/gui';
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { t }                      from 'g3w-i18n';
 
-export class ScaleControl extends ol.control.Control {
+// wait for map ready
+GUI.once('ready', async () => {
+  const map = GUI.getService('map');
+  map.setupControl.scale = function() {
+    map.addControl('scale', new ScaleControl({
+      coordinateFormat: ol.coordinate.createStringXY(4),
+      projection:       map.getCrs(),
+      isMobile:         isMobile.any
+    }), false);
+  };
+});
+
+class ScaleControl extends ol.control.Control {
 
   constructor(opts = {}) {
     opts.target  = 'scale-control';

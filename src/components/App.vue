@@ -171,25 +171,24 @@
 
         <!-- LANGUAGE SWITCHER -->
         <li v-if = "languages" class="nav-lang">
-          <select
-            v-select2          = "'language'"
-            class              = "form-control"
-            :templateSelection = "templateResultLanguages"
-            :templateResult    = "templateResultLanguages"
-            :dropdownAutoWidth = "true"
-            :dropdownParent    = "dropdownParent"
-            v-model            = "language"
-            style              = "cursor:pointer; width: 130px;"
-          >
-            <option
-              v-for     = "lang in languages"
-              :key      = "lang[0]"
-              :value    = "lang[0]"
-              :selected = "lang[0] === language && 'selected'"
-            >
-              {{ lang[1] }}
-            </option>
-          </select>
+          <button type="button" popovertarget="nav-lang-popover" style="display: flex; gap:5px;">
+            <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width="24" height="16" alt="" />
+            {{ languages.find(l => l[0] === language).at(1) }}
+            <i class="triangle" style="margin-top: 8px;"></i>
+          </button>
+          <dialog id="nav-lang-popover" popover>
+            <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
+              <label
+                v-for     = "lang in languages"
+                :key      = "lang[0]"
+                style     = "cursor:pointer; text-align: left;"
+              >
+                <input type="radio" :value="lang[0]" v-model="language" @change="$event.target.closest('dialog').hidePopover()" style="pointer-events:none;margin-right: 8px;">
+                <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" :alt="lang[0].toLowerCase()" />
+                <span style="margin-left: 5px;">{{ lang[1] }}</span> 
+              </label>
+            </form>
+          </dialog>
         </li>
 
       </ul>
@@ -318,9 +317,9 @@
           :type              = "usermessage.type"
           :icon-class        = "usermessage.iconClass"
         >
-          <template v-if="usermessage.hooks.header"   slot="header"><component :is="usermessage.hooks.header" /></template>
-          <template v-if="usermessage.hooks.body"     slot="body"><component   :is="usermessage.hooks.body" /></template>
-          <template v-if="usermessage.hooks.footer" slot="footer"><component :is="usermessage.hooks.footer" /></template>
+          <template v-if = "usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
+          <template v-if = "usermessage.hooks.body"   slot = "body"><component   :is = "usermessage.hooks.body" /></template>
+          <template v-if = "usermessage.hooks.footer" slot = "footer"><component :is = "usermessage.hooks.footer" /></template>
         </user-message>
       </transition>
 
@@ -561,7 +560,7 @@ export default {
   computed: {
 
     languages() {
-      const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
+      const languages = (Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || []).sort((a, b) => a[0].localeCompare(b[0]));
       return languages.length > 1 && languages;
     },
 
@@ -706,21 +705,6 @@ export default {
   },
 
   methods: {
-
-    /**
-     * Language switcher item template (select2)
-     * 
-     * @TODO find out how to replace `justify-content: space-around` with `justify-content: center` (it's really weird on mobile)
-     */
-     templateResultLanguages(state) {
-      if (!state.id) { return state.text }
-      return $(/*html*/`
-        <div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around;">
-          <img src="${this.urls.staticurl}img/flags/${state.element.value.toLowerCase()}.png" />
-          <span style="margin-left: 5px;">${state.text}</span> 
-        </span>`
-      );
-    },
 
     /**
      * @since 3.11.0
@@ -934,6 +918,9 @@ export default {
   watch: {
 
     language(language, cl) {
+      if (!language) {
+        return;
+      }
       if (cl) {
         i18next.changeLanguage(language);
         ApplicationState.language = language;
@@ -1042,8 +1029,8 @@ export default {
   .user-footer .btn-default:not(:hover) { background-color: transparent; }
   .nav-user > .dropdown-menu            { padding: 1px 0 0 0; border: 1px solid #aaaaaa; border-top-width: 0; border-radius: 0; margin-top: 0 }
 
-  .nav-user .triangle                   { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
-  .nav-user.open .triangle              { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
+  i.triangle                            { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
+  .open i.triangle                      { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
 
   #menu-toggler                         { display:none }
   .navbar-toggler                       { color: #fff; margin: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; }

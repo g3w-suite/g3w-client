@@ -1,12 +1,22 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/controls/geolocationcontrol.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/geolocationcontrol.js@v3.11.10
+ * @since 4.0.0
  */
 
 import GUI                from 'services/gui';
 import InteractionControl from 'map/controls/interactioncontrol';
+import { throttle }       from 'utils/throttle';
 
-export class GeolocationControl extends InteractionControl {
+// wait for map ready
+GUI.once('ready', async () => {
+  const map = GUI.getService('map');
+  map.setupControl.geolocation = function() {
+    map.addControl('geolocation', new GeolocationControl());
+    map.getMapControlByType('geolocation').on('click', throttle(e => map.showMarker(e.coordinates)));
+  };
+});
+
+class GeolocationControl extends InteractionControl {
 
   constructor() {
 
@@ -103,7 +113,6 @@ export class GeolocationControl extends InteractionControl {
         type:      'warning',
         title:     "mapcontrols.geolocation.error",
         message:   e.message,
-        autoclose: false
       });
 
       this.toggle(false);

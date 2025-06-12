@@ -8,6 +8,17 @@ import { watch, unwatch } from 'directives/utils';
 
 const attr = 'g3w-v-select2-id';
 
+// show select2 dropdowns as "popover" (ie. always on top over other DOM elements) 
+$(document).on('select2:open', function(e) {
+  const dropdown = document.querySelector('.select2-container--open .select2-dropdown');
+  dropdown.popover = true;
+  dropdown.parentElement.style.anchorName = '--select2-dropdown-open';
+  dropdown.style.margin = dropdown.style.inset = 'unset';
+  dropdown.style.top = 'anchor(--select2-dropdown-open bottom)';
+  dropdown.style.left = 'anchor(--select2-dropdown-open left)';
+  dropdown.showPopover();
+});
+
 export default {
   inserted(el, binding, vnode) {
     const {
