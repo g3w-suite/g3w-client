@@ -101,9 +101,9 @@ class AnnotationControl extends InteractionControl {
       const epsg = GUI.getService('map').getEpsg();
       localforage.setItem('annotations', Object.assign(await localforage.getItem('annotations') || {},
         {
-          [ApplicationState.project.state.id] : (new ol.format.GeoJSON()).writeFeaturesObject(
+          [ApplicationState.project.state.id] : JSON.parse(JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
             this._annotation.layer.getSource().getFeatures(), { dataProjection: epsg, featureProjection: epsg }
-          )
+          )))
         }
       ));
     });
