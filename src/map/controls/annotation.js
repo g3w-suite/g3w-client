@@ -2,7 +2,7 @@
  * @file
  * @since 4.0.0
  */
-
+import localforage                from 'localforage';
 import ApplicationState           from 'store/application';
 import GUI                        from 'services/gui';
 import InteractionControl         from 'map/controls/interactioncontrol';
@@ -699,6 +699,8 @@ class AnnotationControl extends InteractionControl {
             }
 
             if ('Circle' === f.get('type')) {
+              //need to set radius in degrees
+              feat.set('radius', ol.sphere.getLength(new ol.geom.LineString([f.get('center'), f.get('endCoordinates')])));
               feat.set('label', `${f.get('show_text') && f.get('text') || ''}`);
               feat.set('label_radius', `${f.get('show_info') ? get_formatted_radius(f.getGeometry(), 'EPSG:4326', 'degrees') : ''}`);
               feat.set('label_angle',  `${f.get('show_info') ? get_formatted_angle(f.getGeometry().getCenter(), f.get('endCoordinates')) : ''}`);
