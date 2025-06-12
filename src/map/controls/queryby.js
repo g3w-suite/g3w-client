@@ -20,13 +20,13 @@ import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
-  map.setupControl.querybypolygon = map.setupControl.querybbox = map.setupControl.querybycircle = map.setupControl.querybydrawpolygon = function() {
+  map.setupControl.querybypolygon = map.setupControl.querybbox = map.setupControl.querybycircle = map.setupControl.querybydrawpolygon = map.setupControl.querybyfreehand = function() {
     if (isMobile.any) {
       return;
     }
     Object
       .keys(window.initConfig.mapcontrols)
-      .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon'].includes(type))
+      .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon', 'querybyfreehand'].includes(type))
       .forEach(type => {
         if (map.getMapControlByType('queryby')) {
           map.getMapControlByType('queryby').addType(type)
@@ -283,12 +283,13 @@ export class QueryBy extends InteractionControl {
               },
               templateType(state) {
                 if (!state.id) { return state.text }
-                return $(/*html*/`<span><i class="${ GUI.getFontClass(({
-                  'querybbox':          'square',
-                  'querybycircle':      'empty-circle',
-                  'querybydrawpolygon': 'draw',
-                  'querybypolygon':     'pointer',
-                })[state.id]) }"></i>&nbsp;&nbsp;${state.text}</span>`);
+                return $(/*html*/`<span><i class="${ ({
+                  'querybbox':          'far fa-square',
+                  'querybycircle':      'far fa-circle',
+                  'querybydrawpolygon': 'fas fa-draw-polygon',
+                  'querybypolygon':     'fa fa-hand-pointer',
+                  'querybyfreehand':    'fas fa-pen-fancy',
+                })[state.id] }"></i>&nbsp;&nbsp;${state.text}</span>`);
               },
               templateLayer(state) {
                 if (!state.id || '__NEW__' === state.id) { return state.text }
@@ -346,16 +347,17 @@ export class QueryBy extends InteractionControl {
       name:             type,
       offline:          false,
       visible:          false,
-      geometryTypes:    ['querybypolygon','querybydrawpolygon'].includes(type) ? POLYGON_TYPES : [],
-      cursorClass:      'querybypolygon' !== type ? 'ol-crosshair': 'ol-pointer',
+      geometryTypes:    ['querybypolygon','querybydrawpolygon','querybyfreehand'].includes(type) ? POLYGON_TYPES : [],
+      cursorClass:      'querybypolygon' === type ? 'ol-pointer' : 'ol-crosshair',
       interactionClass: ({
         'querybbox':          ol.interaction.DragBox,
         'querybycircle':      ol.interaction.Draw,
         'querybydrawpolygon': ol.interaction.Draw,
+        'querybyfreehand':    ol.interaction.Draw,
         'querybypolygon':     PickCoordinatesInteraction,
       })[type],
-      interactionClassOptions: ['querybydrawpolygon', 'querybycircle'].includes(type)
-        ? { type: 'querybydrawpolygon' === type ? 'Polygon' : 'Circle' }
+      interactionClassOptions: ['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type)
+        ? { type: 'querybycircle' === type ? 'Circle' : 'Polygon', freehand: type === 'querybyfreehand' }
         :  {},
       layers: _getAvailableLayers(type),
       onSetMap({ setter, map }) {
@@ -391,7 +393,7 @@ export class QueryBy extends InteractionControl {
           })
         }
 
-        if (['querybydrawpolygon', 'querybycircle'].includes(type)) {
+        if (['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type)) {
           this._interaction.on('drawend', throttle(e => {
             //convert circle geometry to polygon
             if ('querybycircle' === type) {
@@ -612,25 +614,26 @@ export class QueryBy extends InteractionControl {
         });
       }
 
-      if (['querybypolygon','querybydrawpolygon', 'querybycircle'].includes(type)) {
+      if (['querybypolygon','querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type)) {
         await DataRouterService.getData('query:polygon', {
           inputs: {
             layerName:       'querybypolygon' === type ? (QUERY.layer.getName ? QUERY.layer.getName() : QUERY.layer.get('name')) : '',
             excludeSelected: 'querybypolygon' === type || !selected,
             feature:         (() => {
-                              switch (type) {
-                                case 'querybypolygon':     return QUERY.feature;
-                                case 'querybydrawpolygon': return QUERY.dfeature;
-                                case 'querybycircle':
-                                  const feat = QUERY.dfeature.clone();
-                                  feat.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry(), 64));
-                                  return feat;
-                              }
-                             })(),
+                            switch (type) {
+                              case 'querybypolygon':     return QUERY.feature;
+                              case 'querybydrawpolygon': return QUERY.dfeature;
+                              case 'querybyfreehand':    return QUERY.dfeature;
+                              case 'querybycircle':
+                                const feat = QUERY.dfeature.clone();
+                                feat.setGeometry(ol.geom.Polygon.fromCircle(QUERY.dfeature.getGeometry(), 64));
+                                return feat;
+                            }
+                           })(),
             external:        {
               add:           'querybypolygon' === type || (!selected || externalLayers.some(l => l === selected)),
               filter: {
-                SELECTED:    ['querybydrawpolygon', 'querybycircle'].includes(type) && !!selected, //true if some layer on TOC is selected
+                SELECTED:    ['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type) && !!selected, // true if some layer on TOC is selected
               }
             },
             type:            (type || '').replace('queryby', '') || undefined,
