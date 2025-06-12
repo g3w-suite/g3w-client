@@ -62,7 +62,7 @@ export function createMeasureTooltip({ map, feature } = {}) {
      * @since 4.0.0
      */
     remove() {
-      tooltip.getMap().removeOverlay(tooltip);
+      tooltip.getMap()?.removeOverlay(tooltip);
       ol.Observable.unByKey(unbyKey);
     }
   };
@@ -92,9 +92,7 @@ export function get_formatted_area(geom, epsg = ApplicationState.map.epsg, unit 
     return;
   }
 
-  const area = 'EPSG:3857' === epsg || 'degrees' === unit
-    ? ol.sphere.getArea(geom, { projection: epsg })
-    : geom.getArea();
+  const area = 'EPSG:3857' === epsg || 'degrees' === unit ? ol.sphere.getArea(geom, { projection: epsg }) : geom.getArea();
 
   if ('nautical' === unit) {
     return `${area * 0.000000291553349598122862913947445759414840765222583489217190918463024037990567} nmi²`;
