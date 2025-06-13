@@ -731,7 +731,6 @@ export default {
     });
 
     this.changeColumn = debounce(async (e, i) => {
-      const table = $(this.$refs.attribute_table)
       const value = e.target.value.trim();
       table.one('draw', async() => {
         filterColumns[i]      = value;
