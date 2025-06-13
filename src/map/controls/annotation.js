@@ -639,9 +639,7 @@ class AnnotationControl extends InteractionControl {
 
       params.ANNOTATIONS = JSON.stringify(
         new ol.format.GeoJSON().writeFeaturesObject(
-          this
-          .#proj(features, GUI.getService('map').getEpsg(), 'EPSG:4326')
-          .map(f => {
+          features.map(f => {
             const feat = f.clone();
             //need to set id  after clone https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#clone
             feat.setId(f.getId());
@@ -699,8 +697,10 @@ class AnnotationControl extends InteractionControl {
             }
 
             if ('Circle' === f.get('type')) {
-              //need to set radius in degrees
-              feat.set('radius', ol.sphere.getLength(new ol.geom.LineString([f.get('center'), f.get('endCoordinates')])));
+              if ('degrees' === GUI.getService('map').getProjection().getUnits()) {
+                //need to set radius in degrees
+                feat.set('radius', ol.sphere.getLength(new ol.geom.LineString([f.get('center'), f.get('endCoordinates')])));
+              }
               feat.set('label', `${f.get('show_text') && f.get('text') || ''}`);
               feat.set('label_radius', `${f.get('show_info') ? get_formatted_radius(f.getGeometry(), 'EPSG:4326', 'degrees') : ''}`);
               feat.set('label_angle',  `${f.get('show_info') ? get_formatted_angle(f.getGeometry().getCenter(), f.get('endCoordinates')) : ''}`);
