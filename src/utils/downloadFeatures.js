@@ -36,7 +36,7 @@ GUI.once('ready', () => {
           toggleable: true,
           hint:       'Downloads',
           change({ features }) {
-            features.forEach((_, i) => undefined === QUERY.state.toggled[i] ? VM.$set(QUERY.state.toggled, i, false) : (QUERY.state.toggled[i] = false))
+            features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
           },
           cbk: (layer, feature, action, index) => {
             action.state.toggled[index] = !action.state.toggled[index];
