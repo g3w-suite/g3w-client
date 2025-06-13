@@ -37,8 +37,11 @@ export function SearchPanel(opts = {}, show = false) {
     /** @deprecated will be removed in v4.x */
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
-    /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
+    /** Layers that will be searchable for that search form. 
+     * The First one is a layer owner of the search set on admin. 
+     * Need to ser layer TOC layer olorder on results.
+     * */
+    search_layers: (GUI.getService('queryresults')._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
