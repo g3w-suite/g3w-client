@@ -759,8 +759,6 @@ export default new (class QueryResultsService extends G3WObject {
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.currentactionfeaturelayer[layer.id] = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.layersactions[layer.id]             = this.state.layersactions[layer.id] || [];
-      const relations        = (this._relations[layer.id] || []).filter(r => 'MANY' === r.type);
-      const chartRelationIds = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
 
       this.state.layersactions[layer.id].push(...([
 
@@ -774,7 +772,7 @@ export default new (class QueryResultsService extends G3WObject {
         },
 
         // show relations (query)
-        relations.length && {
+        (this._relations[layer.id] || []).some(r => 'MANY' === r.type) && {
           id:       'show-query-relations',
           class:    GUI.getFontClass('relation'),
           hint:     'sdk.mapcontrols.query.actions.relations.hint',
@@ -784,7 +782,7 @@ export default new (class QueryResultsService extends G3WObject {
               content: new Component({
                 internalComponent: new (Vue.extend(require('components/RelationsPage.vue').default))({
                   relations:        action.relations,
-                  chartRelationIds: action.chartRelationIds,
+                  chartRelationIds: action.relations.map(r => GUI.getService('queryresults').plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
                   feature,
                   layer,
                 })
@@ -799,29 +797,7 @@ export default new (class QueryResultsService extends G3WObject {
               closable: false
             });
           },
-          relations,
-          chartRelationIds
-        },
-
-        // show relations (plot)
-        chartRelationIds.length && {
-          id:       'show-plots-relations',
-          opened:   true,
-          class:    GUI.getFontClass('chart'),
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
-          hint:     'sdk.mapcontrols.query.actions.relations_charts.hint',
-          cbk: throttle((layer, feature, action, index, container) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            if (action.state.toggled[index]) {
-              this.emit('show-chart', chartRelationIds, container, {
-                relations: this._relations[layer.id],
-                fid:       feature.attributes[G3W_FID],
-                height:    400
-              });
-            } else {
-              this.hideChart(container);
-            }
-          }),
+          relations: (this._relations[layer.id] || []).filter(r => 'MANY' === r.type),
         },
 
         // print (atlas)
