@@ -533,13 +533,17 @@
 
       onChartResize() {
         const move = e => {
-          const size                     = e.pageX + 2 - $('.main-sidebar').width();
-          this.$refs.content.style.width = `${size}px`;
-          this.$refs.chart.style.width   = `${$(this.$refs.wrapper).width() - size - 10}px`;
+          const size                     =  Math.abs(e.x -  window.innerWidth);
+          this.$refs.content.style.width = `${$(this.$refs.wrapper).width() - size - 10}px`;
+          this.$refs.chart.style.width   = `${size}px`;
         };
         const el = document.getElementById('g3w-view-content');
         el.addEventListener('mousemove', move);
-        el.addEventListener('mouseup', () => { el.removeEventListener('mousemove', move); this.$nextTick().then(() => GUI.emit('resize')) }, { once: true });
+        el.addEventListener('mouseup', async () => { 
+          el.removeEventListener('mousemove', move); 
+          await this.$nextTick();
+          GUI.emit('resize') 
+        }, { once: true });
       },
 
     },
