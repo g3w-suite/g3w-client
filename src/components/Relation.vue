@@ -660,9 +660,9 @@
 
       onChartResize() {
         const move = e => {
-          const size                     = e.pageX+2 - ($('.sidebar-collapse').length ? 0 : SIDEBARWIDTH);
-          this.$refs.content.style.width = `${size}px`;
-          this.$refs.chart.style.width   = `${$(this.$refs.wrapper).width() - size - 10}px`;
+          const perc                     =  (Math.abs(e.x -  window.innerWidth) * 100 / $(this.$refs.wrapper).width()); // percentage
+          this.$refs.content.style.width = `${100 - perc}%`;
+          this.$refs.chart.style.width   = `${perc}%`;
         };
         const el = document.getElementById('g3w-view-content');
         el.addEventListener('mousemove', move);
