@@ -66,12 +66,19 @@
     </div>
 
     <div
-      v-if  = "table.rows.length"
+        v-if  = "start && 0 === table.rows.length"
+        class = "dataTables_scrollBody"
+      >
+        <span v-t = "'sdk.relations.no_relations_found'"></span>
+    </div>
+    <div
+      v-else
       ref   = "wrapper"
       class = "relation-wrapper"
     >
-
+      <!-- Need to set here v-if to recreate only table data without destroy eventually charts open -->
       <div
+        v-if   = "table.rows.length"
         id     = "table_content"
         ref    = "content"
         :style = "{
@@ -174,13 +181,6 @@
 
     </div>
 
-    <div
-      v-else
-      class = "dataTables_scrollBody"
-    >
-      <span v-t = "'sdk.relations.no_relations_found'"></span>
-    </div>
-
   </div>
 
 </template>
@@ -253,6 +253,7 @@
          * @since 3.11.2
          */
         showChartButton: !!this.chartRelationIds.find(id => id === this.relation.referencingLayer),
+        start: true, //@since.3.11.12 need to show no relation at start time
       };
     },
 
@@ -498,6 +499,7 @@
               deferLoading:   data_from_server && this.table.count,
               serverSide:     data_from_server,
               ajax: data_from_server ? newOpts => {
+                this.start = false;
                 this.createTable({
                   ...newOpts,
                   page:       1 + (0 !== newOpts.start ? newOpts.start/newOpts.length : 0),
