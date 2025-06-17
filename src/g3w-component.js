@@ -304,12 +304,14 @@ export default class Component extends G3WObject {
    * @fires internalComponent~resize-component
    * @fires layout
    */
-  layout(width, height) {
+  async layout(width, height) {
     if (this.state.resizable && this._firstLayout) {
       this.internalComponent.$on('resize-component', this.internalComponent.layout);
       this._firstLayout = false;
     }
-    this.internalComponent.$nextTick(() => { this.internalComponent.$emit('resize-component', { width, height }); });
+    await this.internalComponent.$nextTick();
+    //need to check if internal component exist becouse wehn unmount, internalcomponent is set to nul
+    this.internalComponent?.$emit('resize-component', { width, height });
     this.emit('layout');
   }
 
