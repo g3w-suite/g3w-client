@@ -889,7 +889,7 @@ export default new (class GUI extends G3WObject {
     if (content instanceof Component || content instanceof Panel) {
       await promisify(content.unmount());
     } else {
-      $(this.getComponent('contents').parent).empty();
+      content.remove();
     }
 
     ApplicationState.contentsdata.pop();
