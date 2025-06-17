@@ -533,9 +533,9 @@
 
       onChartResize() {
         const move = e => {
-          const size                     =  Math.abs(e.x -  window.innerWidth);
-          this.$refs.content.style.width = `${$(this.$refs.wrapper).width() - size - 10}px`;
-          this.$refs.chart.style.width   = `${size}px`;
+          const perc                     =  (Math.abs(e.x -  window.innerWidth) * 100 / $(this.$refs.wrapper).width()); // percentage
+          this.$refs.content.style.width = `${100 - perc}%`;
+          this.$refs.chart.style.width   = `${perc}%`;
         };
         const el = document.getElementById('g3w-view-content');
         el.addEventListener('mousemove', move);
