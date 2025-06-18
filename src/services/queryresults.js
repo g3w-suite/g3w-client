@@ -1172,8 +1172,6 @@ export default new (class QueryResultsService extends G3WObject {
     this.state.query               = null;
     this.state.querytitle          = "";
     this.state.changed             = false;
-    // clear actions
-    Object.values(this.state.layersactions).forEach(l => l.forEach(a => a.clear && a.clear()));
     this.state.layersactions       = {};
     this.state.actiontools         = {};
     this.state.layeractiontool     = {};
