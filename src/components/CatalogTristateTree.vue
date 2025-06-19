@@ -111,10 +111,10 @@
           highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class            = "skin-tooltip-top g3w-long-text"
-        data-placement   = "top"
-        v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class            = "g3w-long-text"
+        data-placement   = "left"
+        v-t-tooltip:right.create.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        :current-tooltip              = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
@@ -569,11 +569,6 @@ export default {
       this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
     }
   },
-
-  async mounted() {
-    await this.$nextTick();
-    $('span.scalevisibility, a.toggle-context-menu').tooltip();
-  }
 
 };
 </script>
