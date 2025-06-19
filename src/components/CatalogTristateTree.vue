@@ -112,9 +112,8 @@
           scalevisibility: showscalevisibilityclass
         }"
         class            = "g3w-long-text"
-        data-placement   = "left"
-        v-t-tooltip:right.create.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        :current-tooltip              = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        v-t-tooltip:top.create.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        :current-tooltip            = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
