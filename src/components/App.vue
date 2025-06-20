@@ -956,28 +956,6 @@ export default {
 };
 </script>
 
-<style>
-  .nav-lang .select2-container--default .select2-selection--single {
-    background: none;
-    border: none;
-  }
-  .nav-lang .select2-container--default .select2-selection--single .select2-selection__arrow b {
-    border-color: #fff transparent transparent transparent
-  }
-  .nav-lang .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
-    border-color: transparent transparent #fff transparent;
-  }
-  .nav-lang .select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: #fff !important;
-  }
-  @media (min-width: 768px) {
-    .nav-lang .select2-container {
-      right: 0;
-      left: auto !important;
-    }
-  }
-</style>
-
 <style scoped>
   .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
   .project_title > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
