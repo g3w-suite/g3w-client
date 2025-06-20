@@ -171,12 +171,12 @@
 
         <!-- LANGUAGE SWITCHER -->
         <li v-if = "languages" class="nav-lang">
-          <button type="button" popovertarget="nav-lang-popover" style="display: flex; gap:5px;">
+          <button type="button" commandfor="nav-lang-dialog" command="show-modal" style="display: flex; gap:5px;">
             <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width="24" height="16" alt="" />
             {{ languages.find(l => l[0] === language).at(1) }}
             <i class="triangle" style="margin-top: 8px;"></i>
           </button>
-          <dialog id="nav-lang-popover" popover>
+          <dialog id="nav-lang-dialog">
             <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
               <label
                 v-for     = "lang in languages"

@@ -5,6 +5,7 @@
 
 // polyfills
 import '@ungap/with-resolvers';
+import 'invokers-polyfill';
 
 import * as ol              from 'ol';
 import * as array           from 'ol/array';
