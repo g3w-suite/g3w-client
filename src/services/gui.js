@@ -634,10 +634,10 @@ export default new (class GUI extends G3WObject {
   }
 
   //  (100%) content
-  showContent(options = {}) {
+  async showContent(options = {}) {
     this.setLoadingContent(false);
     options.perc = isMobile.any ? 100 : options.perc;
-    this.setContent(options);
+    await this.setContent(options);
     return true;
   }
 
@@ -646,10 +646,10 @@ export default new (class GUI extends G3WObject {
   //  - push every component is added, set is refreshed
   //  - pushContent has a new parameter (backonclose) when is clicked x
   //  - the contentComponent is close all stacks are closed
-  pushContent(options = {}) {
+  async pushContent(options = {}) {
     options.perc = isMobile.any ? 100 : options.perc;
     options.push = true;
-    this.setContent(options);
+    await this.setContent(options);
   }
 
   //return number of a component of stack
@@ -819,7 +819,7 @@ export default new (class GUI extends G3WObject {
 
     contents.setOpen(true);
 
-    this._layout(true);
+    await this._layout(true);
   }
 
   // hide content
@@ -1077,7 +1077,7 @@ export default new (class GUI extends G3WObject {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  _layout(param) {
+  async _layout(param) {
 
     // whether to show secondary (content)
     if ('boolean' === typeof param) {
@@ -1126,26 +1126,25 @@ export default new (class GUI extends G3WObject {
     });
 
     // resize "content" (after vue state is updated)
-    Vue.nextTick().then(() => {
+    await Vue.nextTick();
 
-      // resize "map"
-      this.getService('map').layout({
-        width:  state.map.sizes.width,
-        height: state.map.sizes.height
-      });
-
-      ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-        try {
-          if ('function' == typeof d.content.layout) {
-            d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
-          }
-        } catch (e) {
-          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-          setTimeout(() => this._layout(), 1000);
-        }
-      });
+    // resize "map"
+    this.getService('map').layout({
+      width:  state.map.sizes.width,
+      height: state.map.sizes.height
     });
 
+    ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+      try {
+        if ('function' == typeof d.content.layout) {
+          d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+        }
+      } catch(e) {
+        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+        setTimeout(() => this._layout(), 1000);
+      }
+    });
+    
     this.emit('resize');
 
     window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
