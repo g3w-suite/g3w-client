@@ -183,7 +183,7 @@
                 :key      = "lang[0]"
                 style     = "cursor:pointer; text-align: left;"
               >
-                <input type="radio" :value="lang[0]" v-model="language" @change="$event.target.closest('dialog').hidePopover()" style="pointer-events:none;margin-right: 8px;">
+                <input type="radio" :value="lang[0]" v-model="language" @click="$event.target.closest('dialog').close()" style="pointer-events:none;margin-right: 8px;">
                 <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" :alt="lang[0].toLowerCase()" />
                 <span style="margin-left: 5px;">{{ lang[1] }}</span> 
               </label>
