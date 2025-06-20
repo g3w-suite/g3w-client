@@ -176,7 +176,7 @@
             {{ languages.find(l => l[0] === language).at(1) }}
             <i class="triangle" style="margin-top: 8px;"></i>
           </button>
-          <dialog id="nav-lang-dialog">
+          <dialog id="nav-lang-dialog" @click="$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()">
             <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
               <label
                 v-for     = "lang in languages"
