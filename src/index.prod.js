@@ -384,8 +384,6 @@ $.ajaxSetup({
 
   ApplicationService.emit('ready');
 
-  ApplicationState.map.epsg = project.state.crs.epsg;
-
   if (ApplicationState.iframe) {
     IframePluginService.init({ project })
   }
