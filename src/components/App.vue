@@ -44,6 +44,7 @@
 
         <!-- CUSTOM LINKS -->
         <li
+          :id     = "`g3w-nav-custom-links-${item.id}`"
           v-for  = "item in custom_links"
           :key   = "item.id"
           :style = "{ order: item.position }"
@@ -67,6 +68,7 @@
 
         <!-- ACCOUNT -->
         <li
+          id    = "g3w-nav-account"
           class = "nav-user dropdown"
         >
           <a
@@ -170,7 +172,11 @@
         </li>
 
         <!-- LANGUAGE SWITCHER -->
-        <li v-if = "languages" class="nav-lang">
+        <li 
+          id    = "g3w-nav-language"
+          v-if  = "languages" 
+          class ="nav-lang"
+        >
           <button type="button" commandfor="nav-lang-dialog" command="show-modal" style="display: flex; gap:5px;">
             <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width="24" height="16" alt="" />
             {{ languages.find(l => l[0] === language).at(1) }}
