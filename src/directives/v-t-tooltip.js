@@ -3,9 +3,9 @@
  * @since v3.7
  */
 
-import ApplicationState            from 'store/application';
-import { watch, unwatch, trigger } from 'directives/utils';
-import { t, tPlugin }              from 'g3w-i18n';
+import ApplicationState                 from 'store/application';
+import { watch, unwatch, trigger }      from 'directives/utils';
+import { t, tPlugin , languageIsReady } from 'g3w-i18n';
 
 const attr = 'g3w-v-t-tooltip-id';
 
@@ -40,7 +40,8 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.language,
-        ({el = _el}) => {
+        async ({ el = _el }) => {
+          await languageIsReady(ApplicationState.language);
           let value = el.getAttribute('current-tooltip');
           if (null === value) { value = binding.value; }
           el.setAttribute('data-original-title', binding.modifiers.text ? value : ('plugin' === binding.arg ? tPlugin : t)(value));

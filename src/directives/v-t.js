@@ -5,7 +5,6 @@
 
 import ApplicationState       from 'store/application';
 import { watch, unwatch }     from 'directives/utils';
-import { waitFor }            from 'utils/waitFor';
 import { t, languageIsReady } from 'g3w-i18n';
 
 const attr = 'g3w-v-t-id';
@@ -30,6 +29,7 @@ export default {
     el.__innerHTML = el.innerHTML;
     //set current binging
     el.__currentBinding = binding;
+    handleInnerHTML({ el });
     watch({
       el,
       attr,
