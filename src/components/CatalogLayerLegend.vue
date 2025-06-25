@@ -190,11 +190,16 @@
 
       showHideLayerCategory(index) {
         this.categories[index].checked = !this.categories[index].checked;
+        //emit chang layer on map to refresh tiles
+        this.getProjectLayer().change();
+        
         if ('tab' === this.legendplace) {
           this.layer.legend.change = true;
+          
         } else if (this.categories[index].checked && this.mapReady) {
           this.setLayerCategories(false);
         }
+
       },
 
       setError() {
@@ -258,7 +263,8 @@
               this._updateLayerCategories(nodes, categories);
             }
           }
-        } catch(err) {
+        } catch(e) {
+          console.warn(e);
           this.setError();
         }
       },
