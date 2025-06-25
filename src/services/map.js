@@ -917,6 +917,10 @@ class MapService extends G3WObject {
 
     const map = this.viewer.getMap();
 
+    //set application epsg and map unit
+    ApplicationState.map.epsg = this.getEpsg();
+    ApplicationState.map.unit = map.getView().getProjection().getUnits();
+
     // disable douclickzoom
     map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(false);
 
