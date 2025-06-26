@@ -33,6 +33,7 @@
     "datatables.net-dt": "^1.10.16",
     "eonasdan-bootstrap-datetimepicker": "^4.17.49",
     "i18next": "^18.0.1",
+    "invokers-polyfill": "^0.5.5",
     "ismobilejs": "^1.1.1",
     "jquery": "^2.2.1",
     "jsts": "^2.11.3",

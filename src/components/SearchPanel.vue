@@ -362,7 +362,7 @@
             /** @TODO use `getDataForSearchInput` instead ? */
             try {
               // get data for all searchable layers
-              const data = await getDataForSearchInput({ state, field: d.attribute, filter });
+              const data = await getDataForSearchInput({ state, layerid: d.alternativeuniquelayer, field: d.attribute, filter });
               // case value map
               if (!d.dependance_strict && 'selectfield' === d.type) {
                 d._values.push(...d.values);
@@ -453,6 +453,7 @@
               ok({
                 results: (await getDataForSearchInput({
                   state:    this.state,
+                  layerid:  input.alternativeuniquelayer,
                   field:    input.attribute,
                   suggest: `${input.attribute}|${d.data.q}`,
                 })).map(d => ({ id: d.value, text: d.key })

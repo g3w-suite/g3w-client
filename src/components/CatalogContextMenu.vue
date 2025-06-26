@@ -330,14 +330,14 @@
       <a :href = "layers_url" target = "_blank" style = "color: initial">
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <i>
-          <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
-            <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
-            <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
-            <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
+          <svg xmlns = "http://www.w3.org/2000/svg" xml:space = "preserve" viewBox = "0 0 32 32" style = "height: 14px; vertical-align: -1.5px; fill: currentColor;">
+            <path d = "m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
+            <path d = "m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
+            <path d = "M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
           </svg>
         </i>
         Layers settings
-        <i :class = "$fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i :class = "$fa('external-link')" style = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
     </li>
 
@@ -346,14 +346,14 @@
       <a :href = "edit_url" @click.stop = "closeMenu" target = "_blank" style = "color: initial">
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <i>
-          <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32" style="height: 14px; vertical-align: -1.5px; fill: currentColor;">
-            <path d="m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
-            <path d="m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
-            <path d="M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" xml:space = "preserve" viewBox = "0 0 32 32" style = "height: 14px; vertical-align: -1.5px; fill: currentColor;">
+            <path d = "m17.61 17.63 4.36-.02-4-3.98h-4.36v4l4 4.45z"/>
+            <path d = "m31.61 27.22-7.62-7.6-4.38.01v4.33l7.24 7.67h4.76z"/>
+            <path d = "M18 25.18c-.68.16-1.17.2-1.9.2a9.77 9.77 0 0 1-9.68-9.88c0-5.57 4.4-9.78 9.68-9.78s9.48 4.2 9.48 9.78c0 .91-.15 1.96-.36 2.8l4.88 4.65a15 15 0 0 0 1.95-7.48C32.05 6.87 25.19.44 16 .44 6.86.44 0 6.84 0 15.47c0 8.68 6.86 15.2 16 15.2 2.36 0 4.23-.3 6.2-1.1L18 25.18z"/>
           </svg>
         </i>
         Project settings
-        <i :class = "$fa('external-link')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i :class = "$fa('external-link')" style = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
   </li>
 
@@ -456,11 +456,11 @@
             }
             e.stopPropagation();
             vnode.context[binding.expression](e);
-          };
-          document.body.addEventListener('click', this.event, true)
+          }
+          document.body.addEventListener('click', this.event, true);
         },
         unbind() {
-          document.body.removeEventListener('click', this.event, true)
+          document.body.removeEventListener('click', this.event, true);
         }
       }
     },
@@ -509,7 +509,7 @@
       },
 
       canShowWmsUrl(layerId) {
-        const layer = getCatalogLayerById(layerId);
+        const layer   = getCatalogLayerById(layerId);
         const wms_url = ApplicationState.project.state.metadata.wms_url;
         return layer && !layer.isType('table') && !!(wms_url && !layer.isExternalWMS()
           ? wms_url
@@ -560,10 +560,10 @@
        * @param { HTMLElement } el
        */
       copyUrl(format, el) {
-        const url = this[`get${format}Url`](this.layer.id);
-        const a = document.createElement('a');
+        const url   = this[`get${format}Url`](this.layer.id);
+        const a     = document.createElement('a');
         const input = document.createElement('input');
-        a.href = url;
+        a.href      = url;
         input.value = a.href;
         document.body.appendChild(input);
         input.select();
@@ -584,7 +584,7 @@
       setLayerPosition(position) {
         if (position !== this.layer.position) {
           this.layer.position = position;
-          const map = GUI.getService('map');
+          const map           = GUI.getService('map');
           map.getLayerById(this.layer.id).setZIndex(({ top: map.layersCount, bottom: 0 })[position]);
           map.emit('change-layer-position-map', { id: this.layer.id, position });
           this.closeMenu();
@@ -650,7 +650,7 @@
       },
 
       getGeometryType(layerId, external=false) {
-        const layer = external ? GUI.getService('catalog').state.external.vector.find(l => l.id === layerId) : getCatalogLayerById(layerId);
+        const layer = external ? GUI.getService('catalog').state.external.vector.find(l => layerId === l.id) : getCatalogLayerById(layerId);
         if (layer) {
           const type = external ? layer.geometryType : layer.config.geometrytype;
           return layer && 'NoGeometry' !== type && type || '';
@@ -675,10 +675,9 @@
       },
 
       setLayerStyle(index) {
-
         this.layer_style = this.layer.styles[index].name;
         //change layer style
-        getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style)
+        getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style);
         this.closeMenu();
       },
 
@@ -692,7 +691,7 @@
       async setLayerFilter(filter) {
         const changed = (
           null === this.layer.filter.current ||
-          this.layer.filter.current.fid !== filter.fid
+          filter.fid !== this.layer.filter.current.fid 
         );
         const layer = getCatalogLayerById(this.layer.id);
         if (changed) {
@@ -720,7 +719,6 @@
         const change = fid === this.layer.fid;
         await layer.deleteFilterToken(fid);
         if (change) { layer.change() }
-
         this.closeMenu();
       },
 
@@ -734,7 +732,7 @@
         const li = e.target.closest('li');
         const ul = li && li.querySelector('ul');
         if (ul) {
-          const overflowY = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs['menu'].offsetHeight + this.$refs['menu'].getBoundingClientRect().top);
+          const overflowY    = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs['menu'].offsetHeight + this.$refs['menu'].getBoundingClientRect().top);
           ul.style.top       = ul.offsetHeight > this.$refs['menu'].offsetHeight ? 0 : undefined;
           ul.style.left      = this.$refs['menu'].offsetWidth -2 + 'px';
           ul.style.maxHeight = this.$refs['menu'].offsetHeight + 'px';
@@ -755,7 +753,7 @@
        * @since 3.10.0
        */
       isExternalLayer(layer) {
-        return !layer.projectLayer
+        return !layer.projectLayer;
       },
 
       /**

@@ -41,7 +41,7 @@ export default {
   name: 'modal-login',
   data() {
     return {
-      show: true,
+      show: false,
     }
   },
 
@@ -64,6 +64,11 @@ export default {
     },
 
   },
+
+  async mounted() {
+    await this.$nextTick();
+    this.show = true;
+  }
 
 };
 </script>

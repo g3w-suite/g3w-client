@@ -1,4 +1,6 @@
 import ApplicationState from 'store/application';
+import { waitFor }      from 'utils/waitFor';
+
 
 export const i18next = require('i18next');
 
@@ -30,10 +32,23 @@ export const addI18nPlugin = ({ name, config }) =>  {
   }
 };
 
+/**
+ * @since 4.0.0 check if bundle resource language is ready
+ * @param { String } lang 
+ */
+export const languageIsReady = async (lang) => {
+  await waitFor(() => {
+    const resources = i18next.getResourceBundle(lang);
+    //Check if ready client translation and all pluglins are ready
+    return Object.keys(resources).length > 1 && Object.keys(initConfig.plugins).length === Object.keys(resources.plugins).length;
+  })
+}
+
 export default {
   getAppLanguage,
   t,
   tPlugin,
   addI18n,
   addI18nPlugin,
+  languageIsReady,
 };

@@ -1371,7 +1371,7 @@ class Layer extends G3WObject {
           filtertoken = response.data.filtertoken;
         }
       } catch(e) {
-        console.warn(e)
+        console.warn(e);
       }
 
       // remove it from filters list when deleting a saved filter (since v3.9.0)

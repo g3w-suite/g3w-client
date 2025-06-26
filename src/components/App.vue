@@ -44,6 +44,7 @@
 
         <!-- CUSTOM LINKS -->
         <li
+          :id     = "`g3w-nav-custom-links-${item.id}`"
           v-for  = "item in custom_links"
           :key   = "item.id"
           :style = "{ order: item.position }"
@@ -67,6 +68,7 @@
 
         <!-- ACCOUNT -->
         <li
+          id    = "g3w-nav-account"
           class = "nav-user dropdown"
         >
           <a
@@ -170,20 +172,24 @@
         </li>
 
         <!-- LANGUAGE SWITCHER -->
-        <li v-if = "languages" class="nav-lang">
-          <button type="button" popovertarget="nav-lang-popover" style="display: flex; gap:5px;">
+        <li 
+          id    = "g3w-nav-language"
+          v-if  = "languages" 
+          class ="nav-lang"
+        >
+          <button type="button" commandfor="nav-lang-dialog" command="show-modal" style="display: flex; gap:5px;">
             <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width="24" height="16" alt="" />
             {{ languages.find(l => l[0] === language).at(1) }}
             <i class="triangle" style="margin-top: 8px;"></i>
           </button>
-          <dialog id="nav-lang-popover" popover>
+          <dialog id="nav-lang-dialog" @click="$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()">
             <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
               <label
                 v-for     = "lang in languages"
                 :key      = "lang[0]"
                 style     = "cursor:pointer; text-align: left;"
               >
-                <input type="radio" :value="lang[0]" v-model="language" @change="$event.target.closest('dialog').hidePopover()" style="pointer-events:none;margin-right: 8px;">
+                <input type="radio" :value="lang[0]" v-model="language" @click="$event.target.closest('dialog').close()" style="pointer-events:none;margin-right: 8px;">
                 <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" :alt="lang[0].toLowerCase()" />
                 <span style="margin-left: 5px;">{{ lang[1] }}</span> 
               </label>
@@ -955,28 +961,6 @@ export default {
 
 };
 </script>
-
-<style>
-  .nav-lang .select2-container--default .select2-selection--single {
-    background: none;
-    border: none;
-  }
-  .nav-lang .select2-container--default .select2-selection--single .select2-selection__arrow b {
-    border-color: #fff transparent transparent transparent
-  }
-  .nav-lang .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
-    border-color: transparent transparent #fff transparent;
-  }
-  .nav-lang .select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: #fff !important;
-  }
-  @media (min-width: 768px) {
-    .nav-lang .select2-container {
-      right: 0;
-      left: auto !important;
-    }
-  }
-</style>
 
 <style scoped>
   .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }

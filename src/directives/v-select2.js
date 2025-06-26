@@ -3,8 +3,10 @@
  * @since v3.7
  */
 
-import ApplicationState   from 'store/application';
-import { watch, unwatch } from 'directives/utils';
+import ApplicationState    from 'store/application';
+import { watch, unwatch }  from 'directives/utils';
+import { languageIsReady } from 'g3w-i18n';
+
 
 const attr = 'g3w-v-select2-id';
 
@@ -125,7 +127,10 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.language,
-        () => createSelect2()
+        async (lang) => {
+          await languageIsReady(lang);
+          createSelect2();
+        }
       ],
       immediate: false,
     });

@@ -76,7 +76,7 @@
     },
     beforeDestroy() {
       if (typeof this.action.clear === 'function') {
-        this.action.clear({ layer: this.layer, feature: this.feature });
+        this.action.clear({ action: this.action, layer: this.layer, feature: this.feature });
       }
     }
   }
