@@ -219,7 +219,8 @@ const Providers = {
               data:   JSON.stringify({
                 ...params,
                 ...options.filter,
-              })
+              }),
+              contentType: 'application/json',
             })
           } else if (is_defined(options.filter.nofeatures)) {
             response = await XHR.post({
