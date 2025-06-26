@@ -698,6 +698,7 @@
         return (
           GUI.getService('queryresults').getActionLayerById({ layer, id: 'selection' })
           && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
+          && layer.features.length > 1
         );
       },
 

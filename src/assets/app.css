@@ -598,6 +598,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
   .nav-links > li                                            { color: inherit; border: 0; }
   .nav-links > li > a:not(.nav-user) [hidden]                { display: inline-block; }
   .nav-links > li > a:not(.nav-user)                         { margin: 5px 8px; padding: 10px; border: 1px dashed #fff; display: flex; flex-direction: row; justify-content: left; align-items: center; gap: 8px; }
+  .nav-lang button                                           { width: 100%; }
   .navbar .dropdown-menu li.divider                          { background-color: rgba(255, 255, 255, 0.1); }
   .navbar .dropdown-menu li a                                { color: #fff; }
   .navbar .dropdown-menu li a:hover                          { background: hsl(from var(--skin-color) h s calc(l - 5)); }
