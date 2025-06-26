@@ -34,6 +34,8 @@ export function SearchPanel(opts = {}, show = false) {
     type:                 opts.type || 'search',
     /** @TODO check if deprecated */
     queryurl:             (opts.options || {}).queryurl,
+    layerid:              (opts.options || {}).layerid,
+    otherquerylayerids:   (opts.options|| {}).otherquerylayerids || [],
     /** @deprecated will be removed in v4.x */
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
@@ -43,7 +45,7 @@ export function SearchPanel(opts = {}, show = false) {
      * */
     search_layers: (GUI.getService('queryresults')._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
-    forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
+    forminputs:    ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
       type:        d.input.type || 'textfield',
       widget_type: d.input.widget_type,
@@ -60,7 +62,7 @@ export function SearchPanel(opts = {}, show = false) {
        *        will contain the filtered values consistent with the
        *        value of the dependent parent field
        */
-      dependance_strict: d.input.options.dependance_strict || false,
+      dependance_strict:      d.input.options.dependance_strict || false,
       /**
        * true → the select is not disabled and will contain all possible values
        *        (since at the beginning the parent will have the value ALL).
@@ -68,14 +70,15 @@ export function SearchPanel(opts = {}, show = false) {
        *        select list will be filtered in a manner consistent with the value
        *        of the parent
        */
-      dependance: d.input.options.dependance || false,
-      value:     'selectfield' === d.input.type ? SEARCH_ALLVALUE : null,
-      operator:  d.op,
-      logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
-      loading:   true,
-      disabled:  d.input.options.disabled || false, 
+      dependance:             d.input.options.dependance || false,
+      alternativeuniquelayer: d.input.alternativeuniquelayer, //@since 4.0.0 layers to get selectbox data eventually
+      value:                  'selectfield' === d.input.type ? SEARCH_ALLVALUE : null,
+      operator:               d.op,
+      logicop:                i === (opts.options.filter.length - 1) ? null : d.logicop,
+      loading:                true,
+      disabled:               d.input.options.disabled || false, 
       /** keep a reference to initial search options (you shouldn't mutate them..) */
-      options:   d.input.options,
+      options:                d.input.options,
     })),
     /** @since 3.11.0 whether layers are filtered (value = 0/1, see: https://github.com/g3w-suite/g3w-client/issues/676) */
     autofilter: { value: 0 }, //
@@ -112,7 +115,7 @@ export function SearchPanel(opts = {}, show = false) {
       input.values = [
         ...('selectfield' === input.type 
             // set `SEARCH_ALLVALUE` as first element and retrive input values from server (set empty in case of strict dependance)
-            ? [SEARCH_ALLVALUE].concat(no_value ? [] : await getDataForSearchInput({ state, field: input.attribute })) 
+            ? [SEARCH_ALLVALUE].concat(no_value ? [] : await getDataForSearchInput({ state, layerid: input.alternativeuniquelayer, field: input.attribute })) 
             : []
           ), 
 

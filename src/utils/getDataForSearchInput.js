@@ -1,14 +1,20 @@
 import { SEARCH_ALLVALUE }      from 'g3w-constants';
+import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
+
 
 /**
+ * @param { Object } state search configuration
+ * @param { String } field field name
+ * @param { String } layerid id of layer to search input data 
+ * @param { String } filter other filter field
+ * @param { String } suggest field
  * @returns { Array } of unique values from field
  */
-export async function getDataForSearchInput({ state, field, filter, suggest }) {
-
+export async function getDataForSearchInput({ state, field, layerid, filter, suggest }) {
   try {
     // get unique value from each layers
     return (
-      await Promise.allSettled(state.search_layers.map(l => l.getFilterData({
+      await Promise.allSettled([layerid || state.layerid].concat(state.otherquerylayerids).map(id => getCatalogLayerById(id).getFilterData({
         suggest,
         fformatter: field,
         ordering:   field,
