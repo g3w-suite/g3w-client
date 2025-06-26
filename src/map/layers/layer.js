@@ -1371,7 +1371,7 @@ class Layer extends G3WObject {
           filtertoken = response.data.filtertoken;
         }
       } catch(e) {
-        console.warn(e)
+        console.warn(e);
       }
 
       // remove it from filters list when deleting a saved filter (since v3.9.0)
@@ -2583,7 +2583,7 @@ class Layer extends G3WObject {
         //set as current the style passed
         this.config.styles.forEach(s => s.current = style === s.name);
         //In case of change need to call change function
-        this.change() 
+        this.change();
       } catch(e) {
         console.warn(e);    
       }

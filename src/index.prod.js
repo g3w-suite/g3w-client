@@ -273,7 +273,8 @@ $.ajaxSetup({
   i18next
     .init({
         lng:         initConfig.user.i18n,
-        ns:          'app',
+        ns:          'translation',
+        partialBundledLanguages: true,
         fallbackLng: 'en',
         resources:    {
           en:                     (await import(`${initConfig.urls.clienturl}locales/en.js`)).default,
@@ -283,18 +284,18 @@ $.ajaxSetup({
 
   addI18n(ApplicationState.i18n.plugins);
 
-  (new Vue).$watch(() => ApplicationState.language, async () => {
+  (new Vue).$watch(() => ApplicationState.language, async (lang) => {
 
     // lazy load i18n translations
     try {
       i18next.addResourceBundle(
-        ApplicationState.language,
+        lang,
         'translation',
-        (await import(`${initConfig.urls.clienturl}locales/${ApplicationState.language}.js`)).default,
+        (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default?.translation,
         false,
         true
       );
-    } catch (e) {
+    } catch(e) {
       GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
     }
 

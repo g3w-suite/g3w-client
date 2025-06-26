@@ -3,9 +3,10 @@
  * @since v3.7
  */
 
-import ApplicationState   from 'store/application';
-import { watch, unwatch } from 'directives/utils';
-import { t }              from 'g3w-i18n';
+import ApplicationState       from 'store/application';
+import { watch, unwatch }     from 'directives/utils';
+import { t, languageIsReady } from 'g3w-i18n';
+
 
 const attr = 'g3w-v-t-html-id';
 
@@ -16,7 +17,7 @@ export default {
       attr,
       watcher: [
         () => ApplicationState.language,
-        () => { el.innerHTML = `${t(binding.value)}`; }
+        async (lang) => { await languageIsReady(lang); el.innerHTML = `${t(binding.value)}`; }
       ]
     });
   },

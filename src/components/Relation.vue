@@ -645,6 +645,10 @@
         this.$table.destroy();
         this.$table = null;
       }
+      //In case of chart open, need to hide chart
+      if (this.chart.toggled) {
+         GUI.getService('queryresults').hideChart(this.chart.container);
+      }
       if (this.chart.container) {
         this.$emit('hide-chart', this.chart.container);
         this.chart.container = null;
