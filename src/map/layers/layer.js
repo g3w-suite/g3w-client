@@ -2882,7 +2882,6 @@ class Layer extends G3WObject {
     if ('boolean' === typeof resolution) {
       return this.state.disabled = resolution;
     }
-    console.log(this.state.scalebasedvisibility);
     if (this.state.scalebasedvisibility) {
       const mapScale      = getScaleFromResolution(resolution, mapUnits);
       this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
