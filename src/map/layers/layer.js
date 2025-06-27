@@ -223,7 +223,8 @@ const Providers = {
               data:   JSON.stringify({
                 ...params,
                 ...options.filter,
-              })
+              }),
+              contentType: 'application/json',
             })
           } else if (is_defined(options.filter.nofeatures)) {
             response = await XHR.post({
@@ -2596,14 +2597,19 @@ class Layer extends G3WObject {
    */
   async getStyleEditorFormStructure(style) {
     try {
-      const { result, data } = await XHR.post({
+      const { result, data = {} } = await XHR.post({
         url:          `${this.config.urls.editorformstructure}${this.getId()}/`,
         data:         JSON.stringify({ style }),
         contentType: 'application/json'
       });
       if (result) {
-        this.config.editor_form_structure = data;
-        return this.config.editor_form_structure;
+        //set form structure
+        this.config.editor_form_structure = data?.editor_form_structure;
+        //@since 4.0.0 set scale visibility on change style
+        this.state.scalebasedvisibility   = data?.scalebasedvisibility;
+        this.state.minscale               = data?.minscale;
+        this.state.maxscale               = data?.maxscale;
+        return data ?? {};
       }
     } catch(e) {
       console.warn(e);
@@ -2877,7 +2883,6 @@ class Layer extends G3WObject {
     if ('boolean' === typeof resolution) {
       return this.state.disabled = resolution;
     }
-
     if (this.state.scalebasedvisibility) {
       const mapScale      = getScaleFromResolution(resolution, mapUnits);
       this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);

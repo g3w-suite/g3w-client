@@ -233,11 +233,9 @@ class RasterLayer extends G3WObject {
     let { force, ...params } = extraParams;
 
     // check which layers have to be disabled
-    if (!force) {
-      const { resolution, mapUnits } = mapState;
-      this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
-    }
-
+    const { resolution, mapUnits } = mapState;
+    this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
+    
     if ('XYZ' === this.config.type) {
       this._olLayer.setVisible(this.layer.isVisible());
       return;
