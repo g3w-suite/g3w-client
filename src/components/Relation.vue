@@ -339,7 +339,7 @@
               page_size: opts.length,
               formatter: 1,
               ordering:  opts.order.length ? `${'desc' === opts.order[0].dir ? '-' : ''}${this.table.columns[opts.order[0].column - Number(!!this.showTools)].name}` : undefined,
-              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}`).join('|and,') || undefined,
+              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}`).join('|AND,') || undefined,
             }),
           })).json();
 
