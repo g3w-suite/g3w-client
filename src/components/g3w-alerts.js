@@ -43,14 +43,14 @@ async function _showAlertsManager() {
           <table style="user-select:none;width:100%;">
             <thead>
               <tr>
-                <th><i class="fa fa-check"></i> Marked as read</th>
+                <th><i class="fa fa-check"></i> ${ t('Marked as read') }</th>
               </tr>
             </thead>
             <tbody>
               ${messages.items.map(message => /* html */`
                 <tr>
                   <td>
-                    <label style="display: flex;justify-content: space-between; font-weight:${data[pid].some(id => id === message.id) ? 'normal' : 'bold'};" title="Mark as read/unread">
+                    <label style="display: flex;justify-content: space-between; font-weight:${data[pid].some(id => id === message.id) ? 'normal' : 'bold'};" title="${ t('Mark as read/unread') }">
                       &bull; ${message.title}
                       <input name="dont_show_again_${message.id}" type="checkbox" ${data[pid].some(id => id === message.id) ? 'checked' : ''}>
                     </label>

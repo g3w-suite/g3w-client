@@ -685,5 +685,7 @@ export default {
     no_csv_field: 'Nessun campo valido',
     /** @since 3.11.0 */
     show_more: 'Mostra di più',
+    'Marked as read': 'Contrassegnato come letto',
+    'Mark as read/unread': 'Segna come letto/non letto',
   },
 };
