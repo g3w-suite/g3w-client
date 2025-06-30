@@ -1,3 +1,5 @@
+import G3WObject from 'g3w-object';
+
 /**
  * Based on google closure library implementation
  */
@@ -15,7 +17,8 @@ export function base(target) {
     if ('Function' === caller.superClass_.constructor.name) {
       return caller.superClass_.constructor.apply(target, Array.prototype.slice.call(arguments, 1));
     }
-    // CASE: `base(this)`
+    // CASE: `base(this) for example in case set some attributes/methods to this before call base(this)
+    // example http://github.com/g3w-suite/g3w-client-plugin-qtimeseries/blob/dev/service.js#L16-L21`
     if (1 === arguments.length) {
       return Object.assign(
         target,
