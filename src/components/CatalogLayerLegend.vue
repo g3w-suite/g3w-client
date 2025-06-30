@@ -176,8 +176,9 @@
   
       getWmsSourceLayerLegendUrl() {
         return this.getProjectLayer().getLegendUrl({
+          ...(window.initConfig.layout || {}).legend,
           width:  16,
-          height: 16
+          height: 16,
         });
       },
 
