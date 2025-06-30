@@ -11,9 +11,18 @@ export function base(target) {
 
   // call superclass constructor (that inherits from superClass_)
   if (caller.superClass_) {
+    // CASE: `super(opts)`
     if ('Function' === caller.superClass_.constructor.name) {
       return caller.superClass_.constructor.apply(target, Array.prototype.slice.call(arguments, 1));
     }
+    // CASE: `base(this)`
+    if (1 === arguments.length) {
+      return Object.assign(
+        target,
+        Reflect.construct(caller.superClass_.constructor, arguments, target.constructor)
+      )
+    }
+    // CASE: `base(this, opts)`
     return Object.assign(
       target,
       Reflect.construct(caller.superClass_.constructor, Array.prototype.slice.call(arguments, 1), target.constructor)
