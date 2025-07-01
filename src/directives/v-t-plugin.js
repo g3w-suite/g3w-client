@@ -3,30 +3,26 @@
  * @since v3.7
  */
 
-import ApplicationState             from 'store/application';
-import { watch, unwatch }           from 'directives/utils';
-import { tPlugin, languageIsReady } from 'g3w-i18n';
+import GUI   from 'services/gui';
+import { t } from 'g3w-i18n';
 
-const attr = 'g3w-v-t-plugin-id';
+const update = (el) => {
+  const value =  t(null === el.__currentBinding.value ? '' : `plugins.${el.__currentBinding.value}`);
+  el.innerHTML = 'pre' === el.__currentBinding.arg ? `${value} ${el.__innerHTML}` : `${el.__innerHTML} ${value}`;
+  // unlisten for "i18nReady" event
+  if (!el.isConnected) {
+    return true;
+  }
+}
 
 export default {
   bind(el, binding) {
-    const innerHTML = el.innerHTML;
-    watch({
-      el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        async (lang) => {
-          await languageIsReady(lang);
-          const value = null === binding.value ? '' : tPlugin(binding.value);
-          switch(binding.arg ? binding.arg : 'post') {
-            case 'pre':  el.innerHTML = `${value} ${innerHTML}`; break;
-            case 'post': el.innerHTML = `${innerHTML} ${value}`; break;
-          }
-        }
-      ]
-    });
+    el.__innerHTML      = el.innerHTML; // set init innerHTML value of element
+    el.__currentBinding = binding;      // set current binging
+    update(el);
+    GUI.on('i18nReady', update.bind(null, el));
   },
-  unbind: el => unwatch({ el, attr })
+  unbind: el => {
+    update(el);
+  }
 };

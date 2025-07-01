@@ -1,54 +1,67 @@
-import ApplicationState from 'store/application';
-import { waitFor }      from 'utils/waitFor';
-
-export const i18next = require('i18next');
-
-export const getAppLanguage = () => window.initConfig.user.i18n || "en";
-/* function to translate */
-export const t = text => i18next.t(text);
-
- /* function to translate plugins */
-export const tPlugin =  text => i18next.t(`plugins.${text}`);
-
-export const addI18n = i18nObject => {
-  for (const lang in i18nObject) {
-    for (const key in i18nObject[lang])  {
-      i18next.addResource(lang, 'translation', key, i18nObject[lang][key])
+// Based on leaflet-i18n
+export const L = {
+  locales: {},
+  language: null,
+  registerLocale(lang, locale) {
+    L.locales[lang] = L.merge(L.locales[lang] || {}, locale);
+  },
+  setLocale(lang) {
+    L.language = lang;
+  },
+  // translate
+  translate(string, data) {
+    let value;
+    try {
+      value = L.locales[L.language]?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales[L.language] || {});
+    } catch (e) {
+      // fallback to "en"
+      try {
+        value = L.locales.en?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales.en || {}) 
+      } catch (e) {
+        console.info(`[G3W-I18N] ${string} not found`);        
+      }
     }
+    // // based on: `L.Util.template`
+    // string = string.replace(/\{ *([\w_-]+) *\}/g, function (str, key) {
+    //   let value = data[key];
+    //   if (undefined === value) {
+    //     console.warn('No value provided for variable ' + str);
+    //   } else if ('function' === typeof value) {
+    //     value = value(data);
+    //   }
+    //   return value;
+    // });
+    return value ?? string;
+  },
+  // deep merge
+  merge(target, source) {
+    for (const key in source) {
+      if (source[key] instanceof Object && key in target) {
+        target[key] = L.merge(target[key], source[key]);
+      } else {
+        target[key] = source[key];
+      }
+    }
+    return target;
   }
 };
+
+L._ = L.translate;
+
+/* function to translate */
+export const t = text => L._(text);
+
+ /* function to translate plugins */
+export const tPlugin =  text => L._(`plugins.${text}`);
 
 export const addI18nPlugin = ({ name, config }) =>  {
   for (const lang in config) {
-    if (ApplicationState.i18n.plugins[lang]) {
-      ApplicationState.i18n.plugins[lang].plugins[name] = config[lang]
-    }
-  }
-  for (const lang in ApplicationState.i18n.plugins) {
-    for (const key in ApplicationState.i18n.plugins[lang])  {
-      i18next.addResource(lang, 'translation', key, ApplicationState.i18n.plugins[lang][key])
-    }
+    L.registerLocale(lang, { plugins: { [name]: config[lang] } });
   }
 };
 
-/**
- * @since 4.0.0 check if bundle resource language is ready
- * @param { String } lang 
- */
-export const languageIsReady = async (lang) => {
-  await waitFor(() => {
-    const resources = i18next.getResourceBundle(lang);
-    //Check if ready client translation and all pluglins are ready
-    //exluding plugin that haven't translation check default language en 
-    return Object.keys(resources).length > 1 && Object.keys(initConfig.plugins).filter(name => ApplicationState.i18n.plugins['en'].plugins[name]).length === Object.keys(resources.plugins).length;
-  })
-}
-
 export default {
-  getAppLanguage,
   t,
   tPlugin,
-  addI18n,
   addI18nPlugin,
-  languageIsReady,
 };

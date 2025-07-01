@@ -19,7 +19,7 @@ import { addZValue }                  from 'utils/addZValue';
 import { convertSingleMultiGeometry } from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 import { debounce }                   from 'utils/debounce';
-import { t, languageIsReady }         from 'g3w-i18n';
+import { t }                          from 'g3w-i18n';
 
 /**
  * Provider definitions.
@@ -125,12 +125,11 @@ class GeocodingControl extends ol.control.Control {
     const map          = GUI.getService('map');
     const queryresults = GUI.getService('queryresults');
     const VM           = new Vue;
-  
-    VM.$watch(() => ApplicationState.language, async (lang) => {
-      await languageIsReady(lang);
+
+    GUI.on('i18nReady', () => {
       this.element.querySelector('ul').innerHTML = '';
       this.element.querySelector('input[type="search"]').placeholder = t('mapcontrols.geocoding.placeholder');
-    }, { immediate: true });
+    })
 
     VM.$watch(() => GUI.getCurrentContent(), is_sidebar_open => {
       this.element.querySelector('button[value="toggle-sidebar"] code').style.opacity = is_sidebar_open ? 0.5 : null;

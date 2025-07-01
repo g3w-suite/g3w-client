@@ -53,7 +53,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { addI18n, t, tPlugin, i18next } from 'g3w-i18n';
+import { L, t, tPlugin } from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
@@ -252,10 +252,6 @@ initConfig.header_custom_links.unshift({
 initConfig.layout.iframe  = window.top !== window.self;
 ApplicationState.language = initConfig.user.i18n || 'en';
 
-
-// setup i18n
-(initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
-
 // set Accept-Language request header based on config language
 $.ajaxSetup({
   beforeSend: xhr => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
@@ -270,54 +266,9 @@ $.ajaxSetup({
 (async () => { try {
 
   // lazy load i18n translations
-  i18next
-    .init({
-        lng:         initConfig.user.i18n,
-        ns:          'translation',
-        partialBundledLanguages: true,
-        fallbackLng: 'en',
-        resources:    {
-          en:                     (await import(`${initConfig.urls.clienturl}locales/en.js`)).default,
-          [initConfig.user.i18n]: (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default
-        }
-    });
-
-  addI18n(ApplicationState.i18n.plugins);
-
-  (new Vue).$watch(() => ApplicationState.language, async (lang) => {
-
-    // lazy load i18n translations
-    try {
-      i18next.addResourceBundle(
-        lang,
-        'translation',
-        (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default?.translation,
-        false,
-        true
-      );
-    } catch(e) {
-      GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-    }
-
-    //set form control class to filter
-    $.extend($.fn.dataTableExt.oStdClasses, {
-      "sFilterInput": "form-control search"
-    });
-    $.extend(true, $.fn.dataTable.defaults, {
-      "language": {
-        "sSearch": '',
-        "searchPlaceholder": t("dosearch"),
-        "sLengthMenu": t("dataTable.lengthMenu"),
-        "paginate": {
-          "previous": '«',
-          "next": '»',
-        },
-        "info": t("dataTable.info"),
-        "zeroRecords": t("dataTable.nodatafilterd"),
-        "infoFiltered": ''
-      }
-    });
-  }, { immediate: true});
+  L.setLocale(initConfig.user.i18n);
+  L.registerLocale('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default?.translation);
+  L.registerLocale([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default?.translation);
 
   /** @since 3.8.0 */
   try {

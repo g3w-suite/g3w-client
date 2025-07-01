@@ -3,11 +3,9 @@
  * @since v3.7
  */
 
-import ApplicationState                 from 'store/application';
-import { watch, unwatch, trigger }      from 'directives/utils';
-import { t, tPlugin , languageIsReady } from 'g3w-i18n';
-
-const attr = 'g3w-v-t-tooltip-id';
+import ApplicationState from 'store/application';
+import GUI              from 'services/gui';
+import { t }            from 'g3w-i18n';
 
 // show tooltip as "popover" (ie. always on top over other DOM elements) 
 $(document).on('shown.bs.tooltip', function (e) {
@@ -17,47 +15,41 @@ $(document).on('shown.bs.tooltip', function (e) {
   tip.showPopover();
 });
 
+const update = (el, binding) => {
+  let value = el.getAttribute('current-tooltip') ?? binding.value;
+  value = binding.modifiers.text ? value : t('plugin' === binding.arg ? `plugins.${value}` : value);
+  if ([null, ''].includes(value)) {
+    $(el).tooltip('hide');
+  } else {
+    el.setAttribute('data-original-title', value);
+  }
+  // unlisten for "i18nReady" event
+  if (!el.isConnected) {
+    return true;
+  }
+};
+
 export default {
-  bind(_el, binding) {
+  bind(el, binding) {
+    if (binding.arg) {
+      el.setAttribute('data-placement', binding.arg);
+      el.classList.add(`skin-tooltip-${binding.arg}`);
+    }
     // Automatically create tooltip
     if (binding.modifiers.create) {
-      if (binding.arg) {
-        _el.setAttribute('data-placement', binding.arg);
-        _el.classList.add(`skin-tooltip-${binding.arg}`);
-      }
-      _el.setAttribute('data-container',"body");
-      $(_el)
+      el.setAttribute('data-container', "body");
+      $(el)
         .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true, })
         .on('shown.bs.tooltip', function() {
           // hide tooltip on mobile after click
           if (ApplicationState.ismobile) {
-            setTimeout(()=>$(_el).tooltip('hide'), 600)
+            setTimeout(()=>$(el).tooltip('hide'), 600)
           }
         });
     }
-    watch({
-      el: _el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        async ({ el = _el }) => {
-          await languageIsReady(ApplicationState.language);
-          let value = el.getAttribute('current-tooltip');
-          if (null === value) { value = binding.value; }
-          el.setAttribute('data-original-title', binding.modifiers.text ? value : ('plugin' === binding.arg ? tPlugin : t)(value));
-        }
-      ]
-    });
+    GUI.on('i18nReady', update.bind(null, el, binding));
   },
-  componentUpdated(el, oldVnode) {
-    const value = el.getAttribute('current-tooltip');
-    //in case of null or empty value, need to hide tooltip
-    if ([null, ''].includes(value)) {
-      $(el).tooltip('hide');
-    }
-    if (null != value && value !== oldVnode.oldValue) {
-      trigger({ el, attr, data: { el } });
-    }
-  },
-  unbind: el => { $(el).tooltip('hide'); unwatch({ el, attr }); }
+  unbind: el => {
+    $(el).tooltip('hide');
+  }
 };

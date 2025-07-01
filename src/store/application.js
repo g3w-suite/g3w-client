@@ -52,11 +52,6 @@ const STATE = Vue.observable({
   language: 'en',
 
   /**
-   * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
-   */
-  lng: 'en',
-
-  /**
    * Store Array of loading plugins (by name)
    * Every time a plugin is loaded, plugin name is removed from Array
    * It used in v-plugins directive
@@ -235,11 +230,6 @@ const STATE = Vue.observable({
     sidebar: {
       width:0
     }
-  },
-
-  /** @since 3.11.0 */
-  i18n: {
-    plugins: {} // plugins configs
   },
 
   /** @since 3.11.0 */

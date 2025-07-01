@@ -525,6 +525,7 @@ import GUI                from 'services/gui';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { promisify }      from 'utils/promisify';
 import { sameOrigin }     from 'utils/sameOrigin';
+import { waitFor }        from 'utils/waitFor';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
@@ -532,7 +533,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import { t, i18next }     from 'g3w-i18n';
+import { L, t }     from 'g3w-i18n';
 
 export default {
 
@@ -923,16 +924,59 @@ export default {
 
   watch: {
 
-    language(language, cl) {
-      if (!language) {
-        return;
-      }
-      if (cl) {
-        i18next.changeLanguage(language);
-        ApplicationState.language = language;
-        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? language : part).join('/'));
+    language: {
+      immediate: true,
+      async handler(lang) {
+        if (!lang) {
+          return;
+        }
+
+        L.setLocale(lang);
+
+        ApplicationState.language = lang;
+
+        // lazy load i18n translations
+        try {
+          L.registerLocale(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default?.translation);
+        } catch(e) {
+          GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+        }
+
+        //set form control class to filter
+        $.extend($.fn.dataTableExt.oStdClasses, {
+          "sFilterInput": "form-control search"
+        });
+        $.extend(true, $.fn.dataTable.defaults, {
+          "language": {
+            "sSearch": '',
+            "searchPlaceholder": t("dosearch"),
+            "sLengthMenu": t("dataTable.lengthMenu"),
+            "paginate": {
+              "previous": '«',
+              "next": '»',
+            },
+            "info": t("dataTable.info"),
+            "zeroRecords": t("dataTable.nodatafilterd"),
+            "infoFiltered": ''
+          }
+        });
+
+        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
         this.cookie_law_buttonText = t('cookie_law.buttonText');
-      }
+
+        await waitFor(() => {
+          const locales = L.locales[lang];
+          if (!locales?.plugins) {
+            return;
+          }
+          //Check if ready client translation and all pluglins are ready
+          //exluding plugin that haven't translation check default language en 
+          return Object.keys(locales).length > 1 && Object.keys(initConfig.plugins).filter(name => L.locales.en.plugins[name]).length === Object.keys(locales.plugins).length;
+        });
+
+        setTimeout(() => GUI.emit('i18nReady'), 500);
+
+      },
     },
 
   },

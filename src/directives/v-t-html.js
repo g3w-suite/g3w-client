@@ -3,28 +3,27 @@
  * @since v3.7
  */
 
-import ApplicationState       from 'store/application';
-import { watch, unwatch }     from 'directives/utils';
-import { t, languageIsReady } from 'g3w-i18n';
+import GUI   from 'services/gui';
+import { t } from 'g3w-i18n';
 
-
-const attr = 'g3w-v-t-html-id';
+const update = (el, binding) => {
+  if (binding && binding.value !== binding.oldValue) {
+    el.innerHTML = `${t(binding.value)}`;
+  }
+  // unlisten for "i18nReady" event
+  if (!el.isConnected) {
+    return true;
+  }
+}
 
 export default {
   bind(el, binding) {
-    watch({
-      el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        async (lang) => { await languageIsReady(lang); el.innerHTML = `${t(binding.value)}`; }
-      ]
-    });
+    GUI.on('i18nReady', update.bind(null, el, binding));
   },
   update(el, binding) {
-    if (binding.value !== binding.oldValue) {
-      el.innerHTML = `${t(binding.value)}`;
-    }
+    update(el, binding);
   },
-  unbind: el => unwatch({ el, attr })
+  unbind: el => {
+    update(el);
+  }
 };

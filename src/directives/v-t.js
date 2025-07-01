@@ -3,56 +3,26 @@
  * @since v3.7
  */
 
-import ApplicationState       from 'store/application';
-import { watch, unwatch }     from 'directives/utils';
-import { t, languageIsReady } from 'g3w-i18n';
+import GUI   from 'services/gui';
+import { t } from 'g3w-i18n';
 
-const attr = 'g3w-v-t-id';
-
-/**
- * @since 3.8.7
- */
-const handleInnerHTML = ({ el } = {}) => {
-  const value = null === el.__currentBinding.value ? '' : t(el.__currentBinding.value);
-  switch(el.__currentBinding.arg ? el.__currentBinding.arg : 'post') {
-    case 'pre':  el.innerHTML = `${value} ${el.__innerHTML}`; break;
-    case 'post': el.innerHTML = `${el.__innerHTML} ${value}`; break;
+const update = (el) => {
+  const value  = t(el.__currentBinding.value ?? '');
+  el.innerHTML = 'pre' === el.__currentBinding.arg ? `${value} ${el.__innerHTML}` : `${el.__innerHTML} ${value}`;
+  // unlisten for "i18nReady" event
+  if (!el.isConnected) {
+    return true;
   }
 }
 
 export default {
   bind(el, binding) {
-    /**
-     * @since 3.8.7
-     */
-    // set init innerHTML value of element
-    el.__innerHTML = el.innerHTML;
-    //set current binging
-    el.__currentBinding = binding;
-    handleInnerHTML({ el });
-    watch({
-      el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        async lang => {
-          //need to wait language set plugins and core client
-          await languageIsReady(lang);
-          handleInnerHTML({ el });
-        }
-      ]
-    });
+    el.__innerHTML      = el.innerHTML; // set init innerHTML value of element
+    el.__currentBinding = binding;      // set current binging
+    update(el);
+    GUI.on('i18nReady', update.bind(null, el));
   },
-  /**
-   * @since 3.8.7
-   */
-  componentUpdated(el, binding) {
-    if (el.__currentBinding.value !== binding.value) {
-      // reset currentBinding to get last value;
-      el.__currentBinding = binding;
-      handleInnerHTML({ el })
-    }
-  },
-
-  unbind: el => unwatch({ el, attr })
+  unbind: el => {
+    update(el);
+  }
 }

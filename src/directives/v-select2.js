@@ -3,12 +3,7 @@
  * @since v3.7
  */
 
-import ApplicationState    from 'store/application';
-import { watch, unwatch }  from 'directives/utils';
-import { languageIsReady } from 'g3w-i18n';
-
-
-const attr = 'g3w-v-select2-id';
+import GUI from 'services/gui';
 
 // show select2 dropdowns as "popover" (ie. always on top over other DOM elements) 
 $(document).on('select2:open', function(e) {
@@ -110,6 +105,7 @@ export default {
     }
 
     createSelect2();
+
     // listen `select2_value` attribute changes to reflect select2 current value
     if (binding.value && undefined !== select2_value) {
       $(el).val(select2_value).trigger('change');
@@ -121,18 +117,13 @@ export default {
       });
       vnode.g3w_observer.observe(el, {attributes: true});
     }
-    //@since 3.11.0
-    watch({
-      el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        async (lang) => {
-          await languageIsReady(lang);
-          createSelect2();
-        }
-      ],
-      immediate: false,
+
+    GUI.on('i18nReady', () => {
+      createSelect2();
+      // unlisten for "i18nReady" event
+      if (!el.isConnected) {
+        return true;
+      }
     });
   },
   unbind: (el, vnode) => {
@@ -140,6 +131,6 @@ export default {
       vnode.g3w_observer.disconnect();
     }
     $(el).select2('destroy');
-    unwatch({ el, attr });
+    // unwatch({ el, attr });
   }
 };
