@@ -54,10 +54,21 @@ L._ = L.translate;
 /* function to translate */
 export const t = text => L._(text);
 
- /* function to translate plugins */
+/* function to translate plugins */
 export const tPlugin =  text => L._(`plugins.${text}`);
+
+/** used by the following plugins: "datasinc" */
+export const getAppLanguage = () => window.initConfig.user.i18n || "en";
+
+export const addI18nPlugin = ({ name, config }) =>  {
+  for (const lang in config) {
+    L.registerLocale(lang, { plugins: { [name]: config[lang] } });
+  }
+};
 
 export default {
   t,
   tPlugin,
+  addI18nPlugin,
+  getAppLanguage,
 };
