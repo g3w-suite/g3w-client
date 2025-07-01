@@ -974,7 +974,7 @@ export default {
           return Object.keys(locales).length > 1 && Object.keys(initConfig.plugins).filter(name => L.locales.en.plugins[name]).length === Object.keys(locales.plugins).length;
         });
 
-        setTimeout(() => GUI.emit('i18nReady'), 500);
+        setTimeout(() => GUI.emit('i18nReady', lang), 500);
 
       },
     },
