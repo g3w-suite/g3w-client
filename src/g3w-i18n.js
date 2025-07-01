@@ -1,7 +1,6 @@
 import ApplicationState from 'store/application';
 import { waitFor }      from 'utils/waitFor';
 
-
 export const i18next = require('i18next');
 
 export const getAppLanguage = () => window.initConfig.user.i18n || "en";
@@ -40,7 +39,8 @@ export const languageIsReady = async (lang) => {
   await waitFor(() => {
     const resources = i18next.getResourceBundle(lang);
     //Check if ready client translation and all pluglins are ready
-    return Object.keys(resources).length > 1 && Object.keys(initConfig.plugins).length === Object.keys(resources.plugins).length;
+    //exluding plugin that haven't translation check default language en 
+    return Object.keys(resources).length > 1 && Object.keys(initConfig.plugins).filter(name => ApplicationState.i18n.plugins['en'].plugins[name]).length === Object.keys(resources.plugins).length;
   })
 }
 
