@@ -14,7 +14,10 @@ export const L = {
     try {
       value = L.locales[L.language]?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales[L.language] || {});
     } catch (e) {
-      // fallback to "en"
+      // fail silently
+    }
+    // fallback to "en"
+    if (undefined === value) {
       try {
         value = L.locales.en?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales.en || {}) 
       } catch (e) {
