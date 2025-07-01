@@ -9,7 +9,7 @@ import ApplicationState   from 'store/application';
 import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
-import { addI18nPlugin }  from 'g3w-i18n';
+import { L }              from 'g3w-i18n';
 
 /** @deprecated */
 import _cloneDeep         from 'lodash.clonedeep';
@@ -96,7 +96,9 @@ export class Plugin extends G3WObject {
    */
   setLocale(i18n) {
     if (i18n && this.name) {
-      addI18nPlugin({ name: this.name, config: i18n});
+      for (const lang in i18n) {
+        L.registerLocale(lang, { plugins: { [this.name]: i18n[lang] } });
+      }
     }
   }
 

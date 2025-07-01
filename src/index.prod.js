@@ -53,7 +53,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { L, t, tPlugin } from 'g3w-i18n';
+import { L, t } from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
@@ -91,14 +91,6 @@ Vue.component(DateTime.name, DateTime);
 Vue.component(Range.name, Range);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
-
-/**
- * Install application filters
- *
- * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
- */
-Vue.filter('t', value => t(value));
-Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
 
 /**
  * Install global directives

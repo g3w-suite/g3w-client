@@ -21,7 +21,7 @@ export const L = {
       try {
         value = L.locales.en?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales.en || {}) 
       } catch (e) {
-        console.info(`[G3W-I18N] ${string} not found`);        
+        console.info(`[G3W-I18N] ${string} not found`);
       }
     }
     // // based on: `L.Util.template`
@@ -57,14 +57,7 @@ export const t = text => L._(text);
  /* function to translate plugins */
 export const tPlugin =  text => L._(`plugins.${text}`);
 
-export const addI18nPlugin = ({ name, config }) =>  {
-  for (const lang in config) {
-    L.registerLocale(lang, { plugins: { [name]: config[lang] } });
-  }
-};
-
 export default {
   t,
   tPlugin,
-  addI18nPlugin,
 };
