@@ -190,7 +190,7 @@
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import resizeMixin                           from 'mixins/resize';
-  import { t }                                 from 'g3w-i18n';
+  import { t, languageIsReady }                from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];
@@ -542,8 +542,9 @@
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => ApplicationState.language,  () => {
+        const unwatch = this.$watch(() => ApplicationState.language,  async (lang) => {
           unwatch();
+          await languageIsReady(lang);
           this.clearSelect2();
           this.initSelect2Field(input);
         });
