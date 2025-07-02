@@ -33,7 +33,7 @@ GUI.once('ready', async () => {
               this.element.querySelectorAll('button').forEach(btn => btn.parentElement.title = btn.parentElement.dataset.originalTitle = g3wsdk.core.i18n.t('last' === btn.value ? 'sdk.mapcontrols.zoomhistory.zoom_last' : 'sdk.mapcontrols.zoomhistory.zoom_next'));
             });
             this.element.querySelectorAll('button').forEach(btn => {
-              $(btn.parentElement).tooltip({ placement: 'top', container: 'body' });
+              btn.parentElement.setAttribute('data-placement', 'top');
               btn.addEventListener('click', e => {
                 curr += 'last' === e.currentTarget.value ? -1 : +1;
                 GUI.getService('map').getMap().getView().fit(history.at(curr));
