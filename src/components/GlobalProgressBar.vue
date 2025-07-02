@@ -6,11 +6,11 @@
 <template>
   <div
     v-if  = "(null !== progress && undefined !== progress)"
-    style = "margin: 5px 0 5px 0; width: 100%; backgroundColor: #FFFFFF; border: 0; borderRadius: 3px;"
+    style = "margin: 5px 0 5px 0; width: 100%; background-color: #FFFFFF; border: 0; border-radius: 3px;"
   >
     <div
       class  = "skin-background-color"
-      style  = "display: flex; justifyContent: center; fontWeight: bold;"
+      style  = "display: flex; justify-content: center; font-weight: bold;"
       :style = "{ width: (progress < 10 ? 10 : progress) }"
     >
       <span>{{ progress }}</span>
