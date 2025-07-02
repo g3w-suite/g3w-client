@@ -649,18 +649,7 @@ class MapService extends G3WObject {
       this.controlClick(mapcontrol, { clickmap })
     });
 
-    const buttonControl = $(control.element).find('button');
-
-    buttonControl.tooltip({
-      placement: 'left',
-      container: 'body',
-      trigger:   GUI.isMobile() ? 'click': 'hover'
-    });
-
-    // in case of mobile hide tooltip after click
-    if (GUI.isMobile()) {
-      buttonControl.on('shown.bs.tooltip', function() { setTimeout(() => $(this).tooltip('hide'), 600); });
-    }
+    $(control.element).find('button')[0]?.setAttribute('data-placement', 'left');
 
     if (addToMapControls && !visible) {
       control.element.style.display = "none";
