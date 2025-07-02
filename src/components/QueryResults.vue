@@ -135,8 +135,9 @@
                   </span>
 
                   <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active && !layer.filter.pagination">
+                  <template v-if = "!layer.external && layer.selection.active">
                     <span
+                      v-if                    = !layer.filter.pagination
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button skin-tooltip-left"
                       :class                  = "{'toggled': layer.filter.active}"
@@ -163,7 +164,6 @@
                         :class = "g3wtemplate.getFontClass('save')"
                       ></span>
                     </span>
-
                   </template>
 
                 </div>
