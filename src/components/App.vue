@@ -61,8 +61,8 @@
           >
             <i v-if     = "item.icon" :class = "item.icon"></i>
             <img v-if   = "item.img" height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
-            <span v-if  = "item.i18n"  v-t-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
-            <span v-if  = "!item.i18n" v-html   = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
+            <span v-if  = "item.i18n"  v-t    = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
+            <span v-if  = "!item.i18n" v-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
           </a>
         </li>
 

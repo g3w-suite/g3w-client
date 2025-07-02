@@ -97,7 +97,6 @@ Vue.component(Divider.name, Divider);
 Vue.directive("disabled", vDisabled);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
-Vue.directive('t-html', vT);
 Vue.directive("t", vT);
 Vue.directive("t-plugin", vT);
 

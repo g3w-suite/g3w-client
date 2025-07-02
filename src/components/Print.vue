@@ -23,7 +23,7 @@
               <i class="far fa-eye"></i>
             </summary>
             <hr style="margin: 10px 0;border-style: dotted;">
-            <div style="white-space: wrap; line-height: 25px;" v-t-html="'sdk.print.help_details'"></div>
+            <div style="white-space: wrap; line-height: 25px;" v-t="'sdk.print.help_details'"></div>
           </details>
         </fieldset>
 

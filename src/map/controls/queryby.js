@@ -175,7 +175,7 @@ export class QueryBy extends InteractionControl {
                   </select>
                 </div>
                 <!-- HELP TEXT -->
-                <div ref="help" v-t-html="help"></div>
+                <div ref="help" v-t="help"></div>
                 <!-- CLEAR SELECTION -->
                 <button v-if = "!['__ALL__', '__NEW__'].includes(selectedLayer)" style="color: #FFF; background-color: var(--skin-color)" class="clear-selected-layer btn btn-block"  @click.stop="selectedLayer = '__ALL__'"><i :class = "$fa('clear')"></i> <span v-t="'layer_selection_filter.tools.clear'"></span></button>
               </div>`,

@@ -8,12 +8,7 @@ import { t } from 'g3w-i18n';
 
 const update = (el, binding) => {
   let value = '';
-  
-  // v-t-html
-  if ('t-html' === binding.name) {
-    value = `${t(binding.value)}`;
-  }
-  
+
   // v-t-plugin
   if ('t-plugin' === binding.name && null !== el.__currentBinding.value) {
     value = t(`plugins.${el.__currentBinding.value}`);
