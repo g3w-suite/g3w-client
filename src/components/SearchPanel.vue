@@ -542,8 +542,7 @@
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => ApplicationState.language,  () => {
-          unwatch();
+        GUI.on('i18n-ready', () => {
           this.clearSelect2();
           this.initSelect2Field(input);
         });
