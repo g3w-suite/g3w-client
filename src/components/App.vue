@@ -975,7 +975,7 @@ export default {
         });
 
         /** @since 4.0.0 */
-        setTimeout(() => GUI.emit('i18nReady', lang), 500);
+        setTimeout(() => GUI.emit('i18n-ready', lang), 500);
 
       },
     },

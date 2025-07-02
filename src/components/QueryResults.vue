@@ -83,7 +83,7 @@
                       @click.stop             = "printAtlas(layer)"
                       class                   = "action-button"
                       v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.atlas.hint'"
-                      v-download
+                      v-disabled              = "ApplicationState.download"
                     >
                       <span
                         class  = "action-button-icon"
@@ -96,7 +96,7 @@
                         class                   = "action-button"
                         :class                  = "{'toggled': layer.downloadformats.active}"
                         v-t-tooltip:left.create = "'Downloads'"
-                        v-download
+                        v-disabled              = "ApplicationState.download"
                       >
                         <span
                           class       = "action-button-icon"
@@ -568,6 +568,7 @@
 </template>
 
 <script>
+  import ApplicationState            from 'store/application';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
@@ -598,6 +599,8 @@
 
     data() {
       return {
+        /** @since 4.0.0 */
+        ApplicationState,
         state:                       this.$options.service.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth:      headerActionsCellWidth,

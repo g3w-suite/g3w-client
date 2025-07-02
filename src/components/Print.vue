@@ -143,8 +143,7 @@
         <button
           id                  = "printbutton"
           class               = "sidebar-button-run btn"
-          v-disabled          = "disabled"
-          v-download
+          v-disabled          = "ApplicationState.download || disabled"
           v-t                 = "'create_print'"
           @click.stop.prevent = "print"
         ></button>
@@ -195,6 +194,8 @@ export default {
   data() {
     this.init();
     return {
+      /** @since 4.0.0 */
+      ApplicationState,
       state: this.state || {},
       disabled: false,
       /** @since 3.10.0 */

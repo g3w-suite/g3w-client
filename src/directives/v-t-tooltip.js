@@ -156,22 +156,18 @@ function showTooltip(e) {
 }
 
 export default function(el, binding) {
-    // destroy existing tooltips
-    // if (el.hasAttribute('data-original-title')) {
-    //   $(el).tooltip('destroy');
-    // }
-    if (binding.arg) {
-      el.setAttribute('data-placement', binding.arg);
-    }
-    if ([null, '', undefined].includes(binding.value)) {
-      el.removeAttribute('data-i18n-title');
-    } else {
-      el.setAttribute('data-i18n-title', binding.value);
-    }
-    if (binding.modifiers.text) {
-      el.setAttribute('data-i18n-raw', '');
-    }
-    if ('plugin' === binding.arg) {
-      el.setAttribute('data-i18n-plugin', '');
-    }
+  if (binding.arg) {
+    el.setAttribute('data-placement', binding.arg);
+  }
+  if ([null, '', undefined].includes(binding.value)) {
+    el.removeAttribute('data-i18n-title');
+  } else {
+    el.setAttribute('data-i18n-title', binding.value);
+  }
+  if (binding.modifiers.text) {
+    el.setAttribute('data-i18n-raw', '');
+  }
+  if ('plugin' === binding.arg) {
+    el.setAttribute('data-i18n-plugin', '');
+  }
 };

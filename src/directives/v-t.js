@@ -6,10 +6,27 @@
 import GUI   from 'services/gui';
 import { t } from 'g3w-i18n';
 
-const update = (el) => {
-  const value  = t(el.__currentBinding.value ?? '');
+const update = (el, binding) => {
+  let value = '';
+  
+  // v-t-html
+  if ('t-html' === binding.name) {
+    value = `${t(binding.value)}`;
+  }
+  
+  // v-t-plugin
+  if ('t-plugin' === binding.name && null !== el.__currentBinding.value) {
+    value = t(`plugins.${el.__currentBinding.value}`);
+  }
+  
+  // v-t
+  if ('t' === binding.name) {
+    value = t(el.__currentBinding.value ?? '');
+  }
+
   el.innerHTML = 'pre' === el.__currentBinding.arg ? `${value} ${el.__innerHTML}` : `${el.__innerHTML} ${value}`;
-  // unlisten for "i18nReady" event
+
+  // unlisten for "i18n-ready" event
   if (!el.isConnected) {
     return true;
   }
@@ -19,10 +36,10 @@ export default {
   bind(el, binding) {
     el.__innerHTML      = el.innerHTML; // set init innerHTML value of element
     el.__currentBinding = binding;      // set current binging
-    update(el);
-    GUI.on('i18nReady', update.bind(null, el));
+    update(el, binding);
+    GUI.on('i18n-ready', update.bind(null, el, binding));
   },
-  unbind: el => {
-    update(el);
+  update(el, binding) {
+    update(el, binding);
   }
-}
+};

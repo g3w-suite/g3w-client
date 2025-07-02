@@ -40,10 +40,7 @@ import Divider                     from 'components/GlobalDivider.vue';
 import vDisabled                   from 'directives/v-disabled';
 import vSelect2                    from 'directives/v-select2';
 import vTToltip                    from 'directives/v-t-tooltip';
-import vTHtml                      from 'directives/v-t-html';
 import vT                          from "directives/v-t";
-import vTPlugin                    from 'directives/v-t-plugin';
-import vDownload                   from 'directives/v-download';
 
 // utils
 import { noop }                    from 'utils/noop';
@@ -100,10 +97,9 @@ Vue.component(Divider.name, Divider);
 Vue.directive("disabled", vDisabled);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
-Vue.directive('t-html', vTHtml);
+Vue.directive('t-html', vT);
 Vue.directive("t", vT);
-Vue.directive("t-plugin", vTPlugin);
-Vue.directive("download", vDownload);
+Vue.directive("t-plugin", vT);
 
 /**
  * Install global plugins

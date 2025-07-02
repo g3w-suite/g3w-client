@@ -38,7 +38,7 @@
         <!-- DOWNLOAD BUTTON -->
         <span
           v-if                    = "download.formats.length"
-          v-download
+          v-disabled              = "ApplicationState.download"
           class                   = "action-button-icon action-button"
           :class                  = "[
             $fa('download'),
@@ -221,6 +221,9 @@
     data() {
       const layer  = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
       return {
+
+        /** @since 4.0.0 */
+        ApplicationState,
 
         /**
          * @since 4.0.0 chart state (action button)

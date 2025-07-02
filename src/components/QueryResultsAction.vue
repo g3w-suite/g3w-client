@@ -8,10 +8,9 @@
      v-if                      = "show && (undefined === (action.state || {}).show ? show : action.state.show)"
      @contextmenu.prevent.stop = ""
      @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
-     v-download                = "action.download"
      :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[featureIndex] }"
      class                     = "action-button"
-     v-disabled                = "!!(action.state || {}).disabled"
+     v-disabled                = "ApplicationState.download || action.download || !!(action.state || {}).disabled"
      v-t-tooltip:top.create    = "action.hint">
      <span
        style  = "padding: 2px;"
@@ -22,12 +21,14 @@
 </template>
 
 <script>
-  import { t } from 'g3w-i18n';
+  import ApplicationState from 'store/application';
 
   export default {
     name: "action",
     data() {
       return {
+        /** @since 4.0.0 */
+        ApplicationState,
         show: true
       }
     },

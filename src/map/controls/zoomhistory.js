@@ -29,8 +29,8 @@ GUI.once('ready', async () => {
               <div><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900;"></button></div>
               <div><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900;"></button></div>
             `;
-            GUI.on('i18nReady', () =>{
-              this.element.querySelectorAll('button').forEach(btn => btn.parentElement.title = btn.parentElement.dataset.originalTitle = g3wsdk.core.i18n.t('last' === btn.value ? 'sdk.mapcontrols.zoomhistory.zoom_last' : 'sdk.mapcontrols.zoomhistory.zoom_next'));
+            GUI.on('i18n-ready', () =>{
+              this.element.querySelectorAll('button').forEach(btn => btn.parentElement.title = g3wsdk.core.i18n.t('last' === btn.value ? 'sdk.mapcontrols.zoomhistory.zoom_last' : 'sdk.mapcontrols.zoomhistory.zoom_next'));
             });
             this.element.querySelectorAll('button').forEach(btn => {
               btn.parentElement.setAttribute('data-placement', 'top');

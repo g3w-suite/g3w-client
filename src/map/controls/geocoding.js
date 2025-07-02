@@ -126,7 +126,7 @@ class GeocodingControl extends ol.control.Control {
     const queryresults = GUI.getService('queryresults');
     const VM           = new Vue;
 
-    GUI.on('i18nReady', () => {
+    GUI.on('i18n-ready', () => {
       this.element.querySelector('ul').innerHTML = '';
       this.element.querySelector('input[type="search"]').placeholder = t('mapcontrols.geocoding.placeholder');
     })

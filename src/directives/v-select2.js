@@ -118,12 +118,12 @@ export default {
       vnode.g3w_observer.observe(el, {attributes: true});
     }
 
-    GUI.on('i18nReady', () => {
-      createSelect2();
-      // unlisten for "i18nReady" event
+    GUI.on('i18n-ready', () => {
+      // unlisten for "i18n-ready" event
       if (!el.isConnected) {
         return true;
       }
+      createSelect2();
     });
   },
   unbind: (el, vnode) => {
