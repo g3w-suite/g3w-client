@@ -14,7 +14,7 @@
         data-container      = "body"
         data-toggle         = "tooltip"
         v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
-        class               = "action skin-tooltip-left skin-color skin-border-color"
+        class               = "action skin-color skin-border-color"
         style               = "border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
         :class              = "g3wtemplate.font['crosshairs']">
       </button>

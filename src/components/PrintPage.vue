@@ -30,7 +30,7 @@
             <a :href = "state.url" :download = "`download.${format}`">
               <button
                 @click.stop        = "downloadImage"
-                class              = "btn skin-button skin-tooltip-left"
+                class              = "btn skin-button"
                 data-placement     = "left"
                 data-toggle        = "tooltip"
                 data-container     = "body"

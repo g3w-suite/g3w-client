@@ -33,7 +33,7 @@
         <bar-loader :loading = "search.qbloading"/>
         <div class = "search-tools">
           <span
-            class          = "search-action skin-tooltip-bottom"
+            class          = "search-action"
             :class         = "$fa('trash')"
             data-placement = "bottom"
             data-toggle    = "tooltip"

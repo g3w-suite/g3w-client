@@ -265,7 +265,7 @@
               <i :class = "$fa('map')"></i> WMS
             </a>
             <b
-              class           = "click-to-copy skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
@@ -288,7 +288,7 @@
               <i :class = "$fa('map')"></i> WFS
             </a>
             <b
-              class           = "click-to-copy skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"
@@ -311,7 +311,7 @@
               <i :class = "$fa('map')"></i> WFS 3
             </a>
             <b
-              class           = "click-to-copy skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
               data-toggle     = "tooltip"

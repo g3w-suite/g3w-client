@@ -234,7 +234,7 @@
                   data-toggle        = "tooltip"
                   data-container     = "body"
                   v-t-tooltip.create = "'back'"
-                  class              = "skin-tooltip-left g3w-span-button close-pane-button"
+                  class              = "g3w-span-button close-pane-button"
                 >
                   <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
                 </span>
@@ -244,7 +244,7 @@
                   data-container           = "body"
                   v-t-tooltip:right.create = "app.sidebar.tooltip_close || 'close'"
                   :current-tooltip         = "app.sidebar.tooltip_close || 'close'"
-                  class                    = "skin-tooltip-left g3w-span-button close-pane-button"
+                  class                    = "g3w-span-button close-pane-button"
                 >
                   <i
                     :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"

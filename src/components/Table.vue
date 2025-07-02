@@ -16,7 +16,7 @@
       <!-- FETCH DATA FROM BBOX -->
       <div
         v-if               = "layer.isGeoLayer()"
-        class              = "skin-color action-button skin-tooltip-right"
+        class              = "skin-color action-button"
         v-disabled         = "state.geolayer.active && current_layout.rightpanel.height_100"
         :class             = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
@@ -27,7 +27,7 @@
       <!-- CLEAR SELECTION -->
       <div
         v-show             = "state.show_tools"
-        class              = "skin-color action-button skin-tooltip-right"
+        class              = "skin-color action-button"
         :class             = "$fa('clear')"
         v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
         data-placement     = "right"
@@ -37,7 +37,7 @@
       <!-- INVERSE SELECTION -->
       <div
         v-show             = "state.show_tools"
-        class              = "skin-color action-button skin-tooltip-right"
+        class              = "skin-color action-button"
         :class             = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.invert'"
         data-placement     = "right"
@@ -47,7 +47,7 @@
       <!-- TOGGLE FILTER -->
       <div
         v-show             = "state.show_tools && show_on_active_filter"
-        class              = "skin-color action-button skin-tooltip-right"
+        class              = "skin-color action-button"
         :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
         data-placement     = "right"

@@ -143,7 +143,7 @@
         <!-- CLEAR SELECTION -->
         <span
           v-if                         = "layerstree.selection.active"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
           data-container="body"
@@ -155,7 +155,7 @@
         <!-- TOGGLE FILTER  -->
         <span
           v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
           data-container="body"
@@ -170,7 +170,7 @@
         <!-- SAVE FILTER  -->
         <span
           v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
           data-toggle                  = "tooltip"
           :class                       = "g3wtemplate.getFontClass('save')"

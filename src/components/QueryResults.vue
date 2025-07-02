@@ -124,7 +124,7 @@
                   <span
                     v-if                    = "canSelect(layer)"
                     @click.stop             = "toggleSelection(layer)"
-                    class                   = "action-button skin-tooltip-left"
+                    class                   = "action-button"
                     v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
                     :class                  = "{'toggled': layer.selection.active}"
                   >
@@ -138,7 +138,7 @@
                   <template v-if = "!layer.external && layer.selection.active && !layer.filter.pagination">
                     <span
                       @click.stop             = "addRemoveFilter(layer)"
-                      class                   = "action-button skin-tooltip-left"
+                      class                   = "action-button"
                       :class                  = "{'toggled': layer.filter.active}"
                       v-t-tooltip:left.create = "'layer_selection_filter.tools.filter'"
                     >
@@ -155,7 +155,7 @@
                         && (null === layer.filter.current || layer.selection.active)
                       "
                       @click.stop             = "saveFilter(layer)"
-                      class                   = "action-button skin-tooltip-left"
+                      class                   = "action-button"
                       v-t-tooltip:left.create = "'layer_selection_filter.tools.savefilter'"
                     >
                       <span
