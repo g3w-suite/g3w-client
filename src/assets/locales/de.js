@@ -260,7 +260,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Kopieren der Karten-URL mit dieser Geometrie-Feature-Erweiterung",
-              hint_change: "Kopiert"
             }
           }
         },

@@ -273,7 +273,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Share via link",
-              hint_change: "Copied"
             }
           }
         },

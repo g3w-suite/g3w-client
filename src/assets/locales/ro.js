@@ -260,7 +260,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Copiază URL hartă cu întinderea geometriei entității",
-              hint_change: "Copiat"
             }
           }
         },

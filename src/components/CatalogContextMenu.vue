@@ -268,8 +268,6 @@
               class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
-              data-toggle     = "tooltip"
-              data-container  = "body"
               :title          = "getWmsUrl(layer.id)"
             ></b>
           </li>
@@ -480,7 +478,6 @@
         this.project_menu = !layer;
         await this.$nextTick();
         this.top = e.target.getBoundingClientRect().top - this.$refs['menu'].clientHeight + (e.target.clientHeight / 2);
-        $('.click-to-copy[data-toggle="tooltip"]').tooltip();
         // conditionally inline "ogc_menu" when they contain a single item
         [this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
         dragElement(this.$refs.menu);
@@ -568,12 +565,11 @@
         document.body.appendChild(input);
         input.select();
         document.execCommand("copy");
-        $(el).attr('data-original-title', t('sdk.catalog.menu.wms.copied')).tooltip('show');
-        $(el).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
+        el.setAttribute('title', t('sdk.catalog.menu.wms.copied'));
+        el.setAttribute('data-i18n-title', t('sdk.catalog.menu.wms.copied'));
         input.remove();
         a.remove();
         setTimeout(() => {
-          $('[data-toggle="tooltip"]').tooltip("destroy"); // remove tooltip
           this.closeMenu();
         }, 600);
       },

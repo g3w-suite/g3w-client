@@ -259,7 +259,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Copier l'URL de la carte avec l'extension vers cette géométrie",
-              hint_change: "Copié"
             }
           }
         },

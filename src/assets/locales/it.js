@@ -270,7 +270,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Condividi tramite link",
-              hint_change: "URL copiato negli appunti"
             }
           }
         },

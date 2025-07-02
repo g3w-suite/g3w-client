@@ -52,16 +52,6 @@
     methods: {
       async clickAction(action, layer, feature, featureIndex, event) {
         await this.trigger(action, layer, feature, featureIndex);
-        if (action.hint_change) {
-          const element = $(event.target).parent();
-          const originalDataTitle = element.attr('data-original-title');
-          element.attr('data-original-title', t(action.hint_change.hint));
-          element.tooltip('show');
-          setTimeout(() => {
-            element.attr('data-original-title', originalDataTitle);
-            element.tooltip('show');
-          }, action.hint_change.duration || 600)
-        }
         this.$emit('action-clicked', action)
       }
     },

@@ -255,7 +255,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Skopiuj adres URL map z tym rozszerzeniem funkcji geometrii",
-              hint_change: "Skopiowane"
             }
           }
         },

@@ -260,7 +260,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Copy map URL with this geometry feature extension",
-              hint_change: "Copied"
             }
           }
         },

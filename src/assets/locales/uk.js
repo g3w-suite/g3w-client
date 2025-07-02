@@ -271,7 +271,6 @@ export default {
             },
             copy_zoom_to_fid_url: {
               hint: "Поділитися",
-              hint_change: "Скопійовано до буферу обміну"
             }
           }
         },
