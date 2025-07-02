@@ -82,9 +82,8 @@ document.addEventListener('mousemove', showTooltip);
 document.addEventListener('mousedown', showTooltip);
 
 function showTooltip(e) {
-  let element = document.elementFromPoint(e.clientX, e.clientY);
-  let title = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-i18n-title], [title]');
-  title   = title?.getAttribute('data-i18n-title') ?? title?.getAttribute('title');
+  const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-i18n-title], [title]');
+  const title   = element?.getAttribute('data-i18n-title') ?? element?.getAttribute('title');
 
   if (!element || !title || element?.closest('.select2')) {
     tooltip.hidePopover();
