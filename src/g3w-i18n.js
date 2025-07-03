@@ -22,6 +22,7 @@ export const L = {
         value = L.locales.en?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales.en || {}) 
       } catch (e) {
         console.info(`[G3W-I18N] ${string} not found`);
+        value = string;
       }
     }
     // // based on: `L.Util.template`
