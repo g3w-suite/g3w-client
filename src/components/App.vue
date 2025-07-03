@@ -29,11 +29,9 @@
         <img style="height: 100%;" alt = "" :src = "logo_url" />
       </a>
 
-      <input id="menu-toggler" ref="menu-toggler" type="checkbox" autocomplete="off" hidden="">
-
-      <label for="menu-toggler" class="navbar-toggler" hidden="">
-        <i :class = "$fa('bars')" ></i><span style="margin-left: 8px;">MENU</span>
-      </label>
+      <button class="navbar-toggler" hidden="" @click.prevent="toggleSidebar">
+        <i :class = "$fa('bars')" ></i><b style="margin-left: 8px;">MENU</b>
+      </button>
 
       <hgroup class  = "project_title">
         <p class = "h2">{{ main_title }}</p>
@@ -741,8 +739,8 @@ export default {
      * @since 3.11.0
      */
     showaddLayerModal() {
-      if (this.$refs['menu-toggler']) {
-        this.$refs['menu-toggler'].checked = false;
+      if (window.innerWidth < 767) {
+        GUI.hideSidebar();
       }
       $('#modal-addlayer').modal('show');
     },
@@ -751,8 +749,8 @@ export default {
      * @since 3.8.0
      */
     openChangeMapMenu() {
-      if (this.$refs['menu-toggler']) {
-        this.$refs['menu-toggler'].checked = false;
+      if (window.innerWidth < 767) {
+        GUI.hideSidebar();
       }
       $('#modal-changemap').modal('show');
     },
@@ -871,9 +869,6 @@ export default {
      * @since 3.11.0
      */
     toggleSidebar() {
-      if (this.$refs['menu-toggler']) {
-        this.$refs['menu-toggler'].checked = false;
-      }
       GUI.toggleSidebar();
     },
 
@@ -1006,19 +1001,13 @@ export default {
   i.triangle                            { border-color: #fff transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
   .open i.triangle                      { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
 
-  #menu-toggler                         { display:none }
-  .navbar-toggler                       { color: #fff; margin: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; }
-
   @media (min-width: 767px) {
     .user-footer :is(.nav-sidebar, .nav-addlayer).btn-default { display: none; }
     .project_title                                            { margin-right: auto; }
   }
 
   @media (max-width: 767px) {
-    .navbar-toggler                     { display: block; cursor: pointer; user-select: none;}
-    #menu-toggler:checked ~ hgroup      { position: fixed; top: 0; background: var(--skin-color); padding-left: 8px; }
-    #menu-toggler:checked ~ ul          { position: fixed; inset: 50px 0 0 0; background: var(--skin-color); z-index: 100; flex-direction: column; border-top: 1px solid #fff;}
-    #menu-toggler:not(:checked)~*:not(.navbar-toggler),
+    body:not(.sidebar-open) .navbar-toggler ~ *,
     .nav-user > .dropdown-toggle,
     .user-header                        { display: none !important; }
     .navbar-nav                         { flex-direction: column; }
