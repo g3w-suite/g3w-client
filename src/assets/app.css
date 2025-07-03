@@ -230,6 +230,10 @@ button.close                { padding: 0; cursor: pointer; background: transpare
   .sidebar-collapse .content-wrapper { margin-left: 0; }
 }
 
+@media (max-width: 767px) { 
+ #g3w-sidebarcomponents { margin-top: 50px; }
+}
+
 /**************************************************************************************
 * boxes.less
 **************************************************************************************/
@@ -681,7 +685,10 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 /** Add "sidebar-mini" class to the body tag to activate this feature */
 
 @media (max-width: 767px) {
-  a.sidebar-aside-toggle                          { display: none !important; }
+  a.sidebar-aside-toggle {
+    display: block !important;
+    left: 0;
+  }  
   .main-sidebar                                   { left: -100%; width: 100%; }
   .sidebar-open .main-sidebar                     { left: 0; }
 }
@@ -699,7 +706,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .sidebar-mini.sidebar-collapse #catalog > *                                                   { display: none; }
 .sidebar-mini.sidebar-collapse #catalog > a                                                   { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                         { padding-top: 50px; overflow: hidden; }
-.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { left: 10px; }
+.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { margin-left: 40px; }
 .sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
 .sidebar-mini.sidebar-collapse .main-sidebar                                                  { overflow-y: hidden; }
 

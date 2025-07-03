@@ -807,7 +807,7 @@ document.head.insertAdjacentHTML(
   .ol-geocoder input[type="search"]:focus                              { outline: none; }
   .ol-geocoder input[type="search"]                                    { border: 0; width: 100%; height: 100%; padding: 5px 5px 5px 5px; text-indent: 6px; background-color: transparent; font-family: inherit; font-size: 1em; }
   .ol-geocoder input[type="search"]::-webkit-search-cancel-button      { display: none; }
-  .ol-geocoder form                                                    { display: flex; justify-content: flex-end; height: 41px; background-color: #fff; overflow: hidden; width: 100%; border: 1px solid var(--skin-color); border-radius: 0 3px 3px 0; anchor-name: --ol-geocoder-form; }
+  .ol-geocoder form                                                    { display: flex; justify-content: flex-end; height: 40px; background-color: #fff; overflow: hidden; width: 100%; border: 1px solid var(--skin-color); border-radius: 0 3px 3px 0; anchor-name: --ol-geocoder-form; }
   .ol-geocoder .gcd-road                                               { font-size: 0.875em; font-weight: 500; }
   .ol-geocoder .gcd-city                                               { font-size: 1em; font-weight: bold; }
   .ol-geocoder .gcd-country                                            { font-size: 0.75em; }
