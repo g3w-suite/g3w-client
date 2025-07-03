@@ -230,10 +230,6 @@ button.close                { padding: 0; cursor: pointer; background: transpare
   .sidebar-collapse .content-wrapper { margin-left: 0; }
 }
 
-@media (max-width: 767px) { 
- #g3w-sidebarcomponents { margin-top: 50px; }
-}
-
 /**************************************************************************************
 * boxes.less
 **************************************************************************************/
@@ -685,10 +681,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 /** Add "sidebar-mini" class to the body tag to activate this feature */
 
 @media (max-width: 767px) {
-  a.sidebar-aside-toggle {
-    display: block !important;
-    left: 0;
-  }  
+  a.sidebar-aside-toggle                          { display: none !important; }  
   .main-sidebar                                   { left: -100%; width: 100%; }
   .sidebar-open .main-sidebar                     { left: 0; }
 }
@@ -706,9 +699,23 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .sidebar-mini.sidebar-collapse #catalog > *                                                   { display: none; }
 .sidebar-mini.sidebar-collapse #catalog > a                                                   { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                         { padding-top: 50px; overflow: hidden; }
-.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { margin-left: 40px; }
+.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { margin-left: 10px; }
 .sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
 .sidebar-mini.sidebar-collapse .main-sidebar                                                  { overflow-y: hidden; }
+
+/** mobile menu */
+@media (max-width: 767px) {
+  .navbar-toggler                                                       { position: absolute; right: 0; top: 0; }
+  #menu-toggler:checked ~ ul                                            { --bgcolor: #212c31; background-color: var(--bgcolor)!important; }
+  #menu-toggler:checked ~ :is(hgroup, ul),
+  body:has(#menu-toggler:checked) .main-sidebar                         { position: relative !important; inset: 0 !important; }
+  body:has(#menu-toggler:checked),
+  body:has(#menu-toggler:checked) .wrapper                              { overflow-y: visible; }
+  body:has(#menu-toggler:checked) :is(.g3w-sidebarpanel, .main-sidebar) { height: auto !important; }
+  body:has(#menu-toggler:checked) .content-wrapper                      { display: none; }
+  body:has(#menu-toggler:checked) .navbar                               { display: block !important; height: auto !important; }
+}
+
 
 /**************************************************************************************
  * 5. Viewport
@@ -1304,6 +1311,7 @@ body .tooltip .tooltip-inner                                              { max-
 .catalog-context-menu .sub-contex-menu { border: 1px solid #eee; border-left: 0; }
 
 .tooltip .tooltip-inner             { font-weight: 700; font-size: 1.25rem; padding: 8px; background-color: #222; }
+
 
 /**************************************************************************************
  * 15. Print
