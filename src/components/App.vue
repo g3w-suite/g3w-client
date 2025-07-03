@@ -157,16 +157,6 @@
               >
                 <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
               </a>
-
-              <!-- SIDEBAR MENU -->
-              <a
-                href   = "#"
-                @click = "toggleSidebar"
-                class  = "nav-sidebar btn btn-default btn-flat"
-              >
-                <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
-              </a>
-              
             </li>
           </ul>
         </li>
