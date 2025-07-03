@@ -81,7 +81,7 @@ export class QueryBy extends InteractionControl {
     super({
       ...opts,
       name:        'queryby',
-      tipLabel:    "sdk.mapcontrols.queryby.title",
+      tipLabel:    "mapcontrols.queryby.title",
       enabled:     true,
       cursorClass: null, //store cursorClass of a current sub control enabled (querybbox, etc..)
     });
@@ -105,7 +105,7 @@ export class QueryBy extends InteractionControl {
         return GUI.closeUserMessage();
       }
       GUI.showUserMessage({
-        title: 'sdk.mapcontrols.queryby.title',
+        title: 'mapcontrols.queryby.title',
         type: 'tool',
         size: 'small',
         iconClass: 'info',
@@ -135,18 +135,18 @@ export class QueryBy extends InteractionControl {
                 <!-- SPATIAL METHOD -->
                 <div style="padding: 5px;">
                   <select :search="false" v-select2="'method'">
-                    <option v-for="method in methods" :value="method" v-t="'sdk.mapcontrols.queryby.methods.' + method"></option>
+                    <option v-for="method in methods" :value="method" v-t="'mapcontrols.queryby.methods.' + method"></option>
                   </select>
                 </div>
                 <!-- QUERY TYPE -->
                 <div style="padding: 5px;">
                   <select :search="false" v-select2="'type'" :templateSelection="templateType" :templateResult="templateType">
-                    <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.queryby.' + type + '.tooltip'"></option>
+                    <option v-for="type in types" :value="type" v-t="'mapcontrols.queryby.' + type + '.tooltip'"></option>
                   </select>
                 </div>
                 <!-- RADIUS TYPE IN METERS-->
                 <div v-if="'querybycircle' === type" style="padding: 5px;">
-                  <label for="g3w_querybycircle_radius" v-t:pre="'sdk.mapcontrols.querybycircle.label'">[m]</label>
+                  <label for="g3w_querybycircle_radius" v-t:pre="'mapcontrols.querybycircle.label'">[m]</label>
                   <div style = "display: flex">
                     <input
                       id      = "g3w_querybycircle_radius"
@@ -167,11 +167,11 @@ export class QueryBy extends InteractionControl {
                 </div>
                 <!-- SELECTED LAYER -->
                 <div style = "padding: 5px;">
-                  <label v-t="'sdk.mapcontrols.queryby.layer'"></label>
+                  <label v-t="'mapcontrols.queryby.layer'"></label>
                   <select v-if="!reloading" ref="layer" :select2_value = "selectedLayer" v-select2="'selectedLayer'" :templateSelection="templateLayer" :templateResult="templateLayer">
                     <option v-t="all" :value ="'__ALL__'"></option>
                     <option v-for="layer in layers" :value="layer.getId()" :selected="selectedLayer === layer.getId()">{{ layer.get('name') }}</option>
-                    <option :value="'__NEW__'" v-t="'sdk.mapcontrols.queryby.new'"></option>
+                    <option :value="'__NEW__'" v-t="'mapcontrols.queryby.new'"></option>
                   </select>
                 </div>
                 <!-- HELP TEXT -->
@@ -182,8 +182,8 @@ export class QueryBy extends InteractionControl {
             computed: {
               control()   { return CONTROLS[this.type]; },
               queryable() { return (this.control.layers || []).filter(l => 'querybypolygon' === this.type ? POLYGON_TYPES.includes(l.getGeometryType()) : true); },
-              help()      { return `sdk.mapcontrols.${this.type}.help.message`; },
-              all()       { return `sdk.mapcontrols.queryby.${(!this.queryable.length || !_hasVisible(this.control)) ? 'none' : 'all'}`; },
+              help()      { return `mapcontrols.${this.type}.help.message`; },
+              all()       { return `mapcontrols.queryby.${(!this.queryable.length || !_hasVisible(this.control)) ? 'none' : 'all'}`; },
               radius:    {
                 get() { return QUERY.radius },
                 set(v) {

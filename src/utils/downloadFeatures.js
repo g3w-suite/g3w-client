@@ -336,12 +336,12 @@ export async function downloadFeatures(type, layer, features = [], action, index
         {
           id: getUniqueDomId(),
           type: 'feature',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature.label',
+          label: 'mapcontrols.querybypolygon.download.choiches.feature.label',
         },
         {
           id: getUniqueDomId(),
           type: 'polygon',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
+          label: 'mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
         },
       ],
       // choose between only feature attribute or also polygon attribute

@@ -81,6 +81,22 @@ export default {
   'A WMS connection with this name already exists': "Już dodana warstwa WMS",
   'WMS URL/Name already added': "WMS URL/Nazwa już dodana",
   'WMS Layer not added. Please check all wms parameter or url': "Warstwa WMS nie dodano. Sprawdź wszystkich parametrów lub adresu URL WMS",
+  'Zoom Last': "Zoom ostatni",
+  'Zoom Next': "Zoom Dalej",
+  'Invalid Scale': "Nieprawidłowa skala",
+  'Geolocation': "Geolokalizację",
+  'The result in the map is partial due to the presence of the below incorrect records list:': "Wynik na mapie jest częściowy ze względu na obecność poniższej listy błędnych rekordów:",
+  'Add Layer': "Dodaj warstwę",
+  'Query layer': "Warstwa zapytania",
+  'Add/Remove Selection': "Dodaj/usuń wybór",
+  'Zoom to features extent': "Zoom w zakresie funkcji",
+  'Add/Remove features to results': "Dodaj/usuń funkcje do wyników",
+  'Remove feature from results': "Usuń funkcję z wyników",
+  'Zoom to feature': "Zoom do funkcji",
+  'Show Relations': "Pokaż relacje",
+  'Print Atlas': "Wydrukuj atlas",
+  'Share via link': "Skopiuj adres URL map",
+  'Select Template': "Wybierz szablon",
   layer_position: {
     top: "SZCZYT",
     bottom: "SPÓD",
@@ -93,6 +109,18 @@ export default {
     server_error: "Wystąpił błąd z serwera",
     no_results: "Nie znaleziono wyników dla tego zapytania/wyszukiwania",
     link_button: "otwarty"
+  },
+  scaleline_units: {
+    metric: "Metry",
+    nautical: "Mila morska"
+  },
+  measure_types: {
+    length: "Długość",
+    area: "Obszar",
+  },
+  measure_descriptions: {
+    length: "Kliknij mapę, aby narysować linię. Naciśnij <br> Canc, jeśli chcesz usunąć ostatni wierzchołek",
+    area: "Kliknij, aby narysować Poligon.press <br> Canc Jeśli chcesz usunąć ostatni wierzchołek"
   },
   mapcontrols: {
     geolocations: {
@@ -118,6 +146,34 @@ export default {
     query: {
       input_relation: "Kliknij, aby pokazać relacje"
     },
+    querybypolygon: {
+      download: {
+        title: "Pobieranie atrybutów",
+        choiches: {
+          feature: {
+            label: "Tylko funkcje"
+          },
+          feature_polygon: {
+            label: "Funkcje+Polygon zapytania"
+          }
+        }
+      },
+      tooltip: "Zapytanie według wielokąta",
+      no_geometry: "Brak geometrii w odpowiedzi",
+      help: {
+        message: "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Zapytanie przez Polygon Draw"
+    },
+    querybbox: {
+      tooltip: "Zapytanie warstwa Bbox",
+      nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
+      help: {
+        message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
+      }
+    },
     length: {
       tooltip: "Długość"
     },
@@ -138,11 +194,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Wybierz szablon"
-      }
-    },
     spatialbookmarks: {
       title: "Zakładki przestrzenne",
       helptext: "Poruszaj zasięg mapy, wstaw nazwę i kliknij Dodaj",
@@ -301,162 +352,6 @@ export default {
       download_xls: "Pobierz XLS",
       show_chart: "Wykres pokazowy",
       atlas: "Wydrukuj atlas"
-    },
-    mapcontrols: {
-      query: {
-        tooltip: "Warstwa zapytania",
-        actions: {
-          add_selection: {
-            hint: "Dodaj/usuń wybór"
-          },
-          zoom_to_features_extent: {
-            hint: "Zoom w zakresie funkcji"
-          },
-          add_features_to_results: {
-            hint: "Dodaj/usuń funkcje do wyników"
-          },
-          remove_feature_from_results: {
-            hint: "Usuń funkcję z wyników"
-          },
-          zoom_to_feature: {
-            hint: "Zoom do funkcji"
-          },
-          relations: {
-            hint: "Pokaż relacje"
-          },
-          relations_charts: {
-            hint: "Pokaż wykres relacji"
-          },
-          download_features_shapefile: {
-            hint: "Pobierz funkcje ShapeFile"
-          },
-          download_shapefile: {
-            hint: "Pobierz funkcję kształtu plik"
-          },
-          download_features_gpx: {
-            hint: "Pobierz funkcję GPX"
-          },
-          download_features_gpkg: {
-            hint: "Pobierz funkcje GPKG"
-          },
-          download_gpx: {
-            hint: "Pobierz funkcję GPX"
-          },
-          download_gpkg: {
-            hint: "Pobierz funkcję gpkg"
-          },
-          download_features_csv: {
-            hint: "Pobierz funkcje CSV"
-          },
-          download_csv: {
-            hint: "Pobierz funkcję CSV"
-          },
-          download_features_xls: {
-            hint: "Pobierz funkcje XLS"
-          },
-          download_xls: {
-            hint: "Pobierz funkcję XLS"
-          },
-          atlas: {
-            hint: "Wydrukuj atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Skopiuj adres URL map z tym rozszerzeniem funkcji geometrii",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Pobieranie atrybutów",
-          choiches: {
-            feature: {
-              label: "Tylko funkcje"
-            },
-            feature_polygon: {
-              label: "Funkcje+Polygon zapytania"
-            }
-          }
-        },
-        tooltip: "Zapytanie według wielokąta",
-        no_geometry: "Brak geometrii w odpowiedzi",
-        help: {
-          message: "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Zapytanie przez Polygon Draw"
-      },
-      querybbox: {
-        tooltip: "Zapytanie warstwa Bbox",
-        nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
-        help: {
-          message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Query by Draw Circle ",
-        label: 'Radius',
-        help: {
-          message: "<ul><li>Click on map to draw circle</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "Wynik na mapie jest częściowy ze względu na obecność poniższej listy błędnych rekordów:"
-          }
-        },
-        tooltip: "Dodaj warstwę"
-      },
-      geolocation: {
-        tooltip: "Geolokalizację"
-      },
-      measures: {
-        length: {
-          tooltip: "Długość",
-          help: "Kliknij mapę, aby narysować linię. Naciśnij <br> Canc, jeśli chcesz usunąć ostatni wierzchołek"
-        },
-        area: {
-          tooltip: "Obszar",
-          help: "Kliknij, aby narysować Poligon.press <br> Canc Jeśli chcesz usunąć ostatni wierzchołek"
-        }
-      },
-      scale: {
-        no_valid_scale: "Nieprawidłowa skala"
-      },
-      scaleline: {
-        units: {
-          metric: "Metry",
-          nautical: "Mila morska"
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom ostatni",
-        zoom_next: "Zoom Dalej"
-      }
     },
     relations: {
       relation_data: "Dane dotyczące relacji",

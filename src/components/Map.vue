@@ -116,7 +116,7 @@
             <option
               v-for     = "unit in service.state.mapunits"
               :value    = "unit"
-              v-t       = "`sdk.mapcontrols.scaleline.units.${unit}`"
+              v-t       = "`scaleline_units.${unit}`"
               :selected = "mapunit === unit"
               style     = "font-weight: bold">
             </option>

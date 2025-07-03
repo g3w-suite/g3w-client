@@ -39,7 +39,7 @@ class ScaleControl extends ol.control.Control {
       dropdownParent:          $(map.getTargetElement()),
       width:                   '120px',
       height:                  '20px',
-      language:                { noResults: () => t("sdk.mapcontrols.scale.no_valid_scale") },
+      language:                { noResults: () => t('Invalid Scale') },
       minimumResultsForSearch: this.isMobile ? -1 : 0,
       createTag(params = {}) {
         let newTag = null;

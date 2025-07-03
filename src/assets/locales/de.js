@@ -78,6 +78,21 @@ export default {
   'A WMS connection with this name already exists': "WMS Layer bereits hinzugefügt",
   'WMS URL/Name already added': "WMS URL/Name bereits hinzugefügt",
   'WMS Layer not added. Please check all wms parameter or url': "WMS Layer nicht hinzugefügt. Bitte überprüfen Sie alle WMS-Parameter oder Url",
+  'Zoom Last': "Zoom Vorheriger",
+  'Zoom Next': "Zoom Nächster",
+  'Invalid Scale': "Ungültige Skala",
+  'Geolocation': 'Geolokalisierung',
+  'The result in the map is partial due to the presence of the below incorrect records list:': "Das Ergebnis in der Karte ist unvollständig, da die unten stehende Liste fehlerhafter Einträge enthält:",
+  'Add Layer': 'Layer hinzufügen',
+  'Add/Remove Selection': "Auswahl hinzufügen/entfernen",
+  'Zoom to features extent': "Zoom auf Feature-Ausdehnung",
+  'Add/Remove features to results': "Hinzufügen/Entfernen von Features zu den Ergebnissen",
+  'Remove feature from results': "Feature aus den Ergebnissen entfernen",
+  'Zoom to feature': "Zum Feature zoomen",
+  'Show Relations': "Relationen anzeigen",
+  'Print Atlas': "Atlas drucken",
+  'Share via link': "Kopieren der Karten-URL",
+  'Select Template': "Template auswählen",
   layer_position: {
     top: 'OBEN',
     bottom: 'UNTEN',
@@ -90,6 +105,18 @@ export default {
     server_error: "Auf dem Server ist ein Fehler aufgetreten",
     no_results: "Keine Ergebnisse für diese Anfrage/Suche gefunden",
     link_button: "Öffnen"
+  },
+  scaleline_units: {
+    metric: 'Meter',
+    nautical: 'Nautische Meile'
+  },
+  measure_types: {
+    length: "Länge",
+    area: "Fläche",
+  },
+  measure_descriptions: {
+    length: "Klicken Sie auf die Karte, um die Linie zu zeichnen. Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen möchten.",
+    area: "Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen wollen."
   },
   mapcontrols: {
     geolocation: {
@@ -115,6 +142,31 @@ export default {
     query: {
       input_relation: "Klicken, um Relationen anzuzeigen"
     },
+    querybypolygon: {
+      download: {
+        title: "Attribute herunterladen",
+        choiches:{
+          feature: {
+            label:"Nur Features",
+          },
+        }
+      },
+      tooltip: 'Query nach Polygon',
+      no_geometry: 'Keine Geometrie in der Antwort',
+      help: {
+        message: "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Abfrage durch Polygon zeichnen"
+    },
+    querybbox: {
+      tooltip: 'BBox Layer abfragen',
+      nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
+      help: {
+        message: "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>"
+      }
+    },
     length: {
       tooltip: "Länge"
     },
@@ -135,11 +187,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Template auswählen"
-      }
-    },
     spatialbookmarks: {
       title: "Räumliche Lesezeichen",
       helptext: "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",
@@ -300,159 +347,6 @@ export default {
       show_chart: "Diagramm anzeigen",
       atlas: "Atlas drucken",
       editing: "Editing",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Query layer',
-        actions: {
-          add_selection: {
-            hint: "Auswahl hinzufügen/entfernen"
-          },
-          zoom_to_features_extent:{
-            hint: "Zoom auf Feature-Ausdehnung"
-          },
-          add_features_to_results: {
-            hint: "Hinzufügen/Entfernen von Features zu den Ergebnissen"
-          },
-          remove_feature_from_results: {
-            hint: "Feature aus den Ergebnissen entfernen"
-          },
-          zoom_to_feature: {
-            hint: "Zum Feature zoomen"
-          },
-          relations: {
-            hint: "Relationen anzeigen"
-          },
-          relations_charts: {
-            hint: "Relationship-Diagramm anzeigen"
-          },
-          download_features_shapefile:{
-            hint: 'Features Shapefile herunterladen'
-          },
-          download_shapefile: {
-            hint: 'Feature Shapefile herunterladen'
-          },
-          download_features_gpx: {
-            hint: "Feature GPX herunterladen"
-          },
-          download_features_gpkg: {
-            hint: "Feature GPKG herunterladen"
-          },
-          download_gpx: {
-            hint: "Feature GPX herunterladen"
-          },
-          download_gpkg: {
-            hint: "Feature GPKG herunterladen"
-          },
-          download_features_csv: {
-            hint: "Features CSV herunterladen"
-          },
-          download_csv: {
-            hint: "Feature CSV herunterladen"
-          },
-          download_features_xls: {
-            hint: "Features XLS herunterladen"
-          },
-          download_xls: {
-            hint: "Feature XLS herunterladen"
-          },
-          download_pdf: {
-            hint: "Feature PDF herunterladen"
-          },
-          atlas: {
-            hint: "Atlas drucken"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Kopieren der Karten-URL mit dieser Geometrie-Feature-Erweiterung",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        }
-      },
-
-      querybypolygon: {
-        download: {
-          title: "Attribute herunterladen",
-          choiches:{
-            feature: {
-              label:"Nur Features",
-            },
-            feature_polygon: {
-              label:"Features+Query Polygon",
-            }
-          }
-        },
-        tooltip: 'Query nach Polygon',
-        no_geometry: 'Keine Geometrie in der Antwort',
-        help: {
-          message: "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Abfrage durch Polygon zeichnen"
-      },
-      querybbox: {
-        tooltip: 'BBox Layer abfragen',
-        nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
-        help: {
-          message: "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>"
-        }
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "Das Ergebnis in der Karte ist unvollständig, da die unten stehende Liste fehlerhafter Einträge enthält:"
-          }
-        },
-        tooltip: 'Layer hinzufügen'
-      },
-      geolocation: {
-        tooltip: 'Geolokalisierung'
-      },
-      measures: {
-        length: {
-          tooltip: "Länge",
-          help: "Klicken Sie auf die Karte, um die Linie zu zeichnen. Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen möchten.",
-        },
-        area: {
-          tooltip: "Fläche",
-          help: "Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen wollen."
-        }
-      },
-      scale: {
-        no_valid_scale: "Ungültige Skala"
-      },
-      scaleline: {
-        units: {
-          metric: 'Meter',
-          nautical: 'Nautische Meile'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Vorheriger",
-        zoom_next: "Zoom Nächster"
-      }
     },
     relations: {
       relation_data: 'Daten zur Relation',

@@ -187,7 +187,7 @@ export default {
         },
         usermessage: !geometry && {
           type:        'warning',
-          message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          message:     `${layerName} - ${t('mapcontrols.querybypolygon.no_geometry')}`,
           messagetext: true,
           autoclose:   false
         },

@@ -767,7 +767,7 @@ export default new (class QueryResultsService extends G3WObject {
           id:        'gotogeometry',
           mouseover: true,
           class:     GUI.getFontClass('marker'),
-          hint:      'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
+          hint:      'Zoom to feature',
           cbk:       throttle(this.goToGeometry.bind(this))
         },
 
@@ -775,7 +775,7 @@ export default new (class QueryResultsService extends G3WObject {
         (this._relations[layer.id] || []).some(r => 'MANY' === r.type) && {
           id:       'show-query-relations',
           class:    GUI.getFontClass('relation'),
-          hint:     'sdk.mapcontrols.query.actions.relations.hint',
+          hint:     'Show Relations',
           cbk(layer, feature, action) {
             GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
@@ -817,7 +817,7 @@ export default new (class QueryResultsService extends G3WObject {
           style:     { color: 'red' },
           /** @since 3.11.0 hide element in case of pagination (show = false) */
           state:     Vue.observable({ show: !layer.filter.pagination }),
-          hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+          hint:      'Remove feature from results',
           cbk:       this.removeFeatureLayerFromResult.bind(this),
           init() {
             this.unwatch = VM.$watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
@@ -834,7 +834,7 @@ export default new (class QueryResultsService extends G3WObject {
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
           class:    GUI.getFontClass('success'),
-          hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
+          hint:     'Add/Remove Selection',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
             show:    !layer.filter.pagination // show action when filter with pagination is not set
@@ -867,7 +867,7 @@ export default new (class QueryResultsService extends G3WObject {
         (layer.hasgeometry && !layer.external && 'wms' !== (layer.source || {}).type) && {
           id:          'link_zoom_to_fid',
           class:       GUI.getFontClass('share-alt'),
-          hint:        'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
+          hint:        'Share via link',
           cbk(layer, feature, action) {
             const url = new URL(location.href);
             url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
@@ -1413,7 +1413,7 @@ export default new (class QueryResultsService extends G3WObject {
     });
 
     GUI.showModalDialog({
-      title: t('sdk.atlas.template_dialog.title'),
+      title: t('Select Template'),
       message: inputs,
       buttons: {
         success: {

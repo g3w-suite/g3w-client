@@ -74,6 +74,18 @@ export default {
   'Framework developed by': "Frameworkin on kehittänyt",
   'A WMS connection with this name already exists': "WMS Taso on jo lisätty.",
   'WMS URL/Name already added': "WMS URL/Nimi on jo lisätty.",
+  'Zoom Last': "Zoom Edellinen",
+  'Zoom Next': "Zoom Seurata",
+  'Invalid Scale': "Väärä mittakaava",
+  'Geolocation': 'Maantieteellinen sijainti',
+  'Add Layer': 'Lisää taso',
+  'Query layer': 'Kyselytaso',
+  'Add/Remove Selection': 'Lisää/Poista valinta',
+  'Zoom to features extent': "Tarkenna ominaisuuden laajuuteen",
+  'Zoom to feature': "Tarkenna ominaisuuteen",
+  'Show Relations': "Näytä relaatiot",
+  'Print Atlas': "Tulosta Atlas",
+  'Select Template': "Valitse Template",
   layer_position: {
     top: 'TOP',
     bottom: 'BOTTOM',
@@ -86,6 +98,18 @@ export default {
     server_error: "Palvelimella tapahtui virhe.",
     no_results: "Ei tuloksia haulle/kyselylle.",
     link_button: "Avaa"
+  },
+  scaleline_units: {
+    metric: 'Meters',
+    nautical: 'Nautical Mile'
+  },
+  measure_types: {
+    length: "Pituus",
+    area: "Alue",
+  },
+  measure_descriptions: {
+    length: "Piirrä murtoviiva kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.",
+    area: "Piirrä monikulmio kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen."
   },
   mapcontrols: {
     geolocation: {
@@ -111,6 +135,22 @@ export default {
     query: {
       input_relation: "Paina näyttääksesi relaatiot"
     },
+    querybypolygon: {
+      tooltip: 'Kysely monikulmiolla',
+      help: {
+        message: "<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Kysely piirtopolygonin mukaan"
+    },
+    querybbox: {
+      tooltip: 'Tasoon kohdituva BBox-kysely',
+      nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
+      help: {
+        message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
+      }
+    },
     length: {
       tooltip: "Pituus"
     },
@@ -118,7 +158,6 @@ export default {
       tooltip: "Pinta-ala"
     },
     screenshot: {
-      error: "Screenshot error creation",
       securityError: `  
       <p><b>Turvallisuusvirhe</b>: ulkoinen kerros estää karttaa tulostamasta. Tarkistaaksesi, toimi seuraavasti:</p>
       <ol>
@@ -131,11 +170,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Valitse Template"
-      }
-    },
     spatialbookmarks: {
       title: "Tilalliset kirjanmerkit",
       helptext: "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
@@ -296,165 +330,6 @@ export default {
       show_chart: "Näytä kaavio",
       atlas: "Tulosta Atlas",
       editing: "Editing",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Kyselytaso',
-        actions: {
-          add_selection: {
-            hint: 'Lisää/Poista valinta'
-          },
-          zoom_to_features_extent:{
-            hint: "Tarkenna ominaisuuden laajuuteen"
-          },
-          add_features_to_results: {
-            hint: "Add/Remove features to results"
-          },
-          remove_feature_from_results: {
-            hint: "Remove feature from results"
-          },
-          zoom_to_feature: {
-            hint: "Tarkenna ominaisuuteen"
-          },
-          relations: {
-            hint: "Näytä relaatiot"
-          },
-          relations_charts: {
-            hint: "Näytä relaatiokaavio"
-          },			  
-          download_features_shapefile:{
-            hint: 'Lataa ominaisuuden SHP-tiedosto'
-          },
-          download_shapefile: {
-            hint: 'Lataa ominaisuuden SHP-tiedosto'
-          },
-          download_features_gpx: {
-            hint: "Lataa ominaisuuden GPX-tiedosto"
-          },
-          download_features_gpkg: {
-            hint: "Lataa ominaisuuden GPKG-tiedosto"
-          },
-          download_gpx: {
-            hint: "Lataa ominaisuuden GPX-tiedosto"
-          },
-          download_gpkg: {
-            hint: "Lataa ominaisuuden GPKG-tiedosto"
-          },
-          download_features_csv: {
-            hint: "Lataa ominaisuuden CSV-tiedosto"
-          },
-          download_csv: {
-            hint: "Lataa ominaisuuden CSV-tiedosto"
-          },
-          download_features_xls: {
-            hint: "Lataa ominaisuuden XLS-tiedosto"
-          },
-          download_xls: {
-            hint: "Lataa ominaisuuden XLS-tiedosto"
-          },
-          download_pdf: {
-            hint: "Lataa ominaisuuden PDF-tiedosto"
-          },
-          atlas: {
-            hint: "Tulosta Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Copy map URL with this geometry feature extension",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Attributes download",
-          choiches:{
-            feature: {
-              label:"Features only",
-            },
-            feature_polygon: {
-              label:"Features+Query Polygon",
-            }
-          }
-        },
-        tooltip: 'Kysely monikulmiolla',
-        no_geometry: 'No geometry on response',
-        help: {
-          message: "<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Kysely piirtopolygonin mukaan"
-      },
-      querybbox: {
-        tooltip: 'Tasoon kohdituva BBox-kysely',
-        nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
-        help: {
-          message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Query by Draw Circle ",
-        label: 'Radius',
-        help: {
-          message: "<ul><li>Click on map to draw circle</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "The result in the map is partial due to the presence of the below incorrect records list:"
-          }
-        },
-        tooltip: 'Lisää taso'
-      },
-      geolocation: {
-        tooltip: 'Maantieteellinen sijainti'
-      },
-      measures: {
-        length: {
-          tooltip: "Pituus",
-          help: "Piirrä murtoviiva kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.",
-        },
-        area: {
-          tooltip: "Alue",
-          help: "Piirrä monikulmio kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen."
-        }
-      },
-      scale: {
-        no_valid_scale: "Väärä mittakaava"
-      },
-      scaleline: {
-        units: {
-          metric: 'Meters',
-          nautical: 'Nautical Mile'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Edellinen",
-        zoom_next: "Zoom Seurata"
-      }
     },
     relations: {
       relation_data: 'Relaation tiedot',

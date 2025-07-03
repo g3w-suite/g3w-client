@@ -108,6 +108,44 @@ export default {
   'A WMS connection with this name already exists': "Esiste già una connessione WMS con questo nome",
   'WMS URL/Name already added': "URL/Nome WMS già aggiunto",
   'WMS Layer not added. Please check all wms parameter or url': "WMS Layer non aggiunto. Verificare i parametri o l'url",
+  'Annotation': 'Annotazioni',
+  'Radius': 'Raggio',
+  'Length': 'Lunghezza',
+  'Width Length': 'Larghezza',
+  'Height Length': 'Altezza',
+  'Rotation': 'Rotazione',
+  'Font Size': 'Dimensione Font',
+  'Direction': 'Direzione',
+  'Forward': 'Avanti',
+  'Backward': 'Indietro',
+  'Opacity': 'Opacità',
+  'Stroke': 'Bordo',
+  'Show Text': 'Mostra Testo',
+  'Show Info': 'Mostra Info',
+  'Export': 'Esporta',
+  'Import': 'Importa',
+  'Remove': 'Rimuovi',
+  'Show/Hide': 'Mostra/Nascondi',
+  'Show All': 'Mostra tutti',
+  'Zoom Last': "Zoom Precedente",
+  'Zoom Next': "Zoom Successivo",
+  'Invalid Scale': "Scala non valida",
+  'Screen capture': 'Cattura schermata',
+  'Generate': 'Genera',
+  'Measure': 'Misura',
+  'Geolocation': 'Mostra la mia posizione',
+  'The result in the map is partial due to the presence of the below incorrect records list:': "Il risultato in mappa è parziale a causa della presenza dei seguenti records non corretti:",
+  'Add Layer': 'Aggiungi livello',
+  'Query layer': 'Interroga Layer',
+  'Add/Remove Selection': "Aggiungi/Rimuovi Selezione",
+  'Zoom to features extent': "Zoom sulle geometrie",
+  'Add/Remove features to results': "Aggiungi elementi ai risultati",
+  'Remove feature from results': "Rimuovi elemento dai risultati",
+  'Zoom to feature': "Zoom sulla geometria",
+  'Show Relations': "Visualizza Relazioni",
+  'Print Atlas': "Stampa Atlas",
+  'Share via link': "Condividi tramite link",
+  'Select Template': "Seleziona Template",
   layer_position: {
     top: 'in cima',
     bottom: 'in fondo',
@@ -120,6 +158,26 @@ export default {
     server_error: "Si è verificato un errore nella richiesta al server",
     no_results: "Nessun risultato per questa interrogazione/ricerca ",
     link_button: "Apri"
+  },
+  annotation_types: {
+    'Point':      'Punto',
+    'LineString': 'Linea',
+    'Polygon':    'Poligono',
+    'Rectangle':  'Rettangolo',
+    'Circle':     'Cerchio',
+    'Text':       'Testo',
+  },
+  scaleline_units: {
+    metric: 'Metri',
+    nautical: 'Miglio Nautico'
+  },
+  measure_types: {
+    length: "Lunghezza",
+    area: "Area",
+  },
+  measure_descriptions: {
+    length: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
+    area: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
   },
   mapcontrols: {
     geolocation: {
@@ -147,6 +205,76 @@ export default {
     query: {
       input_relation: "Clicca per consultare le relazioni"
     },
+    queryby: {
+      title: 'Interroga un area',
+      layer: 'Livello selezionato:',
+      none: 'NESSUNO',
+      new: 'LIVELLO TEMPORANEO',
+      all: 'TUTTI',
+      methods: {
+        intersects: 'interseca',
+        within: 'all\'interno'
+      },
+      querybypolygon: {
+        tooltip: 'seleziona un poligono'
+      },
+      querybydrawpolygon: {
+        tooltip: 'disegna un poligono'
+      },
+      querybbox: {
+        tooltip: 'disegna un rettangolo'
+      },
+      querybycircle: {
+        tooltip: 'disegna un cerchio'
+      },
+      querybyfreehand: {
+        tooltip: 'disegno a mano libera'
+      },
+    },
+    querybypolygon: {
+      download: {
+        title: "Download attributi",
+        choiches:{
+          feature: {
+            label: "Solo features",
+          },
+          feature_polygon: {
+            label: "Features+Poligono Interrogazione",
+          }
+        }
+      },
+      tooltip: 'Interroga per poligono',
+      no_geometry: 'Non contiene la geometria nella risposta',
+      help: {
+        message: "<ul><li>Seleziona un livello (visibile).</li><li>Clicca su una geometria nella mappa.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Disegna un poligono per interrogare",
+      help: {
+        message: "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli</li></ul>"
+      },
+    },
+    querybbox: {
+      tooltip: 'Interroga per BBOX',
+      nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
+      help: {
+        message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli</li></ul>"
+      },
+    },
+    querybycircle: {
+      tooltip: "Disegna un cerchio per interrogare",
+      label: 'Raggio',
+      help: {
+        message: "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>"
+      },
+    },
+    querybyfreehand: {
+      tooltip: "Disegno un poligono (a mano libera) per interrogare",
+      help: {
+        message: "<ul><li>Trascina il mouse per disegnare un poligono ed interrogare i livelli</li></ul>"
+      },
+    },
     length: {
       tooltip: "Lunghezza"
     },
@@ -167,11 +295,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Seleziona Template"
-      }
-    },
     spatialbookmarks: {
       title: "Segnalibri",
       helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
@@ -331,7 +454,6 @@ export default {
         row_to_form: "Visualizza modulo",
         zoomtogeometry: "Zoom sulla geometria",
       },
-      zoom_to_features_extent: "Zoom sulle features",
       copy_map_extent_url: 'Copia URL di condivisione',
       download_shapefile: "Scarica Shapefile",
       download_gpx: "Scarica GPX",
@@ -342,221 +464,6 @@ export default {
       show_chart: "Mostra Grafico",
       atlas: "Stampa Atlas",
       editing: "Modifica",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Interroga Layer',
-        actions: {
-          add_selection: {
-            hint: "Aggiungi/Rimuovi Selezione"
-          },
-          zoom_to_features_extent:{
-            hint: "Zoom sulle geometrie"
-          },
-          add_features_to_results: {
-            hint: "Aggiungi elementi ai risultati"
-          },
-          remove_feature_from_results: {
-            hint: "Rimuovi elemento dai risultati"
-          },
-          zoom_to_feature: {
-            hint: "Zoom sulla geometria"
-          },
-          relations: {
-            hint: "Visualizza Relazioni"
-          },
-          relations_charts: {
-            hint: "Visualizza grafici relazioni"
-          },
-          download_features_shapefile:{
-            hint: 'Scarica come Shapefile'
-          },
-          download_shapefile: {
-            hint: 'Scarica come Shapefile'
-          },
-          download_features_gpx: {
-            hint: "Scarica come GPX"
-          },
-          download_features_gpkg: {
-            hint: "Scarica come GPKG"
-          },
-          download_gpx: {
-            hint: "Scarica come GPX"
-          },
-          download_gpkg: {
-            hint: "Scarica come GPKG"
-          },
-          download_features_csv: {
-            hint: "Scarica come CSV"
-          },
-          download_csv: {
-            hint: "Scarica come CSV"
-          },
-          download_features_xls: {
-            hint: "Scarica come XLS"
-          },
-          download_xls: {
-            hint: "Scarica come XLS"
-          },
-          download_pdf: {
-            hint: "Scarica come PDF"
-          },
-          atlas: {
-            hint: "Stampa Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Condividi tramite link",
-          }
-        }
-      },
-      queryby: {
-        title: 'Interroga un area',
-        layer: 'Livello selezionato:',
-        none: 'NESSUNO',
-        new: 'LIVELLO TEMPORANEO',
-        all: 'TUTTI',
-        methods: {
-          intersects: 'interseca',
-          within: 'all\'interno'
-        },
-        querybypolygon: {
-          tooltip: 'seleziona un poligono'
-        },
-        querybydrawpolygon: {
-          tooltip: 'disegna un poligono'
-        },
-        querybbox: {
-          tooltip: 'disegna un rettangolo'
-        },
-        querybycircle: {
-          tooltip: 'disegna un cerchio'
-        },
-        querybyfreehand: {
-          tooltip: 'disegno a mano libera'
-        },
-      },
-      querybypolygon: {
-        download: {
-          title: "Download attributi",
-          choiches:{
-            feature: {
-              label: "Solo features",
-            },
-            feature_polygon: {
-              label: "Features+Poligono Interrogazione",
-            }
-          }
-        },
-        tooltip: 'Interroga per poligono',
-        no_geometry: 'Non contiene la geometria nella risposta',
-        help: {
-          message: "<ul><li>Seleziona un livello (visibile).</li><li>Clicca su una geometria nella mappa.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Disegna un poligono per interrogare",
-        help: {
-          message: "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli</li></ul>"
-        },
-      },
-      querybbox: {
-        tooltip: 'Interroga per BBOX',
-        nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
-        help: {
-          message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli</li></ul>"
-        },
-      },
-      querybycircle: {
-        tooltip: "Disegna un cerchio per interrogare",
-        label: 'Raggio',
-        help: {
-          message: "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>"
-        },
-      },
-      querybyfreehand: {
-        tooltip: "Disegno un poligono (a mano libera) per interrogare",
-        help: {
-          message: "<ul><li>Trascina il mouse per disegnare un poligono ed interrogare i livelli</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "Il risultato in mappa è parziale a causa della presenza dei seguenti records non corretti:"
-          }
-        },
-        tooltip: 'Aggiungi livello'
-      },
-      geolocation: {
-        tooltip: 'Mostra la mia posizione'
-      },
-      measures: {
-        title: 'Misura',
-        length: {
-          tooltip: "Lunghezza",
-          help: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
-        },
-        area: {
-          tooltip: "Area",
-          help: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
-        }
-      },
-      screenshot: {
-        title: 'Cattura schermata',
-        screenshot: "PNG",
-        geoscreenshot: "GeoTIFF",
-        download: 'Genera'
-      },
-      scale: {
-        no_valid_scale: "Scala non valida"
-      },
-      scaleline: {
-        units: {
-          metric: 'Metri',
-          nautical: 'Miglio Nautico'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Precedente",
-        zoom_next: "Zoom Successivo"
-      }, 
-      annotation: {
-        title: 'Annotazioni',
-        tooltip: 'Crea Annotazioni',
-        types: {
-          'Point':      'Punto',
-          'LineString': 'Linea',
-          'Polygon':    'Poligono',
-          'Rectangle':  'Rettangolo',
-          'Circle':     'Cerchio',
-          'Text':       'Testo',
-          
-        },
-        inputs: {
-          'radius':    'Raggio',
-          'length':    'Lunghezza',
-          'w_length' : 'Larghezza',
-          'h_length' : 'Altezza',
-          'rotation' : 'Rotazione',
-          'font_size': 'Dimensione Font',
-          'direction': 'Direzione',
-          'f_direction': 'Avanti',
-          'b_direction': 'Indietro',
-          'opacity':   'Opacità',
-          'stroke':    'Bordo',
-        },
-        checkbox: {
-          'show_text': 'Mostra Testo',
-          'show_info': 'Mostra Info'
-        },
-        actions: {
-          'export': 'Esporta',
-          'import': 'Importa',
-          'remove': 'Rimuovi',
-          'show_hide': 'Mostra/Nascondi',
-          'show_all': 'Mostra tutti',
-        }
-      }
     },
     relations: {
       relation_data: 'Dati Relazione',

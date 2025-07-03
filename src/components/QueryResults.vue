@@ -71,7 +71,7 @@
                       v-if                    = "layer.hasgeometry"
                       @click.stop             = "zoomToLayerFeaturesExtent(layer)"
                        class                  = "action-button"
-                      v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'"
+                      v-t-tooltip:left.create = "'Zoom to features extent'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -82,7 +82,7 @@
                       v-if                    = "layer.atlas.length"
                       @click.stop             = "printAtlas(layer)"
                       class                   = "action-button"
-                      v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.atlas.hint'"
+                      v-t-tooltip:left.create = "'Print Atlas'"
                       v-disabled              = "ApplicationState.download"
                     >
                       <span
@@ -112,7 +112,7 @@
                     @click.stop             = "addLayerFeaturesToResults(layer)"
                     class                   = "action-button"
                     :class                  = "{'toggled': layer.addfeaturesresults.active}"
-                    v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_features_to_results.hint'"
+                    v-t-tooltip:left.create = "'Add/Remove features to results'"
                   >
                     <span
                       class  = "action-button-icon"
@@ -125,7 +125,7 @@
                     v-if                    = "canSelect(layer)"
                     @click.stop             = "toggleSelection(layer)"
                     class                   = "action-button"
-                    v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
+                    v-t-tooltip:left.create = "'Add/Remove Selection'"
                     :class                  = "{'toggled': layer.selection.active}"
                   >
                     <span
@@ -560,7 +560,7 @@
       <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
       <select style="flex: 1;">
         <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
-        <option :selected="!selectedLayer">{{ $t('sdk.mapcontrols.queryby.all') }}</option>
+        <option :selected="!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
       </select>
     </div>
 

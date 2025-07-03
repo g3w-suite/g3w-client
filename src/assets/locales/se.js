@@ -75,6 +75,18 @@ export default {
   'Framework developed by': "Framework har utvecklats av",
   'A WMS connection with this name already exists': "WMS Nivån har redan lagts till.",
   'WMS URL/Name already added': "WMS URL/Namn har redan lagts till.",
+  'Zoom Last': "Zoom Föregående",
+  'Zoom Next': "Zoom Nästa",
+  'Invalid Scale': "Fel skala",
+  'Geolocation': 'Geografiskt läge',
+  'Add Layer': 'Lägg till nivå',
+  'Query layer': 'Förfrågningsnivå',
+  'Add/Remove Selection': "Lägg till/Avlägsna Urval",
+  'Zoom to features extent': "Zooma till egenskapens omfattning",
+  'Zoom to feature': "Zooma till egenskapen",
+  'Show Relations': "Visa relationerna",
+  'Print Atlas': "Skriv ut Atlas",
+  'Select Template': "Välj Template",
   layer_position: {
     top: 'Överst',
     bottom: 'Underst',
@@ -87,6 +99,18 @@ export default {
     server_error: "Ett fel uppstod på servern.",
     no_results: "Inga resultat för sökningen/förfrågan.",
     link_button: "Öppna"
+  },
+  scaleline_units: {
+    metric: 'Meters',
+    nautical: 'Nautical Mile'
+  },
+  measure_types: {
+    length: "Längd",
+    area: "Område",
+  },
+  measure_descriptions: {
+    length: "Rita upp en bruten linje på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.",
+    area: "Rita upp en polygon på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt."
   },
   mapcontrols: {
     geolocation: {
@@ -112,6 +136,23 @@ export default {
     query: {
       input_relation: "Tryck för att visa relationerna"
     },
+    querybypolygon: {
+      tooltip: 'Förfrågan med polygon',
+      no_geometry: 'No geometry on response',
+      help: {
+        message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Fråga efter ritpolygon"
+    },
+    querybbox: {
+      tooltip: 'BBox-förfrågan som riktar sig till en nivå',
+      nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
+      help: {
+        message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
+      }
+    },
     length: {
       tooltip: "Längd"
     },
@@ -132,11 +173,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Välj Template"
-      }
-    },
     spatialbookmarks: {
       title: "Rumsliga bokmärken",
       helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
@@ -297,165 +333,6 @@ export default {
       show_chart: "Visa diagram", //Tero 9.12.2020
       atlas: "Skriv ut Atlas",
       editing: "Editing",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Förfrågningsnivå',
-        actions: {
-          add_selection: {
-            hint: "Lägg till/Avlägsna Urval"
-          },
-          zoom_to_features_extent:{
-            hint: "Zooma till egenskapens omfattning"
-          },
-          add_features_to_results: {
-            hint: "Add/Remove features to results"
-          },
-          remove_feature_from_results: {
-            hint: "Remove feature from results"
-          },
-          zoom_to_feature: {
-            hint: "Zooma till egenskapen"
-          },
-          relations: {
-            hint: "Visa relationerna"
-          },
-          relations_charts: {
-            hint: "Visa relationsdiagrammet" //Tero 9.12.2020
-          },			  
-          download_features_shapefile:{
-            hint: 'Ladda egenskapens SHP-fil'
-          },
-          download_shapefile: {
-            hint: 'Ladda egenskapens SHP-fil'
-          },
-          download_features_gpx: {
-            hint: "Ladda egenskapens GPX-fil"
-          },
-          download_features_gpkg: {
-            hint: "Ladda egenskapens GPKG-fil"
-          },
-          download_gpx: {
-            hint: "Ladda egenskapens GPX-fil"
-          },
-          download_gpkg: {
-            hint: "Ladda egenskapens GPKG-fil"
-          },
-          download_features_csv: {
-            hint: "Ladda egenskapens CSV-fil"
-          },
-          download_csv: {
-            hint: "Ladda egenskapens CSV-fil"
-          },
-          download_features_xls: {
-            hint: "Ladda egenskapens XLS-fil"
-          },
-          download_xls: {
-            hint: "Ladda egenskapens XLS-fil"
-          },
-          download_pdf: {
-            hint: "Ladda egenskapens PDF-fil"
-          },
-          atlas: {
-            hint: "Skriv ut Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Copy map URL with this geometry feature extension",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Attributes download",
-          choiches:{
-            feature: {
-              label:"Features only",
-            },
-            feature_polygon: {
-              label:"Features+Query Polygon",
-            }
-          }
-        },
-        tooltip: 'Förfrågan med polygon',
-        no_geometry: 'No geometry on response',
-        help: {
-          message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Fråga efter ritpolygon"
-      },
-      querybbox: {
-        tooltip: 'BBox-förfrågan som riktar sig till en nivå',
-        nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
-        help: {
-          message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Query by Draw Circle ",
-        label: 'Radius',
-        help: {
-          message: "<ul><li>Click on map to draw circle</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "The result in the map is partial due to the presence of the below incorrect records list:"
-          }
-        },
-        tooltip: 'Lägg till nivå'
-      },
-      geolocation: {
-        tooltip: 'Geografiskt läge'
-      },
-      measures: {
-        length: {
-          tooltip: "Längd",
-          help: "Rita upp en bruten linje på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.",
-        },
-        area: {
-          tooltip: "Område",
-          help: "Rita upp en polygon på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt."
-        }
-      },
-      scale: {
-        no_valid_scale: "Fel skala"
-      },
-      scaleline: {
-        units: {
-          metric: 'Meters',
-          nautical: 'Nautical Mile'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Föregående",
-        zoom_next: "Zoom Nästa"
-      }
     },
     relations: {
       relation_data: 'Relationsuppgifter',

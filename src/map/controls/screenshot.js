@@ -92,15 +92,15 @@ class ScreenshotControl extends InteractionControl {
     this.types.push(type);
 
     this.toggledTool = this.toggledTool || {
-      __title: 'sdk.mapcontrols.screenshot.title',
+      __title: 'Screen capture',
       __iconClass: 'camera',
       data: () => ({ types: this.types, type: this.types[0] }),
       template: /* html */ `
         <div style="width: 100%; padding: 5px;">
           <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
-            <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.screenshot.' + type"></option>
+            <option v-for="type in types" :value="type" v-t="'screenshot_types.' + type"></option>
           </select>
-          <button v-disabled = "loading" style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'sdk.mapcontrols.screenshot.download'"></button>
+          <button v-disabled = "loading" style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'Generate'"></button>
         </div>`,  
       computed: {
         loading: () => ApplicationState.download,

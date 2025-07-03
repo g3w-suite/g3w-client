@@ -57,6 +57,30 @@ export default {
     no_results: "No results found for this query/search",
     link_button: "Open"
   },
+  annotation_types: {
+    'Point':      'Point',
+    'LineString': 'Line',
+    'Polygon':    'Polygon',
+    'Rectangle':  'Rectangle',
+    'Circle':     'Circle',
+    'Text':       'Text'
+  },
+  scaleline_units: {
+    metric: 'Meters',
+    nautical: 'Nautical Mile'
+  },
+  screenshot_types: {
+    screenshot: "PNG",
+    geoscreenshot: "GeoTIFF",
+  },
+  measure_types: {
+    length: "Length",
+    area: "Area",
+  },
+  measure_descriptions: {
+    length: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
+    area: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
+  },
   mapcontrols: {
     geolocation: {
       error: "Can't get your position"
@@ -83,6 +107,76 @@ export default {
     query: {
       input_relation: "Click to show relations"
     },
+    queryby: {
+      title: 'Query area',
+      layer: 'Selected layer:',
+      none: 'NONE',
+      new: 'TEMPORARY LAYER',
+      all: 'ALL',
+      methods: {
+        intersects: 'intersects',
+        within: 'within'
+      },
+      querybypolygon: {
+        tooltip: 'select a polygon'
+      },
+      querybydrawpolygon: {
+        tooltip: 'draw a polygon'
+      },
+      querybbox: {
+        tooltip: 'draw a rectangle'
+      },
+      querybycircle: {
+        tooltip: 'draw a circle'
+      },
+      querybyfreehand: {
+        tooltip: 'freehand'
+      },
+    },
+    querybypolygon: {
+      download: {
+        title: "Attributes download",
+        choiches:{
+          feature: {
+            label:"Features only",
+          },
+          feature_polygon: {
+            label:"Features+Query Polygon",
+          }
+        }
+      },
+      tooltip: 'Query By Polygon',
+      no_geometry: 'No geometry on response',
+      help: {
+        message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Query by Draw Polygon ",
+      help: {
+        message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>"
+      }
+    },
+    querybbox: {
+      tooltip: 'Query BBox layer',
+      nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
+      help: {
+        message: "<ul><li>Drag the mouse to draw a rectangle and query layers</li></ul>"
+      }
+    },
+    querybycircle: {
+      tooltip: "Query by Draw Circle ",
+      label: 'Radius',
+      help: {
+        message: "<ul><li>Click on map to draw circle</li></ul>"
+      },
+    },
+    querybyfreehand: {
+      tooltip: "Query by Draw Polygon (freehand)",
+      help: {
+        message: "<ul><li>Drag the mouse to draw a polygon and query the levels</li></ul>"
+      },
+    },
     length: {
       tooltip: "Length"
     },
@@ -103,11 +197,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Select Template"
-      }
-    },
     spatialbookmarks: {
       title: "Bookmarks",
       helptext: "Move on map extent, insert name and click Add",
@@ -140,7 +229,7 @@ export default {
       autofilter: "Filter results",
       autofilter_tooltip: "Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.",
 
-},
+    },
     print: {
       no_layers: 'No Layer to print',
       template: "Template",
@@ -281,220 +370,6 @@ export default {
       show_chart: "Show Chart",
       atlas: "Print Atlas",
       editing: "Editing",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Query layer',
-        actions: {
-          add_selection: {
-            hint: "Add/Remove Selection"
-          },
-          zoom_to_features_extent:{
-            hint: "Zoom to features extent"
-          },
-          add_features_to_results: {
-            hint: "Add/Remove features to results"
-          },
-          remove_feature_from_results: {
-            hint: "Remove feature from results"
-          },
-          zoom_to_feature: {
-            hint: "Zoom to feature"
-          },
-          relations: {
-            hint: "Show Relations"
-          },
-          relations_charts: {
-            hint: "Show relations chart"
-          },
-          download_features_shapefile:{
-            hint: 'Download features Shapefile'
-          },
-          download_shapefile: {
-            hint: 'Download feature Shapefile'
-          },
-          download_features_gpx: {
-            hint: "Download feature GPX"
-          },
-          download_features_gpkg: {
-            hint: "Download features GPKG"
-          },
-          download_gpx: {
-            hint: "Download feature GPX"
-          },
-          download_gpkg: {
-            hint: "Download feature GPKG"
-          },
-          download_features_csv: {
-            hint: "Download features CSV"
-          },
-          download_csv: {
-            hint: "Download feature CSV"
-          },
-          download_features_xls: {
-            hint: "Download features XLS"
-          },
-          download_xls: {
-            hint: "Download feature XLS"
-          },
-          download_pdf: {
-            hint: "Download feature PDF"
-          },
-          atlas: {
-            hint: "Print Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Share via link",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        },
-        querybyfreehand: {
-          tooltip: 'freehand'
-        },
-      },
-      querybypolygon: {
-        download: {
-          title: "Attributes download",
-          choiches:{
-            feature: {
-              label:"Features only",
-            },
-            feature_polygon: {
-              label:"Features+Query Polygon",
-            }
-          }
-        },
-        tooltip: 'Query By Polygon',
-        no_geometry: 'No geometry on response',
-        help: {
-          message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Query by Draw Polygon ",
-        help: {
-          message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>"
-        }
-      },
-      querybbox: {
-        tooltip: 'Query BBox layer',
-        nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
-        help: {
-          message: "<ul><li>Drag the mouse to draw a rectangle and query layers</li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Query by Draw Circle ",
-        label: 'Radius',
-        help: {
-          message: "<ul><li>Click on map to draw circle</li></ul>"
-        },
-      },
-      querybyfreehand: {
-        tooltip: "Query by Draw Polygon (freehand)",
-        help: {
-          message: "<ul><li>Drag the mouse to draw a polygon and query the levels</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "The result in the map is partial due to the presence of the below incorrect records list:"
-          }
-        },
-        tooltip: 'Add Layer'
-      },
-      geolocation: {
-        tooltip: 'Geolocation'
-      },
-      measures: {
-        title: 'Measure',
-        length: {
-          tooltip: "Length",
-          help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
-        },
-        area: {
-          tooltip: "Area",
-          help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
-        }
-      },
-      screenshot: {
-        title: 'Screen capture',
-        screenshot: "PNG",
-        geoscreenshot: "GeoTIFF",
-        download: 'Generate'
-      },
-      scale: {
-        no_valid_scale: "Invalid Scale"
-      },
-      scaleline: {
-        units: {
-          metric: 'Meters',
-          nautical: 'Nautical Mile'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Last",
-        zoom_next: "Zoom Next"
-      },
-      annotation: {
-        title: 'Annotation',
-        tooltip: 'Create Annotation',
-        types: {
-          'Point':      'Point',
-          'LineString': 'Line',
-          'Polygon':    'Polygon',
-          'Rectangle':  'Rectangle',
-          'Circle':     'Circle',
-          'Text':       'Text'
-        },
-        inputs: {
-          'radius':    'Radius',
-          'length':    'Length',
-          'w_length' : 'Width Length',
-          'h_length' : 'Height Length',
-          'rotation' : 'Rotation',
-          'font_size': 'Font Size',
-          'direction': 'Direction',
-          'f_direction': 'Forward',
-          'b_direction': 'Backward',
-          'opacity':   'Opacity',
-          'stroke':    'Stroke',
-        },
-        checkbox: {
-          'show_text': 'Show Text',
-          'show_info': 'Info'
-        },
-        actions: {
-          'export': 'Export',
-          'import': 'Import',
-          'remove': 'Remove',
-          'show_hide': 'Show/Hide',
-          'show_all': 'Show All',
-        }
-      }
     },
     relations: {
       relation_data: 'Relation data',

@@ -1015,7 +1015,7 @@ export default new (class GUI extends G3WObject {
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <dialog id="share_modal">
-          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fa fa-share-alt" style="margin-right: .5ch;"></i> ${t('sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint')}</h4>
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fa fa-share-alt" style="margin-right: .5ch;"></i> ${t('Share via link')}</h4>
           <form method="dialog">
             <input readonly value = "${ url.toString() }" onfocus="event.target.select()" class="form-control mt-2" id="embed-link" />
             <label style="margin: 1em 0;" ${uparams.length ? '' : 'hidden' }>

@@ -81,6 +81,22 @@ export default {
   'A WMS connection with this name already exists': "Strat WMS deja adăugat",
   'WMS URL/Name already added': "URL WMS/Nume deja adăugat",
   'WMS Layer not added. Please check all wms parameter or url': "Stratul WMS nu s-a adăugat. Verificați URL-ul sau parametrii WMS",
+  'Zoom Last': "Zoom Anterior",
+  'Zoom Next': "Zoom Urmatorul",
+  'Invalid Scale': "Scară Invalidă",
+  'Geolocation': 'Geolocalizare',
+  'The result in the map is partial due to the presence of the below incorrect records list:': "Rezultateul pe hartă este parțial datorită prezenței următoarei liste de rezultate incorecte:",
+  'Add Layer': 'Adaugă Strat',
+  'Query layer': 'Interogare strat',
+  'Add/Remove Selection': "Adaugă/Elimină Selecția",
+  'Zoom to features extent': "Zoom la încadrarea entităților",
+  'Add/Remove features to results': "Adaugă/Elimină entități rezultat",
+  'Remove feature from results': "Elimină entitate din rezultat",
+  'Zoom to feature': "Zoom la entitate",
+  'Show Relations': "Arată Relațiile",
+  'Print Atlas': "Tipărire Atlas",
+  'Share via link': "Copiază URL hartă",
+  'Select Template': "Selectați Template",
   layer_position: {
     top: 'SUS',
     bottom: 'JOS',
@@ -93,6 +109,18 @@ export default {
     server_error: "Serverul a întâmpinat o eroare",
     no_results: "Niciun rezultat",
     link_button: "Deschide"
+  },
+  scaleline_units: {
+    metric: 'Metri',
+    nautical: 'Mile Nautice'
+  },
+  measure_types: {
+    length: "Lungime",
+    area: "Aria",
+  },
+  measure_descriptions: {
+    length: "Click pe hartă pentru a desena linia. Apasă <br>CANC dacă dorești să ștergi ultimul vertex",
+    area: "Click pentru desen poligon. Apasă <br>CANC dacă dorești să ștergi ultimul vertex"
   },
   mapcontrols: {
     geolocation: {
@@ -118,6 +146,34 @@ export default {
     query: {
       input_relation: "Click pentru a arăta relațiile"
     },
+    querybypolygon: {
+      download: {
+        title: "Descărcare atribute",
+        choiches:{
+          feature: {
+            label:"Doar entități",
+          },
+          feature_polygon: {
+            label:"Entități+Poligon Interogare",
+          }
+        }
+      },
+      tooltip: 'Interogare După Poligon',
+      no_geometry: 'Nu avem geometrii în răspuns',
+      help: {
+        message: "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Interogare prin poligon de desen"
+    },
+    querybbox: {
+      tooltip: 'Interogare BBox strat',
+      nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
+      help: {
+        message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
+      }
+    },
     length: {
       tooltip: "Lungime"
     },
@@ -138,11 +194,7 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Selectați Template"
-      }
-    },
+
     spatialbookmarks: {
       title: "Marcaje spațiale",
       helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
@@ -303,165 +355,6 @@ export default {
       show_chart: "Arată Diagrama",
       atlas: "Tipărire Atlas",
       editing: "Editing",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Interogare strat',
-        actions: {
-          add_selection: {
-            hint: "Adaugă/Elimină Selecția"
-          },
-          zoom_to_features_extent:{
-            hint: "Zoom la încadrarea entităților"
-          },
-          add_features_to_results: {
-            hint: "Adaugă/Elimină entități rezultat"
-          },
-          remove_feature_from_results: {
-            hint: "Elimină entitate din rezultat"
-          },
-          zoom_to_feature: {
-            hint: "Zoom la entitate"
-          },
-          relations: {
-            hint: "Arată Relațiile"
-          },
-          relations_charts: {
-            hint: "Arată diagrama de relații"
-          },
-          download_features_shapefile:{
-            hint: 'Descarcă entități în Shapefile'
-          },
-          download_shapefile: {
-            hint: 'Descarcă entitate în Shapefile'
-          },
-          download_features_gpx: {
-            hint: "Descarcă entități în GPX"
-          },
-          download_features_gpkg: {
-            hint: "Descarcă entități în GPKG"
-          },
-          download_gpx: {
-            hint: "Descarcă entitate în GPX"
-          },
-          download_gpkg: {
-            hint: "Descarcă entitate în GPKG"
-          },
-          download_features_csv: {
-            hint: "Descarcă entități în CSV"
-          },
-          download_csv: {
-            hint: "Descarcă entitate în CSV"
-          },
-          download_features_xls: {
-            hint: "Descarcă entități în XLS"
-          },
-          download_xls: {
-            hint: "Descarcă entitate în XLS"
-          },
-          download_pdf: {
-            hint: "Descarcă entitate în PDF"
-          },
-          atlas: {
-            hint: "Tipărire Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Copiază URL hartă cu întinderea geometriei entității",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Descărcare atribute",
-          choiches:{
-            feature: {
-              label:"Doar entități",
-            },
-            feature_polygon: {
-              label:"Entități+Poligon Interogare",
-            }
-          }
-        },
-        tooltip: 'Interogare După Poligon',
-        no_geometry: 'Nu avem geometrii în răspuns',
-        help: {
-          message: "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Interogare prin poligon de desen"
-      },
-      querybbox: {
-        tooltip: 'Interogare BBox strat',
-        nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
-        help: {
-          message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Query by Draw Circle ",
-        label: 'Radius',
-        help: {
-          message: "<ul><li>Click on map to draw circle</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "Rezultateul pe hartă este parțial datorită prezenței următoarei liste de rezultate incorecte:"
-          }
-        },
-        tooltip: 'Adaugă Strat'
-      },
-      geolocation: {
-        tooltip: 'Geolocalizare'
-      },
-      measures: {
-        length: {
-          tooltip: "Lungime",
-          help: "Click pe hartă pentru a desena linia. Apasă <br>CANC dacă dorești să ștergi ultimul vertex",
-        },
-        area: {
-          tooltip: "Aria",
-          help: "Click pentru desen poligon. Apasă <br>CANC dacă dorești să ștergi ultimul vertex"
-        }
-      },
-      scale: {
-        no_valid_scale: "Scară Invalidă"
-      },
-      scaleline: {
-        units: {
-          metric: 'Metri',
-          nautical: 'Mile Nautice'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Anterior",
-        zoom_next: "Zoom Urmatorul"
-      }
     },
     relations: {
       relation_data: 'Date Relații',

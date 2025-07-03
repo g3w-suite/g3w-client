@@ -72,11 +72,6 @@ export default {
   'Application based on OS framework': "Application construite avec le framework OS",
   'Publish and manage your QGIS projects on the web': "Publiez et gérez vos projets QGIS sur le Web",
   'Framework developed by': "Framework développé par",
-  layer_position: {
-    top: 'HAUT',
-    bottom: 'BAS',
-    message: "Position relative des couches dans la table des matières"
-  },
   'Name': "Nom",
   'Projection': 'Projection',
   'Layers': 'Couches',
@@ -84,6 +79,25 @@ export default {
   'A WMS connection with this name already exists': "La couche est déjà présente.",
   'WMS URL/Name already added': "L'URL WMS est déjà présent.",
   'WMS Layer not added. Please check all wms parameter or url': "Couche WMS non ajoutée. Veuillez vérifier tous les paramètres de l'URL",
+  'Zoom Last': "Zoom Précédent",
+  'Zoom Next': "Zoom Suivant",
+  'Invalid Scale': "Échelle invalide",
+  'Geolocation': 'Géolocalisation',
+  'The result in the map is partial due to the presence of the below incorrect records list:': "Le résultat de la carte est partiel en raison de la présence des enregistrements incorrects suivants :",
+  'Add Layer': 'Ajouter un layer',
+  'Query layer': 'Couche Interrogée',
+  'Add/Remove Selection': "Ajouter/supprimer une sélection",
+  'Zoom to features extent': "Zoom sur les entités",
+  'Add/Remove features to results': "Ajouter des fonctionnalités aux résultats",
+  'Remove feature from results': "Supprimer l'entité des résultats",
+  'Zoom to feature': "Zoom sur les entités",
+  'Show Relations': "Voir les relations",
+  'Share via link': "Copier l'URL de la carte",
+  layer_position: {
+    top: 'HAUT',
+    bottom: 'BAS',
+    message: "Position relative des couches dans la table des matières"
+  },
   info: {
     title: "Résultats",
     list_of_relations: "Liste des relations",
@@ -91,6 +105,18 @@ export default {
     server_error: "Une erreur s'est produite dans la requête au serveur",
     no_results: "Aucun résultat pour cette requête/recherche",
     link_button: "Ouvrir"
+  },
+  scaleline_units: {
+    metric: 'Mètre',
+    nautical: 'Mile Nautique'
+  },
+  measure_types: {
+    length: "Longueur",
+    area: "Zone",
+  },
+  measure_descriptions: {
+    length: "Cliquez sur la carte pour continuer à dessiner la ligne.<br>CANC si vous voulez supprimer le dernier vertex inséré",
+    area: "Cliquez pour continuer à dessiner le polygone.<br>CANC si vous voulez supprimer le dernier vertex inséré"
   },
   mapcontrols: {
     geolocation: {
@@ -116,6 +142,34 @@ export default {
     query: {
       input_relation: "Cliquez pour voir les relations"
     },
+    querybypolygon: {
+      download: {
+        title: "Téléchargement des attributs",
+        choiches:{
+          feature: {
+            label: "Entités seulement",
+          },
+          feature_polygon: {
+            label: "Entités+Requête Polygon ",
+          }
+        }
+      },
+      tooltip: 'Requête par polygone',
+      no_geometry: 'La réponse ne contient pas de géométrie',
+      help: {
+        message: "<ul><li>Sélectionnez une couche de polygone dans la légende.</li><li>Vérifiez que la couche est visible dans la carte.</li><li>Cliquez sur une géométrie de la couche sélectionnée.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Requête par polygone de dessin"
+    },
+    querybbox: {
+      tooltip: 'Requête pour BBOX',
+      nolayers_visible: "Aucune couche requêtable n'est visible. Assurez-vous qu'au moins une couche wfs est visible pour exécuter la requête",
+      help: {
+        message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
+      },
+    },
     length: {
       tooltip: "Longueur"
     },
@@ -136,11 +190,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Sélectionnez un modèle"
-      }
-    },
     spatialbookmarks: {
       title: "Signets spatiaux",
       helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
@@ -289,7 +338,6 @@ export default {
         row_to_form: "Format du formulaire d'affichage",
         zoomtogeometry: "Zoom sur la géométrie",
       },
-      zoom_to_features_extent: "Zoom sur les entités",
       copy_map_extent_url: 'Copier le lien de visualisation de la carte',
       download_shapefile: "Télécharger le fichier Shapefile",
       download_gpx: "Télécharger GPX",
@@ -300,165 +348,6 @@ export default {
       show_chart: "Montrer le graphique",
       atlas: "Imprimer l'Atlas",
       editing: "Modifier",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Couche Interrogée',
-        actions: {
-          add_selection: {
-            hint: "Ajouter/supprimer une sélection"
-          },
-          zoom_to_features_extent:{
-            hint: "Zoom sur les entités"
-          },
-          add_features_to_results: {
-            hint: "Ajouter des fonctionnalités aux résultats"
-          },
-          remove_feature_from_results: {
-            hint: "Supprimer l'entité des résultats"
-          },
-          zoom_to_feature: {
-            hint: "Zoom sur les entités"
-          },
-          relations: {
-            hint: "Voir les relations"
-          },
-          relations_charts: {
-            hint: "Voir les graphiques de relations"
-          },
-          download_features_shapefile:{
-            hint: 'Télécharger les entités vers Shapefile'
-          },
-          download_shapefile: {
-            hint: 'Télécharger le Shapefile'
-          },
-          download_features_gpx: {
-            hint: "Télécharger les entités vers GPX"
-          },
-          download_features_gpkg: {
-            hint: "Télécharger les entités vers GPKG"
-          },
-          download_gpx: {
-            hint: "Télécharger le GPX"
-          },
-          download_gpkg: {
-            hint: "Télécharger le GPKG"
-          },
-          download_features_csv: {
-            hint: "Télécharger les entités vers CSV"
-          },
-          download_csv: {
-            hint: "Télécharger le CSV"
-          },
-          download_features_xls: {
-            hint: "Télécharger les entités vers XLS"
-          },
-          download_xls: {
-            hint: "Télécharger le XLS"
-          },
-          download_pdf: {
-            hint: "Télécharger le PDF"
-          },
-          atlas: {
-            hint: "Imprimer l'Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Copier l'URL de la carte avec l'extension vers cette géométrie",
-          }
-        }
-      },
-      queryby: {
-        title: 'Query area',
-        layer: 'Selected layer:',
-        none: 'NONE',
-        new: 'TEMPORARY LAYER',
-        all: 'ALL',
-        methods: {
-          intersects: 'intersects',
-          within: 'within'
-        },
-        querybypolygon: {
-          tooltip: 'select a polygon'
-        },
-        querybydrawpolygon: {
-          tooltip: 'draw a polygon'
-        },
-        querybbox: {
-          tooltip: 'draw a rectangle'
-        },
-        querybycircle: {
-          tooltip: 'draw a circle'
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Téléchargement des attributs",
-          choiches:{
-            feature: {
-              label: "Entités seulement",
-            },
-            feature_polygon: {
-              label: "Entités+Requête Polygon ",
-            }
-          }
-        },
-        tooltip: 'Requête par polygone',
-        no_geometry: 'La réponse ne contient pas de géométrie',
-        help: {
-          message: "<ul><li>Sélectionnez une couche de polygone dans la légende.</li><li>Vérifiez que la couche est visible dans la carte.</li><li>Cliquez sur une géométrie de la couche sélectionnée.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Requête par polygone de dessin"
-      },
-      querybbox: {
-        tooltip: 'Requête pour BBOX',
-        nolayers_visible: "Aucune couche requêtable n'est visible. Assurez-vous qu'au moins une couche wfs est visible pour exécuter la requête",
-        help: {
-          message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
-        },
-      },
-      querybycircle: {
-        tooltip: "Query by Draw Circle ",
-        label: 'Radius',
-        help: {
-          message: "<ul><li>Click on map to draw circle</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "Le résultat de la carte est partiel en raison de la présence des enregistrements incorrects suivants :"
-          }
-        },
-        tooltip: 'Ajouter un layer'
-      },
-      geolocation: {
-        tooltip: 'Géolocalisation'
-      },
-      measures: {
-        length: {
-          tooltip: "Longueur",
-          help: "Cliquez sur la carte pour continuer à dessiner la ligne.<br>CANC si vous voulez supprimer le dernier vertex inséré",
-        },
-        area: {
-          tooltip: "Zone",
-          help: "Cliquez pour continuer à dessiner le polygone.<br>CANC si vous voulez supprimer le dernier vertex inséré"
-        }
-      },
-      scale: {
-        no_valid_scale: "Échelle invalide"
-      },
-      scaleline: {
-        units: {
-          metric: 'Mètre',
-          nautical: 'Mile Nautique'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom Précédent",
-        zoom_next: "Zoom Suivant"
-      }
     },
     relations: {
       relation_data: 'Données relationnelles',

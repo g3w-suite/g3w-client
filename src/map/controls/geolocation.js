@@ -25,7 +25,7 @@ class GeolocationControl extends InteractionControl {
       offline:  false,
       enabled:  true, // set initial to false. Is set enabled if is autorized
       name:     "geolocation",
-      tipLabel: "sdk.mapcontrols.geolocation.tooltip",
+      tipLabel: 'Geolocation',
     });
 
     /**

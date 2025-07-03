@@ -7,7 +7,7 @@
   <div style = "width:100%">
     <h5
       class = "skin-background-color g3w-polygonattributes-types-title"
-      v-t   = "'sdk.mapcontrols.querybypolygon.download.title'">
+      v-t   = "'mapcontrols.querybypolygon.download.title'">
     </h5>
     <div class = "g3w-polygonattributes-types-content">
       <select

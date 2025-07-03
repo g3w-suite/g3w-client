@@ -107,6 +107,25 @@ export default {
   'A WMS connection with this name already exists': "Já existe uma ligação WMS com o mesmo nome",
   'WMS URL/Name already added': "Endereço/Nome do WMS já adicionado",
   'WMS Layer not added. Please check all wms parameter or url': "Camada WMS não adicionada. Verifique o parametro do endereço do wms",
+  'Zoom Last': "Zoom anterior",
+  'Zoom Next': "Zoom seguinte",
+  'Invalid Scale': "Escala inválida",
+  'Screen capture': 'Captura de ecran',
+  'Generate': 'Gerar',
+  'Measure': 'Medir',
+  'Geolocation': 'Geolocalização',
+  'The result in the map is partial due to the presence of the below incorrect records list:': "O resulto no mapa é parcial, dada a presença dos seguintes registos incorretos:",
+  'Add Layer': 'Adicionar camada',
+  'Query layer': 'Consultar camada',
+  'Add/Remove Selection': "Adicionar/Remover Seleção",
+  'Zoom to features extent': "Aproximar à extensão da camada",
+  'Add/Remove features to results': "Adicionar/Remover camadas aos resultados",
+  'Remove feature from results': "Remover camada dos resultados",
+  'Zoom to feature': "Ampliar para a camada",
+  'Show Relations': "Mostrar Relações",
+  'Print Atlas': "Imprimir Atlas",
+  'Share via link': "Compartilhar link",
+  'Select Template': "Selecione o Modelo",
   layer_position: {
     top: 'cima',
     bottom: 'baixo',
@@ -119,6 +138,18 @@ export default {
     server_error: "Ocorreu um erro no servidor",
     no_results: "Não foram encontrados resultados para a consulta/pesquisa",
     link_button: "Abrir"
+  },
+  scaleline_units: {
+    metric: 'Metros',
+    nautical: 'Milhas náuticas'
+  },
+  measure_types: {
+    length: "Comprimento",
+    area: "Área",
+  },
+  measure_descriptions: {
+    length: "Clique no mapa  para desenhar uma linha. Prima <br>CANC se pretender eliminar o ultimo vértice",
+    area: "Clique para desenhar o polígono.Prima <br>CANC se pretender eliminar o ultimo vértice"
   },
   mapcontrols: {
     geolocation: {
@@ -146,6 +177,67 @@ export default {
     query: {
       input_relation: "Clique para mostrar as relações"
     },
+    queryby: {
+      title: 'Consultar área',
+      layer: 'Selecionar camadas:',
+      none: 'NENHUM',
+      new: 'CAMADA TEMPORÁRIA',
+      all: 'TODOS',
+      methods: {
+        intersects: 'interseção',
+        within: 'dentro de'
+      },
+      querybypolygon: {
+        tooltip: 'selecione um polígono'
+      },
+      querybydrawpolygon: {
+        tooltip: 'desenhe um polígono'
+      },
+      querybbox: {
+        tooltip: 'desenhe um retangulo'
+      },
+      querybycircle: {
+        tooltip: 'desenhe um círculo'
+      }
+    },
+    querybypolygon: {
+      download: {
+        title: "Descarregar atributos",
+        choiches:{
+          feature: {
+            label:"Apenas geometrias",
+          },
+          feature_polygon: {
+            label:"Consultar Camadas+Polígono",
+          }
+        }
+      },
+      tooltip: 'Consultar por Polígono',
+      no_geometry: 'Resposta sem geometrias',
+      help: {
+        message: "<ul><li>Selecione uma camada (ativa).</li><li>Clique sobre uma geometria no mapa.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Desenhe um polígono para consultar ",
+      help: {
+        message: "<ul><li>Clique sobre o mapa para adicionar um novo vértice </li><li>Duplo clique para finalizar e inquirir camadas (sublinhado a amarelo na legenda)</li></ul>"
+      }
+    },
+    querybbox: {
+      tooltip: 'Consultar camada com retangulo',
+      nolayers_visible: 'Nenhuma camada consultável visivel. Defina pelo menos uma camada wfs visivel para executar a consulta',
+      help: {
+        message: "<ul><li>Arraste o rato para desenhar um retangulo e consultar as camadas. (sublinhado a amarelo na legenda)</li></ul>"
+      }
+    },
+    querybycircle: {
+      tooltip: "Consultar camada com circulo ",
+      label: 'Raio',
+      help: {
+        message: "<ul><li>Clique no mapa para desenhar o círculo</li></ul>"
+      },
+    },
     length: {
       tooltip: "Comprimento"
     },
@@ -166,11 +258,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Selecione o Modelo"
-      }
-    },
     spatialbookmarks: {
       title: "Marcadores",
       helptext: "Altere a extensão do mapa, insira um nome e clique Adicionar",
@@ -343,175 +430,6 @@ export default {
       show_chart: "Mostrar Gráfico",
       atlas: "Imprimir Atlas",
       editing: "Edição",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: 'Consultar camada',
-        actions: {
-          add_selection: {
-            hint: "Adicionar/Remover Seleção"
-          },
-          zoom_to_features_extent:{
-            hint: "Aproximar à extensão da camada"
-          },
-          add_features_to_results: {
-            hint: "Adicionar/Remover camadas aos resultados"
-          },
-          remove_feature_from_results: {
-            hint: "Remover camada dos resultados"
-          },
-          zoom_to_feature: {
-            hint: "Ampliar para a camada"
-          },
-          relations: {
-            hint: "Mostrar Relações"
-          },
-          relations_charts: {
-            hint: "Mostrar gráfico das relações"
-          },
-          download_features_shapefile:{
-            hint: 'Descarregar camadas para Shapefile'
-          },
-          download_shapefile: {
-            hint: 'Descarregar camada para Shapefile'
-          },
-          download_features_gpx: {
-            hint: "Descarregar camadas para GPX"
-          },
-          download_features_gpkg: {
-            hint: "Descarregar camadas para GPKG"
-          },
-          download_gpx: {
-            hint: "Descarregar camada para GPX"
-          },
-          download_gpkg: {
-            hint: "Descarregar camada para GPKG"
-          },
-          download_features_csv: {
-            hint: "Descarregar camadas para CSV"
-          },
-          download_csv: {
-            hint: "Descarregar camada para CSV"
-          },
-          download_features_xls: {
-            hint: "Descarregar camadas para para XLS"
-          },
-          download_xls: {
-            hint: "Descarregar camada para XLS"
-          },
-          download_pdf: {
-            hint: "Descarregar camada para PDF"
-          },
-          atlas: {
-            hint: "Imprimir Atlas"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Compartilhar link",
-          }
-        }
-      },
-      queryby: {
-        title: 'Consultar área',
-        layer: 'Selecionar camadas:',
-        none: 'NENHUM',
-        new: 'CAMADA TEMPORÁRIA',
-        all: 'TODOS',
-        methods: {
-          intersects: 'interseção',
-          within: 'dentro de'
-        },
-        querybypolygon: {
-          tooltip: 'selecione um polígono'
-        },
-        querybydrawpolygon: {
-          tooltip: 'desenhe um polígono'
-        },
-        querybbox: {
-          tooltip: 'desenhe um retangulo'
-        },
-        querybycircle: {
-          tooltip: 'desenhe um círculo'
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Descarregar atributos",
-          choiches:{
-            feature: {
-              label:"Apenas geometrias",
-            },
-            feature_polygon: {
-              label:"Consultar Camadas+Polígono",
-            }
-          }
-        },
-        tooltip: 'Consultar por Polígono',
-        no_geometry: 'Resposta sem geometrias',
-        help: {
-          message: "<ul><li>Selecione uma camada (ativa).</li><li>Clique sobre uma geometria no mapa.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Desenhe um polígono para consultar ",
-        help: {
-          message: "<ul><li>Clique sobre o mapa para adicionar um novo vértice </li><li>Duplo clique para finalizar e inquirir camadas (sublinhado a amarelo na legenda)</li></ul>"
-        }
-      },
-      querybbox: {
-        tooltip: 'Consultar camada com retangulo',
-        nolayers_visible: 'Nenhuma camada consultável visivel. Defina pelo menos uma camada wfs visivel para executar a consulta',
-        help: {
-          message: "<ul><li>Arraste o rato para desenhar um retangulo e consultar as camadas. (sublinhado a amarelo na legenda)</li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Consultar camada com circulo ",
-        label: 'Raio',
-        help: {
-          message: "<ul><li>Clique no mapa para desenhar o círculo</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "O resulto no mapa é parcial, dada a presença dos seguintes registos incorretos:"
-          }
-        },
-        tooltip: 'Adicionar camada'
-      },
-      geolocation: {
-        tooltip: 'Geolocalização'
-      },
-      measures: {
-        title: 'Medir',
-        length: {
-          tooltip: "Comprimento",
-          help: "Clique no mapa  para desenhar uma linha. Prima <br>CANC se pretender eliminar o ultimo vértice",
-        },
-        area: {
-          tooltip: "Área",
-          help: "Clique para desenhar o polígono.Prima <br>CANC se pretender eliminar o ultimo vértice"
-        }
-      },
-      screenshot: {
-        title: 'Captura de ecran',
-        screenshot: "PNG",
-        geoscreenshot: "GeoTIFF",
-        download: 'Gerar'
-      },
-      scale: {
-        no_valid_scale: "Escala inválida"
-      },
-      scaleline: {
-        units: {
-          metric: 'Metros',
-          nautical: 'Milhas náuticas'
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Zoom anterior",
-        zoom_next: "Zoom seguinte"
-      }
     },
     relations: {
       relation_data: 'Dados da Relação',

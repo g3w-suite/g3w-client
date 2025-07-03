@@ -105,6 +105,25 @@ export default {
   'A WMS connection with this name already exists': "WMS з'єднання з таким ім'ям вже існує",
   'WMS URL/Name already added': "WMS з'єднання вже додане",
   'WMS Layer not added. Please check all wms parameter or url': "WMS шар не додано. Перевірте параметри або URL сервера",
+  'Zoom Last': "Попередній масштаб",
+  'Zoom Next': "Наступний масштаб",
+  'Invalid Scale': "Неправильний масштаб",
+  'Screen capture': "Знімок екрану",
+  'Generate': "Створити",
+  'Measure': "Виміряти",
+  'Geolocation': "Геолокація",
+  'The result in the map is partial due to the presence of the below incorrect records list:': "Результати неповні через наявність наступних некоректних записів:",
+  'Add Layer': "Додати шар",
+  'Query layer': "Запит до шару",
+  'Add/Remove Selection': "Додати до/Вилучити з вибірки",
+  'Zoom to features extent': "Наблизити до об'єктів",
+  'Add/Remove features to results': "Додати до/Вилучити з результатів",
+  'Remove feature from results': "Видалити об'єкт з результатів",
+  'Zoom to feature': "Наблизити до об'єкта",
+  'Show Relations': "Показати відношення",
+  'Print Atlas': "Друкувати Атлас",
+  'Share via link': "Поділитися",
+  'Select Template': "Виберіть шаблон",
   layer_position: {
     top: "вгорі",
     bottom: "внизу",
@@ -117,6 +136,18 @@ export default {
     server_error: "Помилка запиту до сервера",
     no_results: "За запитом нічого не знайдено",
     link_button: "Відкрити"
+  },
+  scaleline_units: {
+    metric: "Метри",
+    nautical: "Морські милі"
+  },
+  measure_types: {
+    length: "Довжина",
+    area: "Площа",
+  },
+  measure_descriptions: {
+    length: "Клацніть по мапі щоб намалювати лінію. Натисніть <br>CANC щоб видалити останню вершину",
+    area: "Клацніть по мапі щоб намалювати полігон. Натисність <br>CANC щоб видалити останню вершину"
   },
   mapcontrols: {
     geolocation: {
@@ -144,6 +175,70 @@ export default {
     query: {
       input_relation: "Показати відношення"
     },
+    queryby: {
+      title: "Вибрати полігоном",
+      layer: "Шар:",
+      none: "НІЧОГО",
+      new: "ТИМЧАСОВИЙ ШАР",
+      all: "ВСЕ",
+      methods: {
+        intersects: "intersects",
+        within: "within"
+      },
+      querybypolygon: {
+        tooltip: "вибрати полігоном"
+      },
+      querybydrawpolygon: {
+        tooltip: "оцифрувати полігон",
+        help: {
+          message:"<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів</li></ul>"
+        }
+      },
+      querybbox: {
+        tooltip: "оцифрувати прямокутник"
+      },
+      querybycircle: {
+        tooltip: "оцифрувати коло"
+      }
+    },
+    querybypolygon: {
+      download: {
+        title: "Завантижити атрибути",
+        choiches:{
+          feature: {
+            label: "Тільки об'єкти",
+          },
+          feature_polygon: {
+            label: "Об'єкти та полігон",
+          }
+        }
+      },
+      tooltip: "Вибрати за об'єктом шару",
+      no_geometry: "Відповідь не містить геометрії",
+      help: {
+        message: "<ul><li>Виберіть (видимий) шар.</li><li>Клацніть по об'єкту на мапі.</li></ul>"
+      }
+    },
+    querybydrawpolygon: {
+      tooltip: "Вибрати за полігоном",
+      help: {
+        message: "<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
+      }
+    },
+    querybbox: {
+      tooltip: "Вибрати у межах шару",
+      nolayers_visible: "Відсутні видимі шари до яких можна сформувати запит. Переконайтеся, що є хоча б один видимий шар WFS",
+      help: {
+        message: "<ul><li>Протягніть мишкою щоб намалювати полігон та виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
+      }
+    },
+    querybycircle: {
+      tooltip: "Вибрати за радіусом",
+      label: "Радіус",
+      help: {
+        message: "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>"
+      },
+    },
     length: {
       tooltip: "Довжина"
     },
@@ -164,11 +259,6 @@ export default {
     }
   },
   sdk: {
-    atlas: {
-      template_dialog: {
-        title: "Виберіть шаблон"
-      }
-    },
     spatialbookmarks: {
       title: "Закладки",
       helptext: "Встановіть бажані межі мапи, задайте назву та натисніть Додати",
@@ -340,178 +430,6 @@ export default {
       show_chart: "Показати діаграми",
       atlas: "Друкувати атлас",
       editing: "Оцифровка",
-    },
-    mapcontrols: {
-      query: {
-        tooltip: "Запит до шару",
-        actions: {
-          add_selection: {
-            hint: "Додати до/Вилучити з вибірки"
-          },
-          zoom_to_features_extent:{
-            hint: "Наблизити до об'єктів"
-          },
-          add_features_to_results: {
-            hint: "Додати до/Вилучити з результатів"
-          },
-          remove_feature_from_results: {
-            hint: "Видалити об'єкт з результатів"
-          },
-          zoom_to_feature: {
-            hint: "Наблизити до об'єкта"
-          },
-          relations: {
-            hint: "Показати відношення"
-          },
-          relations_charts: {
-            hint: "Показати діаграму відношення"
-          },
-          download_features_shapefile:{
-            hint: "Завантажити Shapefile"
-          },
-          download_shapefile: {
-            hint: "Завантажити Shapefile"
-          },
-          download_features_gpx: {
-            hint: "Завантажити GPX"
-          },
-          download_features_gpkg: {
-            hint: "Завантажити GPKG"
-          },
-          download_gpx: {
-            hint: "Завантажити GPX"
-          },
-          download_gpkg: {
-            hint: "Завантажити GPKG"
-          },
-          download_features_csv: {
-            hint: "Завантажити CSV"
-          },
-          download_csv: {
-            hint: "Завантажити CSV"
-          },
-          download_features_xls: {
-            hint: "Завантажити XLS"
-          },
-          download_xls: {
-            hint: "Завантажити XLS"
-          },
-          download_pdf: {
-            hint: "Завантажити PDF"
-          },
-          atlas: {
-            hint: "Друкувати Атлас"
-          },
-          copy_zoom_to_fid_url: {
-            hint: "Поділитися",
-          }
-        }
-      },
-      queryby: {
-        title: "Вибрати полігоном",
-        layer: "Шар:",
-        none: "НІЧОГО",
-        new: "ТИМЧАСОВИЙ ШАР",
-        all: "ВСЕ",
-        methods: {
-          intersects: "intersects",
-          within: "within"
-        },
-        querybypolygon: {
-          tooltip: "вибрати полігоном"
-        },
-        querybydrawpolygon: {
-          tooltip: "оцифрувати полігон",
-          help: {
-            message:"<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів</li></ul>"
-          }
-        },
-        querybbox: {
-          tooltip: "оцифрувати прямокутник"
-        },
-        querybycircle: {
-          tooltip: "оцифрувати коло"
-        }
-      },
-      querybypolygon: {
-        download: {
-          title: "Завантижити атрибути",
-          choiches:{
-            feature: {
-              label: "Тільки об'єкти",
-            },
-            feature_polygon: {
-              label: "Об'єкти та полігон",
-            }
-          }
-        },
-        tooltip: "Вибрати за об'єктом шару",
-        no_geometry: "Відповідь не містить геометрії",
-        help: {
-          message: "<ul><li>Виберіть (видимий) шар.</li><li>Клацніть по об'єкту на мапі.</li></ul>"
-        }
-      },
-      querybydrawpolygon: {
-        tooltip: "Вибрати за полігоном",
-        help: {
-          message: "<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
-        }
-      },
-      querybbox: {
-        tooltip: "Вибрати у межах шару",
-        nolayers_visible: "Відсутні видимі шари до яких можна сформувати запит. Переконайтеся, що є хоча б один видимий шар WFS",
-        help: {
-          message: "<ul><li>Протягніть мишкою щоб намалювати полігон та виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
-        }
-      },
-      querybycircle: {
-        tooltip: "Вибрати за радіусом",
-        label: "Радіус",
-        help: {
-          message: "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>"
-        },
-      },
-      addlayer: {
-        messages: {
-          csv: {
-            warning: "Результати неповні через наявність наступних некоректних записів:"
-          }
-        },
-        tooltip: "Додати шар"
-      },
-      geolocation: {
-        tooltip: "Геолокація"
-      },
-      measures: {
-        title: "Виміряти",
-        length: {
-          tooltip: "Довжина",
-          help: "Клацніть по мапі щоб намалювати лінію. Натисніть <br>CANC щоб видалити останню вершину",
-        },
-        area: {
-          tooltip: "Площа",
-          help: "Клацніть по мапі щоб намалювати полігон. Натисність <br>CANC щоб видалити останню вершину"
-        }
-      },
-      screenshot: {
-        title: "Знімок екрану",
-        screenshot: "PNG",
-        geoscreenshot: "GeoTIFF",
-        download: "Створити"
-      },
-      scale: {
-        no_valid_scale: "Неправильний масштаб"
-      },
-      scaleline: {
-        units: {
-          metric: "Метри",
-          nautical: "Морські милі"
-        }
-      },
-      zoomhistory: {
-        zoom_last: "Попередній масштаб",
-        zoom_next: "Наступний масштаб"
-      }
     },
     relations: {
       relation_data: "Відношення",
