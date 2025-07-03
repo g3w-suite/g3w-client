@@ -10,7 +10,7 @@
      @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
      :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[featureIndex] }"
      class                     = "action-button"
-     v-disabled                = "ApplicationState.download || action.download || !!(action.state || {}).disabled"
+     v-disabled                = "ApplicationState.download || !!(action.state || {}).disabled"
      v-t-tooltip:top.create    = "action.hint">
      <span
        style  = "padding: 2px;"

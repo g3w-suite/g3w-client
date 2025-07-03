@@ -1342,16 +1342,17 @@ export default new (class QueryResultsService extends G3WObject {
   } = {}) {
     let field = atlas.atlas?.field_name || '$id';
 
-    const { url } = await printAtlas({
-      field,
-      values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
-      template: atlas.name,
-      download: true
-    });
+    ApplicationState.download = true;
 
     GUI.setLoadingContent(true);
 
     try {
+      const { url } = await printAtlas({
+        field,
+        values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
+        template: atlas.name,
+        download: true
+      });
       const response = url && await fetch(url);
 
       if (!response?.ok) {
@@ -1363,7 +1364,6 @@ export default new (class QueryResultsService extends G3WObject {
       GUI.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
     }
 
-    ApplicationState.download = true;
     ApplicationState.download = false;
 
     GUI.setLoadingContent(false);

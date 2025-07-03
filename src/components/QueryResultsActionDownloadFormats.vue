@@ -7,10 +7,10 @@
   <div>
     <div v-if = "layer.hasdownloadablerelations">
       <input
-        :id        = "`g3w-download-relations_${featureIndex}`"
-        class     = "magic-checkbox"
-        v-model   = "down_with_relations"
-        type      = "checkbox"/>
+        :id         = "`g3w-download-relations_${featureIndex}`"
+        class       = "magic-checkbox"
+        v-model     = "down_with_relations"
+        type        = "checkbox"/>
         <label :for = "`g3w-download-relations_${featureIndex}`" v-t = "'sdk.relations.download_with_relations'"></label>
     </div>
     <div
@@ -37,7 +37,7 @@
         style       = "border-radius: 0 3px 3px 0;"
         class       = "btn skin-button"
         @click.stop = download
-        v-disabled  = "ApplicationState.dowload"
+        v-disabled  = "ApplicationState.download"
       >
         <span :class = "g3wtemplate.getFontClass('download')">
         </span>
