@@ -127,7 +127,7 @@
                 :href = "user.logout_url"
                 class = "nav-logout btn btn-default btn-flat skin-color"
               >
-                <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
+                <b v-t="'Logout'"></b><i :class = "$fa('sign-out')"></i>
               </a>
 
               <!-- SHARE URL -->
@@ -136,7 +136,7 @@
                 @click = "showEmbedModal"
                 class  = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b v-t="'embed_map'"></b><i :class = "$fa('share-alt')"></i>
+                <b v-t="'Embed map'"></b><i :class = "$fa('share-alt')"></i>
               </a>
 
               <!-- CHANGE MAP -->
@@ -164,7 +164,7 @@
                 @click = "toggleSidebar"
                 class  = "nav-sidebar btn btn-default btn-flat"
               >
-                <b v-t="'sidebar_menu'"></b><i class = "fa fa-toggle-on"></i>
+                <b v-t="'Sidebar menu'"></b><i class = "fa fa-toggle-on"></i>
               </a>
               
             </li>
@@ -295,7 +295,7 @@
         @click.prevent     = "toggleSidebar"
         role               = "button"
         data-placement     = "right"
-        v-t-tooltip.create = "'sidebar_menu'"
+        v-t-tooltip.create = "'Sidebar menu'"
       ></a>
 
     </aside>
@@ -457,7 +457,7 @@
               <i
                 v-if                      = "undefined !== state.split"
                 :class                    = "$fa(`resize-${state.split}`)"
-                v-t-tooltip:bottom.create = "'enlange_reduce'"
+                v-t-tooltip:bottom.create = "'Enlarge / Reduce'"
                 style                     = "margin-right: 3px;"
                 class                     = "action-button skin-color-dark"
                 @click                    = "resizeFull"
@@ -487,7 +487,7 @@
 
     <!-- COOKIE BANNER -->
     <cookie-law theme = "dark-lime" :buttonText = "cookie_law_buttonText">
-      <div slot="message" v-t="'cookie_law.message'"></div>
+      <div slot="message" v-t="'This website uses cookies to ensure you get the best experience on our website.'"></div>
     </cookie-law>
 
     <Teleport to="body">
@@ -544,7 +544,7 @@ export default {
     return {
       iframe:                false,
       language:              null,
-      cookie_law_buttonText: t('cookie_law.buttonText'),
+      cookie_law_buttonText: t('Got It!'),
       app:                   ApplicationState,
       state:                 ApplicationState.viewport,
       updatePreviousTitle:   false,
@@ -937,7 +937,7 @@ export default {
 
         // lazy load i18n translations
         try {
-          L.registerLocale(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default?.translation);
+          L.registerLocale(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default);
         } catch(e) {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
@@ -950,19 +950,19 @@ export default {
           "language": {
             "sSearch": '',
             "searchPlaceholder": t("dosearch"),
-            "sLengthMenu": t("dataTable.lengthMenu"),
+            "sLengthMenu": t('Show _MENU_ values per page'),
             "paginate": {
               "previous": '«',
               "next": '»',
             },
-            "info": t("dataTable.info"),
-            "zeroRecords": t("dataTable.nodatafilterd"),
+            "info": t('_TOTAL_ entries'),
+            "zeroRecords": t('No matching records found'),
             "infoFiltered": ''
           }
         });
 
         history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
-        this.cookie_law_buttonText = t('cookie_law.buttonText');
+        this.cookie_law_buttonText = t('Got It!');
 
         await waitFor(() => {
           const locales = L.locales[lang];

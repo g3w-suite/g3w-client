@@ -49,7 +49,7 @@
       v-if                = "canEdit(layer)"
       @click.prevent.stop = "startEditing(layer)"
     >
-      <i :class = "$fa('pencil')"></i> {{ $t('catalog_items.contextmenu.edit') }}
+      <i :class = "$fa('pencil')"></i> {{ $t('Edit Layer') }}
     </li>
 
     <!-- LAYER MENU -->
@@ -60,7 +60,7 @@
         v-if                = "canZoom(layer)"
         @click.prevent.stop = "zoomToLayer(layer)"
       >
-        <i :class = "$fa('search')"></i> {{ $t('catalog_items.contextmenu.zoomtolayer') }}
+        <i :class = "$fa('search')"></i> {{ $t('Zoom to Layer') }}
       </li>
 
       <!-- Attribute Table -->
@@ -68,7 +68,7 @@
         v-if                = "canOpenAttributeTable(layer)"
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
-        <i :class = "$fa('list')"></i> {{ $t('catalog_items.contextmenu.open_attribute_table') }}
+        <i :class = "$fa('list')"></i> {{ $t('Open Attribute Table') }}
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
@@ -99,7 +99,7 @@
         v-if = "canShowStylesMenu(layer)"
       >
         <i :class = "$fa('palette')"></i>
-        {{ $t('catalog_items.contextmenu.styles') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
+        {{ $t('Style') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
         <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
@@ -123,7 +123,7 @@
         v-if = "canShowOpacityPicker(layer)"
       >
         <i :class = "$fa('slider')"></i>
-        {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ (layer.opacity / 100) }})
+        {{ $t('Opacity') }} ({{ (layer.opacity / 100) }})
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li style="display: list-item;">
@@ -152,7 +152,7 @@
         v-if = "isExternalWMSLayer(layer)"
       >
         <i :class = "$fa('slider')"></i>
-        {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ layer.opacity }})
+        {{ $t('Opacity') }} ({{ layer.opacity }})
         <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul class = "sub-contex-menu">
           <li style="display: list-item;">
@@ -181,7 +181,7 @@
         v-if = "isExternalVectorLayer(layer)"
       >
         <i :class = "$fa('tint')"></i>
-        {{ $t('catalog_items.contextmenu.vector_color_menu') }}
+        {{ $t('Color') }}
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
@@ -203,7 +203,7 @@
         v-if = "canShowFiltersMenu(layer)"
       >
         <i :class = "$fa('filter')"></i>
-        {{ $t('catalog_items.contextmenu.filters') }}
+        {{ $t('Filters') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
@@ -247,7 +247,7 @@
         ].filter(Boolean).length"
         ref  = "ogc_menu"
       >
-        <i :class = "$fa('map')"></i> {{ $t('catalog_items.contextmenu.ogc_services') }}
+        <i :class = "$fa('map')"></i> {{ $t('OGC Services') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <ul class = "sub-contex-menu">
 

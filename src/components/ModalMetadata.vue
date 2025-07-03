@@ -212,7 +212,7 @@
                 class = "g3w-credits-block"
               >
                 <div
-                  v-t   = "'credits.g3wSuiteFramework'"
+                  v-t   = "'Application based on OS framework'"
                   style = "padding: 5px;"
                   class = "credit-title-logo">
                 </div>
@@ -226,12 +226,12 @@
                     alt   = ""
                   />
                 </a>
-                <div v-t = "'credits.g3wSuiteDescription'" style = "margin-top: 10px;"></div>
+                <div v-t = "'Publish and manage your QGIS projects on the web'" style = "margin-top: 10px;"></div>
               </div>
 
               <div
                 v-if    = "powered_by"
-                v-t:pre = "'credits.productOf'"
+                v-t:pre = "'Framework developed by'"
                 class   = "credit-title-logo g3w-credits-block"
                 style   = "font-size: 1em; display: flex; justify-content: center"
               >

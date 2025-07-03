@@ -348,7 +348,7 @@ export const ResponseParser = {
         return function({
           layers = [],
         } = {}) {
-          return layers.map(layer => ({ layer, rawdata: t('warning.not_supported_format') }))
+          return layers.map(layer => ({ layer, rawdata: t('Not supported format') }))
         };
 
     }

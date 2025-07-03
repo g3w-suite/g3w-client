@@ -44,7 +44,7 @@
                     v-if                    = "!layer.external"
                     @click.stop             = "openAttributeTable(layer)"
                     class                   = "action-button"
-                    v-t-tooltip:left.create = "'catalog_items.contextmenu.open_attribute_table'"
+                    v-t-tooltip:left.create = "'Open Attribute Table'"
                   >
                     <span
                       class  = "action-button-icon"
@@ -140,7 +140,7 @@
                       @click.stop             = "addRemoveFilter(layer)"
                       class                   = "action-button"
                       :class                  = "{'toggled': layer.filter.active}"
-                      v-t-tooltip:left.create = "'layer_selection_filter.tools.filter'"
+                      v-t-tooltip:left.create = "'Enable/Disable filter'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -156,7 +156,7 @@
                       "
                       @click.stop             = "saveFilter(layer)"
                       class                   = "action-button"
-                      v-t-tooltip:left.create = "'layer_selection_filter.tools.savefilter'"
+                      v-t-tooltip:left.create = "'Save Filter'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -557,7 +557,7 @@
 
     <!-- TODO: SHOW SELECTED LAYER -->
     <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
-      <label style="margin-top: 5px;">{{ $t('query_filter') }}</label>
+      <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
       <select style="flex: 1;">
         <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
         <option :selected="!selectedLayer">{{ $t('sdk.mapcontrols.queryby.all') }}</option>

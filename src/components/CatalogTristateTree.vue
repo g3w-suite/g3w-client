@@ -149,7 +149,7 @@
           data-container="body"
           :class                       = "g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop = "clearSelection"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
+          v-t-tooltip.create           = "'Invert Selection'"
         ></span>
 
         <!-- TOGGLE FILTER  -->
@@ -164,7 +164,7 @@
             layerstree.filter.active  ? 'active' : '',
           ]"
           @click.caputure.prevent.stop = "toggleFilterLayer"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.filter'"
+          v-t-tooltip.create           = "'Enable/Disable filter'"
         ></span>
 
         <!-- SAVE FILTER  -->
@@ -175,7 +175,7 @@
           data-toggle                  = "tooltip"
           :class                       = "g3wtemplate.getFontClass('save')"
           @click.caputure.prevent.stop = "saveFilter(layerstree)"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.savefilter'"
+          v-t-tooltip.create           = "'Save Filter'"
         ></span>
 
       </div>
@@ -218,7 +218,7 @@
       :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
       @click.prevent.stop     = "showContextMenu"
       href                    = "#"
-      v-t-tooltip:left.create = "'catalog_items.helptext'"
+      v-t-tooltip:left.create = "'Open menu'"
     ></a>
 
   </li>

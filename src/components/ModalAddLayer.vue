@@ -33,11 +33,11 @@
 
           <!-- LAYER TYPE -->
           <div class="form-group">
-            <label v-t="'layer_type'"></label>
+            <label v-t="'Layer type'"></label>
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
-              <option disabled :value="undefined" v-t="'choose_type'"></option>
-              <option value="wms"  v-t="'remote_wms_url'"></option>
-              <option value="file" v-t="'local_file'"></option>
+              <option disabled :value="undefined" v-t="'Choose type'"></option>
+              <option value="wms"  v-t="'WMS (URL)'"></option>
+              <option value="file" v-t="'Local file'"></option>
             </select>
           </div>
 
@@ -70,7 +70,7 @@
                 list         = "wms_urls"
                 required
               />
-              <small v-if="!wms_config" v-t="'add_new_wms_url_help'"></small>
+              <small v-if="!wms_config" v-t="'Search through saved connections or add a new server'"></small>
               <datalist id="wms_urls">
                 <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
               </datalist>
@@ -79,7 +79,7 @@
             <!-- WMS NAME -->
             <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
               <label for = "add_wms_name" title = "required">
-                <span v-t = "'sidebar.wms.panel.label.name'"></span>
+                <span v-t = "'Name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
               </label>
               <input
@@ -89,7 +89,7 @@
                 required
               />
               <p v-if = "null !== id && wms_urls.some(l => l.id === id) && wms_urls.every(l => l.url !== url)" style = "color: red; margin: 10px 0;">
-                ⚠️ <b v-t = "'sidebar.wms.layer_id_already_added'"></b>
+                ⚠️ <b v-t = "'A WMS connection with this name already exists'"></b>
               </p>
             </fieldset>
 
@@ -99,19 +99,19 @@
               :disabled           = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success"
-            ><i :class = "$fa('plus-square')"></i> <span v-t="'connect_to_wms'"></span></button>
+            ><i :class = "$fa('plus-square')"></i> <span v-t="'Connect'"></span></button>
 
             <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
             <div v-if="!wms_config" class="form-group">
               <hr>
-              <p v-if="wms_urls.length" style="text-align: center; font-weight: bold;" v-t="'saved_connections'"></p>
+              <p v-if="wms_urls.length" style="text-align: center; font-weight: bold;" v-t="'Saved connections:'"></p>
               <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
-                  <b @click = "fetchWMS(wms.url)"    :title = "$t('connect_to_wms')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
-                  <i @click = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'connect_to_wms'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
-                  <i @click = "deleteWmsUrl(wms.id)" v-t-tooltip:top.create = "'sidebar.wms.delete_wms_url'" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <b @click = "fetchWMS(wms.url)"    :title = "$t('Connect')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
+                  <i @click = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'Connect'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <i @click = "deleteWmsUrl(wms.id)" v-t-tooltip:top.create = "'Remove'" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
                 </div>
-                <small @click = "fetchWMS(wms.url)" :title = "$t('connect_to_wms')" style="cursor: pointer;">{{ wms.url }}</small>
+                <small @click = "fetchWMS(wms.url)" :title = "$t('Connect')" style="cursor: pointer;">{{ wms.url }}</small>
               </div>
             </div>
 
@@ -122,7 +122,7 @@
                 class                  = "close"
                 style                  = "float: right; padding: 5px 10px; margin-top: 15px; outline: 1px solid; color: red; opacity: 1;"
                 @click                 = "unloadWMS"
-                v-t-tooltip:left.create = "'disconnect_from_wms'"
+                v-t-tooltip:left.create = "'Disconnect'"
               >&times;</button>
 
               <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
@@ -135,7 +135,7 @@
 
               <!-- LAYERS NAME -->
               <div class = "form-group">
-                <label for = "g3w-wms-layers"><span v-t = "'sidebar.wms.panel.label.layers'"></span></label>
+                <label for = "g3w-wms-layers"><span v-t = "'Layers'"></span></label>
                 <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
                   <option v-for = "(l, i) in layers" :value = "i">{{ l.title }}</option>
                 </select>
@@ -143,7 +143,7 @@
 
               <!-- EPSG PROJECTIONS -->
               <div class = "form-group">
-                <label for = "g3w-wms-projections" v-t = "'sidebar.wms.panel.label.projections'"></label>
+                <label for = "g3w-wms-projections" v-t = "'Projection'"></label>
                 <select id = "g3w-wms-projections" class = "form-control" v-model = "wms_projection">
                   <option v-for = "p in projections">{{ p }}</option>
                 </select>
@@ -166,7 +166,7 @@
 
               <!-- LAYER OPACITY -->
               <div class = "form-group">
-                <label for = "g3w-wms-opacity" v-t = "'catalog_items.contextmenu.layer_opacity'"></label>
+                <label for = "g3w-wms-opacity" v-t = "'Opacity'"></label>
                 <input
                   id      = "g3w-wms-opacity"
                   type    = "range"
@@ -187,7 +187,7 @@
 
               <!-- NAME OF LAYER TO SAVE -->
               <div class = "form-group">
-                <label for = "g3w-wms-layer-name" v-t = "'sidebar.wms.panel.label.name'"></label>
+                <label for = "g3w-wms-layer-name" v-t = "'Name'"></label>
                 <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
               </div>
 
@@ -203,7 +203,7 @@
               class                  = "close"
               style                  = "float: right; padding: 5px 10px; margin: 5px 0 0 8px;outline: 1px solid; color: red; opacity: 1;"
               @click                 = "unloadFile"
-              v-t-tooltip:left.create = "'sidebar.wms.delete_wms_url'"
+              v-t-tooltip:left.create = "'Remove'"
             >&times;</button>
 
             <!-- FILE UPLOAD -->
@@ -251,7 +251,7 @@
                 </select>
               </template>
 
-              <div v-if = "0 === fields.length" v-t="'no_csv_fields'"></div>
+              <div v-if = "0 === fields.length" v-t="'No valid fields'"></div>
 
               <small v-if="olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t="'sdk.querybuilder.messages.number_of_features'"></span> {{ feature_count }}</small>
 
@@ -562,7 +562,7 @@ export default {
 
       // skip invalid names
       if (GUI.getService('map').getLayerByName(input.files[0].name)) {
-        this.error_message = 'layer_is_added';
+        this.error_message = 'Layer with same name already added';
         return;
       }
 
@@ -726,7 +726,7 @@ export default {
             console.warn(e);
             GUI.getService('map').removeExternalLayer(name);
             this.deleteWMS(name);
-            setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'sidebar.wms.layer_add_error' }) });
+            setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'WMS Layer not added. Please check all wms parameter or url' }) });
           }
         } catch(e) {
           console.warn(e);

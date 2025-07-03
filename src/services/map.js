@@ -2034,7 +2034,7 @@ class MapService extends G3WObject {
 
     // skip when another layer with the same name was already added
     if (this.getLayerByName(externalLayer.name)) {
-      GUI.notify.warning("layer_is_added", false);
+      GUI.notify.warning('Layer with same name already added', false);
     }
 
     const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();

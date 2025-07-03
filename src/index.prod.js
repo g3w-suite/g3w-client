@@ -254,8 +254,8 @@ $.ajaxSetup({
 
   // lazy load i18n translations
   L.setLocale(initConfig.user.i18n);
-  L.registerLocale('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default?.translation);
-  L.registerLocale([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default?.translation);
+  L.registerLocale('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
+  L.registerLocale([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
 
   /** @since 3.8.0 */
   try {
@@ -671,14 +671,14 @@ $.ajaxSetup({
   if (!wrapper) {
     document.body.insertAdjacentHTML('beforeend', /* html */`
       <div class="error-page" style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #FFF; background-color: var(--skin-color);">
-        <h1 style="font-weight: bold;">${ t('error_page.error') }</h1>
+        <h1 style="font-weight: bold;">${ t('Connection error') }</h1>
         <h2 style="order: -1; font-size: 5em; font-weight: bold;">Oops!</h2>
-        <h3>${ t('error_page.at_moment') }</h3>
-        <p class="trace" style="background: #333;padding: 1rem;border-radius: 3px;margin-top: 2rem;font-family: Monospace;">${ error || t('error_page.error') }</p>
+        <h3>${ t('At the moment is not possible show map') }</h3>
+        <p class="trace" style="background: #333;padding: 1rem;border-radius: 3px;margin-top: 2rem;font-family: Monospace;">${ error || t('Connection error') }</p>
       </div>`);  
   } else {
     wrapper.querySelector('.trace').insertAdjacentHTML('beforeend', /* html */`
-      <br>${ error || t('error_page.error') }
+      <br>${ error || t('Connection error') }
     `);
   }
 }

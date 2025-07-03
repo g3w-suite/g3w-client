@@ -147,7 +147,7 @@ async function _showAlerts() {
             ${message.body}
             <menu style="display: flex;justify-content: space-between;">
               <label style="display: block; width: fit-content;">
-                <input type="checkbox" name="dont_show_again" /> ${t('dont_show_again')}
+                <input type="checkbox" name="dont_show_again" /> ${t('Don\'t show again')}
               </label>
               <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-message">${t('close')}</button>
             </menu>

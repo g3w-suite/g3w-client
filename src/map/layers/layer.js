@@ -1267,7 +1267,7 @@ class Layer extends G3WObject {
     }
 
     prompt({
-      label: t('layer_selection_filter.tools.savefilter'),
+      label: t('Save Filter'),
       value: this.state.filter.current?.name || '',
       callback: async(name) => {
 

@@ -14,7 +14,7 @@
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
       <helpdiv message="sdk.search.help_filter"/>
       <button
-        v-t-tooltip:left.create = "'layer_selection_filter.tools.nofilter'"
+        v-t-tooltip:left.create = "'Remove Filter'"
         @click.stop             = "clearFilters"
         class                   = "btn skin-border-color"
         style                   = "background-color: transparent; margin: 5px 0"

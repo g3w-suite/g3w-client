@@ -19,7 +19,7 @@
         class              = "skin-color action-button"
         v-disabled         = "state.geolayer.active && current_layout.rightpanel.height_100"
         :class             = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
-        v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
+        v-t-tooltip.create = "'Update results when map moves'"
         data-placement     = "right"
         @click.stop        = "getDataFromBBOX"
       ></div>
@@ -29,7 +29,7 @@
         v-show             = "state.show_tools"
         class              = "skin-color action-button"
         :class             = "$fa('clear')"
-        v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
+        v-t-tooltip.create = "'Invert Selection'"
         data-placement     = "right"
         @click.stop        = "layer.clearSelectionFids()"
       ></div>
@@ -39,7 +39,7 @@
         v-show             = "state.show_tools"
         class              = "skin-color action-button"
         :class             = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
-        v-t-tooltip.create = "'layer_selection_filter.tools.invert'"
+        v-t-tooltip.create = "'Invert Selection'"
         data-placement     = "right"
         @click.stop        = "inverseSelection"
       ></div>
@@ -49,7 +49,7 @@
         v-show             = "state.show_tools && show_on_active_filter"
         class              = "skin-color action-button"
         :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
-        v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
+        v-t-tooltip.create = "'Enable/Disable filter'"
         data-placement     = "right"
         @click.stop        = "toggleFilterToken(layer)"
       ></div>
@@ -116,7 +116,7 @@
               ></i>
               <i
                 v-if                   = "layer.state.geolayer && !feature.geometry"
-                v-t-tooltip:top.create = "'no_geometry'"
+                v-t-tooltip:top.create = "'This item has no geometry'"
                 style                  = "color: currentColor !important;"
                 :class                 = "'action-button ' + $fa('alert')"
               ></i>
@@ -138,7 +138,7 @@
       </tbody>
 
     </table>
-    <div v-else id = "noheaders" v-t = "'dataTable.no_data'"></div>
+    <div v-else id = "noheaders" v-t = "'No data'"></div>
   </div>
 </template>
 
