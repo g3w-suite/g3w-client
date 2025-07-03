@@ -271,12 +271,14 @@ export default new (class GUI extends G3WObject {
   async downloadWrapper(downloadFnc, options = {}) {
     this.setLoadingContent(true);
 
+    ApplicationState.download = true;
+
     try {
       await downloadFnc(options);
     } catch(e) {
       this.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
     }
-    ApplicationState.download = true;
+    
     ApplicationState.download = false;
 
     this.setLoadingContent(false);
