@@ -820,6 +820,11 @@ export default new (class GUI extends G3WObject {
     contents.setOpen(true);
 
     await this._layout(true);
+
+    //In case of mobile, hide sidebar
+    if (isMobile.any) {
+      this.hideSidebar();
+    }  
   }
 
   // hide content
