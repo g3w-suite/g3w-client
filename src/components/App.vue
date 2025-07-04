@@ -199,8 +199,8 @@
         <div id="disable-sidebar"></div>
 
         <div
-          v-show = "panels.length > 0"
-          class = "g3w-sidebarpanel"
+          :hidden = "panels.length <= 0"
+          class   = "g3w-sidebarpanel"
         >
           <div id="g3w-sidebarpanel-header-placeholder">
             <div
@@ -252,11 +252,11 @@
         </div>
 
         <ul
-          id     = "g3w-sidebarcomponents"
-          v-show = "showmainpanel"
-          class  = "sidebar-menu"
-          :class = "{ 'g3w-disabled': disabled }"
-          @click = "toggleSidebarItem"
+          id      = "g3w-sidebarcomponents"
+          :hidden = "!showmainpanel"
+          class   = "sidebar-menu"
+          :class  = "{ 'g3w-disabled': disabled }"
+          @click  = "toggleSidebarItem"
         >
 
         <li id="metadata" class="treeview sidebaritem">

@@ -705,9 +705,11 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
   .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
   .sidebar-open :is(.project_title, .main-sidebar)            { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open .wrapper                       { overflow-y: visible; }
-  .sidebar-open :is(.g3w-sidebarpanel, .main-sidebar, .content-wrapper)         { height: auto !important; }
+  .sidebar-open:has(#g3w-sidebarcomponents:not([hidden])) .g3w-sidebarpanel:not([hidden]),
+  .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
-  .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer) { display: none !important; }
+  .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
+  .sidebar-open:has(#g3w-sidebarcomponents[hidden]) .nav-links { display: none !important; }
 }
 
 
