@@ -11,7 +11,7 @@ GUI.once('ready', async () => {
     map.createMapControl({
       id: 'zoomtoextent',
       options: {
-        ol: new ol.control.ZoomToExtent({ extent: map.project.state.initextent })
+        ol: new ol.control.ZoomToExtent({ extent: map.project.state.extent })
       }
     });
   };
