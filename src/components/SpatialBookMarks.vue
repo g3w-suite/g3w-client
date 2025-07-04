@@ -238,6 +238,10 @@
       },
 
       async gotoSpatialBookmark({ extent, crs }) {
+        // automatically hide sidebar on mobile
+        if (window.innerWidth < 767) {
+          GUI.hideSidebar();
+        }
         if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
           const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
           extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
