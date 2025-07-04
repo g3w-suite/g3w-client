@@ -1,3 +1,5 @@
+import { VM } from "g3w-eventbus";
+
 // Based on leaflet-i18n
 export const L = {
   locales: {},
@@ -61,6 +63,15 @@ export const tPlugin =  text => L._(`plugins.${text}`);
 /** used by the following plugins: "datasinc" */
 export const getAppLanguage = () => window.initConfig.user.i18n || "en";
 
+export const addI18n = config => {
+  const i18n = async lang => {
+    for (const key in config[lang])  {
+      L.registerLocale(lang, { [key]: config[lang] });
+    }
+  };
+  VM.$watch(() => L.language, i18n);
+};
+
 export const addI18nPlugin = ({ name, config }) =>  {
   for (const lang in config) {
     L.registerLocale(lang, { plugins: { [name]: config[lang] } });
@@ -70,6 +81,7 @@ export const addI18nPlugin = ({ name, config }) =>  {
 export default {
   t,
   tPlugin,
+  addI18n,
   addI18nPlugin,
   getAppLanguage,
 };
