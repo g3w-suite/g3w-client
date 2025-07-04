@@ -44,8 +44,9 @@
     <template v-else>
 
       <div v-if = "is_staff" class = "content-bookmarks">
-        <span v-t = "'sdk.spatialbookmarks.sections.project.title'"></span>
+        <span :hidden = "is_mobile" v-t = "'sdk.spatialbookmarks.sections.project.title'"></span>
         <a
+          :hidden = "is_mobile"
           :href  = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
           target = "_blank"
           style  = "float: right;"
@@ -96,8 +97,9 @@
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span v-t="'sdk.spatialbookmarks.sections.user.title'"></span>
+        <span :hidden = "is_mobile" v-t="'sdk.spatialbookmarks.sections.user.title'"></span>
         <span
+          :hidden                 = "is_mobile"
           v-t-tooltip:left.create = "'add'"
           @click.stop             = "showAddForm"
           style                   = "padding: 5px; cursor: pointer;"
@@ -202,6 +204,11 @@
       lang() {
         return ApplicationState.language;
       },
+
+      /** @since 4.0.0 */
+      is_mobile() {
+        return window.innerWidth < 767;
+      }
 
     },
 
