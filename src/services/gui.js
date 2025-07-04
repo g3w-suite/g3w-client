@@ -1112,6 +1112,7 @@ export default new (class GUI extends G3WObject {
     const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
+    
 
     // size "content"
     Object.assign(state.content.sizes, {
@@ -1124,6 +1125,13 @@ export default new (class GUI extends G3WObject {
       width:  viewW - (h_split ? state.content.sizes.width : 0),
       height: viewH - (v_split ? state.content.sizes.height : 0),
     });
+
+    if (window.innerWidth < 767) {
+      Object.assign(state.map.sizes, {
+        width:  window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
 
     // resize "content" (after vue state is updated)
     await Vue.nextTick();

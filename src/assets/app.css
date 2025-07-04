@@ -222,7 +222,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 /* When opening the sidebar on small screens */
 @media (max-width: 767px) {
   .content-wrapper               { margin-left: 0; }
-  .sidebar-open .content-wrapper { transform: translate(var(--sidebar-width), 0); }
+  .sidebar-open .content-wrapper { --sidebar-width: 0; transform: translate(var(--sidebar-width), 0); position: absolute; inset: 0; z-index: -1;}
 }
 
 /* When opening the sidebar on large screens */
@@ -519,10 +519,6 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .modal-footer button                      { font-weight: bold; min-width: 70px; }
 
 
-@media (max-width: 767px) {
-  .sidebar-open .content-wrapper        { transform: translate(300px,0); }
-}
-
 .tooltip                             { position: absolute; z-index: 1070; display: block; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-style: normal; font-weight: 400; line-height: 1.42857143; line-break: auto; text-align: left; text-align: start; text-decoration: none; text-shadow: none; text-transform: none; letter-spacing: normal; word-break: normal; word-spacing: normal; word-wrap: normal; white-space: normal; font-size: 12px; opacity: 0; }
 .tooltip.in                          { opacity: 0.9; }
 .tooltip.top                         { padding: 5px 0; margin-top: -3px; }
@@ -709,8 +705,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
   .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
   .sidebar-open :is(.project_title, .main-sidebar)            { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open .wrapper                       { overflow-y: visible; }
-  .sidebar-open :is(.g3w-sidebarpanel, .main-sidebar)         { height: auto !important; }
-  .sidebar-open .content-wrapper                              { display: none; }
+  .sidebar-open :is(.g3w-sidebarpanel, .main-sidebar, .content-wrapper)         { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
   .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer) { display: none !important; }
 }
