@@ -1126,7 +1126,8 @@ export default new (class GUI extends G3WObject {
       height: viewH - (v_split ? state.content.sizes.height : 0),
     });
 
-    if (window.innerWidth < 767) {
+    // size full (when mobile menu is open) 
+    if (document.body.classList.contains('sidebar-open') && window.innerWidth < 767) {
       Object.assign(state.map.sizes, {
         width:  window.innerWidth,
         height: window.innerHeight,
