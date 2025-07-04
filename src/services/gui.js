@@ -821,8 +821,8 @@ export default new (class GUI extends G3WObject {
 
     await this._layout(true);
 
-    //In case of mobile, hide sidebar
-    if (isMobile.any) {
+    // automatically hide sidebar on mobile
+    if (window.innerWidth < 767) {
       this.hideSidebar();
     }  
   }
