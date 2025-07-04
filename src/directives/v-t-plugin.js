@@ -9,9 +9,18 @@ import { tPlugin, languageIsReady } from 'g3w-i18n';
 
 const attr = 'g3w-v-t-plugin-id';
 
+const handleInnerHTML = ({ el, binding, innerHTML } = {}) => {
+  const value = null === binding.value ? '' : tPlugin(binding.value);
+  switch(binding.arg ? binding.arg : 'post') {
+    case 'pre':  el.innerHTML = `${value} ${innerHTML}`; break;
+    case 'post': el.innerHTML = `${innerHTML} ${value}`; break;
+  }
+}
+
 export default {
   bind(el, binding) {
     const innerHTML = el.innerHTML;
+    handleInnerHTML({ el, binding, innerHTML })
     watch({
       el,
       attr,
@@ -19,11 +28,7 @@ export default {
         () => ApplicationState.language,
         async (lang) => {
           await languageIsReady(lang);
-          const value = null === binding.value ? '' : tPlugin(binding.value);
-          switch(binding.arg ? binding.arg : 'post') {
-            case 'pre':  el.innerHTML = `${value} ${innerHTML}`; break;
-            case 'post': el.innerHTML = `${innerHTML} ${value}`; break;
-          }
+          handleInnerHTML({ el, binding, innerHTML });
         }
       ]
     });
