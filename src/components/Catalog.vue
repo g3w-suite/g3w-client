@@ -266,16 +266,16 @@
       "
     >
       <a
-        v-if   = "'legend' !== activeTab"
-        href   = "#"
-        @click = "showaddLayerModal"
+        v-if           = "'legend' !== activeTab"
+        href           = "#"
+        @click.stop = "showaddLayerModal"
       >
         <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
       </a>
       <a
-        v-if   = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
-        href   = "#"
-        @click = "openChangeMapMenu"
+        v-if           = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
+        href           = "#"
+        @click.stop = "openChangeMapMenu"
       >
         <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
       </a>
@@ -754,6 +754,9 @@ export default {
      * @since 3.11.0
      */
     showaddLayerModal() {
+      if (window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
       $('#modal-addlayer').modal('show');
     },
 
@@ -761,6 +764,9 @@ export default {
      * @since 3.11.0
      */
     openChangeMapMenu() {
+      if (window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
       $('#modal-changemap').modal('show');
     },
     
