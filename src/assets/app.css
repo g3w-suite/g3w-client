@@ -222,7 +222,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 /* When opening the sidebar on small screens */
 @media (max-width: 767px) {
   .content-wrapper               { margin-left: 0; }
-  .sidebar-open .content-wrapper { transform: translate(var(--sidebar-width), 0); }
+  .sidebar-open .content-wrapper { --sidebar-width: 0; transform: translate(var(--sidebar-width), 0); position: absolute; inset: 0; z-index: -1;}
 }
 
 /* When opening the sidebar on large screens */
@@ -519,10 +519,6 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .modal-footer button                      { font-weight: bold; min-width: 70px; }
 
 
-@media (max-width: 767px) {
-  .sidebar-open .content-wrapper        { transform: translate(300px,0); }
-}
-
 .tooltip                             { position: absolute; z-index: 1070; display: block; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-style: normal; font-weight: 400; line-height: 1.42857143; line-break: auto; text-align: left; text-align: start; text-decoration: none; text-shadow: none; text-transform: none; letter-spacing: normal; word-break: normal; word-spacing: normal; word-wrap: normal; white-space: normal; font-size: 12px; opacity: 0; }
 .tooltip.in                          { opacity: 0.9; }
 .tooltip.top                         { padding: 5px 0; margin-top: -3px; }
@@ -681,7 +677,7 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 /** Add "sidebar-mini" class to the body tag to activate this feature */
 
 @media (max-width: 767px) {
-  a.sidebar-aside-toggle                          { display: none !important; }
+  a.sidebar-aside-toggle                          { display: none !important; }  
   .main-sidebar                                   { left: -100%; width: 100%; }
   .sidebar-open .main-sidebar                     { left: 0; }
 }
@@ -699,9 +695,31 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .sidebar-mini.sidebar-collapse #catalog > *                                                   { display: none; }
 .sidebar-mini.sidebar-collapse #catalog > a                                                   { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                         { padding-top: 50px; overflow: hidden; }
-.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { left: 10px; }
+.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { margin-left: 5px; }
 .sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
 .sidebar-mini.sidebar-collapse .main-sidebar                                                  { overflow-y: hidden; }
+
+/** mobile menu */
+@media (max-width: 767px) {
+  .navbar-toggler                                             { color: #fff; padding: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; top: 0; display: block; border: 0;background: none;}
+  .sidebar-open .navbar-toggler                               { position: fixed; }
+  .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
+  .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: unset !important; z-index: 2; }
+  .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
+  .sidebar-open, .sidebar-open .wrapper                       { overflow-y: visible; }
+  .sidebar-open:has(#g3w-sidebarcomponents:not([hidden])) .g3w-sidebarpanel:not([hidden]),
+  .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
+  .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
+  .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
+  .sidebar-open:has(#g3w-sidebarcomponents[hidden]) .nav-links { display: none !important; }
+}
+
+/** handle scrollbars width (desktop small) */
+@media (max-width: 767px) and (pointer: fine) {
+  .sidebar-open .navbar-toggler { right: 18px; }
+  .sidebar-open .project_title  { max-width: calc( 100% - 18px)!important; }
+}
+
 
 /**************************************************************************************
  * 5. Viewport
@@ -1297,6 +1315,7 @@ body .tooltip .tooltip-inner                                              { max-
 .catalog-context-menu .sub-contex-menu { border: 1px solid #eee; border-left: 0; }
 
 .tooltip .tooltip-inner             { font-weight: 700; font-size: 1.25rem; padding: 8px; background-color: #222; }
+
 
 /**************************************************************************************
  * 15. Print

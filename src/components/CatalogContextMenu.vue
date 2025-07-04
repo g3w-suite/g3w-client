@@ -478,6 +478,11 @@
         this.project_menu = !layer;
         await this.$nextTick();
         this.top = e.target.getBoundingClientRect().top - this.$refs['menu'].clientHeight + (e.target.clientHeight / 2);
+        // handle context menu on mobile
+        if (window.innerWidth < 767) {
+          this.left = (window.innerWidth / 2) - (this.$refs['menu'].clientWidth / 2);
+          this.top  = (window.innerHeight / 2) - (this.$refs['menu'].clientHeight / 2);
+        }
         // conditionally inline "ogc_menu" when they contain a single item
         [this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
         dragElement(this.$refs.menu);
