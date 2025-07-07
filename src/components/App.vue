@@ -916,10 +916,6 @@ export default {
           return;
         }
 
-        L.setLocale(lang);
-
-        ApplicationState.language = lang;
-
         // lazy load i18n translations
         try {
           L.registerLocale(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default);
@@ -927,27 +923,9 @@ export default {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
-        //set form control class to filter
-        $.extend($.fn.dataTableExt.oStdClasses, {
-          "sFilterInput": "form-control search"
-        });
-        $.extend(true, $.fn.dataTable.defaults, {
-          "language": {
-            "sSearch": '',
-            "searchPlaceholder": t("dosearch"),
-            "sLengthMenu": t('Show _MENU_ values per page'),
-            "paginate": {
-              "previous": '«',
-              "next": '»',
-            },
-            "info": t('_TOTAL_ entries'),
-            "zeroRecords": t('No matching records found'),
-            "infoFiltered": ''
-          }
-        });
+        L.setLocale(lang);
 
         history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
-        this.cookie_law_buttonText = t('Got It!');
 
         await waitFor(() => {
           const locales = L.locales[lang];
@@ -959,8 +937,29 @@ export default {
           return Object.keys(locales).length > 1 && Object.keys(initConfig.plugins).filter(name => L.locales.en.plugins[name]).length === Object.keys(locales.plugins).length;
         });
 
-        /** @since 4.0.0 */
-        setTimeout(() => GUI.emit('i18n-ready', lang), 500);
+        setTimeout(() => {
+          /** @since 4.0.0 */
+          GUI.emit('i18n-ready', lang);
+          this.cookie_law_buttonText = t('Got It!');
+          //set form control class to filter
+          $.extend($.fn.dataTableExt.oStdClasses, {
+            "sFilterInput": "form-control search"
+          });
+          $.extend(true, $.fn.dataTable.defaults, {
+            "language": {
+              "sSearch": '',
+              "searchPlaceholder": t("dosearch"),
+              "sLengthMenu": t('Show _MENU_ values per page'),
+              "paginate": {
+                "previous": '«',
+                "next": '»',
+              },
+              "info": t('_TOTAL_ entries'),
+              "zeroRecords": t('No matching records found'),
+              "infoFiltered": ''
+            }
+          });
+        }, 500);
 
       },
     },

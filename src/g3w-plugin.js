@@ -92,12 +92,26 @@ export class Plugin extends G3WObject {
   }
 
   /**
-   * @FIXME add description
+   * Register custom i18n strings (global context) 
+   * 
+   * @param { string } lang 
+   * @param {*} locale i18n object
+   * 
+   * @since 4.0.0
    */
-  setLocale(i18n) {
-    if (i18n && this.name) {
-      for (const lang in i18n) {
-        L.registerLocale(lang, { plugins: { [this.name]: i18n[lang] } });
+  registerLocale(lang, locale) {
+    L.registerLocale(lang, locale);
+  }
+
+  /**
+   * Register custom i18n strings (plugin context)
+   * 
+   * @param {*} locale i18n object
+   */
+  setLocale(locale) {
+    if (locale && this.name) {
+      for (const lang in locale) {
+        L.registerLocale(lang, { plugins: { [this.name]: locale[lang] } });
       }
     }
   }

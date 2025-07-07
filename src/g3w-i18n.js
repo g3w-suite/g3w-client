@@ -1,20 +1,21 @@
-import { VM } from "g3w-eventbus";
+import ApplicationState from 'store/application';
 
 // Based on leaflet-i18n
 export const L = {
   locales: {},
-  language: null,
+  // language: null,
   registerLocale(lang, locale) {
     L.locales[lang] = L.merge(L.locales[lang] || {}, locale);
   },
   setLocale(lang) {
-    L.language = lang;
+    // L.language = lang;
+    ApplicationState.language = lang;
   },
   // translate
   translate(string, data) {
     let value;
     try {
-      value = L.locales[L.language]?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales[L.language] || {});
+      value = L.locales[ApplicationState.language]?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales[ApplicationState.language] || {});
     } catch (e) {
       // fail silently
     }
@@ -52,6 +53,7 @@ export const L = {
   }
 };
 
+
 L._ = L.translate;
 
 /* function to translate */
@@ -63,16 +65,9 @@ export const tPlugin =  text => L._(`plugins.${text}`);
 /** used by the following plugins: "datasinc" */
 export const getAppLanguage = () => window.initConfig.user.i18n || "en";
 
-export const addI18n = config => {
-  const i18n = async lang => {
-    for (const key in config[lang])  {
-      L.registerLocale(lang, { [key]: config[lang] });
-    }
-  };
-  VM.$watch(() => L.language, i18n);
-};
-
+/** used by the following plugins: "iframe", "law", "bforest", "sispi-worksite", "gsk", "arpalombardia-charts", "simplereporting", "politowps", "billboards", "ws-trento", "br-service", "datasinc", "archiweb", "fsimulator", "skeleton", "elevation-profile" */
 export const addI18nPlugin = ({ name, config }) =>  {
+  console.warn('[G3W-I18N] g3wsdk.core.i18n.addI18nPlugin is deprecated, please use `g3wsdk.core.plugin.Plugin.setLocale` instead')
   for (const lang in config) {
     L.registerLocale(lang, { plugins: { [name]: config[lang] } });
   }
@@ -81,7 +76,6 @@ export const addI18nPlugin = ({ name, config }) =>  {
 export default {
   t,
   tPlugin,
-  addI18n,
   addI18nPlugin,
   getAppLanguage,
 };
