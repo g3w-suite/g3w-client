@@ -111,7 +111,7 @@ class GeolocationControl extends InteractionControl {
 
       GUI.showUserMessage({
         type:      'warning',
-        title:     "mapcontrols.geolocation.error",
+        title:     'Can\'t get your position',
         message:   e.message,
       });
 

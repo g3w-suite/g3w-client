@@ -805,7 +805,7 @@ export default new (class QueryResultsService extends G3WObject {
           id:       'printatlas',
           download: true,
           class:    GUI.getFontClass('print'),
-          hint:     'sdk.tooltips.atlas',
+          hint:     'Print Atlas',
           cbk:      this.printAtlas.bind(this)
         },
 
@@ -879,7 +879,7 @@ export default new (class QueryResultsService extends G3WObject {
         (layer.editable && false === layer.inediting) && {
           id:    'editing',
           class: GUI.getFontClass('pencil'),
-          hint:  'sdk.tooltips.editing',
+          hint:  'Editing',
           cbk:   (layer, feature) => this.editFeature({ layer, feature })
         },
 

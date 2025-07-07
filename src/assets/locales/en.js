@@ -44,6 +44,14 @@ export default {
   homepage: 'Home',
   /** @since 3.11.0 */
   wms_server: 'WMS Server',
+  screenshot_error: `  
+  <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
+  <ol>
+    <li>remove any manually added external layers (eg. WMS layers)</li>
+    <li>force page reload: <code>CTRL + F5</code></li>
+    <li>print again the map</li>
+  </ol>
+  <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
   layer_position: {
     top: 'top',
     bottom: 'bottom',
@@ -81,29 +89,85 @@ export default {
     length: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
     area: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
   },
+  print_help: `<p>If you don't see some layer in your print file:</p>
+  <ol style="padding-left: 25px">
+    <li>try again by selecting a different template</li>
+    <li>try changing the zoom level</li>
+    <li>check the origin (eg. third-party WMS server)</li>
+    <li>make sure the item is actually checked within layers list</li>
+  </ol>`,
+  metadata_groups: {
+    general: {
+      title: 'GENERAL',
+      fields: {
+        title: 'TITLE',
+        name: 'NAME',
+        description: "DESCRIPTION",
+        abstract: "ABSTRACT",
+        keywords: 'KEYWORDS',
+        fees: "FEES",
+        accessconstraints: "ACCESS CONSTRAINT",
+        contactinformation: "CONTACTS",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "Email",
+            personprimary: 'References',
+            contactvoicetelephone: 'Phone',
+            contactorganization: 'Organization',
+            ContactOrganization: 'Organization',
+            contactposition: 'Position',
+            ContactPosition: 'Position',
+            contactperson: 'Person',
+            ContactPerson: 'Person'
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'SPATIAL',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'LAYERS',
+      fields: {
+        layers: 'LAYERS',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "TITLE",
+          name: 'NAME',
+          geometrytype: 'GEOMETRY',
+          source: 'SOURCE',
+          attributes: 'ATTRIBUTES',
+          abstract: 'ABSTRACT',
+          attribution: 'ATTRIBUTION',
+          keywords: "PAROLE CHIAVE",
+          metadataurl:'METADATA URL',
+          dataurl: "DATA URL"
+        }
+      },
+      groups : {
+        general: 'GENERAL',
+        spatial: 'SPATIAL'
+      }
+    },
+    credits: {
+      title: 'Credits',
+    }
+  },
+  download_types: {
+    shapefile: "Download Shapefile",
+    gpx: "Download GPX",
+    gpkg: "Download GPKG",
+    csv: "Download CSV",
+    xls: "Download XLS",
+    pdf: "Download PDF",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Can't get your position"
-    },
-    geocoding: {
-      choose_layer: "Choose a layer where to add this feature",
-      placeholder: "Search",
-      nolayers: "No editable point layers found on this project",
-      noresults: "No results",
-      notresponseserver: "No response from server"
-    },
-    add_layer_control: {
-      header: "Add Layer",
-      select_projection: "Projection",
-      select_field_to_show: "field shown on map",
-      select_csv_separator: "Delimiter",
-      select_csv_x_field: "X field",
-      select_csv_y_field: "Y field",
-      select_color: "Layer Color",
-      drag_layer: "Add your file here",
-      persistent_data: "Persistent data",
-      persistent_help: "save layer into browser storage",
-    },
     query: {
       input_relation: "Click to show relations"
     },
@@ -177,41 +241,8 @@ export default {
         message: "<ul><li>Drag the mouse to draw a polygon and query the levels</li></ul>"
       },
     },
-    length: {
-      tooltip: "Length"
-    },
-    area: {
-      tooltip: "Area"
-    },
-    screenshot: {
-      error: "Screenshot error creation",
-      securityError: `  
-      <p><b>Security Error</b>: an external layer is preventing map from being printed. To check, proceed as follows:</p>
-      <ol>
-        <li>remove any manually added external layers (eg. WMS layers)</li>
-        <li>force page reload: <code>CTRL + F5</code></li>
-        <li>print again the map</li>
-      </ol>
-      <p>For more info please contact server administrator about: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Bookmarks",
-      helptext: "Move on map extent, insert name and click Add",
-      input: {
-        name: "Name"
-      },
-      sections: {
-        project:{
-          title: "Project Bookmarks"
-        },
-        user: {
-          title: "User Bookmarks"
-        }
-      }
-    },
     search: {
       all: 'ALL',
       no_results: "No results",
@@ -228,157 +259,6 @@ export default {
       help_filter : "Search values are limited based on the active filter. Remove the filter to search all data.",
       autofilter: "Filter results",
       autofilter_tooltip: "Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.",
-
-    },
-    print: {
-      no_layers: 'No Layer to print',
-      template: "Template",
-      labels: "Labels",
-      scale: "Scale",
-      format: "Format",
-      rotation: "Rotation",
-      download_image: "Download Image",
-      fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
-      fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-      help: "Exportable layers are defined by the administrator",
-      help_details: `<p>If you don't see some layer in your print file:</p>
-        <ol style="padding-left: 25px">
-          <li>try again by selecting a different template</li>
-          <li>try changing the zoom level</li>
-          <li>check the origin (eg. third-party WMS server)</li>
-          <li>make sure the item is actually checked within layers list</li>
-        </ol>`,
-    },
-    querybuilder: {
-      title: 'Advanced search',
-      search: {
-        run: "Run",
-        info: "Information",
-        delete: "Delete",
-        edit: "Edit"
-      },
-      messages: {
-        changed: 'Saved',
-        number_of_features: "Features found:"
-      },
-      panel: {
-        button: {
-          all: 'SEARCH A VALUE',
-          save: 'SAVE',
-          test: 'TEST',
-          clear: 'CLEAR',
-          run: 'RUN',
-          manual: 'MANUAL'
-        },
-        layers: 'LAYERS',
-        fields: 'FIELDS',
-        values: 'VALUES',
-        operators: 'OPERATORS',
-        expression: 'EXPRESSION'
-      },
-      error_run: 'An error occurs. Please check the query',
-      error_test: "An error occur during query execution",
-      delete: 'Do you want delete it?',
-      additem: 'Insert the name of the new search'
-    },
-    errors: {
-      layers: {
-        load: "Some layers are not available"
-      },
-      unsupported_format: 'Not supported format',
-      add_external_layer: 'Load layer error'
-    },
-    metadata: {
-      title: 'Metadata',
-      groups: {
-        general: {
-          title: 'GENERAL',
-          fields: {
-            title: 'TITLE',
-            name: 'NAME',
-            description: "DESCRIPTION",
-            abstract: "ABSTRACT",
-            keywords: 'KEYWORDS',
-            fees: "FEES",
-            accessconstraints: "ACCESS CONSTRAINT",
-            contactinformation: "CONTACTS",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "Email",
-                personprimary: 'References',
-                contactvoicetelephone: 'Phone',
-                contactorganization: 'Organization',
-                ContactOrganization: 'Organization',
-                contactposition: 'Position',
-                ContactPosition: 'Position',
-                contactperson: 'Person',
-                ContactPerson: 'Person'
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'SPATIAL',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'LAYERS',
-          fields: {
-            layers: 'LAYERS',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "TITLE",
-              name: 'NAME',
-              geometrytype: 'GEOMETRY',
-              source: 'SOURCE',
-              attributes: 'ATTRIBUTES',
-              abstract: 'ABSTRACT',
-              attribution: 'ATTRIBUTION',
-              keywords: "PAROLE CHIAVE",
-              metadataurl:'METADATA URL',
-              dataurl: "DATA URL"
-            }
-          },
-          groups : {
-            general: 'GENERAL',
-            spatial: 'SPATIAL'
-          }
-        },
-        credits: {
-          title: 'Credits',
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Row View",
-        row_to_form: "Form View",
-        zoomtogeometry: "Zoom to Geometry",
-      },
-      copy_map_extent_url: 'Copy share URL',
-      download_shapefile: "Download Shapefile",
-      download_gpx: "Download GPX",
-      download_gpkg: "Download GPKG",
-      download_csv: "Download CSV",
-      download_xls: "Download XLS",
-      download_pdf: "Download PDF",
-      show_chart: "Show Chart",
-      atlas: "Print Atlas",
-      editing: "Editing",
-    },
-    relations: {
-      relation_data: 'Relation data',
-      no_relations_found: 'No relations found',
-      back_to_relations: 'Back to relations',
-      list_of_relations_feature: 'List of relations of feature',
-      error_missing_father_field: "Field is missing",
-      download_with_relations: "Download with relations",
-      field: "Relation key field",
     },
     form: {
       loading: 'Loading ...',
@@ -416,38 +296,13 @@ export default {
         qgis_input_widget_relation: "Use relation specific form to work with relation"
       }
     },
-    catalog: {
-      current_map_theme_prefix: "THEME",
-      choose_map_theme: "CHOOSE THEME",
-      choose_map_theme_input_label: 'Name of new map theme',
-      project_map_theme : 'Project Themes',
-      user_map_theme: 'User Themes',
-      question_delete_map_theme: "Do you want delete the theme?",
-      delete_map_theme: "Theme deleted successfully",
-      saved_map_theme: "Theme saved successfully",
-      updated_map_theme: "Theme updated successfully",
-      invalid_map_theme_name: "Invalid or exiting name",
-      menu: {
-        layerposition: 'Layer Position',
-        setwmsopacity: "Set Opacity",
-        wms: {
-          title:"",
-          copy: "Click here to copy url",
-          copied: "Copied"
-        },
-        download: {
-          unknow: 'Download',
-          geotiff_map_extent: "GeoTiff (current view)",
-          title: "Export features",
-          layer: "Layer",
-          include_relations: "Include relations in exported file?",
-          data_format: "Data Format"
-        }
-      }
-    },
     wps: {
       list_process: "List of process",
       tooltip: 'Click on map'
     }
   },
+  /** BACKCOMP v3.x */
+  'mapcontrols.add_layer_control.drag_layer': "Add your file here",
+  /** BACKCOMP v3.x */
+  'mapcontrols.add_layer_control.header': "Add Layer",
 };

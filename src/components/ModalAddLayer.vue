@@ -23,7 +23,7 @@
             data-dismiss = "modal">&times;</button>
           <h4
             style = "font-weight: bold"
-            v-t   = "'mapcontrols.add_layer_control.header'"
+            v-t   = "'Add Layer'"
             class = "modal-title"
           ></h4>
         </div>
@@ -215,7 +215,7 @@
                 accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
               />
               <h4 class = "skin-color">
-                <b v-if="!layer_data" v-t="'mapcontrols.add_layer_control.drag_layer'"></b>
+                <b v-if="!layer_data" v-t="'Add your file here'"></b>
                 <b v-else-if = "layer_name">{{ layer_name }}</b>
               </h4>
               <i v-if="!layer_data" :class = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
@@ -226,19 +226,19 @@
             <div v-if = "'csv' === file_type" class = "form-group" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
               <bar-loader :loading = "csv_loading"/>
 
-              <label v-t = "'mapcontrols.add_layer_control.select_csv_separator'" for = "g3w-select-field-layer"></label>
+              <label v-t = "'Delimiter'" for = "g3w-select-field-layer"></label>
               <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator" @change="parseFile">
                 <option>,</option>
                 <option>;</option>
               </select>
 
               <template v-if = "fields.length > 1 && !csv_wkt">
-                <label v-t = "'mapcontrols.add_layer_control.select_csv_x_field'" for = "g3w-select-x-field"></label>
+                <label v-t = "'X field'" for = "g3w-select-x-field"></label>
                 <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(fields || []).length" @change="parseFile">
                   <option v-for = "h in fields">{{ h }}</option>
                 </select>
 
-                <label v-t = "'mapcontrols.add_layer_control.select_csv_y_field'" for = "g3w-select-y-field"></label>
+                <label v-t = "'Y field'" for = "g3w-select-y-field"></label>
                 <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(fields || []).length" @change="parseFile">
                   <option v-for = "h in fields">{{ h }}</option>
                 </select>
@@ -253,7 +253,7 @@
 
               <div v-if = "0 === fields.length" v-t="'No valid fields'"></div>
 
-              <small v-if="olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t="'sdk.querybuilder.messages.number_of_features'"></span> {{ feature_count }}</small>
+              <small v-if="olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t="'Features found:'"></span> {{ feature_count }}</small>
 
             </div>
 
@@ -269,7 +269,7 @@
 
             <!-- LAYER PROJECTION -->
             <fieldset class = "form-group" :disabled = "layer_data || ['kml','kmz'].includes(file_type)">
-              <label for="projection-layer" v-t = "'mapcontrols.add_layer_control.select_projection'"></label>
+              <label for="projection-layer" v-t = "'Projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
                 <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
               </select>
@@ -293,12 +293,12 @@
 
             <!-- PERSISTENT LAYER  -->
             <div v-if="layer_data" class = "form-group">
-              <label for="persistent-layer" v-t = "'mapcontrols.add_layer_control.persistent_data'"></label>
+              <label for="persistent-layer" v-t = "'Persistent data'"></label>
               <select class = "form-control" id = "persistent-layer" v-model = "persistent">
                 <option :value = "false" v-t = "'no'"></option>
                 <option :value = "true" v-t = "'yes'"></option>
               </select>
-              <small v-t = "'mapcontrols.add_layer_control.persistent_help'"></small>
+              <small v-t = "'save layer into browser storage'"></small>
             </div>
 
             <!-- LAYER LABEL (visible field) -->
@@ -308,12 +308,12 @@
                 <option :value = "null">---</option>
                 <option v-for = "f in fields" :key = "f" :value = "f">{{ f }}</option>
               </select>
-              <small v-t = "'mapcontrols.add_layer_control.select_field_to_show'"></small>
+              <small v-t = "'field shown on map'"></small>
             </div>
 
             <!-- LAYER COLOR  -->
             <div v-if="layer_data">
-              <p v-t = "'mapcontrols.add_layer_control.select_color'" style = "font-weight: 700;"></p>
+              <p v-t = "'Layer Color'" style = "font-weight: 700;"></p>
               <chrome-picker
                 v-model = "layer_color"
                 @input  = "onChangeColor"
@@ -556,7 +556,7 @@ export default {
 
       // skip invalid formats
       if (!input.accept.split(',').includes(`.${input.files[0].name.split('.').at(-1).toLowerCase()}`)) {
-        this.error_message = 'sdk.errors.unsupported_format';
+        this.error_message = 'Not supported format';
         return;
       }
 
@@ -685,7 +685,7 @@ export default {
 
       } catch(e) {
         console.warn(e);
-        this.error_message = 'sdk.errors.add_external_layer';
+        this.error_message = 'Load layer error';
       }
     },
 
@@ -743,7 +743,7 @@ export default {
           await Projections.registerProjection(this.layer_crs);
         } catch(e) {
           console.warn(e);
-          this.error_message = `sdk.errors.${e}`;
+          this.error_message = `${e}`;
           return;
         }
         try {
@@ -759,7 +759,7 @@ export default {
           this.unloadFile();
         } catch(e) {
           console.warn(e);
-          this.error_message = 'sdk.errors.add_external_layer';
+          this.error_message = 'Load layer error';
         }
       }
       this.loading = false;

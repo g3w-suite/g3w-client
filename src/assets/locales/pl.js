@@ -97,6 +97,77 @@ export default {
   'Print Atlas': "Wydrukuj atlas",
   'Share via link': "Skopiuj adres URL map",
   'Select Template': "Wybierz szablon",
+  'Bookmarks': "Zakładki przestrzenne",
+  'Move on map extent, insert name and click Add': "Poruszaj zasięg mapy, wstaw nazwę i kliknij Dodaj",
+  'Project Bookmarks': "Zakładki projektu",
+  'User Bookmarks': "Zakładki użytkowników",
+  'No Layer to print': "Brak warstwy do wydrukowania",
+  'Template': "Szablon",
+  'Labels': "Etykiety",
+  'Scale': "Skala",
+  'Format': "Format",
+  'Rotation': "Obrót",
+  'Download Image': "Pobierz obraz",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Zaakceptowane wartości: od 1 do wartości [maks.]. Możliwe jest wstawienie zasięgu ex. 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Były. 1,4-6 zostanie wydrukowany 1,4,5,6",
+  'Exportable layers are defined by the administrator': "Warstwy pokazane w druku mogą być warstwy zdefiniowane w projekcie, a nie wyświetlane na mapie",
+  'Metadata': "Metadane",
+  'THEME': "TEMAT",
+  'CHOOSE THEME': "Wybierz motyw",
+  'Layer Position': "Pozycja warstwy",
+  'Set Opacity': "Ustaw krycie",
+  'Copied': "Skopiowane",
+  'GeoTiff (current view)': "Pobierz Geotiff (Obecny zasięg View)",
+  'Row View': "Widok wiersza",
+  'Form View': "Widok formularza",
+  'Zoom to Geometry': "Powiększ geometrię",
+  'Copy share URL': "Kopiuj link Widok Mapa",
+  'Show Chart': "Wykres pokazowy",
+  'Print Atlas': "Wydrukuj atlas",
+  'Run': "Uruchomić",
+  'Delete': "Usuwać",
+  'Saved': "Uratowany",
+  'Features found:': "Liczba funkcji",
+  'SEARCH A VALUE': "WSZYSTKO",
+  'SAVE': "RATOWAĆ",
+  'CLEAR': "JASNE",
+  'RUN': "URUCHOMIĆ",
+  'FIELDS': "Pola",
+  'EXPRESSION': "WYRAŻENIE",
+  'An error occurs. Please check the query': "Występuje błąd. Sprawdź zapytanie",
+  'Do you want delete it?': "Chcesz to usunąć?",
+  'Insert the name of the new search': "Włóż nazwę nowego wyszukiwania",
+  'Some layers are not available': "Niektóre warstwy nie są dostępne",
+  'Not supported format': "Nie obsługiwany format",
+  'Load layer error': "Błąd warstwy ładowania",
+  'Relation data': "Dane dotyczące relacji",
+  'No relations found': "Nie znaleziono żadnych relacji",
+  'Back to relations': "Powrót do relacji",
+  'List of relations of feature': "Lista relacji funkcji",
+  'Download with relations': "Pobierz z relacjami",
+  'Relation key field': "Relation key field",
+  'Can\'t get your position': "Nie mogę zdobyć swojej pozycji",
+  'Choose a layer where to add this feature': "Wybierz warstwę, gdzie dodać tę funkcję",
+  'Search': "Adres ...",
+  'No editable point layers found on this project': "Brak edytowalnych warstw punktowych w tym projekcie",
+  'No results': "Brak wyników",
+  'Add Layer': "Dodaj warstwę",
+  'Projection': "Wybierz projekcję warstwy",
+  'field shown on map': "Wybierz pole, aby pokazać na mapie",
+  'Delimiter': "Wybierz Selimiter",
+  'X field': "Wybierz pole x",
+  'Y field': "Wybierz pole Y.",
+  'Layer Color': "Wybierz kolor warstwy",
+  'Add your file here': "Przeciągnij i upuść warstwę tutaj",
+  'Screenshot error creation': "Tworzenie błędów z ekranu",
+  screenshot_error: `  
+  <p><b>Błąd bezpieczeństwa</b>: Warstwa zewnętrzna zapobiega wydrukowaniu mapy. Aby sprawdzić, postępuj w następujący sposób:</p>
+  <ol>
+    <li>Usuń wszelkie ręcznie dodane warstwy zewnętrzne (np. WMORY WMS)</li>
+    <li>Przeładowanie strony Siły: <code> CTRL + F5</code></li>
+    <li>Wydrukuj ponownie mapę</li>
+  </ol>
+  <p>Aby uzyskać więcej informacji, skontaktuj się z administratorem serwera o: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
   layer_position: {
     top: "SZCZYT",
     bottom: "SPÓD",
@@ -122,27 +193,74 @@ export default {
     length: "Kliknij mapę, aby narysować linię. Naciśnij <br> Canc, jeśli chcesz usunąć ostatni wierzchołek",
     area: "Kliknij, aby narysować Poligon.press <br> Canc Jeśli chcesz usunąć ostatni wierzchołek"
   },
+  metadata_groups: {
+    general: {
+      title: "OGÓLNY",
+      fields: {
+        title: "TYTUŁ",
+        name: "NAZWA",
+        description: "OPIS",
+        abstract: "ABSTRAKCYJNY",
+        keywords: "SŁOWA KLUCZOWE",
+        fees: "OPŁATY",
+        accessconstraints: "Ograniczenie dostępu",
+        contactinformation: "ŁĄCZNOŚĆ",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "E-mail",
+            personprimary: "Bibliografia",
+            contactvoicetelephone: "Telefon",
+            contactorganization: "Organizacja",
+            ContactOrganization: "Organizacja",
+            contactposition: "Pozycja",
+            ContactPosition: "Pozycja",
+            contactperson: "Osoba",
+            ContactPerson: "Osoba"
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial: {
+      title: "PRZESTRZENNY",
+      fields: {
+        crs: "EPSG",
+        extent: "Bbox"
+      }
+    },
+    layers: {
+      title: "Warstwy",
+      fields: {
+        layers: "Warstwy",
+        subfields: {
+          crs: "EPSG",
+          bbox: "Bbox",
+          title: "TYTUŁ",
+          name: "NAZWA",
+          geometrytype: "GEOMETRIA",
+          source: "ŹRÓDŁO",
+          attributes: "Atrybuty",
+          abstract: "ABSTRAKCYJNY",
+          attribution: "ATRYBUCJA",
+          keywords: "Chiave zwolnienia warunkowego",
+          metadataurl: "URL METADATA",
+          dataurl: "URL danych"
+        }
+      },
+      groups: {
+        general: "OGÓLNY",
+        spatial: "PRZESTRZENNY"
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Pobierz ShapeFile",
+    gpx: "Pobierz GPX",
+    gpkg: "Pobierz GPKG",
+    csv: "Pobierz CSV",
+    xls: "Pobierz XLS",
+  },
   mapcontrols: {
-    geolocations: {
-      error: "Nie mogę zdobyć swojej pozycji"
-    },
-    geocoding: {
-      choose_layer: "Wybierz warstwę, gdzie dodać tę funkcję",
-      placeholder: "Adres ...",
-      nolayers: "Brak edytowalnych warstw punktowych w tym projekcie",
-      noresults: "Brak wyników",
-      notresponseserver: "Brak odpowiedzi z serwera"
-    },
-    add_layer_control: {
-      header: "Dodaj warstwę",
-      select_projection: "Wybierz projekcję warstwy",
-      select_field_to_show: "Wybierz pole, aby pokazać na mapie",
-      select_csv_separator: "Wybierz Selimiter",
-      select_csv_x_field: "Wybierz pole x",
-      select_csv_y_field: "Wybierz pole Y.",
-      select_color: "Wybierz kolor warstwy",
-      drag_layer: "Przeciągnij i upuść warstwę tutaj"
-    },
     query: {
       input_relation: "Kliknij, aby pokazać relacje"
     },
@@ -174,41 +292,8 @@ export default {
         message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
       }
     },
-    length: {
-      tooltip: "Długość"
-    },
-    area: {
-      tooltip: "Obszar"
-    },
-    screenshot: {
-      error: "Tworzenie błędów z ekranu",
-      securityError: `  
-      <p><b>Błąd bezpieczeństwa</b>: Warstwa zewnętrzna zapobiega wydrukowaniu mapy. Aby sprawdzić, postępuj w następujący sposób:</p>
-      <ol>
-        <li>Usuń wszelkie ręcznie dodane warstwy zewnętrzne (np. WMORY WMS)</li>
-        <li>Przeładowanie strony Siły: <code> CTRL + F5</code></li>
-        <li>Wydrukuj ponownie mapę</li>
-      </ol>
-      <p>Aby uzyskać więcej informacji, skontaktuj się z administratorem serwera o: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Zakładki przestrzenne",
-      helptext: "Poruszaj zasięg mapy, wstaw nazwę i kliknij Dodaj",
-      input: {
-        name: "Nazwa"
-      },
-      sections: {
-        project: {
-          title: "Zakładki projektu"
-        },
-        user: {
-          title: "Zakładki użytkowników"
-        }
-      }
-    },
     search: {
       all: "WSZYSTKO",
       no_results: "Brak wyników",
@@ -224,143 +309,6 @@ export default {
       },
       help_filter : "Wartości wyszukiwania są ograniczone w zależności od aktywnego filtra. Usuń filtr, aby przeszukać wszystkie dane.",
       autofilter: "Filtruj wyniki"
-    },
-    print: {
-      no_layers: "Brak warstwy do wydrukowania",
-      template: "Szablon",
-      labels: "Etykiety",
-      scale: "Skala",
-      format: "Format",
-      rotation: "Obrót",
-      download_image: "Pobierz obraz",
-      fids_instruction: "Zaakceptowane wartości: od 1 do wartości [maks.]. Możliwe jest wstawienie zasięgu ex. 4-6",
-      fids_example: "Były. 1,4-6 zostanie wydrukowany 1,4,5,6",
-      help: "Warstwy pokazane w druku mogą być warstwy zdefiniowane w projekcie, a nie wyświetlane na mapie"
-    },
-    querybuilder: {
-      search: {
-        run: "Uruchomić",
-        info: "Informacja",
-        delete: "Usuwać",
-        edit: "Edytować"
-      },
-      messages: {
-        changed: "Uratowany",
-        number_of_features: "Liczba funkcji"
-      },
-      panel: {
-        button: {
-          all: "WSZYSTKO",
-          save: "RATOWAĆ",
-          test: "TEST",
-          clear: "JASNE",
-          run: "URUCHOMIĆ",
-          manual: "PODRĘCZNIK"
-        },
-        layers: "Warstwy",
-        fields: "Pola",
-        values: "Wartości",
-        operators: "Operatorzy",
-        expression: "WYRAŻENIE"
-      },
-      error_run: "Występuje błąd. Sprawdź zapytanie",
-      error_test: "Błąd wystąpił podczas wykonywania zapytania",
-      delete: "Chcesz to usunąć?",
-      additem: "Włóż nazwę nowego wyszukiwania"
-    },
-    errors: {
-      layers: {
-        load: "Niektóre warstwy nie są dostępne"
-      },
-      unsupported_format: "Nie obsługiwany format",
-      add_external_layer: "Błąd warstwy ładowania"
-    },
-    metadata: {
-      title: "Metadane",
-      groups: {
-        general: {
-          title: "OGÓLNY",
-          fields: {
-            title: "TYTUŁ",
-            name: "NAZWA",
-            description: "OPIS",
-            abstract: "ABSTRAKCYJNY",
-            keywords: "SŁOWA KLUCZOWE",
-            fees: "OPŁATY",
-            accessconstraints: "Ograniczenie dostępu",
-            contactinformation: "ŁĄCZNOŚĆ",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "E-mail",
-                personprimary: "Bibliografia",
-                contactvoicetelephone: "Telefon",
-                contactorganization: "Organizacja",
-                ContactOrganization: "Organizacja",
-                contactposition: "Pozycja",
-                ContactPosition: "Pozycja",
-                contactperson: "Osoba",
-                ContactPerson: "Osoba"
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial: {
-          title: "PRZESTRZENNY",
-          fields: {
-            crs: "EPSG",
-            extent: "Bbox"
-          }
-        },
-        layers: {
-          title: "Warstwy",
-          fields: {
-            layers: "Warstwy",
-            subfields: {
-              crs: "EPSG",
-              bbox: "Bbox",
-              title: "TYTUŁ",
-              name: "NAZWA",
-              geometrytype: "GEOMETRIA",
-              source: "ŹRÓDŁO",
-              attributes: "Atrybuty",
-              abstract: "ABSTRAKCYJNY",
-              attribution: "ATRYBUCJA",
-              keywords: "Chiave zwolnienia warunkowego",
-              metadataurl: "URL METADATA",
-              dataurl: "URL danych"
-            }
-          },
-          groups: {
-            general: "OGÓLNY",
-            spatial: "PRZESTRZENNY"
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Widok wiersza",
-        row_to_form: "Widok formularza",
-        zoomtogeometry: "Powiększ geometrię"
-      },
-      copy_map_extent_url: "Kopiuj link Widok Mapa",
-      download_shapefile: "Pobierz ShapeFile",
-      download_gpx: "Pobierz GPX",
-      download_gpkg: "Pobierz GPKG",
-      download_csv: "Pobierz CSV",
-      download_xls: "Pobierz XLS",
-      show_chart: "Wykres pokazowy",
-      atlas: "Wydrukuj atlas"
-    },
-    relations: {
-      relation_data: "Dane dotyczące relacji",
-      no_relations_found: "Nie znaleziono żadnych relacji",
-      back_to_relations: "Powrót do relacji",
-      list_of_relations_feature: "Lista relacji funkcji",
-      error_missing_father_field: "Brakuje pola",
-      download_with_relations: "Pobierz z relacjami",
-      field: "Relation key field",
     },
     form: {
       loading: "Ładowanie ...",
@@ -396,29 +344,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Użyj relacji konkretna forma do pracy w związku z relacją"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "TEMAT",
-      choose_map_theme: "Wybierz motyw",
-      menu: {
-        layerposition: "Pozycja warstwy",
-        setwmsopacity: "Ustaw krycie",
-        wms: {
-          title: "--",
-          copy: "Kliknij tutaj, aby skopiować adres URL",
-          copied: "Skopiowane"
-        },
-        download: {
-          unknow: "Pobierać",
-          shp: "Pobierz ShapeFile",
-          gpx: "Pobierz GPX",
-          gpkg: "Pobierz GPKG",
-          csv: "Pobierz CSV",
-          xls: "Pobierz XLS",
-          geotiff: "Pobierz Geotiff",
-          geotiff_map_extent: "Pobierz Geotiff (Obecny zasięg View)"
-        }
       }
     },
     wps: {

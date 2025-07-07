@@ -97,6 +97,85 @@ export default {
   'Print Atlas': "Tipărire Atlas",
   'Share via link': "Copiază URL hartă",
   'Select Template': "Selectați Template",
+  'Bookmarks': "Marcaje spațiale",
+  'Move on map extent, insert name and click Add': "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
+  'Project Bookmarks': "Marcaje de proiect",
+  'User Bookmarks': "Marcaje utilizator",
+  'No Layer to print': 'Nu avem straturi de print',
+  'Template': "Șablon",
+  'Labels': "Etichete",
+  'Scale': "Scară",
+  'Format': "Format",
+  'Rotation': "Rotație",
+  'Download Image': "Descarcă Imaginea",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Valori acceptate: de la 1 la valoarea [max]. Este posibilă inserarea de interval, de ex. 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Ex. 1,4-6 vor fi tipărite id 1,4,5,6",
+  'Exportable layers are defined by the administrator': "Straturile prezentate în print pot fi acelea definite în proiect și nu acelea prezentate în cadrul hărții",
+  'Metadata': 'Metadate',
+  'THEME': "TEMA",
+  'CHOOSE THEME': "ALEGE TEMA",
+  'Name of new map theme': 'Numele noii tema',
+  'Project Themes': 'Tema de proiect',
+  'User Themes': "Tema utilizator",
+  'Do you want delete the theme?': "Doriți să ștergeți tema?",
+  'Theme deleted successfully': "Tema a fost ștearsă cu succes",
+  'Theme saved successfully': "Tema a fost salvată cu succes",
+  'Theme updated successfully': "Tema a fost actualizată cu succes",
+  'Invalid or exiting name': "Numele există deja sau este incorect",
+  'Layer Position': 'Poziție Strat',
+  'Set Opacity': "Alege Opacitatea",
+  'Copied': "Copiat",
+  'GeoTiff (current view)': "Descarcă GEOTIFF(ce se vede în cadrul hărții)",
+  'Row View': "Vizualizare pe rânduri",
+  'Form View': "Vizualizare formular",
+  'Zoom to Geometry': "Măriți la geometrie",
+  'Copy share URL': 'Copiază linkul de vizualizare hartă',
+  'Show Chart': "Arată Diagrama",
+  'Print Atlas': "Tipărire Atlas",
+  'Run': "Execută",
+  'Delete': "Elimină",
+  'Saved': 'Salvat',
+  'Features found:': "Număr de entități",
+  'SEARCH A VALUE': 'TOATE',
+  'SAVE': 'SALVEAZĂ',
+  'CLEAR': 'ȘTERGE',
+  'RUN': 'RUN',
+  'FIELDS': 'CÂMPURI',
+  'EXPRESSION': 'EXPRESII',
+  'An error occurs. Please check the query': 'A survenit o eroare. De verificat interogarea',
+  'Do you want delete it?': 'Vrei să o ștergi?',
+  'Insert the name of the new search': 'Introdu numele noii căutări',
+  'Some layers are not available': "Câteva straturi nu sunt disponibile",
+  'Not supported format': 'Formatul nu este acceptat',
+  'Load layer error': 'Eroare încărcare strat',
+  'Relation data': 'Date Relații',
+  'No relations found': 'Nu am găsit nicio relație',
+  'Back to relations': 'Înapoi la relații',
+  'List of relations of feature': 'Lista de relații a entității',
+  'Download with relations': "Descărcați cu relații",
+  'Relation key field': "Relation key field",
+  'Can\'t get your position': "Nu te-am putut localiza",
+  'Choose a layer where to add this feature': "Alegeți un strat unde să adăugați această caracteristică",
+  'Search': "Adresa ...",
+  'No editable point layers found on this project': "Nu s-au găsit straturi de puncte editabile în acest proiect",
+  'No results': "Niciun rezultat",
+  'Add Layer': "Adăugare Strat",
+  'Projection': "Selectează proiecția strat",
+  'field shown on map': "Selectează câmpul de arătat pe hartă",
+  'Delimiter': "Selectează delimitatorul",
+  'X field': "Selectează câmpul X - Est",
+  'Y field': "Selectează câmpul Y - Nord",
+  'Layer Color': "Selectează culoare strat",
+  'Add your file here': "Trageți stratul aici (Drag&Drop)",
+  'Screenshot error creation': "Eroare captură ecran",
+  screenshot_error: `  
+  <p><b>Eroare de securitate</b>: un strat extern împiedică imprimarea hărții. Pentru a verifica, procedați după cum urmează:</p>
+  <ol>
+    <li>eliminați orice straturi externe adăugate manual (de exemplu, straturi WMS)</li>
+    <li>forțați reîncărcarea paginii: <code>CTRL + F5</code></li>
+    <li>tipărește din nou harta</li>
+  </ol>
+  <p>Pentru mai multe informații, vă rugăm să contactați administratorul serverului despre: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -greutate: bold;">&#x2139;&#xFE0F; securitate și pânze contaminate</a></p>`,
   layer_position: {
     top: 'SUS',
     bottom: 'JOS',
@@ -122,27 +201,75 @@ export default {
     length: "Click pe hartă pentru a desena linia. Apasă <br>CANC dacă dorești să ștergi ultimul vertex",
     area: "Click pentru desen poligon. Apasă <br>CANC dacă dorești să ștergi ultimul vertex"
   },
+  metadata_groups: {
+    general: {
+      title: 'GENERALITĂȚI',
+      fields: {
+        title: 'TITLU',
+        name: 'NUME',
+        description: "DESCRIERE",
+        abstract: "ABSTRACT",
+        keywords: 'CUVINTE CHEIE',
+        fees: "TAXE",
+        accessconstraints: "CONSTRÂNGERI DE ACCES",
+        contactinformation: "CONTACTE",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "Email",
+            personprimary: 'Referințe',
+            contactvoicetelephone: 'Telefon',
+            contactorganization: 'Organizație',
+            ContactOrganization: 'Organizație',
+            contactposition: 'Poziție',
+            ContactPosition: 'Poziție',
+            contactperson: 'Persoana',
+            ContactPerson: 'Persoana'
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'SPAȚIAL',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'STRATURI',
+      fields: {
+        layers: 'STRATURI',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "TITLU",
+          name: 'NUME',
+          geometrytype: 'GEOMETRIE',
+          source: 'SURSA',
+          attributes: 'ATRIBUTE',
+          abstract: 'ABSTRACT',
+          attribution: 'ATRIBUIRE',
+          keywords: "CUVINTE CHEIE",
+          metadataurl:'URL METADATE',
+          dataurl: "URL DATE"
+        }
+      },
+      groups : {
+        general: 'GENERALITĂȚI',
+        spatial: 'SPAȚIAL'
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Descarcă Shapefile",
+    gpx: "Descarcă GPX",
+    gpkg: "Descarcă GPKG",
+    csv: "Descarcă CSV",
+    xls: "Descarcă XLS",
+    pdf: "Descarcă PDF",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Nu te-am putut localiza"
-    },
-    geocoding: {
-      choose_layer: "Alegeți un strat unde să adăugați această caracteristică",
-      placeholder: "Adresa ...",
-      nolayers: "Nu s-au găsit straturi de puncte editabile în acest proiect",
-      noresults: "Niciun rezultat",
-      notresponseserver: "Niciun răspuns de la server"
-    },
-    add_layer_control: {
-      header: "Adăugare Strat",
-      select_projection: "Selectează proiecția strat",
-      select_field_to_show: "Selectează câmpul de arătat pe hartă",
-      select_csv_separator: "Selectează delimitatorul",
-      select_csv_x_field: "Selectează câmpul X - Est",
-      select_csv_y_field: "Selectează câmpul Y - Nord",
-      select_color: "Selectează culoare strat",
-      drag_layer: "Trageți stratul aici (Drag&Drop)"
-    },
     query: {
       input_relation: "Click pentru a arăta relațiile"
     },
@@ -174,42 +301,8 @@ export default {
         message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
       }
     },
-    length: {
-      tooltip: "Lungime"
-    },
-    area: {
-      tooltip: "Arie"
-    },
-    screenshot: {
-      error: "Eroare captură ecran",
-      securityError: `  
-      <p><b>Eroare de securitate</b>: un strat extern împiedică imprimarea hărții. Pentru a verifica, procedați după cum urmează:</p>
-      <ol>
-        <li>eliminați orice straturi externe adăugate manual (de exemplu, straturi WMS)</li>
-        <li>forțați reîncărcarea paginii: <code>CTRL + F5</code></li>
-        <li>tipărește din nou harta</li>
-      </ol>
-      <p>Pentru mai multe informații, vă rugăm să contactați administratorul serverului despre: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -greutate: bold;">&#x2139;&#xFE0F; securitate și pânze contaminate</a></p>
-      `
-    }
   },
   sdk: {
-
-    spatialbookmarks: {
-      title: "Marcaje spațiale",
-      helptext: "Deplasați-vă pe întinderea hărții, introduceți numele și faceți clic pe Adăugați",
-      input: {
-        name: "Nume"
-      },
-      sections: {
-        project:{
-          title: "Marcaje de proiect"
-        },
-        user: {
-          title: "Marcaje utilizator"
-        }
-      }
-    },
     search: {
       all: 'Toate',
       no_results: "Fără rezultat",
@@ -225,145 +318,6 @@ export default {
       },
       help_filter : "Valorile de căutare sunt limitate în funcție de filtrul activ. Eliminați filtrul pentru a căuta toate datele.",
       autofilter: "Filtrați rezultatele"
-    },
-    print: {
-      no_layers: 'Nu avem straturi de print',
-      template: "Șablon",
-      labels: "Etichete",
-      scale: "Scară",
-      format: "Format",
-      rotation: "Rotație",
-      download_image: "Descarcă Imaginea",
-      fids_instruction: "Valori acceptate: de la 1 la valoarea [max]. Este posibilă inserarea de interval, de ex. 4-6",
-      fids_example: "Ex. 1,4-6 vor fi tipărite id 1,4,5,6",
-      help: "Straturile prezentate în print pot fi acelea definite în proiect și nu acelea prezentate în cadrul hărții"
-    },
-    querybuilder: {
-      search: {
-        run: "Execută",
-        info: "Info",
-        delete: "Elimină",
-        edit: "Modifică"
-      },
-      messages: {
-        changed: 'Salvat',
-        number_of_features: "Număr de entități"
-      },
-      panel: {
-        button: {
-          all: 'TOATE',
-          save: 'SALVEAZĂ',
-          test: 'TEST',
-          clear: 'ȘTERGE',
-          run: 'RUN',
-          manual: 'MANUAL'
-        },
-        layers: 'STRATURI',
-        fields: 'CÂMPURI',
-        values: 'VALORI',
-        operators: 'OPERATORI',
-        expression: 'EXPRESII'
-      },
-      error_run: 'A survenit o eroare. De verificat interogarea',
-      error_test: "A survenit o eroare în timp ce se executa interogarea",
-      delete: 'Vrei să o ștergi?',
-      additem: 'Introdu numele noii căutări'
-    },
-    errors: {
-      layers: {
-        load: "Câteva straturi nu sunt disponibile"
-      },
-      unsupported_format: 'Formatul nu este acceptat',
-      add_external_layer: 'Eroare încărcare strat'
-    },
-    metadata: {
-      title: 'Metadate',
-      groups: {
-        general: {
-          title: 'GENERALITĂȚI',
-          fields: {
-            title: 'TITLU',
-            name: 'NUME',
-            description: "DESCRIERE",
-            abstract: "ABSTRACT",
-            keywords: 'CUVINTE CHEIE',
-            fees: "TAXE",
-            accessconstraints: "CONSTRÂNGERI DE ACCES",
-            contactinformation: "CONTACTE",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "Email",
-                personprimary: 'Referințe',
-                contactvoicetelephone: 'Telefon',
-                contactorganization: 'Organizație',
-                ContactOrganization: 'Organizație',
-                contactposition: 'Poziție',
-                ContactPosition: 'Poziție',
-                contactperson: 'Persoana',
-                ContactPerson: 'Persoana'
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'SPAȚIAL',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'STRATURI',
-          fields: {
-            layers: 'STRATURI',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "TITLU",
-              name: 'NUME',
-              geometrytype: 'GEOMETRIE',
-              source: 'SURSA',
-              attributes: 'ATRIBUTE',
-              abstract: 'ABSTRACT',
-              attribution: 'ATRIBUIRE',
-              keywords: "CUVINTE CHEIE",
-              metadataurl:'URL METADATE',
-              dataurl: "URL DATE"
-            }
-          },
-          groups : {
-            general: 'GENERALITĂȚI',
-            spatial: 'SPAȚIAL'
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Vizualizare pe rânduri",
-        row_to_form: "Vizualizare formular",
-        zoomtogeometry: "Măriți la geometrie",
-      },
-      copy_map_extent_url: 'Copiază linkul de vizualizare hartă',
-      download_shapefile: "Descarcă Shapefile",
-      download_gpx: "Descarcă GPX",
-      download_gpkg: "Descarcă GPKG",
-      download_csv: "Descarcă CSV",
-      download_xls: "Descarcă XLS",
-      download_pdf: "Descarcă PDF",
-      show_chart: "Arată Diagrama",
-      atlas: "Tipărire Atlas",
-      editing: "Editing",
-    },
-    relations: {
-      relation_data: 'Date Relații',
-      no_relations_found: 'Nu am găsit nicio relație',
-      back_to_relations: 'Înapoi la relații',
-      list_of_relations_feature: 'Lista de relații a entității',
-      error_missing_father_field: "Câmpul de legătură lipsește",
-      download_with_relations: "Descărcați cu relații",
-      field: "Relation key field",
     },
     form: {
       loading: 'Se încarcă ...',
@@ -399,37 +353,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Folosește formular specific de relații pentru a lucra cu relația"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "TEMA",
-      choose_map_theme: "ALEGE TEMA",
-      choose_map_theme_input_label: 'Numele noii tema',
-      project_map_theme : 'Tema de proiect',
-      user_map_theme: "Tema utilizator",
-      question_delete_map_theme: "Doriți să ștergeți tema?",
-      delete_map_theme: "Tema a fost ștearsă cu succes",
-      saved_map_theme: "Tema a fost salvată cu succes",
-      updated_map_theme: "Tema a fost actualizată cu succes",
-      invalid_map_theme_name: "Numele există deja sau este incorect",
-      menu: {
-        layerposition: 'Poziție Strat',
-        setwmsopacity: "Alege Opacitatea",
-        wms: {
-          title:"Titlu",
-          copy: "Click pentru copiere URL",
-          copied: "Copiat"
-        },
-        download: {
-          unknow: 'Descarcă',
-          shp: 'Descarcă Shapefile',
-          gpx: 'Descarcă GPX',
-          gpkg: 'Descarcă GPKG',
-          csv: 'Descarcă CSV',
-          xls: 'Descarcă XLS',
-          geotiff: "Descarcă GEOTIFF",
-          geotiff_map_extent: "Descarcă GEOTIFF(ce se vede în cadrul hărții)"
-        }
       }
     },
     wps: {

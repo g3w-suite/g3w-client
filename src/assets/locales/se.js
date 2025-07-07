@@ -73,6 +73,7 @@ export default {
   'Application based on OS framework': "Tillämpningen baserar på OS framework",
   'Publish and manage your QGIS projects on the web': "Publicera och hantera QGIS-projekt på nätet.",
   'Framework developed by': "Framework har utvecklats av",
+  'Name': "Namn",
   'A WMS connection with this name already exists': "WMS Nivån har redan lagts till.",
   'WMS URL/Name already added': "WMS URL/Namn har redan lagts till.",
   'Zoom Last': "Zoom Föregående",
@@ -87,6 +88,81 @@ export default {
   'Show Relations': "Visa relationerna",
   'Print Atlas': "Skriv ut Atlas",
   'Select Template': "Välj Template",
+  'Bookmarks': "Rumsliga bokmärken",
+  'Move on map extent, insert name and click Add': "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
+  'Project Bookmarks': "Projektbokmärken",
+  'User Bookmarks': "Användarbokmärken",
+  'No Layer to print': 'Inga nivåer att skriva ut',
+  'Scale': "Skala",
+  'Format': "Format",
+  'Rotation': "Rotation",
+  'Download Image': "Ladda ner bild",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Godkända värden: Från ett till värdet [max]. Mellanslag tillåts, t.ex. 4-6.",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Exempelvis 1,4-6 skriver ut id 1,4,5,6.",
+  'Exportable layers are defined by the administrator': "Nivåerna på utskriften kan vara specificerade i ett projekt inte sådana som visas på karta.",
+  'Name of new map theme': 'Namn på det nya temat',
+  'Project Themes': 'Temat de proiect',
+  'User Themes': "Temat utilizator",
+  'Do you want delete the theme?': "Vill du ta bort temat?",
+  'Theme deleted successfully': "Temat har tagits bort",
+  'Theme saved successfully': "Temat har sparats",
+  'Theme updated successfully': "Temat har uppdaterats",
+  'Invalid or exiting name': "Namnet finns redan eller är felaktigt",
+  'Layer Position': 'Lagerposition',
+  'Set Opacity': "Ställ in Opacitet",
+  'Copied': "Kopierad.",
+  'GeoTiff (current view)': "Ladda GEOTIFF-fil(current view extent)",
+  'Row View': "Radvy",
+  'Form View': "Tabellvy",
+  'Zoom to Geometry': "Zooma till geometri",
+  'Copy share URL': 'Kopiera länk till karta',
+  'Show Chart': "Visa diagram",
+  'Print Atlas': "Skriv ut Atlas",
+  'Editing': "Editing",
+  'Run': "Utför",
+  'Delete': "Ta bort",
+  'Saved': 'Sparat',
+  'Features found:': "Antal funktione",
+  'SEARCH A VALUE': 'ALLA',
+  'SAVE': 'SPARA',
+  'CLEAR': 'TÖM',
+  'RUN': 'UTFÖR',
+  'FIELDS': 'FÄLT',
+  'EXPRESSION': 'KLAUSUL',
+  'An error occurs. Please check the query': 'Ett fel inträffade. Kontrollera förfrågan.',
+  'Do you want delete it?': 'Vill du ta bort den?',
+  'Insert the name of the new search': 'Ge den nya sökningen ett namn.',
+  'Some layers are not available': "Vissa nivåer är inte tillgängliga.",
+  'Not supported format': 'Formatet stöds inte',
+  'Load layer error': 'Fel vid laddning av nivån',
+  'Relation data': 'Relationsuppgifter',
+  'No relations found': 'Inga relationer hittades.',
+  'Back to relations': 'Tillbaka till relationerna',
+  'List of relations of feature': 'Lista på egenskapens relationer',
+  'Download with relations': "Ladda ner med relationer",
+  'Relation key field': "Relation key field",
+  'Can\'t get your position': "Du kan inte lokaliseras",
+  'Choose a layer where to add this feature': "Välj ett lager där du vill lägga till denna funktion",
+  'Search': "Adress ...",
+  'No editable point layers found on this project': "Inga redigerbara punktlager hittades i det här projektet",
+  'No results': "Inga resultat",
+  'Add Layer': "Lägg till nivå",
+  'Projection': "Välj projektion för nivån",
+  'field shown on map': "Select Field to show on map",
+  'Delimiter': "Select delimiter",
+  'X field': "Select X field",
+  'Y field': "Select Y field",
+  'Layer Color': "Välj färg på nivån",
+  'Add your file here': "Dra och släpp nivån hit",
+  'Screenshot error creation': "Screenshot error creation",
+  screenshot_error: `  
+  <p><b>Säkerhetsfel</b>: ett externt lager hindrar kartan från att skrivas ut. Gör så här för att kontrollera:</p>
+  <ol>
+    <li>ta bort alla manuellt tillagda externa lager (t.ex. WMS-lager)</li>
+    <li>tvinga om inläsning av sidan: <code>CTRL + F5</code></li>
+    <li>skriv ut kartan igen</li>
+  </ol>
+  <p>För mer information kontakta serveradministratören om: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -vikt: fet;">&#x2139;&#xFE0F; säkerhet och nedsmutsade dukar</a></p>`,
   layer_position: {
     top: 'Överst',
     bottom: 'Underst',
@@ -112,27 +188,75 @@ export default {
     length: "Rita upp en bruten linje på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.",
     area: "Rita upp en polygon på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt."
   },
+  metadata_groups: {
+    general: {
+      title: 'ALLMÄN',
+      fields: {
+        title: 'RUBRIK',
+        name: 'NAMN',
+        description: "BESKRIVNING",
+        abstract: "SAMMANDRAG",
+        keywords: 'NYCKELORD',
+        fees: "AVGIFTER",
+        accessconstraints: "ÅTKOMSTBEGRÄNSNINGAR",
+        contactinformation: "KONTAKTUPPGIFTER",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "E-post",
+            personprimary: 'Referenser',
+            contactvoicetelephone: 'Telefon',
+            contactorganization: 'Organisation',
+            ContactOrganization: 'Organisation',
+            contactposition: 'Ställning',
+            ContactPosition: 'Ställning',
+            contactperson: 'Kontaktperson',
+            ContactPerson: 'Kontaktperson'
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'SPATIAL',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'NIVÅER',
+      fields: {
+        layers: 'NIVÅER',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "RUBRIK",
+          name: 'NAMN',
+          geometrytype: 'GEOMETRI',
+          source: 'KÄLLA',
+          attributes: 'ATTRIBUT',
+          abstract: 'SAMMANDRAG',
+          attribution: 'TILLSKRIVNING',
+          keywords: "NYCKELORD",
+          metadataurl:'METADATA URL',
+          dataurl: "DATA URL"
+        }
+      },
+      groups : {
+        general: 'ALLMÄN',
+        spatial: 'SPATIAL'
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Ladda SHP-fil",
+    gpx: "Ladda GPX-fil",
+    gpkg: "Ladda GPKG-fil",
+    csv: "Ladda CSV-fil",
+    xls: "Ladda XLS-fil",
+    pdf: "Ladda PDF-fil",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Du kan inte lokaliseras"
-    },
-    geocoding: {
-      choose_layer: "Välj ett lager där du vill lägga till denna funktion",
-      placeholder: "Adress ...",
-      nolayers: "Inga redigerbara punktlager hittades i det här projektet",
-      noresults: "Inga resultat",
-      notresponseserver: "Inget svar från servern"
-    },
-    add_layer_control: {
-      header: "Lägg till nivå",
-      select_projection: "Välj projektion för nivån",
-      select_field_to_show: "Select Field to show on map",
-      select_csv_separator: "Select delimiter",
-      select_csv_x_field: "Select X field",
-      select_csv_y_field: "Select Y field",
-      select_color: "Välj färg på nivån",
-      drag_layer: "Dra och släpp nivån hit"
-    },
     query: {
       input_relation: "Tryck för att visa relationerna"
     },
@@ -153,41 +277,8 @@ export default {
         message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
       }
     },
-    length: {
-      tooltip: "Längd"
-    },
-    area: {
-      tooltip: "Areal"
-    },
-    screenshot: {
-      error: "Screenshot error creation",
-      securityError: `  
-      <p><b>Säkerhetsfel</b>: ett externt lager hindrar kartan från att skrivas ut. Gör så här för att kontrollera:</p>
-      <ol>
-        <li>ta bort alla manuellt tillagda externa lager (t.ex. WMS-lager)</li>
-        <li>tvinga om inläsning av sidan: <code>CTRL + F5</code></li>
-        <li>skriv ut kartan igen</li>
-      </ol>
-      <p>För mer information kontakta serveradministratören om: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -vikt: fet;">&#x2139;&#xFE0F; säkerhet och nedsmutsade dukar</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Rumsliga bokmärken",
-      helptext: "Flytta på kartans omfattning, ange namn och klicka på Lägg till",
-      input: {
-        name: "Namn"
-      },
-      sections: {
-        project:{
-          title: "Projektbokmärken"
-        },
-        user: {
-          title: "Användarbokmärken"
-        }
-      }
-    },
     search: {
       all: 'ALLA',
       no_results: "Inga resultat",
@@ -203,145 +294,6 @@ export default {
       },
       help_filter : "Sökvärdena är begränsade baserat på det aktiva filtret. Ta bort filtret för att söka på all data.",
       autofilter: "Filtrera resultaten"
-    },
-    print: {
-      no_layers: 'Inga nivåer att skriva ut',
-      template: "Template",
-      labels: "Labels",
-      scale: "Skala",
-      format: "Format",
-      rotation: "Rotation",
-      download_image: "Ladda ner bild",
-      fids_instruction: "Godkända värden: Från ett till värdet [max]. Mellanslag tillåts, t.ex. 4-6.",
-      fids_example: "Exempelvis 1,4-6 skriver ut id 1,4,5,6.",
-      help: "Nivåerna på utskriften kan vara specificerade i ett projekt inte sådana som visas på karta."
-    },
-    querybuilder: {
-      search: {
-        run: "Utför",
-        info: "Information",
-        delete: "Ta bort",
-        edit: "Redigera"
-      },
-      messages: {
-        changed: 'Sparat',
-        number_of_features: "Antal funktione"
-      },
-      panel: {
-        button: {
-          all: 'ALLA',
-          save: 'SPARA',
-          test: 'TEST',
-          clear: 'TÖM',
-          run: 'UTFÖR',
-          manual: 'MANUELL'
-        },
-        layers: 'NIVÅER',
-        fields: 'FÄLT',
-        values: 'VÄRDEN',
-        operators: 'OPERATÖRER',
-        expression: 'KLAUSUL'
-      },
-      error_run: 'Ett fel inträffade. Kontrollera förfrågan.',
-      error_test: "Ett fel inträffade när förfrågan utfördes.",
-      delete: 'Vill du ta bort den?',
-      additem: 'Ge den nya sökningen ett namn.'
-    },
-    errors: {
-      layers: {
-        load: "Vissa nivåer är inte tillgängliga."
-      },
-      unsupported_format: 'Formatet stöds inte',
-      add_external_layer: 'Fel vid laddning av nivån'
-    },
-    metadata: {
-      title: 'Metadata',
-      groups: {
-        general: {
-          title: 'ALLMÄN',
-          fields: {
-            title: 'RUBRIK',
-            name: 'NAMN',
-            description: "BESKRIVNING",
-            abstract: "SAMMANDRAG",
-            keywords: 'NYCKELORD',
-            fees: "AVGIFTER",
-            accessconstraints: "ÅTKOMSTBEGRÄNSNINGAR",
-            contactinformation: "KONTAKTUPPGIFTER",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "E-post",
-                personprimary: 'Referenser',
-                contactvoicetelephone: 'Telefon',
-                contactorganization: 'Organisation',
-                ContactOrganization: 'Organisation',
-                contactposition: 'Ställning',
-                ContactPosition: 'Ställning',
-                contactperson: 'Kontaktperson',
-                ContactPerson: 'Kontaktperson'
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'SPATIAL',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'NIVÅER',
-          fields: {
-            layers: 'NIVÅER',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "RUBRIK",
-              name: 'NAMN',
-              geometrytype: 'GEOMETRI',
-              source: 'KÄLLA',
-              attributes: 'ATTRIBUT',
-              abstract: 'SAMMANDRAG',
-              attribution: 'TILLSKRIVNING',
-              keywords: "NYCKELORD",
-              metadataurl:'METADATA URL',
-              dataurl: "DATA URL"
-            }
-          },
-          groups : {
-            general: 'ALLMÄN',
-            spatial: 'SPATIAL'
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Radvy",
-        row_to_form: "Tabellvy",
-        zoomtogeometry: "Zooma till geometri",
-      },
-      copy_map_extent_url: 'Kopiera länk till karta',
-      download_shapefile: "Ladda SHP-fil",
-      download_gpx: "Ladda GPX-fil",
-      download_gpkg: "Ladda GPKG-fil",
-      download_csv: "Ladda CSV-fil",
-      download_xls: "Ladda XLS-fil",
-      download_pdf: "Ladda PDF-fil",
-      show_chart: "Visa diagram", //Tero 9.12.2020
-      atlas: "Skriv ut Atlas",
-      editing: "Editing",
-    },
-    relations: {
-      relation_data: 'Relationsuppgifter',
-      no_relations_found: 'Inga relationer hittades.',
-      back_to_relations: 'Tillbaka till relationerna',
-      list_of_relations_feature: 'Lista på egenskapens relationer',
-      error_missing_father_field: "Fält saknas",
-      download_with_relations: "Ladda ner med relationer",
-      field: "Relation key field",
     },
     form: {
       loading: 'Laddning...',
@@ -377,37 +329,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Använd den specifika funktinen för att bestämma relationer"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "THEME",
-      choose_map_theme: "CHOOSE THEME",
-      choose_map_theme_input_label: 'Namn på det nya temat',
-      project_map_theme : 'Temat de proiect',
-      user_map_theme: "Temat utilizator",
-      question_delete_map_theme: "Vill du ta bort temat?",
-      delete_map_theme: "Temat har tagits bort",
-      saved_map_theme: "Temat har sparats",
-      updated_map_theme: "Temat har uppdaterats",
-      invalid_map_theme_name: "Namnet finns redan eller är felaktigt",
-      menu: {
-        layerposition: 'Lagerposition',
-        setwmsopacity: "Ställ in Opacitet",
-        wms: {
-          title:"",
-          copy: "Tryck här för att kopiera url.",
-          copied: "Kopierad."
-        },
-        download: {
-          unknow: 'Ladda',
-          shp: 'Ladda SHP-fil',
-          gpx: 'Ladda GPX-fil',
-          gpkg: 'Ladda GPKG-fil',
-          csv: 'Ladda CSV-fil',
-          xls: 'Ladda XLS-fil',
-          geotiff: 'Ladda GEOTIFF-fil',
-          geotiff_map_extent: "Ladda GEOTIFF-fil(current view extent)"
-        }
       }
     },
     wps: {

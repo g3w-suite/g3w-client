@@ -19,16 +19,16 @@
           <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
           <details>
             <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right = "'Show more'">
-              <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'sdk.print.help'"></span>
+              <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'Exportable layers are defined by the administrator'"></span>
               <i class="far fa-eye"></i>
             </summary>
             <hr style="margin: 10px 0;border-style: dotted;">
-            <div style="white-space: wrap; line-height: 25px;" v-t="'sdk.print.help_details'"></div>
+            <div style="white-space: wrap; line-height: 25px;" v-t="'print_help'"></div>
           </details>
         </fieldset>
 
         <!-- PRINT TEMPLATE -->
-        <label for = "templates" v-t = "'sdk.print.template'"></label>
+        <label for = "templates" v-t = "'Template'"></label>
         <select
           id             = "templates"
           class          = "form-control"
@@ -43,7 +43,7 @@
         <template v-if = "!state.atlas">
 
           <!-- PRINT SCALE -->
-          <label for = "scale" v-t = "'sdk.print.scale'"></label>
+          <label for = "scale" v-t = "'Scale'"></label>
           <select
             id             = "scale"
             class          = "form-control"
@@ -72,7 +72,7 @@
           </select>
 
           <!-- PRINT ROTATION -->
-          <label for = "rotation" v-t = "'sdk.print.rotation'"></label>
+          <label for = "rotation" v-t = "'Rotation'"></label>
           <input
             id         = "rotation"
             class      = "form-control"
@@ -85,7 +85,7 @@
           />
 
           <!-- PRINT FORMAT -->
-          <label for = "format" v-t = "'sdk.print.format'"></label>
+          <label for = "format" v-t = "'Format'"></label>
           <select
             id             = "format"
             class          = "form-control"
@@ -114,8 +114,8 @@
             <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
             <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
             <div id = "fid-print-atals-instruction">
-              <div id = "fids_intruction"      v-t = "'sdk.print.fids_instruction'"></div>
-              <div id = "fids_examples_values" v-t = "'sdk.print.fids_example'"></div>
+              <div id = "fids_intruction"      v-t = "'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6'"></div>
+              <div id = "fids_examples_values" v-t = "'Ex. 1,4-6 will be printed id 1,4,5,6'"></div>
             </div>
           </template>
         </div>
@@ -124,7 +124,7 @@
           v-if  = "state.labels && state.labels.length > 0"
           class = "print-labels-content"
         >
-          <b class = "skin-color" v-t = "'sdk.print.labels'"></b>
+          <b class = "skin-color" v-t = "'Labels'"></b>
           <div class = "labels-input-content">
             <span
               v-for = "label in state.labels"

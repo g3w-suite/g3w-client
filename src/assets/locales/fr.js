@@ -93,6 +93,84 @@ export default {
   'Zoom to feature': "Zoom sur les entités",
   'Show Relations': "Voir les relations",
   'Share via link': "Copier l'URL de la carte",
+  'Bookmarks': "Signets spatiaux",
+  'Move on map extent, insert name and click Add': "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
+  'Project Bookmarks': "Signets du projet",
+  'User Bookmarks': "Signets de l'utilisateur",
+  'No Layer to print': 'Aucune layer visible',
+  'Scale': "Échelle",
+  'Format': "Format",
+  'Rotation': "Rotation",
+  'Download Image': "Télécharger l'image",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Valeurs acceptées : de 1 à la valeur maximale indiquée par [max]. Il est également possible d'indiquer une fourchette de valeurs, par exemple 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Par exemple 1,4-6 les ids 1,4,5,6 seront imprimés",
+  'Exportable layers are defined by the administrator': "Les couches montrées dans l'impression peuvent être celles définies dans le projet et non celles montrées sur la carte",
+  'Metadata': "Métadonnées",
+  'THEME': "THEME",
+  'CHOOSE THEME': "SÉLECTIONNEZ LE THÈME",
+  'Name of new map theme': 'Nom du nouveau thème',
+  'Project Themes': 'Thème du projet',
+  'User Themes': "Thème de l'utilisateur",
+  'Do you want delete the theme?': "Voulez-vous supprimer le thème ?",
+  'Theme deleted successfully': "Thème supprimé avec succès",
+  'Theme saved successfully': "Thème enregistré avec succès",
+  'Theme updated successfully': "Thème mise à jour avec succès",
+  'Invalid or exiting name': "Le nom existe déjà ou est incorrect",
+  'Layer Position': 'Position du calque',
+  'Set Opacity': "Définir l'opacité",
+  'Copied': "Copié",
+  'GeoTiff (current view)': "Télécharger GEOTIFF(vue courante)",
+  'Row View': "Afficher le format de la ligne",
+  'Form View': "Format du formulaire d'affichage",
+  'Zoom to Geometry': "Zoom sur la géométrie",
+  'Copy share URL': 'Copier le lien de visualisation de la carte',
+  'Show Chart': "Montrer le graphique",
+  'Print Atlas': "Imprimer l'Atlas",
+  'Editing': "Modifier",
+  'Run': "Lancer la recherche",
+  'Delete': "Supprimer",
+  'Saved': 'Enregistré correctement',
+  'Features found:': "Nombre d'entités",
+  'SEARCH A VALUE': 'TOUTES',
+  'SAVE': 'SAUVEGARDER',
+  'CLEAR': 'NETTOYER',
+  'RUN': 'EXECUTER',
+  'FIELDS': 'CHAMPS',
+  'EXPRESSION': 'EXPRESSION',
+  'An error occurs. Please check the query': "Une erreur s'est produite. Vérifiez si la requête est correcte",
+  'Do you want delete it?': 'Voulez-vous confirmer la suppression ?',
+  'Insert the name of the new search': 'Entrer le nom de la requête',
+  'Some layers are not available': "Certaines couches du projet ne sont pas disponibles actuellement et n'apparaissent donc pas dans la vue actuelle",
+  'Not supported format': 'Format non supporté',
+  'Load layer error': 'Erreur lors du chargement de la couche',
+  'Relation data': 'Données relationnelles',
+  'No relations found': 'Aucune relation trouvée',
+  'Back to relations': 'Retour aux relations',
+  'List of relations of feature': 'Liste des relations entre les entités',
+  'Download with relations': "Télécharger avec les relations",
+  'Relation key field': "Relation key field",
+  'Can\'t get your position': "Votre position ne peut être calculée.",
+  'Choose a layer where to add this feature': "Choisissez un calque où ajouter cette entité",
+  'Search': "Adresse ...",
+  'No editable point layers found on this project': "Aucune couche de points modifiable trouvée sur ce projet",
+  'No results': "Aucun résultat",
+  'Add Layer': "Ajouter une couche",
+  'Projection': "Sélectionnez le système de projection de couches",
+  'field shown on map': "Sélectionnez le champ à afficher sur la carte",
+  'Delimiter': "Sélectionner le séparateur",
+  'X field': "Sélectionnez le champ X",
+  'Y field': "Sélectionnez le champ Y",
+  'Layer Color': "Sélectionnez la couleur du layer",
+  'Add your file here': "Faire glisser le layer vers cette zone",
+  'Screenshot error creation': "Erreur de création de la capture d'écran",
+  screenshot_error: `  
+  <p><b>Erreur de sécurité</b> : une couche externe empêche l'impression de la carte. Pour vérifier, procédez comme suit :</p>
+  <ol>
+    <li>supprimer toutes les couches externes ajoutées manuellement (par exemple, les couches WMS)</li>
+    <li>forcer le rechargement de la page : <code>CTRL + F5</code></li>
+    <li>imprimer à nouveau la carte</li>
+  </ol>
+  <p>Pour plus d'informations, veuillez contacter l'administrateur du serveur à propos de : <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -poids : gras ;">&#x2139;&#xFE0F; sécurité et toiles souillées</a></p>`,
   layer_position: {
     top: 'HAUT',
     bottom: 'BAS',
@@ -118,27 +196,75 @@ export default {
     length: "Cliquez sur la carte pour continuer à dessiner la ligne.<br>CANC si vous voulez supprimer le dernier vertex inséré",
     area: "Cliquez pour continuer à dessiner le polygone.<br>CANC si vous voulez supprimer le dernier vertex inséré"
   },
+  metadata_groups: {
+    general: {
+      title: 'GÉNÉRAL',
+      fields: {
+        title: 'TITRE',
+        name: 'NOM',
+        description: "DESCRIPTION",
+        abstract: "ABREGE",
+        keywords: 'LISTE DE MOTS-CLÉS',
+        fees: "DROITS D'INSCRIPTION",
+        accessconstraints: "CONTRAINTES D'ACCÈS",
+        contactinformation: "CONTACTS",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "E-mail",
+            personprimary: 'Références',
+            contactvoicetelephone: 'Téléphone',
+            contactorganization: 'Organisation',
+            ContactOrganization: 'Organisation',
+            contactposition: 'Localisation',
+            ContactPosition : 'Localisation',
+            contactperson: 'Personne',
+            ContactPerson: 'Personne',
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'INFO SPATIALE',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'COUCHES',
+      groups : {
+        general: 'GENERALE',
+        spatial: 'INFO SPATIALE'
+      },
+      fields: {
+        layers: 'COUCHES',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "TITRE",
+          name: 'NOM',
+          geometrytype: 'GÉOMÉTRIE',
+          source: 'SOURCE',
+          attributes: 'ATTRIBUTS',
+          abstract: 'ABRÉGÉ',
+          attribution: 'ATTRIBUTION',
+          keywords: "MOTS- CLÉS",
+          metadataurl:'URL DE MÉTADONNÉES',
+          dataurl: "URL DES DONNÉES"
+        }
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Télécharger le fichier Shapefile",
+    gpx: "Télécharger GPX",
+    gpkg: "Télécharger GPKG",
+    csv: "Télécharger CSV",
+    xls: "Télécharger XLS",
+    pdf: "Télécharger PDF",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Votre position ne peut être calculée."
-    },
-    geocoding: {
-      choose_layer: "Choisissez un calque où ajouter cette entité",
-      placeholder: "Adresse ...",
-      nolayers: "Aucune couche de points modifiable trouvée sur ce projet",
-      noresults: "Aucun résultat",
-      notresponseserver: "Le serveur ne répond pas"
-    },
-    add_layer_control: {
-      header: "Ajouter une couche",
-      select_projection: "Sélectionnez le système de projection de couches",
-      select_field_to_show: "Sélectionnez le champ à afficher sur la carte",
-      select_csv_separator: "Sélectionner le séparateur",
-      select_csv_x_field: "Sélectionnez le champ X",
-      select_csv_y_field: "Sélectionnez le champ Y",
-      select_color: "Sélectionnez la couleur du layer",
-      drag_layer: "Faire glisser le layer vers cette zone"
-    },
     query: {
       input_relation: "Cliquez pour voir les relations"
     },
@@ -170,41 +296,8 @@ export default {
         message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
       },
     },
-    length: {
-      tooltip: "Longueur"
-    },
-    area: {
-      tooltip: "Zone"
-    },
-    screenshot: {
-      error: "Erreur de création de la capture d'écran",
-      securityError: `  
-      <p><b>Erreur de sécurité</b> : une couche externe empêche l'impression de la carte. Pour vérifier, procédez comme suit :</p>
-      <ol>
-        <li>supprimer toutes les couches externes ajoutées manuellement (par exemple, les couches WMS)</li>
-        <li>forcer le rechargement de la page : <code>CTRL + F5</code></li>
-        <li>imprimer à nouveau la carte</li>
-      </ol>
-      <p>Pour plus d'informations, veuillez contacter l'administrateur du serveur à propos de : <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -poids : gras ;">&#x2139;&#xFE0F; sécurité et toiles souillées</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Signets spatiaux",
-      helptext: "Déplacez-vous sur l'étendue de la carte, insérez le nom et cliquez sur Ajouter",
-      input: {
-        name: "Nom"
-      },
-      sections: {
-        project:{
-          title: "Signets du projet"
-        },
-        user: {
-          title: "Signets de l'utilisateur"
-        }
-      }
-    },
     search: {
       all: 'TOUTES',
       no_results: "Aucune valeur trouvée",
@@ -220,143 +313,6 @@ export default {
       },
       help_filter : "Les valeurs de recherche sont limitées en fonction du filtre actif. Supprimez le filtre pour rechercher toutes les données.",
       autofilter: "Filtrer les résultats"
-    },
-    print: {
-      no_layers: 'Aucune layer visible',
-      scale: "Échelle",
-      format: "Format",
-      rotation: "Rotation",
-      download_image: "Télécharger l'image",
-      fids_instruction: "Valeurs acceptées : de 1 à la valeur maximale indiquée par [max]. Il est également possible d'indiquer une fourchette de valeurs, par exemple 4-6",
-      fids_example: "Par exemple 1,4-6 les ids 1,4,5,6 seront imprimés",
-      help: "Les couches montrées dans l'impression peuvent être celles définies dans le projet et non celles montrées sur la carte"
-    },
-    querybuilder: {
-      search: {
-        run: "Lancer la recherche",
-        info: "Information",
-        delete: "Supprimer",
-        edit: "Modifier"
-      },
-      messages: {
-        changed: 'Enregistré correctement',
-        number_of_features: "Nombre d'entités"
-      },
-      panel: {
-        button: {
-          all: 'TOUTES',
-          save: 'SAUVEGARDER',
-          test: 'TESTER',
-          clear: 'NETTOYER',
-          run: 'EXECUTER',
-          manual: 'MANUEL'
-        },
-        layers: 'COUCHES',
-        fields: 'CHAMPS',
-        values: 'VALEURS',
-        operators: 'OPERATEURS',
-        expression: 'EXPRESSION'
-      },
-      error_run: "Une erreur s'est produite. Vérifiez si la requête est correcte",
-      error_test: "Erreur d'exécution de la requête",
-      delete: 'Voulez-vous confirmer la suppression ?',
-      additem: 'Entrer le nom de la requête'
-    },
-    errors: {
-      layers: {
-        load: "Certaines couches du projet ne sont pas disponibles actuellement et n'apparaissent donc pas dans la vue actuelle"
-      },
-      unsupported_format: 'Format non supporté',
-      add_external_layer: 'Erreur lors du chargement de la couche'
-    },
-    metadata: {
-      title: "Métadonnées",
-      groups: {
-        general: {
-          title: 'GÉNÉRAL',
-          fields: {
-            title: 'TITRE',
-            name: 'NOM',
-            description: "DESCRIPTION",
-            abstract: "ABREGE",
-            keywords: 'LISTE DE MOTS-CLÉS',
-            fees: "DROITS D'INSCRIPTION",
-            accessconstraints: "CONTRAINTES D'ACCÈS",
-            contactinformation: "CONTACTS",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "E-mail",
-                personprimary: 'Références',
-                contactvoicetelephone: 'Téléphone',
-                contactorganization: 'Organisation',
-                ContactOrganization: 'Organisation',
-                contactposition: 'Localisation',
-                ContactPosition : 'Localisation',
-                contactperson: 'Personne',
-                ContactPerson: 'Personne',
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'INFO SPATIALE',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'COUCHES',
-          groups : {
-            general: 'GENERALE',
-            spatial: 'INFO SPATIALE'
-          },
-          fields: {
-            layers: 'COUCHES',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "TITRE",
-              name: 'NOM',
-              geometrytype: 'GÉOMÉTRIE',
-              source: 'SOURCE',
-              attributes: 'ATTRIBUTS',
-              abstract: 'ABRÉGÉ',
-              attribution: 'ATTRIBUTION',
-              keywords: "MOTS- CLÉS",
-              metadataurl:'URL DE MÉTADONNÉES',
-              dataurl: "URL DES DONNÉES"
-            }
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Afficher le format de la ligne",
-        row_to_form: "Format du formulaire d'affichage",
-        zoomtogeometry: "Zoom sur la géométrie",
-      },
-      copy_map_extent_url: 'Copier le lien de visualisation de la carte',
-      download_shapefile: "Télécharger le fichier Shapefile",
-      download_gpx: "Télécharger GPX",
-      download_gpkg: "Télécharger GPKG",
-      download_csv: "Télécharger CSV",
-      download_xls: "Télécharger XLS",
-      download_pdf: "Télécharger PDF",
-      show_chart: "Montrer le graphique",
-      atlas: "Imprimer l'Atlas",
-      editing: "Modifier",
-    },
-    relations: {
-      relation_data: 'Données relationnelles',
-      no_relations_found: 'Aucune relation trouvée',
-      back_to_relations: 'Retour aux relations',
-      list_of_relations_feature: 'Liste des relations entre les entités',
-      error_missing_father_field: "Le champ concerné n'existe pas",
-      download_with_relations: "Télécharger avec les relations",
-      field: "Relation key field",
     },
     form: {
       loading: 'Chargement...',
@@ -392,37 +348,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Gérer les relations via un formulaire dédié"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "THEME",
-      choose_map_theme: "SÉLECTIONNEZ LE THÈME",
-      choose_map_theme_input_label: 'Nom du nouveau thème',
-      project_map_theme : 'Thème du projet',
-      user_map_theme: "Thème de l'utilisateur",
-      question_delete_map_theme: "Voulez-vous supprimer le thème ?",
-      delete_map_theme: "Thème supprimé avec succès",
-      saved_map_theme: "Thème enregistré avec succès",
-      updated_map_theme: "Thème mise à jour avec succès",
-      invalid_map_theme_name: "Le nom existe déjà ou est incorrect",
-      menu: {
-        layerposition: 'Position du calque',
-        setwmsopacity: "Définir l'opacité",
-        wms: {
-          title:"",
-          copy: "Cliquez ici pour copier l'url",
-          copied: "Copié"
-        },
-        download: {
-          unknow: 'Télécharger',
-          shp: 'Télécharger Shapefile',
-          gpx: 'Télécharger GPX',
-          gpkg: 'Télécharger GPKG',
-          csv: 'Télécharger CSV',
-          xls: 'Télécharger XLS',
-          geotiff: 'Télécharger GEOTIFF',
-          geotiff_map_extent: "Télécharger GEOTIFF(vue courante)"
-        }
       }
     },
     wps: {

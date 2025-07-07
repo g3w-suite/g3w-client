@@ -93,6 +93,83 @@ export default {
   'Print Atlas': "Atlas drucken",
   'Share via link': "Kopieren der Karten-URL",
   'Select Template': "Template auswählen",
+  'Bookmarks': "Räumliche Lesezeichen",
+  'Move on map extent, insert name and click Add': "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",
+  'Project Bookmarks': "Projekt-Lesezeichen",
+  'User Bookmarks': "Benutzer-Lesezeichen",
+  'No Layer to print': 'Kein Layer zu drucken',
+  'Scale': "Skala",
+  'Format': "Format",
+  'Rotation': "Drehung",
+  'Download Image': "Bild herunterladen",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Akzeptierte Werte: von 1 bis [max]. Es ist möglich, ein Intervall einzugeben, z. B. 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Bsp. 1,4-6 druckt id 1,4,5,6",
+  'Exportable layers are defined by the administrator': "Die im Druck angezeigten Layer können die im Projekt definierten sein und nicht die auf der Karte angezeigten",
+  'Metadata': 'Metadaten',
+  'THEME': "THEMA",
+  'CHOOSE THEME': "THEMA AUSWÄHLEN",
+  'Name of new map theme': 'Name des neuen Themes',
+  'Project Themes': 'Projekt Themes',
+  'User Themes': 'Benutzer Themes',
+  'Do you want delete the theme?': "Möchten Sie das Thema löschen??",
+  'Theme deleted successfully': "Theme erfolgreich gelöscht",
+  'Theme saved successfully': "Thema erfolgreich gespeichert",
+  'Theme updated successfully': "Thema aktualisieren gespeichert",
+  'Invalid or exiting name': "Der Name ist bereits vorhanden oder falsch",
+  'Layer Position': 'Position der Ebenen',
+  'Set Opacity': "Opazität einstellen",
+  'Copied': "Kopiert",
+  'GeoTiff (current view)': "GEOTIFF herunterladen (aktueller Ansichtsumfang)",
+  'Row View': "Zeilenansicht",
+  'Form View': "Formularansicht",
+  'Zoom to Geometry': "Auf Geometrie zoomen",
+  'Copy share URL': 'Link zur Kartenansicht kopieren',
+  'Show Chart': "Diagramm anzeigen",
+  'Print Atlas': "Atlas drucken",
+  'Run': "Ausführen",
+  'Delete': "Löschen",
+  'Saved': 'Gespeichert',
+  'Features found:': "Anzahl der Features",
+  'SEARCH A VALUE': 'ALLE',
+  'SAVE': 'SPEICHERN',
+  'CLEAR': 'LÖSCHEN',
+  'RUN': 'AUSFÜHREN',
+  'FIELDS': 'FELDER',
+  'EXPRESSION': 'AUSDRUCK',
+  'An error occurs. Please check the query': 'Es ist ein Fehler aufgetreten. Bitte überprüfen Sie die Abfrage',
+  'Do you want delete it?': 'Soll es gelöscht werden?',
+  'Insert the name of the new search': 'Geben Sie den Namen der neuen Suche ein',
+  'Some layers are not available': "Einige Layer sind nicht verfügbar",
+  'Not supported format': 'Nicht unterstütztes Format',
+  'Load layer error': 'Fehler im Ladevorgang des Layers',
+  'Relation data': 'Daten zur Relation',
+  'No relations found': 'Keine Relationen gefunden',
+  'Back to relations': 'Zurück zu den Relationen',
+  'List of relations of feature': 'Liste der Relationen des Features',
+  'Download with relations': "Download mit Beziehungen",
+  'Relation key field': "Relation key field",
+  'Can\'t get your position': "Position kann nicht bestimmt werden",
+  'Choose a layer where to add this feature': "Wählen Sie eine Ebene aus, auf der Sie diese Funktion hinzufügen möchten",
+  'Search': "Addresse ...",
+  'No editable point layers found on this project': "Für dieses Projekt wurden keine bearbeitbaren Punktebenen gefunden",
+  'No results': "Keine Ergebnisse",
+  'Add Layer': "Layer hinzufügen",
+  'Projection': "Layer Projektion auswählen",
+  'field shown on map': "Feld auswählen, das auf der Karte angezeigt werden soll",
+  'Delimiter': "Begrenzer auswählen",
+  'X field': "X-Feld auswählen",
+  'Y field': "Y-Feld auswählen",
+  'Layer Color': "Layer Farbe auswählen",
+  'Add your file here': "Layer hierher ziehen und ablegen",
+  'Screenshot error creation': "Screenshot Fehlererstellung",
+  screenshot_error: `  
+  <p><b>Sicherheitsfehler</b>: Eine externe Ebene verhindert, dass die Karte gedruckt wird. Gehen Sie zur Überprüfung wie folgt vor:</p>
+  <ol>
+    <li>Entfernen Sie alle manuell hinzugefügten externen Ebenen (z. B. WMS-Ebenen)</li>
+    <li>Neuladen der Seite erzwingen: <code>STRG + F5</code></li>
+    <li>Drucken Sie die Karte erneut</li>
+  </ol>
+  <p>Für weitere Informationen wenden Sie sich bitte an den Serveradministrator zu: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -weight: fett;">&#x2139;&#xFE0F; Sicherheit und befleckte Leinwände</a></p>`,
   layer_position: {
     top: 'OBEN',
     bottom: 'UNTEN',
@@ -118,27 +195,75 @@ export default {
     length: "Klicken Sie auf die Karte, um die Linie zu zeichnen. Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen möchten.",
     area: "Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen wollen."
   },
+  metadata_groups: {
+    general: {
+      title: 'ALLGEMEIN',
+      fields: {
+        title: 'TITEL',
+        name: 'NAME',
+        description: "BESCHREIBUNG",
+        abstract: "ABASTRACT",
+        keywords: 'SCHLÜSSELWÖRTER',
+        fees: "GEBÜHREN",
+        accessconstraints: "ZUGRIFFSBESCHRÄNKUNG",
+        contactinformation: "KONTAKTE",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "Email",
+            personprimary: 'Referenzen',
+            contactvoicetelephone: 'Telefon',
+            contactorganization: 'Firma',
+            ContactOrganization: 'Firma',
+            contactposition: 'Position',
+            ContactPosition: 'Position',
+            contactperson: 'Person',
+            ContactPerson: 'Person'
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'SPATIAL',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'LAYERS',
+      fields: {
+        layers: 'LAYERS',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "TITEL",
+          name: 'NAME',
+          geometrytype: 'GEOMETRIE',
+          source: 'QUELLE',
+          attributes: 'ATTRIBUTE',
+          abstract: 'ABSTRACT',
+          attribution: 'ATRIBUTION',
+          keywords: "SCHLÜSSELWÖRTER",
+          metadataurl:'METADATEN URL',
+          dataurl: "DATEN URL"
+        }
+      },
+      groups : {
+        general: 'ALLGEMEIN',
+        spatial: 'SPATIAL'
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Shapefile herunterladen",
+    gpx: "DGPX herunterladen",
+    gpkg: "GPKG herunterladen",
+    csv: "CSV herunterladen",
+    xls: "XLS herunterladen",
+    pdf: "PDF herunterladen",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Position kann nicht bestimmt werden"
-    },
-    geocoding: {
-      choose_layer: "Wählen Sie eine Ebene aus, auf der Sie diese Funktion hinzufügen möchten",
-      placeholder: "Addresse ...",
-      nolayers: "Für dieses Projekt wurden keine bearbeitbaren Punktebenen gefunden",
-      noresults: "Keine Ergebnisse",
-      notresponseserver: "Keine Antwort vom Server"
-    },
-    add_layer_control: {
-      header: "Layer hinzufügen",
-      select_projection: "Layer Projektion auswählen",
-      select_field_to_show: "Feld auswählen, das auf der Karte angezeigt werden soll",
-      select_csv_separator: "Begrenzer auswählen",
-      select_csv_x_field: "X-Feld auswählen",
-      select_csv_y_field: "Y-Feld auswählen",
-      select_color: "Layer Farbe auswählen",
-      drag_layer: "Layer hierher ziehen und ablegen"
-    },
     query: {
       input_relation: "Klicken, um Relationen anzuzeigen"
     },
@@ -167,41 +292,8 @@ export default {
         message: "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>"
       }
     },
-    length: {
-      tooltip: "Länge"
-    },
-    area: {
-      tooltip: "Area"
-    },
-    screenshot: {
-      error: "Screenshot Fehlererstellung",
-      securityError: `  
-      <p><b>Sicherheitsfehler</b>: Eine externe Ebene verhindert, dass die Karte gedruckt wird. Gehen Sie zur Überprüfung wie folgt vor:</p>
-      <ol>
-        <li>Entfernen Sie alle manuell hinzugefügten externen Ebenen (z. B. WMS-Ebenen)</li>
-        <li>Neuladen der Seite erzwingen: <code>STRG + F5</code></li>
-        <li>Drucken Sie die Karte erneut</li>
-      </ol>
-      <p>Für weitere Informationen wenden Sie sich bitte an den Serveradministrator zu: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -weight: fett;">&#x2139;&#xFE0F; Sicherheit und befleckte Leinwände</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Räumliche Lesezeichen",
-      helptext: "Bewegen Sie sich auf der Kartenausdehnung, fügen Sie den Namen ein und klicken Sie auf Hinzufügen",
-      input: {
-        name: "Name"
-      },
-      sections: {
-        project:{
-          title: "Projekt-Lesezeichen"
-        },
-        user: {
-          title: "Benutzer-Lesezeichen"
-        }
-      }
-    },
     search: {
       all: 'ALLE',
       no_results: "Keine Ergebnisse",
@@ -217,145 +309,6 @@ export default {
       },
       help_filter : "Suchwerte werden basierend auf dem aktiven Filter begrenzt. Entfernen Sie den Filter, um nach allen Daten zu suchen.",
       autofilter: "Filtern Sie die Ergebnisse"
-    },
-    print: {
-      no_layers: 'Kein Layer zu drucken',
-      template: "Template",
-      labels: "Labels",
-      scale: "Skala",
-      format: "Format",
-      rotation: "Drehung",
-      download_image: "Bild herunterladen",
-      fids_instruction: "Akzeptierte Werte: von 1 bis [max]. Es ist möglich, ein Intervall einzugeben, z. B. 4-6",
-      fids_example: "Bsp. 1,4-6 druckt id 1,4,5,6",
-      help: "Die im Druck angezeigten Layer können die im Projekt definierten sein und nicht die auf der Karte angezeigten"
-    },
-    querybuilder: {
-      search: {
-        run: "Ausführen",
-        info: "Information",
-        delete: "Löschen",
-        edit: "Bearbeiten"
-      },
-      messages: {
-        changed: 'Gespeichert',
-        number_of_features: "Anzahl der Features"
-      },
-      panel: {
-        button: {
-          all: 'ALLE',
-          save: 'SPEICHERN',
-          test: 'TEST',
-          clear: 'LÖSCHEN',
-          run: 'AUSFÜHREN',
-          manual: 'MANUELL'
-        },
-        layers: 'LAYERS',
-        fields: 'FELDER',
-        values: 'WERTE',
-        operators: 'OPERATOREN',
-        expression: 'AUSDRUCK'
-      },
-      error_run: 'Es ist ein Fehler aufgetreten. Bitte überprüfen Sie die Abfrage',
-      error_test: "Während der Ausführung der Abfrage ist ein Fehler aufgetreten",
-      delete: 'Soll es gelöscht werden?',
-      additem: 'Geben Sie den Namen der neuen Suche ein'
-    },
-    errors: {
-      layers: {
-        load: "Einige Layer sind nicht verfügbar"
-      },
-      unsupported_format: 'Nicht unterstütztes Format',
-      add_external_layer: 'Fehler im Ladevorgang des Layers'
-    },
-    metadata: {
-      title: 'Metadaten',
-      groups: {
-        general: {
-          title: 'ALLGEMEIN',
-          fields: {
-            title: 'TITEL',
-            name: 'NAME',
-            description: "BESCHREIBUNG",
-            abstract: "ABASTRACT",
-            keywords: 'SCHLÜSSELWÖRTER',
-            fees: "GEBÜHREN",
-            accessconstraints: "ZUGRIFFSBESCHRÄNKUNG",
-            contactinformation: "KONTAKTE",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "Email",
-                personprimary: 'Referenzen',
-                contactvoicetelephone: 'Telefon',
-                contactorganization: 'Firma',
-                ContactOrganization: 'Firma',
-                contactposition: 'Position',
-                ContactPosition: 'Position',
-                contactperson: 'Person',
-                ContactPerson: 'Person'
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'SPATIAL',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'LAYERS',
-          fields: {
-            layers: 'LAYERS',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "TITEL",
-              name: 'NAME',
-              geometrytype: 'GEOMETRIE',
-              source: 'QUELLE',
-              attributes: 'ATTRIBUTE',
-              abstract: 'ABSTRACT',
-              attribution: 'ATRIBUTION',
-              keywords: "SCHLÜSSELWÖRTER",
-              metadataurl:'METADATEN URL',
-              dataurl: "DATEN URL"
-            }
-          },
-          groups : {
-            general: 'ALLGEMEIN',
-            spatial: 'SPATIAL'
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Zeilenansicht",
-        row_to_form: "Formularansicht",
-        zoomtogeometry: "Auf Geometrie zoomen",
-      },
-      copy_map_extent_url: 'Link zur Kartenansicht kopieren',
-      download_shapefile: "Shapefile herunterladen",
-      download_gpx: "DGPX herunterladen",
-      download_gpkg: "GPKG herunterladen",
-      download_csv: "CSV herunterladen",
-      download_xls: "XLS herunterladen",
-      download_pdf: "PDF herunterladen",
-      show_chart: "Diagramm anzeigen",
-      atlas: "Atlas drucken",
-      editing: "Editing",
-    },
-    relations: {
-      relation_data: 'Daten zur Relation',
-      no_relations_found: 'Keine Relationen gefunden',
-      back_to_relations: 'Zurück zu den Relationen',
-      list_of_relations_feature: 'Liste der Relationen des Features',
-      error_missing_father_field: "Ein Feld fehlt",
-      download_with_relations: "Download mit Beziehungen",
-      field: "Relation key field",
     },
     form: {
       loading: 'Laden ...',
@@ -391,37 +344,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Spezifisches Relations-Formular verwenden, um mit Relationen zu arbeiten"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "THEMA",
-      choose_map_theme: "THEMA AUSWÄHLEN",
-      choose_map_theme_input_label: 'Name des neuen Themes',
-      project_map_theme : 'Projekt Themes',
-      user_map_theme: 'Benutzer Themes',
-      question_delete_map_theme: "Möchten Sie das Thema löschen??",
-      delete_map_theme: "Theme erfolgreich gelöscht",
-      saved_map_theme: "Thema erfolgreich gespeichert",
-      updated_map_theme: "Thema aktualisieren gespeichert",
-      invalid_map_theme_name: "Der Name ist bereits vorhanden oder falsch",
-      menu: {
-        layerposition: 'Position der Ebenen',
-        setwmsopacity: "Opazität einstellen",
-        wms: {
-          title:"",
-          copy: "Klicken Sie hier, um die Url zu kopieren",
-          copied: "Kopiert"
-        },
-        download: {
-          unknow: "Herunterladen",
-          shp: 'Shapefile herunterladen',
-          gpx: 'GPX herunterladen',
-          gpkg: 'GPKG herunterladen',
-          csv: 'CSV herunterladen',
-          xls: 'XLS herunterladen',
-          geotiff: "GEOTIFF herunterladen",
-          geotiff_map_extent: "GEOTIFF herunterladen (aktueller Ansichtsumfang)"
-        }
       }
     },
     wps: {

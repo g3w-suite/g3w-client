@@ -34,7 +34,7 @@
       v-if                = "project_menu || hasMetadata(layer)"
       @click.prevent.stop = "showMetadata(layer && layer.id)"
     >
-      <i :class = "$fa('info')"></i> {{ $t('sdk.metadata.title') }}
+      <i :class = "$fa('info')"></i> {{ $t('Metadata') }}
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
         style = "border-radius: 0 3px 3px 0;"
@@ -570,8 +570,8 @@
         document.body.appendChild(input);
         input.select();
         document.execCommand("copy");
-        el.setAttribute('title', t('sdk.catalog.menu.wms.copied'));
-        el.setAttribute('data-i18n-title', t('sdk.catalog.menu.wms.copied'));
+        el.setAttribute('title', t('Copied'));
+        el.setAttribute('data-i18n-title', t('Copied'));
         input.remove();
         a.remove();
         setTimeout(() => {

@@ -126,7 +126,7 @@ class ScreenshotControl extends InteractionControl {
           } catch (e) {
             GUI.showUserMessage({
               type:    'SecurityError' === e.name ? 'warning' : 'alert',
-              message: 'SecurityError' === e.name ? 'mapcontrols.screenshot.securityError' : 'mapcontrols.screenshot.error',
+              message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
             });
             console.warn(e);
           }

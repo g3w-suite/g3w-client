@@ -34,7 +34,7 @@
                 data-placement     = "left"
                 data-toggle        = "tooltip"
                 data-container     = "body"
-                v-t-tooltip.create = "'sdk.print.download_image'"
+                v-t-tooltip.create = "'Download Image'"
                 :class             = "$fa('download')"
                 role               = "button">
               </button>
@@ -59,7 +59,7 @@
     <!---NO PRINT LAYERS-->
     <h4
       v-else
-      v-t = "'sdk.print.no_layers'">
+      v-t = "'No Layer to print'">
     </h4>
 
   </div>

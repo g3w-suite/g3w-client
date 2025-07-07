@@ -18,7 +18,7 @@
           <li v-for="tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
             <a data-toggle="tab" :href="'#metadata_' + tab" :class="'metadata-item-tab '+ tab">
               <i class="action-button" :class="$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden="true"></i>
-              <b v-t = "'sdk.metadata.groups.'+ tab +'.title'"></b>
+              <b v-t = "'metadata_groups.'+ tab +'.title'"></b>
             </a>
           </li>
         </ul>
@@ -53,11 +53,11 @@
                       <div class = "row metadata-contact-row">
                         <div class = "col-sm-2 metadata-contact-label">
                           <i class = "contact-icon" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                          <span v-t="`sdk.metadata.groups.general.fields.subfields.contactinformation.${info}`"></span>
+                          <span v-t="`metadata_groups.general.fields.subfields.contactinformation.${info}`"></span>
                         </div>
                         <div v-if = "'personprimary' === info" class = "col-sm-10">
                           <div v-for = "(subvalue, key) in value">
-                            <span v-t="`sdk.metadata.groups.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
+                            <span v-t="`metadata_groups.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
                             <span>{{ subvalue }}</span>
                           </div>
                         </div>
@@ -91,12 +91,12 @@
 
                     <!-- LAYER GENERAL TAB -->
                     <li role = "presentation" class = "active spatial-tab">
-                      <a v-t="'sdk.metadata.groups.layers.groups.general'" :href="`#layer_general_${layer.id}`" aria-controls="general" role="tab" data-toggle="tab"></a>
+                      <a v-t="'metadata_groups.layers.groups.general'" :href="`#layer_general_${layer.id}`" aria-controls="general" role="tab" data-toggle="tab"></a>
                     </li>
 
                     <!-- LAYER SPATIAL TAB -->
                     <li v-if="'NoGeometry' !== layer.geometrytype" role="presentation" class="spatial-tab">
-                      <a v-t="'sdk.metadata.groups.layers.groups.spatial'" :href="`#layer_spatial_${layer.id}`" aria-controls="profile" role="tab" data-toggle="tab"></a>
+                      <a v-t="'metadata_groups.layers.groups.spatial'" :href="`#layer_spatial_${layer.id}`" aria-controls="profile" role="tab" data-toggle="tab"></a>
                     </li>
 
                   </ul>
@@ -110,7 +110,7 @@
                       <div class="container-fluid">
                         <template v-for="attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes']">
                           <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class="row layer-row">
-                            <div v-t = "'sdk.metadata.groups.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
+                            <div v-t = "'metadata_groups.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
                             <!-- LAYER TITLE -->
                             <div v-if="'metadata.title' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.title }}</div>
@@ -164,7 +164,7 @@
                         <template v-for="attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
                           <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class="row layer-row">
                             <div v-if="'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
-                            <div v-else v-t = "'sdk.metadata.groups.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
+                            <div v-else v-t = "'metadata_groups.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
                             <!-- LAYER EPSG -->
                             <div v-if="'crs' === attr" class = "col-sm-10 value">{{ layer.crs.epsg }}</div>
@@ -321,7 +321,7 @@
             if (value) {
               //In case of layers that has geometry and no epsg, filter according to filter of project layers
               if ('layers' === field) { value = value.filter(l => 'NoGeometry' !== l.geometry && l.crs && l.crs.epsg) } 
-              f[field] = { value, label: `sdk.metadata.groups.${name}.fields.${field}` };
+              f[field] = { value, label: `metadata_groups.${name}.fields.${field}` };
             }
             return f;
           }, {});

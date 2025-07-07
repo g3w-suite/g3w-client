@@ -146,6 +146,93 @@ export default {
   'Print Atlas': "Stampa Atlas",
   'Share via link': "Condividi tramite link",
   'Select Template': "Seleziona Template",
+  'Bookmarks': "Segnalibri",
+  'Move on map extent, insert name and click Add': "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
+  'Project Bookmarks': "Segnalibri Progetto",
+  'User Bookmarks': "Segnalibri Utente",
+  'No Layer to print': 'Nessun Layer visibile',
+  'Template': "Modello",
+  'Labels': "Etichette",
+  'Scale': "Scala",
+  'Format': "Formato",
+  'Rotation': "Rotazione",
+  'Download Image': "Scarica Immagine",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
+  'Exportable layers are defined by the administrator': "I livelli esportabili sono definiti dall'amministratore",
+  'Metadata': "Metadati",
+  'THEME': "TEMA",
+  'CHOOSE THEME': "SCEGLI TEMA",
+  'Name of new map theme': 'Nome del nuovo tema',
+  'Project Themes': 'Temi Progetto',
+  'User Themes': 'Temi Utente',
+  'Do you want delete the theme?': "Vuoi cancellare il tema ?",
+  'Theme deleted successfully': "Tema cancellato con successo",
+  'Theme saved successfully': "Tema salvato con successo",
+  'Theme updated successfully': "Tema aggiornato con successo",
+  'Invalid or exiting name': "Nome già esistente o non corretto",
+  'Layer Position': 'Posizione Layer',
+  'Set Opacity': "Cambia opacità",
+  'Copied': "Copiato",
+  'GeoTiff (current view)': "GeoTiff (vista attuale)",
+  'Export features': "Esporta",
+  'Layer': "Livello",
+  'Include relations in exported file?': "Includere le relazioni?",
+  'Data Format': "Formato",
+  'Row View': 'Visualizza riga',
+  'Form View': "Visualizza modulo",
+  'Zoom to Geometry': "Zoom sulla geometria",
+  'Copy share URL': 'Copia URL di condivisione',
+  'Show Chart': "Mostra Grafico",
+  'Print Atlas': "Stampa Atlas",
+  'Editing': "Modifica",
+  'Advanced search': 'Ricerca avanzata',
+  'Run': "Esegui",
+  'Delete': "Rimuovi",
+  'Saved': 'Salvato correttamente',
+  'Features found:': "Elementi trovati:",
+  'SEARCH A VALUE': 'TROVA UN VALORE',
+  'SAVE': 'SALVA',
+  'CLEAR': 'PULISCI',
+  'RUN': 'ESEGUI',
+  'FIELDS': 'CAMPI',
+  'EXPRESSION': 'ESPRESSIONE',
+  'An error occurs. Please check the query': 'Si è verificato un errore. Verificare se la query è corretta',
+  'Do you want delete it?': 'Vuoi confermare la cancellazione?',
+  'Insert the name of the new search': 'Inserisci nome della ricerca',
+  'Some layers are not available': "Alcuni livelli presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione",
+  'Not supported format': 'Formato non supportato',
+  'Load layer error': 'Errore nel caricamento del layer',
+  'Relation data': 'Dati Relazione',
+  'No relations found': 'Nessuna relazione trovata',
+  'Back to relations': 'Ritorna alle relazioni',
+  'List of relations of feature': 'Lista delle relazioni della feature',
+  'Download with relations': "Scarica con relazioni",
+  'Relation key field': "Campo chiave relazione",
+  'Can\'t get your position': "Non è possibile ottenere la tua posizione.",
+  'Choose a layer where to add this feature': "Scegli un livello in cui aggiungere questa funzionalità",
+  'Search': "Cerca",
+  'No editable point layers found on this project': "Nessun layer di punti modificabile trovato in questo progetto",
+  'No results': "Nessun risultato",
+  'Add Layer': "Aggiungi livello",
+  'Projection': "Sistema di riferimento",
+  'field shown on map': "valore mostrato sulla mappa",
+  'Delimiter': "Separatore",
+  'X field': "Campo X",
+  'Y field': "Campo Y",
+  'Layer Color': "Colore",
+  'Add your file here': "Aggiungi qui il tuo file",
+  'Persistent data': "Persistenza",
+  'save layer into browser storage': "salva il livello nella memoria del browser",
+  'Screenshot error creation': "Errore nella creazione dello screenshot",
+  screenshot_error: `  
+  <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
+  <ol>
+    <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
+    <li>forza il ricaricamento della pagina: <code>CTRL + F5</code></li>
+    <li>stampa nuovamente la mappa</li>
+  </ol>
+  <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
   layer_position: {
     top: 'in cima',
     bottom: 'in fondo',
@@ -179,29 +266,82 @@ export default {
     length: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
     area: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
   },
+  print_help: `<p>Se non vedi qualche livello nel file di stampa:</p>
+  <ol style="padding-left: 25px">
+    <li>prova ancora usando un template diverso</li>
+    <li>prova a cambiare lo zoom della mappa</li>
+    <li>controlla l'origine (es. server WMS esterno)</li>
+    <li>verifica che la sua voce sia effettivamente spuntata nella lista dei livelli</li>
+  </ol>`,
+  metadata_groups: {
+    general: {
+      title: 'GENERALE',
+      fields: {
+        title: 'TITOLO',
+        name: 'NOME',
+        description: "DESCRIZIONE",
+        abstract: "ABSTRACT",
+        keywords: 'LISTA DELLE PAROLE CHIAVE',
+        fees: "CANONI",
+        accessconstraints: "VINCOLI DI ACCESSO",
+        contactinformation: "CONTATTI",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "E-mail",
+            personprimary: 'Riferimenti',
+            contactvoicetelephone: 'Telefono',
+            contactorganization: 'Organizzazione',
+            ContactOrganization: 'Organizzazione',
+            contactposition: 'Posizione',
+            ContactPosition : 'Posizione',
+            contactperson: 'Persona',
+            ContactPerson: 'Persona',
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'INFO SPAZIALI',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'STRATI',
+      groups : {
+        general: 'GENERALE',
+        spatial: 'INFO SPAZIALI'
+      },
+      fields: {
+        layers: 'STRATI',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "TITOLO",
+          name: 'NOME',
+          geometrytype: 'GEOMETRIA',
+          source: 'SORGENTE',
+          attributes: 'ATTRIBUTI',
+          abstract: 'ABSTRACT',
+          attribution: 'ATTRIBUTION',
+          keywords: "PAROLE CHIAVE",
+          metadataurl:'METADATA URL',
+          dataurl: "DATA URL"
+        }
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Scarica Shapefile",
+    gpx: "Scarica GPX",
+    gpkg: "Scarica GPKG",
+    csv: "Scarica CSV",
+    xls: "Scarica XLS",
+    pdf: "Scarica PDF",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Non è possibile ottenere la tua posizione."
-    },
-    geocoding: {
-      choose_layer: "Scegli un livello in cui aggiungere questa funzionalità",
-      placeholder: "Cerca",
-      nolayers: "Nessun layer di punti modificabile trovato in questo progetto",
-      noresults: "Nessun risultato",
-      notresponseserver: "Il server non risponde"
-    },
-    add_layer_control: {
-      header: "Aggiungi livello",
-      select_projection: "Sistema di riferimento",
-      select_field_to_show: "valore mostrato sulla mappa",
-      select_csv_separator: "Separatore",
-      select_csv_x_field: "Campo X",
-      select_csv_y_field: "Campo Y",
-      select_color: "Colore",
-      drag_layer: "Aggiungi qui il tuo file",
-      persistent_data: "Persistenza",
-      persistent_help: "salva il livello nella memoria del browser",
-    },
     query: {
       input_relation: "Clicca per consultare le relazioni"
     },
@@ -275,41 +415,8 @@ export default {
         message: "<ul><li>Trascina il mouse per disegnare un poligono ed interrogare i livelli</li></ul>"
       },
     },
-    length: {
-      tooltip: "Lunghezza"
-    },
-    area: {
-      tooltip: "Area"
-    },
-    screenshot: {
-      error: "Errore nella creazione dello screenshot",
-      securityError: `  
-      <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
-      <ol>
-        <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
-        <li>forza il ricaricamento della pagina: <code>CTRL + F5</code></li>
-        <li>stampa nuovamente la mappa</li>
-      </ol>
-      <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Segnalibri",
-      helptext: "Posizionati all'estensione del tuo nuovo segnalibro, definisci il nome e clicca Aggiungi",
-      input: {
-        name: "Nome"
-      },
-      sections: {
-        project:{
-          title: "Segnalibri Progetto"
-        },
-        user: {
-          title: "Segnalibri Utente"
-        }
-      }
-    },
     search: {
       all: 'TUTTE',
       no_results: "Nessun valore trovato",
@@ -326,153 +433,6 @@ export default {
       help_filter : "I valori di ricerca sono limitati sulla base del filtro attivo. Rimuovere il filtro per ricercare su tutti i dati.",
       autofilter: "Filtro sui risultati",
       autofilter_tooltip: "Filtra automaticamente le geometrie visualizzate nella mappa<br>per mostrare solo quelle relative ai risultati della ricerca corrente.",
-    },
-    print: {
-      no_layers: 'Nessun Layer visibile',
-      template: "Template",
-      labels: "Etichette",
-      scale: "Scala",
-      format: "Formato",
-      rotation: "Rotazione",
-      download_image: "Scarica Immagine",
-      fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
-      fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
-      help: "I livelli esportabili sono definiti dall'amministratore",
-      help_details: `<p>Se non vedi qualche livello nel file di stampa:</p>
-        <ol style="padding-left: 25px">
-          <li>prova ancora usando un template diverso</li>
-          <li>prova a cambiare lo zoom della mappa</li>
-          <li>controlla l'origine (es. server WMS esterno)</li>
-          <li>verifica che la sua voce sia effettivamente spuntata nella lista dei livelli</li>
-        </ol>`,
-    },
-    querybuilder: {
-      title: 'Ricerca avanzata',
-      search: {
-        run: "Esegui",
-        info: "Informazioni",
-        delete: "Rimuovi",
-        edit: "Modifica"
-      },
-      messages: {
-        changed: 'Salvato correttamente',
-        number_of_features: "Elementi trovati:"
-      },
-      panel: {
-        button: {
-          all: 'TROVA UN VALORE',
-          save: 'SALVA',
-          test: 'VERIFICA',
-          clear: 'PULISCI',
-          run: 'ESEGUI',
-          manual: 'MANUALE'
-        },
-        layers: 'LAYERS',
-        fields: 'CAMPI',
-        values: 'VALORI',
-        operators: 'OPERATORI',
-        expression: 'ESPRESSIONE'
-      },
-      error_run: 'Si è verificato un errore. Verificare se la query è corretta',
-      error_test: "Errore nell'esecuzione della query",
-      delete: 'Vuoi confermare la cancellazione?',
-      additem: 'Inserisci nome della ricerca'
-    },
-    errors: {
-      layers: {
-        load: "Alcuni livelli presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
-      },
-      unsupported_format: 'Formato non supportato',
-      add_external_layer: 'Errore nel caricamento del layer'
-    },
-    metadata: {
-      title: "Metadati",
-      groups: {
-        general: {
-          title: 'GENERALE',
-          fields: {
-            title: 'TITOLO',
-            name: 'NOME',
-            description: "DESCRIZIONE",
-            abstract: "ABSTRACT",
-            keywords: 'LISTA DELLE PAROLE CHIAVE',
-            fees: "CANONI",
-            accessconstraints: "VINCOLI DI ACCESSO",
-            contactinformation: "CONTATTI",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "E-mail",
-                personprimary: 'Riferimenti',
-                contactvoicetelephone: 'Telefono',
-                contactorganization: 'Organizzazione',
-                ContactOrganization: 'Organizzazione',
-                contactposition: 'Posizione',
-                ContactPosition : 'Posizione',
-                contactperson: 'Persona',
-                ContactPerson: 'Persona',
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'INFO SPAZIALI',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'STRATI',
-          groups : {
-            general: 'GENERALE',
-            spatial: 'INFO SPAZIALI'
-          },
-          fields: {
-            layers: 'STRATI',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "TITOLO",
-              name: 'NOME',
-              geometrytype: 'GEOMETRIA',
-              source: 'SORGENTE',
-              attributes: 'ATTRIBUTI',
-              abstract: 'ABSTRACT',
-              attribution: 'ATTRIBUTION',
-              keywords: "PAROLE CHIAVE",
-              metadataurl:'METADATA URL',
-              dataurl: "DATA URL"
-            }
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Visualizza riga",
-        row_to_form: "Visualizza modulo",
-        zoomtogeometry: "Zoom sulla geometria",
-      },
-      copy_map_extent_url: 'Copia URL di condivisione',
-      download_shapefile: "Scarica Shapefile",
-      download_gpx: "Scarica GPX",
-      download_gpkg: "Scarica GPKG",
-      download_csv: "Scarica CSV",
-      download_xls: "Scarica XLS",
-      download_pdf: "Scarica PDF",
-      show_chart: "Mostra Grafico",
-      atlas: "Stampa Atlas",
-      editing: "Modifica",
-    },
-    relations: {
-      relation_data: 'Dati Relazione',
-      no_relations_found: 'Nessuna relazione trovata',
-      back_to_relations: 'Ritorna alle relazioni',
-      list_of_relations_feature: 'Lista delle relazioni della feature',
-      error_missing_father_field: "Il campo relazionato non esiste",
-      download_with_relations: "Scarica con relazioni",
-      field: "Campo chiave relazione",
     },
     form: {
       loading: 'Caricamento ...',
@@ -508,35 +468,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "TEMA",
-      choose_map_theme: "SCEGLI TEMA",
-      choose_map_theme_input_label: 'Nome del nuovo tema',
-      project_map_theme : 'Temi Progetto',
-      user_map_theme: 'Temi Utente',
-      question_delete_map_theme: "Vuoi cancellare il tema ?",
-      delete_map_theme: "Tema cancellato con successo",
-      saved_map_theme: "Tema salvato con successo",
-      updated_map_theme: "Tema aggiornato con successo",
-      invalid_map_theme_name: "Nome già esistente o non corretto",
-      menu: {
-        layerposition: 'Posizione Layer',
-        setwmsopacity: "Cambia opacità",
-        wms: {
-          title:"",
-          copy: "Clicca qui per copiare url",
-          copied: "Copiato"
-        },
-        download: {
-          unknow: "Scarica",
-          geotiff_map_extent: "GeoTiff (vista attuale)",
-          title: "Esporta",
-          layer: "Livello",
-          include_relations: "Includere le relazioni?",
-          data_format: "Formato"
-        }
       }
     },
     wps: {

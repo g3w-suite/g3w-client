@@ -111,7 +111,7 @@
               </label>
                <i
                 @click.stop            = "openForm(feature)"
-                v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
+                v-t-tooltip:top.create = "'Form View'"
                 :class                 = "'action-button skin-color ' + $fa('table')"
               ></i>
               <i
@@ -123,7 +123,7 @@
               <i
                 v-if                   = "layer.isEditable() && layer.config.editing.visible"
                 @click.stop            = "editFeature(feature)"
-                v-t-tooltip:top.create = "'sdk.tooltips.editing'"
+                v-t-tooltip:top.create = "'Editing'"
                 :class                 = "'action-button skin-color ' + $fa('pencil')"
               ></i>
             </div>

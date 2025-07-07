@@ -20,7 +20,7 @@
       <!-- BACK BUTTON -->
         <span
           v-if                     = "showrelationslist"
-          v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
+          v-t-tooltip:right.create = "'Back to relations'"
           class                    = "action-button-icon action-button back-button"
           :class                   = "$fa('exit')"
           @click.stop              = "back">
@@ -45,7 +45,7 @@
             { 'toggled-white': download.toggled },
           ]"
           @click.stop             = "download.handler"
-          v-t-tooltip:left.create = "download.formats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${this.download.formats[0]}`">
+          v-t-tooltip:left.create = "download.formats.length > 1 ? 'Downloads' : `download_types.${this.download.formats[0]}`">
         </span>
 
         <!-- SHOW CHART BUTTON -->
@@ -57,7 +57,7 @@
             chart.toggled ? 'toggled-white' : '',
           ]"
           @click.stop               = "chart.handler"
-          v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'">
+          v-t-tooltip:bottom.create = "'Show Chart'">
         </span>
 
       </div>
@@ -128,13 +128,13 @@
                   v-if                     = "table.features[index].geometry"
                   @click.stop              = "zoomToGeometry(table.features[index].geometry)"
                   class                    = "action-button row-form skin-color"
-                  v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
+                  v-t-tooltip:right.create = "'Zoom to Geometry'"
                   :class                   = "$fa('marker')"
                 ></span>
                 <span
                   v-if                     = "table.formStructure"
                   @click.stop              = "showFormStructure(row, index)"
-                  v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
+                  v-t-tooltip:right.create = "'Form View'"
                   class                    = "action-button row-form skin-color"
                   :class                   = "$fa('table')"
                 ></span>
@@ -175,7 +175,7 @@
       v-else
       class = "dataTables_scrollBody"
     >
-      <span v-t = "'sdk.relations.no_relations_found'"></span>
+      <span v-t = "'No relations found'"></span>
     </div>
   </div>
 

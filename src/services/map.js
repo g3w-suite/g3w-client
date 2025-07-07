@@ -234,7 +234,7 @@ class MapService extends G3WObject {
       return;
     }
     if (!this.onLayerLoadError.shown) {
-      GUI.notify.warning('sdk.errors.layers.load');
+      GUI.notify.warning('Some layers are not available');
       this.onLayerLoadError.shown = true;
     }
     this.onLayerLoadEnd();

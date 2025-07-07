@@ -1036,7 +1036,7 @@ export default new (class GUI extends G3WObject {
               </div>
             </div>
             <menu style="display: flex; justify-content: end;">
-              <button type="submit" onclick="document.querySelector('#embed-link').focus() || document.execCommand('copy')" class="form-control btn btn-success mt-2">${ t('sdk.tooltips.copy_map_extent_url') }</button>
+              <button type="submit" onclick="document.querySelector('#embed-link').focus() || document.execCommand('copy')" class="form-control btn btn-success mt-2">${ t('Copy share URL') }</button>
             </menu>
           </form>
         </dialog>

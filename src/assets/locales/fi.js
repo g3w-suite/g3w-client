@@ -72,6 +72,7 @@ export default {
   'Application based on OS framework': "Sovellus perustuu OS framework",
   'Publish and manage your QGIS projects on the web': "Julkaise ja hallinnoi QGIS-projekteja verkossa.",
   'Framework developed by': "Frameworkin on kehittänyt",
+  'Name': "Nimi",
   'A WMS connection with this name already exists': "WMS Taso on jo lisätty.",
   'WMS URL/Name already added': "WMS URL/Nimi on jo lisätty.",
   'Zoom Last': "Zoom Edellinen",
@@ -86,6 +87,83 @@ export default {
   'Show Relations': "Näytä relaatiot",
   'Print Atlas': "Tulosta Atlas",
   'Select Template': "Valitse Template",
+  'Bookmarks': "Tilalliset kirjanmerkit",
+  'Move on map extent, insert name and click Add': "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
+  'Project Bookmarks': "Projektin kirjanmerkit",
+  'User Bookmarks': "Käyttäjän kirjanmerkit",
+  'No Layer to print': 'Ei tulostettavia tasoja',
+  'Labels': "Labels",
+  'Scale': "Mittakaava",
+  'Format': "Formaatti",
+  'Rotation': "Kierto",
+  'Download Image': "Lataa kuva",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Hyväksytyt arvot: yhdestä arvoon [max]. Salittua syöttää myös väli, esim. 4-6.",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Esimerkiksi 1,4-6 tulostuu id 1,4,5,6.",
+  'Exportable layers are defined by the administrator': "Tulosteessa esiintyvät tasot voivat olla projektissa määriteltyjä ei kartalla esiintyviä.",
+  'Metadata': 'Metatiedot',
+  'THEME': "THEME",
+  'CHOOSE THEME': "CHOOSE THEME",
+  'Name of new map theme': 'Uuden teeman nimi',
+  'Project Themes': 'Projektin Themes',
+  'User Themes': 'Käyttäjä Themes',
+  'Do you want delete the theme?': "Haluatko poistaa teeman?",
+  'Theme deleted successfully': "Teeman poistaminen onnistui",
+  'Theme saved successfully': "Teeman tallennus onnistui",
+  'Theme updated successfully': "Teeman päivittää onnistui",
+  'Invalid or exiting name': "Nimi on jo olemassa tai se on virheellinen",
+  'Layer Position': 'Kerroksen sijainti',
+  'Set Opacity': "Aseta Opacity",
+  'Copied': "Kopioitu.",
+  'GeoTiff (current view)': "Lataa GEOTIFF-tiedosto(current view extent)",
+  'Row View': "Rivinäkymä",
+  'Form View': "Taulukkonäkymä",
+  'Zoom to Geometry': "Zoomaa geometriaan",
+  'Copy share URL': 'Kopioi kartan katselulinkki',
+  'Show Chart': "Näytä kaavio",
+  'Print Atlas': "Tulosta Atlas",
+  'Run': "Suorita",
+  'Delete': "Poista",
+  'Saved': 'Tallennettu',
+  'Features found:': "Ominaisuuksien lukumäärä",
+  'SEARCH A VALUE': 'KAIKKI',
+  'SAVE': 'TALLENNA',
+  'CLEAR': 'TYHJENNÄ',
+  'RUN': 'SUORITA',
+  'FIELDS': 'KENTÄT',
+  'EXPRESSION': 'LAUSEKE',
+  'An error occurs. Please check the query': 'Tapahtui virhe. Tarkista kysely.',
+  'Do you want delete it?': 'Haluatko poistaa sen?',
+  'Insert the name of the new search': 'Anna nimi uudelle haulle.',
+  'Some layers are not available': "Jotkin tasot eivät ole saatavilla.",
+  'Not supported format': 'Ei tuettu formaatti',
+  'Load layer error': 'Tason latausvirhe',
+  'Relation data': 'Relaation tiedot',
+  'No relations found': 'Relaatiota ei löytynyt.',
+  'Back to relations': 'Takaisin relaatioihin',
+  'List of relations of feature': 'Lista ominaisuuden relaatioista',
+  'Download with relations': "Lataa suhteiden kanssa",
+  'Relation key field': "Relation key field",
+  'Can\'t get your position': "Sijaintiasi ei saada",
+  'Choose a layer where to add this feature': "Valitse kerros, johon tämä ominaisuus lisätään",
+  'Search': "Osoite ...",
+  'No editable point layers found on this project': "Tästä projektista ei löytynyt muokattavia pistetasoja",
+  'No results': "Ei tuloksia",
+  'Add Layer': "Lisää taso",
+  'Projection': "Valitse tason projektio",
+  'field shown on map' : "Select Field to show on map",
+  'Delimiter': "Select delimiter",
+  'X field': "Select X field",
+  'Y field': "Select Y field",
+  'Layer Color': "Valitse tason väri",
+  'Add your file here': "Vedä ja pudota taso tähän",
+  screenshot_error: `  
+  <p><b>Turvallisuusvirhe</b>: ulkoinen kerros estää karttaa tulostamasta. Tarkistaaksesi, toimi seuraavasti:</p>
+  <ol>
+    <li>poista manuaalisesti lisätyt ulkoiset tasot (esim. WMS-tasot)</li>
+    <li>Pakota sivun uudelleenlataus: <code>CTRL + F5</code></li>
+    <li>tulosta kartta uudelleen</li>
+  </ol>
+  <p>Saat lisätietoja palvelimen järjestelmänvalvojalta seuraavista aiheista: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -paino: lihavoitu;">&#x2139;&#xFE0F; turvallisuus ja likaiset kankaat</a></p>`,
   layer_position: {
     top: 'TOP',
     bottom: 'BOTTOM',
@@ -111,27 +189,75 @@ export default {
     length: "Piirrä murtoviiva kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.",
     area: "Piirrä monikulmio kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen."
   },
+  metadata_groups: {
+    general: {
+      title: 'YLEINEN',
+      fields: {
+        title: 'OTSIKKO',
+        name: 'NIMI',
+        description: "KUVAUS",
+        abstract: "TIIVISTELMÄ",
+        keywords: 'AVAINSANAT',
+        fees: "MAKSUT",
+        accessconstraints: "PÄÄSYRAJOITUKSET",
+        contactinformation: "YHTEYSTIEDOT",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "Sähköposti",
+            personprimary: 'Viitteet',
+            contactvoicetelephone: 'Puhelin',
+            contactorganization: 'Organisaatio',
+            ContactOrganization: 'Organisaatio',
+            contactposition: 'Asema',
+            ContactPosition: 'Asema',
+            contactperson: 'Yhteyshenkilö',
+            ContactPerson: 'Yhteyshenkilö'
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'SPATIAL',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'TASOT',
+      fields: {
+        layers: 'TASOT',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "OTSIKKO",
+          name: 'NIMI',
+          geometrytype: 'GEOMETRIA',
+          source: 'LÄHDE',
+          attributes: 'ATTRIBUUTIT',
+          abstract: 'TIIVISTELMÄ',
+          attribution: 'ATTRIBUUTIO',
+          keywords: "AVAINSANAT",
+          metadataurl:'METATIEDON URL',
+          dataurl: "DATA URL"
+        }
+      },
+      groups : {
+        general: 'YLEINEN',
+        spatial: 'SPATIAL'
+      }
+    }
+  },
+  download_types: {
+    shapefile: "Lataa SHP-tiedosto",
+    gpx: "Lataa GPX-tiedosto",
+    gpkg: "Lataa GPKG-tiedosto",
+    csv: "Lataa CSV-tiedosto",
+    xls: "Lataa XLS-tiedosto",
+    pdf: "Lataa PDF-tiedosto",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Sijaintiasi ei saada"
-    },
-    geocoding: {
-      choose_layer: "Valitse kerros, johon tämä ominaisuus lisätään",
-      placeholder: "Osoite ...",
-      nolayers: "Tästä projektista ei löytynyt muokattavia pistetasoja",
-      noresults: "Ei tuloksia",
-      notresponseserver: "Ei vastausta palvelimelta"
-    },
-    add_layer_control: {
-      header: "Lisää taso",
-      select_projection: "Valitse tason projektio",
-      select_field_to_show : "Select Field to show on map",
-      select_csv_separator: "Select delimiter",
-      select_csv_x_field: "Select X field",
-      select_csv_y_field: "Select Y field",
-      select_color: "Valitse tason väri",
-      drag_layer: "Vedä ja pudota taso tähän"
-    },
     query: {
       input_relation: "Paina näyttääksesi relaatiot"
     },
@@ -151,40 +277,8 @@ export default {
         message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
       }
     },
-    length: {
-      tooltip: "Pituus"
-    },
-    area: {
-      tooltip: "Pinta-ala"
-    },
-    screenshot: {
-      securityError: `  
-      <p><b>Turvallisuusvirhe</b>: ulkoinen kerros estää karttaa tulostamasta. Tarkistaaksesi, toimi seuraavasti:</p>
-      <ol>
-        <li>poista manuaalisesti lisätyt ulkoiset tasot (esim. WMS-tasot)</li>
-        <li>Pakota sivun uudelleenlataus: <code>CTRL + F5</code></li>
-        <li>tulosta kartta uudelleen</li>
-      </ol>
-      <p>Saat lisätietoja palvelimen järjestelmänvalvojalta seuraavista aiheista: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -paino: lihavoitu;">&#x2139;&#xFE0F; turvallisuus ja likaiset kankaat</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Tilalliset kirjanmerkit",
-      helptext: "Siirry kartan laajuuteen, lisää nimi ja napsauta Lisää",
-      input: {
-        name: "Nimi"
-      },
-      sections: {
-        project:{
-          title: "Projektin kirjanmerkit"
-        },
-        user: {
-          title: "Käyttäjän kirjanmerkit"
-        }
-      }
-    },
     search: {
       all: 'KAIKKI',
       no_results: "Ei tuloksia",
@@ -200,145 +294,6 @@ export default {
       },
       help_filter : "Hakuarvot ovat rajoitettuja aktiivisen suodattimen perusteella. Poista suodatin etsiäksesi kaikista tiedoista.",
       autofilter: "Suodata tulokset"
-    },
-    print: {
-      no_layers: 'Ei tulostettavia tasoja',
-      template: "Template",
-      labels: "Labels",
-      scale: "Mittakaava",
-      format: "Formaatti",
-      rotation: "Kierto",
-      download_image: "Lataa kuva",
-      fids_instruction: "Hyväksytyt arvot: yhdestä arvoon [max]. Salittua syöttää myös väli, esim. 4-6.",
-      fids_example: "Esimerkiksi 1,4-6 tulostuu id 1,4,5,6.",
-      help: "Tulosteessa esiintyvät tasot voivat olla projektissa määriteltyjä ei kartalla esiintyviä."
-    },
-    querybuilder: {
-      search: {
-        run: "Suorita",
-        info: "Informaatio",
-        delete: "Poista",
-        edit: "Muokkaa"
-      },
-      messages: {
-        changed: 'Tallennettu',
-        number_of_features: "Ominaisuuksien lukumäärä"
-      },
-      panel: {
-        button: {
-          all: 'KAIKKI',
-          save: 'TALLENNA',
-          test: 'TESTI',
-          clear: 'TYHJENNÄ',
-          run: 'SUORITA',
-          manual: 'MANUAALINEN'
-        },
-        layers: 'TASOT',
-        fields: 'KENTÄT',
-        values: 'ARVOT',
-        operators: 'OPERAATTORIT',
-        expression: 'LAUSEKE'
-      },
-      error_run: 'Tapahtui virhe. Tarkista kysely.',
-      error_test: "Kyselyä suorittaessa tapahtui virhe.",
-      delete: 'Haluatko poistaa sen?',
-      additem: 'Anna nimi uudelle haulle.'
-    },
-    errors: {
-      layers: {
-        load: "Jotkin tasot eivät ole saatavilla."
-      },
-      unsupported_format: 'Ei tuettu formaatti',
-      add_external_layer: 'Tason latausvirhe'
-    },
-    metadata: {
-      title: 'Metatiedot',
-      groups: {
-        general: {
-          title: 'YLEINEN',
-          fields: {
-            title: 'OTSIKKO',
-            name: 'NIMI',
-            description: "KUVAUS",
-            abstract: "TIIVISTELMÄ",
-            keywords: 'AVAINSANAT',
-            fees: "MAKSUT",
-            accessconstraints: "PÄÄSYRAJOITUKSET",
-            contactinformation: "YHTEYSTIEDOT",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "Sähköposti",
-                personprimary: 'Viitteet',
-                contactvoicetelephone: 'Puhelin',
-                contactorganization: 'Organisaatio',
-                ContactOrganization: 'Organisaatio',
-                contactposition: 'Asema',
-                ContactPosition: 'Asema',
-                contactperson: 'Yhteyshenkilö',
-                ContactPerson: 'Yhteyshenkilö'
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'SPATIAL',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'TASOT',
-          fields: {
-            layers: 'TASOT',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "OTSIKKO",
-              name: 'NIMI',
-              geometrytype: 'GEOMETRIA',
-              source: 'LÄHDE',
-              attributes: 'ATTRIBUUTIT',
-              abstract: 'TIIVISTELMÄ',
-              attribution: 'ATTRIBUUTIO',
-              keywords: "AVAINSANAT",
-              metadataurl:'METATIEDON URL',
-              dataurl: "DATA URL"
-            }
-          },
-          groups : {
-            general: 'YLEINEN',
-            spatial: 'SPATIAL'
-          }
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Rivinäkymä",
-        row_to_form: "Taulukkonäkymä",
-        zoomtogeometry: "Zoomaa geometriaan",
-      },
-      copy_map_extent_url: 'Kopioi kartan katselulinkki',
-      download_shapefile: "Lataa SHP-tiedosto",
-      download_gpx: "Lataa GPX-tiedosto",
-      download_gpkg: "Lataa GPKG-tiedosto",
-      download_csv: "Lataa CSV-tiedosto",
-      download_xls: "Lataa XLS-tiedosto",
-      download_pdf: "Lataa PDF-tiedosto",
-      show_chart: "Näytä kaavio",
-      atlas: "Tulosta Atlas",
-      editing: "Editing",
-    },
-    relations: {
-      relation_data: 'Relaation tiedot',
-      no_relations_found: 'Relaatiota ei löytynyt.',
-      back_to_relations: 'Takaisin relaatioihin',
-      list_of_relations_feature: 'Lista ominaisuuden relaatioista',
-      error_missing_father_field: "Kenttä puuttu",
-      download_with_relations: "Lataa suhteiden kanssa",
-      field: "Relation key field",
     },
     form: {
       loading: 'Ladataan...',
@@ -374,37 +329,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Käytä relaatioiden määrittämiseen tähän tarkoitettua toimintoa"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "THEME",
-      choose_map_theme: "CHOOSE THEME",
-      choose_map_theme_input_label: 'Uuden teeman nimi',
-      project_map_theme : 'Projektin Themes',
-      user_map_theme: 'Käyttäjä Themes',
-      question_delete_map_theme: "Haluatko poistaa teeman?",
-      delete_map_theme: "Teeman poistaminen onnistui",
-      saved_map_theme: "Teeman tallennus onnistui",
-      updated_map_theme: "Teeman päivittää onnistui",
-      invalid_map_theme_name: "Nimi on jo olemassa tai se on virheellinen",
-      menu: {
-        layerposition: 'Kerroksen sijainti',
-        setwmsopacity: "Aseta Opacity",
-        wms: {
-          title:"",
-          copy: "Paina tästä kopioidaksesi url:n.",
-          copied: "Kopioitu."
-        },
-        download: {
-          unknow: "Lataa",
-          shp: 'Lataa SHP-tiedosto',
-          gpx: 'Lataa GPX-tiedosto',
-          gpkg: 'Lataa GPKG-tiedosto',
-          csv: 'Lataa CSV-tiedosto',
-          xls: 'Lataa XLS-tiedosto',
-          geotiff: 'Lataa GEOTIFF-tiedosto',
-          geotiff_map_extent: "Lataa GEOTIFF-tiedosto(current view extent)"
-        }
       }
     },
     wps: {

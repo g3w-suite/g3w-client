@@ -50,7 +50,7 @@ GUI.once('ready', () => {
             download: true,
             format,
             class:    GUI.getFontClass(format),
-            hint:     `sdk.tooltips.download_${format}`,
+            hint:     `download_types.${format}`,
             cbk: (layer, feature, action, index, html, down_with_relations) => {
               // un-toggle downloads action
               downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
@@ -80,11 +80,11 @@ export async function downloadFeatures(type, layer, features = [], action, index
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <dialog>
-          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ t('sdk.catalog.menu.download.title') }</h4>
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ t('Export features') }</h4>
           <form method="dialog">
 
             <div class="form-group">
-              <label>${ t('sdk.catalog.menu.download.layer') }</label>
+              <label>${ t('Layer') }</label>
               <select name="layer" class="form-control" disabled>
                 <option value="${layer.id}" selected>${ layer.name }</option>
                 ${
@@ -96,11 +96,11 @@ export async function downloadFeatures(type, layer, features = [], action, index
             </div>
 
             <div class="form-group">
-              <label>${ t('sdk.catalog.menu.download.data_format') }</label>
+              <label>${ t('Data Format') }</label>
               <select name="format" class="form-control">
                 ${[
                     catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ t('GeoTiff') }</option>` : '',
-                    catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff-at-map-extent">${ t('sdk.catalog.menu.download.geotiff_map_extent') }</option>` : '',
+                    catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff-at-map-extent">${ t('GeoTiff (current view)') }</option>` : '',
                     catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ t('Shapefile') }</option>` : '',
                     catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ t('GPX') }</option>` : '',
                     catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ t('GeoPackage') }</option>` : '',
@@ -114,7 +114,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
             </div>
 
             <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() ? '' : 'hidden' }>
-              <label>${ t('sdk.catalog.menu.download.include_relations') }</label>
+              <label>${ t('Include relations in exported file?') }</label>
               <select name="down_with_relations" class="form-control">
                 <option value="1">${ t('yes') }</option>
                 <option value="0">${ t('no') }</option>

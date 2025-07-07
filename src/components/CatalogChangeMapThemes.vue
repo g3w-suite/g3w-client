@@ -19,14 +19,14 @@
             v-if  = "active_theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span v-t:pre = "'sdk.catalog.current_map_theme_prefix'">:</span>
+            <span v-t:pre = "'THEME'">:</span>
             <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
           </span>
           <!-- Choose a theme -->
           <b
             v-else
             class = "treeview-label"
-            v-t   = "'sdk.catalog.choose_map_theme'">
+            v-t   = "'CHOOSE THEME'">
           </b>
         </section>
       </a>
@@ -73,7 +73,7 @@
           <ul style = "padding: 0">
             <li>
               <div
-                v-t   = "'sdk.catalog.project_map_theme'"
+                v-t   = "'Project Themes'"
                 class = "project_map_theme">
               </div>
             </li>
@@ -106,7 +106,7 @@
           <ul style = "padding: 0">
             <li>
               <div class = "user_map_theme">
-                <span v-t = "'sdk.catalog.user_map_theme'"></span>
+                <span v-t = "'User Themes'"></span>
                 <!-- Add theme button -->
                 <span
                   v-t-tooltip:left.create = "'add'"
@@ -212,7 +212,7 @@ export default {
       // user themes
       custom_theme: {
         name:     'add-user-theme',
-        label:    'sdk.catalog.choose_map_theme_input_label',
+        label:    'Name of new map theme',
         i18nLabel: true,
         value:     null,
         editable:  true,
@@ -223,7 +223,7 @@ export default {
         validate: {
           valid:    false,
           required: true,
-          error: 'sdk.catalog.invalid_map_theme_name',
+          error: 'Invalid or exiting name',
         }
       },
       /**@since 3.10.0 whether show add a new map theme form **/
@@ -308,7 +308,7 @@ export default {
         }
         this.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
         // show a success add custom matp theme message to user
-        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.saved_map_theme', autoclose: true });
+        GUI.showUserMessage({ type: 'success', message: 'Theme saved successfully', autoclose: true });
         // close dialog
         this.show_form    = false;
         //set as current active name map theme
@@ -345,7 +345,7 @@ export default {
           layerstree: params.layerstree,
         });
         // show a success update map theme message to user
-        GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.updated_map_theme', autoclose: true });
+        GUI.showUserMessage({ type: 'success', message: 'Theme updated successfully', autoclose: true });
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
@@ -360,7 +360,7 @@ export default {
      * @since 3.10.0
      */
     deleteTheme(theme) {
-      GUI.dialog.confirm(t('sdk.catalog.question_delete_map_theme'), async bool => {
+      GUI.dialog.confirm(t('Do you want delete the theme?'), async bool => {
         // skip when ..
         if (!bool || !theme) {
           return;
@@ -375,7 +375,7 @@ export default {
           }
           this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
           // show a success message to user
-          GUI.showUserMessage({ type: 'success', message: 'sdk.catalog.delete_map_theme', autoclose: true })
+          GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
           // in the case of deleted current map theme set current theme to null
           if (theme === this.active_theme) { this.active_theme = null;}
         } catch(e) {

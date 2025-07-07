@@ -126,6 +126,89 @@ export default {
   'Print Atlas': "Imprimir Atlas",
   'Share via link': "Compartilhar link",
   'Select Template': "Selecione o Modelo",
+  'Bookmarks': "Marcadores",
+  'Move on map extent, insert name and click Add': "Altere a extensão do mapa, insira um nome e clique Adicionar",
+  'Project Bookmarks': "Marcadores do projeto",
+  'User Bookmarks': "Marcadores do Utilizador",
+  'No Layer to print': 'Sem camada para imprimir',
+  'Template': "Modelo",
+  'Labels': "Etiquetas",
+  'Scale': "Escala",
+  'Format': "Formato",
+  'Rotation': "Rotação",
+  'Download Image': "Descarregar Imagem",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Valores permitidos: de 1 até [max]. Pode inserir um intervalo ex. 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Ex. 1,4-6 irá imprimir id 1,4,5,6",
+  'Exportable layers are defined by the administrator': "Camadas a exportar serão definidas pelo administrador",
+  'Metadata': 'Metadados',
+  'THEME': "TEMA",
+  'CHOOSE THEME': "ESCOLHA O TEMA",
+  'Name of new map theme': 'Nome do novo tema do mapa',
+  'Project Themes': 'Tema do Projeto',
+  'User Themes': 'Temas do utilizador',
+  'Do you want delete the theme?': "Pretende eliminar o tema?",
+  'Theme deleted successfully': "Tema apagado com sucesso",
+  'Theme saved successfully': "Tema guardado com sucesso",
+  'Theme updated successfully': "Tema alterado com sucesso",
+  'Invalid or exiting name': "Nome inválido",
+  'Layer Position': 'Posição da camada',
+  'Set Opacity': "Definir transparência",
+  'Copied': "Copiado",
+  'GeoTiff (current view)': "GeoTiff (vista atual)",
+  'Row View': "Vista de tabela",
+  'Form View': "Vista de Formulário",
+  'Zoom to Geometry': "Aproximar à Geometria",
+  'Copy share URL': 'Copiar URL partilhável',
+  'Show Chart': "Mostrar Gráfico",
+  'Print Atlas': "Imprimir Atlas",
+  'Editing': "Edição",
+  'Advanced search': 'Pesquisa avançada',
+  'Run': "Executar",
+  'Delete': "Eliminar",
+  'Saved': 'Guardado',
+  'Features found:': "Entidades encontradas:",
+  'SEARCH A VALUE': 'PESQUISE UM VALOR',
+  'SAVE': 'GUARDAR',
+  'CLEAR': 'LIMPAR',
+  'RUN': 'EXECUTAR',
+  'FIELDS': 'CAMPOS',
+  'EXPRESSION': 'EXPRESSÃO',
+  'An error occurs. Please check the query': 'Ocorreu um erro. Verifique a consulta',
+  'Do you want delete it?': 'Pretende eliminar?',
+  'Insert the name of the new search': 'Insira o nome da nova pesquisa',
+  'Some layers are not available': "Algumas camadas não estão disponíveis",
+  'Not supported format': 'Formato não suportado',
+  'Load layer error': 'Erro de carregamento de camada',
+  'Relation data': 'Dados da Relação',
+  'No relations found': 'Relações não encontradas',
+  'Back to relations': 'Voltar para as relações',
+  'List of relations of feature': 'Lista de relações da camada',
+  'Download with relations': "Download com relações",
+  'Relation key field': "Campo chave da relação",
+  'Can\'t get your position': "Não é possivel obter a sua posição",
+  'Choose a layer where to add this feature': "Escolher uma camada para adicionar a entidade",
+  'Search': "Endereço ...",
+  'No editable point layers found on this project': "Sem camadas de pontos editáveis no projeto",
+  'No results': "Sem resultados",
+  'Add Layer': "Adicionar camada",
+  'Projection': "Projeção",
+  'field shown on map': "campo a mostrar no mapa",
+  'Delimiter': "Delimitador",
+  'X field': "Campo X",
+  'Y field': "Campo Y",
+  'Layer Color': "Cor da camada",
+  'Add your file here': "Adicione o seu ficheiro aqui",
+  'Persistent data': "Dados persistentes",
+  'save layer into browser storage': "guardar camada no armazenamento do navegador",
+  'Screenshot error creation': "Erro na criação da captura de ecra",
+  screenshot_error: `  
+  <p><b>Erro de segurança</b>: uma camada externa está a impedir a impressão do mapa. Para verificar proceda da seguinte forma:</p>
+  <ol>
+    <li>remova as camadas externas (ex. camadas WMS)</li>
+    <li>recarregue a página: <code>CTRL + F5</code></li>
+    <li>imprima o mapa de novo</li>
+  </ol>
+  <p>Para mais informações contacte o administrador do sistema: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
   layer_position: {
     top: 'cima',
     bottom: 'baixo',
@@ -151,29 +234,85 @@ export default {
     length: "Clique no mapa  para desenhar uma linha. Prima <br>CANC se pretender eliminar o ultimo vértice",
     area: "Clique para desenhar o polígono.Prima <br>CANC se pretender eliminar o ultimo vértice"
   },
+  print_help: `<p>Se não visualizar alguma camada no ficheiro de impressão</p>
+  <ol style="padding-left: 25px">
+    <li>tente novamente selecionando outro modelo</li>
+    <li>tente mudar o nível de zoom</li>
+    <li>verifique a origem (ex. Servidor WMS externos)</li>
+    <li>garanta que a camada está ativada na lista de camadas.</li>
+  </ol>`,
+  metadata_groups: {
+    general: {
+      title: 'GERAL',
+      fields: {
+        title: 'TÍTULO',
+        name: 'NOME',
+        description: "DESCRIÇÃO",
+        abstract: "RESUMO",
+        keywords: 'PALAVRAS CHAVE',
+        fees: "TAXAS",
+        accessconstraints: "RESTRIÇÃO DE ACESSO",
+        contactinformation: "CONTATOS",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "Email",
+            personprimary: 'Referencias',
+            contactvoicetelephone: 'Telefone',
+            contactorganization: 'Organização',
+            ContactOrganization: 'Organização',
+            contactposition: 'Cargo',
+            ContactPosition: 'Cargo',
+            contactperson: 'Pessoa',
+            ContactPerson: 'Pessoa'
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: 'ESPACIAL',
+      fields : {
+        crs: 'EPSG',
+        extent: 'BBOX'
+      }
+    },
+    layers: {
+      title: 'CAMADAS',
+      fields: {
+        layers: 'LAYERS',
+        subfields: {
+          crs: 'EPSG',
+          bbox: 'BBOX',
+          title: "TÍTULO",
+          name: 'NOME',
+          geometrytype: 'GEOMETRIA',
+          source: 'FONTE',
+          attributes: 'ATRIBUTOS',
+          abstract: 'RESUMO',
+          attribution: 'ATRIBUIÇÃO',
+          keywords: "PALAVRA CHAVE",
+          metadataurl:'ENDEREÇO METADADOS',
+          dataurl: "ENDEREÇO DADOS"
+        }
+      },
+      groups : {
+        general: 'GERAL',
+        spatial: 'ESPACIAL'
+      }
+    },
+    credits: {
+      title: 'Créditos',
+    }
+  },
+  download_types: {
+    shapefile: "Descarregar Shapefile",
+    gpx: "Descarregar GPX",
+    gpkg: "Descarregar GPKG",
+    csv: "Descarregar CSV",
+    xls: "Descarregar XLS",
+    pdf: "Descarregar PDF",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Não é possivel obter a sua posição"
-    },
-    geocoding: {
-      choose_layer: "Escolher uma camada para adicionar a entidade",
-      placeholder: "Endereço ...",
-      nolayers: "Sem camadas de pontos editáveis no projeto",
-      noresults: "Sem resultados",
-      notresponseserver: "Sem resposta do servidor"
-    },
-    add_layer_control: {
-      header: "Adicionar camada",
-      select_projection: "Projeção",
-      select_field_to_show: "campo a mostrar no mapa",
-      select_csv_separator: "Delimitador",
-      select_csv_x_field: "Campo X",
-      select_csv_y_field: "Campo Y",
-      select_color: "Cor da camada",
-      drag_layer: "Adicione o seu ficheiro aqui",
-      persistent_data: "Dados persistentes",
-      persistent_help: "guardar camada no armazenamento do navegador",
-    },
     query: {
       input_relation: "Clique para mostrar as relações"
     },
@@ -238,41 +377,8 @@ export default {
         message: "<ul><li>Clique no mapa para desenhar o círculo</li></ul>"
       },
     },
-    length: {
-      tooltip: "Comprimento"
-    },
-    area: {
-      tooltip: "Área"
-    },
-    screenshot: {
-      error: "Erro na criação da captura de ecra",
-      securityError: `  
-      <p><b>Erro de segurança</b>: uma camada externa está a impedir a impressão do mapa. Para verificar proceda da seguinte forma:</p>
-      <ol>
-        <li>remova as camadas externas (ex. camadas WMS)</li>
-        <li>recarregue a página: <code>CTRL + F5</code></li>
-        <li>imprima o mapa de novo</li>
-      </ol>
-      <p>Para mais informações contacte o administrador do sistema: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Marcadores",
-      helptext: "Altere a extensão do mapa, insira um nome e clique Adicionar",
-      input: {
-        name: "Nome"
-      },
-      sections: {
-        project:{
-          title: "Marcadores do projeto"
-        },
-        user: {
-          title: "Marcadores do Utilizador"
-        }
-      }
-    },
     search: {
       all: 'Todos',
       no_results: "Sem resultados",
@@ -289,156 +395,6 @@ export default {
       help_filter : "Os valores de pesquisa são limitados com base no filtro ativo. Remova o filtro para pesquisar todos os dados.",
       autofilter: "Filtrar resultados"
 
-},
-    print: {
-      no_layers: 'Sem camada para imprimir',
-      template: "Modelo",
-      labels: "Etiquetas",
-      scale: "Escala",
-      format: "Formato",
-      rotation: "Rotação",
-      download_image: "Descarregar Imagem",
-      fids_instruction: "Valores permitidos: de 1 até [max]. Pode inserir um intervalo ex. 4-6",
-      fids_example: "Ex. 1,4-6 irá imprimir id 1,4,5,6",
-      help: "Camadas a exportar serão definidas pelo administrador",
-      help_details: `<p>Se não visualizar alguma camada no ficheiro de impressão</p>
-        <ol style="padding-left: 25px">
-          <li>tente novamente selecionando outro modelo</li>
-          <li>tente mudar o nível de zoom</li>
-          <li>verifique a origem (ex. Servidor WMS externos)</li>
-          <li>garanta que a camada está ativada na lista de camadas.</li>
-        </ol>`,
-    },
-    querybuilder: {
-      title: 'Pesquisa avançada',
-      search: {
-        run: "Executar",
-        info: "Informação",
-        delete: "Eliminar",
-        edit: "Editar"
-      },
-      messages: {
-        changed: 'Guardado',
-        number_of_features: "Entidades encontradas:"
-      },
-      panel: {
-        button: {
-          all: 'PESQUISE UM VALOR',
-          save: 'GUARDAR',
-          test: 'TESTAR',
-          clear: 'LIMPAR',
-          run: 'EXECUTAR',
-          manual: 'MANUAL'
-        },
-        layers: 'CAMADAS',
-        fields: 'CAMPOS',
-        values: 'VALORES',
-        operators: 'OPERADORES',
-        expression: 'EXPRESSÃO'
-      },
-      error_run: 'Ocorreu um erro. Verifique a consulta',
-      error_test: "Oorreu um erro durante a execução da consulta",
-      delete: 'Pretende eliminar?',
-      additem: 'Insira o nome da nova pesquisa'
-    },
-    errors: {
-      layers: {
-        load: "Algumas camadas não estão disponíveis"
-      },
-      unsupported_format: 'Formato não suportado',
-      add_external_layer: 'Erro de carregamento de camada'
-    },
-    metadata: {
-      title: 'Metadados',
-      groups: {
-        general: {
-          title: 'GERAL',
-          fields: {
-            title: 'TÍTULO',
-            name: 'NOME',
-            description: "DESCRIÇÃO",
-            abstract: "RESUMO",
-            keywords: 'PALAVRAS CHAVE',
-            fees: "TAXAS",
-            accessconstraints: "RESTRIÇÃO DE ACESSO",
-            contactinformation: "CONTATOS",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "Email",
-                personprimary: 'Referencias',
-                contactvoicetelephone: 'Telefone',
-                contactorganization: 'Organização',
-                ContactOrganization: 'Organização',
-                contactposition: 'Cargo',
-                ContactPosition: 'Cargo',
-                contactperson: 'Pessoa',
-                ContactPerson: 'Pessoa'
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: 'ESPACIAL',
-          fields : {
-            crs: 'EPSG',
-            extent: 'BBOX'
-          }
-        },
-        layers: {
-          title: 'CAMADAS',
-          fields: {
-            layers: 'LAYERS',
-            subfields: {
-              crs: 'EPSG',
-              bbox: 'BBOX',
-              title: "TÍTULO",
-              name: 'NOME',
-              geometrytype: 'GEOMETRIA',
-              source: 'FONTE',
-              attributes: 'ATRIBUTOS',
-              abstract: 'RESUMO',
-              attribution: 'ATRIBUIÇÃO',
-              keywords: "PALAVRA CHAVE",
-              metadataurl:'ENDEREÇO METADADOS',
-              dataurl: "ENDEREÇO DADOS"
-            }
-          },
-          groups : {
-            general: 'GERAL',
-            spatial: 'ESPACIAL'
-          }
-        },
-        credits: {
-          title: 'Créditos',
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Vista de tabela",
-        row_to_form: "Vista de Formulário",
-        zoomtogeometry: "Aproximar à Geometria",
-      },
-      copy_map_extent_url: 'Copiar URL partilhável',
-      download_shapefile: "Descarregar Shapefile",
-      download_gpx: "Descarregar GPX",
-      download_gpkg: "Descarregar GPKG",
-      download_csv: "Descarregar CSV",
-      download_xls: "Descarregar XLS",
-      download_pdf: "Descarregar PDF",
-      show_chart: "Mostrar Gráfico",
-      atlas: "Imprimir Atlas",
-      editing: "Edição",
-    },
-    relations: {
-      relation_data: 'Dados da Relação',
-      no_relations_found: 'Relações não encontradas',
-      back_to_relations: 'Voltar para as relações',
-      list_of_relations_feature: 'Lista de relações da camada',
-      error_missing_father_field: "Atributo em falta",
-      download_with_relations: "Download com relações",
-      field: "Campo chave da relação",
     },
     form: {
       loading: 'A carregar ...',
@@ -474,31 +430,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Utilize o formulário específico para trabalhar com relações"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "TEMA",
-      choose_map_theme: "ESCOLHA O TEMA",
-      choose_map_theme_input_label: 'Nome do novo tema do mapa',
-      project_map_theme : 'Tema do Projeto',
-      user_map_theme: 'Temas do utilizador',
-      question_delete_map_theme: "Pretende eliminar o tema?",
-      delete_map_theme: "Tema apagado com sucesso",
-      saved_map_theme: "Tema guardado com sucesso",
-      updated_map_theme: "Tema alterado com sucesso",
-      invalid_map_theme_name: "Nome inválido",
-      menu: {
-        layerposition: 'Posição da camada',
-        setwmsopacity: "Definir transparência",
-        wms: {
-          title:"",
-          copy: "Clique para copiar o endereço",
-          copied: "Copiado"
-        },
-        download: {
-          unknow: 'Descarregar',
-          geotiff_map_extent: "GeoTiff (vista atual)"
-        }
       }
     },
     wps: {

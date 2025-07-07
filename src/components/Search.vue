@@ -38,7 +38,7 @@
             data-placement = "bottom"
             data-toggle    = "tooltip"
             data-container = "body"
-            v-t-tooltip    = "'sdk.querybuilder.search.delete'"
+            v-t-tooltip    = "'Delete'"
             @click.stop    = "remove(search, i)"
             style          = "color: red;margin-right: 5px;"
           ></span>
@@ -47,7 +47,7 @@
             <span
             class                     = "search-action"
             :class                    = "$fa('run')"
-            v-t-tooltip:bottom.create = "'sdk.querybuilder.search.run'"
+            v-t-tooltip:bottom.create = "'Run'"
             @click.stop               = "run(search)"
             style                     = "color: green;"
           ></span>
@@ -103,7 +103,7 @@ export default {
      */
     async remove(search, index) {
       try {
-        await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
+        await (new Promise((res, rej) => { GUI.dialog.confirm(t('Do you want delete it?'), d => d ? res() : rej()) }));
         const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
         const items = item ? JSON.parse(item) : undefined;
         const projectId = ApplicationState.project.getId();
@@ -137,7 +137,7 @@ export default {
         name:          search.name,
         layerId:       search.layerId,
         filter:        search.filter,
-        title:         t('sdk.querybuilder.title'),
+        title:         t('Advanced search'),
         show:          true,
       };
       opts.internalPanel = new (Vue.extend(vueComp))({ options: opts });
@@ -161,7 +161,7 @@ export default {
         });
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: 'sdk.querybuilder.error_run', autoclose: true });
+        GUI.showUserMessage({ type: 'alert', message: 'An error occurs. Please check the query', autoclose: true });
       }
       search.qbloading = false;
     },

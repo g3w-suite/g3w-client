@@ -128,7 +128,7 @@ class GeocodingControl extends ol.control.Control {
 
     GUI.on('i18n-ready', () => {
       this.element.querySelector('ul').innerHTML = '';
-      this.element.querySelector('input[type="search"]').placeholder = t('mapcontrols.geocoding.placeholder');
+      this.element.querySelector('input[type="search"]').placeholder = t('Search');
     })
 
     VM.$watch(() => GUI.getCurrentContent(), is_sidebar_open => {
@@ -403,7 +403,7 @@ class GeocodingControl extends ol.control.Control {
           ${item.__heading ? `<b style="padding: 5px; color: #FFF;">${ item.label }</b>` : ''}
             
           <!-- NO RESULTS -->
-          ${!item.__heading && item.__no_results ? `<span>${t('mapcontrols.geocoding.noresults')}</span>` : ''}
+          ${!item.__heading && item.__no_results ? `<span>${t('No results')}</span>` : ''}
 
           <!-- RESULTS -->
           ${!item.__heading && !item.__no_results ? /* html */`
@@ -630,8 +630,8 @@ class GeocodingControl extends ol.control.Control {
       [layer.id]: {
         layers:   editable_point_layers,
         icon:     'pencil',
-        label:    'mapcontrols.geocoding.choose_layer',
-        nolayers: 'mapcontrols.geocoding.nolayers',
+        label:    'Choose a layer where to add this feature',
+        nolayers: 'No editable point layers found on this project',
         cbk:      this.#editItem,
       }
     };

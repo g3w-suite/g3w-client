@@ -345,7 +345,7 @@ $.ajaxSetup({
         id:                 'spatialbookmarks',
         icon:               'far fa-bookmark',
         iconColor:          '#00bcd4',
-        title:              'sdk.spatialbookmarks.title',
+        title:              'Bookmarks',
         vueComponentObject: require('components/SpatialBookMarks.vue').default,
       }),
 
@@ -393,12 +393,12 @@ $.ajaxSetup({
           {
             id:      "querybuilder",
             class:   `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-            tooltip: t('sdk.querybuilder.title'),
+            tooltip: t('Advanced search'),
             fnc:     () => {
               GUI.closeContent();
               GUI.closeSideBar();
               return new Panel({
-                title: t('sdk.querybuilder.title'),
+                title: t('Advanced search'),
                 show: true,
                 vueComponentObject: require('components/QueryBuilder.vue').default
               });

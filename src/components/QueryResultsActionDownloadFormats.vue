@@ -11,7 +11,7 @@
         class       = "magic-checkbox"
         v-model     = "down_with_relations"
         type        = "checkbox"/>
-        <label :for = "`g3w-download-relations_${featureIndex}`" v-t = "'sdk.relations.download_with_relations'"></label>
+        <label :for = "`g3w-download-relations_${featureIndex}`" v-t = "'Download with relations'"></label>
     </div>
     <div
       class               = "g3w-download-formats-content"

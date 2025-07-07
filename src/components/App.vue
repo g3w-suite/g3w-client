@@ -153,7 +153,7 @@
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
               >
-                <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
+                <b v-t="'Add Layer'"></b><i :class="$fa('layers')"></i> 
               </a>
             </li>
           </ul>
@@ -266,7 +266,7 @@
             data-target    = "#modal-metadata"
           >
             <i :class="$fa('file')" style="color: #fff;"></i>
-            <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
+            <span class="treeview-label" v-t="'Metadata'"></span>
           </a>
         </li>
 

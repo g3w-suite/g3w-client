@@ -124,6 +124,89 @@ export default {
   'Print Atlas': "Друкувати Атлас",
   'Share via link': "Поділитися",
   'Select Template': "Виберіть шаблон",
+  'Bookmarks': "Закладки",
+  'Move on map extent, insert name and click Add': "Встановіть бажані межі мапи, задайте назву та натисніть Додати",
+  'Project Bookmarks': "Закладки проекту",
+  'User Bookmarks': "Закладки користувача",
+  'No Layer to print': "Відсутні видимі шари",
+  'Template': "Шаблон",
+  'Labels': "Підписи",
+  'Scale': "Масштаб",
+  'Format': "Формат",
+  'Rotation': "Обертання",
+  'Download Image': "Завантажити зображення",
+  'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6': "Допустимі значення: від 1 до значення позначеного [max]. Підтримуються діапазони значень, наприклад, 4-6",
+  'Ex. 1,4-6 will be printed id 1,4,5,6': "Наприклад, 1,4-6 надрукує сторінки 1,4,5,6",
+  'Exportable layers are defined by the administrator': "Шари, які можна експортувати, задаються адміністратором",
+  'Metadata': "Метадані",
+  'THEME': "ТЕМА",
+  'CHOOSE THEME': "ВИБРАТИ ТЕМУ",
+  'Name of new map theme': "Назва нової теми",
+  'Project Themes': "Теми проекту",
+  'User Themes': "Теми користувача",
+  'Do you want delete the theme?': "Видалити тему?",
+  'Theme deleted successfully': "Тему видалено",
+  'Theme saved successfully': "Тему збережено",
+  'Theme updated successfully': "Тему оновлено",
+  'Invalid or exiting name': "Неправильна назва або тема з такою назвою вже існує",
+  'Layer Position': "Положення шару",
+  'Set Opacity': "Встановити непрозорість",
+  'Copied': "Скопійовано",
+  'GeoTiff (current view)': "GeoTiff (поточні межі)",
+  'Row View': "Таблиця",
+  'Form View': "Форма",
+  'Zoom to Geometry': "Наблизити до об'єкта",
+  'Copy share URL': "Поділитися",
+  'Show Chart': "Показати діаграми",
+  'Print Atlas': "Друкувати атлас",
+  'Editing': "Оцифровка",
+  'Advanced search': "Розширений пошук",
+  'Run': "Виконати",
+  'Delete': "Видалити",
+  'Saved': "Збережено",
+  'Features found:': "Знайдено об'єктів:",
+  'SEARCH A VALUE': "ПОШУК ЗНАЧЕННЯ",
+  'SAVE': "ЗБЕРЕГТИ",
+  'CLEAR': "ОЧИСТИТИ",
+  'RUN': "ВИКОНАТИ",
+  'FIELDS': "ПОЛЯ",
+  'EXPRESSION': "ВИРАЗ",
+  'An error occurs. Please check the query': "Помилка. Перевірте правильність запиту",
+  'Do you want delete it?': "Скасувати?",
+  'Insert the name of the new search': "Задайте назву запиту",
+  'Some layers are not available': "Деякі шари недоступні",
+  'Not supported format': "Формат не підтримується",
+  'Load layer error': "Помилка завантаження шару",
+  'Relation data': "Відношення",
+  'No relations found': "Відношення відсутні",
+  'Back to relations': "До відношень",
+  'List of relations of feature': "Відношення об'єкта",
+  'Download with relations': "Завантажити з відносинами",
+  'Relation key field': "Ключ відношення",
+  'Can\'t get your position': "Не вдалося отримати місцезнаходження",
+  'Choose a layer where to add this feature': "Оберіть шар у який буде додано об'єкт",
+  'Search': "Адреса…",
+  'No editable point layers found on this project': "У проекті відсутні точкові шари, які можна редагувати",
+  'No results': "Немає результатів",
+  'Add Layer': "Додати шар",
+  'Projection': "Система координат",
+  'field shown on map': "значення для відображення на мапі",
+  'Delimiter': "Роздільник",
+  'X field': "X",
+  'Y field': "Y",
+  'Layer Color': "Колір шару",
+  'Add your file here': "Додати файл",
+  'Persistent data': "Постійні дані",
+  'save layer into browser storage': "зберегти шар у сховищі браузера",
+  'Screenshot error creation': "Помилка створення знімка екрана",
+  screenshot_error: `  
+  <p><b>Порушення безпеки</b>: зовнішній шар перешкоджає друку мапи. Щоб переконатися в цьому:</p>
+  <ol>
+    <li>видаліть всі зовнішні шари додані вручну (наприклад, шари WMS)</li>
+    <li>оновіть сторінку: <code>CTRL + F5</code></li>
+    <li>спробуйте роздрукувати мапу ще раз</li>
+  </ol>
+  <p>Зв'яжіться з адміністратором щоб дізнатися більше про <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; безпеку та зіпсовані полотна canvas</a></p>`,
   layer_position: {
     top: "вгорі",
     bottom: "внизу",
@@ -149,29 +232,85 @@ export default {
     length: "Клацніть по мапі щоб намалювати лінію. Натисніть <br>CANC щоб видалити останню вершину",
     area: "Клацніть по мапі щоб намалювати полігон. Натисність <br>CANC щоб видалити останню вершину"
   },
+  print_help: `<p>Якщо у файлі відсутні деякі шари:</p>
+  <ol style="padding-left: 25px">
+    <li>спробуйте обрати інший шаблон</li>
+    <li>спробуйте змінитиіть масштаб</li>
+    <li>перевірте джерела даних (наприклад, зовнішній WMS-сервер)</li>
+    <li>переконайтеся, що шар дійсно вибрано у списку шарів</li>
+  </ol>`,
+  metadata_groups: {
+    general: {
+      title: "ЗАГАЛЬНЕ",
+      fields: {
+        title: "НАЗВА",
+        name: "ІМ'Я",
+        description: "ОПИС",
+        abstract: "АННОТАЦІЯ",
+        keywords: "КЛЮЧОВІ СЛОВА",
+        fees: "ОПЛАТА",
+        accessconstraints: "ОБМЕЖЕННЯ ДОСТУПУ",
+        contactinformation: "КОНТАКТИ",
+        subfields: {
+          contactinformation: {
+            contactelectronicmailaddress: "Email",
+            personprimary: "Посилання",
+            contactvoicetelephone: "Телефон",
+            contactorganization: "Організація",
+            ContactOrganization: "Організація",
+            contactposition: "Посада",
+            ContactPosition: "Посада",
+            contactperson: "Особа",
+            ContactPerson: "Особа"
+          }
+        },
+        wms_url: "WMS"
+      }
+    },
+    spatial:{
+      title: "ПРОСТОРОВА ІНФОРМАЦІЯ",
+      fields : {
+        crs: "EPSG",
+        extent: "BBOX"
+      }
+    },
+    layers: {
+      title: "ШАРИ",
+      fields: {
+        layers: "ШАРИ",
+        subfields: {
+          crs: "EPSG",
+          bbox: "BBOX",
+          title: "НАЗВА",
+          name: "ІМ'Я",
+          geometrytype: "ГЕОМЕТРІЯ",
+          source: "ДЖЕРЕЛО",
+          attributes: "АТРИБУТИ",
+          abstract: "АННОТАЦІЯ",
+          attribution: "ПОХОДЖЕННЯ",
+          keywords: "КЛЮЧОВІ СЛОВА",
+          metadataurl: "URL МЕТАДАНИХ",
+          dataurl: "URL ДАНИХ"
+        }
+      },
+      groups : {
+        general: "ЗАГАЛЬНЕ",
+        spatial: "ПРОСТОРОВА ІНФОРМАЦІЯ"
+      }
+    },
+    credits: {
+      title: 'Про проект',
+    }
+  },
+  download_types: {
+    shapefile: "Завантажити Shapefile",
+    gpx: "Завантажити GPX",
+    gpkg: "Завантажити GPKG",
+    csv: "Завантажити CSV",
+    xls: "Завантажити XLS",
+    pdf: "Завантажити PDF",
+  },
   mapcontrols: {
-    geolocation: {
-      error: "Не вдалося отримати місцезнаходження"
-    },
-    geocoding: {
-      choose_layer: "Оберіть шар у який буде додано об'єкт",
-      placeholder: "Адреса…",
-      nolayers: "У проекті відсутні точкові шари, які можна редагувати",
-      noresults: "Немає результатів",
-      notresponseserver: "Сервер не відповідає"
-    },
-    add_layer_control: {
-      header: "Додати шар",
-      select_projection: "Система координат",
-      select_field_to_show: "значення для відображення на мапі",
-      select_csv_separator: "Роздільник",
-      select_csv_x_field: "X",
-      select_csv_y_field: "Y",
-      select_color: "Колір шару",
-      drag_layer: "Додати файл",
-      persistent_data: "Постійні дані",
-      persistent_help: "зберегти шар у сховищі браузера",
-    },
     query: {
       input_relation: "Показати відношення"
     },
@@ -239,41 +378,8 @@ export default {
         message: "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>"
       },
     },
-    length: {
-      tooltip: "Довжина"
-    },
-    area: {
-      tooltip: "Площа"
-    },
-    screenshot: {
-      error: "Помилка створення знімка екрана",
-      securityError: `  
-      <p><b>Порушення безпеки</b>: зовнішній шар перешкоджає друку мапи. Щоб переконатися в цьому:</p>
-      <ol>
-        <li>видаліть всі зовнішні шари додані вручну (наприклад, шари WMS)</li>
-        <li>оновіть сторінку: <code>CTRL + F5</code></li>
-        <li>спробуйте роздрукувати мапу ще раз</li>
-      </ol>
-      <p>Зв'яжіться з адміністратором щоб дізнатися більше про <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; безпеку та зіпсовані полотна canvas</a></p>
-      `
-    }
   },
   sdk: {
-    spatialbookmarks: {
-      title: "Закладки",
-      helptext: "Встановіть бажані межі мапи, задайте назву та натисніть Додати",
-      input: {
-        name: "Назва"
-      },
-      sections: {
-        project:{
-          title: "Закладки проекту"
-        },
-        user: {
-          title: "Закладки користувача"
-        }
-      }
-    },
     search: {
       all: "ВСЕ",
       no_results: "Не знайдено",
@@ -289,156 +395,6 @@ export default {
       },
       help_filter : "Результати пошуку обмежуються фільтром. Видаліть фільтр щоб шукати по всьому шару.",
       autofilter: "Фільтрувати за результатами"
-    },
-    print: {
-      no_layers: "Відсутні видимі шари",
-      template: "Шаблон",
-      labels: "Підписи",
-      scale: "Масштаб",
-      format: "Формат",
-      rotation: "Обертання",
-      download_image: "Завантажити зображення",
-      fids_instruction: "Допустимі значення: від 1 до значення позначеного [max]. Підтримуються діапазони значень, наприклад, 4-6",
-      fids_example: "Наприклад, 1,4-6 надрукує сторінки 1,4,5,6",
-      help: "Шари, які можна експортувати, задаються адміністратором",
-      help_details: `<p>Якщо у файлі відсутні деякі шари:</p>
-        <ol style="padding-left: 25px">
-          <li>спробуйте обрати інший шаблон</li>
-          <li>спробуйте змінитиіть масштаб</li>
-          <li>перевірте джерела даних (наприклад, зовнішній WMS-сервер)</li>
-          <li>переконайтеся, що шар дійсно вибрано у списку шарів</li>
-        </ol>`,
-    },
-    querybuilder: {
-      title: "Розширений пошук",
-      search: {
-        run: "Виконати",
-        info: "Інформація",
-        delete: "Видалити",
-        edit: "Змінити"
-      },
-      messages: {
-        changed: "Збережено",
-        number_of_features: "Знайдено об'єктів:"
-      },
-      panel: {
-        button: {
-          all: "ПОШУК ЗНАЧЕННЯ",
-          save: "ЗБЕРЕГТИ",
-          test: "ПЕРЕВІРИТИ",
-          clear: "ОЧИСТИТИ",
-          run: "ВИКОНАТИ",
-          manual: "ДОВІДКА"
-        },
-        layers: "ШАРИ",
-        fields: "ПОЛЯ",
-        values: "ЗНАЧЕННЯ",
-        operators: "ОПЕРАТОРИ",
-        expression: "ВИРАЗ"
-      },
-      error_run: "Помилка. Перевірте правильність запиту",
-      error_test: "Помилка виконання запиту",
-      delete: "Скасувати?",
-      additem: "Задайте назву запиту"
-    },
-    errors: {
-      layers: {
-        load: "Деякі шари недоступні"
-      },
-      unsupported_format: "Формат не підтримується",
-      add_external_layer: "Помилка завантаження шару"
-    },
-    metadata: {
-      title: "Метадані",
-      groups: {
-        general: {
-          title: "ЗАГАЛЬНЕ",
-          fields: {
-            title: "НАЗВА",
-            name: "ІМ'Я",
-            description: "ОПИС",
-            abstract: "АННОТАЦІЯ",
-            keywords: "КЛЮЧОВІ СЛОВА",
-            fees: "ОПЛАТА",
-            accessconstraints: "ОБМЕЖЕННЯ ДОСТУПУ",
-            contactinformation: "КОНТАКТИ",
-            subfields: {
-              contactinformation: {
-                contactelectronicmailaddress: "Email",
-                personprimary: "Посилання",
-                contactvoicetelephone: "Телефон",
-                contactorganization: "Організація",
-                ContactOrganization: "Організація",
-                contactposition: "Посада",
-                ContactPosition: "Посада",
-                contactperson: "Особа",
-                ContactPerson: "Особа"
-              }
-            },
-            wms_url: "WMS"
-          }
-        },
-        spatial:{
-          title: "ПРОСТОРОВА ІНФОРМАЦІЯ",
-          fields : {
-            crs: "EPSG",
-            extent: "BBOX"
-          }
-        },
-        layers: {
-          title: "ШАРИ",
-          fields: {
-            layers: "ШАРИ",
-            subfields: {
-              crs: "EPSG",
-              bbox: "BBOX",
-              title: "НАЗВА",
-              name: "ІМ'Я",
-              geometrytype: "ГЕОМЕТРІЯ",
-              source: "ДЖЕРЕЛО",
-              attributes: "АТРИБУТИ",
-              abstract: "АННОТАЦІЯ",
-              attribution: "ПОХОДЖЕННЯ",
-              keywords: "КЛЮЧОВІ СЛОВА",
-              metadataurl: "URL МЕТАДАНИХ",
-              dataurl: "URL ДАНИХ"
-            }
-          },
-          groups : {
-            general: "ЗАГАЛЬНЕ",
-            spatial: "ПРОСТОРОВА ІНФОРМАЦІЯ"
-          }
-        },
-        credits: {
-          title: 'Про проект',
-        }
-      }
-    },
-    tooltips: {
-      relations: {
-        form_to_row: "Таблиця",
-        row_to_form: "Форма",
-        zoomtogeometry: "Наблизити до об'єкта",
-      },
-      copy_map_extent_url: "Поділитися",
-      download_shapefile: "Завантажити Shapefile",
-      download_gpx: "Завантажити GPX",
-      download_gpkg: "Завантажити GPKG",
-      download_csv: "Завантажити CSV",
-      download_xls: "Завантажити XLS",
-      download_pdf: "Завантажити PDF",
-      show_chart: "Показати діаграми",
-      atlas: "Друкувати атлас",
-      editing: "Оцифровка",
-    },
-    relations: {
-      relation_data: "Відношення",
-      no_relations_found: "Відношення відсутні",
-      back_to_relations: "До відношень",
-      list_of_relations_feature: "Відношення об'єкта",
-      error_missing_father_field: "Відсутнє поле",
-      download_with_relations: "Завантажити з відносинами",
-      field: "Ключ відношення",
     },
     form: {
       loading: "Завантаження…",
@@ -474,31 +430,6 @@ export default {
       },
       messages: {
         qgis_input_widget_relation: "Керуйте відношеннями за допомогою спеціальної форми"
-      }
-    },
-    catalog: {
-      current_map_theme_prefix: "ТЕМА",
-      choose_map_theme: "ВИБРАТИ ТЕМУ",
-      choose_map_theme_input_label: "Назва нової теми",
-      project_map_theme: "Теми проекту",
-      user_map_theme: "Теми користувача",
-      question_delete_map_theme: "Видалити тему?",
-      delete_map_theme: "Тему видалено",
-      saved_map_theme: "Тему збережено",
-      updated_map_theme: "Тему оновлено",
-      invalid_map_theme_name: "Неправильна назва або тема з такою назвою вже існує",
-      menu: {
-        layerposition: "Положення шару",
-        setwmsopacity: "Встановити непрозорість",
-        wms: {
-          title:"",
-          copy: "Скопіювати посилання",
-          copied: "Скопійовано"
-        },
-        download: {
-          unknow: "Завантажити",
-          geotiff_map_extent: "GeoTiff (поточні межі)"
-        }
       }
     },
     wps: {

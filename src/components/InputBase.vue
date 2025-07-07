@@ -36,7 +36,7 @@
       style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
     >
       <span :class = "g3wtemplate.getFontClass('warning')"></span>
-      <span v-t = "'sdk.relations.field'"></span>
+      <span v-t = "'Relation key field'"></span>
     </div>
 
     <div class = "">
