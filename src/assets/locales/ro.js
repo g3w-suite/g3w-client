@@ -269,39 +269,21 @@ export default {
     xls: "Descarcă XLS",
     pdf: "Descarcă PDF",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Click pentru a arăta relațiile"
-    },
-    querybypolygon: {
-      download: {
-        title: "Descărcare atribute",
-        choiches:{
-          feature: {
-            label:"Doar entități",
-          },
-          feature_polygon: {
-            label:"Entități+Poligon Interogare",
-          }
-        }
-      },
-      tooltip: 'Interogare După Poligon',
-      no_geometry: 'Nu avem geometrii în răspuns',
-      help: {
-        message: "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Interogare prin poligon de desen"
-    },
-    querybbox: {
-      tooltip: 'Interogare BBox strat',
-      nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
-      help: {
-        message: "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>"
-      }
-    },
-  },
+  'mapcontrols.query.input_relation': "Click pentru a arăta relațiile",
+  
+  'mapcontrols.querybypolygon.download.title': "Descărcare atribute",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Doar entități",
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Entități+Poligon Interogare",
+  'mapcontrols.querybypolygon.tooltip': 'Interogare După Poligon',
+  'mapcontrols.querybypolygon.no_geometry': 'Nu avem geometrii în răspuns',
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Interogare prin poligon de desen",
+
+  'mapcontrols.querybbox.tooltip': 'Interogare BBox strat',
+  'mapcontrols.querybbox.nolayers_visible': 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
+  'mapcontrols.querybbox.help.message': "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>",
+
   sdk: {
     search: {
       all: 'Toate',

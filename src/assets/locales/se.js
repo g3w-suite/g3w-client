@@ -256,28 +256,18 @@ export default {
     xls: "Ladda XLS-fil",
     pdf: "Ladda PDF-fil",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Tryck för att visa relationerna"
-    },
-    querybypolygon: {
-      tooltip: 'Förfrågan med polygon',
-      no_geometry: 'No geometry on response',
-      help: {
-        message: "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Fråga efter ritpolygon"
-    },
-    querybbox: {
-      tooltip: 'BBox-förfrågan som riktar sig till en nivå',
-      nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
-      help: {
-        message: "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>"
-      }
-    },
-  },
+  'mapcontrols.query.input_relation': "Tryck för att visa relationerna",
+  
+  'mapcontrols.querybypolygon.tooltip': 'Förfrågan med polygon',
+  'mapcontrols.querybypolygon.no_geometry': 'No geometry on response',
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Fråga efter ritpolygon",
+
+  'mapcontrols.querybbox.tooltip': 'BBox-förfrågan som riktar sig till en nivå',
+  'mapcontrols.querybbox.nolayers_visible': 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
+  'mapcontrols.querybbox.help.message': "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>",
+
   sdk: {
     search: {
       all: 'ALLA',

@@ -257,27 +257,17 @@ export default {
     xls: "Lataa XLS-tiedosto",
     pdf: "Lataa PDF-tiedosto",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Paina näyttääksesi relaatiot"
-    },
-    querybypolygon: {
-      tooltip: 'Kysely monikulmiolla',
-      help: {
-        message: "<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Kysely piirtopolygonin mukaan"
-    },
-    querybbox: {
-      tooltip: 'Tasoon kohdituva BBox-kysely',
-      nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
-      help: {
-        message: "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>"
-      }
-    },
-  },
+  'mapcontrols.query.input_relation': "Paina näyttääksesi relaatiot",
+
+  'mapcontrols.querybypolygon.tooltip': 'Kysely monikulmiolla',
+  'mapcontrols.querybypolygon.help.message': '<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>',
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Kysely piirtopolygonin mukaan",
+
+  'mapcontrols.querybbox.tooltip': 'Tasoon kohdituva BBox-kysely',
+  'mapcontrols.querybbox.nolayers_visible': 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
+  'mapcontrols.querybbox.help.message': "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>",
+
   sdk: {
     search: {
       all: 'KAIKKI',

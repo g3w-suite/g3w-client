@@ -264,39 +264,21 @@ export default {
     xls: "Télécharger XLS",
     pdf: "Télécharger PDF",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Cliquez pour voir les relations"
-    },
-    querybypolygon: {
-      download: {
-        title: "Téléchargement des attributs",
-        choiches:{
-          feature: {
-            label: "Entités seulement",
-          },
-          feature_polygon: {
-            label: "Entités+Requête Polygon ",
-          }
-        }
-      },
-      tooltip: 'Requête par polygone',
-      no_geometry: 'La réponse ne contient pas de géométrie',
-      help: {
-        message: "<ul><li>Sélectionnez une couche de polygone dans la légende.</li><li>Vérifiez que la couche est visible dans la carte.</li><li>Cliquez sur une géométrie de la couche sélectionnée.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Requête par polygone de dessin"
-    },
-    querybbox: {
-      tooltip: 'Requête pour BBOX',
-      nolayers_visible: "Aucune couche requêtable n'est visible. Assurez-vous qu'au moins une couche wfs est visible pour exécuter la requête",
-      help: {
-        message: "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>"
-      },
-    },
-  },
+  'mapcontrols.query.input_relation': "Cliquez pour voir les relations",
+  
+  'mapcontrols.querybypolygon.download.title': "Téléchargement des attributs",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Entités seulement",
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Entités+Requête Polygon",
+  'mapcontrols.querybypolygon.tooltip': 'Requête par polygone',
+  'mapcontrols.querybypolygon.no_geometry': 'La réponse ne contient pas de géométrie',
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Sélectionnez une couche de polygone dans la légende.</li><li>Vérifiez que la couche est visible dans la carte.</li><li>Cliquez sur une géométrie de la couche sélectionnée.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Requête par polygone de dessin",
+
+  'mapcontrols.querybbox.tooltip': 'Requête pour BBOX',
+  'mapcontrols.querybbox.nolayers_visible': "Aucune couche requêtable n'est visible. Assurez-vous qu'au moins une couche wfs est visible pour exécuter la requête",
+  'mapcontrols.querybbox.help.message': "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>",
+
   sdk: {
     search: {
       all: 'TOUTES',

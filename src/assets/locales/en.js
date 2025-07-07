@@ -167,81 +167,41 @@ export default {
     xls: "Download XLS",
     pdf: "Download PDF",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Click to show relations"
-    },
-    queryby: {
-      title: 'Query area',
-      layer: 'Selected layer:',
-      none: 'NONE',
-      new: 'TEMPORARY LAYER',
-      all: 'ALL',
-      methods: {
-        intersects: 'intersects',
-        within: 'within'
-      },
-      querybypolygon: {
-        tooltip: 'select a polygon'
-      },
-      querybydrawpolygon: {
-        tooltip: 'draw a polygon'
-      },
-      querybbox: {
-        tooltip: 'draw a rectangle'
-      },
-      querybycircle: {
-        tooltip: 'draw a circle'
-      },
-      querybyfreehand: {
-        tooltip: 'freehand'
-      },
-    },
-    querybypolygon: {
-      download: {
-        title: "Attributes download",
-        choiches:{
-          feature: {
-            label:"Features only",
-          },
-          feature_polygon: {
-            label:"Features+Query Polygon",
-          }
-        }
-      },
-      tooltip: 'Query By Polygon',
-      no_geometry: 'No geometry on response',
-      help: {
-        message: "<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Query by Draw Polygon ",
-      help: {
-        message: "<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>"
-      }
-    },
-    querybbox: {
-      tooltip: 'Query BBox layer',
-      nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
-      help: {
-        message: "<ul><li>Drag the mouse to draw a rectangle and query layers</li></ul>"
-      }
-    },
-    querybycircle: {
-      tooltip: "Query by Draw Circle ",
-      label: 'Radius',
-      help: {
-        message: "<ul><li>Click on map to draw circle</li></ul>"
-      },
-    },
-    querybyfreehand: {
-      tooltip: "Query by Draw Polygon (freehand)",
-      help: {
-        message: "<ul><li>Drag the mouse to draw a polygon and query the levels</li></ul>"
-      },
-    },
-  },
+  'mapcontrols.query.input_relation': "Click to show relations",
+  'mapcontrols.queryby.title': 'Query area',
+  'mapcontrols.queryby.layer': 'Selected layer:',
+  'mapcontrols.queryby.none': 'NONE',
+  'mapcontrols.queryby.new': 'TEMPORARY LAYER',
+  'mapcontrols.queryby.all': 'ALL',
+  'mapcontrols.queryby.methods.intersects': 'intersects',
+  'mapcontrols.queryby.methods.within': 'within',
+  'mapcontrols.queryby.querybypolygon.tooltip': 'select a polygon',
+  'mapcontrols.queryby.querybydrawpolygon.tooltip': 'draw a polygon',
+  'mapcontrols.queryby.querybbox.tooltip': 'draw a rectangle',
+  'mapcontrols.queryby.querybycircle.tooltip': 'draw a circle',
+  'mapcontrols.queryby.querybyfreehand.tooltip': 'freehand',
+
+  'mapcontrols.querybypolygon.download.title': 'Attributes download',
+  'mapcontrols.querybypolygon.download.choiches.feature.label': 'Features only',
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': 'Features+Query Polygon',
+  'mapcontrols.querybypolygon.tooltip': 'Query By Polygon',
+  'mapcontrols.querybypolygon.no_geometry': 'No geometry on response',
+  'mapcontrols.querybypolygon.help.message': '<ul><li>Select a (visible) layer.</li><li>Click on a geometry within map.</li></ul>',
+
+  'mapcontrols.querybydrawpolygon.tooltip': 'Query by Draw Polygon',
+  'mapcontrols.querybydrawpolygon.help.message': '<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>',
+
+  'mapcontrols.querybbox.tooltip': 'Query BBox layer',
+  'mapcontrols.querybbox.nolayers_visible': 'No querable layers are visible. Please set at least one visible wfs layer to run query',
+  'mapcontrols.querybbox.help.message': '<ul><li>Drag the mouse to draw a rectangle and query layers</li></ul>',
+
+  'mapcontrols.querybycircle.tooltip': 'Query by Draw Circle',
+  'mapcontrols.querybycircle.label': 'Radius',
+  'mapcontrols.querybycircle.help.message': '<ul><li>Click on map to draw circle</li></ul>',
+
+  'mapcontrols.querybyfreehand.tooltip': 'Query by Draw Polygon (freehand)',
+  'mapcontrols.querybyfreehand.help.message': '<ul><li>Drag the mouse to draw a polygon and query the levels</li></ul>',
+
   sdk: {
     search: {
       all: 'ALL',

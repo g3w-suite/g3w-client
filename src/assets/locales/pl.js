@@ -260,39 +260,21 @@ export default {
     csv: "Pobierz CSV",
     xls: "Pobierz XLS",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Kliknij, aby pokazać relacje"
-    },
-    querybypolygon: {
-      download: {
-        title: "Pobieranie atrybutów",
-        choiches: {
-          feature: {
-            label: "Tylko funkcje"
-          },
-          feature_polygon: {
-            label: "Funkcje+Polygon zapytania"
-          }
-        }
-      },
-      tooltip: "Zapytanie według wielokąta",
-      no_geometry: "Brak geometrii w odpowiedzi",
-      help: {
-        message: "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Zapytanie przez Polygon Draw"
-    },
-    querybbox: {
-      tooltip: "Zapytanie warstwa Bbox",
-      nolayers_visible: "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
-      help: {
-        message: "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>"
-      }
-    },
-  },
+  'mapcontrols.query.input_relation': "Kliknij, aby pokazać relacje",
+
+  'mapcontrols.querybypolygon.download.title': "Pobieranie atrybutów",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Tylko funkcje",
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Funkcje+Polygon zapytania",
+  'mapcontrols.querybypolygon.tooltip': "Zapytanie według wielokąta",
+  'mapcontrols.querybypolygon.no_geometry': "Brak geometrii w odpowiedzi",
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Zapytanie przez Polygon Draw",
+
+  'mapcontrols.querybbox.tooltip': "Zapytanie warstwa Bbox",
+  'mapcontrols.querybbox.nolayers_visible': "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
+  'mapcontrols.querybbox.help.message': "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>",
+
   sdk: {
     search: {
       all: "WSZYSTKO",

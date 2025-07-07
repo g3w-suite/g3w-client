@@ -263,36 +263,20 @@ export default {
     xls: "XLS herunterladen",
     pdf: "PDF herunterladen",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Klicken, um Relationen anzuzeigen"
-    },
-    querybypolygon: {
-      download: {
-        title: "Attribute herunterladen",
-        choiches:{
-          feature: {
-            label:"Nur Features",
-          },
-        }
-      },
-      tooltip: 'Query nach Polygon',
-      no_geometry: 'Keine Geometrie in der Antwort',
-      help: {
-        message: "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Abfrage durch Polygon zeichnen"
-    },
-    querybbox: {
-      tooltip: 'BBox Layer abfragen',
-      nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
-      help: {
-        message: "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>"
-      }
-    },
-  },
+  'mapcontrols.query.input_relation': "Klicken, um Relationen anzuzeigen",
+  
+  'mapcontrols.querybypolygon.download.title': "Attribute herunterladen",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Nur Features",
+  'mapcontrols.querybypolygon.tooltip': 'Query nach Polygon',
+  'mapcontrols.querybypolygon.no_geometry': 'Keine Geometrie in der Antwort',
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Abfrage durch Polygon zeichnen",
+
+  'mapcontrols.querybbox.tooltip': 'BBox Layer abfragen',
+  'mapcontrols.querybbox.nolayers_visible': 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
+  'mapcontrols.querybbox.help.message': "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>",
+
   sdk: {
     search: {
       all: 'ALLE',

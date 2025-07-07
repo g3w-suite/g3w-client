@@ -341,81 +341,41 @@ export default {
     xls: "Scarica XLS",
     pdf: "Scarica PDF",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Clicca per consultare le relazioni"
-    },
-    queryby: {
-      title: 'Interroga un area',
-      layer: 'Livello selezionato:',
-      none: 'NESSUNO',
-      new: 'LIVELLO TEMPORANEO',
-      all: 'TUTTI',
-      methods: {
-        intersects: 'interseca',
-        within: 'all\'interno'
-      },
-      querybypolygon: {
-        tooltip: 'seleziona un poligono'
-      },
-      querybydrawpolygon: {
-        tooltip: 'disegna un poligono'
-      },
-      querybbox: {
-        tooltip: 'disegna un rettangolo'
-      },
-      querybycircle: {
-        tooltip: 'disegna un cerchio'
-      },
-      querybyfreehand: {
-        tooltip: 'disegno a mano libera'
-      },
-    },
-    querybypolygon: {
-      download: {
-        title: "Download attributi",
-        choiches:{
-          feature: {
-            label: "Solo features",
-          },
-          feature_polygon: {
-            label: "Features+Poligono Interrogazione",
-          }
-        }
-      },
-      tooltip: 'Interroga per poligono',
-      no_geometry: 'Non contiene la geometria nella risposta',
-      help: {
-        message: "<ul><li>Seleziona un livello (visibile).</li><li>Clicca su una geometria nella mappa.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Disegna un poligono per interrogare",
-      help: {
-        message: "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli</li></ul>"
-      },
-    },
-    querybbox: {
-      tooltip: 'Interroga per BBOX',
-      nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
-      help: {
-        message: "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli</li></ul>"
-      },
-    },
-    querybycircle: {
-      tooltip: "Disegna un cerchio per interrogare",
-      label: 'Raggio',
-      help: {
-        message: "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>"
-      },
-    },
-    querybyfreehand: {
-      tooltip: "Disegno un poligono (a mano libera) per interrogare",
-      help: {
-        message: "<ul><li>Trascina il mouse per disegnare un poligono ed interrogare i livelli</li></ul>"
-      },
-    },
-  },
+  'mapcontrols.query.input_relation': "Clicca per consultare le relazioni",
+  'mapcontrols.queryby.title': 'Interroga un area',
+  'mapcontrols.queryby.layer': 'Livello selezionato:',
+  'mapcontrols.queryby.none': 'NESSUNO',
+  'mapcontrols.queryby.new': 'LIVELLO TEMPORANEO',
+  'mapcontrols.queryby.all': 'TUTTI',
+  'mapcontrols.queryby.methods.intersects': 'interseca',
+  'mapcontrols.queryby.methods.within': 'all\'interno',
+  'mapcontrols.queryby.querybypolygon.tooltip': 'seleziona un poligono',
+  'mapcontrols.queryby.querybydrawpolygon.tooltip': 'disegna un poligono',
+  'mapcontrols.queryby.querybbox.tooltip': 'disegna un rettangolo',
+  'mapcontrols.queryby.querybycircle.tooltip': 'disegna un cerchio',
+  'mapcontrols.queryby.querybyfreehand.tooltip': 'disegno a mano libera',
+
+  'mapcontrols.querybypolygon.download.title': "Download attributi",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Solo features",
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Features+Poligono Interrogazione",
+  'mapcontrols.querybypolygon.tooltip': 'Interroga per poligono',
+  'mapcontrols.querybypolygon.no_geometry': 'Non contiene la geometria nella risposta',
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Disegna un poligono per interrogare",
+  'mapcontrols.querybydrawpolygon.help.message': '<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>',
+
+  'mapcontrols.querybbox.tooltip': 'Interroga per BBOX',
+  'mapcontrols.querybbox.nolayers_visible': "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
+  'mapcontrols.querybbox.help.message': "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli</li></ul>",
+
+  'mapcontrols.querybycircle.tooltip': "Disegna un cerchio per interrogare",
+  'mapcontrols.querybycircle.label': 'Raggio',
+  'mapcontrols.querybycircle.help.message': "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>",
+
+  'mapcontrols.querybyfreehand.tooltip': "Disegno un poligono (a mano libera) per interrogare",
+  'mapcontrols.querybyfreehand.help.message': "<ul><li>Trascina il mouse per disegnare un poligono ed interrogare i livelli</li></ul>",
+
   sdk: {
     search: {
       all: 'TUTTE',

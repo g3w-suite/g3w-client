@@ -312,72 +312,36 @@ export default {
     xls: "Descarregar XLS",
     pdf: "Descarregar PDF",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Clique para mostrar as relações"
-    },
-    queryby: {
-      title: 'Consultar área',
-      layer: 'Selecionar camadas:',
-      none: 'NENHUM',
-      new: 'CAMADA TEMPORÁRIA',
-      all: 'TODOS',
-      methods: {
-        intersects: 'interseção',
-        within: 'dentro de'
-      },
-      querybypolygon: {
-        tooltip: 'selecione um polígono'
-      },
-      querybydrawpolygon: {
-        tooltip: 'desenhe um polígono'
-      },
-      querybbox: {
-        tooltip: 'desenhe um retangulo'
-      },
-      querybycircle: {
-        tooltip: 'desenhe um círculo'
-      }
-    },
-    querybypolygon: {
-      download: {
-        title: "Descarregar atributos",
-        choiches:{
-          feature: {
-            label:"Apenas geometrias",
-          },
-          feature_polygon: {
-            label:"Consultar Camadas+Polígono",
-          }
-        }
-      },
-      tooltip: 'Consultar por Polígono',
-      no_geometry: 'Resposta sem geometrias',
-      help: {
-        message: "<ul><li>Selecione uma camada (ativa).</li><li>Clique sobre uma geometria no mapa.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Desenhe um polígono para consultar ",
-      help: {
-        message: "<ul><li>Clique sobre o mapa para adicionar um novo vértice </li><li>Duplo clique para finalizar e inquirir camadas (sublinhado a amarelo na legenda)</li></ul>"
-      }
-    },
-    querybbox: {
-      tooltip: 'Consultar camada com retangulo',
-      nolayers_visible: 'Nenhuma camada consultável visivel. Defina pelo menos uma camada wfs visivel para executar a consulta',
-      help: {
-        message: "<ul><li>Arraste o rato para desenhar um retangulo e consultar as camadas. (sublinhado a amarelo na legenda)</li></ul>"
-      }
-    },
-    querybycircle: {
-      tooltip: "Consultar camada com circulo ",
-      label: 'Raio',
-      help: {
-        message: "<ul><li>Clique no mapa para desenhar o círculo</li></ul>"
-      },
-    },
-  },
+  'mapcontrols.query.input_relation': "Clique para mostrar as relações",
+  'mapcontrols.queryby.title': 'Consultar área',
+  'mapcontrols.queryby.layer': 'Selecionar camadas:',
+  'mapcontrols.queryby.none': 'NENHUM',
+  'mapcontrols.queryby.new': 'CAMADA TEMPORÁRIA',
+  'mapcontrols.queryby.all': 'TODOS',
+  'mapcontrols.queryby.methods.intersects': 'interseção',
+  'mapcontrols.queryby.methods.within': 'dentro de',
+  'mapcontrols.queryby.querybypolygon.tooltip': 'selecione um polígono',
+  'mapcontrols.queryby.querybydrawpolygon.tooltip': 'desenhe um polígono',
+  'mapcontrols.queryby.querybbox.tooltip': 'desenhe um retangulo',
+  'mapcontrols.queryby.querybycircle.tooltip': 'desenhe um círculo',
+
+  'mapcontrols.querybypolygon.download.title': "Descarregar atributos",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Apenas geometrias",
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Consultar Camadas+Polígono",
+  'mapcontrols.querybypolygon.tooltip': 'Consultar por Polígono',
+  'mapcontrols.querybypolygon.no_geometry': 'Resposta sem geometrias',
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Selecione uma camada (ativa).</li><li>Clique sobre uma geometria no mapa.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Desenhe um polígono para consultar",
+  'mapcontrols.querybydrawpolygon.help.message': "<ul><li>Clique sobre o mapa para adicionar um novo vértice </li><li>Duplo clique para finalizar e inquirir camadas (sublinhado a amarelo na legenda)</li></ul>",
+
+  'mapcontrols.querybbox.tooltip': 'Consultar camada com retangulo',
+  'mapcontrols.querybbox.nolayers_visible': 'Nenhuma camada consultável visivel. Defina pelo menos uma camada wfs visivel para executar a consulta',
+  'mapcontrols.querybbox.help.message': "<ul><li>Arraste o rato para desenhar um retangulo e consultar as camadas. (sublinhado a amarelo na legenda)</li></ul>",
+
+  'mapcontrols.querybycircle.tooltip': "Consultar camada com circulo",
+  'mapcontrols.querybycircle.label': 'Raio',
+  'mapcontrols.querybycircle.help.message': "<ul><li>Clique no mapa para desenhar o círculo</li></ul>",
   sdk: {
     search: {
       all: 'Todos',

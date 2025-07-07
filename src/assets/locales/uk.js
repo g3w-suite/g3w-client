@@ -310,75 +310,35 @@ export default {
     xls: "Завантажити XLS",
     pdf: "Завантажити PDF",
   },
-  mapcontrols: {
-    query: {
-      input_relation: "Показати відношення"
-    },
-    queryby: {
-      title: "Вибрати полігоном",
-      layer: "Шар:",
-      none: "НІЧОГО",
-      new: "ТИМЧАСОВИЙ ШАР",
-      all: "ВСЕ",
-      methods: {
-        intersects: "intersects",
-        within: "within"
-      },
-      querybypolygon: {
-        tooltip: "вибрати полігоном"
-      },
-      querybydrawpolygon: {
-        tooltip: "оцифрувати полігон",
-        help: {
-          message:"<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів</li></ul>"
-        }
-      },
-      querybbox: {
-        tooltip: "оцифрувати прямокутник"
-      },
-      querybycircle: {
-        tooltip: "оцифрувати коло"
-      }
-    },
-    querybypolygon: {
-      download: {
-        title: "Завантижити атрибути",
-        choiches:{
-          feature: {
-            label: "Тільки об'єкти",
-          },
-          feature_polygon: {
-            label: "Об'єкти та полігон",
-          }
-        }
-      },
-      tooltip: "Вибрати за об'єктом шару",
-      no_geometry: "Відповідь не містить геометрії",
-      help: {
-        message: "<ul><li>Виберіть (видимий) шар.</li><li>Клацніть по об'єкту на мапі.</li></ul>"
-      }
-    },
-    querybydrawpolygon: {
-      tooltip: "Вибрати за полігоном",
-      help: {
-        message: "<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
-      }
-    },
-    querybbox: {
-      tooltip: "Вибрати у межах шару",
-      nolayers_visible: "Відсутні видимі шари до яких можна сформувати запит. Переконайтеся, що є хоча б один видимий шар WFS",
-      help: {
-        message: "<ul><li>Протягніть мишкою щоб намалювати полігон та виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>"
-      }
-    },
-    querybycircle: {
-      tooltip: "Вибрати за радіусом",
-      label: "Радіус",
-      help: {
-        message: "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>"
-      },
-    },
-  },
+  'mapcontrols.query.input_relation': "Показати відношення",
+  'mapcontrols.queryby.title': "Вибрати полігоном",
+  'mapcontrols.queryby.layer': "Шар:",
+  'mapcontrols.queryby.none': "НІЧОГО",
+  'mapcontrols.queryby.new': "ТИМЧАСОВИЙ ШАР",
+  'mapcontrols.queryby.all': "ВСЕ",
+  'mapcontrols.queryby.querybypolygon.tooltip': "вибрати полігоном",
+  'mapcontrols.queryby.querybydrawpolygon.tooltip': "оцифрувати полігон",
+  'mapcontrols.queryby.querybbox.tooltip': "оцифрувати прямокутник",
+  'mapcontrols.queryby.querybycircle.tooltip': "оцифрувати коло",
+
+  'mapcontrols.querybypolygon.download.title': "Завантижити атрибути",
+  'mapcontrols.querybypolygon.download.choiches.feature.label': "Тільки об'єкти",
+  'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Об'єкти та полігон",
+  'mapcontrols.querybypolygon.tooltip': "Вибрати за об'єктом шару",
+  'mapcontrols.querybypolygon.no_geometry': "Відповідь не містить геометрії",
+  'mapcontrols.querybypolygon.help.message': "<ul><li>Виберіть (видимий) шар.</li><li>Клацніть по об'єкту на мапі.</li></ul>",
+
+  'mapcontrols.querybydrawpolygon.tooltip': "Вибрати за полігоном",
+  'mapcontrols.querybydrawpolygon.help.message': "<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>",
+
+  'mapcontrols.querybbox.tooltip': "Вибрати у межах шару",
+  'mapcontrols.querybbox.nolayers_visible': "Відсутні видимі шари до яких можна сформувати запит. Переконайтеся, що є хоча б один видимий шар WFS",
+  'mapcontrols.querybbox.help.message': "<ul><li>Протягніть мишкою щоб намалювати полігон та виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>",
+
+  'mapcontrols.querybycircle.tooltip': "Вибрати за радіусом",
+  'mapcontrols.querybycircle.label': "Радіус",
+  'mapcontrols.querybycircle.help.message': "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>",
+
   sdk: {
     search: {
       all: "ВСЕ",
