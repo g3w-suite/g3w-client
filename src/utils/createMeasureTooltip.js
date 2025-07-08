@@ -103,17 +103,16 @@ export function get_formatted_area(geom, epsg = ApplicationState.map.epsg, unit 
 
 export function get_formatted_length(geom, epsg = ApplicationState.map.epsg, unit = ApplicationState.map.unit) {
 
-  const segments = /^Polygon|^MultiPolygon/.test(geom.getType()) && (geom?.getPolygons?.() || [geom]).flatMap(p => p.getLinearRing().getCoordinates()) || [];
+  const segments = (/^Polygon|^MultiPolygon/.test(geom.getType()) && (geom?.getPolygons?.() || [geom]).flatMap(p => p.getLinearRing().getCoordinates())) || [];
 
   if (!(/^Line|^MultiLine/.test(geom.getType()) || (/^Polygon|^MultiPolygon/.test(geom.getType()) && segments.length > 2))) {
     return;
   }
-
   const length = 'EPSG:3857' === epsg || 'degrees' === unit
     ? ol.sphere.getLength(segments.length ? new ol.geom.LineString(segments) : geom, { projection: epsg })
     : /^Multi/.test(geom.getType())
       ? geom.getLineStrings().reduce((len, geom) => len+=geom.getLength(), 0)
-      : (new ol.geom.LineString(segments)).getLength();
+      : (segments.length ? new ol.geom.LineString(segments) : geom).getLength();
 
   if ('nautical' === unit) {
     return `${length * 0.0005399568} nm`;
