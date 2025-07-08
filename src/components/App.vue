@@ -224,8 +224,8 @@
                 </span>
                 <span
                   @click.stop       = "app.sidebar.btn_close && closeAllPanels()"
-                  v-t-tooltip:right = "app.sidebar.tooltip_close || 'close'"
-                  :current-tooltip  = "app.sidebar.tooltip_close || 'close'"
+                  :data-i18n-title  = "app.sidebar.tooltip_close || 'close'"
+                  data-placement    = "right"
                   class             = "g3w-span-button close-pane-button"
                 >
                   <i

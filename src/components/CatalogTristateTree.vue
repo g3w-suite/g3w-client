@@ -112,16 +112,18 @@
           scalevisibility: showscalevisibilityclass
         }"
         class                = "g3w-long-text"
-        v-t-tooltip:top.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        :current-tooltip     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        :data-i18n-title     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        data-placement       = "top"
+        data-i18n-raw        = ""
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
-          v-if                 = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
-          :current-tooltip     = "layerstree.filter.current.name"
-          v-t-tooltip:top.text = "layerstree.filter.current.name"
-          style                = "cursor: pointer"
-          @click.stop          = "removeCurrentFilter"
+          v-if             = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :data-i18n-title = "layerstree.filter.current.name"
+          data-placement   = "top"
+          data-i18n-raw    = ""
+          style            = "cursor: pointer"
+          @click.stop      = "removeCurrentFilter"
         >
           <span
             style  = "color: red"

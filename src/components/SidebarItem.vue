@@ -15,8 +15,8 @@
     <a
       href              = "#"
       style             = "display: flex; justify-content: space-between; align-items: center"
-      v-t-tooltip:right = "sidebar.open ? '' : title"
-      :current-tooltip  = "sidebar.open ? '' : title"
+      :data-i18n-title  = "sidebar.open ? '' : title"
+      data-placement    = "right"
     >
       <div>
         <span

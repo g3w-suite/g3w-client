@@ -30,8 +30,8 @@
       @click            = "!disabled ? tool.action(tool) : null"
       :class            = "{ tool_disabled: disabled }"
       style             = "position:relative"
-      v-t-tooltip:right = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
-      :current-tooltip  = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      :data-i18n-title  = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      data-placement    = "right"
     >
       <bar-loader :loading = "tool.loading"/>
       <i :class = "$fa(tool.icon || 'caret-right')"></i>
