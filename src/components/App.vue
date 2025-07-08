@@ -921,14 +921,13 @@ export default {
 
         history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
 
+        // wait until all plugins have been translated
         await waitFor(() => {
-          const locales = L.locales[lang];
-          if (!locales?.plugins) {
-            return;
-          }
-          //Check if ready client translation and all pluglins are ready
-          //exluding plugin that haven't translation check default language en 
-          return Object.keys(locales).length > 1 && Object.keys(initConfig.plugins).filter(name => L.locales.en.plugins[name]).length === Object.keys(locales.plugins).length;
+          const locale             = Object.keys(L.locales[lang]);
+          const installed_plugins  = Object.keys(initConfig.plugins);
+          const i18n_plugins       = Array.from((new Set(Object.keys(L.locales.en).filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
+          const translated_plugins = Array.from((new Set(locale.filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
+          return locale.length && installed_plugins.filter(name => i18n_plugins.includes(name)).length === translated_plugins.length;
         });
 
         setTimeout(() => {
