@@ -3,6 +3,7 @@
  * @since 4.0.0
  */
 
+import { gettext as _ }           from 'g3w-i18n';
 import ApplicationState           from 'store/application';
 import GUI                        from 'services/gui';
 import { XHR }                    from 'utils/XHR';
@@ -25,7 +26,7 @@ class StreetViewControl extends InteractionControl {
       offline:                 false,
       visible:                 true, // always visible. Only change behavior if exist or not
       name:                    "streetview",
-      tipLabel:                "StreetView",
+      tipLabel:                _("StreetView"),
       clickmap:                true,
       interactionClass:        PickCoordinatesInteraction,
       interactionClassOptions: { cursor: 'ol-streetview' },
