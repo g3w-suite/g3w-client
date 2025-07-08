@@ -19,11 +19,11 @@
 
       <!-- BACK BUTTON -->
         <span
-          v-if                     = "showrelationslist"
-          v-t-tooltip:right.create = "'sdk.relations.back_to_relations'"
-          class                    = "action-button-icon action-button back-button"
-          :class                   = "$fa('exit')"
-          @click.stop              = "back">
+          v-if              = "showrelationslist"
+          v-t-tooltip:right = "'Back to relations'"
+          class             = "action-button-icon action-button back-button"
+          :class            = "$fa('exit')"
+          @click.stop       = "back">
         </span>
 
         <!-- RELATION NAME -->
@@ -38,14 +38,14 @@
         <!-- DOWNLOAD BUTTON -->
         <span
           v-if                    = "download.formats.length"
-          v-download
+          v-disabled              = "ApplicationState.download"
           class                   = "action-button-icon action-button"
           :class                  = "[
             $fa('download'),
             { 'toggled-white': download.toggled },
           ]"
-          @click.stop             = "download.handler"
-          v-t-tooltip:left.create = "download.formats.length > 1 ? 'Downloads' : `sdk.tooltips.download_${this.download.formats[0]}`">
+          @click.stop      = "download.handler"
+          v-t-tooltip:left = "download.formats.length > 1 ? 'Downloads' : `download_types.${this.download.formats[0]}`">
         </span>
 
         <!-- SHOW CHART BUTTON -->
@@ -56,8 +56,8 @@
             $fa('chart'),
             chart.toggled ? 'toggled-white' : '',
           ]"
-          @click.stop               = "chart.handler"
-          v-t-tooltip:bottom.create = "'sdk.tooltips.show_chart'">
+          @click.stop        = "chart.handler"
+          v-t-tooltip:bottom = "'Show Chart'">
         </span>
 
       </div>
@@ -125,25 +125,25 @@
                 class = "table-tools"
               >
                 <span
-                  v-if                     = "table.features[index].geometry"
-                  @click.stop              = "zoomToGeometry(table.features[index].geometry)"
-                  class                    = "action-button row-form skin-color"
-                  v-t-tooltip:right.create = "'sdk.tooltips.relations.zoomtogeometry'"
-                  :class                   = "$fa('marker')"
+                  v-if              = "table.features[index].geometry"
+                  @click.stop       = "zoomToGeometry(table.features[index].geometry)"
+                  class             = "action-button row-form skin-color"
+                  v-t-tooltip:right = "'Zoom to Geometry'"
+                  :class            = "$fa('marker')"
                 ></span>
                 <span
-                  v-if                     = "table.formStructure"
-                  @click.stop              = "showFormStructure(row, index)"
-                  v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
-                  class                    = "action-button row-form skin-color"
-                  :class                   = "$fa('table')"
+                  v-if              = "table.formStructure"
+                  @click.stop       = "showFormStructure(row, index)"
+                  v-t-tooltip:right = "'Form View'"
+                  class             = "action-button row-form skin-color"
+                  :class            = "$fa('table')"
                 ></span>
                 <span
-                  v-if                     = "isEditable"
-                  @click.stop              = "editFeature(index)"
-                  class                    = "action-button row-form skin-color"
-                  v-t-tooltip:right.create = "'Edit'"
-                  :class                   = "$fa('pencil')"
+                  v-if              = "isEditable"
+                  @click.stop       = "editFeature(index)"
+                  class             = "action-button row-form skin-color"
+                  v-t-tooltip:right = "'Edit'"
+                  :class            = "$fa('pencil')"
                 ></span>
               </td>
               <td v-for = "value in row.slice(1)">
@@ -175,7 +175,7 @@
       v-else
       class = "dataTables_scrollBody"
     >
-      <span v-t = "'sdk.relations.no_relations_found'"></span>
+      <span v-t = "'No relations found'"></span>
     </div>
   </div>
 
@@ -221,6 +221,9 @@
     data() {
       const layer  = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
       return {
+
+        /** @since 4.0.0 */
+        ApplicationState,
 
         /**
          * @since 4.0.0 chart state (action button)

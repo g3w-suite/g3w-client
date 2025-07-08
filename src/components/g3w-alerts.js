@@ -6,7 +6,7 @@
 import ApplicationState   from 'store/application';
 import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
-import { t }              from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 /**
  * Custom navbar item: "alerts"
@@ -38,25 +38,25 @@ async function _showAlertsManager() {
   const dialog = Object.assign(document.createElement('template'), {
     innerHTML: /* html */`
       <dialog id="project-messages" popover="manual">
-        <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${t('alerts')}</h4>
+        <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${_('alerts')}</h4>
         <form method="dialog">
           <table style="user-select:none;width:100%;">
             <thead>
               <tr>
-                <th><i class="fa fa-check"></i> ${ t('Marked as read') }</th>
+                <th><i class="fa fa-check"></i> ${ _('Marked as read') }</th>
               </tr>
             </thead>
             <tbody>
               ${messages.items.map(message => /* html */`
                 <tr>
                   <td>
-                    <label style="display: flex;justify-content: space-between; font-weight:${data[pid].some(id => id === message.id) ? 'normal' : 'bold'};" title="${ t('Mark as read/unread') }">
+                    <label style="display: flex;justify-content: space-between; font-weight:${data[pid].some(id => id === message.id) ? 'normal' : 'bold'};" title="${ _('Mark as read/unread') }">
                       &bull; ${message.title}
                       <input name="dont_show_again_${message.id}" type="checkbox" ${data[pid].some(id => id === message.id) ? 'checked' : ''}>
                     </label>
                   </td>
                   <td style="width: 20px;" ${edit_url ? '' : 'hidden'}>
-                    <a href="${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" title="Edit in admin">
+                    <a href="${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" data-i18n-title="Edit in admin">
                       <i class="far fa-edit"></i>
                     </a>
                   </td>
@@ -65,7 +65,7 @@ async function _showAlertsManager() {
             </tbody>
           </table>
           <menu style="display: flex; justify-content: end;">
-            <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-messages">${messages.items.find(message => !data[pid].some(id => id === message.id)) ? t('show') : t('close')}</button>
+            <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-messages">${messages.items.find(message => !data[pid].some(id => id === message.id)) ? _('show') : _('close')}</button>
           </menu>
         </form>
       </dialog>
@@ -94,8 +94,8 @@ async function _showAlertsManager() {
     window.localStorage.setItem('MESSAGES', JSON.stringify(data));
     dialog.querySelector('menu button[value="close"]').innerHTML =
       Array.from(dialog.querySelectorAll('[name^="dont_show_again_"]')).some(checkbox => !checkbox.checked)
-      ? t('show')
-      : t('close');
+      ? _('show')
+      : _('close');
   }));
 
   dialog.addEventListener('click', e => {
@@ -147,9 +147,9 @@ async function _showAlerts() {
             ${message.body}
             <menu style="display: flex;justify-content: space-between;">
               <label style="display: block; width: fit-content;">
-                <input type="checkbox" name="dont_show_again" /> ${t('dont_show_again')}
+                <input type="checkbox" name="dont_show_again" /> ${_('Don\'t show again')}
               </label>
-              <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-message">${t('close')}</button>
+              <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-message">${_('close')}</button>
             </menu>
           </form>
         </dialog>

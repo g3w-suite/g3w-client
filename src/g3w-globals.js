@@ -88,7 +88,7 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 
-import i18n                                        from 'g3w-i18n';
+import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import { MapLayersStoresRegistry }                 from 'services/map';
 import { SearchPanel }                             from 'components/g3w-search';
@@ -175,7 +175,7 @@ const g3wsdk = {
     },
     ApplicationService,
     ApplicationState,
-    i18n,
+    i18n: { t: _ },
     task: {
       TaskService
     },
@@ -349,6 +349,18 @@ g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.ifr
 
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = window.initConfig.projects.find(p => alias.gid === p.gid); if (p) { p.url = `${alias.host || ''}${alias.url}` } };
+
+/** used by the following plugins: "datasinc" */
+g3wsdk.core.i18n.getAppLanguage = () => window.initConfig.user.i18n || "en";
+/* function to translate plugins */
+g3wsdk.core.i18n.tPlugin        = text => _(`plugins.${text}`);
+/** used by the following plugins: "iframe", "law", "bforest", "sispi-worksite", "gsk", "arpalombardia-charts", "simplereporting", "politowps", "billboards", "ws-trento", "br-service", "datasinc", "archiweb", "fsimulator", "skeleton", "elevation-profile" */
+g3wsdk.core.i18n.addI18nPlugin  = ({ name, config }) =>  {
+  console.warn('[G3W-I18N] g3wsdk.core.i18n.addI18nPlugin is deprecated, please use `g3wsdk.core.plugin.Plugin.setLocale` instead')
+  for (const lang in config) {
+    _.register(lang, { plugins: { [name]: config[lang] } });
+  }
+};
 
 /**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances

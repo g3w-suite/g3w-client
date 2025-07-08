@@ -16,7 +16,7 @@ import { getFilterExpression }     from "utils/getFilterExpression";
 /**
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
  * 
- * Used by the following plugins: "editing", "cadastre", "geonotes", "iternet"  
+ * Used by the following plugins: "editing", "cadastre", "geonotes", "iternet"
  */
 export class FormComponent extends Component {
   constructor(opts = {}) {

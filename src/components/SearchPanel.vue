@@ -12,12 +12,16 @@
     <h4><b>{{ state.title }}</b></h4>
 
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
-      <helpdiv message="sdk.search.help_filter"/>
+      <!-- HELP DIV -->
+      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
+        <div v-t = "'Search values are limited based on the active filter. Remove the filter to search all data.'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
+      </div>
       <button
-        v-t-tooltip:left.create = "'layer_selection_filter.tools.nofilter'"
-        @click.stop             = "clearFilters"
-        class                   = "btn skin-border-color"
-        style                   = "background-color: transparent; margin: 5px 0"
+        v-t-tooltip:left = "'Remove Filter'"
+        @click.stop      = "clearFilters"
+        class            = "btn skin-border-color"
+        style            = "background-color: transparent; margin: 5px 0"
       >
         <i class = "skin-color" :class="$fa('clear')"></i>
       </button>
@@ -150,9 +154,9 @@
 
         <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
-          <label v-t-tooltip:right.create = "'sdk.search.autofilter_tooltip'" style="display: block;">
+          <label v-t-tooltip:right = "'Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.'" style="display: block;">
             <input type = "checkbox" v-model = "autofilter" style="margin:0;" />
-            <span v-t="'sdk.search.autofilter'"></span>
+            <span v-t="'Filter results'"></span>
             <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
           </label>
         </div>
@@ -174,7 +178,7 @@
     <slot name = "footer"></slot>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">Edit in admin</a></b></div>
+    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">{{ $t('Edit in admin') }}</a></b></div>
 
   </div>
 </template>
@@ -190,7 +194,7 @@
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import resizeMixin                           from 'mixins/resize';
-  import { t, languageIsReady }                from 'g3w-i18n';
+  import { gettext as _ }                      from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];
@@ -485,10 +489,10 @@
             return null;                                                                                    // hide the term
           },
           language: {
-            noResults:     () => t("sdk.search.no_results"),
-            errorLoading:  () => t("sdk.search.error_loading"),
-            searching:     () => t("sdk.search.searching"),
-            inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
+            noResults:     () => _('No results'),
+            errorLoading:  () => _('Error Loading Data'),
+            searching:     () => _('Searching ...'),
+            inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
           },
         });
 
@@ -542,9 +546,7 @@
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => ApplicationState.language,  async (lang) => {
-          unwatch();
-          await languageIsReady(lang);
+        GUI.on('i18n-ready', () => {
           this.clearSelect2();
           this.initSelect2Field(input);
         });

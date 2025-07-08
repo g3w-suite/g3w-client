@@ -8,7 +8,7 @@ import {
   TIMEOUT,
 }                                 from 'g3w-constants';
 import { VM }                     from 'g3w-eventbus';
-import { t }                      from 'g3w-i18n';
+import { gettext as _ }           from 'g3w-i18n';
 import ApplicationState           from 'store/application';
 import GUI                        from 'services/gui';
 import { saveBlob }               from 'utils/saveBlob';
@@ -50,7 +50,7 @@ GUI.once('ready', () => {
             download: true,
             format,
             class:    GUI.getFontClass(format),
-            hint:     `sdk.tooltips.download_${format}`,
+            hint:     `download_types.${format}`,
             cbk: (layer, feature, action, index, html, down_with_relations) => {
               // un-toggle downloads action
               downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
@@ -80,11 +80,11 @@ export async function downloadFeatures(type, layer, features = [], action, index
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <dialog>
-          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ t('sdk.catalog.menu.download.title') }</h4>
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ _('Export features') }</h4>
           <form method="dialog">
 
             <div class="form-group">
-              <label>${ t('sdk.catalog.menu.download.layer') }</label>
+              <label>${ _('Layer') }</label>
               <select name="layer" class="form-control" disabled>
                 <option value="${layer.id}" selected>${ layer.name }</option>
                 ${
@@ -96,28 +96,28 @@ export async function downloadFeatures(type, layer, features = [], action, index
             </div>
 
             <div class="form-group">
-              <label>${ t('sdk.catalog.menu.download.data_format') }</label>
+              <label>${ _('Data Format') }</label>
               <select name="format" class="form-control">
                 ${[
-                    catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ t('GeoTiff') }</option>` : '',
-                    catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff-at-map-extent">${ t('sdk.catalog.menu.download.geotiff_map_extent') }</option>` : '',
-                    catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ t('Shapefile') }</option>` : '',
-                    catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ t('GPX') }</option>` : '',
-                    catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ t('GeoPackage') }</option>` : '',
-                    catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ t('CSV') }</option>` : '',
-                    catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ t('Excel') }</option>` : '',
+                    catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
+                    catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff-at-map-extent">${ _('GeoTiff (current view)') }</option>` : '',
+                    catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
+                    catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
+                    catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
+                    catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
+                    catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
                     external_layer && 'wms' !== external_layer._type && external_layer.downloadUrl  ? /* html */`<option value="external-url">External URL</option>` : '',
-                    external_layer && 'wms' !== external_layer._type && !external_layer.downloadUrl ? /* html */`<option value="external-shp">${ t('Shapefile') }</option>` : '',
+                    external_layer && 'wms' !== external_layer._type && !external_layer.downloadUrl ? /* html */`<option value="external-shp">${ _('Shapefile') }</option>` : '',
                   ].filter(Boolean).join('')
                 }
               </select>
             </div>
 
             <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() ? '' : 'hidden' }>
-              <label>${ t('sdk.catalog.menu.download.include_relations') }</label>
+              <label>${ _('Include relations in exported file?') }</label>
               <select name="down_with_relations" class="form-control">
-                <option value="1">${ t('yes') }</option>
-                <option value="0">${ t('no') }</option>
+                <option value="1">${ _('yes') }</option>
+                <option value="0">${ _('no') }</option>
               </select>
             </div>
 
@@ -336,12 +336,12 @@ export async function downloadFeatures(type, layer, features = [], action, index
         {
           id: getUniqueDomId(),
           type: 'feature',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature.label',
+          label: 'mapcontrols.querybypolygon.download.choiches.feature.label',
         },
         {
           id: getUniqueDomId(),
           type: 'polygon',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
+          label: 'mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
         },
       ],
       // choose between only feature attribute or also polygon attribute

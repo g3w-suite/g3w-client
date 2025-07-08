@@ -24,15 +24,15 @@
         </div>
       </div>
       <div v-if = "!state.menuitems.length" style = "margin-left:15px;">
-        <h2 v-t = "'no_other_projects'"></h2>
+        <h2 v-t = "'No more project for this group'"></h2>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import GUI   from 'services/gui';
-import { t } from 'g3w-i18n';
+import GUI              from 'services/gui';
+import { gettext as _ } from 'g3w-i18n';
 
 export default {
 
@@ -65,7 +65,7 @@ export default {
         .then(promise => { // changeProject is a setter so it returns a promise
           promise
             .then(project => { if (project) document.title = project.state.html_page_title })
-            .fail(() => { GUI.notify.error("<h4>" + t("error_map_loading") + "</h4>" + "<h5>"+ t("check_internet_connection_or_server_admin") + "</h5>"); })
+            .fail(() => { GUI.notify.error("<h4>" + _('Error occurs loading map') + "</h4>" + "<h5>"+ _('Check internet connection or contact admin') + "</h5>"); })
             .always(() => { this._toggleModal(false); })
         });
     },

@@ -75,7 +75,7 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
   if (errors.length) {
     GUI.showUserMessage({
       type: 'warning',
-      message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
+      message: 'The result in the map is partial due to the presence of the below incorrect records list:',
       hooks: {
         footer: {
           template: /* html */

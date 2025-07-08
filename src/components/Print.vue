@@ -18,17 +18,17 @@
         <fieldset style="border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: hsl(from var(--bgcolor) h s calc(l + 8)); color: rgb(255, 255, 255); user-select:none">
           <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
           <details>
-            <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right.create = "'show_more'">
-              <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'sdk.print.help'"></span>
+            <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right = "'Show more'">
+              <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'Exportable layers are defined by the administrator'"></span>
               <i class="far fa-eye"></i>
             </summary>
             <hr style="margin: 10px 0;border-style: dotted;">
-            <div style="white-space: wrap; line-height: 25px;" v-t-html="'sdk.print.help_details'"></div>
+            <div style="white-space: wrap; line-height: 25px;" v-t="'print_help'"></div>
           </details>
         </fieldset>
 
         <!-- PRINT TEMPLATE -->
-        <label for = "templates" v-t = "'sdk.print.template'"></label>
+        <label for = "templates" v-t = "'Template'"></label>
         <select
           id             = "templates"
           class          = "form-control"
@@ -43,7 +43,7 @@
         <template v-if = "!state.atlas">
 
           <!-- PRINT SCALE -->
-          <label for = "scale" v-t = "'sdk.print.scale'"></label>
+          <label for = "scale" v-t = "'Scale'"></label>
           <select
             id             = "scale"
             class          = "form-control"
@@ -72,7 +72,7 @@
           </select>
 
           <!-- PRINT ROTATION -->
-          <label for = "rotation" v-t = "'sdk.print.rotation'"></label>
+          <label for = "rotation" v-t = "'Rotation'"></label>
           <input
             id         = "rotation"
             class      = "form-control"
@@ -85,7 +85,7 @@
           />
 
           <!-- PRINT FORMAT -->
-          <label for = "format" v-t = "'sdk.print.format'"></label>
+          <label for = "format" v-t = "'Format'"></label>
           <select
             id             = "format"
             class          = "form-control"
@@ -114,8 +114,8 @@
             <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
             <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
             <div id = "fid-print-atals-instruction">
-              <div id = "fids_intruction"      v-t = "'sdk.print.fids_instruction'"></div>
-              <div id = "fids_examples_values" v-t = "'sdk.print.fids_example'"></div>
+              <div id = "fids_intruction"      v-t = "'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6'"></div>
+              <div id = "fids_examples_values" v-t = "'Ex. 1,4-6 will be printed id 1,4,5,6'"></div>
             </div>
           </template>
         </div>
@@ -124,7 +124,7 @@
           v-if  = "state.labels && state.labels.length > 0"
           class = "print-labels-content"
         >
-          <b class = "skin-color" v-t = "'sdk.print.labels'"></b>
+          <b class = "skin-color" v-t = "'Labels'"></b>
           <div class = "labels-input-content">
             <span
               v-for = "label in state.labels"
@@ -143,21 +143,24 @@
         <button
           id                  = "printbutton"
           class               = "sidebar-button-run btn"
-          v-disabled          = "disabled"
-          v-download
-          v-t                 = "'create_print'"
+          v-disabled          = "ApplicationState.download || disabled"
+          v-t                 = "'Create Print'"
           @click.stop.prevent = "print"
         ></button>
 
       </form>
 
       <div style = "padding: 1em;text-align: center;">
-        <b><a
-            :href  = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
-            target = "_blank"
-            title  = "QGIS Docs">
-          <i :class = "$fa('external-link')"></i> Edit in QGIS
-        </a></b>
+        <b>
+          <a
+            :href            = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
+            target           = "_blank"
+            data-i18n-title  = "QGIS Docs"
+            data-placement   = "right"
+          >
+          <i :class = "$fa('external-link')"></i> {{ $t('Edit in QGIS') }}
+          </a>
+        </b>
       </div>
 
     </li>
@@ -183,7 +186,7 @@ import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 import resizeMixin                  from 'mixins/resize';
 
 import vueComp                      from 'components/PrintPage.vue';
-import { t }                        from 'g3w-i18n';
+import { gettext as _ }             from 'g3w-i18n';
 
 export default {
 
@@ -195,6 +198,8 @@ export default {
   data() {
     this.init();
     return {
+      /** @since 4.0.0 */
+      ApplicationState,
       state: this.state || {},
       disabled: false,
       /** @since 3.10.0 */
@@ -568,7 +573,7 @@ export default {
 
       if (err) {
         console.warn(err);
-        GUI.notify.error(err || t("info.server_error"));
+        GUI.notify.error(err || _("info.server_error"));
         GUI.closeContent();
       }
 
@@ -728,10 +733,10 @@ export default {
           return null;                                                                                 // hide the term
         },
         language: {
-          noResults:     () => t("sdk.search.no_results"),
-          errorLoading:  () => t("sdk.search.error_loading"),
-          searching:     () => t("sdk.search.searching"),
-          inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
+          noResults:     () => _('No results'),
+          errorLoading:  () => _('Error Loading Data'),
+          searching:     () => _('Searching ...'),
+          inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
         },
       });
       this.select2.on('select2:select',   e => { this.atlas_values.push(e.params.data.id); });
@@ -810,7 +815,7 @@ export default {
         }
       } catch (e) {
         console.warn(e);
-        GUI.notify.error(e || t("info.server_error"));
+        GUI.notify.error(e || _("info.server_error"));
         GUI.closeContent();
       } finally {
         clearTimeout(timeout);

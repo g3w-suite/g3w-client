@@ -18,7 +18,7 @@ GUI.once('ready', async () => {
       options: {
         toggled:          true,
         offline:          false,
-        tipLabel:         "sdk.mapcontrols.query.tooltip",
+        tipLabel:         'Query layer',
         clickmap:         true,
         interactionClass: PickCoordinatesInteraction,
         cursorClass:      'ol-help',

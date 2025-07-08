@@ -14,15 +14,20 @@
     <li v-if = "showaddform">
       <div style = "display: flex; justify-content: end">
         <span
-          v-t-tooltip:left.create  = "'close'"
-          @click.stop              = "showaddform = false"
-          :class                   = "$fa('close')"
-          class                    = "sidebar-button sidebar-button-icon"
-          style                    = "padding: 5px; margin: 3px;"
+          v-t-tooltip:left = "'close'"
+          @click.stop      = "showaddform = false"
+          :class           = "$fa('close')"
+          class            = "sidebar-button sidebar-button-icon"
+          style            = "padding: 5px; margin: 3px;"
         ></span>
       </div>
+      
 
-      <helpdiv message = "sdk.spatialbookmarks.helptext" />
+      <!-- HELP DIV -->
+      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
+        <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
+      </div>
 
       <div
         class = "container add-bookmark-input"
@@ -44,13 +49,14 @@
     <template v-else>
 
       <div v-if = "is_staff" class = "content-bookmarks">
-        <span :hidden = "is_mobile" v-t = "'sdk.spatialbookmarks.sections.project.title'"></span>
+        <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
         <a
-          :hidden = "is_mobile"
-          :href  = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
-          target = "_blank"
-          style  = "float: right;"
-          title  = "QGIS Docs"
+          :hidden          = "is_mobile"
+          :href            = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+          target           = "_blank"
+          style            = "float: right;"
+          data-i18n-title  = "QGIS Docs"
+          data-placement   = "right"
         >
           <i :class = "$fa('external-link')"></i>
         </a>
@@ -97,14 +103,14 @@
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span :hidden = "is_mobile" v-t="'sdk.spatialbookmarks.sections.user.title'"></span>
+        <span :hidden = "is_mobile" v-t="'User Bookmarks'"></span>
         <span
-          :hidden                 = "is_mobile"
-          v-t-tooltip:left.create = "'add'"
-          @click.stop             = "showAddForm"
-          style                   = "padding: 5px; cursor: pointer;"
-          class                   = "sidebar-button sidebar-button-icon"
-          :class                  = "$fa('plus')"
+          :hidden          = "is_mobile"
+          v-t-tooltip:left = "'add'"
+          @click.stop      = "showAddForm"
+          style            = "padding: 5px; cursor: pointer;"
+          class            = "sidebar-button sidebar-button-icon"
+          :class           = "$fa('plus')"
         ></span>
       </div>
 
@@ -136,7 +142,7 @@
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
-  import { t }                from 'g3w-i18n';
+  import { gettext as _ }     from 'g3w-i18n';
 
     export default {
 
@@ -181,7 +187,7 @@
 
         addbookmarkinput: {
           name:     'add-bookmark',
-          label:    t('sdk.spatialbookmarks.input.name'),
+          label:    _('Name'),
           i18nLabel:true,
           value:    null,
           editable: true,

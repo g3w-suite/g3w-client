@@ -53,14 +53,12 @@
             @click         = "onCustomItemClick($event, item)"
             :target        = "item.target"
             data-placement = "bottom"
-            data-toggle    = "tooltip"
-            data-container = "body"
-            v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
+            v-t-tooltip    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
           >
             <i v-if     = "item.icon" :class = "item.icon"></i>
             <img v-if   = "item.img" height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
-            <span v-if  = "item.i18n"  v-t-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
-            <span v-if  = "!item.i18n" v-html   = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
+            <span v-if  = "item.i18n"  v-t    = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
+            <span v-if  = "!item.i18n" v-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
           </a>
         </li>
 
@@ -125,7 +123,7 @@
                 :href = "user.logout_url"
                 class = "nav-logout btn btn-default btn-flat skin-color"
               >
-                <b v-t="'logout'"></b><i :class = "$fa('sign-out')"></i>
+                <b v-t="'Logout'"></b><i :class = "$fa('sign-out')"></i>
               </a>
 
               <!-- SHARE URL -->
@@ -134,7 +132,7 @@
                 @click = "showEmbedModal"
                 class  = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b v-t="'embed_map'"></b><i :class = "$fa('share-alt')"></i>
+                <b v-t="'Embed map'"></b><i :class = "$fa('share-alt')"></i>
               </a>
 
               <!-- CHANGE MAP -->
@@ -153,7 +151,7 @@
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
               >
-                <b v-t="'mapcontrols.add_layer_control.header'"></b><i :class="$fa('layers')"></i> 
+                <b v-t="'Add Layer'"></b><i :class="$fa('layers')"></i> 
               </a>
             </li>
           </ul>
@@ -216,23 +214,19 @@
 
               <div>
                 <span
-                  v-if               = "panels.length > 1"
-                  @click.stop        = "closePanel"
-                  data-placement     = "left"
-                  data-toggle        = "tooltip"
-                  data-container     = "body"
-                  v-t-tooltip.create = "'back'"
-                  class              = "skin-tooltip-left g3w-span-button close-pane-button"
+                  v-if           = "panels.length > 1"
+                  @click.stop    = "closePanel"
+                  data-placement = "left"
+                  v-t-tooltip    = "'back'"
+                  class          = "g3w-span-button close-pane-button"
                 >
                   <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
                 </span>
                 <span
-                  @click.stop              = "app.sidebar.btn_close && closeAllPanels()"
-                  data-toggle              = "tooltip"
-                  data-container           = "body"
-                  v-t-tooltip:right.create = "app.sidebar.tooltip_close || 'close'"
-                  :current-tooltip         = "app.sidebar.tooltip_close || 'close'"
-                  class                    = "skin-tooltip-left g3w-span-button close-pane-button"
+                  @click.stop       = "app.sidebar.btn_close && closeAllPanels()"
+                  :data-i18n-title  = "app.sidebar.tooltip_close || 'close'"
+                  data-placement    = "right"
+                  class             = "g3w-span-button close-pane-button"
                 >
                   <i
                     :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
@@ -266,7 +260,7 @@
             data-target    = "#modal-metadata"
           >
             <i :class="$fa('file')" style="color: #fff;"></i>
-            <span class="treeview-label" v-t="'sdk.metadata.title'"></span>
+            <span class="treeview-label" v-t="'Metadata'"></span>
           </a>
         </li>
 
@@ -276,14 +270,14 @@
 
       <!-- TOGGLE BUTTON (sidebar menu) -->
       <a
-        href               = "#"
-        class              = "sidebar-aside-toggle"
-        :class             = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
-        style              = "z-index: 2"
-        @click.prevent     = "toggleSidebar"
-        role               = "button"
-        data-placement     = "right"
-        v-t-tooltip.create = "'sidebar_menu'"
+        href           = "#"
+        class          = "sidebar-aside-toggle"
+        :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
+        style          = "z-index: 2"
+        @click.prevent = "toggleSidebar"
+        role           = "button"
+        data-placement = "right"
+        v-t-tooltip    = "'Sidebar menu'"
       ></a>
 
     </aside>
@@ -443,27 +437,27 @@
               "
             >
               <i
-                v-if                      = "undefined !== state.split"
-                :class                    = "$fa(`resize-${state.split}`)"
-                v-t-tooltip:bottom.create = "'enlange_reduce'"
-                style                     = "margin-right: 3px;"
-                class                     = "action-button skin-color-dark"
-                @click                    = "resizeFull"
+                v-if               = "undefined !== state.split"
+                :class             = "$fa(`resize-${state.split}`)"
+                v-t-tooltip:bottom = "'Enlarge / Reduce'"
+                style              = "margin-right: 3px;"
+                class              = "action-button skin-color-dark"
+                @click             = "resizeFull"
               ></i>
             </div>
             <i
-              style="cursor: pointer; scale:.9;"
-              :style = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              v-t-tooltip:bottom.create="`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
-              class="action-button skin-color-dark fa fa-external-link-alt"
-              @click ="splitContent"
+              style              = "cursor: pointer; scale:.9;"
+              :style             = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              v-t-tooltip:bottom = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
+              class              = "action-button skin-color-dark fa fa-external-link-alt"
+              @click             = "splitContent"
             ></i>
             <i
-              v-if = "state.content.closable"
-              @click = "closeContent"
-              v-t-tooltip:bottom.create="'close'"
-              :class = "{'mobile': isMobile()}"
-              class  = "action-button skin-color-dark fas fa-times"
+              v-if               = "state.content.closable"
+              @click             = "closeContent"
+              v-t-tooltip:bottom = "'close'"
+              :class             = "{'mobile': isMobile()}"
+              class              = "action-button skin-color-dark fas fa-times"
             ></i>
           </div>
         </div>
@@ -475,7 +469,7 @@
 
     <!-- COOKIE BANNER -->
     <cookie-law theme = "dark-lime" :buttonText = "cookie_law_buttonText">
-      <div slot="message" v-t="'cookie_law.message'"></div>
+      <div slot="message" v-t="'This website uses cookies to ensure you get the best experience on our website.'"></div>
     </cookie-law>
 
     <Teleport to="body">
@@ -513,6 +507,7 @@ import GUI                from 'services/gui';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { promisify }      from 'utils/promisify';
 import { sameOrigin }     from 'utils/sameOrigin';
+import { waitFor }        from 'utils/waitFor';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
@@ -520,7 +515,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import { t, i18next }     from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 export default {
 
@@ -531,11 +526,11 @@ export default {
     return {
       iframe:                false,
       language:              null,
-      cookie_law_buttonText: t('cookie_law.buttonText'),
+      cookie_law_buttonText: _('Got It!'),
       app:                   ApplicationState,
       state:                 ApplicationState.viewport,
       updatePreviousTitle:   false,
-      header:                t('main navigation'),
+      header:                _('main navigation'),
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
     }
   },
@@ -908,16 +903,58 @@ export default {
 
   watch: {
 
-    language(language, cl) {
-      if (!language) {
-        return;
-      }
-      if (cl) {
-        i18next.changeLanguage(language);
-        ApplicationState.language = language;
-        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? language : part).join('/'));
-        this.cookie_law_buttonText = t('cookie_law.buttonText');
-      }
+    language: {
+      immediate: true,
+      async handler(lang) {
+        if (!lang) {
+          return;
+        }
+
+        // lazy load i18n translations
+        try {
+          _.register(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default);
+        } catch(e) {
+          GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+        }
+
+        ApplicationState.language = lang;
+
+        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
+
+        // wait until all plugins have been translated
+        await waitFor(() => {
+          const locale             = Object.keys(ApplicationState.locales[lang]);
+          const installed_plugins  = Object.keys(initConfig.plugins);
+          const i18n_plugins       = Array.from((new Set(Object.keys(ApplicationState.locales.en).filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
+          const translated_plugins = Array.from((new Set(locale.filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
+          return locale.length && installed_plugins.filter(name => i18n_plugins.includes(name)).length === translated_plugins.length;
+        });
+
+        setTimeout(() => {
+          /** @since 4.0.0 */
+          GUI.emit('i18n-ready', lang);
+          this.cookie_law_buttonText = _('Got It!');
+          //set form control class to filter
+          $.extend($.fn.dataTableExt.oStdClasses, {
+            "sFilterInput": "form-control search"
+          });
+          $.extend(true, $.fn.dataTable.defaults, {
+            "language": {
+              "sSearch": '',
+              "searchPlaceholder": _("dosearch"),
+              "sLengthMenu": _('Show _MENU_ values per page'),
+              "paginate": {
+                "previous": '«',
+                "next": '»',
+              },
+              "info": _('_TOTAL_ entries'),
+              "zeroRecords": _('No matching records found'),
+              "infoFiltered": ''
+            }
+          });
+        }, 500);
+
+      },
     },
 
   },

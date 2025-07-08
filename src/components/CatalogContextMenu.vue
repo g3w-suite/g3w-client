@@ -34,7 +34,7 @@
       v-if                = "project_menu || hasMetadata(layer)"
       @click.prevent.stop = "showMetadata(layer && layer.id)"
     >
-      <i :class = "$fa('info')"></i> {{ $t('sdk.metadata.title') }}
+      <i :class = "$fa('info')"></i> {{ $t('Metadata') }}
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
         style = "border-radius: 0 3px 3px 0;"
@@ -49,7 +49,7 @@
       v-if                = "canEdit(layer)"
       @click.prevent.stop = "startEditing(layer)"
     >
-      <i :class = "$fa('pencil')"></i> {{ $t('catalog_items.contextmenu.edit') }}
+      <i :class = "$fa('pencil')"></i> {{ $t('Edit Layer') }}
     </li>
 
     <!-- LAYER MENU -->
@@ -60,7 +60,7 @@
         v-if                = "canZoom(layer)"
         @click.prevent.stop = "zoomToLayer(layer)"
       >
-        <i :class = "$fa('search')"></i> {{ $t('catalog_items.contextmenu.zoomtolayer') }}
+        <i :class = "$fa('search')"></i> {{ $t('Zoom to Layer') }}
       </li>
 
       <!-- Attribute Table -->
@@ -68,7 +68,7 @@
         v-if                = "canOpenAttributeTable(layer)"
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
-        <i :class = "$fa('list')"></i> {{ $t('catalog_items.contextmenu.open_attribute_table') }}
+        <i :class = "$fa('list')"></i> {{ $t('Open Attribute Table') }}
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
@@ -99,7 +99,7 @@
         v-if = "canShowStylesMenu(layer)"
       >
         <i :class = "$fa('palette')"></i>
-        {{ $t('catalog_items.contextmenu.styles') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
+        {{ $t('Style') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
         <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
@@ -123,7 +123,7 @@
         v-if = "canShowOpacityPicker(layer)"
       >
         <i :class = "$fa('slider')"></i>
-        {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ (layer.opacity / 100) }})
+        {{ $t('Opacity') }} ({{ (layer.opacity / 100) }})
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li style="display: list-item;">
@@ -152,7 +152,7 @@
         v-if = "isExternalWMSLayer(layer)"
       >
         <i :class = "$fa('slider')"></i>
-        {{ $t('catalog_items.contextmenu.layer_opacity') }} ({{ layer.opacity }})
+        {{ $t('Opacity') }} ({{ layer.opacity }})
         <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul class = "sub-contex-menu">
           <li style="display: list-item;">
@@ -181,7 +181,7 @@
         v-if = "isExternalVectorLayer(layer)"
       >
         <i :class = "$fa('tint')"></i>
-        {{ $t('catalog_items.contextmenu.vector_color_menu') }}
+        {{ $t('Color') }}
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
@@ -203,7 +203,7 @@
         v-if = "canShowFiltersMenu(layer)"
       >
         <i :class = "$fa('filter')"></i>
-        {{ $t('catalog_items.contextmenu.filters') }}
+        {{ $t('Filters') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
@@ -247,7 +247,7 @@
         ].filter(Boolean).length"
         ref  = "ogc_menu"
       >
-        <i :class = "$fa('map')"></i> {{ $t('catalog_items.contextmenu.ogc_services') }}
+        <i :class = "$fa('map')"></i> {{ $t('OGC Services') }}
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
         <ul class = "sub-contex-menu">
 
@@ -265,11 +265,9 @@
               <i :class = "$fa('map')"></i> WMS
             </a>
             <b
-              class           = "click-to-copy skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
-              data-toggle     = "tooltip"
-              data-container  = "body"
               :title          = "getWmsUrl(layer.id)"
             ></b>
           </li>
@@ -288,11 +286,9 @@
               <i :class = "$fa('map')"></i> WFS
             </a>
             <b
-              class           = "click-to-copy skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
-              data-toggle     = "tooltip"
-              data-container  = "body"
               :title          = "getWfsUrl(layer.id)"
             ></b>
           </li>
@@ -311,11 +307,9 @@
               <i :class = "$fa('map')"></i> WFS 3
             </a>
             <b
-              class           = "click-to-copy skin-tooltip-top skin-color-dark"
+              class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
-              data-toggle     = "tooltip"
-              data-container  = "body"
               :title          = "getWfs3Url(layer.id)"
             ></b>
           </li>
@@ -368,7 +362,7 @@
   import GUI                           from 'services/gui';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import { downloadFeatures }          from 'utils/downloadFeatures';
-  import { t }                         from 'g3w-i18n';
+  import { gettext as _ }              from 'g3w-i18n';
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
@@ -485,7 +479,6 @@
           this.left = (window.innerWidth / 2) - (this.$refs['menu'].clientWidth / 2);
           this.top  = (window.innerHeight / 2) - (this.$refs['menu'].clientHeight / 2);
         }
-        $('.click-to-copy[data-toggle="tooltip"]').tooltip();
         // conditionally inline "ogc_menu" when they contain a single item
         [this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
         dragElement(this.$refs.menu);
@@ -573,12 +566,11 @@
         document.body.appendChild(input);
         input.select();
         document.execCommand("copy");
-        $(el).attr('data-original-title', t('sdk.catalog.menu.wms.copied')).tooltip('show');
-        $(el).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
+        el.setAttribute('title', _('Copied'));
+        el.setAttribute('data-i18n-title', _('Copied'));
         input.remove();
         a.remove();
         setTimeout(() => {
-          $('[data-toggle="tooltip"]').tooltip("destroy"); // remove tooltip
           this.closeMenu();
         }, 600);
       },
