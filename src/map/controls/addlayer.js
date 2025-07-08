@@ -18,7 +18,7 @@ GUI.once('ready', async () => {
           map.createMapControl({
             id: 'addlayer',
             options: {
-              tipLabel: "sdk.mapcontrols.addlayer.tooltip",
+              tipLabel: 'Add Layer',
               onSetMap(e) {
                 if ('after' === e.setter) {
                   $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());

@@ -52,9 +52,11 @@ const STATE = Vue.observable({
   language: 'en',
 
   /**
-   * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
+   * Store all i18n objects
+   * 
+   * @since 4.0.0
    */
-  lng: 'en',
+  locales: {},
 
   /**
    * Store Array of loading plugins (by name)
@@ -235,11 +237,6 @@ const STATE = Vue.observable({
     sidebar: {
       width:0
     }
-  },
-
-  /** @since 3.11.0 */
-  i18n: {
-    plugins: {} // plugins configs
   },
 
   /** @since 3.11.0 */

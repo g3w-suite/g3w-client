@@ -10,7 +10,7 @@ import { groupBy }                        from 'utils/groupBy';
 import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
 import { $promisify, promisify }          from 'utils/promisify';
-import { t }                              from 'g3w-i18n';
+import { gettext as _ }                   from 'g3w-i18n';
 
 const handleQueryPromises = async (promises = []) => {
   const responses = await Promise.allSettled(promises);
@@ -187,7 +187,7 @@ export default {
         },
         usermessage: !geometry && {
           type:        'warning',
-          message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          message:     `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
           messagetext: true,
           autoclose:   false
         },

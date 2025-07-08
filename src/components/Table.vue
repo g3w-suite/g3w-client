@@ -15,43 +15,43 @@
 
       <!-- FETCH DATA FROM BBOX -->
       <div
-        v-if               = "layer.isGeoLayer()"
-        class              = "skin-color action-button skin-tooltip-right"
-        v-disabled         = "state.geolayer.active && current_layout.rightpanel.height_100"
-        :class             = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
-        v-t-tooltip.create = "'layer_selection_filter.tools.show_features_on_map'"
-        data-placement     = "right"
-        @click.stop        = "getDataFromBBOX"
+        v-if           = "layer.isGeoLayer()"
+        class          = "skin-color action-button"
+        v-disabled     = "state.geolayer.active && current_layout.rightpanel.height_100"
+        :class         = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
+        v-t-tooltip    = "'Update results when map moves'"
+        data-placement = "right"
+        @click.stop    = "getDataFromBBOX"
       ></div>
 
       <!-- CLEAR SELECTION -->
       <div
-        v-show             = "state.show_tools"
-        class              = "skin-color action-button skin-tooltip-right"
-        :class             = "$fa('clear')"
-        v-t-tooltip.create = "'layer_selection_filter.tools.clear'"
-        data-placement     = "right"
-        @click.stop        = "layer.clearSelectionFids()"
+        v-show         = "state.show_tools"
+        class          = "skin-color action-button"
+        :class         = "$fa('clear')"
+        v-t-tooltip    = "'Invert Selection'"
+        data-placement = "right"
+        @click.stop    = "layer.clearSelectionFids()"
       ></div>
 
       <!-- INVERSE SELECTION -->
       <div
-        v-show             = "state.show_tools"
-        class              = "skin-color action-button skin-tooltip-right"
-        :class             = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
-        v-t-tooltip.create = "'layer_selection_filter.tools.invert'"
-        data-placement     = "right"
-        @click.stop        = "inverseSelection"
+        v-show         = "state.show_tools"
+        class          = "skin-color action-button"
+        :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
+        v-t-tooltip    = "'Invert Selection'"
+        data-placement = "right"
+        @click.stop    = "inverseSelection"
       ></div>
 
       <!-- TOGGLE FILTER -->
       <div
-        v-show             = "state.show_tools && show_on_active_filter"
-        class              = "skin-color action-button skin-tooltip-right"
-        :class             = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
-        v-t-tooltip.create = "'layer_selection_filter.tools.filter'"
-        data-placement     = "right"
-        @click.stop        = "toggleFilterToken(layer)"
+        v-show         = "state.show_tools && show_on_active_filter"
+        class          = "skin-color action-button"
+        :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
+        v-t-tooltip    = "'Enable/Disable filter'"
+        data-placement = "right"
+        @click.stop    = "toggleFilterToken(layer)"
       ></div>
 
     </div>
@@ -110,21 +110,21 @@
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
                <i
-                @click.stop            = "openForm(feature)"
-                v-t-tooltip:top.create = "'sdk.tooltips.relations.row_to_form'"
-                :class                 = "'action-button skin-color ' + $fa('table')"
+                @click.stop     = "openForm(feature)"
+                v-t-tooltip:top = "'Form View'"
+                :class          = "'action-button skin-color ' + $fa('table')"
               ></i>
               <i
-                v-if                   = "layer.state.geolayer && !feature.geometry"
-                v-t-tooltip:top.create = "'no_geometry'"
-                style                  = "color: currentColor !important;"
-                :class                 = "'action-button ' + $fa('alert')"
+                v-if            = "layer.state.geolayer && !feature.geometry"
+                v-t-tooltip:top = "'This item has no geometry'"
+                style           = "color: currentColor !important;"
+                :class          = "'action-button ' + $fa('alert')"
               ></i>
               <i
-                v-if                   = "layer.isEditable() && layer.config.editing.visible"
-                @click.stop            = "editFeature(feature)"
-                v-t-tooltip:top.create = "'sdk.tooltips.editing'"
-                :class                 = "'action-button skin-color ' + $fa('pencil')"
+                v-if            = "layer.isEditable() && layer.config.editing.visible"
+                @click.stop     = "editFeature(feature)"
+                v-t-tooltip:top = "'Editing'"
+                :class          = "'action-button skin-color ' + $fa('pencil')"
               ></i>
             </div>
           </td>
@@ -138,7 +138,7 @@
       </tbody>
 
     </table>
-    <div v-else id = "noheaders" v-t = "'dataTable.no_data'"></div>
+    <div v-else id = "noheaders" v-t = "'No data'"></div>
   </div>
 </template>
 
@@ -155,7 +155,7 @@ import DataRouterService           from 'services/data';
 import { debounce }                from 'utils/debounce';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-import { t }                       from 'g3w-i18n';
+import { gettext as _ }            from 'g3w-i18n';
 
 function toOLGeom(geom) {
   return new (Object.entries({
@@ -615,7 +615,7 @@ export default {
         };
       } catch(e) {
         console.warn(e);
-        GUI.notify.error(t("info.server_error"));
+        GUI.notify.error(_("info.server_error"));
         return Promise.reject(e);
       } finally {
         GUI.setLoadingContent(false);

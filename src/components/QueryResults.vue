@@ -41,10 +41,10 @@
                   class  = "box-title query-layer-title"
                   :style = "{fontSize: isMobile() && '1em !important'}">
                   <span
-                    v-if                    = "!layer.external"
-                    @click.stop             = "openAttributeTable(layer)"
-                    class                   = "action-button"
-                    v-t-tooltip:left.create = "'catalog_items.contextmenu.open_attribute_table'"
+                    v-if             = "!layer.external"
+                    @click.stop      = "openAttributeTable(layer)"
+                    class            = "action-button"
+                    v-t-tooltip:left = "'Open Attribute Table'"
                   >
                     <span
                       class  = "action-button-icon"
@@ -68,10 +68,10 @@
                   <infoformats :layer = "layer"/>
                   <template v-if = "layer.features.length > 1">
                     <span
-                      v-if                    = "layer.hasgeometry"
-                      @click.stop             = "zoomToLayerFeaturesExtent(layer)"
-                       class                  = "action-button"
-                      v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'"
+                      v-if             = "layer.hasgeometry"
+                      @click.stop      = "zoomToLayerFeaturesExtent(layer)"
+                       class           = "action-button"
+                      v-t-tooltip:left = "'Zoom to features extent'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -79,11 +79,11 @@
                       </span>
                     </span>
                     <span
-                      v-if                    = "layer.atlas.length"
-                      @click.stop             = "printAtlas(layer)"
-                      class                   = "action-button"
-                      v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.atlas.hint'"
-                      v-download
+                      v-if             = "layer.atlas.length"
+                      @click.stop      = "printAtlas(layer)"
+                      class            = "action-button"
+                      v-t-tooltip:left = "'Print Atlas'"
+                      v-disabled       = "ApplicationState.download"
                     >
                       <span
                         class  = "action-button-icon"
@@ -93,10 +93,10 @@
                     <!--        DOWNLOAD        -->
                     <template v-if = "getLayerDownloads(layer.downloads).length > 0">
                       <span
-                        class                   = "action-button"
-                        :class                  = "{'toggled': layer.downloadformats.active}"
-                        v-t-tooltip:left.create = "'Downloads'"
-                        v-download
+                        class            = "action-button"
+                        :class           = "{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left = "'Downloads'"
+                        v-disabled       = "ApplicationState.download"
                       >
                         <span
                           class       = "action-button-icon"
@@ -108,11 +108,11 @@
                     <!--        END DOWNLOAD        -->
                   </template>
                   <span
-                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
-                    @click.stop             = "addLayerFeaturesToResults(layer)"
-                    class                   = "action-button"
-                    :class                  = "{'toggled': layer.addfeaturesresults.active}"
-                    v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_features_to_results.hint'"
+                    v-if             = "layer.external || (layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                    @click.stop      = "addLayerFeaturesToResults(layer)"
+                    class            = "action-button"
+                    :class           = "{'toggled': layer.addfeaturesresults.active}"
+                    v-t-tooltip:left = "'Add/Remove features to results'"
                   >
                     <span
                       class  = "action-button-icon"
@@ -122,11 +122,11 @@
 
                   <!-- TOGGLE LAYER SELECTION -->
                   <span
-                    v-if                    = "canSelect(layer)"
-                    @click.stop             = "toggleSelection(layer)"
-                    class                   = "action-button skin-tooltip-left"
-                    v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
-                    :class                  = "{'toggled': layer.selection.active}"
+                    v-if             = "canSelect(layer)"
+                    @click.stop      = "toggleSelection(layer)"
+                    class            = "action-button"
+                    v-t-tooltip:left = "'Add/Remove Selection'"
+                    :class           = "{'toggled': layer.selection.active}"
                   >
                     <span
                       class  = "action-button-icon"
@@ -137,11 +137,11 @@
                   <!-- Filter template tools -->
                   <template v-if = "!layer.external && layer.selection.active">
                     <span
-                      v-if                    = !layer.filter.pagination
-                      @click.stop             = "addRemoveFilter(layer)"
-                      class                   = "action-button skin-tooltip-left"
-                      :class                  = "{'toggled': layer.filter.active}"
-                      v-t-tooltip:left.create = "'layer_selection_filter.tools.filter'"
+                      v-if             = !layer.filter.pagination
+                      @click.stop      = "addRemoveFilter(layer)"
+                      class            = "action-button"
+                      :class           = "{'toggled': layer.filter.active}"
+                      v-t-tooltip:left = "'Enable/Disable filter'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -155,9 +155,9 @@
                         && layer.filter.active
                         && (null === layer.filter.current || layer.selection.active)
                       "
-                      @click.stop             = "saveFilter(layer)"
-                      class                   = "action-button skin-tooltip-left"
-                      v-t-tooltip:left.create = "'layer_selection_filter.tools.savefilter'"
+                      @click.stop      = "saveFilter(layer)"
+                      class            = "action-button"
+                      v-t-tooltip:left = "'Save Filter'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -557,10 +557,10 @@
 
     <!-- TODO: SHOW SELECTED LAYER -->
     <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
-      <label style="margin-top: 5px;">{{ $t('query_filter') }}</label>
+      <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
       <select style="flex: 1;">
         <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
-        <option :selected="!selectedLayer">{{ $t('sdk.mapcontrols.queryby.all') }}</option>
+        <option :selected="!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
       </select>
     </div>
 
@@ -568,6 +568,7 @@
 </template>
 
 <script>
+  import ApplicationState            from 'store/application';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
@@ -598,6 +599,8 @@
 
     data() {
       return {
+        /** @since 4.0.0 */
+        ApplicationState,
         state:                       this.$options.service.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth:      headerActionsCellWidth,

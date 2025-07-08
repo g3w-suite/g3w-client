@@ -6,7 +6,7 @@
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
-import { t }                       from 'g3w-i18n';
+import { gettext as _ }            from 'g3w-i18n';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -22,11 +22,11 @@ GUI.once('ready', async () => {
           } else {
             map.addControl('measure', new MeasureControl({
                 name: "measure",
-                tipLabel: 'sdk.mapcontrols.measures.title',
+                tipLabel: 'Measure',
                 types: [type],
                 interactionClassOptions: {
                   projection: map.getProjection(),
-                  help:       `sdk.mapcontrols.measures.${type}.help`
+                  help:       `measure_descriptions.${type}`
                 }
               })
             );
@@ -134,7 +134,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._poinOnMapMoveListener = this._map.on('pointermove', e => {
       if (e.dragging) { return }
       if (this._feature && this._helpMsg) {
-        this._helpTooltipElement.innerHTML = t(this._helpMsg);
+        this._helpTooltipElement.innerHTML = _(this._helpMsg);
         this._helpTooltip.setPosition(e.coordinate);
         this._helpTooltipElement.classList.remove('hidden');
       }
@@ -231,13 +231,13 @@ class MeasureControl extends InteractionControl {
 
     if (this.types.length > 1) {
       this.toggledTool = this.toggledTool || {
-        __title:      'sdk.mapcontrols.measures.title',
+        __title:      'Measure',
         __iconClass:  'measure', //@since v3.11.0
         data: () => ({ types: this.types, type: this.types[0] }),
         template: /* html */ `
           <div style="width: 100%; padding: 5px;">
             <select ref="select" style="width: 100%" :search="false" v-select2="'type'">
-              <option v-for="type in types" :value="type" v-t="'sdk.mapcontrols.measures.' + type + '.tooltip'"></option>
+              <option v-for="type in types" :value="type" v-t="'measure_types.' + type"></option>
             </select>
           </div>`,
         watch: {

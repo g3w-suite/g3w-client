@@ -19,7 +19,7 @@ import { addZValue }                  from 'utils/addZValue';
 import { convertSingleMultiGeometry } from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 import { debounce }                   from 'utils/debounce';
-import { t, languageIsReady }         from 'g3w-i18n';
+import { gettext as _ }               from 'g3w-i18n';
 
 /**
  * Provider definitions.
@@ -108,11 +108,11 @@ class GeocodingControl extends ol.control.Control {
           <div class="ol-geocoder">
             <form>
               <input  type="search" autocomplete="off" style="font-weight: bold;" />
-              <button type="reset"                         title="Reset search"                                 hidden></button>
-              <button type="submit" value="search"         title="Submit search"   class="btn fas fa-search"></button>
-              <button type="submit" value="trash"          title="Clear selection" class="btn fas fa-trash"     hidden style="color:red;"></button>
-              <button type="submit" value="toggle-layer"   title="Toggle layer"    class="btn far fa-eye-slash" hidden></button>
-              <button type="submit" value="toggle-sidebar" title="Toggle sidebar"  class="btn"                  hidden><code></code></button>
+              <button type="reset"                         data-i18n-title="Reset search"    data-placement="bottom"                                 hidden></button>
+              <button type="submit" value="search"         data-i18n-title="Submit search"   data-placement="bottom" class="btn fas fa-search"></button>
+              <button type="submit" value="trash"          data-i18n-title="Clear selection" data-placement="bottom" class="btn fas fa-trash"     hidden style="color:red;"></button>
+              <button type="submit" value="toggle-layer"   data-i18n-title="Toggle layer"    data-placement="bottom" class="btn far fa-eye-slash" hidden></button>
+              <button type="submit" value="toggle-sidebar" data-i18n-title="Toggle sidebar"  data-placement="bottom" class="btn"                  hidden><code></code></button>
             </form>
             <!-- SEARCH RESULTS -->
             <ul popover="manual"></ul>
@@ -125,12 +125,11 @@ class GeocodingControl extends ol.control.Control {
     const map          = GUI.getService('map');
     const queryresults = GUI.getService('queryresults');
     const VM           = new Vue;
-  
-    VM.$watch(() => ApplicationState.language, async (lang) => {
-      await languageIsReady(lang);
+
+    GUI.on('i18n-ready', () => {
       this.element.querySelector('ul').innerHTML = '';
-      this.element.querySelector('input[type="search"]').placeholder = t('mapcontrols.geocoding.placeholder');
-    }, { immediate: true });
+      this.element.querySelector('input[type="search"]').placeholder = _('Search');
+    })
 
     VM.$watch(() => GUI.getCurrentContent(), is_sidebar_open => {
       this.element.querySelector('button[value="toggle-sidebar"] code').style.opacity = is_sidebar_open ? 0.5 : null;
@@ -404,7 +403,7 @@ class GeocodingControl extends ol.control.Control {
           ${item.__heading ? `<b style="padding: 5px; color: #FFF;">${ item.label }</b>` : ''}
             
           <!-- NO RESULTS -->
-          ${!item.__heading && item.__no_results ? `<span>${t('mapcontrols.geocoding.noresults')}</span>` : ''}
+          ${!item.__heading && item.__no_results ? `<span>${_('No results')}</span>` : ''}
 
           <!-- RESULTS -->
           ${!item.__heading && !item.__no_results ? /* html */`
@@ -631,8 +630,8 @@ class GeocodingControl extends ol.control.Control {
       [layer.id]: {
         layers:   editable_point_layers,
         icon:     'pencil',
-        label:    'mapcontrols.geocoding.choose_layer',
-        nolayers: 'mapcontrols.geocoding.nolayers',
+        label:    'Choose a layer where to add this feature',
+        nolayers: 'No editable point layers found on this project',
         cbk:      this.#editItem,
       }
     };

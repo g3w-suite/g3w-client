@@ -40,10 +40,7 @@ import Divider                     from 'components/GlobalDivider.vue';
 import vDisabled                   from 'directives/v-disabled';
 import vSelect2                    from 'directives/v-select2';
 import vTToltip                    from 'directives/v-t-tooltip';
-import vTHtml                      from 'directives/v-t-html';
 import vT                          from "directives/v-t";
-import vTPlugin                    from 'directives/v-t-plugin';
-import vDownload                   from 'directives/v-download';
 
 // utils
 import { noop }                    from 'utils/noop';
@@ -53,7 +50,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { addI18n, t, tPlugin, i18next } from 'g3w-i18n';
+import { gettext as _ } from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
@@ -93,14 +90,6 @@ Vue.component(Tabs.name, Tabs);
 Vue.component(Divider.name, Divider);
 
 /**
- * Install application filters
- *
- * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
- */
-Vue.filter('t', value => t(value));
-Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
-
-/**
  * Install global directives
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
@@ -108,10 +97,8 @@ Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
 Vue.directive("disabled", vDisabled);
 Vue.directive('select2', vSelect2);
 Vue.directive('t-tooltip', vTToltip);
-Vue.directive('t-html', vTHtml);
 Vue.directive("t", vT);
-Vue.directive("t-plugin", vTPlugin);
-Vue.directive("download", vDownload);
+Vue.directive("t-plugin", vT);
 
 /**
  * Install global plugins
@@ -128,7 +115,7 @@ Vue.use(require('vue-cookie'));
 Vue.use({
   install(Vue) {
     /** @since 3.11.0 */
-    Vue.prototype.$t = t;
+    Vue.prototype.$t = _;
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
       font: FONT_AWESOME_ICONS,
@@ -252,10 +239,6 @@ initConfig.header_custom_links.unshift({
 initConfig.layout.iframe  = window.top !== window.self;
 ApplicationState.language = initConfig.user.i18n || 'en';
 
-
-// setup i18n
-(initConfig.i18n || []).map(l => l[0]).forEach(l => ApplicationState.i18n.plugins[l] = { plugins: {} });
-
 // set Accept-Language request header based on config language
 $.ajaxSetup({
   beforeSend: xhr => { xhr.setRequestHeader('Accept-Language', initConfig.user.i18n || 'en'); }
@@ -269,55 +252,11 @@ $.ajaxSetup({
  */
 (async () => { try {
 
+  ApplicationState.language = initConfig.user.i18n;
+
   // lazy load i18n translations
-  i18next
-    .init({
-        lng:         initConfig.user.i18n,
-        ns:          'translation',
-        partialBundledLanguages: true,
-        fallbackLng: 'en',
-        resources:    {
-          en:                     (await import(`${initConfig.urls.clienturl}locales/en.js`)).default,
-          [initConfig.user.i18n]: (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default
-        }
-    });
-
-  addI18n(ApplicationState.i18n.plugins);
-
-  (new Vue).$watch(() => ApplicationState.language, async (lang) => {
-
-    // lazy load i18n translations
-    try {
-      i18next.addResourceBundle(
-        lang,
-        'translation',
-        (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default?.translation,
-        false,
-        true
-      );
-    } catch(e) {
-      GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-    }
-
-    //set form control class to filter
-    $.extend($.fn.dataTableExt.oStdClasses, {
-      "sFilterInput": "form-control search"
-    });
-    $.extend(true, $.fn.dataTable.defaults, {
-      "language": {
-        "sSearch": '',
-        "searchPlaceholder": t("dosearch"),
-        "sLengthMenu": t("dataTable.lengthMenu"),
-        "paginate": {
-          "previous": '«',
-          "next": '»',
-        },
-        "info": t("dataTable.info"),
-        "zeroRecords": t("dataTable.nodatafilterd"),
-        "infoFiltered": ''
-      }
-    });
-  }, { immediate: true});
+  _.register('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
+  _.register([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
 
   /** @since 3.8.0 */
   try {
@@ -407,7 +346,7 @@ $.ajaxSetup({
         id:                 'spatialbookmarks',
         icon:               'far fa-bookmark',
         iconColor:          '#00bcd4',
-        title:              'sdk.spatialbookmarks.title',
+        title:              'Bookmarks',
         vueComponentObject: require('components/SpatialBookMarks.vue').default,
       }),
 
@@ -455,12 +394,12 @@ $.ajaxSetup({
           {
             id:      "querybuilder",
             class:   `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-            tooltip: t('sdk.querybuilder.title'),
+            tooltip: _('Advanced search'),
             fnc:     () => {
               GUI.closeContent();
               GUI.closeSideBar();
               return new Panel({
-                title: t('sdk.querybuilder.title'),
+                title: _('Advanced search'),
                 show: true,
                 vueComponentObject: require('components/QueryBuilder.vue').default
               });
@@ -733,14 +672,14 @@ $.ajaxSetup({
   if (!wrapper) {
     document.body.insertAdjacentHTML('beforeend', /* html */`
       <div class="error-page" style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #FFF; background-color: var(--skin-color);">
-        <h1 style="font-weight: bold;">${ t('error_page.error') }</h1>
+        <h1 style="font-weight: bold;">${ _('Connection error') }</h1>
         <h2 style="order: -1; font-size: 5em; font-weight: bold;">Oops!</h2>
-        <h3>${ t('error_page.at_moment') }</h3>
-        <p class="trace" style="background: #333;padding: 1rem;border-radius: 3px;margin-top: 2rem;font-family: Monospace;">${ error || t('error_page.error') }</p>
+        <h3>${ _('At the moment is not possible show map') }</h3>
+        <p class="trace" style="background: #333;padding: 1rem;border-radius: 3px;margin-top: 2rem;font-family: Monospace;">${ error || _('Connection error') }</p>
       </div>`);  
   } else {
     wrapper.querySelector('.trace').insertAdjacentHTML('beforeend', /* html */`
-      <br>${ error || t('error_page.error') }
+      <br>${ error || _('Connection error') }
     `);
   }
 }

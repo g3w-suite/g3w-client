@@ -3,10 +3,8 @@
  * @since 4.0.0
  */
 
-import ApplicationState    from 'store/application';
-import GUI                 from 'services/gui';
-import { debounce }        from 'utils/debounce';
-import { languageIsReady } from 'g3w-i18n';
+import GUI          from 'services/gui';
+import { debounce } from 'utils/debounce';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -28,20 +26,11 @@ GUI.once('ready', async () => {
             this.element.style.display = 'flex';
             this.element.style.gap     = '5px';
             this.element.innerHTML     = /* html */`
-              <div><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900;"></button></div>
-              <div><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900;"></button></div>
+              <div data-i18n-title="Zoom Last"><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900;"></button></div>
+              <div data-i18n-title="Zoom Next"><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900;"></button></div>
             `;
-            (new Vue).$watch(
-              () => ApplicationState.language, 
-              async (lang) => { 
-                await languageIsReady(lang); 
-                this.element.querySelectorAll('button')
-                  .forEach(btn => btn.parentElement.title = btn.parentElement.dataset.originalTitle = g3wsdk.core.i18n.t('last' === btn.value ? 'sdk.mapcontrols.zoomhistory.zoom_last' : 'sdk.mapcontrols.zoomhistory.zoom_next'))
-                }, 
-              { immediate: true } 
-            );
             this.element.querySelectorAll('button').forEach(btn => {
-              $(btn.parentElement).tooltip({ placement: 'top', container: 'body' });
+              btn.parentElement.setAttribute('data-placement', 'top');
               btn.addEventListener('click', e => {
                 curr += 'last' === e.currentTarget.value ? -1 : +1;
                 GUI.getService('map').getMap().getView().fit(history.at(curr));

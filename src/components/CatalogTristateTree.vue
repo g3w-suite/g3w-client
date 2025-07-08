@@ -111,17 +111,19 @@
           highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class            = "g3w-long-text"
-        v-t-tooltip:top.create.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        :current-tooltip            = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class                = "g3w-long-text"
+        :data-i18n-title     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        data-placement       = "top"
+        data-i18n-raw        = ""
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
-          v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
-          :current-tooltip            = "layerstree.filter.current.name"
-          v-t-tooltip:top.create.text = "layerstree.filter.current.name"
-          style                       = "cursor: pointer"
-          @click.stop                 = "removeCurrentFilter"
+          v-if             = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :data-i18n-title = "layerstree.filter.current.name"
+          data-placement   = "top"
+          data-i18n-raw    = ""
+          style            = "cursor: pointer"
+          @click.stop      = "removeCurrentFilter"
         >
           <span
             style  = "color: red"
@@ -143,39 +145,34 @@
         <!-- CLEAR SELECTION -->
         <span
           v-if                         = "layerstree.selection.active"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
-          data-container="body"
           :class                       = "g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop = "clearSelection"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
+          v-t-tooltip                  = "'Invert Selection'"
         ></span>
 
         <!-- TOGGLE FILTER  -->
         <span
           v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
-          data-container="body"
           :class                       = "[
             g3wtemplate.getFontClass('filter'),
             layerstree.filter.active  ? 'active' : '',
           ]"
           @click.caputure.prevent.stop = "toggleFilterLayer"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.filter'"
+          v-t-tooltip                  = "'Enable/Disable filter'"
         ></span>
 
         <!-- SAVE FILTER  -->
         <span
           v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
           :class                       = "g3wtemplate.getFontClass('save')"
           @click.caputure.prevent.stop = "saveFilter(layerstree)"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.savefilter'"
+          v-t-tooltip                  = "'Save Filter'"
         ></span>
 
       </div>
@@ -218,7 +215,7 @@
       :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
       @click.prevent.stop     = "showContextMenu"
       href                    = "#"
-      v-t-tooltip:left.create = "'catalog_items.helptext'"
+      v-t-tooltip:left        = "'Open menu'"
     ></a>
 
   </li>

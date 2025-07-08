@@ -1,5 +1,5 @@
 import { toRawType } from 'utils/toRawType';
-import { t }         from 'g3w-i18n';
+import { gettext as _ }    from 'g3w-i18n';
 
 const Validators = {
 
@@ -196,20 +196,20 @@ module.exports = class Service {
   setErrorMessage() {
     //in vase of
     if (this.state.validate.error) {
-      this.state.validate.message = t(this.state.validate.error);
+      this.state.validate.message = _(this.state.validate.error);
       return;
     }
     let message;
     if (this.state.validate.mutually && !this.state.validate.mutually_valid) {
-      this.state.validate.message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${this.state.validate.mutually.join(',')} )`;
+      this.state.validate.message =  `${_("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${this.state.validate.mutually.join(',')} )`;
     } else if (this.state.validate.max_field) {
-      this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${this.state.validate.max_field})`;
+      this.state.validate.message = `${_("sdk.form.inputs.input_validation_max_field")} (${this.state.validate.max_field})`;
     } else if (this.state.validate.min_field) {
-      this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${this.state.validate.min_field})`;
+      this.state.validate.message = `${_("sdk.form.inputs.input_validation_min_field")} (${this.state.validate.min_field})`;
     } else if (('unique' === this.state.input.type || this.state.validate.unique) && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
-      this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
+      this.state.validate.message = `${_("sdk.form.inputs.input_validation_exclude_values")}`;
     } else if (this.state.validate.required) {
-      message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + this.state.type)} )`;
+      message = `${_("sdk.form.inputs.input_validation_error")} ( ${_("sdk.form.inputs." + this.state.type)} )`;
       if (this.state.info) {
         message = `${message}
                  <div>
@@ -221,7 +221,7 @@ module.exports = class Service {
     } else {
       //@since 3.11.0
       // in case of state.validate.valid false and not required need to show a right message (info or type)
-      this.state.validate.message = this.state.info || `${t("sdk.form.inputs.input_validation_error_type")} ( ${t("sdk.form.inputs." + this.state.type)} )`;
+      this.state.validate.message = this.state.info || `${_("sdk.form.inputs.input_validation_error_type")} ( ${_("sdk.form.inputs." + this.state.type)} )`;
     }
   };
   /**

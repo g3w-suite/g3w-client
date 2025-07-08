@@ -1,54 +1,26 @@
+/**
+ * @file inspired by "leaflet-i18n"
+ */
 import ApplicationState from 'store/application';
-import { waitFor }      from 'utils/waitFor';
+import { flattenObject } from 'utils/flattenObject';
 
-export const i18next = require('i18next');
-
-export const getAppLanguage = () => window.initConfig.user.i18n || "en";
-/* function to translate */
-export const t = text => i18next.t(text);
-
- /* function to translate plugins */
-export const tPlugin =  text => i18next.t(`plugins.${text}`);
-
-export const addI18n = i18nObject => {
-  for (const lang in i18nObject) {
-    for (const key in i18nObject[lang])  {
-      i18next.addResource(lang, 'translation', key, i18nObject[lang][key])
-    }
+/**
+ * @param {string} string text to be translated
+ * 
+ * @returns {string} localized string
+ */
+export function gettext(string) {
+  let value = ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
+  if (undefined === value && 'en' !== ApplicationState.language) {
+    console.info(`[G3W-I18N] missing: '${string}'`);
   }
-};
-
-export const addI18nPlugin = ({ name, config }) =>  {
-  for (const lang in config) {
-    if (ApplicationState.i18n.plugins[lang]) {
-      ApplicationState.i18n.plugins[lang].plugins[name] = config[lang]
-    }
-  }
-  for (const lang in ApplicationState.i18n.plugins) {
-    for (const key in ApplicationState.i18n.plugins[lang])  {
-      i18next.addResource(lang, 'translation', key, ApplicationState.i18n.plugins[lang][key])
-    }
-  }
+  return value ?? string;
 };
 
 /**
- * @since 4.0.0 check if bundle resource language is ready
- * @param { String } lang 
+ * @param {string} lang   code (eg. "it") 
+ * @param {*}      locale i18n object
  */
-export const languageIsReady = async (lang) => {
-  await waitFor(() => {
-    const resources = i18next.getResourceBundle(lang);
-    //Check if ready client translation and all pluglins are ready
-    //exluding plugin that haven't translation check default language en 
-    return Object.keys(resources).length > 1 && Object.keys(initConfig.plugins).filter(name => ApplicationState.i18n.plugins['en'].plugins[name]).length === Object.keys(resources.plugins).length;
-  })
-}
-
-export default {
-  getAppLanguage,
-  t,
-  tPlugin,
-  addI18n,
-  addI18nPlugin,
-  languageIsReady,
+gettext.register = function(lang, locale) {
+  ApplicationState.locales[lang] = Object.assign(ApplicationState.locales[lang] || {}, flattenObject(locale, '.'));
 };

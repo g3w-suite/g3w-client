@@ -35,8 +35,9 @@
       </div>
       <div class = "usermessage-header-right">
         <div
-          v-if   = "closable"
-          @click = "closeUserMessage"
+          v-if             = "closable"
+          v-t-tooltip:left = "'close'"
+          @click           = "closeUserMessage"
         >
           <i class = "usermessage-header-right-item" :class = "$fa('close')"></i>
         </div>

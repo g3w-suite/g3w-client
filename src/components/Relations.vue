@@ -11,7 +11,7 @@
       <div class = "skin-color-dark">
         <span
           style   = "font-size: 1.1em;"
-          v-t:pre = "'sdk.relations.list_of_relations_feature'"
+          v-t:pre = "'List of relations of feature'"
         > </span>
         <div v-for = "info in featureInfo()"> - <b>{{ info.key }}</b>: {{ info.value }}</div>
       </div>

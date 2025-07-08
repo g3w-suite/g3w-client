@@ -270,7 +270,7 @@
         href           = "#"
         @click.stop = "showaddLayerModal"
       >
-        <i :class="$fa('layers')"></i> <b v-t="'mapcontrols.add_layer_control.header'"></b>
+        <i :class="$fa('layers')"></i> <b v-t="'Add Layer'"></b>
       </a>
       <a
         v-if           = "hasRelatedMaps && 'legend' !== activeTab && !iframe"

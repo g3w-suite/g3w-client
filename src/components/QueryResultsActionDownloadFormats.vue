@@ -7,11 +7,11 @@
   <div>
     <div v-if = "layer.hasdownloadablerelations">
       <input
-        :id        = "`g3w-download-relations_${featureIndex}`"
-        class     = "magic-checkbox"
-        v-model   = "down_with_relations"
-        type      = "checkbox"/>
-        <label :for = "`g3w-download-relations_${featureIndex}`" v-t = "'sdk.relations.download_with_relations'"></label>
+        :id         = "`g3w-download-relations_${featureIndex}`"
+        class       = "magic-checkbox"
+        v-model     = "down_with_relations"
+        type        = "checkbox"/>
+        <label :for = "`g3w-download-relations_${featureIndex}`" v-t = "'Download with relations'"></label>
     </div>
     <div
       class               = "g3w-download-formats-content"
@@ -25,10 +25,10 @@
         class     ="form-control"
       >
         <option
-          v-for  = "download in downloads_formats"
-          :key   = "download.id"
-          :value = "download.format"
-          v-download
+          v-for      = "download in downloads_formats"
+          :key       = "download.id"
+          :value     = "download.format"
+          v-disabled = "ApplicationState.dowload"
         >
           <span style = "font-weight: bold">{{ download.format }}</span>
         </option>
@@ -37,7 +37,7 @@
         style       = "border-radius: 0 3px 3px 0;"
         class       = "btn skin-button"
         @click.stop = download
-        v-download
+        v-disabled  = "ApplicationState.download"
       >
         <span :class = "g3wtemplate.getFontClass('download')">
         </span>
@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import ApplicationState from 'store/application';
 
 export default {
 
@@ -56,6 +57,8 @@ export default {
 
   data() {
     return {
+      /** @since 4.0.0 */
+      ApplicationState,
       download_format:     this.config.downloads[0].format,
       down_with_relations: false,
       downloads_formats:   [...this.config.downloads],
