@@ -50,10 +50,11 @@
 
             <!-- DOCS -->
             <a
-              :href  = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#wms`"
-              target = "_blank"
-              style  = "float: right;"
-              title  = "Docs"
+              :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#wms`"
+              target          = "_blank"
+              style           = "float: right;"
+              data-i18n-title = "Docs"
+              data-placement  = "bottom"
             >
               <i :class = "$fa('external-link')"></i>
             </a>
@@ -259,10 +260,11 @@
 
             <!-- DOCS -->
             <a
-              :href  = "`https://epsg.io/${(layer_crs || '').toLowerCase().replace('epsg:', '')}`"
-              target = "_blank"
-              style  = "float: right;"
-              title  = "Docs"
+              :href           = "`https://epsg.io/${(layer_crs || '').toLowerCase().replace('epsg:', '')}`"
+              target          = "_blank"
+              style           = "float: right;"
+              data-i18n-title = "Docs"
+              data-placement  = "bottom"
             >
               <i :class = "$fa('external-link')"></i>
             </a>

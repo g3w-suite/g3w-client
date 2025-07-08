@@ -148,10 +148,11 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- DOCS URL -->
                 <a
-                  :href  = "'https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#map-controls'"
-                  target = "_blank"
-                  style  = "position: absolute;inset: 1em 1em auto auto;"
-                  title  = "Docs"
+                  :href           = "'https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#map-controls'"
+                  target          = "_blank"
+                  style           = "position: absolute;inset: 1em 1em auto auto;"
+                  data-i18n-title = "Docs"
+                  data-placement  = "bottom"
                 >
                   <i :class = "$fa('external-link')"></i>
                 </a>

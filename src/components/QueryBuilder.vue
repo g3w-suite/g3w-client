@@ -15,10 +15,11 @@
         v-t   = "'EXPRESSION'">
       </label>
       <a
-        :href  = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
-        target = "_blank"
-        style  = "float: right;"
-        title  = "Docs"
+        :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
+        target          = "_blank"
+        style           = "float: right;"
+        data-i18n-title = "Docs"
+        data-placement  = "right"
       >
         <i :class = "$fa('external-link')"></i>
       </a>
