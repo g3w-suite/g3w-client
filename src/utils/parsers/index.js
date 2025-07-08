@@ -22,7 +22,7 @@ Object
     G3W_FID,
     GUI,
     Feature,
-    t,
+    _,
     is3DGeometry,
     removeZValue,
     sanitizeFidFeature,
