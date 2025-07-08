@@ -5,9 +5,9 @@ import ApplicationState from 'store/application';
 import { flattenObject } from 'utils/flattenObject';
 
 /**
- * @param {*} string text to be translated
+ * @param {string} string text to be translated
  * 
- * @returns localized string
+ * @returns {string} localized string
  */
 export function gettext(string) {
   let value;
