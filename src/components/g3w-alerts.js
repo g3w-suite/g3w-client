@@ -56,7 +56,7 @@ async function _showAlertsManager() {
                     </label>
                   </td>
                   <td style="width: 20px;" ${edit_url ? '' : 'hidden'}>
-                    <a href="${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" title="Edit in admin">
+                    <a href="${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" data-i18n-title="Edit in admin">
                       <i class="far fa-edit"></i>
                     </a>
                   </td>

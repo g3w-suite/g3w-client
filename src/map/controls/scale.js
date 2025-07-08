@@ -141,7 +141,7 @@ class ScaleControl extends ol.control.Control {
 
     if (!this.isMobile) {
       const optgroup  = document.createElement('optgroup');
-      optgroup.label  = 'Custom';
+      optgroup.label  = _('Custom');
       select.appendChild(optgroup);
     }
 

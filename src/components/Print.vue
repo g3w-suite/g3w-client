@@ -151,12 +151,16 @@
       </form>
 
       <div style = "padding: 1em;text-align: center;">
-        <b><a
-            :href  = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
-            target = "_blank"
-            title  = "QGIS Docs">
-          <i :class = "$fa('external-link')"></i> Edit in QGIS
-        </a></b>
+        <b>
+          <a
+            :href            = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
+            target           = "_blank"
+            data-i18n-title  = "QGIS Docs"
+            data-placement   = "right"
+          >
+          <i :class = "$fa('external-link')"></i> {{ $t('Edit in QGIS') }}
+          </a>
+        </b>
       </div>
 
     </li>

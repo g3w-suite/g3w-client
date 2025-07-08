@@ -51,11 +51,12 @@
       <div v-if = "is_staff" class = "content-bookmarks">
         <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
         <a
-          :hidden = "is_mobile"
-          :href  = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
-          target = "_blank"
-          style  = "float: right;"
-          title  = "QGIS Docs"
+          :hidden          = "is_mobile"
+          :href            = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+          target           = "_blank"
+          style            = "float: right;"
+          data-i18n-title  = "QGIS Docs"
+          data-placement   = "right"
         >
           <i :class = "$fa('external-link')"></i>
         </a>

@@ -178,7 +178,7 @@
     <slot name = "footer"></slot>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">Edit in admin</a></b></div>
+    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">{{ $t('Edit in admin') }}</a></b></div>
 
   </div>
 </template>
