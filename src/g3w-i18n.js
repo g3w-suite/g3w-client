@@ -58,24 +58,3 @@ L._ = L.translate;
 
 /* function to translate */
 export const t = text => L._(text);
-
-/* function to translate plugins */
-export const tPlugin =  text => L._(`plugins.${text}`);
-
-/** used by the following plugins: "datasinc" */
-export const getAppLanguage = () => window.initConfig.user.i18n || "en";
-
-/** used by the following plugins: "iframe", "law", "bforest", "sispi-worksite", "gsk", "arpalombardia-charts", "simplereporting", "politowps", "billboards", "ws-trento", "br-service", "datasinc", "archiweb", "fsimulator", "skeleton", "elevation-profile" */
-export const addI18nPlugin = ({ name, config }) =>  {
-  console.warn('[G3W-I18N] g3wsdk.core.i18n.addI18nPlugin is deprecated, please use `g3wsdk.core.plugin.Plugin.setLocale` instead')
-  for (const lang in config) {
-    L.registerLocale(lang, { plugins: { [name]: config[lang] } });
-  }
-};
-
-export default {
-  t,
-  tPlugin,
-  addI18nPlugin,
-  getAppLanguage,
-};
