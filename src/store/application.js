@@ -52,6 +52,13 @@ const STATE = Vue.observable({
   language: 'en',
 
   /**
+   * Store all i18n objects
+   * 
+   * @since 4.0.0
+   */
+  locales: {},
+
+  /**
    * Store Array of loading plugins (by name)
    * Every time a plugin is loaded, plugin name is removed from Array
    * It used in v-plugins directive

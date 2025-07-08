@@ -19,7 +19,7 @@ import { addZValue }                  from 'utils/addZValue';
 import { convertSingleMultiGeometry } from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 import { debounce }                   from 'utils/debounce';
-import { t as _ }                     from 'g3w-i18n';
+import { gettext as _ }               from 'g3w-i18n';
 
 /**
  * Provider definitions.
@@ -108,11 +108,11 @@ class GeocodingControl extends ol.control.Control {
           <div class="ol-geocoder">
             <form>
               <input  type="search" autocomplete="off" style="font-weight: bold;" />
-              <button type="reset"                         title="Reset search"    data-i18n-title="Reset search"    data-placement="bottom"                                 hidden></button>
-              <button type="submit" value="search"         title="Submit search"   data-i18n-title="Submit search"   data-placement="bottom" class="btn fas fa-search"></button>
-              <button type="submit" value="trash"          title="Clear selection" data-i18n-title="Clear selection" data-placement="bottom" class="btn fas fa-trash"     hidden style="color:red;"></button>
-              <button type="submit" value="toggle-layer"   title="Toggle layer"    data-i18n-title="Toggle layer"    data-placement="bottom" class="btn far fa-eye-slash" hidden></button>
-              <button type="submit" value="toggle-sidebar" title="Toggle sidebar"  data-i18n-title="Toggle sidebar"  data-placement="bottom" class="btn"                  hidden><code></code></button>
+              <button type="reset"                         data-i18n-title="Reset search"    data-placement="bottom"                                 hidden></button>
+              <button type="submit" value="search"         data-i18n-title="Submit search"   data-placement="bottom" class="btn fas fa-search"></button>
+              <button type="submit" value="trash"          data-i18n-title="Clear selection" data-placement="bottom" class="btn fas fa-trash"     hidden style="color:red;"></button>
+              <button type="submit" value="toggle-layer"   data-i18n-title="Toggle layer"    data-placement="bottom" class="btn far fa-eye-slash" hidden></button>
+              <button type="submit" value="toggle-sidebar" data-i18n-title="Toggle sidebar"  data-placement="bottom" class="btn"                  hidden><code></code></button>
             </form>
             <!-- SEARCH RESULTS -->
             <ul popover="manual"></ul>

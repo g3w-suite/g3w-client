@@ -9,7 +9,7 @@ import ApplicationState   from 'store/application';
 import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
-import { L }              from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 /** @deprecated */
 import _cloneDeep         from 'lodash.clonedeep';
@@ -100,7 +100,7 @@ export class Plugin extends G3WObject {
    * @since 4.0.0
    */
   registerLocale(lang, locale) {
-    L.registerLocale(lang, locale);
+    _.register(lang, locale);
   }
 
   /**
@@ -111,7 +111,7 @@ export class Plugin extends G3WObject {
   setLocale(locale) {
     if (locale && this.name) {
       for (const lang in locale) {
-        L.registerLocale(lang, { plugins: { [this.name]: locale[lang] } });
+        _.register(lang, { plugins: { [this.name]: locale[lang] } });
       }
     }
   }

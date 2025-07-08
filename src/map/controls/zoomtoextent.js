@@ -2,8 +2,8 @@
  * @file ORIGINAL SOURCE: src/services/map.js@v3.11.10
  * @since 4.0.0
  */
-import { t as _ } from 'g3w-i18n';
-import GUI   from 'services/gui';
+import { gettext as _ } from 'g3w-i18n';
+import GUI              from 'services/gui';
 
 GUI.once('ready', async () => {
   const map = GUI.getService('map');

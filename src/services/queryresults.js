@@ -25,7 +25,7 @@ import { getCatalogLayerById }                  from 'utils/getCatalogLayerById'
 
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
-import { t as _ }                               from 'g3w-i18n';
+import { gettext as _ }                         from 'g3w-i18n';
 
 function _setRelationField(node) {
   if (node.nodes) {

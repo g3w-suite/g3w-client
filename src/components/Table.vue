@@ -155,7 +155,7 @@ import DataRouterService           from 'services/data';
 import { debounce }                from 'utils/debounce';
 import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-import { t as _ }                  from 'g3w-i18n';
+import { gettext as _ }            from 'g3w-i18n';
 
 function toOLGeom(geom) {
   return new (Object.entries({

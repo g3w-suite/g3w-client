@@ -88,7 +88,7 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 
-import { L, t as _ }                               from 'g3w-i18n';
+import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import { MapLayersStoresRegistry }                 from 'services/map';
 import { SearchPanel }                             from 'components/g3w-search';
@@ -358,7 +358,7 @@ g3wsdk.core.i18n.tPlugin        = text => _(`plugins.${text}`);
 g3wsdk.core.i18n.addI18nPlugin  = ({ name, config }) =>  {
   console.warn('[G3W-I18N] g3wsdk.core.i18n.addI18nPlugin is deprecated, please use `g3wsdk.core.plugin.Plugin.setLocale` instead')
   for (const lang in config) {
-    L.registerLocale(lang, { plugins: { [name]: config[lang] } });
+    _.register(lang, { plugins: { [name]: config[lang] } });
   }
 };
 

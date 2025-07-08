@@ -6,7 +6,7 @@
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
-import { t as _ }                  from 'g3w-i18n';
+import { gettext as _ }            from 'g3w-i18n';
 
 // wait for map ready
 GUI.once('ready', async () => {

@@ -141,7 +141,7 @@
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
-  import { t as _ }           from 'g3w-i18n';
+  import { gettext as _ }     from 'g3w-i18n';
 
     export default {
 

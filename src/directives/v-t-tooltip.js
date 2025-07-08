@@ -3,8 +3,8 @@
  * @since v3.7
  */
 
-import GUI        from 'services/gui';
-import { t as _ } from 'g3w-i18n';
+import GUI              from 'services/gui';
+import { gettext as _ } from 'g3w-i18n';
 
 // show tooltip as "popover" (ie. always on top over other DOM elements) 
 $(document).on('shown.bs.tooltip', function (e) {

@@ -7,7 +7,7 @@ import GUI                        from 'services/gui';
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-import { t as _ }                 from 'g3w-i18n';
+import { gettext as _ }           from 'g3w-i18n';
 
 // wait for map ready
 GUI.once('ready', async () => {

@@ -515,7 +515,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import { L, t as _ }      from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 export default {
 
@@ -912,20 +912,20 @@ export default {
 
         // lazy load i18n translations
         try {
-          L.registerLocale(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default);
+          _.register(lang, (await import(`${initConfig.urls.clienturl}locales/${lang}.js`)).default);
         } catch(e) {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
-        L.setLocale(lang);
+        ApplicationState.language = lang;
 
         history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
 
         // wait until all plugins have been translated
         await waitFor(() => {
-          const locale             = Object.keys(L.locales[lang]);
+          const locale             = Object.keys(ApplicationState.locales[lang]);
           const installed_plugins  = Object.keys(initConfig.plugins);
-          const i18n_plugins       = Array.from((new Set(Object.keys(L.locales.en).filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
+          const i18n_plugins       = Array.from((new Set(Object.keys(ApplicationState.locales.en).filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
           const translated_plugins = Array.from((new Set(locale.filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
           return locale.length && installed_plugins.filter(name => i18n_plugins.includes(name)).length === translated_plugins.length;
         });

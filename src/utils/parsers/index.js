@@ -15,7 +15,7 @@ import { removeZValue }       from 'utils/removeZValue';
 import { sanitizeFidFeature } from 'utils/sanitizeFidFeature'
 import { reverseGeometry }    from 'utils/reverseGeometry';
 import { Feature }            from 'map/layers/feature';
-import { t as _ }             from 'g3w-i18n';
+import { gettext as _ }       from 'g3w-i18n';
 
 Object
   .entries({

@@ -50,7 +50,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { L, t as _ } from 'g3w-i18n';
+import { gettext as _ } from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
@@ -252,10 +252,11 @@ $.ajaxSetup({
  */
 (async () => { try {
 
+  ApplicationState.language = initConfig.user.i18n;
+
   // lazy load i18n translations
-  L.setLocale(initConfig.user.i18n);
-  L.registerLocale('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
-  L.registerLocale([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
+  _.register('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
+  _.register([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
 
   /** @since 3.8.0 */
   try {

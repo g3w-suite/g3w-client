@@ -1,7 +1,7 @@
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
-import { t as _ }                from 'g3w-i18n';
+import { gettext as _ }          from 'g3w-i18n';
 
 import ApplicationState          from 'store/application';
 

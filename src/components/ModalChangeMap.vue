@@ -26,7 +26,7 @@
             class = "skin-background-color"
           >
             <span
-              v-t-tooltip:bottom = "'change_session'"
+              v-t-tooltip:bottom = "'Change Session'"
               v-disabled         = "loading"
               @click.stop        = "back"
               style              = "

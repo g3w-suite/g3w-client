@@ -6,7 +6,7 @@
 import ApplicationState   from 'store/application';
 import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
-import { t as _ }         from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 /**
  * Custom navbar item: "alerts"

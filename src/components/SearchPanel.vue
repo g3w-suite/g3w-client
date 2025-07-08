@@ -194,7 +194,7 @@
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import resizeMixin                           from 'mixins/resize';
-  import { t as _ }                            from 'g3w-i18n';
+  import { gettext as _ }                      from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];

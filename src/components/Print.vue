@@ -182,7 +182,7 @@ import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 import resizeMixin                  from 'mixins/resize';
 
 import vueComp                      from 'components/PrintPage.vue';
-import { t as _ }                   from 'g3w-i18n';
+import { gettext as _ }             from 'g3w-i18n';
 
 export default {
 

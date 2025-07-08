@@ -1,5 +1,5 @@
 import { toRawType } from 'utils/toRawType';
-import { t as _ }    from 'g3w-i18n';
+import { gettext as _ }    from 'g3w-i18n';
 
 const Validators = {
 

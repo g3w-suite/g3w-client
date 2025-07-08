@@ -67,7 +67,7 @@ import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import G3WTool                     from 'components/Tool.vue';
 import vueComp                     from 'components/QueryBuilder.vue';
-import { t as _ }                  from 'g3w-i18n';
+import { gettext as _ }            from 'g3w-i18n';
 
 export default {
 

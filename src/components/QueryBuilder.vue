@@ -123,7 +123,7 @@ import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { prompt }                  from 'utils/prompt';
-import { t as _ }                  from 'g3w-i18n';
+import { gettext as _ }            from 'g3w-i18n';
 
 export default {
 

@@ -26,12 +26,9 @@ GUI.once('ready', async () => {
             this.element.style.display = 'flex';
             this.element.style.gap     = '5px';
             this.element.innerHTML     = /* html */`
-              <div><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900;"></button></div>
-              <div><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900;"></button></div>
+              <div data-i18n-title="Zoom Last"><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900;"></button></div>
+              <div data-i18n-title="Zoom Next"><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900;"></button></div>
             `;
-            GUI.on('i18n-ready', () =>{
-              this.element.querySelectorAll('button').forEach(btn => btn.parentElement.title = g3wsdk.core.i18n.t('last' === btn.value ? 'Zoom Last' : 'Zoom Next'));
-            });
             this.element.querySelectorAll('button').forEach(btn => {
               btn.parentElement.setAttribute('data-placement', 'top');
               btn.addEventListener('click', e => {

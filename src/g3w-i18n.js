@@ -1,60 +1,32 @@
+/**
+ * @file inspired by "leaflet-i18n"
+ */
 import ApplicationState from 'store/application';
 import { flattenObject } from 'utils/flattenObject';
 
-// Based on leaflet-i18n
-export const L = {
-  locales: {},
-  // language: null,
-  registerLocale(lang, locale) {
-    L.locales[lang] = L.merge(L.locales[lang] || {}, flattenObject(locale, '.'));
-  },
-  setLocale(lang) {
-    // L.language = lang;
-    ApplicationState.language = lang;
-  },
-  // translate
-  translate(string, data) {
-    let value;
-    try {
-      value = L.locales[ApplicationState.language]?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales[ApplicationState.language] || {});
-    } catch (e) {
-      // fail silently
-    }
-    // fallback to "en"
-    if (undefined === value) {
-      try {
-        value = L.locales.en?.[string] ?? (string || '').split('.').reduce((locale, key) => locale[key], L.locales.en || {}) 
-      } catch (e) {
-        console.info(`[G3W-I18N] ${string} not found`);
-        value = string;
-      }
-    }
-    // // based on: `L.Util.template`
-    // string = string.replace(/\{ *([\w_-]+) *\}/g, function (str, key) {
-    //   let value = data[key];
-    //   if (undefined === value) {
-    //     console.warn('No value provided for variable ' + str);
-    //   } else if ('function' === typeof value) {
-    //     value = value(data);
-    //   }
-    //   return value;
-    // });
-    return value ?? string;
-  },
-  // deep merge
-  merge(target, source) {
-    for (const key in source) {
-      if (source[key] instanceof Object && key in target) {
-        target[key] = L.merge(target[key], source[key]);
-      } else {
-        target[key] = source[key];
-      }
-    }
-    return target;
+/**
+ * @param {*} string text to be translated
+ * 
+ * @returns localized string
+ */
+export function gettext(string) {
+  let value;
+  try {
+    value = ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
+  } catch (e) {
+    // fail silently
   }
+  if (undefined === value) {
+    console.info(`[G3W-I18N] missing: ${string}`);
+    value = string;
+  }
+  return value ?? string;
 };
 
-L._ = L.translate;
-
-/* function to translate */
-export const t = text => L._(text);
+/**
+ * @param {string} lang   code (eg. "it") 
+ * @param {*}      locale i18n object
+ */
+gettext.register = function(lang, locale) {
+  ApplicationState.locales[lang] = Object.assign(ApplicationState.locales[lang] || {}, flattenObject(locale, '.'));
+};

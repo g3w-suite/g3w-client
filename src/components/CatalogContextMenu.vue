@@ -362,7 +362,7 @@
   import GUI                           from 'services/gui';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import { downloadFeatures }          from 'utils/downloadFeatures';
-  import { t as _ }                    from 'g3w-i18n';
+  import { gettext as _ }              from 'g3w-i18n';
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
