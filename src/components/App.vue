@@ -53,9 +53,7 @@
             @click         = "onCustomItemClick($event, item)"
             :target        = "item.target"
             data-placement = "bottom"
-            data-toggle    = "tooltip"
-            data-container = "body"
-            v-t-tooltip.create    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
+            v-t-tooltip    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
           >
             <i v-if     = "item.icon" :class = "item.icon"></i>
             <img v-if   = "item.img" height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
@@ -216,23 +214,19 @@
 
               <div>
                 <span
-                  v-if               = "panels.length > 1"
-                  @click.stop        = "closePanel"
-                  data-placement     = "left"
-                  data-toggle        = "tooltip"
-                  data-container     = "body"
-                  v-t-tooltip.create = "'back'"
-                  class              = "g3w-span-button close-pane-button"
+                  v-if           = "panels.length > 1"
+                  @click.stop    = "closePanel"
+                  data-placement = "left"
+                  v-t-tooltip    = "'back'"
+                  class          = "g3w-span-button close-pane-button"
                 >
                   <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
                 </span>
                 <span
-                  @click.stop              = "app.sidebar.btn_close && closeAllPanels()"
-                  data-toggle              = "tooltip"
-                  data-container           = "body"
-                  v-t-tooltip:right.create = "app.sidebar.tooltip_close || 'close'"
-                  :current-tooltip         = "app.sidebar.tooltip_close || 'close'"
-                  class                    = "g3w-span-button close-pane-button"
+                  @click.stop       = "app.sidebar.btn_close && closeAllPanels()"
+                  v-t-tooltip:right = "app.sidebar.tooltip_close || 'close'"
+                  :current-tooltip  = "app.sidebar.tooltip_close || 'close'"
+                  class             = "g3w-span-button close-pane-button"
                 >
                   <i
                     :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
@@ -276,14 +270,14 @@
 
       <!-- TOGGLE BUTTON (sidebar menu) -->
       <a
-        href               = "#"
-        class              = "sidebar-aside-toggle"
-        :class             = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
-        style              = "z-index: 2"
-        @click.prevent     = "toggleSidebar"
-        role               = "button"
-        data-placement     = "right"
-        v-t-tooltip.create = "'Sidebar menu'"
+        href           = "#"
+        class          = "sidebar-aside-toggle"
+        :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
+        style          = "z-index: 2"
+        @click.prevent = "toggleSidebar"
+        role           = "button"
+        data-placement = "right"
+        v-t-tooltip    = "'Sidebar menu'"
       ></a>
 
     </aside>
@@ -443,27 +437,27 @@
               "
             >
               <i
-                v-if                      = "undefined !== state.split"
-                :class                    = "$fa(`resize-${state.split}`)"
-                v-t-tooltip:bottom.create = "'Enlarge / Reduce'"
-                style                     = "margin-right: 3px;"
-                class                     = "action-button skin-color-dark"
-                @click                    = "resizeFull"
+                v-if               = "undefined !== state.split"
+                :class             = "$fa(`resize-${state.split}`)"
+                v-t-tooltip:bottom = "'Enlarge / Reduce'"
+                style              = "margin-right: 3px;"
+                class              = "action-button skin-color-dark"
+                @click             = "resizeFull"
               ></i>
             </div>
             <i
-              style="cursor: pointer; scale:.9;"
-              :style = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              v-t-tooltip:bottom.create="`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
-              class="action-button skin-color-dark fa fa-external-link-alt"
-              @click ="splitContent"
+              style              = "cursor: pointer; scale:.9;"
+              :style             = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              v-t-tooltip:bottom = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
+              class              = "action-button skin-color-dark fa fa-external-link-alt"
+              @click             = "splitContent"
             ></i>
             <i
-              v-if = "state.content.closable"
-              @click = "closeContent"
-              v-t-tooltip:bottom.create="'close'"
-              :class = "{'mobile': isMobile()}"
-              class  = "action-button skin-color-dark fas fa-times"
+              v-if               = "state.content.closable"
+              @click             = "closeContent"
+              v-t-tooltip:bottom = "'close'"
+              :class             = "{'mobile': isMobile()}"
+              class              = "action-button skin-color-dark fas fa-times"
             ></i>
           </div>
         </div>
@@ -521,7 +515,7 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import { L, t }     from 'g3w-i18n';
+import { L, t as _ }      from 'g3w-i18n';
 
 export default {
 
@@ -532,11 +526,11 @@ export default {
     return {
       iframe:                false,
       language:              null,
-      cookie_law_buttonText: t('Got It!'),
+      cookie_law_buttonText: _('Got It!'),
       app:                   ApplicationState,
       state:                 ApplicationState.viewport,
       updatePreviousTitle:   false,
-      header:                t('main navigation'),
+      header:                _('main navigation'),
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
     }
   },
@@ -940,7 +934,7 @@ export default {
         setTimeout(() => {
           /** @since 4.0.0 */
           GUI.emit('i18n-ready', lang);
-          this.cookie_law_buttonText = t('Got It!');
+          this.cookie_law_buttonText = _('Got It!');
           //set form control class to filter
           $.extend($.fn.dataTableExt.oStdClasses, {
             "sFilterInput": "form-control search"
@@ -948,14 +942,14 @@ export default {
           $.extend(true, $.fn.dataTable.defaults, {
             "language": {
               "sSearch": '',
-              "searchPlaceholder": t("dosearch"),
-              "sLengthMenu": t('Show _MENU_ values per page'),
+              "searchPlaceholder": _("dosearch"),
+              "sLengthMenu": _('Show _MENU_ values per page'),
               "paginate": {
                 "previous": '«',
                 "next": '»',
               },
-              "info": t('_TOTAL_ entries'),
-              "zeroRecords": t('No matching records found'),
+              "info": _('_TOTAL_ entries'),
+              "zeroRecords": _('No matching records found'),
               "infoFiltered": ''
             }
           });

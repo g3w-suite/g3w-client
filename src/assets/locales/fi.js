@@ -15,7 +15,7 @@ export default {
   search: "Hae",
   no_results: "Ei hakutuloksia",
   print: "Tulosta",
-  create_print: "Luo tuloste",
+  'Create Print': "Luo tuloste",
   dosearch: "Hae",
   catalog: "Kartta",
   data: "Data",
@@ -31,10 +31,10 @@ export default {
   copy_form_data: "Kopioi tiedot",
   paste_form_data: "Liitä",
   copy_form_data_from_feature: "Kopioi tiedot kartalta",
-  error_map_loading: "Virhe ladattessa karttaa",
+  'Error occurs loading map': "Virhe ladattessa karttaa",
   'Check internet connection or contact admin': "Tarkista internetyhteys tai ota yhteyttä ylläpitäjään.",
   'Connection error: Layers can be loaded': "Yhteysvirhe, tasoja ei voida ladata.",
-  server_saver_error: "Virhe tallentaessa palvelimelle.",
+  'Error in server saving': "Virhe tallentaessa palvelimelle.",
   server_error: "Yhteysvirhe palvelimeen",
   save: "Tallenna",
   cancel: "Peruuta",
@@ -156,7 +156,7 @@ export default {
   'Y field': "Select Y field",
   'Layer Color': "Valitse tason väri",
   'Add your file here': "Vedä ja pudota taso tähän",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Turvallisuusvirhe</b>: ulkoinen kerros estää karttaa tulostamasta. Tarkistaaksesi, toimi seuraavasti:</p>
   <ol>
     <li>poista manuaalisesti lisätyt ulkoiset tasot (esim. WMS-tasot)</li>
@@ -164,166 +164,104 @@ export default {
     <li>tulosta kartta uudelleen</li>
   </ol>
   <p>Saat lisätietoja palvelimen järjestelmänvalvojalta seuraavista aiheista: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -paino: lihavoitu;">&#x2139;&#xFE0F; turvallisuus ja likaiset kankaat</a></p>`,
-  layer_position: {
-    top: 'TOP',
-    bottom: 'BOTTOM',
-    message: "Position relative to layers on TOC"
-  },
-  info: {
-    title: "Tulokset",
-    list_of_relations: "List of Relations",
-    open_link: "Avaa liitetiedosto",
-    server_error: "Palvelimella tapahtui virhe.",
-    no_results: "Ei tuloksia haulle/kyselylle.",
-    link_button: "Avaa"
-  },
-  scaleline_units: {
-    metric: 'Meters',
-    nautical: 'Nautical Mile'
-  },
-  measure_types: {
-    length: "Pituus",
-    area: "Alue",
-  },
-  measure_descriptions: {
-    length: "Piirrä murtoviiva kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.",
-    area: "Piirrä monikulmio kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen."
-  },
-  metadata_groups: {
-    general: {
-      title: 'YLEINEN',
-      fields: {
-        title: 'OTSIKKO',
-        name: 'NIMI',
-        description: "KUVAUS",
-        abstract: "TIIVISTELMÄ",
-        keywords: 'AVAINSANAT',
-        fees: "MAKSUT",
-        accessconstraints: "PÄÄSYRAJOITUKSET",
-        contactinformation: "YHTEYSTIEDOT",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "Sähköposti",
-            personprimary: 'Viitteet',
-            contactvoicetelephone: 'Puhelin',
-            contactorganization: 'Organisaatio',
-            ContactOrganization: 'Organisaatio',
-            contactposition: 'Asema',
-            ContactPosition: 'Asema',
-            contactperson: 'Yhteyshenkilö',
-            ContactPerson: 'Yhteyshenkilö'
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'SPATIAL',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'TASOT',
-      fields: {
-        layers: 'TASOT',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "OTSIKKO",
-          name: 'NIMI',
-          geometrytype: 'GEOMETRIA',
-          source: 'LÄHDE',
-          attributes: 'ATTRIBUUTIT',
-          abstract: 'TIIVISTELMÄ',
-          attribution: 'ATTRIBUUTIO',
-          keywords: "AVAINSANAT",
-          metadataurl:'METATIEDON URL',
-          dataurl: "DATA URL"
-        }
-      },
-      groups : {
-        general: 'YLEINEN',
-        spatial: 'SPATIAL'
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Lataa SHP-tiedosto",
-    gpx: "Lataa GPX-tiedosto",
-    gpkg: "Lataa GPKG-tiedosto",
-    csv: "Lataa CSV-tiedosto",
-    xls: "Lataa XLS-tiedosto",
-    pdf: "Lataa PDF-tiedosto",
-  },
+  'layer_position.top': 'TOP',
+  'layer_position.bottom': 'BOTTOM',
+  'layer_position.message': 'Position relative to layers on TOC',
+  'info.title': 'Tulokset',
+  'info.list_of_relations': 'List of Relations',
+  'info.open_link': 'Avaa liitetiedosto',
+  'info.server_error': 'Palvelimella tapahtui virhe.',
+  'info.no_results': 'Ei tuloksia haulle/kyselylle.',
+  'info.link_button': 'Avaa',
+  'scaleline_units.metric': 'Meters',
+  'scaleline_units.nautical': 'Nautical Mile',
   'mapcontrols.query.input_relation': "Paina näyttääksesi relaatiot",
-
   'mapcontrols.querybypolygon.tooltip': 'Kysely monikulmiolla',
   'mapcontrols.querybypolygon.help.message': '<ul><li>Valitse monikulmiotaso luettelosta.</li><li>Tarkista, että taso on näkyvillä.</li><li>Valitse ominaisuus valitulla tasolla.</li></ul>',
-
   'mapcontrols.querybydrawpolygon.tooltip': "Kysely piirtopolygonin mukaan",
-
   'mapcontrols.querybbox.tooltip': 'Tasoon kohdituva BBox-kysely',
   'mapcontrols.querybbox.nolayers_visible': 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
   'mapcontrols.querybbox.help.message': "<ul><li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li></ul>",
-
-  sdk: {
-    search: {
-      all: 'KAIKKI',
-      no_results: "Ei tuloksia",
-      searching: "Haetaan ...",
-      error_loading: "Virhe ladattaessa tietoja.",
-      layer_not_searchable: "Taso ei ole haettavissa.",
-      layer_not_querable: "Tasolle ei voi suorittaa kyselyitä.",
-      autocomplete: {
-        inputshort: {
-          pre: "Syötä",
-          post: "tai useampi merkki"
-        }
-      },
-      help_filter : "Hakuarvot ovat rajoitettuja aktiivisen suodattimen perusteella. Poista suodatin etsiäksesi kaikista tiedoista.",
-      autofilter: "Suodata tulokset"
-    },
-    form: {
-      loading: 'Ladataan...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Ominaisuuksia ei valiitu. Tarkista, että taso on muokattavissa tai näkyvissä nykyisellä mittakaavalla."
-          }
-        },
-        tooltips:{
-          picklayer: "Valitse arvo karttatasolta",
-          lonlat: "Click on map to get coordinates"
-        },
-        input_validation_mutually_exclusive: "Kenttä toisensa poissulkeva.",
-        input_validation_error: "Pakollinen kenttä tai väärä tietotyyppi.",
-        input_validation_error_type: "Väärä tietotyyppi.",
-        input_validation_min_field: "Arvon tulee olla suurempi tai yhtäsuuri kuin kentän arvo.",
-        input_validation_max_field: "Arvon tulee olla pienempi tai yhtäsuuri kuin kentän arvo.",
-        input_validation_exclude_values: "Arvon tulee olla uniikki.",
-        integer: "kokonaisluku",
-        bigint: "kokonaisluku",
-        text: "teksti",
-        varchar: "teksti",
-        textarea: "teksti",
-        string: "merkkijono",
-        date: "päiväys",
-        datetime: "päiväys",
-        float: "liukuluku",
-        table: "taulukko"
-      },
-      footer: {
-        "required_fields": "Vaaditut kentät"
-      },
-      messages: {
-        qgis_input_widget_relation: "Käytä relaatioiden määrittämiseen tähän tarkoitettua toimintoa"
-      }
-    },
-    wps: {
-      list_process: "Lista prosesseista",
-      tooltip: 'Valitse kartalta'
-    }
-  },
+  'measure_types.length': 'Pituus',
+  'measure_types.area': 'Alue',
+  'measure_descriptions.length': 'Piirrä murtoviiva kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.',
+  'measure_descriptions.area': 'Piirrä monikulmio kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.',
+  'metadata.general.title': 'YLEINEN',
+  'metadata.general.fields.title': 'OTSIKKO',
+  'metadata.general.fields.name': 'NIMI',
+  'metadata.general.fields.description': 'KUVAUS',
+  'metadata.general.fields.abstract': 'TIIVISTELMÄ',
+  'metadata.general.fields.keywords': 'AVAINSANAT',
+  'metadata.general.fields.fees': 'MAKSUT',
+  'metadata.general.fields.accessconstraints': 'PÄÄSYRAJOITUKSET',
+  'metadata.general.fields.contactinformation': 'YHTEYSTIEDOT',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'Sähköposti',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Viitteet',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Puhelin',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organisaatio',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organisaatio',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Asema',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Asema',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Yhteyshenkilö',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Yhteyshenkilö',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'SPATIAL',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'TASOT',
+  'metadata.layers.groups.general': 'YLEINEN',
+  'metadata.layers.groups.spatial': 'SPATIAL',
+  'metadata.layers.fields.layers': 'TASOT',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'OTSIKKO',
+  'metadata.layers.fields.subfields.name': 'NIMI',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIA',
+  'metadata.layers.fields.subfields.source': 'LÄHDE',
+  'metadata.layers.fields.subfields.attributes': 'ATTRIBUUTIT',
+  'metadata.layers.fields.subfields.abstract': 'TIIVISTELMÄ',
+  'metadata.layers.fields.subfields.attribution': 'ATTRIBUUTIO',
+  'metadata.layers.fields.subfields.keywords': 'AVAINSANAT',
+  'metadata.layers.fields.subfields.metadataurl': 'METATIEDON URL',
+  'metadata.layers.fields.subfields.dataurl': 'DATA URL',
+  'download_types.shapefile': 'Lataa SHP-tiedosto',
+  'download_types.gpx': 'Lataa GPX-tiedosto',
+  'download_types.gpkg': 'Lataa GPKG-tiedosto',
+  'download_types.csv': 'Lataa CSV-tiedosto',
+  'download_types.xls': 'Lataa XLS-tiedosto',
+  'download_types.pdf': 'Lataa PDF-tiedosto',
+  'sdk.search.all': 'KAIKKI',
+  'No results': 'Ei tuloksia',
+  'Searching ...': 'Haetaan ...',
+  'Error Loading Data': 'Virhe ladattaessa tietoja.',
+  'Layer is not searchable': 'Taso ei ole haettavissa.',
+  'Layer is not querable': 'Tasolle ei voi suorittaa kyselyitä.',
+  'Please enter': 'Syötä',
+  'or more characters': 'tai useampi merkki',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Hakuarvot ovat rajoitettuja aktiivisen suodattimen perusteella. Poista suodatin etsiäksesi kaikista tiedoista.',
+  'Filter results': 'Suodata tulokset',
+  'Loading ...': 'Ladataan...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Ominaisuuksia ei valiitu. Tarkista, että taso on muokattavissa tai näkyvissä nykyisellä mittakaavalla.',
+  'sdk.form.inputs.tooltips.picklayer': 'Valitse arvo karttatasolta',
+  'sdk.form.inputs.tooltips.lonlat': 'Click on map to get coordinates',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Kenttä toisensa poissulkeva.',
+  'sdk.form.inputs.input_validation_error': 'Pakollinen kenttä tai väärä tietotyyppi.',
+  'sdk.form.inputs.input_validation_error_type': 'Väärä tietotyyppi.',
+  'sdk.form.inputs.input_validation_min_field': 'Arvon tulee olla suurempi tai yhtäsuuri kuin kentän arvo.',
+  'sdk.form.inputs.input_validation_max_field': 'Arvon tulee olla pienempi tai yhtäsuuri kuin kentän arvo.',
+  'sdk.form.inputs.input_validation_exclude_values': 'Arvon tulee olla uniikki.',
+  'sdk.form.inputs.integer': 'kokonaisluku',
+  'sdk.form.inputs.bigint': 'kokonaisluku',
+  'sdk.form.inputs.text': 'teksti',
+  'sdk.form.inputs.varchar': 'teksti',
+  'sdk.form.inputs.textarea': 'teksti',
+  'sdk.form.inputs.string': 'merkkijono',
+  'sdk.form.inputs.date': 'päiväys',
+  'sdk.form.inputs.datetime': 'päiväys',
+  'sdk.form.inputs.float': 'liukuluku',
+  'sdk.form.inputs.table': 'taulukko',
+  'sdk.form.footer.required_fields': 'Vaaditut kentät',
+  'sdk.form.messages.qgis_input_widget_relation': 'Käytä relaatioiden määrittämiseen tähän tarkoitettua toimintoa',
+  'sdk.wps.list_process': 'Lista prosesseista',
+  'sdk.wps.tooltip': 'Valitse kartalta',
 };

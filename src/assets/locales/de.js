@@ -14,7 +14,7 @@ export default {
   search: "Suche",
   no_results: "Keine Ergebnisse gefunden",
   print: "Drucken",
-  create_print: "Drucken erstellen",
+  'Create Print': "Drucken erstellen",
   dosearch: "Suche",
   catalog: "Karte",
   data: "Daten",
@@ -30,10 +30,10 @@ export default {
   copy_form_data: "Daten kopieren",
   paste_form_data: "Einfügen",
   copy_form_data_from_feature: "Daten von der Karte kopieren",
-  error_map_loading: "Fehler beim Laden der Karte",
+  'Error occurs loading map': "Fehler beim Laden der Karte",
   'Check internet connection or contact admin': "Internetverbindung prüfen oder Admin kontaktieren",
   'Connection error: Layers can be loaded': "Verbindungsfehler: Layers können geladen werden",
-  server_saver_error: "Fehler beim Speichern auf dem Server",
+  'Error in server saving': "Fehler beim Speichern auf dem Server",
   server_error: "Server-Verbindungsfehler",
   save: "Speichern",
   cancel: "Abbrechen",
@@ -162,7 +162,7 @@ export default {
   'Layer Color': "Layer Farbe auswählen",
   'Add your file here': "Layer hierher ziehen und ablegen",
   'Screenshot error creation': "Screenshot Fehlererstellung",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Sicherheitsfehler</b>: Eine externe Ebene verhindert, dass die Karte gedruckt wird. Gehen Sie zur Überprüfung wie folgt vor:</p>
   <ol>
     <li>Entfernen Sie alle manuell hinzugefügten externen Ebenen (z. B. WMS-Ebenen)</li>
@@ -170,169 +170,107 @@ export default {
     <li>Drucken Sie die Karte erneut</li>
   </ol>
   <p>Für weitere Informationen wenden Sie sich bitte an den Serveradministrator zu: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -weight: fett;">&#x2139;&#xFE0F; Sicherheit und befleckte Leinwände</a></p>`,
-  layer_position: {
-    top: 'OBEN',
-    bottom: 'UNTEN',
-    message: "Position relativ zu den Layern im TOC"
-  },
-  info: {
-    title: "Ergebnisse",
-    list_of_relations: "List of Relations",
-    open_link: "Beigefügtes Dokument öffnen",
-    server_error: "Auf dem Server ist ein Fehler aufgetreten",
-    no_results: "Keine Ergebnisse für diese Anfrage/Suche gefunden",
-    link_button: "Öffnen"
-  },
-  scaleline_units: {
-    metric: 'Meter',
-    nautical: 'Nautische Meile'
-  },
-  measure_types: {
-    length: "Länge",
-    area: "Fläche",
-  },
-  measure_descriptions: {
-    length: "Klicken Sie auf die Karte, um die Linie zu zeichnen. Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen möchten.",
-    area: "Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen wollen."
-  },
-  metadata_groups: {
-    general: {
-      title: 'ALLGEMEIN',
-      fields: {
-        title: 'TITEL',
-        name: 'NAME',
-        description: "BESCHREIBUNG",
-        abstract: "ABASTRACT",
-        keywords: 'SCHLÜSSELWÖRTER',
-        fees: "GEBÜHREN",
-        accessconstraints: "ZUGRIFFSBESCHRÄNKUNG",
-        contactinformation: "KONTAKTE",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "Email",
-            personprimary: 'Referenzen',
-            contactvoicetelephone: 'Telefon',
-            contactorganization: 'Firma',
-            ContactOrganization: 'Firma',
-            contactposition: 'Position',
-            ContactPosition: 'Position',
-            contactperson: 'Person',
-            ContactPerson: 'Person'
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'SPATIAL',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'LAYERS',
-      fields: {
-        layers: 'LAYERS',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "TITEL",
-          name: 'NAME',
-          geometrytype: 'GEOMETRIE',
-          source: 'QUELLE',
-          attributes: 'ATTRIBUTE',
-          abstract: 'ABSTRACT',
-          attribution: 'ATRIBUTION',
-          keywords: "SCHLÜSSELWÖRTER",
-          metadataurl:'METADATEN URL',
-          dataurl: "DATEN URL"
-        }
-      },
-      groups : {
-        general: 'ALLGEMEIN',
-        spatial: 'SPATIAL'
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Shapefile herunterladen",
-    gpx: "DGPX herunterladen",
-    gpkg: "GPKG herunterladen",
-    csv: "CSV herunterladen",
-    xls: "XLS herunterladen",
-    pdf: "PDF herunterladen",
-  },
+  'layer_position.top': 'OBEN',
+  'layer_position.bottom': 'UNTEN',
+  'layer_position.message': 'Position relativ zu den Layern im TOC',
+  'info.title': 'Ergebnisse',
+  'info.open_link': 'Beigefügtes Dokument öffnen',
+  'info.server_error': 'Auf dem Server ist ein Fehler aufgetreten',
+  'info.no_results': 'Keine Ergebnisse für diese Anfrage/Suche gefunden',
+  'info.link_button': 'Öffnen',
+  'scaleline_units.metric': 'Meter',
+  'scaleline_units.nautical': 'Nautische Meile',
   'mapcontrols.query.input_relation': "Klicken, um Relationen anzuzeigen",
-  
   'mapcontrols.querybypolygon.download.title': "Attribute herunterladen",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Nur Features",
   'mapcontrols.querybypolygon.tooltip': 'Query nach Polygon',
   'mapcontrols.querybypolygon.no_geometry': 'Keine Geometrie in der Antwort',
   'mapcontrols.querybypolygon.help.message': "<ul><li>Wählen Sie einen Polygon Layer auf TOC.</li><li>Stellen Sie sicher, dass der Layer sichtbar ist.</li><li>Klicken Sie auf ein Feature des ausgewählten Layers.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Abfrage durch Polygon zeichnen",
-
   'mapcontrols.querybbox.tooltip': 'BBox Layer abfragen',
   'mapcontrols.querybbox.nolayers_visible': 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
   'mapcontrols.querybbox.help.message': "<ul><li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li></ul>",
-
-  sdk: {
-    search: {
-      all: 'ALLE',
-      no_results: "Keine Ergebnisse",
-      searching: "Suchen ...",
-      error_loading: "Fehler beim Datenladen",
-      layer_not_searchable: "Layer ist nicht durchsuchbar",
-      layer_not_querable: "Layer ist nicht abfragbar",
-      autocomplete: {
-        inputshort: {
-          pre: "Bitte",
-          post: "oder mehrere Zeichen eingeben"
-        }
-      },
-      help_filter : "Suchwerte werden basierend auf dem aktiven Filter begrenzt. Entfernen Sie den Filter, um nach allen Daten zu suchen.",
-      autofilter: "Filtern Sie die Ergebnisse"
-    },
-    form: {
-      loading: 'Laden ...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Kein Feature ausgewählt. Prüfen, ob der Layer in Bearbeitung oder im aktuellen Maßstab sichtbar ist"
-          }
-        },
-        tooltips:{
-          picklayer: "Wert aus dem Layer abrufen",
-          lonlat: "Zum Abrufen der Koordinaten auf die Karte klicken"
-        },
-        input_validation_mutually_exclusive: "Feld schließt sich gegenseitig aus mit ",
-        input_validation_error: "Obligatorisches Feld oder falscher Datentyp",
-        input_validation_error_type: "Falscher Datentyp",
-        input_validation_min_field: "Der Wert muss größer/gleich sein als der Feldwert  ",
-        input_validation_max_field: "Der Wert muss kleiner/gleich sein als der Feldwert ",
-        input_validation_exclude_values: "Wert muss einmalig sein",
-        integer: "integer",
-        bigint: "integer",
-        text: "text",
-        varchar: "text",
-        textarea: "text",
-        string: "string",
-        date: "date",
-        datetime: "date",
-        float: "float",
-        table: "table"
-      },
-      footer: {
-        "required_fields": "Erforderliche Felder"
-      },
-      messages: {
-        qgis_input_widget_relation: "Spezifisches Relations-Formular verwenden, um mit Relationen zu arbeiten"
-      }
-    },
-    wps: {
-      list_process: "Liste der Prozesse",
-      tooltip: 'Karte anklicken'
-    }
-  },
+  'measure_types.length': 'Länge',
+  'measure_types.area': 'Fläche',
+  'measure_descriptions.length': 'Klicken Sie auf die Karte, um die Linie zu zeichnen. Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen möchten.',
+  'measure_descriptions.area': 'Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen wollen.',
+  'metadata.credits.title': 'Credits',
+  'metadata.general.title': 'ALLGEMEIN',
+  'metadata.general.fields.title': 'TITEL',
+  'metadata.general.fields.name': 'NAME',
+  'metadata.general.fields.description': 'BESCHREIBUNG',
+  'metadata.general.fields.abstract': 'ABASTRACT',
+  'metadata.general.fields.keywords': 'SCHLÜSSELWÖRTER',
+  'metadata.general.fields.fees': 'GEBÜHREN',
+  'metadata.general.fields.accessconstraints': 'ZUGRIFFSBESCHRÄNKUNG',
+  'metadata.general.fields.contactinformation': 'KONTAKTE',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'Email',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Referenzen',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Telefon',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Firma',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Firma',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Position',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Position',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Person',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Person',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'SPATIAL',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'LAYERS',
+  'metadata.layers.groups.general': 'ALLGEMEIN',
+  'metadata.layers.groups.spatial': 'SPATIAL',
+  'metadata.layers.fields.layers': 'LAYERS',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'TITEL',
+  'metadata.layers.fields.subfields.name': 'NAME',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIE',
+  'metadata.layers.fields.subfields.source': 'QUELLE',
+  'metadata.layers.fields.subfields.attributes': 'ATTRIBUTE',
+  'metadata.layers.fields.subfields.abstract': 'ABSTRACT',
+  'metadata.layers.fields.subfields.attribution': 'ATRIBUTION',
+  'metadata.layers.fields.subfields.keywords': 'SCHLÜSSELWÖRTER',
+  'metadata.layers.fields.subfields.metadataurl': 'METADATEN URL',
+  'metadata.layers.fields.subfields.dataurl': 'DATEN URL',
+  'download_types.shapefile': 'Shapefile herunterladen',
+  'download_types.gpx': 'DGPX herunterladen',
+  'download_types.gpkg': 'GPKG herunterladen',
+  'download_types.csv': 'CSV herunterladen',
+  'download_types.xls': 'XLS herunterladen',
+  'download_types.pdf': 'PDF herunterladen',
+  'sdk.search.all': 'ALLE',
+  'No results': 'Keine Ergebnisse',
+  'Searching ...': 'Suchen ...',
+  'Error Loading Data': 'Fehler beim Datenladen',
+  'Layer is not searchable': 'Layer ist nicht durchsuchbar',
+  'Layer is not querable': 'Layer ist nicht abfragbar',
+  'Please enter': 'Bitte',
+  'or more characters': 'oder mehrere Zeichen eingeben',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Suchwerte werden basierend auf dem aktiven Filter begrenzt. Entfernen Sie den Filter, um nach allen Daten zu suchen.',
+  'Filter results': 'Filtern Sie die Ergebnisse',
+  'Loading ...': 'Laden ...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Kein Feature ausgewählt. Prüfen, ob der Layer in Bearbeitung oder im aktuellen Maßstab sichtbar ist',
+  'sdk.form.inputs.tooltips.picklayer': 'Wert aus dem Layer abrufen',
+  'sdk.form.inputs.tooltips.lonlat': 'Zum Abrufen der Koordinaten auf die Karte klicken',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Feld schließt sich gegenseitig aus mit ',
+  'sdk.form.inputs.input_validation_error': 'Obligatorisches Feld oder falscher Datentyp',
+  'sdk.form.inputs.input_validation_error_type': 'Falscher Datentyp',
+  'sdk.form.inputs.input_validation_min_field': 'Der Wert muss größer/gleich sein als der Feldwert  ',
+  'sdk.form.inputs.input_validation_max_field': 'Der Wert muss kleiner/gleich sein als der Feldwert ',
+  'sdk.form.inputs.input_validation_exclude_values': 'Wert muss einmalig sein',
+  'sdk.form.inputs.integer': 'integer',
+  'sdk.form.inputs.bigint': 'integer',
+  'sdk.form.inputs.text': 'text',
+  'sdk.form.inputs.varchar': 'text',
+  'sdk.form.inputs.textarea': 'text',
+  'sdk.form.inputs.string': 'string',
+  'sdk.form.inputs.date': 'date',
+  'sdk.form.inputs.datetime': 'date',
+  'sdk.form.inputs.float': 'float',
+  'sdk.form.inputs.table': 'table',
+  'sdk.form.footer.required_fields': 'Erforderliche Felder',
+  'sdk.form.messages.qgis_input_widget_relation': 'Spezifisches Relations-Formular verwenden, um mit Relationen zu arbeiten',
+  'sdk.wps.list_process': 'Liste der Prozesse',
+  'sdk.wps.tooltip': 'Karte anklicken',
 };

@@ -12,7 +12,7 @@ import {
   G3W_FID,
 }                                 from 'g3w-constants';
 import G3WObject                  from 'g3w-object';
-import { t }                      from 'g3w-i18n';
+import { t as _ }                 from 'g3w-i18n';
 import ApplicationState           from 'store/application';
 import Projections                from 'store/projections';
 import DataRouterService          from 'services/data';
@@ -260,7 +260,7 @@ const Providers = {
         } catch (e) {
           console.warn(e);
         }
-        return Promise.reject({ message: t("info.server_error")});
+        return Promise.reject({ message: _("info.server_error")});
       });
     }
 
@@ -1267,7 +1267,7 @@ class Layer extends G3WObject {
     }
 
     prompt({
-      label: t('Save Filter'),
+      label: _('Save Filter'),
       value: this.state.filter.current?.name || '',
       callback: async(name) => {
 
@@ -2039,7 +2039,7 @@ class Layer extends G3WObject {
       if (provider) {
         return await promisify(provider.query(options));
       }
-      return Promise.reject(t('sdk.search.layer_not_searchable'));
+      return Promise.reject(_('Layer is not searchable'));
     });
   }
 
@@ -2052,7 +2052,7 @@ class Layer extends G3WObject {
       if (provider) {
         return await promisify(provider.query(options));
       }
-      return Promise.reject(t('sdk.search.layer_not_querable'));
+      return Promise.reject(_('Layer is not querable'));
     });
   }
 

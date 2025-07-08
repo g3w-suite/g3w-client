@@ -19,11 +19,11 @@
 
       <!-- BACK BUTTON -->
         <span
-          v-if                     = "showrelationslist"
-          v-t-tooltip:right.create = "'Back to relations'"
-          class                    = "action-button-icon action-button back-button"
-          :class                   = "$fa('exit')"
-          @click.stop              = "back">
+          v-if              = "showrelationslist"
+          v-t-tooltip:right = "'Back to relations'"
+          class             = "action-button-icon action-button back-button"
+          :class            = "$fa('exit')"
+          @click.stop       = "back">
         </span>
 
         <!-- RELATION NAME -->
@@ -44,8 +44,8 @@
             $fa('download'),
             { 'toggled-white': download.toggled },
           ]"
-          @click.stop             = "download.handler"
-          v-t-tooltip:left.create = "download.formats.length > 1 ? 'Downloads' : `download_types.${this.download.formats[0]}`">
+          @click.stop      = "download.handler"
+          v-t-tooltip:left = "download.formats.length > 1 ? 'Downloads' : `download_types.${this.download.formats[0]}`">
         </span>
 
         <!-- SHOW CHART BUTTON -->
@@ -56,8 +56,8 @@
             $fa('chart'),
             chart.toggled ? 'toggled-white' : '',
           ]"
-          @click.stop               = "chart.handler"
-          v-t-tooltip:bottom.create = "'Show Chart'">
+          @click.stop        = "chart.handler"
+          v-t-tooltip:bottom = "'Show Chart'">
         </span>
 
       </div>
@@ -125,25 +125,25 @@
                 class = "table-tools"
               >
                 <span
-                  v-if                     = "table.features[index].geometry"
-                  @click.stop              = "zoomToGeometry(table.features[index].geometry)"
-                  class                    = "action-button row-form skin-color"
-                  v-t-tooltip:right.create = "'Zoom to Geometry'"
-                  :class                   = "$fa('marker')"
+                  v-if              = "table.features[index].geometry"
+                  @click.stop       = "zoomToGeometry(table.features[index].geometry)"
+                  class             = "action-button row-form skin-color"
+                  v-t-tooltip:right = "'Zoom to Geometry'"
+                  :class            = "$fa('marker')"
                 ></span>
                 <span
-                  v-if                     = "table.formStructure"
-                  @click.stop              = "showFormStructure(row, index)"
-                  v-t-tooltip:right.create = "'Form View'"
-                  class                    = "action-button row-form skin-color"
-                  :class                   = "$fa('table')"
+                  v-if              = "table.formStructure"
+                  @click.stop       = "showFormStructure(row, index)"
+                  v-t-tooltip:right = "'Form View'"
+                  class             = "action-button row-form skin-color"
+                  :class            = "$fa('table')"
                 ></span>
                 <span
-                  v-if                     = "isEditable"
-                  @click.stop              = "editFeature(index)"
-                  class                    = "action-button row-form skin-color"
-                  v-t-tooltip:right.create = "'Edit'"
-                  :class                   = "$fa('pencil')"
+                  v-if              = "isEditable"
+                  @click.stop       = "editFeature(index)"
+                  class             = "action-button row-form skin-color"
+                  v-t-tooltip:right = "'Edit'"
+                  :class            = "$fa('pencil')"
                 ></span>
               </td>
               <td v-for = "value in row.slice(1)">

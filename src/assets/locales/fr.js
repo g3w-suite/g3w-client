@@ -14,7 +14,7 @@ export default {
   search: "Recherches",
   no_results: "Aucun résultat trouvé",
   print: "Imprimer",
-  create_print: "Créer une impression",
+  'Create Print': "Créer une impression",
   dosearch: "Recherche",
   catalog: "Carte",
   data: "Données",
@@ -30,10 +30,10 @@ export default {
   copy_form_data: "Copier les données du formulaire",
   paste_form_data: "Coller",
   copy_form_data_from_feature: "Copier les données de la carte",
-  error_map_loading: "Erreur de chargement de la nouvelle carte",
+  'Error occurs loading map': "Erreur de chargement de la nouvelle carte",
   'Check internet connection or contact admin': "Vérifiez la connexion internet ou contactez l'administrateur",
   'Connection error: Layers can be loaded': "Erreur de connexion au serveur : il n'a pas été possible de charger les vecteurs demandés",
-  server_saver_error: "Erreur de sauvegarde sur le serveur",
+  'Error in server saving': "Erreur de sauvegarde sur le serveur",
   server_error: "Une erreur s'est produite dans la requête au serveur",
   save: "Sauvegarder",
   cancel: "Supprimer",
@@ -163,7 +163,7 @@ export default {
   'Layer Color': "Sélectionnez la couleur du layer",
   'Add your file here': "Faire glisser le layer vers cette zone",
   'Screenshot error creation': "Erreur de création de la capture d'écran",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Erreur de sécurité</b> : une couche externe empêche l'impression de la carte. Pour vérifier, procédez comme suit :</p>
   <ol>
     <li>supprimer toutes les couches externes ajoutées manuellement (par exemple, les couches WMS)</li>
@@ -171,170 +171,108 @@ export default {
     <li>imprimer à nouveau la carte</li>
   </ol>
   <p>Pour plus d'informations, veuillez contacter l'administrateur du serveur à propos de : <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -poids : gras ;">&#x2139;&#xFE0F; sécurité et toiles souillées</a></p>`,
-  layer_position: {
-    top: 'HAUT',
-    bottom: 'BAS',
-    message: "Position relative des couches dans la table des matières"
-  },
-  info: {
-    title: "Résultats",
-    list_of_relations: "Liste des relations",
-    open_link: "Ouvrir le document joint",
-    server_error: "Une erreur s'est produite dans la requête au serveur",
-    no_results: "Aucun résultat pour cette requête/recherche",
-    link_button: "Ouvrir"
-  },
-  scaleline_units: {
-    metric: 'Mètre',
-    nautical: 'Mile Nautique'
-  },
-  measure_types: {
-    length: "Longueur",
-    area: "Zone",
-  },
-  measure_descriptions: {
-    length: "Cliquez sur la carte pour continuer à dessiner la ligne.<br>CANC si vous voulez supprimer le dernier vertex inséré",
-    area: "Cliquez pour continuer à dessiner le polygone.<br>CANC si vous voulez supprimer le dernier vertex inséré"
-  },
-  metadata_groups: {
-    general: {
-      title: 'GÉNÉRAL',
-      fields: {
-        title: 'TITRE',
-        name: 'NOM',
-        description: "DESCRIPTION",
-        abstract: "ABREGE",
-        keywords: 'LISTE DE MOTS-CLÉS',
-        fees: "DROITS D'INSCRIPTION",
-        accessconstraints: "CONTRAINTES D'ACCÈS",
-        contactinformation: "CONTACTS",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "E-mail",
-            personprimary: 'Références',
-            contactvoicetelephone: 'Téléphone',
-            contactorganization: 'Organisation',
-            ContactOrganization: 'Organisation',
-            contactposition: 'Localisation',
-            ContactPosition : 'Localisation',
-            contactperson: 'Personne',
-            ContactPerson: 'Personne',
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'INFO SPATIALE',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'COUCHES',
-      groups : {
-        general: 'GENERALE',
-        spatial: 'INFO SPATIALE'
-      },
-      fields: {
-        layers: 'COUCHES',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "TITRE",
-          name: 'NOM',
-          geometrytype: 'GÉOMÉTRIE',
-          source: 'SOURCE',
-          attributes: 'ATTRIBUTS',
-          abstract: 'ABRÉGÉ',
-          attribution: 'ATTRIBUTION',
-          keywords: "MOTS- CLÉS",
-          metadataurl:'URL DE MÉTADONNÉES',
-          dataurl: "URL DES DONNÉES"
-        }
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Télécharger le fichier Shapefile",
-    gpx: "Télécharger GPX",
-    gpkg: "Télécharger GPKG",
-    csv: "Télécharger CSV",
-    xls: "Télécharger XLS",
-    pdf: "Télécharger PDF",
-  },
+  'layer_position.top': 'HAUT',
+  'layer_position.bottom': 'BAS',
+  'layer_position.message': 'Position relative des couches dans la table des matières',
+  'info.title': 'Résultats',
+  'info.list_of_relations': 'Liste des relations',
+  'info.open_link': 'Ouvrir le document joint',
+  'info.server_error': "Une erreur s'est produite dans la requête au serveur",
+  'info.no_results': 'Aucun résultat pour cette requête/recherche',
+  'info.link_button': 'Ouvrir',
+  'scaleline_units.metric': 'Mètre',
+  'scaleline_units.nautical': 'Mile Nautique',
   'mapcontrols.query.input_relation': "Cliquez pour voir les relations",
-  
   'mapcontrols.querybypolygon.download.title': "Téléchargement des attributs",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Entités seulement",
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Entités+Requête Polygon",
   'mapcontrols.querybypolygon.tooltip': 'Requête par polygone',
   'mapcontrols.querybypolygon.no_geometry': 'La réponse ne contient pas de géométrie',
   'mapcontrols.querybypolygon.help.message': "<ul><li>Sélectionnez une couche de polygone dans la légende.</li><li>Vérifiez que la couche est visible dans la carte.</li><li>Cliquez sur une géométrie de la couche sélectionnée.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Requête par polygone de dessin",
-
   'mapcontrols.querybbox.tooltip': 'Requête pour BBOX',
   'mapcontrols.querybbox.nolayers_visible': "Aucune couche requêtable n'est visible. Assurez-vous qu'au moins une couche wfs est visible pour exécuter la requête",
   'mapcontrols.querybbox.help.message': "<ul><li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li></ul>",
-
-  sdk: {
-    search: {
-      all: 'TOUTES',
-      no_results: "Aucune valeur trouvée",
-      searching: "Je cherche...",
-      error_loading: "Erreur de chargement des valeurs",
-      layer_not_searchable: "La couche n’est pas recherchable",
-      layer_not_querable: "La couche n'est pas interrogeable",
-      autocomplete: {
-        inputshort: {
-          pre: "Tapez au moins",
-          post: "caractères"
-        }
-      },
-      help_filter : "Les valeurs de recherche sont limitées en fonction du filtre actif. Supprimez le filtre pour rechercher toutes les données.",
-      autofilter: "Filtrer les résultats"
-    },
-    form: {
-      loading: 'Chargement...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Aucune entité sélectionnée. Vérifier si la couche est en édition ou non visible à l'échelle actuelle"
-          }
-        },
-        tooltips: {
-          picklayer: "Obtenir la valeur de la carte",
-          lonlat: "Cliquez sur la carte pour obtenir les coordonnées"
-        },
-        input_validation_mutually_exclusive: "Champ mutuellement exclusif avec ",
-        input_validation_error: "Champ obligatoire ou type de valeur incorrect",
-        input_validation_error_type: "Type de valeur incorrect",
-        input_validation_min_field: "La valeur doit être supérieure ou égale au camp ",
-        input_validation_max_field: "La valeur doit être inférieure ou égale au champ ",
-        input_validation_exclude_values: "Le champ doit contenir une valeur différente",
-        integer: "entier",
-        bigint: "entier",
-        text: "textuel",
-        varchar: "textuel",
-        textarea: "textuel",
-        string: "chaîne",
-        date: "date",
-        datetime: "date",
-        float: "décimal",
-        table: "table"
-      },
-      footer: {
-        required_fields: "Champs obligatoires"
-      },
-      messages: {
-        qgis_input_widget_relation: "Gérer les relations via un formulaire dédié"
-      }
-    },
-    wps: {
-      list_process: "Liste des processus",
-      tooltip: 'Cliquez sur la carte'
-    }
-  },
+  'measure_types.length': 'Longueur',
+  'measure_types.area': 'Zone',
+  'measure_descriptions.length': "Cliquez sur la carte pour continuer à dessiner la ligne.<br>CANC si vous voulez supprimer le dernier vertex inséré",
+  'measure_descriptions.area': "Cliquez pour continuer à dessiner le polygone.<br>CANC si vous voulez supprimer le dernier vertex inséré",
+  'metadata.general.title': 'GÉNÉRAL',
+  'metadata.general.fields.title': 'TITRE',
+  'metadata.general.fields.name': 'NOM',
+  'metadata.general.fields.description': 'DESCRIPTION',
+  'metadata.general.fields.abstract': 'ABREGE',
+  'metadata.general.fields.keywords': 'LISTE DE MOTS-CLÉS',
+  'metadata.general.fields.fees': "DROITS D'INSCRIPTION",
+  'metadata.general.fields.accessconstraints': "CONTRAINTES D'ACCÈS",
+  'metadata.general.fields.contactinformation': 'CONTACTS',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'E-mail',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Références',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Téléphone',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organisation',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organisation',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Localisation',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Localisation',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Personne',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Personne',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'INFO SPATIALE',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'COUCHES',
+  'metadata.layers.groups.general': 'GENERALE',
+  'metadata.layers.groups.spatial': 'INFO SPATIALE',
+  'metadata.layers.fields.layers': 'COUCHES',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'TITRE',
+  'metadata.layers.fields.subfields.name': 'NOM',
+  'metadata.layers.fields.subfields.geometrytype': 'GÉOMÉTRIE',
+  'metadata.layers.fields.subfields.source': 'SOURCE',
+  'metadata.layers.fields.subfields.attributes': 'ATTRIBUTS',
+  'metadata.layers.fields.subfields.abstract': 'ABRÉGÉ',
+  'metadata.layers.fields.subfields.attribution': 'ATTRIBUTION',
+  'metadata.layers.fields.subfields.keywords': 'MOTS- CLÉS',
+  'metadata.layers.fields.subfields.metadataurl': 'URL DE MÉTADONNÉES',
+  'metadata.layers.fields.subfields.dataurl': 'URL DES DONNÉES',
+  'download_types.shapefile': 'Télécharger le fichier Shapefile',
+  'download_types.gpx': 'Télécharger GPX',
+  'download_types.gpkg': 'Télécharger GPKG',
+  'download_types.csv': 'Télécharger CSV',
+  'download_types.xls': 'Télécharger XLS',
+  'download_types.pdf': 'Télécharger PDF',
+  'sdk.search.all': 'TOUTES',
+  'No results': 'Aucune valeur trouvée',
+  'Searching ...': 'Je cherche...',
+  'Error Loading Data': 'Erreur de chargement des valeurs',
+  'Layer is not searchable': 'La couche n’est pas recherchable',
+  'Layer is not querable': "La couche n'est pas interrogeable",
+  'Please enter': 'Tapez au moins',
+  'or more characters': 'caractères',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Les valeurs de recherche sont limitées en fonction du filtre actif. Supprimez le filtre pour rechercher toutes les données.',
+  'Filter results': 'Filtrer les résultats',
+  'Loading ...': 'Chargement...',
+  'sdk.form.inputs.messages.errors.picklayer': "Aucune entité sélectionnée. Vérifier si la couche est en édition ou non visible à l'échelle actuelle",
+  'sdk.form.inputs.tooltips.picklayer': 'Obtenir la valeur de la carte',
+  'sdk.form.inputs.tooltips.lonlat': 'Cliquez sur la carte pour obtenir les coordonnées',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Champ mutuellement exclusif avec ',
+  'sdk.form.inputs.input_validation_error': 'Champ obligatoire ou type de valeur incorrect',
+  'sdk.form.inputs.input_validation_error_type': 'Type de valeur incorrect',
+  'sdk.form.inputs.input_validation_min_field': 'La valeur doit être supérieure ou égale au camp ',
+  'sdk.form.inputs.input_validation_max_field': 'La valeur doit être inférieure ou égale au champ ',
+  'sdk.form.inputs.input_validation_exclude_values': 'Le champ doit contenir une valeur différente',
+  'sdk.form.inputs.integer': 'entier',
+  'sdk.form.inputs.bigint': 'entier',
+  'sdk.form.inputs.text': 'textuel',
+  'sdk.form.inputs.varchar': 'textuel',
+  'sdk.form.inputs.textarea': 'textuel',
+  'sdk.form.inputs.string': 'chaîne',
+  'sdk.form.inputs.date': 'date',
+  'sdk.form.inputs.datetime': 'date',
+  'sdk.form.inputs.float': 'décimal',
+  'sdk.form.inputs.table': 'table',
+  'sdk.form.footer.required_fields': 'Champs obligatoires',
+  'sdk.form.messages.qgis_input_widget_relation': 'Gérer les relations via un formulaire dédié',
+  'sdk.wps.list_process': 'Liste des processus',
+  'sdk.wps.tooltip': 'Cliquez sur la carte',
 };

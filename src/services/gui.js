@@ -1,7 +1,7 @@
 import G3WObject                 from 'g3w-object';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
-import { t }                     from 'g3w-i18n';
+import { t as _ }                from 'g3w-i18n';
 
 import ApplicationState          from 'store/application';
 
@@ -1022,7 +1022,7 @@ export default new (class GUI extends G3WObject {
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <dialog id="share_modal">
-          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fa fa-share-alt" style="margin-right: .5ch;"></i> ${t('Share via link')}</h4>
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fa fa-share-alt" style="margin-right: .5ch;"></i> ${_('Share via link')}</h4>
           <form method="dialog">
             <input readonly value = "${ url.toString() }" onfocus="event.target.select()" class="form-control mt-2" id="embed-link" />
             <label style="margin: 1em 0;" ${uparams.length ? '' : 'hidden' }>
@@ -1036,7 +1036,7 @@ export default new (class GUI extends G3WObject {
               </div>
             </div>
             <menu style="display: flex; justify-content: end;">
-              <button type="submit" onclick="document.querySelector('#embed-link').focus() || document.execCommand('copy')" class="form-control btn btn-success mt-2">${ t('Copy share URL') }</button>
+              <button type="submit" onclick="document.querySelector('#embed-link').focus() || document.execCommand('copy')" class="form-control btn btn-success mt-2">${ _('Copy share URL') }</button>
             </menu>
           </form>
         </dialog>

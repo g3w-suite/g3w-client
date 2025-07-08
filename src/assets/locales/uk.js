@@ -15,7 +15,14 @@ export default {
   search: "Пошук",
   no_results: "Нічого не знайдено",
   print: "Друк",
-  create_print: "Створити Друк",
+  print_help: `<p>Якщо у файлі відсутні деякі шари:</p>
+  <ol style="padding-left: 25px">
+    <li>спробуйте обрати інший шаблон</li>
+    <li>спробуйте змінитиіть масштаб</li>
+    <li>перевірте джерела даних (наприклад, зовнішній WMS-сервер)</li>
+    <li>переконайтеся, що шар дійсно вибрано у списку шарів</li>
+  </ol>`,
+  'Create Print': "Створити Друк",
   dosearch: "Пошук",
   catalog: "Мапа",
   data: "Дані",
@@ -31,10 +38,10 @@ export default {
   copy_form_data: "Копіювати",
   paste_form_data: "Вставити",
   copy_form_data_from_feature: "Копіювати дані з мапи",
-  error_map_loading: "Помилка завантаження нової мапи",
+  'Error occurs loading map': "Помилка завантаження нової мапи",
   'Check internet connection or contact admin': "Перевірте мережеве з'єднання або зв'яжіться з адміністратором",
   'Connection error: Layers can be loaded': "Помилка з'єднання з сервером: не вдалося завантажити шари",
-  server_saver_error: "Помилка завантаження на сервер",
+  'Error in server saving': "Помилка завантаження на сервер",
   server_error: "Помилка підключення до сервера",
   save: "Зберегти",
   cancel: "Скасувати",
@@ -199,7 +206,7 @@ export default {
   'Persistent data': "Постійні дані",
   'save layer into browser storage': "зберегти шар у сховищі браузера",
   'Screenshot error creation': "Помилка створення знімка екрана",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Порушення безпеки</b>: зовнішній шар перешкоджає друку мапи. Щоб переконатися в цьому:</p>
   <ol>
     <li>видаліть всі зовнішні шари додані вручну (наприклад, шари WMS)</li>
@@ -207,109 +214,17 @@ export default {
     <li>спробуйте роздрукувати мапу ще раз</li>
   </ol>
   <p>Зв'яжіться з адміністратором щоб дізнатися більше про <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; безпеку та зіпсовані полотна canvas</a></p>`,
-  layer_position: {
-    top: "вгорі",
-    bottom: "внизу",
-    message: "Положення"
-  },
-  info: {
-    title: "Результати",
-    list_of_relations: "Список відношень",
-    open_link: "Відкрити вкладений документ",
-    server_error: "Помилка запиту до сервера",
-    no_results: "За запитом нічого не знайдено",
-    link_button: "Відкрити"
-  },
-  scaleline_units: {
-    metric: "Метри",
-    nautical: "Морські милі"
-  },
-  measure_types: {
-    length: "Довжина",
-    area: "Площа",
-  },
-  measure_descriptions: {
-    length: "Клацніть по мапі щоб намалювати лінію. Натисніть <br>CANC щоб видалити останню вершину",
-    area: "Клацніть по мапі щоб намалювати полігон. Натисність <br>CANC щоб видалити останню вершину"
-  },
-  print_help: `<p>Якщо у файлі відсутні деякі шари:</p>
-  <ol style="padding-left: 25px">
-    <li>спробуйте обрати інший шаблон</li>
-    <li>спробуйте змінитиіть масштаб</li>
-    <li>перевірте джерела даних (наприклад, зовнішній WMS-сервер)</li>
-    <li>переконайтеся, що шар дійсно вибрано у списку шарів</li>
-  </ol>`,
-  metadata_groups: {
-    general: {
-      title: "ЗАГАЛЬНЕ",
-      fields: {
-        title: "НАЗВА",
-        name: "ІМ'Я",
-        description: "ОПИС",
-        abstract: "АННОТАЦІЯ",
-        keywords: "КЛЮЧОВІ СЛОВА",
-        fees: "ОПЛАТА",
-        accessconstraints: "ОБМЕЖЕННЯ ДОСТУПУ",
-        contactinformation: "КОНТАКТИ",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "Email",
-            personprimary: "Посилання",
-            contactvoicetelephone: "Телефон",
-            contactorganization: "Організація",
-            ContactOrganization: "Організація",
-            contactposition: "Посада",
-            ContactPosition: "Посада",
-            contactperson: "Особа",
-            ContactPerson: "Особа"
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: "ПРОСТОРОВА ІНФОРМАЦІЯ",
-      fields : {
-        crs: "EPSG",
-        extent: "BBOX"
-      }
-    },
-    layers: {
-      title: "ШАРИ",
-      fields: {
-        layers: "ШАРИ",
-        subfields: {
-          crs: "EPSG",
-          bbox: "BBOX",
-          title: "НАЗВА",
-          name: "ІМ'Я",
-          geometrytype: "ГЕОМЕТРІЯ",
-          source: "ДЖЕРЕЛО",
-          attributes: "АТРИБУТИ",
-          abstract: "АННОТАЦІЯ",
-          attribution: "ПОХОДЖЕННЯ",
-          keywords: "КЛЮЧОВІ СЛОВА",
-          metadataurl: "URL МЕТАДАНИХ",
-          dataurl: "URL ДАНИХ"
-        }
-      },
-      groups : {
-        general: "ЗАГАЛЬНЕ",
-        spatial: "ПРОСТОРОВА ІНФОРМАЦІЯ"
-      }
-    },
-    credits: {
-      title: 'Про проект',
-    }
-  },
-  download_types: {
-    shapefile: "Завантажити Shapefile",
-    gpx: "Завантажити GPX",
-    gpkg: "Завантажити GPKG",
-    csv: "Завантажити CSV",
-    xls: "Завантажити XLS",
-    pdf: "Завантажити PDF",
-  },
+  'layer_position.top': 'вгорі',
+  'layer_position.bottom': 'внизу',
+  'layer_position.message': 'Положення',
+  'info.title': 'Результати',
+  'info.list_of_relations': 'Список відношень',
+  'info.open_link': 'Відкрити вкладений документ',
+  'info.server_error': 'Помилка запиту до сервера',
+  'info.no_results': 'За запитом нічого не знайдено',
+  'info.link_button': 'Відкрити',
+  'scaleline_units.metric': 'Метри',
+  'scaleline_units.nautical': 'Морські милі',
   'mapcontrols.query.input_relation': "Показати відношення",
   'mapcontrols.queryby.title': "Вибрати полігоном",
   'mapcontrols.queryby.layer': "Шар:",
@@ -320,81 +235,101 @@ export default {
   'mapcontrols.queryby.querybydrawpolygon.tooltip': "оцифрувати полігон",
   'mapcontrols.queryby.querybbox.tooltip': "оцифрувати прямокутник",
   'mapcontrols.queryby.querybycircle.tooltip': "оцифрувати коло",
-
   'mapcontrols.querybypolygon.download.title': "Завантижити атрибути",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Тільки об'єкти",
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Об'єкти та полігон",
   'mapcontrols.querybypolygon.tooltip': "Вибрати за об'єктом шару",
   'mapcontrols.querybypolygon.no_geometry': "Відповідь не містить геометрії",
   'mapcontrols.querybypolygon.help.message': "<ul><li>Виберіть (видимий) шар.</li><li>Клацніть по об'єкту на мапі.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Вибрати за полігоном",
   'mapcontrols.querybydrawpolygon.help.message': "<ul><li>Клацніть по мапі щоб додати нову вершину</li><li>Закінчіть оцифровку подвійним клацанням щоб виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>",
-
   'mapcontrols.querybbox.tooltip': "Вибрати у межах шару",
   'mapcontrols.querybbox.nolayers_visible': "Відсутні видимі шари до яких можна сформувати запит. Переконайтеся, що є хоча б один видимий шар WFS",
   'mapcontrols.querybbox.help.message': "<ul><li>Протягніть мишкою щоб намалювати полігон та виконати запит до шарів, підкреслених жовтим у списку шарів</li></ul>",
-
   'mapcontrols.querybycircle.tooltip': "Вибрати за радіусом",
   'mapcontrols.querybycircle.label': "Радіус",
   'mapcontrols.querybycircle.help.message': "<ul><li>Клацніть по мапі щоб намалювати коло</li></ul>",
-
-  sdk: {
-    search: {
-      all: "ВСЕ",
-      no_results: "Не знайдено",
-      searching: "Пошук…",
-      error_loading: "Помилка завантаження даних",
-      layer_not_searchable: "Пошук по шару неможливий",
-      layer_not_querable: "Шар не підтримує запити",
-      autocomplete: {
-        inputshort: {
-          pre: "Введіть",
-          post: "або більше символів"
-        }
-      },
-      help_filter : "Результати пошуку обмежуються фільтром. Видаліть фільтр щоб шукати по всьому шару.",
-      autofilter: "Фільтрувати за результатами"
-    },
-    form: {
-      loading: "Завантаження…",
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Жодного об'єкта не вибрано. Перевірте що шар у режимі редагування та видимий за поточного масштабу"
-          }
-        },
-        tooltips:{
-          picklayer: "Отримати значення з мапи",
-          lonlat: "Клацніть по мапі щоб отримати координати"
-        },
-        input_validation_mutually_exclusive: "Поле взаємовиключне з ",
-        input_validation_error: "Обов'язкове поле або неправильний тип даних",
-        input_validation_error_type: "Неправильний тип даних",
-        input_validation_min_field: "Значення повинно бути більше або дорівнювати значенню поля ",
-        input_validation_max_field: "Значення повинно бути менше або дорівнювати значенню поля ",
-        input_validation_exclude_values: "Значення повинні бути унікальними",
-        integer: "integer",
-        bigint: "integer",
-        text: "text",
-        varchar: "text",
-        textarea: "text",
-        string: "string",
-        date: "date",
-        datetime: "date",
-        float: "float",
-        table: "table"
-      },
-      footer: {
-        required_fields: "Обов'язкові поля"
-      },
-      messages: {
-        qgis_input_widget_relation: "Керуйте відношеннями за допомогою спеціальної форми"
-      }
-    },
-    wps: {
-      list_process: "Список процесів",
-      tooltip: "Клацніть по мапі"
-    }
-  },
+  'measure_types.length': 'Довжина',
+  'measure_types.area': 'Площа',
+  'measure_descriptions.length': 'Клацніть по мапі щоб намалювати лінію. Натисніть <br>CANC щоб видалити останню вершину',
+  'measure_descriptions.area': 'Клацніть по мапі щоб намалювати полігон. Натисність <br>CANC щоб видалити останню вершину',
+  'metadata.credits.title': 'Про проект',
+  'metadata.general.title': 'ЗАГАЛЬНЕ',
+  'metadata.general.fields.title': 'НАЗВА',
+  'metadata.general.fields.name': "Ім'я",
+  'metadata.general.fields.description': 'ОПИС',
+  'metadata.general.fields.abstract': 'АННОТАЦІЯ',
+  'metadata.general.fields.keywords': 'КЛЮЧОВІ СЛОВА',
+  'metadata.general.fields.fees': 'ОПЛАТА',
+  'metadata.general.fields.accessconstraints': 'ОБМЕЖЕННЯ ДОСТУПУ',
+  'metadata.general.fields.contactinformation': 'КОНТАКТИ',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'Email',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Посилання',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Телефон',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Організація',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Організація',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Посада',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Посада',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Особа',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Особа',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'ПРОСТОРОВА ІНФОРМАЦІЯ',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'ШАРИ',
+  'metadata.layers.groups.general': 'ЗАГАЛЬНЕ',
+  'metadata.layers.groups.spatial': 'ПРОСТОРОВА ІНФОРМАЦІЯ',
+  'metadata.layers.fields.layers': 'ШАРИ',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'НАЗВА',
+  'metadata.layers.fields.subfields.name': "Ім'я",
+  'metadata.layers.fields.subfields.geometrytype': 'ГЕОМЕТРІЯ',
+  'metadata.layers.fields.subfields.source': 'ДЖЕРЕЛО',
+  'metadata.layers.fields.subfields.attributes': 'АТРИБУТИ',
+  'metadata.layers.fields.subfields.abstract': 'АННОТАЦІЯ',
+  'metadata.layers.fields.subfields.attribution': 'ПОХОДЖЕННЯ',
+  'metadata.layers.fields.subfields.keywords': 'КЛЮЧОВІ СЛОВА',
+  'metadata.layers.fields.subfields.metadataurl': 'URL МЕТАДАНИХ',
+  'metadata.layers.fields.subfields.dataurl': 'URL ДАНИХ',
+  'download_types.shapefile': 'Завантажити Shapefile',
+  'download_types.gpx': 'Завантажити GPX',
+  'download_types.gpkg': 'Завантажити GPKG',
+  'download_types.csv': 'Завантажити CSV',
+  'download_types.xls': 'Завантажити XLS',
+  'download_types.pdf': 'Завантажити PDF',
+  'sdk.search.all': 'ВСЕ',
+  'No results': 'Не знайдено',
+  'Searching ...': 'Пошук…',
+  'Error Loading Data': 'Помилка завантаження даних',
+  'Layer is not searchable': 'Пошук по шару неможливий',
+  'Layer is not querable': 'Шар не підтримує запити',
+  'Please enter': 'Введіть',
+  'or more characters': 'або більше символів',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Результати пошуку обмежуються фільтром. Видаліть фільтр щоб шукати по всьому шару.',
+  'Filter results': 'Фільтрувати за результатами',
+  'Loading ...': 'Завантаження…',
+  'sdk.form.inputs.messages.errors.picklayer': "Жодного об'єкта не вибрано. Перевірте що шар у режимі редагування та видимий за поточного масштабу", 
+  'sdk.form.inputs.tooltips.picklayer': 'Отримати значення з мапи',
+  'sdk.form.inputs.tooltips.lonlat': 'Клацніть по мапі щоб отримати координати',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Поле взаємовиключне з ',
+  'sdk.form.inputs.input_validation_error': "Обов'язкове поле або неправильний тип даних", 
+  'sdk.form.inputs.input_validation_error_type': 'Неправильний тип даних',
+  'sdk.form.inputs.input_validation_min_field': 'Значення повинно бути більше або дорівнювати значенню поля ',
+  'sdk.form.inputs.input_validation_max_field': 'Значення повинно бути менше або дорівнювати значенню поля ',
+  'sdk.form.inputs.input_validation_exclude_values': 'Значення повинні бути унікальними',
+  'sdk.form.inputs.integer': 'integer',
+  'sdk.form.inputs.bigint': 'integer',
+  'sdk.form.inputs.text': 'text',
+  'sdk.form.inputs.varchar': 'text',
+  'sdk.form.inputs.textarea': 'text',
+  'sdk.form.inputs.string': 'string',
+  'sdk.form.inputs.date': 'date',
+  'sdk.form.inputs.datetime': 'date',
+  'sdk.form.inputs.float': 'float',
+  'sdk.form.inputs.table': 'table',
+  'sdk.form.footer.required_fields': "Обов'язкові поля", 
+  'sdk.form.messages.qgis_input_widget_relation': 'Керуйте відношеннями за допомогою спеціальної форми',
+  'sdk.wps.list_process': 'Список процесів',
+  'sdk.wps.tooltip': 'Клацніть по мапі',
 };

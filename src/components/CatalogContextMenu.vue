@@ -289,8 +289,6 @@
               class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
-              data-toggle     = "tooltip"
-              data-container  = "body"
               :title          = "getWfsUrl(layer.id)"
             ></b>
           </li>
@@ -312,8 +310,6 @@
               class           = "click-to-copy skin-color-dark"
               :class          ="$fa('eye')"
               data-placement  = "top"
-              data-toggle     = "tooltip"
-              data-container  = "body"
               :title          = "getWfs3Url(layer.id)"
             ></b>
           </li>
@@ -366,7 +362,7 @@
   import GUI                           from 'services/gui';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import { downloadFeatures }          from 'utils/downloadFeatures';
-  import { t }                         from 'g3w-i18n';
+  import { t as _ }                    from 'g3w-i18n';
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
@@ -570,8 +566,8 @@
         document.body.appendChild(input);
         input.select();
         document.execCommand("copy");
-        el.setAttribute('title', t('Copied'));
-        el.setAttribute('data-i18n-title', t('Copied'));
+        el.setAttribute('title', _('Copied'));
+        el.setAttribute('data-i18n-title', _('Copied'));
         input.remove();
         a.remove();
         setTimeout(() => {

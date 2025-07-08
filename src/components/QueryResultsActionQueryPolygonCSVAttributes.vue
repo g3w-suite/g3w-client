@@ -38,7 +38,7 @@
 
 <script>
   import ApplicationState from 'store/application'
-  import { t }            from 'g3w-i18n';
+  import { t as _ }       from 'g3w-i18n';
 
   export default {
 
@@ -63,7 +63,7 @@
       this.unwatch = this.$watch(
         () => ApplicationState.language,
         () => {
-          this.config.choices.forEach(c => $(this.$refs[c.type]).text(t(c.label)));
+          this.config.choices.forEach(c => $(this.$refs[c.type]).text(_(c.label)));
           $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
         }
       )

@@ -76,10 +76,10 @@
 
         <!-- SWITCH COORDINATES  -->
         <div
-          v-if                   = "mouse.visible && mouse.switch_icon && !isMobile()"
-          id                     = "switch-mouse-coordinate"
-          v-t-tooltip:top.create = "mouse.tooltip"
-          @click.stop.prevent    = "switchMapsCoordinateTo4326"
+          v-if                = "mouse.visible && mouse.switch_icon && !isMobile()"
+          id                  = "switch-mouse-coordinate"
+          v-t-tooltip:top     = "mouse.tooltip"
+          @click.stop.prevent = "switchMapsCoordinateTo4326"
         >
           <span
             class  = "skin-color-dark"
@@ -95,10 +95,10 @@
         ></div>
 
         <div
-          id                     = "permalink"
-          v-t-tooltip:top.create = "'Copy share URL'"
-          :class                 = "$fa('share-alt') + ' skin-color-dark'"
-          @click.stop            = "showEmbedModal"
+          id              = "permalink"
+          v-t-tooltip:top = "'Copy share URL'"
+          :class          = "$fa('share-alt') + ' skin-color-dark'"
+          @click.stop     = "showEmbedModal"
         ></div>
 
         <!-- SCALE CONTROL -->

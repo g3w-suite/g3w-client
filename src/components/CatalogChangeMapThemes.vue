@@ -38,11 +38,11 @@
       >
         <div style="display: flex; justify-content: end; padding-top: 5px;">
           <span
-            v-t-tooltip:left.create = "'close'"
-            @click.stop             = "show_form = false"
-            :class                  = "$fa('close')"
-            class                   = "sidebar-button sidebar-button-icon"
-            style                   = "padding: 2px; margin: 2px;"
+            v-t-tooltip:left = "'close'"
+            @click.stop      = "show_form = false"
+            :class           = "$fa('close')"
+            class            = "sidebar-button sidebar-button-icon"
+            style            = "padding: 2px; margin: 2px;"
           ></span>
         </div>
         <div class = "container add-map-theme-input">
@@ -109,11 +109,11 @@
                 <span v-t = "'User Themes'"></span>
                 <!-- Add theme button -->
                 <span
-                  v-t-tooltip:left.create = "'add'"
-                  @click.stop             = "show_form = !show_form"
-                  :class                  = "$fa('plus')"
-                  class                   = "action sidebar-button sidebar-button-icon"
-                  style                   = "margin-left: auto; padding: 5px;"
+                  v-t-tooltip:left = "'add'"
+                  @click.stop      = "show_form = !show_form"
+                  :class           = "$fa('plus')"
+                  class            = "action sidebar-button sidebar-button-icon"
+                  style            = "margin-left: auto; padding: 5px;"
                 >
                 </span>
               </div>
@@ -139,11 +139,11 @@
                 </span>
                 <span class = "g3w-custom-map-theme-tools">
                  <span
-                   @click.stop            = "updateTheme(map_theme.theme)"
-                   class                  = "action sidebar-button sidebar-button-icon"
-                   style                  = "padding: 5px;"
-                   v-t-tooltip:top.create = "'update'"
-                   v-disabled             = "active_theme !== map_theme.theme"
+                   @click.stop     = "updateTheme(map_theme.theme)"
+                   class           = "action sidebar-button sidebar-button-icon"
+                   style           = "padding: 5px;"
+                   v-t-tooltip:top = "'update'"
+                   v-disabled      = "active_theme !== map_theme.theme"
                  >
                   <i
                     :class = "$fa('save')"
@@ -151,12 +151,10 @@
 
                  </span>
                   <span
-                    @click.stop = "deleteTheme(map_theme.theme)"
-
-                    class       = "action sidebar-button sidebar-button-icon"
-                    style       = "padding: 5px;"
-
-                    v-t-tooltip:top.create = "'cancel'"
+                    @click.stop     = "deleteTheme(map_theme.theme)"
+                    class           = "action sidebar-button sidebar-button-icon"
+                    style           = "padding: 5px;"
+                    v-t-tooltip:top = "'cancel'"
                   >
                     <i
                       :class = "$fa('trash')"
@@ -181,7 +179,7 @@ import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
 import ApplicationState   from 'store/application';
 import { XHR }            from 'utils/XHR';
-import { t }              from 'g3w-i18n';
+import { t as _ }         from 'g3w-i18n';
 
 export default {
 
@@ -360,7 +358,7 @@ export default {
      * @since 3.10.0
      */
     deleteTheme(theme) {
-      GUI.dialog.confirm(t('Do you want delete the theme?'), async bool => {
+      GUI.dialog.confirm(_('Do you want delete the theme?'), async bool => {
         // skip when ..
         if (!bool || !theme) {
           return;

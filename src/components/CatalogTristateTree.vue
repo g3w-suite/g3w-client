@@ -111,17 +111,17 @@
           highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class            = "g3w-long-text"
-        v-t-tooltip:top.create.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        :current-tooltip            = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class                = "g3w-long-text"
+        v-t-tooltip:top.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        :current-tooltip     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
-          v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
-          :current-tooltip            = "layerstree.filter.current.name"
-          v-t-tooltip:top.create.text = "layerstree.filter.current.name"
-          style                       = "cursor: pointer"
-          @click.stop                 = "removeCurrentFilter"
+          v-if                 = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :current-tooltip     = "layerstree.filter.current.name"
+          v-t-tooltip:top.text = "layerstree.filter.current.name"
+          style                = "cursor: pointer"
+          @click.stop          = "removeCurrentFilter"
         >
           <span
             style  = "color: red"
@@ -145,11 +145,9 @@
           v-if                         = "layerstree.selection.active"
           class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
-          data-container="body"
           :class                       = "g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop = "clearSelection"
-          v-t-tooltip.create           = "'Invert Selection'"
+          v-t-tooltip                  = "'Invert Selection'"
         ></span>
 
         <!-- TOGGLE FILTER  -->
@@ -157,14 +155,12 @@
           v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
           class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
-          data-container="body"
           :class                       = "[
             g3wtemplate.getFontClass('filter'),
             layerstree.filter.active  ? 'active' : '',
           ]"
           @click.caputure.prevent.stop = "toggleFilterLayer"
-          v-t-tooltip.create           = "'Enable/Disable filter'"
+          v-t-tooltip                  = "'Enable/Disable filter'"
         ></span>
 
         <!-- SAVE FILTER  -->
@@ -172,10 +168,9 @@
           v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
           :class                       = "g3wtemplate.getFontClass('save')"
           @click.caputure.prevent.stop = "saveFilter(layerstree)"
-          v-t-tooltip.create           = "'Save Filter'"
+          v-t-tooltip                  = "'Save Filter'"
         ></span>
 
       </div>
@@ -218,7 +213,7 @@
       :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
       @click.prevent.stop     = "showContextMenu"
       href                    = "#"
-      v-t-tooltip:left.create = "'Open menu'"
+      v-t-tooltip:left        = "'Open menu'"
     ></a>
 
   </li>

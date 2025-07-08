@@ -6,7 +6,7 @@
 import GUI                         from 'services/gui';
 import InteractionControl          from 'map/controls/interactioncontrol';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
-import { t }                       from 'g3w-i18n';
+import { t as _ }                  from 'g3w-i18n';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -134,7 +134,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
     this._poinOnMapMoveListener = this._map.on('pointermove', e => {
       if (e.dragging) { return }
       if (this._feature && this._helpMsg) {
-        this._helpTooltipElement.innerHTML = t(this._helpMsg);
+        this._helpTooltipElement.innerHTML = _(this._helpMsg);
         this._helpTooltip.setPosition(e.coordinate);
         this._helpTooltipElement.classList.remove('hidden');
       }

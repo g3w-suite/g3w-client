@@ -26,12 +26,12 @@
 
     <div
       v-else
-      class  = "tool"
-      @click = "!disabled ? tool.action(tool) : null"
-      :class = "{ tool_disabled: disabled }"
-      style  = "position:relative"
-      v-t-tooltip:right.create = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
-      :current-tooltip         = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      class             = "tool"
+      @click            = "!disabled ? tool.action(tool) : null"
+      :class            = "{ tool_disabled: disabled }"
+      style             = "position:relative"
+      v-t-tooltip:right = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      :current-tooltip  = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
     >
       <bar-loader :loading = "tool.loading"/>
       <i :class = "$fa(tool.icon || 'caret-right')"></i>

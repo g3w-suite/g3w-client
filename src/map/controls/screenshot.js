@@ -98,7 +98,7 @@ class ScreenshotControl extends InteractionControl {
       template: /* html */ `
         <div style="width: 100%; padding: 5px;">
           <select ref="select" style="width: 100%;" :search="false" v-select2="'type'">
-            <option v-for="type in types" :value="type" v-t="'screenshot_types.' + type"></option>
+            <option v-for="type in types" :value="type" v-t="({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]"></option>
           </select>
           <button v-disabled = "loading" style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="download(type)" v-t="'Generate'"></button>
         </div>`,  

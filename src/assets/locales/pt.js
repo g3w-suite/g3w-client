@@ -15,7 +15,14 @@ export default {
   search: "Pesquisar",
   no_results: "Não foram encontrados resultados",
   print: "Imprimir",
-  create_print: "Criar impressão",
+  print_help: `<p>Se não visualizar alguma camada no ficheiro de impressão</p>
+  <ol style="padding-left: 25px">
+    <li>tente novamente selecionando outro modelo</li>
+    <li>tente mudar o nível de zoom</li>
+    <li>verifique a origem (ex. Servidor WMS externos)</li>
+    <li>garanta que a camada está ativada na lista de camadas.</li>
+  </ol>`,
+  'Create Print': "Criar impressão",
   dosearch: "Pesquisar",
   catalog: "Mapa",
   data: "Dados",
@@ -31,10 +38,10 @@ export default {
   copy_form_data: "Copiar dados",
   paste_form_data: "Colar",
   copy_form_data_from_feature: "Copia dados do mapa",
-  error_map_loading: "Ocorreu um erro ao carregar o mapa",
+  'Error occurs loading map': "Ocorreu um erro ao carregar o mapa",
   'Check internet connection or contact admin': "Verifique a ligação internet ou contacte o administrador",
   'Connection error: Layers can be loaded': "Erro de ligação: Camadas não podem ser carregadas",
-  server_saver_error: "Erro no servidor ao guardar",
+  'Error in server saving': "Erro no servidor ao guardar",
   server_error: "Erro de ligação ao servidor",
   save: "Guardar",
   cancel: "Cancelar",
@@ -201,7 +208,7 @@ export default {
   'Persistent data': "Dados persistentes",
   'save layer into browser storage': "guardar camada no armazenamento do navegador",
   'Screenshot error creation': "Erro na criação da captura de ecra",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Erro de segurança</b>: uma camada externa está a impedir a impressão do mapa. Para verificar proceda da seguinte forma:</p>
   <ol>
     <li>remova as camadas externas (ex. camadas WMS)</li>
@@ -209,109 +216,17 @@ export default {
     <li>imprima o mapa de novo</li>
   </ol>
   <p>Para mais informações contacte o administrador do sistema: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
-  layer_position: {
-    top: 'cima',
-    bottom: 'baixo',
-    message: "Posição"
-  },
-  info: {
-    title: "Resultados",
-    list_of_relations: "Lista de Relações",
-    open_link: "Abrir documento anexo",
-    server_error: "Ocorreu um erro no servidor",
-    no_results: "Não foram encontrados resultados para a consulta/pesquisa",
-    link_button: "Abrir"
-  },
-  scaleline_units: {
-    metric: 'Metros',
-    nautical: 'Milhas náuticas'
-  },
-  measure_types: {
-    length: "Comprimento",
-    area: "Área",
-  },
-  measure_descriptions: {
-    length: "Clique no mapa  para desenhar uma linha. Prima <br>CANC se pretender eliminar o ultimo vértice",
-    area: "Clique para desenhar o polígono.Prima <br>CANC se pretender eliminar o ultimo vértice"
-  },
-  print_help: `<p>Se não visualizar alguma camada no ficheiro de impressão</p>
-  <ol style="padding-left: 25px">
-    <li>tente novamente selecionando outro modelo</li>
-    <li>tente mudar o nível de zoom</li>
-    <li>verifique a origem (ex. Servidor WMS externos)</li>
-    <li>garanta que a camada está ativada na lista de camadas.</li>
-  </ol>`,
-  metadata_groups: {
-    general: {
-      title: 'GERAL',
-      fields: {
-        title: 'TÍTULO',
-        name: 'NOME',
-        description: "DESCRIÇÃO",
-        abstract: "RESUMO",
-        keywords: 'PALAVRAS CHAVE',
-        fees: "TAXAS",
-        accessconstraints: "RESTRIÇÃO DE ACESSO",
-        contactinformation: "CONTATOS",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "Email",
-            personprimary: 'Referencias',
-            contactvoicetelephone: 'Telefone',
-            contactorganization: 'Organização',
-            ContactOrganization: 'Organização',
-            contactposition: 'Cargo',
-            ContactPosition: 'Cargo',
-            contactperson: 'Pessoa',
-            ContactPerson: 'Pessoa'
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'ESPACIAL',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'CAMADAS',
-      fields: {
-        layers: 'LAYERS',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "TÍTULO",
-          name: 'NOME',
-          geometrytype: 'GEOMETRIA',
-          source: 'FONTE',
-          attributes: 'ATRIBUTOS',
-          abstract: 'RESUMO',
-          attribution: 'ATRIBUIÇÃO',
-          keywords: "PALAVRA CHAVE",
-          metadataurl:'ENDEREÇO METADADOS',
-          dataurl: "ENDEREÇO DADOS"
-        }
-      },
-      groups : {
-        general: 'GERAL',
-        spatial: 'ESPACIAL'
-      }
-    },
-    credits: {
-      title: 'Créditos',
-    }
-  },
-  download_types: {
-    shapefile: "Descarregar Shapefile",
-    gpx: "Descarregar GPX",
-    gpkg: "Descarregar GPKG",
-    csv: "Descarregar CSV",
-    xls: "Descarregar XLS",
-    pdf: "Descarregar PDF",
-  },
+  'layer_position.top': 'cima',
+  'layer_position.bottom': 'baixo',
+  'layer_position.message': 'Posição',
+  'info.title': 'Resultados',
+  'info.list_of_relations': 'Lista de Relações',
+  'info.open_link': 'Abrir documento anexo',
+  'info.server_error': 'Ocorreu um erro no servidor',
+  'info.no_results': 'Não foram encontrados resultados para a consulta/pesquisa',
+  'info.link_button': 'Abrir',
+  'scaleline_units.metric': 'Metros',
+  'scaleline_units.nautical': 'Milhas náuticas',
   'mapcontrols.query.input_relation': "Clique para mostrar as relações",
   'mapcontrols.queryby.title': 'Consultar área',
   'mapcontrols.queryby.layer': 'Selecionar camadas:',
@@ -324,81 +239,101 @@ export default {
   'mapcontrols.queryby.querybydrawpolygon.tooltip': 'desenhe um polígono',
   'mapcontrols.queryby.querybbox.tooltip': 'desenhe um retangulo',
   'mapcontrols.queryby.querybycircle.tooltip': 'desenhe um círculo',
-
   'mapcontrols.querybypolygon.download.title': "Descarregar atributos",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Apenas geometrias",
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Consultar Camadas+Polígono",
   'mapcontrols.querybypolygon.tooltip': 'Consultar por Polígono',
   'mapcontrols.querybypolygon.no_geometry': 'Resposta sem geometrias',
   'mapcontrols.querybypolygon.help.message': "<ul><li>Selecione uma camada (ativa).</li><li>Clique sobre uma geometria no mapa.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Desenhe um polígono para consultar",
   'mapcontrols.querybydrawpolygon.help.message': "<ul><li>Clique sobre o mapa para adicionar um novo vértice </li><li>Duplo clique para finalizar e inquirir camadas (sublinhado a amarelo na legenda)</li></ul>",
-
   'mapcontrols.querybbox.tooltip': 'Consultar camada com retangulo',
   'mapcontrols.querybbox.nolayers_visible': 'Nenhuma camada consultável visivel. Defina pelo menos uma camada wfs visivel para executar a consulta',
   'mapcontrols.querybbox.help.message': "<ul><li>Arraste o rato para desenhar um retangulo e consultar as camadas. (sublinhado a amarelo na legenda)</li></ul>",
-
   'mapcontrols.querybycircle.tooltip': "Consultar camada com circulo",
   'mapcontrols.querybycircle.label': 'Raio',
   'mapcontrols.querybycircle.help.message': "<ul><li>Clique no mapa para desenhar o círculo</li></ul>",
-  sdk: {
-    search: {
-      all: 'Todos',
-      no_results: "Sem resultados",
-      searching: "A pesquisar ...",
-      error_loading: "Erro ao Carregar os Dados",
-      layer_not_searchable: "Camada não é pesquisável",
-      layer_not_querable: "Camada não é consultável (query)",
-      autocomplete: {
-        inputshort: {
-          pre: "Inserir",
-          post: "ou mais carateres"
-        }
-      },
-      help_filter : "Os valores de pesquisa são limitados com base no filtro ativo. Remova o filtro para pesquisar todos os dados.",
-      autofilter: "Filtrar resultados"
-
-    },
-    form: {
-      loading: 'A carregar ...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Sem camadas selecionadas. Verifique se a camada está em edição ou visível na escala atual."
-          }
-        },
-        tooltips:{
-          picklayer: "Obter atributo da camada",
-          lonlat: "Clique no mapa para obter as coordenadas"
-        },
-        input_validation_mutually_exclusive: "Atributo mutuamente exclusivo com ",
-        input_validation_error: "Atributo obrigatório ou tipo de dados incorreto",
-        input_validation_error_type: "Tipo de dados incorreto",
-        input_validation_min_field: "Valor deve ser maior/igual ao valor do campo ",
-        input_validation_max_field: "Valor deve ser menor/igual ao valor do campo ",
-        input_validation_exclude_values: "Valor deverá ser unico",
-        integer: "inteiro",
-        bigint: "inteiro",
-        text: "texto",
-        varchar: "texto",
-        textarea: "texto",
-        string: "string",
-        date: "data",
-        datetime: "data",
-        float: "float",
-        table: "tabela"
-      },
-      footer: {
-        "required_fields": "Atributos necessários"
-      },
-      messages: {
-        qgis_input_widget_relation: "Utilize o formulário específico para trabalhar com relações"
-      }
-    },
-    wps: {
-      list_process: "Listar processo",
-      tooltip: 'Clique no mapa'
-    }
-  },
+  'measure_types.length': 'Comprimento',
+  'measure_types.area': 'Área',
+  'measure_descriptions.length': 'Clique no mapa  para desenhar uma linha. Prima <br>CANC se pretender eliminar o ultimo vértice',
+  'measure_descriptions.area': 'Clique para desenhar o polígono.Prima <br>CANC se pretender eliminar o ultimo vértice',
+  'metadata.credits.title': 'Créditos',
+  'metadata.general.title': 'GERAL',
+  'metadata.general.fields.title': 'TÍTULO',
+  'metadata.general.fields.name': 'NOME',
+  'metadata.general.fields.description': 'DESCRIÇÃO',
+  'metadata.general.fields.abstract': 'RESUMO',
+  'metadata.general.fields.keywords': 'PALAVRAS CHAVE',
+  'metadata.general.fields.fees': 'TAXAS',
+  'metadata.general.fields.accessconstraints': 'RESTRIÇÃO DE ACESSO',
+  'metadata.general.fields.contactinformation': 'CONTATOS',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'Email',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Referencias',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Telefone',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organização',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organização',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Cargo',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Cargo',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Pessoa',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Pessoa',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'ESPACIAL',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'CAMADAS',
+  'metadata.layers.groups.general': 'GERAL',
+  'metadata.layers.groups.spatial': 'ESPACIAL',
+  'metadata.layers.fields.layers': 'LAYERS',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'TÍTULO',
+  'metadata.layers.fields.subfields.name': 'NOME',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIA',
+  'metadata.layers.fields.subfields.source': 'FONTE',
+  'metadata.layers.fields.subfields.attributes': 'ATRIBUTOS',
+  'metadata.layers.fields.subfields.abstract': 'RESUMO',
+  'metadata.layers.fields.subfields.attribution': 'ATRIBUIÇÃO',
+  'metadata.layers.fields.subfields.keywords': 'PALAVRA CHAVE',
+  'metadata.layers.fields.subfields.metadataurl': 'ENDEREÇO METADADOS',
+  'metadata.layers.fields.subfields.dataurl': 'ENDEREÇO DADOS',
+  'download_types.shapefile': 'Descarregar Shapefile',
+  'download_types.gpx': 'Descarregar GPX',
+  'download_types.gpkg': 'Descarregar GPKG',
+  'download_types.csv': 'Descarregar CSV',
+  'download_types.xls': 'Descarregar XLS',
+  'download_types.pdf': 'Descarregar PDF',
+  'sdk.search.all': 'Todos',
+  'No results': 'Sem resultados',
+  'Searching ...': 'A pesquisar ...',
+  'Error Loading Data': 'Erro ao Carregar os Dados',
+  'Layer is not searchable': 'Camada não é pesquisável',
+  'Layer is not querable': 'Camada não é consultável (query)',
+  'Please enter': 'Inserir',
+  'or more characters': 'ou mais carateres',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Os valores de pesquisa são limitados com base no filtro ativo. Remova o filtro para pesquisar todos os dados.',
+  'Filter results': 'Filtrar resultados',
+  'Loading ...': 'A carregar ...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Sem camadas selecionadas. Verifique se a camada está em edição ou visível na escala atual.',
+  'sdk.form.inputs.tooltips.picklayer': 'Obter atributo da camada',
+  'sdk.form.inputs.tooltips.lonlat': 'Clique no mapa para obter as coordenadas',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Atributo mutuamente exclusivo com ',
+  'sdk.form.inputs.input_validation_error': 'Atributo obrigatório ou tipo de dados incorreto',
+  'sdk.form.inputs.input_validation_error_type': 'Tipo de dados incorreto',
+  'sdk.form.inputs.input_validation_min_field': 'Valor deve ser maior/igual ao valor do campo ',
+  'sdk.form.inputs.input_validation_max_field': 'Valor deve ser menor/igual ao valor do campo ',
+  'sdk.form.inputs.input_validation_exclude_values': 'Valor deverá ser unico',
+  'sdk.form.inputs.integer': 'inteiro',
+  'sdk.form.inputs.bigint': 'inteiro',
+  'sdk.form.inputs.text': 'texto',
+  'sdk.form.inputs.varchar': 'texto',
+  'sdk.form.inputs.textarea': 'texto',
+  'sdk.form.inputs.string': 'string',
+  'sdk.form.inputs.date': 'data',
+  'sdk.form.inputs.datetime': 'data',
+  'sdk.form.inputs.float': 'float',
+  'sdk.form.inputs.table': 'tabela',
+  'sdk.form.footer.required_fields': 'Atributos necessários',
+  'sdk.form.messages.qgis_input_widget_relation': 'Utilize o formulário específico para trabalhar com relações',
+  'sdk.wps.list_process': 'Listar processo',
+  'sdk.wps.tooltip': 'Clique no mapa',
 };

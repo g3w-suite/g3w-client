@@ -15,7 +15,7 @@ import { removeZValue }       from 'utils/removeZValue';
 import { sanitizeFidFeature } from 'utils/sanitizeFidFeature'
 import { reverseGeometry }    from 'utils/reverseGeometry';
 import { Feature }            from 'map/layers/feature';
-import { t }                  from 'g3w-i18n';
+import { t as _ }             from 'g3w-i18n';
 
 Object
   .entries({
@@ -68,7 +68,7 @@ export const ResponseParser = {
             }
 
             /** @FIXME add description */
-            return t("server_saver_error");
+            return _('Error in server saving');
           }})
         };
 
@@ -348,7 +348,7 @@ export const ResponseParser = {
         return function({
           layers = [],
         } = {}) {
-          return layers.map(layer => ({ layer, rawdata: t('Not supported format') }))
+          return layers.map(layer => ({ layer, rawdata: _('Not supported format') }))
         };
 
     }
@@ -358,7 +358,7 @@ export const ResponseParser = {
 /**
  * ORIGINAL SOURCE: src/app/core/errors/parser/servererrorparser.js@3.9.1
  */
-function _traverseErrorMessage(errorObject, error_message = "server_saver_error") {
+function _traverseErrorMessage(errorObject, error_message = 'Error in server saving') {
   try {
     const entries   = Object.entries(errorObject);
     const entry     = entries.find(([key, _]) => 'fields' === key);

@@ -123,7 +123,7 @@ import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { prompt }                  from 'utils/prompt';
-import { t }                       from 'g3w-i18n';
+import { t as _ }                  from 'g3w-i18n';
 
 export default {
 
@@ -266,7 +266,7 @@ export default {
           filter:    this.filter,
           layerName: getCatalogLayerById(this.currentlayer.id).getName(),
           name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => prompt({
-            label: t('Insert the name of the new search'),
+            label: _('Insert the name of the new search'),
             value: '',
             callback: d => d ? res(d) : rej()
           }))),
@@ -306,7 +306,7 @@ export default {
 
       setTimeout(() => { searches[id].forEach(q => ITEMS[id].push(q)); }, 0);
       ITEMS[id].splice(0);
-      GUI.showUserMessage({ type: 'success', message: t('Saved'), autoclose: true });
+      GUI.showUserMessage({ type: 'success', message: _('Saved'), autoclose: true });
     },
 
   },

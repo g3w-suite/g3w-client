@@ -13,10 +13,10 @@
   >
     <bar-loader :loading = "component.state.loading"/>
     <a
-      href             = "#"
-      style            = "display: flex; justify-content: space-between; align-items: center"
-      v-t-tooltip:right.create = "sidebar.open ? '' : title"
-      :current-tooltip         = "sidebar.open ? '' : title"
+      href              = "#"
+      style             = "display: flex; justify-content: space-between; align-items: center"
+      v-t-tooltip:right = "sidebar.open ? '' : title"
+      :current-tooltip  = "sidebar.open ? '' : title"
     >
       <div>
         <span
@@ -37,14 +37,14 @@
         >{{ info.state }}</span>
         <!-- ORIGINAL SOURCE: src/components/SidebarItemAction.vue@v3.10.2 -->
         <span
-          v-for                   = "action in actions"
-          :key                    = "action.id"
-          @click.stop             = "triggerAction(action, component.internalComponent)"
-          v-t-tooltip:left.create = "action.tooltip"
-          style                   = "font-weight: bold; padding:3px;"
-          :class                  = "action.class"
-          class                   = "action"
-          :style                  = "action.style"
+          v-for            = "action in actions"
+          :key             = "action.id"
+          @click.stop      = "triggerAction(action, component.internalComponent)"
+          v-t-tooltip:left = "action.tooltip"
+          style            = "font-weight: bold; padding:3px;"
+          :class           = "action.class"
+          class            = "action"
+          :style           = "action.style"
         ></span>
       </div>
       <i

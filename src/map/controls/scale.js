@@ -7,7 +7,7 @@ import GUI                        from 'services/gui';
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-import { t }                      from 'g3w-i18n';
+import { t as _ }                 from 'g3w-i18n';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -39,7 +39,7 @@ class ScaleControl extends ol.control.Control {
       dropdownParent:          $(map.getTargetElement()),
       width:                   '120px',
       height:                  '20px',
-      language:                { noResults: () => t('Invalid Scale') },
+      language:                { noResults: () => _('Invalid Scale') },
       minimumResultsForSearch: this.isMobile ? -1 : 0,
       createTag(params = {}) {
         let newTag = null;

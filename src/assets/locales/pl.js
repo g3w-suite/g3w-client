@@ -15,7 +15,7 @@ export default {
   search: "Szukaj",
   no_results: "Nie znaleziono wyników",
   print: "Wydrukować",
-  create_print: "Utwórz druk",
+  'Create Print': "Utwórz druk",
   dosearch: "Szukaj",
   catalog: "Mapa",
   data: "Dane",
@@ -31,10 +31,10 @@ export default {
   copy_form_data: "Skopiuj dane",
   paste_form_data: "Pasta",
   copy_form_data_from_feature: "Skopiuj dane z mapy",
-  error_map_loading: "Występuje błąd mapy ładowania",
+  'Error occurs loading map': "Występuje błąd mapy ładowania",
   'Check internet connection or contact admin': "Sprawdź połączenie internetowe lub skontaktuj się z administratorem",
   'Connection error: Layers can be loaded': "Błąd połączenia: Warstwy można załadować",
-  server_saver_error: "Błąd zapisywania serwera",
+  'Error in server saving': "Błąd zapisywania serwera",
   server_error: "Błąd połączenia serwera",
   save: "Ratować",
   cancel: "Anulować",
@@ -160,7 +160,7 @@ export default {
   'Layer Color': "Wybierz kolor warstwy",
   'Add your file here': "Przeciągnij i upuść warstwę tutaj",
   'Screenshot error creation': "Tworzenie błędów z ekranu",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Błąd bezpieczeństwa</b>: Warstwa zewnętrzna zapobiega wydrukowaniu mapy. Aby sprawdzić, postępuj w następujący sposób:</p>
   <ol>
     <li>Usuń wszelkie ręcznie dodane warstwy zewnętrzne (np. WMORY WMS)</li>
@@ -168,169 +168,107 @@ export default {
     <li>Wydrukuj ponownie mapę</li>
   </ol>
   <p>Aby uzyskać więcej informacji, skontaktuj się z administratorem serwera o: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
-  layer_position: {
-    top: "SZCZYT",
-    bottom: "SPÓD",
-    message: "Pozycja względem warstw na TOC"
-  },
-  info: {
-    title: "Wyniki",
-    list_of_relations: "Lista relacji",
-    open_link: "Otwarty załączony dokument",
-    server_error: "Wystąpił błąd z serwera",
-    no_results: "Nie znaleziono wyników dla tego zapytania/wyszukiwania",
-    link_button: "otwarty"
-  },
-  scaleline_units: {
-    metric: "Metry",
-    nautical: "Mila morska"
-  },
-  measure_types: {
-    length: "Długość",
-    area: "Obszar",
-  },
-  measure_descriptions: {
-    length: "Kliknij mapę, aby narysować linię. Naciśnij <br> Canc, jeśli chcesz usunąć ostatni wierzchołek",
-    area: "Kliknij, aby narysować Poligon.press <br> Canc Jeśli chcesz usunąć ostatni wierzchołek"
-  },
-  metadata_groups: {
-    general: {
-      title: "OGÓLNY",
-      fields: {
-        title: "TYTUŁ",
-        name: "NAZWA",
-        description: "OPIS",
-        abstract: "ABSTRAKCYJNY",
-        keywords: "SŁOWA KLUCZOWE",
-        fees: "OPŁATY",
-        accessconstraints: "Ograniczenie dostępu",
-        contactinformation: "ŁĄCZNOŚĆ",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "E-mail",
-            personprimary: "Bibliografia",
-            contactvoicetelephone: "Telefon",
-            contactorganization: "Organizacja",
-            ContactOrganization: "Organizacja",
-            contactposition: "Pozycja",
-            ContactPosition: "Pozycja",
-            contactperson: "Osoba",
-            ContactPerson: "Osoba"
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial: {
-      title: "PRZESTRZENNY",
-      fields: {
-        crs: "EPSG",
-        extent: "Bbox"
-      }
-    },
-    layers: {
-      title: "Warstwy",
-      fields: {
-        layers: "Warstwy",
-        subfields: {
-          crs: "EPSG",
-          bbox: "Bbox",
-          title: "TYTUŁ",
-          name: "NAZWA",
-          geometrytype: "GEOMETRIA",
-          source: "ŹRÓDŁO",
-          attributes: "Atrybuty",
-          abstract: "ABSTRAKCYJNY",
-          attribution: "ATRYBUCJA",
-          keywords: "Chiave zwolnienia warunkowego",
-          metadataurl: "URL METADATA",
-          dataurl: "URL danych"
-        }
-      },
-      groups: {
-        general: "OGÓLNY",
-        spatial: "PRZESTRZENNY"
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Pobierz ShapeFile",
-    gpx: "Pobierz GPX",
-    gpkg: "Pobierz GPKG",
-    csv: "Pobierz CSV",
-    xls: "Pobierz XLS",
-  },
+  'layer_position.top': 'SZCZYT',
+  'layer_position.bottom': 'SPÓD',
+  'layer_position.message': 'Pozycja względem warstw na TOC',
+  'info.title': 'Wyniki',
+  'info.list_of_relations': 'Lista relacji',
+  'info.open_link': 'Otwarty załączony dokument',
+  'info.server_error': 'Wystąpił błąd z serwera',
+  'info.no_results': 'Nie znaleziono wyników dla tego zapytania/wyszukiwania',
+  'info.link_button': 'otwarty',
+  'scaleline_units.metric': 'Metry',
+  'scaleline_units.nautical': 'Mila morska',
   'mapcontrols.query.input_relation': "Kliknij, aby pokazać relacje",
-
   'mapcontrols.querybypolygon.download.title': "Pobieranie atrybutów",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Tylko funkcje",
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Funkcje+Polygon zapytania",
   'mapcontrols.querybypolygon.tooltip': "Zapytanie według wielokąta",
   'mapcontrols.querybypolygon.no_geometry': "Brak geometrii w odpowiedzi",
   'mapcontrols.querybypolygon.help.message': "<ul><li>Wybierz warstwę wielokąta na Toc.</li><li>upewnij się, że warstwa jest widoczna.</li><li>Kliknij funkcję wybranej warstwy.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Zapytanie przez Polygon Draw",
-
   'mapcontrols.querybbox.tooltip': "Zapytanie warstwa Bbox",
   'mapcontrols.querybbox.nolayers_visible': "Nie widać zapytaniach warstw. Ustaw co najmniej jedną widoczną warstwę WFS, aby uruchomić zapytanie",
   'mapcontrols.querybbox.help.message': "<ul><li>Narysuj kwadrat na mapie, aby zapytają podkreślone warstwy na Toc</li></ul>",
-
-  sdk: {
-    search: {
-      all: "WSZYSTKO",
-      no_results: "Brak wyników",
-      searching: "Poszukiwanie ...",
-      error_loading: "Błąd Dane dotyczące ładowania",
-      layer_not_searchable: "Warstwa nie można przeszukiwać",
-      layer_not_querable: "Warstwa nie jest zapytana",
-      autocomplete: {
-        inputshort: {
-          pre: "Podaj",
-          post: "lub więcej znaków"
-        }
-      },
-      help_filter : "Wartości wyszukiwania są ograniczone w zależności od aktywnego filtra. Usuń filtr, aby przeszukać wszystkie dane.",
-      autofilter: "Filtruj wyniki"
-    },
-    form: {
-      loading: "Ładowanie ...",
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Brak wybranej funkcji. Sprawdź, czy warstwa jest w edycji lub widoczna w bieżącej skali"
-          }
-        },
-        tooltips: {
-          picklayer: "Uzyskaj wartość z warstwy MA",
-          lonlat: "Kliknij mapę, aby uzyskać współrzędne"
-        },
-        input_validation_mutually_exclusive: "Pole wzajemnie wykluczające się z",
-        input_validation_error: "Obowiązkowe pole lub niewłaściwy typ danych",
-        input_validation_error_type: "Niewłaściwy typ danych",
-        input_validation_min_field: "Wartość musi być większa/równa wartości pola",
-        input_validation_max_field: "Wartość musi być mniej/równa wartości pola",
-        input_validation_exclude_values: "Wartość musi być wyjątkowa",
-        integer: "liczba całkowita",
-        bigint: "liczba całkowita",
-        text: "tekst",
-        varchar: "tekst",
-        textarea: "tekst",
-        string: "strunowy",
-        date: "data",
-        datetime: "data",
-        float: "platforma",
-        table: "tabela"
-      },
-      footer: {
-        required_fields: "Wymagane pola"
-      },
-      messages: {
-        qgis_input_widget_relation: "Użyj relacji konkretna forma do pracy w związku z relacją"
-      }
-    },
-    wps: {
-      list_process: "Lista procesu",
-      tooltip: "Kliknij mapę"
-    }
-  },
+  'measure_types.length': 'Długość',
+  'measure_types.area': 'Obszar',
+  'measure_descriptions.length': 'Kliknij mapę, aby narysować linię. Naciśnij <br> Canc, jeśli chcesz usunąć ostatni wierzchołek',
+  'measure_descriptions.area': 'Kliknij, aby narysować Poligon.press <br> Canc Jeżeli chcesz usunąć ostatni wierzchołek',
+  'metadata.general.title': 'OGÓLNY',
+  'metadata.general.fields.title': 'TYTUŁ',
+  'metadata.general.fields.name': 'NAZWA',
+  'metadata.general.fields.description': 'OPIS',
+  'metadata.general.fields.abstract': 'ABSTRAKCYJNY',
+  'metadata.general.fields.keywords': 'SŁOWA KLUCZOWE',
+  'metadata.general.fields.fees': 'OPŁATY',
+  'metadata.general.fields.accessconstraints': 'Ograniczenie dostępu',
+  'metadata.general.fields.contactinformation': 'ŁĄCZNOŚĆ',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'E-mail',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Bibliografia',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Telefon',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organizacja',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organizacja',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Pozycja',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Pozycja',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Osoba',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Osoba',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'PRZESTRZENNY',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'Bbox',
+  'metadata.layers.title': 'Warstwy',
+  'metadata.layers.groups.general': 'OGÓLNY',
+  'metadata.layers.groups.spatial': 'PRZESTRZENNY',
+  'metadata.layers.fields.layers': 'Warstwy',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'Bbox',
+  'metadata.layers.fields.subfields.title': 'TYTUŁ',
+  'metadata.layers.fields.subfields.name': 'NAZWA',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIA',
+  'metadata.layers.fields.subfields.source': 'ŹRÓDŁO',
+  'metadata.layers.fields.subfields.attributes': 'Atrybuty',
+  'metadata.layers.fields.subfields.abstract': 'ABSTRAKCYJNY',
+  'metadata.layers.fields.subfields.attribution': 'ATRYBUCJA',
+  'metadata.layers.fields.subfields.keywords': 'Chiave zwolnienia warunkowego',
+  'metadata.layers.fields.subfields.metadataurl': 'URL METADATA',
+  'metadata.layers.fields.subfields.dataurl': 'URL danych',
+  'download_types.shapefile': 'Pobierz ShapeFile',
+  'download_types.gpx': 'Pobierz GPX',
+  'download_types.gpkg': 'Pobierz GPKG',
+  'download_types.csv': 'Pobierz CSV',
+  'download_types.xls': 'Pobierz XLS',
+  'sdk.search.all': 'WSZYSTKO',
+  'No results': 'Brak wyników',
+  'Searching ...': 'Poszukiwanie ...',
+  'Error Loading Data': 'Błąd Dane dotyczące ładowania',
+  'Layer is not searchable': 'Warstwa nie można przeszukiwać',
+  'Layer is not querable': 'Warstwa nie jest zapytana',
+  'Please enter': 'Podaj',
+  'or more characters': 'lub więcej znaków',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Wartości wyszukiwania są ograniczone w zależności od aktywnego filtra. Usuń filtr, aby przeszukać wszystkie dane.',
+  'Filter results': 'Filtruj wyniki',
+  'Loading ...': 'Ładowanie ...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Brak wybranej funkcji. Sprawdź, czy warstwa jest w edycji lub widoczna w bieżącej skali',
+  'sdk.form.inputs.tooltips.picklayer': 'Uzyskaj wartość z warstwy MA',
+  'sdk.form.inputs.tooltips.lonlat': 'Kliknij mapę, aby uzyskać współrzędne',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Pole wzajemnie wykluczające się z',
+  'sdk.form.inputs.input_validation_error': 'Obowiązkowe pole lub niewłaściwy typ danych',
+  'sdk.form.inputs.input_validation_error_type': 'Niewłaściwy typ danych',
+  'sdk.form.inputs.input_validation_min_field': 'Wartość musi być większa/równa wartości pola',
+  'sdk.form.inputs.input_validation_max_field': 'Wartość musi być mniej/równa wartości pola',
+  'sdk.form.inputs.input_validation_exclude_values': 'Wartość musi być wyjątkowa',
+  'sdk.form.inputs.integer': 'liczba całkowita',
+  'sdk.form.inputs.bigint': 'liczba całkowita',
+  'sdk.form.inputs.text': 'tekst',
+  'sdk.form.inputs.varchar': 'tekst',
+  'sdk.form.inputs.textarea': 'tekst',
+  'sdk.form.inputs.string': 'strunowy',
+  'sdk.form.inputs.date': 'data',
+  'sdk.form.inputs.datetime': 'data',
+  'sdk.form.inputs.float': 'platforma',
+  'sdk.form.inputs.table': 'tabela',
+  'sdk.form.footer.required_fields': 'Wymagane pola',
+  'sdk.form.messages.qgis_input_widget_relation': 'Użyj relacji konkretna forma do pracy w związku z relacją',
+  'sdk.wps.list_process': 'Lista procesu',
+  'sdk.wps.tooltip': 'Kliknij mapę',
 };

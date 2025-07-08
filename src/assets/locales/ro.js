@@ -15,7 +15,7 @@ export default {
   search: "Căutare",
   no_results: "Niciun rezultat găsit",
   print: "Tipărire",
-  create_print: "Tipărește",
+  'Create Print': "Tipărește",
   dosearch: "Caută",
   catalog: "Hartă",
   data: "Data",
@@ -31,10 +31,10 @@ export default {
   copy_form_data: "Copiază data",
   paste_form_data: "Lipește",
   copy_form_data_from_feature: "Copiază data din hartă",
-  error_map_loading: "Sunt erori la încărcarea hărții",
+  'Error occurs loading map': "Sunt erori la încărcarea hărții",
   'Check internet connection or contact admin': "Verificați conexiune de internet sau contactați administratorul de sistem",
   'Connection error: Layers can be loaded': "Eroare de conexiune: Straturile nu pot fi încărcate",
-  server_saver_error: "Eroare la salvarea pe server",
+  'Error in server saving': "Eroare la salvarea pe server",
   server_error: "Eroare de conexiune la server",
   save: "Salvează",
   cancel: "Anulează",
@@ -168,7 +168,7 @@ export default {
   'Layer Color': "Selectează culoare strat",
   'Add your file here': "Trageți stratul aici (Drag&Drop)",
   'Screenshot error creation': "Eroare captură ecran",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Eroare de securitate</b>: un strat extern împiedică imprimarea hărții. Pentru a verifica, procedați după cum urmează:</p>
   <ol>
     <li>eliminați orice straturi externe adăugate manual (de exemplu, straturi WMS)</li>
@@ -176,170 +176,108 @@ export default {
     <li>tipărește din nou harta</li>
   </ol>
   <p>Pentru mai multe informații, vă rugăm să contactați administratorul serverului despre: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -greutate: bold;">&#x2139;&#xFE0F; securitate și pânze contaminate</a></p>`,
-  layer_position: {
-    top: 'SUS',
-    bottom: 'JOS',
-    message: "Poziție relativă la straturile din TOC"
-  },
-  info: {
-    title: "Rezultate",
-    list_of_relations: "List of Relations",
-    open_link: "Deschide document atașat",
-    server_error: "Serverul a întâmpinat o eroare",
-    no_results: "Niciun rezultat",
-    link_button: "Deschide"
-  },
-  scaleline_units: {
-    metric: 'Metri',
-    nautical: 'Mile Nautice'
-  },
-  measure_types: {
-    length: "Lungime",
-    area: "Aria",
-  },
-  measure_descriptions: {
-    length: "Click pe hartă pentru a desena linia. Apasă <br>CANC dacă dorești să ștergi ultimul vertex",
-    area: "Click pentru desen poligon. Apasă <br>CANC dacă dorești să ștergi ultimul vertex"
-  },
-  metadata_groups: {
-    general: {
-      title: 'GENERALITĂȚI',
-      fields: {
-        title: 'TITLU',
-        name: 'NUME',
-        description: "DESCRIERE",
-        abstract: "ABSTRACT",
-        keywords: 'CUVINTE CHEIE',
-        fees: "TAXE",
-        accessconstraints: "CONSTRÂNGERI DE ACCES",
-        contactinformation: "CONTACTE",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "Email",
-            personprimary: 'Referințe',
-            contactvoicetelephone: 'Telefon',
-            contactorganization: 'Organizație',
-            ContactOrganization: 'Organizație',
-            contactposition: 'Poziție',
-            ContactPosition: 'Poziție',
-            contactperson: 'Persoana',
-            ContactPerson: 'Persoana'
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'SPAȚIAL',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'STRATURI',
-      fields: {
-        layers: 'STRATURI',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "TITLU",
-          name: 'NUME',
-          geometrytype: 'GEOMETRIE',
-          source: 'SURSA',
-          attributes: 'ATRIBUTE',
-          abstract: 'ABSTRACT',
-          attribution: 'ATRIBUIRE',
-          keywords: "CUVINTE CHEIE",
-          metadataurl:'URL METADATE',
-          dataurl: "URL DATE"
-        }
-      },
-      groups : {
-        general: 'GENERALITĂȚI',
-        spatial: 'SPAȚIAL'
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Descarcă Shapefile",
-    gpx: "Descarcă GPX",
-    gpkg: "Descarcă GPKG",
-    csv: "Descarcă CSV",
-    xls: "Descarcă XLS",
-    pdf: "Descarcă PDF",
-  },
+  'layer_position.top': 'SUS',
+  'layer_position.bottom': 'JOS',
+  'layer_position.message': 'Poziție relativă la straturile din TOC',
+  'info.title': 'Rezultate',
+  'info.list_of_relations': 'List of Relations',
+  'info.open_link': 'Deschide document atașat',
+  'info.server_error': 'Serverul a întâmpinat o eroare',
+  'info.no_results': 'Niciun rezultat',
+  'info.link_button': 'Deschide',
+  'scaleline_units.metric': 'Metri',
+  'scaleline_units.nautical': 'Mile Nautice',
   'mapcontrols.query.input_relation': "Click pentru a arăta relațiile",
-  
   'mapcontrols.querybypolygon.download.title': "Descărcare atribute",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Doar entități",
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Entități+Poligon Interogare",
   'mapcontrols.querybypolygon.tooltip': 'Interogare După Poligon',
   'mapcontrols.querybypolygon.no_geometry': 'Nu avem geometrii în răspuns',
   'mapcontrols.querybypolygon.help.message': "<ul><li>Selectează un strat poligon din TOC.</li><li>Asigură-te că stratul este vizibil.</li><li>Click pe o entitate a stratului selectat.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Interogare prin poligon de desen",
-
   'mapcontrols.querybbox.tooltip': 'Interogare BBox strat',
   'mapcontrols.querybbox.nolayers_visible': 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
   'mapcontrols.querybbox.help.message': "<ul><li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li></ul>",
-
-  sdk: {
-    search: {
-      all: 'Toate',
-      no_results: "Fără rezultat",
-      searching: "Căutare ...",
-      error_loading: "Încărcarea a eșuat",
-      layer_not_searchable: "Nu se poate căuta pe strat",
-      layer_not_querable: "Stratul nu se poate interoga",
-      autocomplete: {
-        inputshort: {
-          pre: "Te rog introdu",
-          post: "sau mai multe caractere"
-        }
-      },
-      help_filter : "Valorile de căutare sunt limitate în funcție de filtrul activ. Eliminați filtrul pentru a căuta toate datele.",
-      autofilter: "Filtrați rezultatele"
-    },
-    form: {
-      loading: 'Se încarcă ...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Nu avem entitate selectată. Verifică dacă stratul este în editare sau vizibil la scara curentă if layer is on editing or visible at current scale"
-          }
-        },
-        tooltips:{
-          picklayer: "Ia valoare din strat",
-          lonlat: "Click pe hartă pentru a prelua coordonate"
-        },
-        input_validation_mutually_exclusive: "Câmp ce se exclude mutual cu ",
-        input_validation_error: "Câmp mandatoriu sau tip de date greșit",
-        input_validation_error_type: "Tip de date greșit",
-        input_validation_min_field: "Valoarea trebuie să fie mai mare/egală cu valoare câmpului ",
-        input_validation_max_field: "Valoarea trebuie să fie mai mică/egală cu valoare câmpului ",
-        input_validation_exclude_values: "Valoarea trebuie să fie unică",
-        integer: "integer - nr. întreg",
-        bigint: "integer - nr. întreg",
-        text: "text",
-        varchar: "text",
-        textarea: "text",
-        string: "string - text",
-        date: "data",
-        datetime: "data",
-        float: "float - nr. cu zecimale",
-        table: "tabelă"
-      },
-      footer: {
-        "required_fields": "Câmpuri necesare"
-      },
-      messages: {
-        qgis_input_widget_relation: "Folosește formular specific de relații pentru a lucra cu relația"
-      }
-    },
-    wps: {
-      list_process: "Lista de procese",
-      tooltip: 'Click pe hartă'
-    }
-  },
+  'measure_types.length': 'Lungime',
+  'measure_types.area': 'Aria',
+  'measure_descriptions.length': 'Click pe hartă pentru a desena linia. Apasă <br>CANC dacă dorești să ștergi ultimul vertex',
+  'measure_descriptions.area': 'Click pentru desen poligon. Apasă <br>CANC dacă dorești să ștergi ultimul vertex',
+  'metadata.general.title': 'GENERALITĂȚI',
+  'metadata.general.fields.title': 'TITLU',
+  'metadata.general.fields.name': 'NUME',
+  'metadata.general.fields.description': 'DESCRIERE',
+  'metadata.general.fields.abstract': 'ABSTRACT',
+  'metadata.general.fields.keywords': 'CUVINTE CHEIE',
+  'metadata.general.fields.fees': 'TAXE',
+  'metadata.general.fields.accessconstraints': 'CONSTRÂNGERI DE ACCES',
+  'metadata.general.fields.contactinformation': 'CONTACTE',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'Email',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Referințe',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Telefon',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organizație',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organizație',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Poziție',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Poziție',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Persoana',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Persoana',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'SPAȚIAL',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'STRATURI',
+  'metadata.layers.groups.general': 'GENERALITĂȚI',
+  'metadata.layers.groups.spatial': 'SPAȚIAL',
+  'metadata.layers.fields.layers': 'STRATURI',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'TITLU',
+  'metadata.layers.fields.subfields.name': 'NUME',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIE',
+  'metadata.layers.fields.subfields.source': 'SURSA',
+  'metadata.layers.fields.subfields.attributes': 'ATRIBUTE',
+  'metadata.layers.fields.subfields.abstract': 'ABSTRACT',
+  'metadata.layers.fields.subfields.attribution': 'ATRIBUIRE',
+  'metadata.layers.fields.subfields.keywords': 'CUVINTE CHEIE',
+  'metadata.layers.fields.subfields.metadataurl': 'URL METADATE',
+  'metadata.layers.fields.subfields.dataurl': 'URL DATE',
+  'download_types.shapefile': 'Descarcă Shapefile',
+  'download_types.gpx': 'Descarcă GPX',
+  'download_types.gpkg': 'Descarcă GPKG',
+  'download_types.csv': 'Descarcă CSV',
+  'download_types.xls': 'Descarcă XLS',
+  'download_types.pdf': 'Descarcă PDF',
+  'sdk.search.all': 'Toate',
+  'No results': 'Fără rezultat',
+  'Searching ...': 'Căutare ...',
+  'Error Loading Data': 'Încărcarea a eșuat',
+  'Layer is not searchable': 'Nu se poate căuta pe strat',
+  'Layer is not querable': 'Stratul nu se poate interoga',
+  'Please enter': 'Te rog introdu',
+  'or more characters': 'sau mai multe caractere',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Valorile de căutare sunt limitate în funcție de filtrul activ. Eliminați filtrul pentru a căuta toate datele.',
+  'Filter results': 'Filtrați rezultatele',
+  'Loading ...': 'Se încarcă ...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Nu avem entitate selectată. Verifică dacă stratul este în editare sau vizibil la scara curentă if layer is on editing or visible at current scale',
+  'sdk.form.inputs.tooltips.picklayer': 'Ia valoare din strat',
+  'sdk.form.inputs.tooltips.lonlat': 'Click pe hartă pentru a prelua coordonate',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Câmp ce se exclude mutual cu ',
+  'sdk.form.inputs.input_validation_error': 'Câmp mandatoriu sau tip de date greșit',
+  'sdk.form.inputs.input_validation_error_type': 'Tip de date greșit',
+  'sdk.form.inputs.input_validation_min_field': 'Valoarea trebuie să fie mai mare/egală cu valoare câmpului ',
+  'sdk.form.inputs.input_validation_max_field': 'Valoarea trebuie să fie mai mică/egală cu valoare câmpului ',
+  'sdk.form.inputs.input_validation_exclude_values': 'Valoarea trebuie să fie unică',
+  'sdk.form.inputs.integer': 'integer - nr. întreg',
+  'sdk.form.inputs.bigint': 'integer - nr. întreg',
+  'sdk.form.inputs.text': 'text',
+  'sdk.form.inputs.varchar': 'text',
+  'sdk.form.inputs.textarea': 'text',
+  'sdk.form.inputs.string': 'string - text',
+  'sdk.form.inputs.date': 'data',
+  'sdk.form.inputs.datetime': 'data',
+  'sdk.form.inputs.float': 'float - nr. cu zecimale',
+  'sdk.form.inputs.table': 'tabelă',
+  'sdk.form.footer.required_fields': 'Câmpuri necesare',
+  'sdk.form.messages.qgis_input_widget_relation': 'Folosește formular specific de relații pentru a lucra cu relația',
+  'sdk.wps.list_process': 'Lista de procese',
+  'sdk.wps.tooltip': 'Click pe hartă',
 };

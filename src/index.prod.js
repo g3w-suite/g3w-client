@@ -50,7 +50,7 @@ import { getProject }              from 'utils/getProject';
 
 
 // Internationalization
-import { L, t } from 'g3w-i18n';
+import { L, t as _ } from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
@@ -115,7 +115,7 @@ Vue.use(require('vue-cookie'));
 Vue.use({
   install(Vue) {
     /** @since 3.11.0 */
-    Vue.prototype.$t = t;
+    Vue.prototype.$t = _;
     // hold a list of registered fontawsome classes for current project
     Vue.prototype.g3wtemplate = {
       font: FONT_AWESOME_ICONS,
@@ -393,12 +393,12 @@ $.ajaxSetup({
           {
             id:      "querybuilder",
             class:   `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-            tooltip: t('Advanced search'),
+            tooltip: _('Advanced search'),
             fnc:     () => {
               GUI.closeContent();
               GUI.closeSideBar();
               return new Panel({
-                title: t('Advanced search'),
+                title: _('Advanced search'),
                 show: true,
                 vueComponentObject: require('components/QueryBuilder.vue').default
               });
@@ -671,14 +671,14 @@ $.ajaxSetup({
   if (!wrapper) {
     document.body.insertAdjacentHTML('beforeend', /* html */`
       <div class="error-page" style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #FFF; background-color: var(--skin-color);">
-        <h1 style="font-weight: bold;">${ t('Connection error') }</h1>
+        <h1 style="font-weight: bold;">${ _('Connection error') }</h1>
         <h2 style="order: -1; font-size: 5em; font-weight: bold;">Oops!</h2>
-        <h3>${ t('At the moment is not possible show map') }</h3>
-        <p class="trace" style="background: #333;padding: 1rem;border-radius: 3px;margin-top: 2rem;font-family: Monospace;">${ error || t('Connection error') }</p>
+        <h3>${ _('At the moment is not possible show map') }</h3>
+        <p class="trace" style="background: #333;padding: 1rem;border-radius: 3px;margin-top: 2rem;font-family: Monospace;">${ error || _('Connection error') }</p>
       </div>`);  
   } else {
     wrapper.querySelector('.trace').insertAdjacentHTML('beforeend', /* html */`
-      <br>${ error || t('Connection error') }
+      <br>${ error || _('Connection error') }
     `);
   }
 }

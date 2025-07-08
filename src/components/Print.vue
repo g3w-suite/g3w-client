@@ -144,7 +144,7 @@
           id                  = "printbutton"
           class               = "sidebar-button-run btn"
           v-disabled          = "ApplicationState.download || disabled"
-          v-t                 = "'create_print'"
+          v-t                 = "'Create Print'"
           @click.stop.prevent = "print"
         ></button>
 
@@ -182,7 +182,7 @@ import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 import resizeMixin                  from 'mixins/resize';
 
 import vueComp                      from 'components/PrintPage.vue';
-import { t }                        from 'g3w-i18n';
+import { t as _ }                   from 'g3w-i18n';
 
 export default {
 
@@ -569,7 +569,7 @@ export default {
 
       if (err) {
         console.warn(err);
-        GUI.notify.error(err || t("info.server_error"));
+        GUI.notify.error(err || _("info.server_error"));
         GUI.closeContent();
       }
 
@@ -729,10 +729,10 @@ export default {
           return null;                                                                                 // hide the term
         },
         language: {
-          noResults:     () => t("sdk.search.no_results"),
-          errorLoading:  () => t("sdk.search.error_loading"),
-          searching:     () => t("sdk.search.searching"),
-          inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
+          noResults:     () => _('No results'),
+          errorLoading:  () => _('Error Loading Data'),
+          searching:     () => _('Searching ...'),
+          inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
         },
       });
       this.select2.on('select2:select',   e => { this.atlas_values.push(e.params.data.id); });
@@ -811,7 +811,7 @@ export default {
         }
       } catch (e) {
         console.warn(e);
-        GUI.notify.error(e || t("info.server_error"));
+        GUI.notify.error(e || _("info.server_error"));
         GUI.closeContent();
       } finally {
         clearTimeout(timeout);

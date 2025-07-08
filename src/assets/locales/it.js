@@ -16,7 +16,14 @@ export default {
   alerts: 'Avvisi',
   no_results: "Nessun risultato trovato",
   print: "Stampa",
-  create_print: "Crea Stampa",
+  print_help: `<p>Se non vedi qualche livello nel file di stampa:</p>
+  <ol style="padding-left: 25px">
+    <li>prova ancora usando un template diverso</li>
+    <li>prova a cambiare lo zoom della mappa</li>
+    <li>controlla l'origine (es. server WMS esterno)</li>
+    <li>verifica che la sua voce sia effettivamente spuntata nella lista dei livelli</li>
+  </ol>`,
+  'Create Print': "Crea Stampa",
   dosearch: "Cerca",
   catalog: "Mappa",
   data: "Dati",
@@ -32,10 +39,10 @@ export default {
   copy_form_data: "Copia i dati del modulo",
   paste_form_data: "Incolla",
   copy_form_data_from_feature: "Copia i dati dalla mappa",
-  error_map_loading: "Errore di caricamento della nuova mappa",
+  'Error occurs loading map': "Errore di caricamento della nuova mappa",
   'Check internet connection or contact admin': "Controllare la connessione internet o contattare l'amministratore",
   'Connection error: Layers can be loaded': "Errore di connessione al server: non è stato possibile caricare i vettoriali richiesti",
-  server_saver_error: "Errore nel salvataggio sul server",
+  'Error in server saving': "Errore nel salvataggio sul server",
   server_error: "Si è verificato un errore nella richiesta al server",
   save: "Salva",
   cancel: "Cancella",
@@ -127,10 +134,13 @@ export default {
   'Remove': 'Rimuovi',
   'Show/Hide': 'Mostra/Nascondi',
   'Show All': 'Mostra tutti',
+  'Fit map extent': 'Zoom estensione mappa',
+  'Zoom to box': 'Zoom su area',
   'Zoom Last': "Zoom Precedente",
   'Zoom Next': "Zoom Successivo",
   'Invalid Scale': "Scala non valida",
   'Screen capture': 'Cattura schermata',
+  'Screenshot': 'Cattura schermata',
   'Generate': 'Genera',
   'Measure': 'Misura',
   'Geolocation': 'Mostra la mia posizione',
@@ -225,7 +235,7 @@ export default {
   'Persistent data': "Persistenza",
   'save layer into browser storage': "salva il livello nella memoria del browser",
   'Screenshot error creation': "Errore nella creazione dello screenshot",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Errore di sicurezza</b>: uno strato esterno impedisce la stampa della mappa. Per verificare, procedere come segue:</p>
   <ol>
     <li>rimuovi eventuali layer esterni aggiunti manualmente (es. layer WMS)</li>
@@ -233,114 +243,20 @@ export default {
     <li>stampa nuovamente la mappa</li>
   </ol>
   <p>Per maggiori informazioni contattare l'amministratore del server in merito a: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font-weight: bold;">&#x2139;&#xFE0F; security and tainted canvases</a></p>`,
-  layer_position: {
-    top: 'in cima',
-    bottom: 'in fondo',
-    message: "Posizione"
-  },
-  info: {
-    title: "Risultati",
-    list_of_relations: "Lista delle relazioni",
-    open_link: "Apri documento allegato",
-    server_error: "Si è verificato un errore nella richiesta al server",
-    no_results: "Nessun risultato per questa interrogazione/ricerca ",
-    link_button: "Apri"
-  },
-  annotation_types: {
-    'Point':      'Punto',
-    'LineString': 'Linea',
-    'Polygon':    'Poligono',
-    'Rectangle':  'Rettangolo',
-    'Circle':     'Cerchio',
-    'Text':       'Testo',
-  },
-  scaleline_units: {
-    metric: 'Metri',
-    nautical: 'Miglio Nautico'
-  },
-  measure_types: {
-    length: "Lunghezza",
-    area: "Area",
-  },
-  measure_descriptions: {
-    length: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
-    area: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
-  },
-  print_help: `<p>Se non vedi qualche livello nel file di stampa:</p>
-  <ol style="padding-left: 25px">
-    <li>prova ancora usando un template diverso</li>
-    <li>prova a cambiare lo zoom della mappa</li>
-    <li>controlla l'origine (es. server WMS esterno)</li>
-    <li>verifica che la sua voce sia effettivamente spuntata nella lista dei livelli</li>
-  </ol>`,
-  metadata_groups: {
-    general: {
-      title: 'GENERALE',
-      fields: {
-        title: 'TITOLO',
-        name: 'NOME',
-        description: "DESCRIZIONE",
-        abstract: "ABSTRACT",
-        keywords: 'LISTA DELLE PAROLE CHIAVE',
-        fees: "CANONI",
-        accessconstraints: "VINCOLI DI ACCESSO",
-        contactinformation: "CONTATTI",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "E-mail",
-            personprimary: 'Riferimenti',
-            contactvoicetelephone: 'Telefono',
-            contactorganization: 'Organizzazione',
-            ContactOrganization: 'Organizzazione',
-            contactposition: 'Posizione',
-            ContactPosition : 'Posizione',
-            contactperson: 'Persona',
-            ContactPerson: 'Persona',
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'INFO SPAZIALI',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'STRATI',
-      groups : {
-        general: 'GENERALE',
-        spatial: 'INFO SPAZIALI'
-      },
-      fields: {
-        layers: 'STRATI',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "TITOLO",
-          name: 'NOME',
-          geometrytype: 'GEOMETRIA',
-          source: 'SORGENTE',
-          attributes: 'ATTRIBUTI',
-          abstract: 'ABSTRACT',
-          attribution: 'ATTRIBUTION',
-          keywords: "PAROLE CHIAVE",
-          metadataurl:'METADATA URL',
-          dataurl: "DATA URL"
-        }
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Scarica Shapefile",
-    gpx: "Scarica GPX",
-    gpkg: "Scarica GPKG",
-    csv: "Scarica CSV",
-    xls: "Scarica XLS",
-    pdf: "Scarica PDF",
-  },
+  'layer_position.top': 'in cima',
+  'layer_position.bottom': 'in fondo',
+  'layer_position.message': 'Posizione',
+  'info.title': 'Risultati',
+  'info.list_of_relations': 'Lista delle relazioni',
+  'info.open_link': 'Apri documento allegato',
+  'info.server_error': 'Si è verificato un errore nella richiesta al server',
+  'info.no_results': 'Nessun risultato per questa interrogazione/ricerca ',
+  'info.link_button': 'Apri',
+  'annotation_types.Point': 'Punto',
+  'annotation_types.LineString': 'Linea',
+  'annotation_types.Polygon': 'Poligono',
+  'annotation_types.Rectangle': 'Rettangolo',
+  'annotation_types.Circle': 'Cerchio',
   'mapcontrols.query.input_relation': "Clicca per consultare le relazioni",
   'mapcontrols.queryby.title': 'Interroga un area',
   'mapcontrols.queryby.layer': 'Livello selezionato:',
@@ -354,85 +270,106 @@ export default {
   'mapcontrols.queryby.querybbox.tooltip': 'disegna un rettangolo',
   'mapcontrols.queryby.querybycircle.tooltip': 'disegna un cerchio',
   'mapcontrols.queryby.querybyfreehand.tooltip': 'disegno a mano libera',
-
   'mapcontrols.querybypolygon.download.title': "Download attributi",
   'mapcontrols.querybypolygon.download.choiches.feature.label': "Solo features",
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': "Features+Poligono Interrogazione",
   'mapcontrols.querybypolygon.tooltip': 'Interroga per poligono',
   'mapcontrols.querybypolygon.no_geometry': 'Non contiene la geometria nella risposta',
   'mapcontrols.querybypolygon.help.message': "<ul><li>Clicca sulla mappa per aggiungere un nuovo vertice</li><li>Doppio click per terminare ed interrogare i livelli</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Disegna un poligono per interrogare",
   'mapcontrols.querybydrawpolygon.help.message': '<ul><li>Click on map to add a new vertex</li><li>Double click to finish and query layers</li></ul>',
-
   'mapcontrols.querybbox.tooltip': 'Interroga per BBOX',
   'mapcontrols.querybbox.nolayers_visible': "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
   'mapcontrols.querybbox.help.message': "<ul><li>Trascina il mouse per disegnare un rettangolo ed interrogare i livelli</li></ul>",
-
   'mapcontrols.querybycircle.tooltip': "Disegna un cerchio per interrogare",
   'mapcontrols.querybycircle.label': 'Raggio',
   'mapcontrols.querybycircle.help.message': "<ul><li>Clicca sulla mappa per disegnare il cerchio</li></ul>",
-
   'mapcontrols.querybyfreehand.tooltip': "Disegno un poligono (a mano libera) per interrogare",
   'mapcontrols.querybyfreehand.help.message': "<ul><li>Trascina il mouse per disegnare un poligono ed interrogare i livelli</li></ul>",
-
-  sdk: {
-    search: {
-      all: 'TUTTE',
-      no_results: "Nessun valore trovato",
-      searching: "Sto cercando ..",
-      error_loading: "Errore nel caricamento valori",
-      layer_not_searchable: "Il layer non è ricercabile",
-      layer_not_querable: "Il layer non è interrogabile",
-      autocomplete: {
-        inputshort: {
-          pre: "Digita almeno",
-          post: "caratteri"
-        }
-      },
-      help_filter : "I valori di ricerca sono limitati sulla base del filtro attivo. Rimuovere il filtro per ricercare su tutti i dati.",
-      autofilter: "Filtro sui risultati",
-      autofilter_tooltip: "Filtra automaticamente le geometrie visualizzate nella mappa<br>per mostrare solo quelle relative ai risultati della ricerca corrente.",
-    },
-    form: {
-      loading: 'Caricamento ...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Nessuna feature selezionata. Verificare se il layer è in editing o non visibile alla scala attuale"
-          }
-        },
-        tooltips: {
-          picklayer: "Prendi valore dalla mappa",
-          lonlat: "Clicca sulla mappa per prendere le coordinate"
-        },
-        input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
-        input_validation_error: "Campo obbligatorio o tipo valore non corretto",
-        input_validation_error_type: "Tipo valore non corretto",
-        input_validation_min_field: "Valore deve essere magiore uguale a quello del camp ",
-        input_validation_max_field: "Valore deve essere minore uguale a quello del campo ",
-        input_validation_exclude_values: "Campo deve contenere un valore diverso",
-        integer: "intero",
-        bigint: "intero",
-        text: "testuale",
-        varchar: "testuale",
-        textarea: "testuale",
-        string: "stringa",
-        date: "data",
-        datetime: "data",
-        float: "float",
-        table: "table"
-      },
-      footer: {
-        required_fields: "Campi obbligatori"
-      },
-      messages: {
-        qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
-      }
-    },
-    wps: {
-      list_process: "Lista dei processi",
-      tooltip: 'Clicca sulla mappa'
-    }
-  },
+  'annotation_types.Text': 'Testo',
+  'scaleline_units.metric': 'Metri',
+  'scaleline_units.nautical': 'Miglio Nautico',
+  'measure_types.length': 'Lunghezza',
+  'measure_types.area': 'Area',
+  'measure_descriptions.length': "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
+  'measure_descriptions.area': "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito",
+  'metadata.general.title': 'GENERALE',
+  'metadata.general.fields.title': 'TITOLO',
+  'metadata.general.fields.name': 'NOME',
+  'metadata.general.fields.description': 'DESCRIZIONE',
+  'metadata.general.fields.abstract': 'ABSTRACT',
+  'metadata.general.fields.keywords': 'LISTA DELLE PAROLE CHIAVE',
+  'metadata.general.fields.fees': 'CANONI',
+  'metadata.general.fields.accessconstraints': 'VINCOLI DI ACCESSO',
+  'metadata.general.fields.contactinformation': 'CONTATTI',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'E-mail',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Riferimenti',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Telefono',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organizzazione',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organizzazione',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Posizione',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Posizione',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Persona',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Persona',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'INFO SPAZIALI',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'STRATI',
+  'metadata.layers.groups.general': 'GENERALE',
+  'metadata.layers.groups.spatial': 'INFO SPAZIALI',
+  'metadata.layers.fields.layers': 'STRATI',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'TITOLO',
+  'metadata.layers.fields.subfields.name': 'NOME',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIA',
+  'metadata.layers.fields.subfields.source': 'SORGENTE',
+  'metadata.layers.fields.subfields.attributes': 'ATTRIBUTI',
+  'metadata.layers.fields.subfields.abstract': 'ABSTRACT',
+  'metadata.layers.fields.subfields.attribution': 'ATTRIBUTION',
+  'metadata.layers.fields.subfields.keywords': 'PAROLE CHIAVE',
+  'metadata.layers.fields.subfields.metadataurl': 'METADATA URL',
+  'metadata.layers.fields.subfields.dataurl': 'DATA URL',
+  'download_types.shapefile': 'Scarica Shapefile',
+  'download_types.gpx': 'Scarica GPX',
+  'download_types.gpkg': 'Scarica GPKG',
+  'download_types.csv': 'Scarica CSV',
+  'download_types.xls': 'Scarica XLS',
+  'download_types.pdf': 'Scarica PDF',
+  'sdk.search.all': 'TUTTE',
+  'No results': 'Nessun valore trovato',
+  'Searching ...': 'Sto cercando ..',
+  'Error Loading Data': 'Errore nel caricamento valori',
+  'Layer is not searchable': 'Il layer non è ricercabile',
+  'Layer is not querable': 'Il layer non è interrogabile',
+  'Please enter': 'Digita almeno',
+  'or more characters': 'caratteri',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'I valori di ricerca sono limitati sulla base del filtro attivo. Rimuovere il filtro per ricercare su tutti i dati.',
+  'Filter results': 'Filtro sui risultati',
+  'Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.': 'Filtra automaticamente le geometrie visualizzate nella mappa<br>per mostrare solo quelle relative ai risultati della ricerca corrente.',
+  'Loading ...': 'Caricamento ...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Nessuna feature selezionata. Verificare se il layer è in editing o non visibile alla scala attuale',
+  'sdk.form.inputs.tooltips.picklayer': 'Prendi valore dalla mappa',
+  'sdk.form.inputs.tooltips.lonlat': 'Clicca sulla mappa per prendere le coordinate',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Campo mutualmente esclusivo con ',
+  'sdk.form.inputs.input_validation_error': 'Campo obbligatorio o tipo valore non corretto',
+  'sdk.form.inputs.input_validation_error_type': 'Tipo valore non corretto',
+  'sdk.form.inputs.input_validation_min_field': 'Valore deve essere magiore uguale a quello del camp ',
+  'sdk.form.inputs.input_validation_max_field': 'Valore deve essere minore uguale a quello del campo ',
+  'sdk.form.inputs.input_validation_exclude_values': 'Campo deve contenere un valore diverso',
+  'sdk.form.inputs.integer': 'intero',
+  'sdk.form.inputs.bigint': 'intero',
+  'sdk.form.inputs.text': 'testuale',
+  'sdk.form.inputs.varchar': 'testuale',
+  'sdk.form.inputs.textarea': 'testuale',
+  'sdk.form.inputs.string': 'stringa',
+  'sdk.form.inputs.date': 'data',
+  'sdk.form.inputs.datetime': 'data',
+  'sdk.form.inputs.float': 'float',
+  'sdk.form.inputs.table': 'table',
+  'sdk.form.footer.required_fields': 'Campi obbligatori',
+  'sdk.form.messages.qgis_input_widget_relation': 'Gestisci le relazioni tramite form dedicato',
+  'sdk.wps.list_process': 'Lista dei processi',
+  'sdk.wps.tooltip': 'Clicca sulla mappa',
 };

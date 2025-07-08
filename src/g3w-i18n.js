@@ -1,11 +1,12 @@
 import ApplicationState from 'store/application';
+import { flattenObject } from 'utils/flattenObject';
 
 // Based on leaflet-i18n
 export const L = {
   locales: {},
   // language: null,
   registerLocale(lang, locale) {
-    L.locales[lang] = L.merge(L.locales[lang] || {}, locale);
+    L.locales[lang] = L.merge(L.locales[lang] || {}, flattenObject(locale, '.'));
   },
   setLocale(lang) {
     // L.language = lang;
@@ -53,6 +54,7 @@ export const L = {
   }
 };
 
+window.L = L;
 
 L._ = L.translate;
 

@@ -15,7 +15,7 @@ export default {
   search: "Sök",
   no_results: "Inga sökresultat",
   print: "Skriv ut",
-  create_print: "Skapa utskrift",
+  'Create Print': "Skapa utskrift",
   dosearch: "Sök",
   catalog: "Karta",
   data: "Data",
@@ -31,10 +31,10 @@ export default {
   copy_form_data: "Kopiera uppgifterna",
   paste_form_data: "Infoga",
   copy_form_data_from_feature: "Kopiera uppgifter från kartan",
-  error_map_loading: "Fel vid laddning av kartan",
+  'Error occurs loading map': "Fel vid laddning av kartan",
   'Check internet connection or contact admin': "Kontrollera internetanslutningen eller kontakta administratören.",
   'Connection error: Layers can be loaded': "Fel i anslutningen, nivåer kan inte laddas.",
-  server_saver_error: "Fel vid lagring på servern.",
+  'Error in server saving': "Fel vid lagring på servern.",
   server_error: "Fel på anslutningen till servern",
   save: "Spara",
   cancel: "Ånga",
@@ -155,7 +155,7 @@ export default {
   'Layer Color': "Välj färg på nivån",
   'Add your file here': "Dra och släpp nivån hit",
   'Screenshot error creation': "Screenshot error creation",
-  screenshot_error: `  
+  screenshot_error: `
   <p><b>Säkerhetsfel</b>: ett externt lager hindrar kartan från att skrivas ut. Gör så här för att kontrollera:</p>
   <ol>
     <li>ta bort alla manuellt tillagda externa lager (t.ex. WMS-lager)</li>
@@ -163,167 +163,105 @@ export default {
     <li>skriv ut kartan igen</li>
   </ol>
   <p>För mer information kontakta serveradministratören om: <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image" style="color: #000 !important;font -vikt: fet;">&#x2139;&#xFE0F; säkerhet och nedsmutsade dukar</a></p>`,
-  layer_position: {
-    top: 'Överst',
-    bottom: 'Underst',
-    message: "Position relativt till lager i lagerlistan"
-  },
-  info: {
-    title: "Resultat",
-    list_of_relations: "List of Relations",
-    open_link: "Öppna filbilaga",
-    server_error: "Ett fel uppstod på servern.",
-    no_results: "Inga resultat för sökningen/förfrågan.",
-    link_button: "Öppna"
-  },
-  scaleline_units: {
-    metric: 'Meters',
-    nautical: 'Nautical Mile'
-  },
-  measure_types: {
-    length: "Längd",
-    area: "Område",
-  },
-  measure_descriptions: {
-    length: "Rita upp en bruten linje på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.",
-    area: "Rita upp en polygon på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt."
-  },
-  metadata_groups: {
-    general: {
-      title: 'ALLMÄN',
-      fields: {
-        title: 'RUBRIK',
-        name: 'NAMN',
-        description: "BESKRIVNING",
-        abstract: "SAMMANDRAG",
-        keywords: 'NYCKELORD',
-        fees: "AVGIFTER",
-        accessconstraints: "ÅTKOMSTBEGRÄNSNINGAR",
-        contactinformation: "KONTAKTUPPGIFTER",
-        subfields: {
-          contactinformation: {
-            contactelectronicmailaddress: "E-post",
-            personprimary: 'Referenser',
-            contactvoicetelephone: 'Telefon',
-            contactorganization: 'Organisation',
-            ContactOrganization: 'Organisation',
-            contactposition: 'Ställning',
-            ContactPosition: 'Ställning',
-            contactperson: 'Kontaktperson',
-            ContactPerson: 'Kontaktperson'
-          }
-        },
-        wms_url: "WMS"
-      }
-    },
-    spatial:{
-      title: 'SPATIAL',
-      fields : {
-        crs: 'EPSG',
-        extent: 'BBOX'
-      }
-    },
-    layers: {
-      title: 'NIVÅER',
-      fields: {
-        layers: 'NIVÅER',
-        subfields: {
-          crs: 'EPSG',
-          bbox: 'BBOX',
-          title: "RUBRIK",
-          name: 'NAMN',
-          geometrytype: 'GEOMETRI',
-          source: 'KÄLLA',
-          attributes: 'ATTRIBUT',
-          abstract: 'SAMMANDRAG',
-          attribution: 'TILLSKRIVNING',
-          keywords: "NYCKELORD",
-          metadataurl:'METADATA URL',
-          dataurl: "DATA URL"
-        }
-      },
-      groups : {
-        general: 'ALLMÄN',
-        spatial: 'SPATIAL'
-      }
-    }
-  },
-  download_types: {
-    shapefile: "Ladda SHP-fil",
-    gpx: "Ladda GPX-fil",
-    gpkg: "Ladda GPKG-fil",
-    csv: "Ladda CSV-fil",
-    xls: "Ladda XLS-fil",
-    pdf: "Ladda PDF-fil",
-  },
+  'layer_position.top': 'Överst',
+  'layer_position.bottom': 'Underst',
+  'layer_position.message': 'Position relativt till lager i lagerlistan',
+  'info.title': 'Resultat',
+  'info.list_of_relations': 'List of Relations',
+  'info.open_link': 'Öppna filbilaga',
+  'info.server_error': 'Ett fel uppstod på servern.',
+  'info.no_results': 'Inga resultat för sökningen/förfrågan.',
+  'info.link_button': 'Öppna',
+  'scaleline_units.metric': 'Meters',
+  'scaleline_units.nautical': 'Nautical Mile',
   'mapcontrols.query.input_relation': "Tryck för att visa relationerna",
-  
   'mapcontrols.querybypolygon.tooltip': 'Förfrågan med polygon',
   'mapcontrols.querybypolygon.no_geometry': 'No geometry on response',
   'mapcontrols.querybypolygon.help.message': "<ul><li>Välj polygonnivå i listan.</li><li>Kontrollera att nivån är synlig.</li><li>Välj egenskap på önskad nivå.</li></ul>",
-
   'mapcontrols.querybydrawpolygon.tooltip': "Fråga efter ritpolygon",
-
   'mapcontrols.querybbox.tooltip': 'BBox-förfrågan som riktar sig till en nivå',
   'mapcontrols.querybbox.nolayers_visible': 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
   'mapcontrols.querybbox.help.message': "<ul><li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li></ul>",
-
-  sdk: {
-    search: {
-      all: 'ALLA',
-      no_results: "Inga resultat",
-      searching: "Sökning ...",
-      error_loading: "Fel vid laddning av uppgifter.",
-      layer_not_searchable: "Nivån kan inte sökas.",
-      layer_not_querable: "Förfrågningar kan inte göras på nivån.",
-      autocomplete: {
-        inputshort: {
-          pre: "Mata in",
-          post: "eller flera tecken"
-        }
-      },
-      help_filter : "Sökvärdena är begränsade baserat på det aktiva filtret. Ta bort filtret för att söka på all data.",
-      autofilter: "Filtrera resultaten"
-    },
-    form: {
-      loading: 'Laddning...',
-      inputs: {
-        messages: {
-          errors: {
-            picklayer: "Inga egenskaper har valts. Kontroller att nivån kan redigeras eller att den syns med nuvarande skala."
-          }
-        },
-        tooltips:{
-          picklayer: "Välj värde på kartnivå",
-          lonlat: "Click on map to get coordinates"
-        },
-        input_validation_mutually_exclusive: "Fälten utesluter varandra.",
-        input_validation_error: "Obligatoriskt fält eller fel datatyp.",
-        input_validation_error_type: "Fel datatyp.",
-        input_validation_min_field: "Värdet ska vara större eller lika stort som värdet i fältet.",
-        input_validation_max_field: "Värdet ska vara mindre eller lika stort som värdet i fältet.",
-        input_validation_exclude_values: "Värdet ska vara unikt.",
-        integer: "heltal",
-        bigint: "heltal",
-        text: "text",
-        varchar: "text",
-        textarea: "text",
-        string: "teckensträng",
-        date: "datum",
-        datetime: "datum",
-        float: "flyttal",
-        table: "tabell"
-      },
-      footer: {
-        "required_fields": "Obligatoriska fält"
-      },
-      messages: {
-        qgis_input_widget_relation: "Använd den specifika funktinen för att bestämma relationer"
-      }
-    },
-    wps: {
-      list_process: "Lista på processer",
-      tooltip: 'Välj på kartan'
-    }
-  },
+  'measure_types.length': 'Längd',
+  'measure_types.area': 'Område',
+  'measure_descriptions.length': 'Rita upp en bruten linje på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.',
+  'measure_descriptions.area': 'Rita upp en polygon på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.',
+  'metadata.general.title': 'ALLMÄN',
+  'metadata.general.fields.title': 'RUBRIK',
+  'metadata.general.fields.name': 'NAMN',
+  'metadata.general.fields.description': 'BESKRIVNING',
+  'metadata.general.fields.abstract': 'SAMMANDRAG',
+  'metadata.general.fields.keywords': 'NYCKELORD',
+  'metadata.general.fields.fees': 'AVGIFTER',
+  'metadata.general.fields.accessconstraints': 'ÅTKOMSTBEGRÄNSNINGAR',
+  'metadata.general.fields.contactinformation': 'KONTAKTUPPGIFTER',
+  'metadata.general.fields.subfields.contactinformation.contactelectronicmailaddress': 'E-post',
+  'metadata.general.fields.subfields.contactinformation.personprimary': 'Referenser',
+  'metadata.general.fields.subfields.contactinformation.contactvoicetelephone': 'Telefon',
+  'metadata.general.fields.subfields.contactinformation.contactorganization': 'Organisation',
+  'metadata.general.fields.subfields.contactinformation.ContactOrganization': 'Organisation',
+  'metadata.general.fields.subfields.contactinformation.contactposition': 'Ställning',
+  'metadata.general.fields.subfields.contactinformation.ContactPosition': 'Ställning',
+  'metadata.general.fields.subfields.contactinformation.contactperson': 'Kontaktperson',
+  'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Kontaktperson',
+  'metadata.general.fields.wms_url': 'WMS',
+  'metadata.spatial.title': 'SPATIAL',
+  'metadata.spatial.fields.crs': 'EPSG',
+  'metadata.spatial.fields.extent': 'BBOX',
+  'metadata.layers.title': 'NIVÅER',
+  'metadata.layers.groups.general': 'ALLMÄN',
+  'metadata.layers.groups.spatial': 'SPATIAL',
+  'metadata.layers.fields.layers': 'NIVÅER',
+  'metadata.layers.fields.subfields.crs': 'EPSG',
+  'metadata.layers.fields.subfields.bbox': 'BBOX',
+  'metadata.layers.fields.subfields.title': 'RUBRIK',
+  'metadata.layers.fields.subfields.name': 'NAMN',
+  'metadata.layers.fields.subfields.geometrytype': 'GEOMETRI',
+  'metadata.layers.fields.subfields.source': 'KÄLLA',
+  'metadata.layers.fields.subfields.attributes': 'ATTRIBUT',
+  'metadata.layers.fields.subfields.abstract': 'SAMMANDRAG',
+  'metadata.layers.fields.subfields.attribution': 'TILLSKRIVNING',
+  'metadata.layers.fields.subfields.keywords': 'NYCKELORD',
+  'metadata.layers.fields.subfields.metadataurl': 'METADATA URL',
+  'metadata.layers.fields.subfields.dataurl': 'DATA URL',
+  'download_types.shapefile': 'Ladda SHP-fil',
+  'download_types.gpx': 'Ladda GPX-fil',
+  'download_types.gpkg': 'Ladda GPKG-fil',
+  'download_types.csv': 'Ladda CSV-fil',
+  'download_types.xls': 'Ladda XLS-fil',
+  'download_types.pdf': 'Ladda PDF-fil',
+  'sdk.search.all': 'ALLA',
+  'No results': 'Inga resultat',
+  'Searching ...': 'Sökning ...',
+  'Error Loading Data': 'Fel vid laddning av uppgifter.',
+  'Layer is not searchable': 'Nivån kan inte sökas.',
+  'Layer is not querable': 'Förfrågningar kan inte göras på nivån.',
+  'Please enter': 'Mata in',
+  'or more characters': 'eller flera tecken',
+  'Search values are limited based on the active filter. Remove the filter to search all data.': 'Sökvärdena är begränsade baserat på det aktiva filtret. Ta bort filtret för att söka på all data.',
+  'Filter results': 'Filtrera resultaten',
+  'Loading ...': 'Laddning...',
+  'sdk.form.inputs.messages.errors.picklayer': 'Inga egenskaper har valts. Kontroller att nivån kan redigeras eller att den syns med nuvarande skala.',
+  'sdk.form.inputs.tooltips.picklayer': 'Välj värde på kartnivå',
+  'sdk.form.inputs.tooltips.lonlat': 'Click on map to get coordinates',
+  'sdk.form.inputs.input_validation_mutually_exclusive': 'Fälten utesluter varandra.',
+  'sdk.form.inputs.input_validation_error': 'Obligatoriskt fält eller fel datatyp.',
+  'sdk.form.inputs.input_validation_error_type': 'Fel datatyp.',
+  'sdk.form.inputs.input_validation_min_field': 'Värdet ska vara större eller lika stort som värdet i fältet.',
+  'sdk.form.inputs.input_validation_max_field': 'Värdet ska vara mindre eller lika stort som värdet i fältet.',
+  'sdk.form.inputs.input_validation_exclude_values': 'Värdet ska vara unikt.',
+  'sdk.form.inputs.integer': 'heltal',
+  'sdk.form.inputs.bigint': 'heltal',
+  'sdk.form.inputs.text': 'text',
+  'sdk.form.inputs.varchar': 'text',
+  'sdk.form.inputs.textarea': 'text',
+  'sdk.form.inputs.string': 'teckensträng',
+  'sdk.form.inputs.date': 'datum',
+  'sdk.form.inputs.datetime': 'datum',
+  'sdk.form.inputs.float': 'flyttal',
+  'sdk.form.inputs.table': 'tabell',
+  'sdk.form.footer.required_fields': 'Obligatoriska fält',
+  'sdk.form.messages.qgis_input_widget_relation': 'Använd den specifika funktinen för att bestämma relationer',
+  'sdk.wps.list_process': 'Lista på processer',
+  'sdk.wps.tooltip': 'Välj på kartan',
 };

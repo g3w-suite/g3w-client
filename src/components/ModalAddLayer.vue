@@ -108,8 +108,8 @@
               <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
                   <b @click = "fetchWMS(wms.url)"    :title = "$t('Connect')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
-                  <i @click = "fetchWMS(wms.url)"    v-t-tooltip:top.create = "'Connect'"             :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
-                  <i @click = "deleteWmsUrl(wms.id)" v-t-tooltip:top.create = "'Remove'" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <i @click = "fetchWMS(wms.url)"    v-t-tooltip:top = "'Connect'" :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                  <i @click = "deleteWmsUrl(wms.id)" v-t-tooltip:top = "'Remove'"  :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
                 </div>
                 <small @click = "fetchWMS(wms.url)" :title = "$t('Connect')" style="cursor: pointer;">{{ wms.url }}</small>
               </div>
@@ -118,11 +118,11 @@
             <fieldset v-if = "wms_config" :disabled = "loading">
 
               <button
-                type                   = "button"
-                class                  = "close"
-                style                  = "float: right; padding: 5px 10px; margin-top: 15px; outline: 1px solid; color: red; opacity: 1;"
-                @click                 = "unloadWMS"
-                v-t-tooltip:left.create = "'Disconnect'"
+                type             = "button"
+                class            = "close"
+                style            = "float: right; padding: 5px 10px; margin-top: 15px; outline: 1px solid; color: red; opacity: 1;"
+                @click           = "unloadWMS"
+                v-t-tooltip:left = "'Disconnect'"
               >&times;</button>
 
               <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
@@ -198,12 +198,12 @@
           <div v-if = "'file' === layer_type" class = "form-group">
 
             <button
-              v-if                   = "layer_data"
-              type                   = "button"
-              class                  = "close"
-              style                  = "float: right; padding: 5px 10px; margin: 5px 0 0 8px;outline: 1px solid; color: red; opacity: 1;"
-              @click                 = "unloadFile"
-              v-t-tooltip:left.create = "'Remove'"
+              v-if             = "layer_data"
+              type             = "button"
+              class            = "close"
+              style            = "float: right; padding: 5px 10px; margin: 5px 0 0 8px;outline: 1px solid; color: red; opacity: 1;"
+              @click           = "unloadFile"
+              v-t-tooltip:left = "'Remove'"
             >&times;</button>
 
             <!-- FILE UPLOAD -->

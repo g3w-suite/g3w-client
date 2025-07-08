@@ -3,8 +3,8 @@
  * @since v3.7
  */
 
-import GUI              from 'services/gui';
-import { t }            from 'g3w-i18n';
+import GUI        from 'services/gui';
+import { t as _ } from 'g3w-i18n';
 
 // show tooltip as "popover" (ie. always on top over other DOM elements) 
 $(document).on('shown.bs.tooltip', function (e) {
@@ -101,7 +101,7 @@ function showTooltip(e) {
   element.setAttribute('data-i18n-title', title);
 
   let value = element.getAttribute('current-tooltip') ?? title;
-  value = element.hasAttribute('data-i18n-raw') ? value : t(element.hasAttribute('data-i18n-plugin') ? `plugins.${value}` : value);
+  value = element.hasAttribute('data-i18n-raw') ? value : _(element.hasAttribute('data-i18n-plugin') ? `plugins.${value}` : value);
 
   tooltip.innerHTML = value;
   tooltip.showPopover();

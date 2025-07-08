@@ -14,11 +14,11 @@
     <li v-if = "showaddform">
       <div style = "display: flex; justify-content: end">
         <span
-          v-t-tooltip:left.create  = "'close'"
-          @click.stop              = "showaddform = false"
-          :class                   = "$fa('close')"
-          class                    = "sidebar-button sidebar-button-icon"
-          style                    = "padding: 5px; margin: 3px;"
+          v-t-tooltip:left = "'close'"
+          @click.stop      = "showaddform = false"
+          :class           = "$fa('close')"
+          class            = "sidebar-button sidebar-button-icon"
+          style            = "padding: 5px; margin: 3px;"
         ></span>
       </div>
       
@@ -104,12 +104,12 @@
       >
         <span :hidden = "is_mobile" v-t="'User Bookmarks'"></span>
         <span
-          :hidden                 = "is_mobile"
-          v-t-tooltip:left.create = "'add'"
-          @click.stop             = "showAddForm"
-          style                   = "padding: 5px; cursor: pointer;"
-          class                   = "sidebar-button sidebar-button-icon"
-          :class                  = "$fa('plus')"
+          :hidden          = "is_mobile"
+          v-t-tooltip:left = "'add'"
+          @click.stop      = "showAddForm"
+          style            = "padding: 5px; cursor: pointer;"
+          class            = "sidebar-button sidebar-button-icon"
+          :class           = "$fa('plus')"
         ></span>
       </div>
 
@@ -141,7 +141,7 @@
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
-  import { t }                from 'g3w-i18n';
+  import { t as _ }           from 'g3w-i18n';
 
     export default {
 
@@ -186,7 +186,7 @@
 
         addbookmarkinput: {
           name:     'add-bookmark',
-          label:    t('Name'),
+          label:    _('Name'),
           i18nLabel:true,
           value:    null,
           editable: true,

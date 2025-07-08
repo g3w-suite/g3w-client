@@ -25,7 +25,7 @@ import { getCatalogLayerById }                  from 'utils/getCatalogLayerById'
 
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
-import { t }                                    from 'g3w-i18n';
+import { t as _ }                               from 'g3w-i18n';
 
 function _setRelationField(node) {
   if (node.nodes) {
@@ -1413,7 +1413,7 @@ export default new (class QueryResultsService extends G3WObject {
     });
 
     GUI.showModalDialog({
-      title: t('Select Template'),
+      title: _('Select Template'),
       message: inputs,
       buttons: {
         success: {

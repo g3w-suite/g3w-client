@@ -19,7 +19,7 @@ import { addZValue }                  from 'utils/addZValue';
 import { convertSingleMultiGeometry } from 'utils/convertSingleMultiGeometry';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 import { debounce }                   from 'utils/debounce';
-import { t }                          from 'g3w-i18n';
+import { t as _ }                     from 'g3w-i18n';
 
 /**
  * Provider definitions.
@@ -128,7 +128,7 @@ class GeocodingControl extends ol.control.Control {
 
     GUI.on('i18n-ready', () => {
       this.element.querySelector('ul').innerHTML = '';
-      this.element.querySelector('input[type="search"]').placeholder = t('Search');
+      this.element.querySelector('input[type="search"]').placeholder = _('Search');
     })
 
     VM.$watch(() => GUI.getCurrentContent(), is_sidebar_open => {
@@ -403,7 +403,7 @@ class GeocodingControl extends ol.control.Control {
           ${item.__heading ? `<b style="padding: 5px; color: #FFF;">${ item.label }</b>` : ''}
             
           <!-- NO RESULTS -->
-          ${!item.__heading && item.__no_results ? `<span>${t('No results')}</span>` : ''}
+          ${!item.__heading && item.__no_results ? `<span>${_('No results')}</span>` : ''}
 
           <!-- RESULTS -->
           ${!item.__heading && !item.__no_results ? /* html */`
