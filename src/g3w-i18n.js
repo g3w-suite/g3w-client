@@ -54,8 +54,6 @@ export const L = {
   }
 };
 
-window.L = L;
-
 L._ = L.translate;
 
 /* function to translate */
