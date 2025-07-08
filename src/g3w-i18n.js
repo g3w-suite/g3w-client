@@ -17,7 +17,7 @@ export function gettext(string) {
     // fail silently
   }
   if (undefined === value) {
-    console.info(`[G3W-I18N] missing: ${string}`);
+    console.info(`[G3W-I18N] missing: '${string}'`);
     value = string;
   }
   return value ?? string;
