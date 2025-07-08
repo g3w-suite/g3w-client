@@ -324,8 +324,6 @@ Object.assign(Component.prototype, {
   destroy:                           noop,
   click:                             noop,
   show:                              noop,
-  /** used by the following plugins: "cadastre", "iternet" */
+  /** used by the following plugins: "iternet" */
   overwriteServiceMethods:           deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
-  /** used by the following plugins: "cadastre" */
-  extendInternalComponent:           deprecate(function(o) { this.vueComponent ? Object.entries(o).forEach(([k, v]) => { switch (k) { case 'methods': this.extendInternalComponentMethods(v); break; case 'components': this.extendInternalComponentComponents(v); break; case 'computed':   merge(this.vueComponent[k], v); break; case 'data': merge(this.vueComponent[k], v); break; } }): (this.vueComponent = o); }, '[G3W-CLIENT] Component::extendInternalComponent(internalComponentOptions) is deprecated'),
 });
