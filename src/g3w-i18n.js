@@ -10,15 +10,9 @@ import { flattenObject } from 'utils/flattenObject';
  * @returns {string} localized string
  */
 export function gettext(string) {
-  let value;
-  try {
-    value = ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
-  } catch (e) {
-    // fail silently
-  }
-  if (undefined === value) {
+  let value = ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
+  if (undefined === value && 'en' !== ApplicationState.language) {
     console.info(`[G3W-I18N] missing: '${string}'`);
-    value = string;
   }
   return value ?? string;
 };
