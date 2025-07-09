@@ -52,6 +52,7 @@ export default {
    * @since v3.8
    */
   async registerProjection(epsg) {
+    epsg = normalizeEpsg(epsg);
     let p = ol.proj.get(epsg) || undefined;
 
     // check if already registered
