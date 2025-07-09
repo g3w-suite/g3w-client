@@ -121,7 +121,7 @@ export async function getProject(gid, options = {}) {
     setters: {
       setBaseLayer(id) {
         window.initConfig.baselayers.forEach(l => {
-          this._layersStore.getLayerById(l.id).setVisible(id === l.id);
+          this._layersStore.getLayerById(l.id)?.setVisible(id === l.id);
           l.visible = (id === l.id);
         })
       },
