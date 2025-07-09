@@ -414,8 +414,8 @@ const gettext = g3wsdk.core.i18n.t;
 const GUI     = g3wsdk.gui.GUI;
 
 GUI.once('ready', () => {
-  gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" translation: `Credits` (en) → `Impressum` (en)
-  gettext.register('it', { 'Credits': 'Impressum' }); // change default "en" translation: `Credits` (en) → `Impressum` (it)
+  gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" locale: `Credits` (en) → `Impressum` (en)
+  gettext.register('it', { 'Credits': 'Impressum' }); // change default "it" locale: `Credits` (en) → `Impressum` (it)
 });
 ```
 
