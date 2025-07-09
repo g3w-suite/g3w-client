@@ -918,7 +918,7 @@ export default {
         this.name  = config.title + suffix;
 
         // register projections
-        config.layers.forEach(({ crss }) => crss.forEach(crs => Projections.registerProjection(crs)));
+        config.layers.forEach(({ crss }) => crss.forEach(crs => Projections.registerProjection(crs.epsg)));
 
         /** Layers of wms */
         this.layers = config.layers;
