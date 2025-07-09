@@ -119,9 +119,13 @@ export async function getProject(gid, options = {}) {
   const project = Object.assign(new G3WObject, {
     setters: {
       setBaseLayer(id) {
-        window.initConfig.baselayers.forEach(l => {
-          this._layersStore.getLayerById(l.id).setVisible(id === l.id);
-          l.visible = (id === l.id);
+        this.state.baselayers.forEach(l => {
+          const layer  = this._layersStore.getLayerById(l.id);
+          //check if layer exist and has a setVisible method
+          if (layer && layer.setVisible) {
+            layer.setVisible(id === l.id);
+            l.visible = (id === l.id);
+          }
         })
       },
     },
