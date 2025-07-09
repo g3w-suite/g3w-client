@@ -405,10 +405,21 @@ Here is a foundation you can use for create a your own custom theme:
 
 <summary>6. How can I translate this project?</summary>
 
-Depending on your current project version, you can edit one of the following files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):
+Language files are stored into the [`src/assets/locales`](https://github.com/g3w-suite/g3w-client/blob/dev/src/assets/locales) folder.
 
-- `/g3w-client/src/locales/` (> v3.4)
-- `/g3w-client/src/config/i18n/index.js` (<= v3.4)
+By adding some of these lines (eg. into your `plugin.js` or `custom.js`) you can change or add custom translation entries:
+
+```js
+const gettext = g3wsdk.core.i18n.t;
+const GUI     = g3wsdk.gui.GUI;
+
+GUI.once('ready', () => {
+  gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" translation: `Credits` (en) → `Impressum` (en)
+  gettext.register('it', { 'Credits': 'Impressum' }); // change default "en" translation: `Credits` (en) → `Impressum` (it)
+});
+```
+
+Otherwise, edit one of that files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) with appropriate changes.
 
 </details>
 
