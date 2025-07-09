@@ -413,7 +413,7 @@ By adding some of these lines (eg. into your `plugin.js` or `custom.js`) you can
 const gettext = g3wsdk.core.i18n.t;
 const GUI     = g3wsdk.gui.GUI;
 
-GUI.once('ready', () => {
+GUI.isReady().then(() => {
   gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" locale: `Credits` (en) → `Impressum` (en)
   gettext.register('it', { 'Credits': 'Impressum' }); // change default "it" locale: `Credits` (en) → `Impressum` (it)
 });
