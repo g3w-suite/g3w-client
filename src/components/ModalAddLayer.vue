@@ -648,6 +648,10 @@ export default {
         }
 
         this.layer_crs  = ['kml','kmz'].includes(this.file_type) ? 'EPSG:4326' : this.layer_crs;
+
+        // register EPSG
+        await Projections.registerProjection(this.layer_crs);
+
         this.layer_data = data;
 
         // parse features
@@ -687,7 +691,7 @@ export default {
 
       } catch(e) {
         console.warn(e);
-        this.error_message = 'Load layer error';
+        this.error_message = `${e}`;
       }
     },
 
@@ -740,14 +744,6 @@ export default {
       }
 
       if ('file' === this.layer_type) {
-        // register EPSG
-        try {
-          await Projections.registerProjection(this.layer_crs);
-        } catch(e) {
-          console.warn(e);
-          this.error_message = `${e}`;
-          return;
-        }
         try {
           await GUI.getService('map').addExternalLayer(this.olLayer, {
             crs:        this.layer_crs,
@@ -761,7 +757,7 @@ export default {
           this.unloadFile();
         } catch(e) {
           console.warn(e);
-          this.error_message = 'Load layer error';
+          this.error_message = `${e}`;
         }
       }
       this.loading = false;
@@ -922,7 +918,7 @@ export default {
         this.name  = config.title + suffix;
 
         // register projections
-        config.layers.forEach(({ crss }) => crss.forEach(crs => Projections.get(crs)));
+        config.layers.forEach(({ crss }) => crss.forEach(crs => Projections.registerProjection(crs.epsg)));
 
         /** Layers of wms */
         this.layers = config.layers;
