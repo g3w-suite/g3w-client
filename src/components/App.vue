@@ -905,10 +905,17 @@ export default {
 
     language: {
       immediate: true,
-      async handler(lang) {
+      async handler(lang, plang) {
         if (!lang) {
           return;
         }
+        
+        ApplicationState.language = lang;
+
+        //need to wait change laguage. Some plugins watch language change
+        await this.$nextTick();
+
+        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
 
         // lazy load i18n translations
         try {
@@ -917,17 +924,16 @@ export default {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
-        ApplicationState.language = lang;
-
-        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
-
+        //wait loading all plugins
+        await waitFor(() => 0 === ApplicationState.plugins.length);
+        
+        //ge locae from current languare or previuous language to check if plugins are translated
+        const locale             = Object.keys(ApplicationState.locales[plang || lang]);
+        const installed_plugins  = Object.keys(initConfig.plugins); //plugins provided by the server
+        const i18n_plugins       = installed_plugins.filter(name => locale.find(k => k.includes(`plugins.${name}`)));
         // wait until all plugins have been translated
         await waitFor(() => {
-          const locale             = Object.keys(ApplicationState.locales[lang]);
-          const installed_plugins  = Object.keys(initConfig.plugins);
-          const i18n_plugins       = Array.from((new Set(Object.keys(ApplicationState.locales.en).filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
-          const translated_plugins = Array.from((new Set(locale.filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
-          return locale.length && installed_plugins.filter(name => i18n_plugins.includes(name)).length === translated_plugins.length;
+          return i18n_plugins.length === i18n_plugins.filter(name => locale.find(key => key.startsWith(`plugins.${name}`))).length;
         });
 
         setTimeout(() => {
