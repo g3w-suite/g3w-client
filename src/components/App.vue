@@ -924,7 +924,7 @@ export default {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
-        //wait loading all plugins
+        //wait loading all plugins. Need to wait for plugins to be loaded when open apllication first time
         await waitFor(() => 0 === ApplicationState.plugins.length);
         
         //ge locae from current languare or previuous language to check if plugins are translated
