@@ -936,30 +936,27 @@ export default {
           return i18n_plugins.length === i18n_plugins.filter(name => locale.find(key => key.startsWith(`plugins.${name}`))).length;
         });
 
-        setTimeout(() => {
-          /** @since 4.0.0 */
-          GUI.emit('i18n-ready', lang);
-          this.cookie_law_buttonText = _('Got It!');
-          //set form control class to filter
-          $.extend($.fn.dataTableExt.oStdClasses, {
-            "sFilterInput": "form-control search"
-          });
-          $.extend(true, $.fn.dataTable.defaults, {
-            "language": {
-              "sSearch": '',
-              "searchPlaceholder": _("dosearch"),
-              "sLengthMenu": _('Show _MENU_ values per page'),
-              "paginate": {
-                "previous": '«',
-                "next": '»',
-              },
-              "info": _('_TOTAL_ entries'),
-              "zeroRecords": _('No matching records found'),
-              "infoFiltered": ''
-            }
-          });
+        /** @since 4.0.0 */
+        GUI.emit('i18n-ready', lang);
+        this.cookie_law_buttonText = _('Got It!');
+        //set form control class to filter
+        $.extend($.fn.dataTableExt.oStdClasses, {
+          "sFilterInput": "form-control search"
         });
-
+        $.extend(true, $.fn.dataTable.defaults, {
+          "language": {
+             "sSearch": '',
+            "searchPlaceholder": _("dosearch"),
+            "sLengthMenu": _('Show _MENU_ values per page'),
+            "paginate": {
+              "previous": '«',
+               "next": '»',
+            },
+            "info": _('_TOTAL_ entries'),
+            "zeroRecords": _('No matching records found'),
+            "infoFiltered": ''
+          }
+        });
       },
     },
 
