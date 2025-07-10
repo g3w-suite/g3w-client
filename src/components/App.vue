@@ -952,7 +952,7 @@ export default {
               "infoFiltered": ''
             }
           });
-        }, 500);
+        });
 
       },
     },
