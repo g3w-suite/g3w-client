@@ -255,8 +255,8 @@ $.ajaxSetup({
   ApplicationState.language = initConfig.user.i18n;
 
   // lazy load i18n translations
-  _.register('en',                   (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
-  _.register([initConfig.user.i18n], (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
+  _.register('en',                 (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
+  _.register(initConfig.user.i18n, (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
 
   /** @since 3.8.0 */
   try {
