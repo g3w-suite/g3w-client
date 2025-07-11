@@ -37,9 +37,9 @@ export default class G3WObject {
     Object.entries(this.___setters).forEach(([evt, listener]) => {
       this[evt] = new Proxy(listener, {
         apply: (target, thisArg, argList) => {
-          this.trigger(`onbefore:${prop}`, argList);     // call "onbefore" listeners
+          this.trigger(`onbefore:${evt}`, argList);      // call "onbefore" listeners
           const result = target.apply(thisArg, argList); // execute setter function
-          this.trigger(`onafter:${prop}`, args);         // call "onafter" listeners
+          this.trigger(`onafter:${evt}`, argList);       // call "onafter" listeners
           return result;
         }
       });
