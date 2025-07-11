@@ -30,41 +30,26 @@ export default class G3WObject {
     if (Array.isArray(value)) {
       value = value.reduce((setters, i) => Object.assign(setters, { [i]: this[i] }), {});
     }
+
     this.___setters = value || {};
-    Object.assign(this, this.___setters);
-    Object.keys(this.___setters).forEach(evt => {
-      if (!this.___events[`onbefore:${evt}`]) {
-        this.onbefore(evt, () => 0, -Infinity);
-      }
-      if (!this.___events[`onafter:${evt}`]) {
-        this.onafter(evt, () => 0, -Infinity);
-      }
+
+    // register and handle setters (before/after)
+    Object.entries(this.___setters).forEach(([evt, listener]) => {
+      this[evt] = new Proxy(listener, {
+        apply: (target, thisArg, argList) => {
+          this.trigger(`onbefore:${prop}`, argList);     // call "onbefore" listeners
+          const result = target.apply(thisArg, argList); // execute setter function
+          this.trigger(`onafter:${prop}`, args);         // call "onafter" listeners
+          return result;
+        }
+      });
     });
   }
 
   constructor(opts) {
-
     opts = opts || {};
 
     this.setters = opts.setters || this.setters || {};
-
-    // handle setters (before/after)
-    this.___proxy = new Proxy(this, {
-      get: (target, prop, receiver) => {
-        if ('function' !== typeof target[prop] || prop in G3WObject.prototype /*|| !(prop in this.setters)*/) {
-          return;
-        }
-
-        const fnc = target[prop];
-
-        return (...args) => {
-          this.trigger(`onbefore:${prop}`, args); // call "onbefore" listeners
-          const result = fnc.apply(target, args); // execute setter function
-          this.trigger(`onafter:${prop}`, args);  // call "onafter" listeners
-          return result;
-        };
-      }
-    });
   }
 
   /**
