@@ -95,16 +95,13 @@ export default class G3WObject {
    */
   off(evt, listener) {
     // remove all listeners
-    if (undefined === evt) {
-      this.___events = {};  
-    }
-    this.___events[evt] = this.___events[evt] || [];
-
-    // remove all listeners
-    if (undefined === listener) {
-      this.___events[evt].splice(0);
+    if (undefined === evt || undefined === listener) {
+      this.___events[evt]?.splice(0);
       return;
     }
+
+    // remove a specific listener
+    this.___events[evt] = this.___events[evt] || [];
 
     const idx = 'string' === typeof listener
       ? this.___events[evt].findIndex(l => l.key === listener)       // remove listener by key
