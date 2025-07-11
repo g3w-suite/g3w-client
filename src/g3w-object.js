@@ -2,7 +2,6 @@
  * @file ORIGINAL SOURCE: src/app/core/g3w-object.js@v3.10.2
  * @since 3.11.0
  */
-import { $promisify } from 'utils/promisify';
 
 /**
  * Base class for managing events (setters and listeners).
@@ -36,10 +35,10 @@ export default class G3WObject {
     // register and handle setters (before/after)
     Object.entries(this.___setters).forEach(([evt, listener]) => {
       this[evt] = new Proxy(listener, {
-        apply: (target, thisArg, argList) => {
-          this.trigger(`onbefore:${evt}`, argList);      // call "onbefore" listeners
-          const result = target.apply(thisArg, argList); // execute setter function
-          this.trigger(`onafter:${evt}`, argList);       // call "onafter" listeners
+        apply: (target, ctx, args) => {
+          this.trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
+          const result = target.apply(ctx, args); // execute setter function
+          this.trigger(`onafter:${evt}`, args);   // call "onafter" listeners
           return result;
         }
       });
