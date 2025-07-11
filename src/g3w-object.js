@@ -19,7 +19,7 @@ export default class G3WObject {
   ___events = {};
 
   /** @type { Object } */
-  ___setters;
+  ___setters = {};
 
   get setters() {
     return this.___setters;
@@ -31,9 +31,7 @@ export default class G3WObject {
       value = value.reduce((setters, i) => Object.assign(setters, { [i]: this[i] }), {});
     }
     this.___setters = value || {};
-    
     Object.assign(this, this.___setters);
-
     Object.keys(this.___setters).forEach(evt => {
       if (!this.___events[`onbefore:${evt}`]) {
         this.onbefore(evt, () => 0, -Infinity);
@@ -48,63 +46,23 @@ export default class G3WObject {
 
     opts = opts || {};
 
-    this.setters   = opts.setters   || this.setters;
+    this.setters = opts.setters || this.setters || {};
 
     // handle setters (before/after)
-    return new Proxy(this, {
+    this.___proxy = new Proxy(this, {
       get: (target, prop, receiver) => {
-        if ('function' !== typeof target[prop] || prop in G3WObject.prototype) {
-          return Reflect.get(target, prop, receiver);
+        if ('function' !== typeof target[prop] || prop in G3WObject.prototype /*|| !(prop in this.setters)*/) {
+          return;
         }
 
         const fnc = target[prop];
 
         return (...args) => {
-
-          if (!this.___events?.[`onbefore:${prop}`]?.length && !this.___events?.[`onafter:${prop}`]?.length) {
-            return fnc.apply(target, args);
-          }
-
-          return $.Deferred(deferred => {
-            let response;
-
-            // call "onbefore" listeners
-            for (const l of this.___events[`onbefore:${prop}`]) {
-              response = l.listener.apply(this, args);
-              // exit early → prevent executing setter
-              if ('boolean' === typeof response  && !response) {
-                deferred.reject();
-                return;
-              }
-            }
-
-            // unregister "oncebefore" listeners
-            for (const l of this.___events[`onbefore:${prop}`]) {
-              if (l.once) {
-                this.off(evt, l.listener);
-              }
-            }
-
-            // execute setter function
-            const result = fnc.apply(target, args);
-
-            // call "onafter" listeners
-            for (const l of this.___events[`onafter:${prop}`]) {
-              response = l.listener.apply(this, args);
-            }
-
-            // unregister "onceafter" listeners
-            for (const l of this.___events[`onafter:${prop}`]) {
-              if (l.once) {
-                this.off(evt, l.listener)
-              }
-            }
-
-            deferred.resolve(result);
-
-            return;
-          });
-        }
+          this.trigger(`onbefore:${prop}`, args); // call "onbefore" listeners
+          const result = fnc.apply(target, args); // execute setter function
+          this.trigger(`onafter:${prop}`, args);  // call "onafter" listeners
+          return result;
+        };
       }
     });
   }
