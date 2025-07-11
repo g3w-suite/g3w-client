@@ -906,7 +906,10 @@ export default {
     language: {
       immediate: true,
       async handler(lang, plang) {
+        //In case of no language, loading time, set default language en
         if (!lang) {
+          // lazy load i18n translations
+          _.register('en', (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
           return;
         }
         

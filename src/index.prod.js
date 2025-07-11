@@ -254,8 +254,6 @@ $.ajaxSetup({
 
   ApplicationState.language = initConfig.user.i18n;
 
-  // lazy load i18n translations
-  _.register('en',                 (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
   /** @since 3.8.0 */
   try {
     initConfig.macrogroups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/macrogroup/` })
