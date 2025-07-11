@@ -910,11 +910,6 @@ export default {
           return;
         }
         
-        ApplicationState.language = lang;
-
-        //need to wait change laguage. Some plugins watch language change
-        await this.$nextTick();
-
         history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
 
         // lazy load i18n translations
@@ -926,8 +921,13 @@ export default {
 
         //wait loading all plugins. Need to wait for plugins to be loaded when open apllication first time
         await waitFor(() => 0 === ApplicationState.plugins.length);
-        
-        //ge locae from current languare or previuous language to check if plugins are translated
+
+        ApplicationState.language = lang;
+
+        //need to wait change laguage. Some plugins watch language change
+        await this.$nextTick();
+
+        //ge locale from current languare or previuous language to check if plugins are translated
         const locale             = Object.keys(ApplicationState.locales[plang || lang]);
         const installed_plugins  = Object.keys(initConfig.plugins); //plugins provided by the server
         const i18n_plugins       = installed_plugins.filter(name => locale.find(k => k.includes(`plugins.${name}`)));
