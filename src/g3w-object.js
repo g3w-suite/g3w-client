@@ -94,6 +94,10 @@ export default class G3WObject {
    * @param {Function} listener Method to remove from the event.
    */
   off(evt, listener) {
+    // remove all listeners
+    if (undefined === evt) {
+      this.___events = {};  
+    }
     this.___events[evt] = this.___events[evt] || [];
 
     // remove all listeners
@@ -203,6 +207,14 @@ export default class G3WObject {
 
   set(key, value) {
     this[key] = value;
+  }
+
+  /**
+   * @deprecated
+   */
+  removeAllListeners() {
+    console.warn('[G3W-CLIENT] g3wsdk.core.G3WObject.removeAllListeners. Use g3wsdk.core.G3WObject.off() instead');
+    this.off();
   }
 
 };
