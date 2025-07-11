@@ -57,10 +57,12 @@ export default class G3WObject {
           return Reflect.get(target, prop, receiver);
         }
 
+        const fnc = target[prop];
+
         return (...args) => {
 
           if (!this.___events?.[`onbefore:${prop}`]?.length && !this.___events?.[`onafter:${prop}`]?.length) {
-            return Reflect.apply(target[prop], target, args);
+            return fnc.apply(target, args);
           }
 
           return $.Deferred(deferred => {
@@ -83,12 +85,8 @@ export default class G3WObject {
               }
             }
 
-            console.trace(prop);
-
-            alert(prop);
-
             // execute setter function
-            const result = Reflect.apply(target[prop], target, args);
+            const result = fnc.apply(target, args);
 
             // call "onafter" listeners
             for (const l of this.___events[`onafter:${prop}`]) {
