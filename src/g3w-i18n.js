@@ -1,7 +1,7 @@
 /**
  * @file inspired by "leaflet-i18n"
  */
-import ApplicationState from 'store/application';
+import ApplicationState  from 'store/application';
 import { flattenObject } from 'utils/flattenObject';
 
 /**
@@ -10,7 +10,7 @@ import { flattenObject } from 'utils/flattenObject';
  * @returns {string} localized string
  */
 export function gettext(string) {
-  let value = ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
+  let value = window.initConfig.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
   if (undefined === value && 'en' !== ApplicationState.language) {
     console.info(`[G3W-I18N] missing: '${string}'`);
   }
@@ -18,9 +18,9 @@ export function gettext(string) {
 };
 
 /**
- * @param {string} lang   code (eg. "it") 
+ * @param {string} lang   code (eg. "it")
  * @param {*}      locale i18n object
  */
 gettext.register = function(lang, locale) {
-  ApplicationState.locales[lang] = Object.assign(ApplicationState.locales[lang] || {}, flattenObject(locale, '.'));
+  Vue.set(ApplicationState.locales, lang, Vue.observable({ ...(ApplicationState.locales[lang] || {}), ...(flattenObject(locale, '.')) }));
 };

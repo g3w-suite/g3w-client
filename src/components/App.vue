@@ -905,10 +905,15 @@ export default {
 
     language: {
       immediate: true,
-      async handler(lang) {
+      async handler(lang, plang) {
+        //In case of no language, loading time, set default language en
         if (!lang) {
+          // lazy load i18n translations
+          _.register('en', (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
           return;
         }
+        
+        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
 
         // lazy load i18n translations
         try {
@@ -917,43 +922,44 @@ export default {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
+        //wait loading all plugins. Need to wait for plugins to be loaded when open apllication first time
+        await waitFor(() => 0 === ApplicationState.plugins.length);
+
         ApplicationState.language = lang;
 
-        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
+        //need to wait change laguage. Some plugins watch language change
+        await this.$nextTick();
 
+        //ge locale from current languare or previuous language to check if plugins are translated
+        const locale             = Object.keys(ApplicationState.locales[plang || lang]);
+        const installed_plugins  = Object.keys(initConfig.plugins); //plugins provided by the server
+        const i18n_plugins       = installed_plugins.filter(name => locale.find(k => k.includes(`plugins.${name}`)));
         // wait until all plugins have been translated
         await waitFor(() => {
-          const locale             = Object.keys(ApplicationState.locales[lang]);
-          const installed_plugins  = Object.keys(initConfig.plugins);
-          const i18n_plugins       = Array.from((new Set(Object.keys(ApplicationState.locales.en).filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
-          const translated_plugins = Array.from((new Set(locale.filter(key => key.startsWith('plugins.')).map(key => key.split('.')[1]))));
-          return locale.length && installed_plugins.filter(name => i18n_plugins.includes(name)).length === translated_plugins.length;
+          return i18n_plugins.length === i18n_plugins.filter(name => locale.find(key => key.startsWith(`plugins.${name}`))).length;
         });
 
-        setTimeout(() => {
-          /** @since 4.0.0 */
-          GUI.emit('i18n-ready', lang);
-          this.cookie_law_buttonText = _('Got It!');
-          //set form control class to filter
-          $.extend($.fn.dataTableExt.oStdClasses, {
-            "sFilterInput": "form-control search"
-          });
-          $.extend(true, $.fn.dataTable.defaults, {
-            "language": {
-              "sSearch": '',
-              "searchPlaceholder": _("dosearch"),
-              "sLengthMenu": _('Show _MENU_ values per page'),
-              "paginate": {
-                "previous": '«',
-                "next": '»',
-              },
-              "info": _('_TOTAL_ entries'),
-              "zeroRecords": _('No matching records found'),
-              "infoFiltered": ''
-            }
-          });
-        }, 500);
-
+        /** @since 4.0.0 */
+        GUI.emit('i18n-ready', lang);
+        this.cookie_law_buttonText = _('Got It!');
+        //set form control class to filter
+        $.extend($.fn.dataTableExt.oStdClasses, {
+          "sFilterInput": "form-control search"
+        });
+        $.extend(true, $.fn.dataTable.defaults, {
+          "language": {
+             "sSearch": '',
+            "searchPlaceholder": _("dosearch"),
+            "sLengthMenu": _('Show _MENU_ values per page'),
+            "paginate": {
+              "previous": '«',
+               "next": '»',
+            },
+            "info": _('_TOTAL_ entries'),
+            "zeroRecords": _('No matching records found'),
+            "infoFiltered": ''
+          }
+        });
       },
     },
 

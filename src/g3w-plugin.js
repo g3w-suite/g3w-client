@@ -57,7 +57,7 @@ export class Plugin extends G3WObject {
       if (this.name) {
         delete ApplicationState.gui.layout[this.name]
       }
-    }, TIMEOUT)
+    }, TIMEOUT);
 
   }
 
