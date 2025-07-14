@@ -36,9 +36,9 @@ export default class G3WObject {
     Object.entries(this.___setters).forEach(([evt, listener]) => {
       this[evt] = new Proxy(listener, {
         apply: (target, ctx, args) => {
-          this.trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
+          this.__trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
           const result = target.apply(ctx, args); // execute setter function
-          this.trigger(`onafter:${evt}`, args);   // call "onafter" listeners
+          this.__trigger(`onafter:${evt}`, args);   // call "onafter" listeners
           return result;
         }
       });
@@ -121,7 +121,7 @@ export default class G3WObject {
    * @param {...*} args list of arguments to be passed to each listener.
    */
   emit(evt) {
-    return this.trigger(evt, Array.prototype.slice.call(arguments, 1));
+    return this.__trigger(evt, Array.prototype.slice.call(arguments, 1));
   }
 
   /**
@@ -130,7 +130,7 @@ export default class G3WObject {
    * @param {string} evt name of the event to emit.
    * @param {Array} [args] array of arguments to be passed to each listener.
    */
-  trigger(evt, args) {
+  __trigger(evt, args) {
     this.___events[evt] = this.___events[evt] || [];
     let listener, listeners = this.___events[evt].slice(0);
     for (let i = 0; i < listeners.length; i++) {
@@ -154,6 +154,7 @@ export default class G3WObject {
    * @param {number}   priority - priority (lowest value executes first)
    */
   onafter(setter, listener, priority) {
+    console.log(setter)
     return this.on(`onafter:${setter}`, listener, priority, false, true);
   }
 
