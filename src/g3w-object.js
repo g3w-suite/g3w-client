@@ -3,168 +3,147 @@
  * @since 3.11.0
  */
 
-import { noop }      from 'utils/noop';
-import { debounce }  from 'utils/debounce';
-import { throttle }  from 'utils/throttle';
-import EventEmitter  from 'wolfy87-eventemitter';
-
 /**
- * Base object to handle a setter and its listeners.
+ * Base class for managing events (setters and listeners).
+ * 
+ * Based on: EventEmitter v5.2.9 - git.io/ee
  */
-export default class G3WObject extends EventEmitter {
+export default class G3WObject {
 
   /**
-   * @TODO end support for legacy classes (ES5) and use private class fields instead (eg. `___setters` → `#setters`)
+   * @TODO end support for legacy classes (ES5) and use private class fields instead (eg. `___events` → `#events`)
    */
 
   /** @type { Object } */
-  ___setters;
+  ___events = {};
 
   /** @type { Object } */
-  ___throttles;
-
-  /** @type { Object } */
-  ___debounces;
-
-  /** @type { Object } */
-  ___listeners;
+  ___setters = {};
 
   get setters() {
     return this.___setters;
-  };
+  }
 
   set setters(value) {
-
     // setters is an array strings → convert it into an object
     if (Array.isArray(value)) {
       value = value.reduce((setters, i) => Object.assign(setters, { [i]: this[i] }), {});
     }
 
-    this.___setters = value;
-    if (value) {
-      // all methods inside object "setters" of child class.
-      this.___listeners = {
-        after:  {},
-        before: {},
-      };
-    
-      for (const setter in this.___setters) {
-        // Array to push before and after subscribers
-        this.___listeners.after[setter]  = [];
-        this.___listeners.before[setter] = [];
-  
-        // assign the property setter name to the object as own method
-        this[setter] = function(...args) {
-          //Return a Deferred object
-          // When then method of defferred object is called, a new promise is return
-          // and not the deferred.resolve value directly.
-          // This is the reason why when we call setter methods return a promise and not the value
-          return $.Deferred(deferred => {
-            // listener count
-            let count = 0;
-            /**
-             *
-             * @param {undefined | Boolean} bool
-             */
-            const next = (bool) => {
-              //check if it needs to skip (exit)
-              const skip  = (true === bool || false === bool) ? !bool : false;
-              //get count of before subscribers on setter function
-              const len = this.___listeners.before[setter].length;
-  
-              // abort in case of error bool false,
-              // or we reached the end of onbefore subscriber
-              if (skip) {
-                (this.___setters[setter] instanceof Function ? noop : (this.___setters[setter].fallback || noop)).apply(this, args);
-                deferred.reject();
-                return;
-              }
-  
-              // call complete method methods and check what returns
-              if (count === len) {
-                // run setter function (resolve promise)
-                deferred.resolve((this.___setters[setter] instanceof Function ? this.___setters[setter] : this.___setters[setter].fnc).apply(this, args));
-                // call all subscribed methods after setter
-                const onceListeners = [];
-                this
-                  .___listeners
-                  .after[setter]
-                  .forEach(listener => {
-                    listener.fnc.apply(this, args);
-                    if (listener.once) {
-                      onceListeners.push(listener.key);
-                    }
-                  });
-                onceListeners.forEach(key => this.un(setter, key));
-                this.emitEvent(`set:${setter}`, args);
-              }
-              // still call an onbefore listener subscribers
-              if (count < len) {
-                //get on before listener subscribes and increment count to 1
-                const listener = this.___listeners.before[setter][count++];
-                //check if it is async
-                if (listener.async) {
-                  // add function next to argument of listener function
-                  args.push(next);
-                  listener.fnc.apply(this, args)
-                } else {
-                  // return or undefined or a boolean to tell if ok(true) can continue or not (false)
-                  next(listener.fnc.apply(this, args));
-                }
-                //in case of listener subscribe function need to run just one time
-                // after call remove it from listeners
-                if (listener.once) {
-                  this.___listeners.before[setter].splice(count - 1, 1);
-                }
-              }
-            };
-            // run all the subscribers and setters
-            next(true);
-          });
+    this.___setters = value || {};
+
+    // register and handle setters (before/after)
+    Object.entries(this.___setters).forEach(([evt, listener]) => {
+      this[evt] = new Proxy(listener, {
+        apply: (target, ctx, args) => {
+          this.trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
+          const result = target.apply(ctx, args); // execute setter function
+          this.trigger(`onafter:${evt}`, args);   // call "onafter" listeners
+          return result;
         }
-      }
-    }
-  };
-
-  get throttles() {
-    return this.___throttles;
-  };
-
-  set throttles(value) {
-    this.___throttles = value;
-    if (value) {
-      console.warn('[G3W-CLIENT] throttles option is deprecated');
-      console.trace();
-      for (const name in this.___throttles) {
-        this[name] = throttle(this.___throttles[name].fnc, this.___throttles[name].delay);
-      }
-    }
-  };
-
-  get debounces() {
-    return this.___debounces;
-  };
-
-  set debounces(value) {
-    this.___debounces = value;
-    if (value) {
-      console.warn('[G3W-CLIENT] debounces option is deprecated');
-      console.trace();
-      for (const name in this.___debounces) {
-        this[name] = debounce(this.___debounces[name].fnc, this.___debounces[name].delay);
-      }
-    }
-  };
+      });
+    });
+  }
 
   constructor(opts) {
-    super(opts);
-
     opts = opts || {};
 
-    // Register the chain of events
-    this.setters   = opts.setters   || this.setters;
-    this.throttles = opts.throttles || this.throttles;
-    this.throttles = opts.debounces || this.debounces;
+    this.setters = opts.setters || this.setters || {};
+  }
+
+  /**
+   * Adds a listener function to the specified event.
+   * The listener will not be added if it is a duplicate.
+   * If the listener returns true then it will be removed after it is called.
+   *
+   * @param {string}   evt      - name of the event.
+   * @param {Function} listener - Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
+   * @param {number}   priority - priority (lowest value executes first)
+   * @param {boolean}  keyEvent - whether it should return registered event key. 
+   */
+  on(evt, listener, priority, once = false, keyEvent = false) {
+    this.___events[evt] = this.___events[evt] || [];
+
+    let key;
+
+    // register listener (sorted by priority)
+    if (-1 === this.___events[evt].findIndex(l => l.listener === listener)) {
+      key = `${Math.floor(Math.random() * 1000000) + Date.now()}`;
+      this.___events[evt].push({ listener, priority, once, key });
+      this.___events[evt] = this.___events[evt].sort((l1, l2) => l2.priority - l1.priority);
+    }
+
+    return keyEvent ? key : this;
+  }
+
+  /**
+   * Add a event listener and automatically remove it after its first execution.
+   *
+   * @param {string} evt name of the event.
+   * @param {Function} listener Method to be called when the event is emitted. If the function returns true then it will be removed after calling.
+   */
+  once(evt, listener, priority) {
+    this.on(evt, listener, priority, true);
+    return this;
+  }
+
+  /**
+   * Removes a listener function from the specified event.
+   *
+   * @param {string} evt name of the event.
+   * @param {Function} listener Method to remove from the event.
+   */
+  off(evt, listener) {
+    // remove all listeners
+    if (undefined === evt || undefined === listener) {
+      this.___events[evt]?.splice(0);
+      return;
+    }
+
+    // remove a specific listener
+    this.___events[evt] = this.___events[evt] || [];
+
+    const idx = 'string' === typeof listener
+      ? this.___events[evt].findIndex(l => l.key === listener)       // remove listener by key
+      : this.___events[evt].findIndex(l => l.listener === listener); // remove listener by reference
+
+    if (idx >= 0) {
+      this.___events[evt].splice(idx, 1);
+    }
+
+    return this;
+  }
+  
+  /**
+   * Emits an event of your choice.
+   * 
+   * @param {string} evt name of the event to emit.
+   * @param {...*} args list of arguments to be passed to each listener.
+   */
+  emit(evt) {
+    return this.trigger(evt, Array.prototype.slice.call(arguments, 1));
+  }
+
+  /**
+   * Emits an event of your choice.
+   *
+   * @param {string} evt name of the event to emit.
+   * @param {Array} [args] array of arguments to be passed to each listener.
+   */
+  trigger(evt, args) {
+    this.___events[evt] = this.___events[evt] || [];
+    let listener, listeners = this.___events[evt].slice(0);
+    for (let i = 0; i < listeners.length; i++) {
+      listener = listeners[i];
+      if (true === listener.once) {
+        this.off(evt, listener.listener);
+      }
+      // remove listener when it returns true
+      if (true === listener.listener.apply(this, args || [])) {
+          this.off(evt, listener.listener);
+      }
+    }
+    return this;
   }
 
   /**
@@ -175,7 +154,7 @@ export default class G3WObject extends EventEmitter {
    * @param {number}   priority - priority (lowest value executes first)
    */
   onafter(setter, listener, priority) {
-    return this._onsetter('after', setter, listener, false, priority);
+    return this.on(`onafter:${setter}`, listener, priority, false, true);
   }
 
   /**
@@ -186,7 +165,7 @@ export default class G3WObject extends EventEmitter {
    * @param {number}   priority - priority (lowest value executes first)
    */
   onceafter(setter, listener, priority) {
-    return this._onsetter('after', setter, listener, false, priority, true);
+    return this.on(`onafter:${setter}`, listener, priority, true, true);
   }
 
   /**
@@ -197,7 +176,7 @@ export default class G3WObject extends EventEmitter {
    * @param {number}   priority - priority (lowest value executes first)
    */
   onbefore(setter, listener, priority) {
-    return this._onsetter('before', setter, listener, false, priority);
+    return this.on(`onbefore:${setter}`, listener, priority, false, true);
   }
 
   /**
@@ -208,57 +187,16 @@ export default class G3WObject extends EventEmitter {
    * @param {number}   priority - priority (lowest value executes first)
    */
   oncebefore(setter, listener, priority) {
-    return this._onsetter('before', setter, listener, false, priority, true);
-  }
-
-  /**
-   * Attatch an event listener before executing a setter method (once)
-   * 
-   * @param {string}   setter   - function name to listen for
-   * @param {function} listener - event listener (async)
-   * @param {number}   priority - priority (lowest value executes first)
-   */
-  onbeforeasync(setter, listener, priority) {
-    return this._onsetter('before', setter, listener, true, priority);
+    return this.on(`onbefore:${setter}`, listener, priority, true, true);
   }
 
   /**
    *  Loop each listeners (array) and find a setter key (before/after) to be removed
    */
   un(setter, key) {
-    Object.entries(this.___listeners)
-      .forEach(([_key, setters]) => {
-        if (undefined === key) {
-          setters[setter].splice(0);
-        } else {
-          setters[setter].forEach((listener, idx) => { listener.key === key && setters[setter].splice(idx, 1); })
-        }
-      });
+    this.off(`onbefore:${setter}`, key);
+    this.off(`onafter:${setter}`, key);
   };
-
-/**
-  * Register and handle <before/after> listeners
-  * 
-  * @param { 'before' | 'after' } when
-  * @param { string } setter function name
-  * @param { Object } listener
-  * @param { Boolean } async
-  * @param { Number } priority
-  * @param { Boolean }   once
-  */
-  _onsetter(when, setter, listener, async, priority = 0, once = false) {
-    // unique listenerKey
-    let key;
-    // check if setter function is registered
-    // and then add an info object to setter listeners
-    // (sorted based on priority)
-    if (this.___listeners && undefined !== this.___listeners[when][setter]) {
-      key = `${Math.floor(Math.random() * 1000000) + Date.now()}`;
-      this.___listeners[when][setter].push({ key, fnc: listener, async, priority, once});
-      this.___listeners[when][setter] = this.___listeners[when][setter].sort((l1, l2) => l2.priority - l1.priority);
-    }
-    return key // in case of no setter register return undefined listenerKey
-  }
 
   get(key) {
     return this[key] && !(this[key] instanceof Function) ? this[key] : null;
@@ -266,6 +204,14 @@ export default class G3WObject extends EventEmitter {
 
   set(key, value) {
     this[key] = value;
+  }
+
+  /**
+   * @deprecated
+   */
+  removeAllListeners() {
+    console.warn('[G3W-CLIENT] g3wsdk.core.G3WObject.removeAllListeners. Use g3wsdk.core.G3WObject.off() instead');
+    this.off();
   }
 
 };
