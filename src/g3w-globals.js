@@ -206,9 +206,8 @@ const g3wsdk = {
     },
     layer: {
       LayersStore:     babelify(LayersStore),
-      Layer:           {
-        LayerTypes: Layer.LayerTypes
-      },
+      Layer:           babelify(Layer),
+      VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { _TYPE: Layer.LayerTypes.VECTOR })) } }),
       features: {
         Feature:       babelify(Feature),
       },
