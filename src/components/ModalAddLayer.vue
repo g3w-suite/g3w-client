@@ -372,11 +372,11 @@ import Projections         from 'store/projections';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
-import { RasterLayer }     from 'map/layers/layer';
+import { Layer }           from 'map/layers/layer';
 
 Object
   .entries({
-    RasterLayer,
+    Layer,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -856,7 +856,10 @@ export default {
       visible  = true
     } = {}) {
       return new Promise((res, rej) => {
-        const wmslayer = new RasterLayer({ id: name || getUniqueDomId(), layers, projection: ol.proj.get(epsg), url });
+        const wmslayer = new Layer(
+          { id: name || getUniqueDomId(), layers, projection: ol.proj.get(epsg), url },
+          { _RASTER_LAYER: true }
+        );
         const olLayer  = wmslayer.getOLLayer();
         olLayer.getSource().once('imageloadend', res);
         olLayer.getSource().once('imageloaderror', rej);

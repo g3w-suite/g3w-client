@@ -44,6 +44,66 @@ import { Feature }                from 'map/layers/feature';
 
 const is_defined = d => undefined !== d;
 
+/**
+ * Stringify a query URL param (eg. `&WIDTH=700`)
+ * 
+ * @param name
+ * @param value
+ * 
+ * @returns { string | null } a string if value is set or null
+ */
+function __(name, value) {
+  return [null, undefined].includes(value) ? value : `${name}${value}`;
+}
+
+/**
+ * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v3.10.0
+ * 
+ * @since 3.11.0
+ */
+function _makeOlLayer(opts = {}, method = 'GET') {
+  return new (opts.tiled ? ol.layer.Tile : ol.layer.Image)({
+    id:            opts.layerObj.id,
+    name:          opts.layerObj.name,
+    opacity:       undefined !== opts.layerObj.opacity ? opts.layerObj.opacity : 1.0,
+    visible:       opts.layerObj.visible,
+    extent:        opts.layerObj.extent,
+    maxResolution: opts.layerObj.maxResolution,
+    source:        new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
+      ratio:      1,
+      url:        opts.layerObj.url,
+      projection: (opts.layerObj.projection) ? opts.layerObj.projection.getCode() : null,
+      params:     {
+        ...Object.fromEntries(
+          Object.entries({
+            DPI:         DOTS_PER_INCH,
+            TRANSPARENT: true,
+            FORMAT:      opts.layerObj.format,
+            LAYERS:      undefined !== opts.layerObj.layers      ? opts.layerObj.layers : '',
+            VERSION:     undefined !== opts.layerObj.version     ? opts.layerObj.version : '1.3.0',
+            SLD_VERSION: undefined !== opts.layerObj.sld_version ? opts.layerObj.sld_version : '1.1.0',
+          })
+          // prevents sending "FORMAT" parameter when undefined
+          .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
+      ),
+      ...(opts.extraParams || {})
+      },
+      imageLoadFunction: (opts.layerObj.iframe_internal || 'POST' === method)
+        ? (tile, url) => {
+          fetch('POST' === method ? (url || '').split('?')[0] : url, {
+            method,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+            body:    'POST' === method ? url.split('?')[1] : undefined,
+          })
+          .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
+          .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
+        }
+        : undefined,
+    })
+  });
+
+}
+
 // BACKCOMP v3.x
 function createProvider(name, layer) {
   const provider = new Providers[name];
@@ -562,6 +622,38 @@ class Layer extends G3WObject {
       'commit',
       'change',
     ];
+
+    if (options._RASTER_LAYER) {
+      this.config                 = config;
+      this._RASTER_LAYER          = options._RASTER_LAYER;
+      this.iframe_internal        = config.iframe_internal || false;
+      this.extent                 = config.extent;
+      this.projection             = config.projection;
+      this.layer                  = null;
+      this.layers                 = config.layers || []; // store all enabled layers
+      this.allLayers              = []; // store all layers
+      this.showSpinnerWhenLoading = true;
+
+      if ('XYZ' !== this.config.type) {
+        this.LAYERTYPE = {
+          LAYER:      'layer',
+          MULTILAYER: 'multilayer'
+        };
+        this.getInfoFormat = () => 'application/vnd.ogc.gml';
+        this.getGetFeatureInfoUrl = (coordinate, resolution, epsg, params) => this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
+        this.getQueryUrl = () => {
+          if (this.layers[0].infourl && '' !== this.layers[0].infourl) {
+            return this.layers[0].infourl;
+          }
+          return this.config.url;
+        };
+      }
+
+      this.extraParams = options._RASTER_LAYER.params || {};
+      this._method     = options._RASTER_LAYER.method || 'GET';
+
+      return;
+    }
 
     // get current project
     const project   = options.project || ApplicationState.project;
@@ -1212,7 +1304,7 @@ class Layer extends G3WObject {
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
     if ('WMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => RasterLayer._makeOlLayer({
+      this._makeOlLayer = () => _makeOlLayer({
         layerObj: {
           url:          this.config.url,
           projection:   this.getProjectionFromCrs(this.config.crs),
@@ -1257,11 +1349,14 @@ class Layer extends G3WObject {
      * @since 3.11.0
      */
     if (this._makeOlLayer && this.isWMS()) {
-      this._mapLayer = new RasterLayer({
-        url:   this.getWmsUrl(),
-        id:    this.state.id,
-        tiled: this.state.tiled,
-      });
+      this._mapLayer = new Layer(
+        {
+          url:   this.getWmsUrl(),
+          id:    this.state.id,
+          tiled: this.state.tiled,
+        },
+        { _RASTER_LAYER: true }
+      );
       this._mapLayer.addLayer(this);
     } else if (this._makeOlLayer && Layer.LayerTypes.IMAGE === this.type) {
       this._mapLayer = this;
@@ -2455,6 +2550,10 @@ class Layer extends G3WObject {
    * @returns {*} layer source (ex. ogr, spatialite, etc..)
    */
   getSource() {
+    if(this._RASTER_LAYER) {
+      return this.getOLLayer().getSource();
+    }
+
     if (this.type === Layer.LayerTypes.IMAGE && this._mapLayer) {
       return this.getOLLayer().getSource();
     }
@@ -2571,6 +2670,9 @@ class Layer extends G3WObject {
    * @returns {boolean} whether is visible
    */
   isVisible() {
+    if (this._RASTER_LAYER) {
+      return this.layers.filter(l => l.isVisible()).length > 0;
+    }
     return this.state.visible;
   }
 
@@ -3389,31 +3491,45 @@ class Layer extends G3WObject {
       const url                 = this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl());
 
       if (this.isCached() && 'tms' === cache_service_type) {
-        return new RasterLayer({ ...options, extent, url, cache_provider, type: 'XYZ' }, {}, method);
+        return new Layer(
+          { ...options, extent, url, cache_provider, type: 'XYZ' },
+          { _RASTER_LAYER: { params: {}, method } }
+        );
       }
 
       if (this.isExternalWMS() && source && "arcgismapserver" === source.type) {
-        return new RasterLayer({ ...options, ...source }, extraParams)
+        return new Layer(
+          { ...options, ...source },
+          { _RASTER_LAYER: { params: extraParams } }
+        );
       }
 
       if (this.isCached() && 'wmts' === cache_service_type) {
-        return new RasterLayer({
-          ...options,
-          url,
-          cache_provider,
-          cache_layer,
-          cache_extent,
-          cache_grid,
-          cache_grid_extent,
-          type: 'WMTS',
-        }, extraParams, method);
+        return new Layer({
+            ...options,
+            url,
+            cache_provider,
+            cache_layer,
+            cache_extent,
+            cache_grid,
+            cache_grid_extent,
+            type: 'WMTS',
+          },
+          { _RASTER_LAYER: { params: extraParams, method } }
+        );
       }
 
       if (this.isExternalWMS() && source && "wmst" === source.type) {
-        return new RasterLayer({...options, url, cache_provider, type: 'WMTS', }, extraParams, method);
+        return new Layer(
+          {...options, url, cache_provider, type: 'WMTS' },
+          { _RASTER_LAYER: { params: extraParams, method } }
+        );
       }
 
-      return new RasterLayer({ ...options, url }, extraParams, method);
+      return new Layer(
+        { ...options, url },
+        { _RASTER_LAYER: { params: extraParams, method } }
+      );
     }
 
     if (Layer.LayerTypes.VECTOR === this.type) {
@@ -3957,11 +4073,64 @@ class Layer extends G3WObject {
   }
 
   /**
+   * Update Layers
+   * 
    * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
+   * ORIGINAL SOURCE: src/app/core/layers/imagelayer.js@v4.0.0
    * 
    * @since 4.1.0
    */
-  update(mapState, extraParams) {
+  update(mapState = {}, extraParams = {}) {
+    if (this._RASTER_LAYER) {
+      let { force, ...params } = extraParams;
+
+      // check which layers have to be disabled
+      const { resolution, mapUnits } = mapState;
+      this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
+      
+      if ('XYZ' === this.config.type) {
+        this._olLayer.setVisible(this.layer.isVisible());
+        return;
+      }
+      
+      const layers = this.layers.filter(l => l.isVisible()) || [];
+
+      // skip when ..
+      if (layers.length <= 0) {
+        this._olLayer.setVisible(false);
+        return;
+      }
+
+      const STYLES     = [];
+      const OPACITIES  = [];
+      let LEGEND_ON    = undefined;
+      let LEGEND_OFF   = undefined;
+
+      layers.forEach(l => {
+        const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(l);
+        STYLES.push(l.getStyle());
+        OPACITIES.push(parseInt((l.getOpacity() / 100) * 255));
+        if (on)  { LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}` }
+        if (off) { LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}` }
+      })
+
+      this._olLayer.setVisible(true);
+      //check if a layer source has with updateParams method
+      /** @TODO Check a better way to do this */
+      if (this._olLayer.getSource().updateParams) {
+        this._olLayer.getSource().updateParams({
+          ...params,
+          LEGEND_ON,
+          LEGEND_OFF,
+          filtertoken: ApplicationState.tokens.filtertoken,
+          LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
+          STYLES:      STYLES.join(','),
+          /** @since 3.8 */
+          OPACITIES:   OPACITIES.join(','),
+        });
+      }
+      return;
+    }
     if (Layer.LayerTypes.IMAGE === this.type && this.isWMS()) {
       this._mapLayer.update(mapState, extraParams)
     }
@@ -3984,10 +4153,18 @@ class Layer extends G3WObject {
    * 
    * @since 4.1.0
    */
-  getOLLayer() {
+  getOLLayer(withLayers) {
+    if(this._RASTER_LAYER) {
+      if (!this._olLayer) {
+        this._olLayer = this._makeOlLayer(withLayers);
+      }
+      return this._olLayer;
+    }
+
     if (Layer.LayerTypes.IMAGE !== this.type) {
       return;
     }
+
     if (!this._olLayer && this._makeOlLayer) {
       this._olLayer = this._makeOlLayer();
       // register loading event
@@ -4001,129 +4178,51 @@ class Layer extends G3WObject {
     return this._olLayer;
   }
 
-}
-
-/******************************************************************************************
- * LAYER PROPERTIES
- *****************************************************************************************/
-
-/**
- * Layer Types
- */
-Layer.LayerTypes = {
-  TABLE:  "table",
-  IMAGE:  "image",
-  VECTOR: "vector"
-};
-
-/**
- * Layer Capabilities
- */
-Layer.CAPABILITIES = {
-  QUERYABLE:  1,
-  FILTERABLE: 2,
-  EDITABLE:   4,
-};
-
-/**
- * Stringify a query URL param (eg. `&WIDTH=700`)
- * 
- * @param name
- * @param value
- * 
- * @returns { string | null } a string if value is set or null
- */
-function __(name, value) {
-  return [null, undefined].includes(value) ? value : `${name}${value}`;
-}
-
-/**
- * @TODO merge "RasterLayer" class into "ImageLayer"
- * 
- * ORIGINAL SOURCE: src/app/core/layers/map/maplayer.js@v3.10.1
- * ORIGINAL SOURCE: src/app/core/layers/map/wmslayer.js@v3.10.1
- * ORIGINAL SOURCE: src/app/core/layers/map/wmstlayer.js@v3.10.1
- * ORIGINAL SOURCE: src/app/core/layers/map/xyzlayer.js@v3.10.1
- * ORIGINAL SOURCE: src/app/core/layers/map/arcgismapserverlayer.js@v3.10.1
- */
-class RasterLayer extends G3WObject {
-
-  constructor(config = {}, extraParams = {}, method = 'GET') {
-    super();
-
-    this.config                 = config;
-    this.id                     = config.id;
-    this.iframe_internal        = config.iframe_internal || false;
-    this.extent                 = config.extent;
-    this.projection             = config.projection;
-    this.layer                  = null;
-    this.layers                 = config.layers || []; // store all enabled layers
-    this.allLayers              = []; // store all layers
-    this.showSpinnerWhenLoading = true;
-
-    if ('XYZ' !== this.config.type) {
-      this.LAYERTYPE = {
-        LAYER:      'layer',
-        MULTILAYER: 'multilayer'
-      };
-      this.getInfoFormat = () => 'application/vnd.ogc.gml';
-      this.getGetFeatureInfoUrl = (coordinate, resolution, epsg, params) => this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
-      this.getQueryUrl = () => {
-        if (this.layers[0].infourl && '' !== this.layers[0].infourl) {
-          return this.layers[0].infourl;
-        }
-        return this.config.url;
-      };
+  /**
+   * @since 4.1.0
+   */
+   getLayerConfigs() {
+    if (this._RASTER_LAYER) {
+      return this.layers;
     }
-
-    this.extraParams = extraParams;
-
-    this._method     = method;
   }
 
-  getId() {
-    return this.id;
-  }
-
-  getOLLayer(withLayers) {
-    if (!this._olLayer) {
-      this._olLayer = this._makeOlLayer(withLayers);
-    }
-    return this._olLayer;
-  }
-
-  getSource() {
-    return this.getOLLayer().getSource();
-  }
-
-  getLayerConfigs() {
-    return this.layers;
-  }
-
+  /**
+   * @since 4.1.0
+   */
   addLayer(layer) {
-    if (!this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
-    if (!this.layers.find(l => layer === l))    { this.layers.push(layer); }
-    if ('XYZ' === this.config.type)             { this.layer = layer; }
+    if (this._RASTER_LAYER) {
+      if (!this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
+      if (!this.layers.find(l => layer === l))    { this.layers.push(layer); }
+      if ('XYZ' === this.config.type)             { this.layer = layer; }
+    }
   }
 
+  /**
+   * @since 4.1.0
+   */
   removeLayer(layer) {
-    this.layers = this.layers.filter(l => layer !== l);
-  }
-
-  isVisible() {
-    return this.layers.filter(l => l.isVisible()).length > 0;
+    if (this._RASTER_LAYER) {
+      this.layers = this.layers.filter(l => layer !== l);
+    }
   }
 
   /**
    * @param {boolean} withLayers
    * 
-   * @returns { RasterLayer._makeOlLayer }
+   * @returns { _makeOlLayer }
    * 
    * @listens ol.source.ImageWMS~imageloadstart
    * @listens ol.source.ImageWMS~imageloadend
    * @listens ol.source.ImageWMS~imageloaderror
+   * 
+   * @since 4.1.0
    */
   _makeOlLayer(withLayers) {
+    if(!this._RASTER_LAYER) {
+      return;
+    }
+
     let olLayer;
 
     /** @type { 'image' | 'tile' } */
@@ -4177,7 +4276,7 @@ class RasterLayer extends G3WObject {
             transparent: false,
           })
         })
-        : RasterLayer._makeOlLayer({
+        : _makeOlLayer({
           layerObj,
           extraParams: this.extraParams || {},
           tiled:       true
@@ -4222,7 +4321,7 @@ class RasterLayer extends G3WObject {
 
     // WMS LAYER
     else {
-      olLayer = RasterLayer._makeOlLayer({
+      olLayer = _makeOlLayer({
         layerObj: {
           url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
           id:              this.config.id,
@@ -4243,112 +4342,37 @@ class RasterLayer extends G3WObject {
     return olLayer
   }
 
-  //update Layers
-  update(mapState = {}, extraParams = {}) {
-    let { force, ...params } = extraParams;
-
-    // check which layers have to be disabled
-    const { resolution, mapUnits } = mapState;
-    this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
-    
-    if ('XYZ' === this.config.type) {
-      this._olLayer.setVisible(this.layer.isVisible());
-      return;
-    }
-    
-    const layers = this.layers.filter(l => l.isVisible()) || [];
-
-    // skip when ..
-    if (layers.length <= 0) {
-      this._olLayer.setVisible(false);
-      return;
-    }
-
-    const STYLES     = [];
-    const OPACITIES  = [];
-    let LEGEND_ON    = undefined;
-    let LEGEND_OFF   = undefined;
-
-    layers.forEach(l => {
-      const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(l);
-      STYLES.push(l.getStyle());
-      OPACITIES.push(parseInt((l.getOpacity() / 100) * 255));
-      if (on)  { LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}` }
-      if (off) { LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}` }
-    })
-
-    this._olLayer.setVisible(true);
-    //check if a layer source has with updateParams method
-    /** @TODO Check a better way to do this */
-    if (this._olLayer.getSource().updateParams) {
-      this._olLayer.getSource().updateParams({
-        ...params,
-        LEGEND_ON,
-        LEGEND_OFF,
-        filtertoken: ApplicationState.tokens.filtertoken,
-        LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
-        STYLES:      STYLES.join(','),
-        /** @since 3.8 */
-        OPACITIES:   OPACITIES.join(','),
-      });
-    }
-
-  }
-
+  /**
+   * @since 4.1.0 
+   */
   setupCustomMapParamsToLegendUrl(params = {}) {
-    if ('XYZ' !== this.config.type) {
+    if (this._RASTER_LAYER && 'XYZ' !== this.config.type) {
       [].concat(this.layer || this.layers).forEach(l => Object.assign(l.customParams, params));
     }
   }
 
 }
 
-/**
- * ORIGINAL SOURCE: src/app/g3w-ol/layers/rasters.js@v3.10.0
- * 
- * @since 3.11.0
- */
-RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
-  return new (opts.tiled ? ol.layer.Tile : ol.layer.Image)({
-    id:            opts.layerObj.id,
-    name:          opts.layerObj.name,
-    opacity:       undefined !== opts.layerObj.opacity ? opts.layerObj.opacity : 1.0,
-    visible:       opts.layerObj.visible,
-    extent:        opts.layerObj.extent,
-    maxResolution: opts.layerObj.maxResolution,
-    source:        new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
-      ratio:      1,
-      url:        opts.layerObj.url,
-      projection: (opts.layerObj.projection) ? opts.layerObj.projection.getCode() : null,
-      params:     {
-        ...Object.fromEntries(
-          Object.entries({
-            DPI:         DOTS_PER_INCH,
-            TRANSPARENT: true,
-            FORMAT:      opts.layerObj.format,
-            LAYERS:      undefined !== opts.layerObj.layers      ? opts.layerObj.layers : '',
-            VERSION:     undefined !== opts.layerObj.version     ? opts.layerObj.version : '1.3.0',
-            SLD_VERSION: undefined !== opts.layerObj.sld_version ? opts.layerObj.sld_version : '1.1.0',
-          })
-          // prevents sending "FORMAT" parameter when undefined
-          .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
-      ),
-      ...(opts.extraParams || {})
-      },
-      imageLoadFunction: (opts.layerObj.iframe_internal || 'POST' === method)
-        ? (tile, url) => {
-          fetch('POST' === method ? (url || '').split('?')[0] : url, {
-            method,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-            body:    'POST' === method ? url.split('?')[1] : undefined,
-          })
-          .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
-          .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
-        }
-        : undefined,
-    })
-  });
+/******************************************************************************************
+ * LAYER PROPERTIES
+ *****************************************************************************************/
 
+/**
+ * Layer Types
+ */
+Layer.LayerTypes = {
+  TABLE:  "table",
+  IMAGE:  "image",
+  VECTOR: "vector"
 };
 
-export { Layer, RasterLayer };
+/**
+ * Layer Capabilities
+ */
+Layer.CAPABILITIES = {
+  QUERYABLE:  1,
+  FILTERABLE: 2,
+  EDITABLE:   4,
+};
+
+export { Layer };

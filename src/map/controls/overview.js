@@ -5,7 +5,7 @@
 
 import GUI             from 'services/gui';
 import { getProject }  from 'utils/getProject';
-import { RasterLayer } from 'map/layers/layer';
+import { Layer }       from 'map/layers/layer';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -40,11 +40,12 @@ GUI.once('ready', async () => {
                     return group;
                   }, {}) || []
               ).map(([id, layers]) => {
-                const mapLayer = new RasterLayer({
+                const mapLayer = new Layer({
                   url:   project.state.WMSUrl,
                   id:    `overview_layer_${id}`,
                   tiled: layers[0].state.tiled,
-                });
+                },
+                { _RASTER_LAYER: true });
                 layers.reverse().forEach(l => mapLayer.addLayer(l));
                 return mapLayer.getOLLayer(true);
               }).reverse()
