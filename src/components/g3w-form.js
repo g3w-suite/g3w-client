@@ -23,7 +23,7 @@ export class FormComponent extends Component {
     super({
       ...opts,
       id:                 opts.id || 'form',
-      perc:               null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc,
+      perc:               null !== opts.layer.config.editing.form.perc ? opts.layer.config.editing.form.perc : opts.perc,
       service:            new (opts.service || FormService)(),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });
@@ -448,7 +448,7 @@ export class FormService extends G3WObject {
   };
 
   setCurrentFormPercentage(perc) {
-    this.layer.setFormPercentage(perc)
+    this.layer.config.editing.form.perc = perc;
   };
 
   setLoading(bool = false) {
