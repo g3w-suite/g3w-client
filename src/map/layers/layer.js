@@ -572,9 +572,11 @@ class Layer extends G3WObject {
       'change',
     ];
 
+    this._BASE_LAYER   = options._BASE_LAYER;
+    this._RASTER_LAYER = options._RASTER_LAYER;
+
     if (options._RASTER_LAYER) {
       this.config                 = config;
-      this._RASTER_LAYER          = options._RASTER_LAYER;
       this.iframe_internal        = config.iframe_internal || false;
       this.extent                 = config.extent;
       this.projection             = config.projection;
@@ -582,25 +584,9 @@ class Layer extends G3WObject {
       this.layers                 = config.layers || []; // store all enabled layers
       this.allLayers              = []; // store all layers
       this.showSpinnerWhenLoading = true;
-
-      if ('XYZ' !== this.config.type) {
-        this.LAYERTYPE = {
-          LAYER:      'layer',
-          MULTILAYER: 'multilayer'
-        };
-        this.getInfoFormat = () => 'application/vnd.ogc.gml';
-        this.getGetFeatureInfoUrl = (coordinate, resolution, epsg, params) => this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
-        this.getQueryUrl = () => {
-          if (this.layers[0].infourl && '' !== this.layers[0].infourl) {
-            return this.layers[0].infourl;
-          }
-          return this.config.url;
-        };
-      }
-
-      this.extraParams = options._RASTER_LAYER.params || {};
-      this._method     = options._RASTER_LAYER.method || 'GET';
-
+      this.LAYERTYPE              = 'XYZ' !== this.config.type && { LAYER: 'layer', MULTILAYER: 'multilayer' };
+      this.extraParams            = this._RASTER_LAYER?.params || {};
+      this._method                = this._RASTER_LAYER?.method || 'GET';
       return;
     }
 
@@ -1111,9 +1097,6 @@ class Layer extends G3WObject {
      * @since 4.1.0
      */
     this._mapLayer = null; // later that will be added to the map
-
-
-    this._BASE_LAYER  = options._BASE_LAYER;
     this.customParams = {};
 
     /**
@@ -2712,6 +2695,13 @@ class Layer extends G3WObject {
    * @returns { string }  query url based on type, external or same projection of map
    */
   getQueryUrl() {
+    if (this._RASTER_LAYER && 'XYZ' !== this.config.type) {
+      if (this.layers[0].infourl && '' !== this.layers[0].infourl) {
+        return this.layers[0].infourl;
+      }
+      return this.config.url;
+    }
+
     let url;
     if (Layer.LayerTypes.IMAGE === this.type) {
       url       = this.config.urls.query;
@@ -2751,6 +2741,9 @@ class Layer extends G3WObject {
    * @returns { default.watch.infoformat | * | string }
    */
   getInfoFormat(ogcService) {
+    if (this._RASTER_LAYER && 'XYZ' !== this.config.type) {
+      return 'application/vnd.ogc.gml';
+    }
     // In the case of NETCDF (qtime series)
     if (true === this.config.qtimeseries || 'gdal' === this.getSourceType()) {
       return 'application/json';
@@ -4344,6 +4337,15 @@ class Layer extends G3WObject {
   setupCustomMapParamsToLegendUrl(params = {}) {
     if (this._RASTER_LAYER && 'XYZ' !== this.config.type) {
       [].concat(this.layer || this.layers).forEach(l => Object.assign(l.customParams, params));
+    }
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  getGetFeatureInfoUrl(coordinate, resolution, epsg, params) {
+    if (this._RASTER_LAYER && 'XYZ' !== this.config.type) {
+      return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params)
     }
   }
 
