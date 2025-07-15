@@ -495,7 +495,7 @@ export default {
         GUI.disableContent(true);
         GUI.setLoadingContent(true);
 
-        const data     = await promisify(this.layer.getDataTable(params || {}));
+        const data     = await this.layer.getDataTable(params || {});
         const is_valid = this.layer.isGeoLayer() && data.features;
 
         if (is_valid && !params) {
@@ -571,9 +571,7 @@ export default {
       };
 
       try {
-        const data = await promisify(
-          this.layer.getDataTable(this.search)
-        );
+        const data = await this.layer.getDataTable(this.search);
 
         this.state.allfeatures   = data.count;
         this.state.featurescount = (data.features || []).length;

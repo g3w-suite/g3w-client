@@ -576,45 +576,6 @@ class ImageLayer extends Layer {
    */
   change() {}
 
-  /**
-   *
-   * Used by the following plugins: "plugin"
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   *
-   *
-   * @param force
-   * @param vectorurl
-   * @param project_type
-   * @param project
-   * @return {Promise<any|null>}
-   */
-  async getLayerForEditing({
-    force = false,
-    vectorurl,
-    project_type,
-    project
-  } = {}) {
-
-    if (!force && !this.isEditable()) {
-      return null;
-    }
-
-    // set editing layer
-    try {
-      const layerForEditing  = await (new VectorLayer(this.config, {
-        vectorurl,
-        project_type,
-        project: project || ApplicationState.project,
-      })).layerForEditing;
-      this.setEditingLayer(layerForEditing);
-      return layerForEditing;
-    } catch(e) {
-      console.warn(e);
-      return Promise.reject(e);
-    }
-
-  }
-
   isBaseLayer() {
     return this.config.baselayer;
   }

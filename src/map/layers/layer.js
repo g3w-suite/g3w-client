@@ -1807,7 +1807,7 @@ class Layer extends G3WObject {
    *
    * @returns {*}
    */
-  getDataTable({
+  async getDataTable({
     page          = null,
     page_size     = null,
     ordering      = null,
@@ -1818,47 +1818,44 @@ class Layer extends G3WObject {
     field,
     in_bbox,
   } = {}) {
-    return $promisify(async () => {
+    // skip when..
+    if (!this.getProvider('filter') && !this.getProvider('data')) {
+      return Promise.reject();
+    }
 
-      // skip when..
-      if (!this.getProvider('filter') && !this.getProvider('data')) {
-        return Promise.reject();
-      }
+    const response = await promisify(
+      this
+        .getProvider('data')
+        .getFeatures(
+          { editing: false }, {
+          ...custom_params,
+          field,
+          page,
+          page_size,
+          ordering,
+          search,
+          formatter,
+          suggest,
+          in_bbox,
+          filtertoken: this.getFilterToken()
+        })
+    );
 
-      const response = await promisify(
-        this
-          .getProvider('data')
-          .getFeatures(
-            { editing: false }, {
-            ...custom_params,
-            field,
-            page,
-            page_size,
-            ordering,
-            search,
-            formatter,
-            suggest,
-            in_bbox,
-            filtertoken: this.getFilterToken()
-          })
-      );
+    const features          = response.data.features && response.data.features || [];
+    const layerAttributes   = this.getAttributes() || [];
+    const featureAttributes = (features.length ? features[0].properties : []);
 
-      const features          = response.data.features && response.data.features || [];
-      const layerAttributes   = this.getAttributes() || [];
-      const featureAttributes = (features.length ? features[0].properties : []);
-
-      return {
-        features,
-        headers: (layerAttributes && layerAttributes.length > 0)
-        ? layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
-        : Object
-            .keys(featureAttributes)
-            .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
-            .map(name => ({ name, label: name })),
-        title: this.getTitle(),
-        count: response.count
-      };
-    });
+    return {
+      features,
+      headers: (layerAttributes && layerAttributes.length > 0)
+      ? layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
+      : Object
+          .keys(featureAttributes)
+          .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
+          .map(name => ({ name, label: name })),
+      title: this.getTitle(),
+      count: response.count
+    };
   }
 
   /**

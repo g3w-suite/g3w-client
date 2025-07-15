@@ -70,7 +70,7 @@ export class VectorLayer extends TableLayer {
     this._mapLayer._olLayer = new ol.layer.Vector({
       id:             this.getId(),
       __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
-      source:         new ol.source.Vector({ features: (this._editor && this._editor.getEditingSource().getFeaturesCollection() || []) || new ol.Collection() })
+      source:         new ol.source.Vector({ features: (this?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() })
     });
   
     if (!olStyle && isPointGeometryType(this.getGeometryType())) {

@@ -82,7 +82,7 @@ module.exports = class SelectService extends Service {
           $value: f.properties[value]
         }))
         resolve(values);
-      }).fail(e => { console.warn(e); reject(e) });
+      }).catch(e => { console.warn(e); reject(e) });
     });
   };
 };
