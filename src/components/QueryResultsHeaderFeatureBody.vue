@@ -15,17 +15,12 @@
         :class = "g3wtemplate.getFontClass('link')">
       </span>
 
-      <span
-        v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class     = "skin-color"
-        :class    = "g3wtemplate.getFontClass('image')"></span>
+      <g3w-image
+        v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
+        :state    = "getLayerField({layer, feature, fieldName: attribute.name})"
+      />
 
-      <span
-        v-else-if = "isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
-        class     = "skin-color"
-        :class    = "g3wtemplate.getFontClass('image')"></span>
-      <span v-else >{{feature.attributes[attribute.name]}}</span>
-
+      <span v-else v-html = "feature.attributes[attribute.name]"></span>
     </td>
     <td v-if="!hasLayerOneFeature(layer)">
     </td>
@@ -34,11 +29,12 @@
 
 <script>
   import Actions         from 'components/QueryResultsActions.vue';
+  import Image           from 'components/FieldImage.vue'
   import { fieldsMixin } from 'mixins';
   
   export default {
     name: "headerfeaturebody",
-    mixins : [fieldsMixin],
+    mixins : [ fieldsMixin ],
     props: {
       toggleFeatureBoxAndZoom: {
         type: Function
@@ -64,11 +60,10 @@
       feature: {
         type: Object
       },
-
-
     },
     components: {
-      actions:Actions
+      actions: Actions,
+      'g3w-image': Image
     }
   }
 </script>

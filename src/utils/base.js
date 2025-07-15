@@ -1,36 +1,53 @@
+import G3WObject from 'g3w-object';
+
 /**
- * google closure library implementation
+ * Based on google closure library implementation
  */
-export function base(me, opt_methodName, var_args) {
-  // who call base
-  // noinspection JSAnnotator
+export function base(target) {
+
+  console.warn('[G3W-CLIENT] g3wsdk.core.utils.base is deprecated');
+  console.trace();
+
+  // reference to previous function (caller)
   const caller = arguments.callee.caller;
+
+  // call superclass constructor (that inherits from superClass_)
   if (caller.superClass_) {
-    // This function constructor (that inherits from superClass_).
-    // Call the superclass constructor.
-    //It is an easy way to cal superclass in binding to this
-    return caller.superClass_.constructor.apply(me, Array.prototype.slice.call(arguments, 1));
+    // CASE: `super(opts)`
+    if ('Function' === caller.superClass_.constructor.name) {
+      return caller.superClass_.constructor.apply(target, Array.prototype.slice.call(arguments, 1));
+    }
+    // CASE: `base(this) for example in case set some attributes/methods to this before call base(this)
+    // example http://github.com/g3w-suite/g3w-client-plugin-qtimeseries/blob/dev/service.js#L16-L21`
+    if (1 === arguments.length) {
+      return Object.assign(
+        target,
+        Reflect.construct(caller.superClass_.constructor, arguments, target.constructor)
+      )
+    }
+    // CASE: `base(this, opts)`
+    return Object.assign(
+      target,
+      Reflect.construct(caller.superClass_.constructor, Array.prototype.slice.call(arguments, 1), target.constructor)
+    );
   }
-  const args = Array.prototype.slice.call(arguments, 2);
+
   let foundCaller = false;
-  //constructor is the constructor function of the object
-  for (let ctor = me.constructor; ctor; ctor = ctor.superClass_ && ctor.superClass_.constructor) {
-    if (ctor.prototype[opt_methodName] === caller) {
+
+  // traverse prototype chain
+  for (let ctor = target.constructor; ctor; ctor = ctor.superClass_?.constructor) {
+    if (ctor.prototype[arguments[1]] === caller) {
       foundCaller = true;
     } else if (foundCaller) {
-      return ctor.prototype[opt_methodName].apply(me, args);
+      return ctor.prototype[arguments[1]].apply(target, Array.prototype.slice.call(arguments, 2));
     }
   }
-  // If we did not find the caller in the prototype chain,
-  // then one of two things happened:
-  // 1) The caller is an instance method.
-  // 2) This method was not called by the right caller.
-  if (me[opt_methodName] === caller) {
-    // call the function from a prototype object
-    return me.constructor.prototype[opt_methodName].apply(me, args);
-  } else {
-    throw Error(
-      'base called from a method of one name ' +
-      'to a method of a different name');
+
+  // caller is an instance method
+  if (target[arguments[1]] === caller) {
+    return target.constructor.prototype[arguments[1]].apply(target, Array.prototype.slice.call(arguments, 2));
   }
+
+  // method was called by wrong caller
+  throw Error('base called from a method of one name to a method of a different name');
 }

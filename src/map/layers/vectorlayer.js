@@ -8,31 +8,18 @@ import GUI                            from 'services/gui';
 import { isPointGeometryType }        from 'utils/isPointGeometryType';
 import { isLineGeometryType }         from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }      from 'utils/isPolygonGeometryType';
-import GeoLayerMixin                  from 'map/layers/geo-mixin'
 import { $promisify, promisify }      from 'utils/promisify';
 
 
 import { Layer }          from 'map/layers/layer';
 import { TableLayer }     from 'map/layers/tablelayer';
 
-export class VectorLayer extends GeoLayerMixin(TableLayer) {
+export class VectorLayer extends TableLayer {
 
   constructor(config = {}, opts = {}) {
     super(config, opts);
-    this._mapLayer = null; // later tah will be added to the map
+    this._mapLayer = null; // later that will be added to the map
     this.type      = Layer.LayerTypes.VECTOR;
-
-    const layerType = `${config.servertype} ${config.source && config.source.type}`;
-
-    // need an ol layer for adding to the map
-    this.setup(config, opts);
-
-    if ('G3WSUITE geojson' === layerType) {
-      this._g3w_geojson = true;
-      this.config.style = config.style;
-      this.setup(config);
-    }
-
   }
 
   getEditingLayer() {
@@ -57,7 +44,9 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
 
     this._mapLayer = new G3WObject;
 
-    const style = this._g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
+    const _g3w_geojson = 'G3WSUITE geojson' === `${this.config.servertype} ${this.config.source?.type}`;
+    
+    const style = _g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
 
     let olStyle = style ? new ol.style.Style(
       Object
@@ -79,8 +68,9 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
   
     // create ol layer to add to map
     this._mapLayer._olLayer = new ol.layer.Vector({
-      id: this.getId(),
-      source: new ol.source.Vector({ features: (this._editor && this._editor.getEditingSource().getFeaturesCollection() || []) || new ol.Collection() })
+      id:             this.getId(),
+      __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+      source:         new ol.source.Vector({ features: (this._editor && this._editor.getEditingSource().getFeaturesCollection() || []) || new ol.Collection() })
     });
   
     if (!olStyle && isPointGeometryType(this.getGeometryType())) {
@@ -100,13 +90,16 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
   
     if (!olStyle && isPolygonGeometryType(this.getGeometryType())) {
       olStyle =  new ol.style.Style({
-        stroke: new ol.style.Stroke({ color: '#000000', width: 1 }),
+        stroke: new ol.style.Stroke({ color: '#000', width: 1 }),
         fill:   new ol.style.Fill({ color: this.getColor() }),
       });
       this._mapLayer._olLayer.setOpacity(0.6);
     }
 
     this._mapLayer._olLayer.setStyle(olStyle);
+
+    //@since 3.11.0 to has the same compatibility with table layer
+    this._mapLayer._olLayer.getEditingSource = () => super.getEditingSource();
 
     Object.assign(this._mapLayer, {
       _olLayer:      this._mapLayer._olLayer,
@@ -116,11 +109,11 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
       type:          null,
       crs:           null,
       id:            this.getId(),
-      name:          this._g3w_geojson && this.getName() || '',
+      name:          _g3w_geojson && this.getName() || '',
       style,
       color:         this.getColor(),
-      projection:    this._g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
-      url:           this._g3w_geojson ? this.get('source').url : undefined,
+      projection:    _g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
+      url:           _g3w_geojson ? this.get('source').url : undefined,
       provider:      this.getProvider('data'),
       getProvider:   ()           => this._mapLayer.provider,
       resetSource:   (feats = []) => this._mapLayer.setSource(new ol.source.Vector({ features: feats })),
@@ -139,7 +132,7 @@ export class VectorLayer extends GeoLayerMixin(TableLayer) {
 
     });
 
-    if (this._g3w_geojson) {
+    if (_g3w_geojson) {
       this._mapLayer.getFeatures({
         url:           this.get('source').url,
         mapProjection: GUI.getService('map').getProjection().getCode()

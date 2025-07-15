@@ -9,11 +9,10 @@ import ApplicationState   from 'store/application';
 import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
-
-const { addI18nPlugin } = require('g3w-i18n');
+import { gettext as _ }   from 'g3w-i18n';
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
+import _cloneDeep         from 'lodash.clonedeep';
 
 const TIMEOUT = 10000;
 
@@ -58,7 +57,7 @@ export class Plugin extends G3WObject {
       if (this.name) {
         delete ApplicationState.gui.layout[this.name]
       }
-    }, TIMEOUT)
+    }, TIMEOUT);
 
   }
 
@@ -93,11 +92,27 @@ export class Plugin extends G3WObject {
   }
 
   /**
-   * @FIXME add description
+   * Register custom i18n strings (global context) 
+   * 
+   * @param { string } lang 
+   * @param {*} locale i18n object
+   * 
+   * @since 4.0.0
    */
-  setLocale(i18n) {
-    if (i18n && this.name) {
-      addI18nPlugin({ name: this.name, config: i18n});
+  registerLocale(lang, locale) {
+    _.register(lang, locale);
+  }
+
+  /**
+   * Register custom i18n strings (plugin context)
+   * 
+   * @param {*} locale i18n object
+   */
+  setLocale(locale) {
+    if (locale && this.name) {
+      for (const lang in locale) {
+        _.register(lang, { plugins: { [this.name]: locale[lang] } });
+      }
     }
   }
 
@@ -169,8 +184,6 @@ export class Plugin extends G3WObject {
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%
       height:         50, // ie. height == 50%
-      width_default:  50,
-      height_default: 50,
       width_100:      false,
       height_100:     false,
     };
@@ -180,8 +193,6 @@ export class Plugin extends G3WObject {
       {
         width:          config.rightpanel.width  || default_config.width,
         height:         config.rightpanel.height || default_config.width,
-        width_default:  config.rightpanel.width  || default_config.width,
-        height_default: config.rightpanel.height || default_config.width,
         width_100:      false,
         height_100:     false,
       }
@@ -390,12 +401,10 @@ export class Plugin extends G3WObject {
    */
   createSideBarComponent(vue, opts = {}) {
 
-    const çç = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
-
     opts.vueComponentObject = vue; 
-    opts.collapsible        = çç(opts.collapsible, true);
-    opts.mobile             = çç(opts.mobile, true);
-    opts.sidebarOptions     = çç(opts.sidebarOptions, { position: 1 });
+    opts.collapsible        = opts.collapsible    ?? true;
+    opts.mobile             = opts.mobile         ?? true;
+    opts.sidebarOptions     = opts.sidebarOptions ?? { position: 1 };
 
     GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
 
@@ -471,8 +480,8 @@ export class PluginService extends G3WObject {
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
       () => ApplicationState.gui.layout.__current,
-      layoutName => this.currentLayout = layoutName !== this.getPlugin().getName() ? layoutName : this.currentLayout
-    );
+      layoutName => this.currentLayout = layoutName === this.name ? this.currentLayout : layoutName
+    )
   }
 
   /**
@@ -482,10 +491,6 @@ export class PluginService extends G3WObject {
    */
   init(config = {}) {
     this.config = config;
-  }
-
-  setCurrentLayout() {
-    ApplicationState.gui.layout.__current = this.getPlugin().getName();
   }
 
   resetCurrentLayout() {

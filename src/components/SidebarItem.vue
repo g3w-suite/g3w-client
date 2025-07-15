@@ -13,10 +13,10 @@
   >
     <bar-loader :loading = "component.state.loading"/>
     <a
-      href             = "#"
-      style            = "display: flex; justify-content: space-between; align-items: center"
-      v-t-tooltip:right.create = "sidebar.open ? '' : title"
-      :current-tooltip         = "sidebar.open ? '' : title"
+      href              = "#"
+      style             = "display: flex; justify-content: space-between; align-items: center"
+      :data-i18n-title  = "sidebar.open ? '' : title"
+      data-placement    = "right"
     >
       <div>
         <span
@@ -37,19 +37,19 @@
         >{{ info.state }}</span>
         <!-- ORIGINAL SOURCE: src/components/SidebarItemAction.vue@v3.10.2 -->
         <span
-          v-for                   = "action in actions"
-          :key                    = "action.id"
-          @click.stop             = "triggerAction(action, component.internalComponent)"
-          v-t-tooltip:left.create = "action.tooltip"
-          style                   = "font-weight: bold; padding:3px;"
-          :class                  = "action.class"
-          class                   = "action skin-tooltip-left"
-          :style                  = "action.style"
+          v-for            = "action in actions"
+          :key             = "action.id"
+          @click.stop      = "triggerAction(action, component.internalComponent)"
+          v-t-tooltip:left = "action.tooltip"
+          style            = "font-weight: bold; padding:3px;"
+          :class           = "action.class"
+          class            = "action"
+          :style           = "action.style"
         ></span>
       </div>
       <i
         v-if   = "collapsible"
-        :class = "g3wtemplate.getFontClass('angle-left')"
+        :class = "$fa('angle-left')"
         class  ="pull-right">
       </i>
     </a>
@@ -118,11 +118,14 @@
         //@since 3.11.0 Need to add check of sidebar components, in case, for example, close
         // contents element and some sidebar component is related to it's close, for example, qplotly
         //a toggle menu open of <ul>
-        node.classList.toggle('menu-open', open);
+        if (node.classList) {
+          node.classList.toggle('menu-open', open);
+        }
         // toggle active of <li> element
         node.parentNode.classList.toggle('active', open);
 
         this.component.setOpen(open);
+
       };
     },
 

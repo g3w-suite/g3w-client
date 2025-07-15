@@ -14,7 +14,7 @@ import { FeaturesStore }                from 'map/layers/featuresstore';
 import { Feature }                      from 'map/layers/feature';
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
+import _cloneDeep                       from 'lodash.clonedeep';
 
 /**
  * Base Layer that support editing
@@ -27,65 +27,16 @@ export class TableLayer extends Layer {
 
     /**
      * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-     * Hook setters methods
      */
-    this.setters = {
-      /**
-       * Clear all features of the layer
-       */
-      clearFeatures()        { this._featuresstore.clearFeatures(); },
-      addFeature(feature)    { this._featuresstore.addFeature(feature); },
-      /**
-       * @TODO it used ????
-       * @param feature
-       */
-      updateFeature(feature) { this._featuresstore.updateFeature(feature);},
-      setFeatures(features)  { this._featuresstore.setFeatures(features); },
-      setColor(color)        { this._color = color; },
-
-      /**
-       * get data from every sources (server, wms, etc..)
-       * through provider related to featuresstore
-       *
-       * @param {*} opts
-       */
-      getFeatures(opts = {}) {
-        return $promisify(async () => {
-          const features = await promisify(this._featuresstore.getFeatures(opts));
-          this.emit('getFeatures', features);
-          return features;
-        });
-      },
-
-      commit(commitItems) {
-        return $promisify(async () => {
-          const response = await promisify(this._featuresstore.commit(commitItems));
-          // sync selection filter features
-          if (response && response.result) {
-            try {
-              const layer = getCatalogLayerById(this.getId());
-              //if layer has geometry
-              if (layer.isGeoLayer()) {
-                commitItems.update.forEach(({ id, geometry } = {}) => {
-                  if (layer.getOlSelectionFeature(id)) {
-                    layer.updateOlSelectionFeature({id, geometry});
-                  }
-                });
-              }
-              commitItems.delete.forEach(id => {
-                if (layer.hasSelectionFid(id)) {
-                  layer.excludeSelectionFid(id);
-                }
-              })
-            } catch(e) {
-              console.warn(e);
-            }
-          }
-          return response;
-        });
-      },
-
-    };
+    this.setters = [
+      'clearFeatures',
+      'addFeature',
+      'updateFeature',
+      'setFeatures',
+      'setColor',
+      'getFeatures',
+      'commit',
+    ];
 
     /**
      * EDITING API URL: /api/vector/<type of request: data/editing/config>/<project_type>/<project_id>/<layer_id>
@@ -114,19 +65,22 @@ export class TableLayer extends Layer {
             vector,
             constraints = {},
             capabilities,
+            style,
           } = await promisify(this.getProvider('data').getConfig(opts));
-
-          await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
+          
+            await waitFor(() => window.g3wsdk.core.hasOwnProperty('editing'), TIMEOUT);    // wait until "editing" plugin is loaded
             // add editing configurations
-            this.config.editing =  {
-              fields:       vector.fields,
-              format:       vector.format,
+            this.config.editing = {
+              fields:                      vector.fields || [],
+              format:                      vector.format,
               constraints,
-              capabilities: capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
-              form:         { perc: null },                                                      // set editing form `perc` to null at beginning
-              style:        vector.style,                                                        // get vector layer style
-              geometrytype: vector.geometrytype                                                  // whether is a vector layer
-            }
+              capabilities:                capabilities || window.g3wsdk.constant.DEFAULT_EDITING_CAPABILITIES, // default editing capabilities
+              form:                        { perc: null },                                                      // set editing form `perc` to null at beginning
+              style:                       vector.style,                                                        // get vector layer style
+              geometrytype:                vector.geometrytype,                                                 // whether is a vector layer,
+              visible:                     (vector.editing || { visible: true }).visible,                       //@since 3.11.0 let know if layer should be editable directly (true) or through relation layer (false)
+              layer_style:                 (vector.editing || { layer_style: null }).layer_style,               // @since v4.0.0 check if has a layer style to for editing form
+            };
 
             if (vector.style) {                              // set vector layer color 
               this.setColor(vector.style.color);
@@ -157,6 +111,90 @@ export class TableLayer extends Layer {
      */
     this._featuresstore = new FeaturesStore({ provider: this.providers.data });
 
+  }
+
+  /**
+   * Clear all features of the layer
+   * 
+   * @since 4.0.0
+   */
+  clearFeatures()        { this._featuresstore.clearFeatures(); }
+
+  /**
+   * @since 4.0.0 
+   */
+  addFeature(feature)    { this._featuresstore.addFeature(feature); }
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.0.0
+   */
+  updateFeature(feature) { this._featuresstore.updateFeature(feature);}
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.0.0
+   */
+  setFeatures(features)  { this._featuresstore.setFeatures(features); }
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.0.0
+   */
+  setColor(color)        { this._color = color; }
+
+  /**
+   * get data from every sources (server, wms, etc..)
+   * through provider related to featuresstore
+   *
+   * @param {*} opts
+   * 
+   * @since 4.0.0
+   */
+  getFeatures(opts = {}) {
+    return $promisify(async () => {
+      const features = await promisify(this._featuresstore.getFeatures(opts));
+      this.emit('getFeatures', features);
+      return features;
+    });
+  }
+
+  /**
+   * @since 4.0.0 
+   */
+  commit(commitItems) {
+    return $promisify(async () => {
+      const response = await promisify(this._featuresstore.commit(commitItems));
+      // sync selection filter features
+      if (response && response.result) {
+        try {
+          const layer = getCatalogLayerById(this.getId());
+          //if layer has geometry
+          if (layer.isGeoLayer()) {
+            commitItems.update.forEach(({ id, geometry } = {}) => {
+              if (layer.getOlSelectionFeature(id)) {
+                const selected = layer.getOlSelectionFeature(id);
+                if (selected) {
+                  selected.feature = geometry;
+                  GUI.getService('map').setSelectionFeatures('update', { feature: geometry });
+                }
+              }
+            });
+          }
+          commitItems.delete.forEach(id => {
+            if (layer.hasSelectionFid(id)) {
+              layer.excludeSelectionFid(id);
+            }
+          })
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+      return response;
+    });
   }
 
   /**
@@ -263,21 +301,16 @@ export class TableLayer extends Layer {
    * @returns jQuery Promise
    */
   unlock() {
-    return $promisify(async () => { await promisify(this._featuresstore.unlock()); });
+    return $promisify(async () => await promisify(this._featuresstore.unlock()));
   }
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * @param { Boolean }  editable In case we want only editable fields
    * @returns layer fields
    */
   getEditingFields(editable = false) {
-    let fields = this.config.editing.fields.length
-      ? this.config.editing.fields
-      : this.config.fields;
-    if (editable) {
-      fields = fields.filter(f => f.editable);
-    }
-    return fields;
+    return editable ? (this.config.editing.fields || []).filter(f => f.editable) : (this.config.editing.fields || []);
   }
 
   /**
@@ -441,6 +474,7 @@ export class TableLayer extends Layer {
         field.validate = {};
       }
 
+      field.nullOption               = undefined === field.nullOption || field.nullOption ; //@since 3.11.0 used in InputSelect.vue component.
       field.forceNull                = false;
       field.validate.valid           = true;
       field.validate._valid          = true;                            // useful to get previous value in certain case

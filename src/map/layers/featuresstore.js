@@ -8,7 +8,7 @@ import { $promisify } from 'utils/promisify';
 import { XHR }        from 'utils/XHR';
 
 /** @deprecated */
-const _cloneDeep        = require('lodash.clonedeep');
+import _cloneDeep     from 'lodash.clonedeep';
 
 export class FeaturesStore extends G3WObject {
 
@@ -19,85 +19,124 @@ export class FeaturesStore extends G3WObject {
     this._loadedIds = []; // store features id load by current user
     this._lockIds   = []; // store locked features
 
-    //setters
-    this.setters    = {
-      /**
-       * Add an array of features
-       * @param { Array } features
-       */
-      addFeatures(features = []) {
-        features.forEach(f => this._addFeature(f))
-      },
-      /**
-       * Add single feature
-       * @param feature
-       */
-      addFeature(feature) {
-        this._addFeature(feature);
-      },
-      /**
-       * Remove a feature
-       * @param feature
-       */
-      removeFeature(feature) {
-        this._removeFeature(feature);
-      },
-      /**
-       * Update (substitute) a feature
-       * @param feature
-       */
-      updateFeature(feature) {
-        this._updateFeature(feature);
-      },
-      /**
-       * Remove all feature
-       */
-      clear() {
-        this._clearFeatures();
-      },
-      /**
-       * Get features from server
-       * @param opts
-       * @return { Promise }
-       */
-      getFeatures(opts = {}) {
-        return $promisify(async () => {
-          if (this._provider) {
-            //call provider getFeatures to get features from server
-            //get the feature base on response from server features, featurelockis etc ...
-            const features = this._filterFeaturesResponse(await this._provider.getFeatures(opts));
-            this.addFeatures(features);
-            return features;
-          }
-          return this._features; // Get features stored. No call to server is done
-        });
-      },
-      /**
-       * Commit changes (add, update, delete) to server
-       * @param commitItems
-       * @param featurestore Its is used????
-       * @return {*}
-       */
-      commit(commitItems, featurestore) {
-        return $promisify(async () => {
-          if (commitItems && this._provider) {
-            commitItems.lockids = this._lockIds;
-            return await XHR.post({
-              url:         this._provider._layer.getUrl('commit'),
-              data:        JSON.stringify(commitItems),
-              contentType: 'application/json',
-            });
-          }
-          return Promise.reject();
-        });
-      },
-      /**
-       * setter to know when some features are locked
-       */
-      featuresLockedByOtherUser(features = []) {},
-    };
+    this.setters    = [
+      'addFeatures',
+      'addFeature',
+      'removeFeature',
+      'updateFeature',
+      'clear',
+      'getFeatures',
+      'commit',
+      'featuresLockedByOtherUser',
+    ];
 
   }
+
+  /**
+   * Add an array of features
+   * 
+   * @param { Array } features
+   * 
+   * @since 4.0.0
+   */
+  addFeatures(features = []) {
+    features.forEach(f => this._addFeature(f))
+  }
+
+  /**
+   * Add single feature
+   * 
+   * @param feature
+   * 
+   * @since 4.0.0
+   */
+  addFeature(feature) {
+    this._addFeature(feature);
+  }
+
+  /**
+   * Remove a feature
+   * 
+   * @param feature
+   * 
+   * @since 4.0.0
+   */
+  removeFeature(feature) {
+    this._removeFeature(feature);
+  }
+
+  /**
+   * Update (substitute) a feature
+   * 
+   * @param feature
+   * 
+   * @since 4.0.0
+   */
+  updateFeature(feature) {
+    this._updateFeature(feature);
+  }
+
+  /**
+   * Remove all feature
+   * 
+   * @since 4.0.0
+   */
+  clear() {
+    this._clearFeatures();
+  }
+
+  /**
+   * Get features from server
+   * 
+   * @param opts
+   * 
+   * @return { Promise }
+   * 
+   * @since 4.0.0
+   */
+  getFeatures(opts = {}) {
+    return $promisify(async () => {
+      if (this._provider) {
+        //call provider getFeatures to get features from server
+        //get the feature base on response from server features, featurelockis etc ...
+        const features = this._filterFeaturesResponse(await this._provider.getFeatures(opts));
+        this.addFeatures(features);
+        return features;
+      }
+      return this._features; // Get features stored. No call to server is done
+    });
+  }
+
+  /**
+   * Commit changes (add, update, delete) to server
+   * 
+   * @param commitItems
+   * @param featurestore Its is used????
+   * 
+   * @return {*}
+   * 
+   * @since 4.0.0
+   */
+  commit(commitItems, featurestore) {
+    return $promisify(async () => {
+      if (commitItems && this._provider) {
+        commitItems.lockids = this._lockIds;
+        return await XHR.post({
+          url:         this._provider._layer.getUrl('commit'),
+          data:        JSON.stringify(commitItems),
+          contentType: 'application/json',
+        });
+      }
+      return Promise.reject();
+    });
+  }
+
+  /**
+   * setter to know when some features are locked
+   * 
+   * @since 4.0.0
+   */
+  featuresLockedByOtherUser(features = []) {}
 
   clone() {
     return _cloneDeep(this);
@@ -199,7 +238,7 @@ export class FeaturesStore extends G3WObject {
    * Add new lockid
    */
   addLockIds(lockIds) {
-    this._lockIds = _.union(this._lockIds, lockIds);
+    this._lockIds = [...new Set(this._lockIds.concat(...lockIds))]
     this._lockIds.forEach(({ featureid }) => this._loadedIds.push(featureid));
   }
 

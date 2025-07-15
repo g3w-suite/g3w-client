@@ -7,7 +7,6 @@ import { DOTS_PER_INCH }      from 'g3w-constants';
 import G3WObject              from 'g3w-object';
 import ApplicationState       from 'store/application';
 import Projections            from 'store/projections';
-import GeoLayerMixin          from 'map/layers/geo-mixin';
 import { Layer }              from 'map/layers/layer';
 import { VectorLayer }        from 'map/layers/vectorlayer';
 import { get_legend_params }  from 'utils/get_legend_params';
@@ -20,7 +19,7 @@ import { get_legend_params }  from 'utils/get_legend_params';
  * @returns { string | null } a string if value is set or null
  */
 function __(name, value) {
-  return (value || 0 === value) ? `${name}${value}` : null;
+  return [null, undefined].includes(value) ? value : `${name}${value}`;
 }
 
 /**
@@ -184,12 +183,12 @@ class RasterLayer extends G3WObject {
           projection,
           crossOrigin:      undefined,
           tileLoadFunction: (this.iframe_internal) ? (tile, url) => {
-            fetch('POST' === method ? (url || '').split('?')[0] : url, {
-              method,
+            fetch('POST' === this._method ? (url || '').split('?')[0] : url, {
+              method:  this._method,
               headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-              body:    'POST' === method ? url.split('?')[1] : undefined,
+              body:    'POST' === this._method ? url.split('?')[1] : undefined,
             })
-            .then(async response => tile.getImage().src = window.URL.createObjectURL(await response.blob()))
+            .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
             .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
           } : undefined,
           /** @since 3.10.0 - Map Proxy cache_provider **/
@@ -234,11 +233,9 @@ class RasterLayer extends G3WObject {
     let { force, ...params } = extraParams;
 
     // check which layers have to be disabled
-    if (!force) {
-      const { resolution, mapUnits } = mapState;
-      this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
-    }
-
+    const { resolution, mapUnits } = mapState;
+    this.allLayers.forEach(l => { l.setDisabled(resolution, mapUnits); return l.isDisabled(); });
+    
     if ('XYZ' === this.config.type) {
       this._olLayer.setVisible(this.layer.isVisible());
       return;
@@ -285,7 +282,7 @@ class RasterLayer extends G3WObject {
 
   setupCustomMapParamsToLegendUrl(params = {}) {
     if ('XYZ' !== this.config.type) {
-      [].concat(this.layer || this.layers).forEach(l => l.setMapParamstoLegendUrl(params));
+      [].concat(this.layer || this.layers).forEach(l => Object.assign(l.customParams, params));
     }
   }
 
@@ -330,7 +327,7 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
             body:    'POST' === method ? url.split('?')[1] : undefined,
           })
-          .then(async response => tile.getImage().src = window.URL.createObjectURL(await response.blob()))
+          .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
           .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
         }
         : undefined,
@@ -370,24 +367,16 @@ RasterLayer._makeOlLayer = function(opts = {}, method = 'GET') {
  * @param config.wms_use_layer_ids
  * @param config.styles
  */
-class ImageLayer extends GeoLayerMixin(Layer) {
+class ImageLayer extends Layer {
   
   constructor(config = {}, options = {}) {
 
     super(config, options);
 
-    this._BASE_LAYER = options._BASE_LAYER;
-
-    this.setters = {
-      change(){},
-    };
-
-    this.config.baselayer = config.baselayer || false;
-    this.type             = Layer.LayerTypes.IMAGE;
-    this.legendUrl        = null;
-    this.customParams     = {};
-
-    this.setup(config, options);
+    this._BASE_LAYER  = options._BASE_LAYER;
+    this.setters      = ['change'];
+    this.type         = Layer.LayerTypes.IMAGE;
+    this.customParams = {};
 
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
@@ -451,24 +440,6 @@ class ImageLayer extends GeoLayerMixin(Layer) {
               extent:      projection.getExtent(),
             }) : undefined,
           })
-        });
-      };
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('TMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        return new ol.layer.Tile({
-          // extent: opts.extent,
-          visible: false,
-          source: new ol.source.TileArcGISRest({
-            url:          undefined === this.config.url ? null : this.config.url,
-            projection:   this.getProjectionFromCrs(this.config.crs),
-            attributions: this.config.attributions,
-            // crossOrigin:  opts.crossOrigin,
-          }),
         });
       };
     }
@@ -601,6 +572,11 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   /**
+   * @since 4.0.0
+   */
+  change() {}
+
+  /**
    *
    * Used by the following plugins: "plugin"
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
@@ -625,11 +601,11 @@ class ImageLayer extends GeoLayerMixin(Layer) {
 
     // set editing layer
     try {
-      const layerForEditing  = await new VectorLayer(this.config, {
+      const layerForEditing  = await (new VectorLayer(this.config, {
         vectorurl,
         project_type,
         project: project || ApplicationState.project,
-      }).layerForEditing;
+      })).layerForEditing;
       this.setEditingLayer(layerForEditing);
       return layerForEditing;
     } catch(e) {
@@ -644,11 +620,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isWMS() {
-    return ImageLayer.WMSServerTypes.includes(this.config.servertype);
-  }
-
-  isLayerProjectionASMapProjection() {
-    return this.config.crs.epsg === this.config.map_crs;
+    return ["QGIS", "Mapserver", "Geoserver", "OGC"].includes(this.config.servertype);
   }
 
   getCrs() {
@@ -660,13 +632,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   isArcgisMapserver() {
-    return this.isExternalWMS() && Layer.SourceTypes.ARCGISMAPSERVER === this.config.source.type;
-  }
-
-  _getBaseLayerName() {
-    return this.isWmsUseLayerIds()
-      ? this.getId()
-      : this.getName();
+    return this.isExternalWMS() && "arcgismapserver" === this.config.source.type;
   }
 
   /**
@@ -677,12 +643,17 @@ class ImageLayer extends GeoLayerMixin(Layer) {
 
     return (
         source && (
-        ('map' !== type || (this.isExternalWMS() && this.isLayerProjectionASMapProjection())) &&
-        ('legend' === type || source.external)
+        ('map' !== type || (this.isExternalWMS() && this.config.crs.epsg === this.config.map_crs)) &&
+        ('legend' !== type || source.external)
       )
     );
   }
 
+  /**
+   * Overwrite method from Layer. Specific to WMS layers
+   * @param {*} param0 
+   * @returns 
+   */
   getWMSLayerName({ type = 'map' } = {}) {
     const { source }   = this.config || ({ source: {} });
     const source_layer = source.layers || source.layer;
@@ -692,7 +663,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       return source_layer;
     }
 
-    return this._getBaseLayerName();
+    return this.config.wms_use_layer_ids ? this.getId() : this.getName();
   }
 
   /**
@@ -711,91 +682,29 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
   getWFSLayerName() {
-    return (
-      (this.config.infolayer && '' !== this.config.infolayer)
-        ? this.config.infolayer
-        : this.getName()
-    ).replace(/\s/g, '_').replaceAll( ':', '-' );
+    return (this.config.infolayer || this.getName()).replace(/\s/g, '_').replaceAll( ':', '-' );
   }
 
   useProxy() {
-    return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats();
+    return this.isExternalWMS() && this.config.crs.epsg === this.config.map_crs && this.getInfoFormats();
   }
 
   getWMSInfoLayerName() {
     return this.useProxy()
       ? this.getSource().layers
-      : this._getBaseLayerName();
+      : (this.config.wms_use_layer_ids ? this.getId() : this.getName());
   }
 
   getPrintLayerName() {
-    return this.isWmsUseLayerIds()
-      ? this.getId()
-      : this.getName();
-  }
-
-  getStringBBox() {
-    const { minx, miny, maxx, maxy } = this.config.bbox;
-    return `${minx},${miny},${maxx},${maxy}`;
+    return this.config.wms_use_layer_ids ? this.getId() : this.getName();
   }
 
   isWfsActive() {
     return Array.isArray(this.config.ows) && this.config.ows.some(t => 'WFS' === t);
   }
 
-  /**
-   * Get wms url of the layer
-   */
-  getFullWmsUrl() {
-    const { wms_url } = ApplicationState.project.state.metadata;
-
-    /** @FIXME add description */
-    if (wms_url && !this.isExternalWMS()) {
-      return wms_url;
-    }
-
-    return this.getWmsUrl();
-  }
-
-  /**
-   * Get WMS url (used by Catalog Layer Menu) 
-   */
-  getCatalogWmsUrl() {
-    const { wms_url } = ApplicationState.project.state.metadata;
-
-    /** @FIXME add description */
-    if (wms_url && !this.isExternalWMS()) {
-      return wms_url;
-    }
-
-    return `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities`;
-  }
-
-  /**
-   * Get WFS url (used by Catalog Layer Menu)  
-   */
-  getCatalogWfsUrl(){
-    return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
-  }
-
-  /**
-   * Get WFS 3 url (used by Catalog Layer Menu)
-   * @since 3.10.0
-   * @return { String } url
-   */
-  getCatalogWfs3Url() {
-    return `${this.getWfsUrl()}wfs3/`;
-  }
-
   getWfsUrl() {
-    const { wms_url } = ApplicationState.project.state.metadata;
-
-    /** @FIXME add description */
-    if (wms_url) {
-      return wms_url;
-    }
-
-    return this.config.wmsUrl;
+    return ApplicationState.project.state.metadata.wms_url || this.config.wmsUrl;
   }
 
   /**
@@ -806,9 +715,9 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   getQueryUrl() {
     const url       = super.getQueryUrl();
     const is_qgis = (
-      Layer.ServerTypes.QGIS === this.getServerType()
+      "QGIS" === this.getServerType()
       && this.isExternalWMS()
-      && this.isLayerProjectionASMapProjection()
+      && this.config.crs.epsg === this.config.map_crs
     );
 
     /** @FIXME add description */
@@ -824,10 +733,6 @@ class ImageLayer extends GeoLayerMixin(Layer) {
     return url;
   }
 
-  getIconUrlFromLegend() {
-    return this.getLegendUrl({ layertitle: false });
-  }
-
   /**
    * Retrieve legend url (ARCGISMAPSERVER or WMS)
    * 
@@ -841,7 +746,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
    * 
    * @see https://docs.qgis.org/3.28/en/docs/server_manual/services/wms.html#getlegendgraphics
    */
-  getLegendUrl(params = {}, opts = {categories:false,  all:false,format:'image/png',}) {
+  getLegendUrl(params = {}, opts = { categories:false,  all:false,format:'image/png',}) {
 
     let base_url, url_params;
 
@@ -863,7 +768,10 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       layerfontfamily,
       layerfontbold,
       itemfontbold,
+      itemfontsize,     //@since 3.11.3
       layerfontitalic,
+      layerfontsize,    //@since 3.11.3
+      showfeaturecount, //@since 3.11.3
       itemfontitalic,
       rulelabel,
       crs,
@@ -905,52 +813,41 @@ class ImageLayer extends GeoLayerMixin(Layer) {
         'SERVICE=WMS',
         'VERSION=1.3.0',
         'REQUEST=GetLegendGraphic',
-        __('SLD_VERSION=',     sld_version),
-        __('WIDTH=',           width),
-        __('HEIGHT=',          height),
-        __('FORMAT=',          (undefined === opts.format ? 'image/png' : opts.format)),
-        __('TRANSPARENT=',     transparent),
-        __('ITEMFONTCOLOR=',   color),
-        __('LAYERFONTCOLOR=',  color),
-        __('LAYERTITLE=',      layertitle),
-        __('ITEMFONTSIZE=',    fontsize),
-        __('CRS=',             crs),
-        __('BBOX=',            ([false, undefined].includes(opts.all) && bbox && bbox.join(','))),
-        __('BOXSPACE=',        boxspace),
-        __('LAYERSPACE=',      layerspace),
-        __('LAYERTITLESPACE=', layertitlespace),
-        __('SYMBOLSPACE=',     symbolspace),
-        __('ICONLABELSPACE=',  iconlabelspace),
-        __('SYMBOLWIDTH=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
-        __('SYMBOLHEIGHT=',    (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
-        __('LAYERFONTFAMILY=', layerfontfamily),
-        __('ITEMFONTFAMILY=',  itemfontfamily),
-        __('LAYERFONTBOLD=',   layerfontbold),
-        __('ITEMFONTBOLD=',    itemfontbold),
-        __('LAYERFONTITALIC=', layerfontitalic),
-        __('ITEMFONTITALIC=',  itemfontitalic),
-        __('RULELABEL=',       rulelabel),
-        __('LEGEND_ON=',       ctx_legend && ctx_legend.LEGEND_ON),
-        __('LEGEND_OFF=',      ctx_legend && ctx_legend.LEGEND_OFF),
-        __('STYLES=',          (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
-        __('LAYER=',           this.getWMSLayerName({ type: 'legend' }))
+        __('SLD_VERSION=',      sld_version),
+        __('WIDTH=',            width),
+        __('HEIGHT=',           height),
+        __('FORMAT=',           (undefined === opts.format ? 'image/png' : opts.format)),
+        __('TRANSPARENT=',      transparent),
+        __('ITEMFONTCOLOR=',    color),
+        __('LAYERFONTCOLOR=',   color),
+        __('LAYERTITLE=',       layertitle),
+        __('ITEMFONTSIZE=',     itemfontsize || fontsize), //@since 3.11.3 check itemfontsize or fontsize
+        __('CRS=',              crs),
+        __('BBOX=',             ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && bbox && bbox.join(',')))),
+        __('BOXSPACE=',         boxspace),
+        __('LAYERSPACE=',       layerspace),
+        __('LAYERTITLESPACE=',  layertitlespace),
+        __('SYMBOLSPACE=',      symbolspace),
+        __('ICONLABELSPACE=',   iconlabelspace),
+        __('SYMBOLWIDTH=',      (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
+        __('SYMBOLHEIGHT=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
+        __('LAYERFONTFAMILY=',  layerfontfamily),
+        __('ITEMFONTFAMILY=',   itemfontfamily),
+        __('LAYERFONTBOLD=',    layerfontbold),
+        __('ITEMFONTBOLD=',     itemfontbold),
+        __('LAYERFONTITALIC=',  layerfontitalic),
+        __('LAYERFONTSIZE=',    layerfontsize),    //@since 3.11.3
+        __('SHOWFEATURECOUNT=', showfeaturecount), //@since 3.11.3
+        __('ITEMFONTITALIC=',   itemfontitalic),
+        __('RULELABEL=',        rulelabel),
+        __('LEGEND_ON=',        ctx_legend && ctx_legend.LEGEND_ON),
+        __('LEGEND_OFF=',       ctx_legend && ctx_legend.LEGEND_OFF),
+        __('STYLES=',           (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
+        __('LAYER=',            this.getWMSLayerName({ type: 'legend' }))
       ]; 
     }
 
-    // discard nullish parameters (without a value)
-    url_params = url_params.filter(p => p)
-
-    this.legendUrl = `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.join('&')}`;
-
-    return this.legendUrl;
-  }
-
-  setMapParamstoLegendUrl({ bbox, crs }) {
-    this.customParams = { ...this.customParams, bbox, crs };
-  }
-
-  getWfsCapabilities() {
-    return this.config.wfscapabilities || 1 === this.config.capabilities;
+    return `${base_url}${(base_url.indexOf('?') > -1 ? '&' : '?')}${url_params.filter(p => p).join('&')}`;
   }
 
   getMapLayer(options = {}, extraParams) {
@@ -982,7 +879,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       return new RasterLayer({ ...options, extent, url, cache_provider, type: 'XYZ' }, {}, method);
     }
 
-    if (this.isExternalWMS() && source && Layer.SourceTypes.ARCGISMAPSERVER === source.type) {
+    if (this.isExternalWMS() && source && "arcgismapserver" === source.type) {
       return new RasterLayer({ ...options, ...source }, extraParams)
     }
 
@@ -999,7 +896,7 @@ class ImageLayer extends GeoLayerMixin(Layer) {
       }, extraParams, method);
     }
 
-    if (this.isExternalWMS() && source && Layer.SourceTypes.WMST === source.type) {
+    if (this.isExternalWMS() && source && "wmst" === source.type) {
       return new RasterLayer({...options, url, cache_provider, type: 'WMTS', }, extraParams, method);
     }
 
@@ -1098,13 +995,6 @@ class ImageLayer extends GeoLayerMixin(Layer) {
   }
 
 }
-
-ImageLayer.WMSServerTypes = [
-  Layer.ServerTypes.QGIS,
-  Layer.ServerTypes.Mapserver,
-  Layer.ServerTypes.Geoserver,
-  Layer.ServerTypes.OGC,
-];
 
 export {
   ImageLayer,

@@ -14,15 +14,20 @@
     <li v-if = "showaddform">
       <div style = "display: flex; justify-content: end">
         <span
-          v-t-tooltip:left.create  = "'close'"
-          @click.stop              = "showaddform = false"
-          :class                   = "g3wtemplate.getFontClass('close')"
-          class                    = "sidebar-button sidebar-button-icon"
-          style                    = "padding: 5px; margin: 3px;"
+          v-t-tooltip:left = "'close'"
+          @click.stop      = "showaddform = false"
+          :class           = "$fa('close')"
+          class            = "sidebar-button sidebar-button-icon"
+          style            = "padding: 5px; margin: 3px;"
         ></span>
       </div>
+      
 
-      <helpdiv message = "sdk.spatialbookmarks.helptext" />
+      <!-- HELP DIV -->
+      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
+        <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
+      </div>
 
       <div
         class = "container add-bookmark-input"
@@ -44,14 +49,16 @@
     <template v-else>
 
       <div v-if = "is_staff" class = "content-bookmarks">
-        <span v-t = "'sdk.spatialbookmarks.sections.project.title'"></span>
+        <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
         <a
-          :href  = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
-          target = "_blank"
-          style  = "float: right;"
-          title  = "QGIS Docs"
+          :hidden          = "is_mobile"
+          :href            = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+          target           = "_blank"
+          style            = "float: right;"
+          data-i18n-title  = "QGIS Docs"
+          data-placement   = "right"
         >
-          <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+          <i :class = "$fa('external-link')"></i>
         </a>
       </div>
 
@@ -63,7 +70,7 @@
             @click.stop = "bookmark.expanded = !bookmark.expanded"
           >
             <span
-              :class = "g3wtemplate.getFontClass(bookmark.expanded ? 'caret-down' : 'caret-right')"
+              :class = "$fa(bookmark.expanded ? 'caret-down' : 'caret-right')"
               style  = "margin-right: 5px;">
             </span>
             <span>{{ bookmark.name }}</span>
@@ -74,7 +81,7 @@
               class       = "spatial-bookmark"
             >
               <div>
-                <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+                <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
                 <span class = "g3w-long-text">{{ node.name }}</span>
               </div>
             </li>
@@ -85,7 +92,7 @@
           class       = "spatial-bookmark"
         >
           <div>
-            <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+            <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
             <span class = "g3w-long-text">{{ bookmark.name }}</span>
           </div>
         </li>
@@ -96,13 +103,14 @@
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span v-t="'sdk.spatialbookmarks.sections.user.title'"></span>
+        <span :hidden = "is_mobile" v-t="'User Bookmarks'"></span>
         <span
-          v-t-tooltip:left.create = "'add'"
-          @click.stop             = "showAddForm"
-          style                   = "padding: 5px; cursor: pointer;"
-          class                   = "sidebar-button sidebar-button-icon"
-          :class                  = "g3wtemplate.getFontClass('plus')"
+          :hidden          = "is_mobile"
+          v-t-tooltip:left = "'add'"
+          @click.stop      = "showAddForm"
+          style            = "padding: 5px; cursor: pointer;"
+          class            = "sidebar-button sidebar-button-icon"
+          :class           = "$fa('plus')"
         ></span>
       </div>
 
@@ -112,7 +120,7 @@
         class       = "spatial-bookmark"
       >
         <div>
-          <span :class = "g3wtemplate.getFontClass('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+          <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
           <span class = "g3w-long-text">{{bookmark.name}}</span>
         </div>
         <span
@@ -120,7 +128,7 @@
           class       = "sidebar-button sidebar-button-icon"
           style       = "color: red; margin: 5px; cursor: pointer"
         >
-          <i :class = "g3wtemplate.getFontClass('trash')"></i>
+          <i :class = "$fa('trash')"></i>
         </span>
       </li>
     </template>
@@ -129,19 +137,14 @@
 </template>
 
 <script>
-  import { LOCAL_ITEM_IDS }   from 'g3w-constants';
   import ApplicationState     from 'store/application'
   import GUI                  from 'services/gui';
   import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
+  import { gettext as _ }     from 'g3w-i18n';
 
-  const { t }        = require('g3w-i18n');
-
-  const item = window.localStorage.getItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
-  const SPATIAL_BOOKMARKS_LOCALITEMS = item ? JSON.parse(item) : undefined;
-
-  export default {
+    export default {
 
     /** @since 3.8.6 */
     name: 'spatial-bookmarks',
@@ -151,11 +154,10 @@
     },
 
     data() {
-      const project = ApplicationState.project;
-
-      if (undefined === SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]) {
-        SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()] = [];
-      }
+      const gid             = ApplicationState.project.getId();
+      const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
+      SAVED_BOOKMARKS[gid]  = SAVED_BOOKMARKS[gid] || [];
+      window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
 
       return {
 
@@ -176,16 +178,16 @@
          */
 
         project: {
-          bookmarks: project.state.bookmarks || []
+          bookmarks: ApplicationState.project.state.bookmarks || []
         },
 
         user: {
-          bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[project.getId()]
+          bookmarks: SAVED_BOOKMARKS[gid]
         },
 
         addbookmarkinput: {
           name:     'add-bookmark',
-          label:    t('sdk.spatialbookmarks.input.name'),
+          label:    _('Name'),
           i18nLabel:true,
           value:    null,
           editable: true,
@@ -208,6 +210,11 @@
       lang() {
         return ApplicationState.language;
       },
+
+      /** @since 4.0.0 */
+      is_mobile() {
+        return window.innerWidth < 767;
+      }
 
     },
 
@@ -232,12 +239,10 @@
       },
 
       saveUserBookMarks() {
-        SPATIAL_BOOKMARKS_LOCALITEMS[ApplicationState.project.getId()] = this.user.bookmarks;
-        try {
-          window.localStorage.setItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id, JSON.stringify(SPATIAL_BOOKMARKS_LOCALITEMS));
-        } catch(e) {
-          console.warn(e);
-        }
+        const gid             = ApplicationState.project.getId();
+        const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
+        SAVED_BOOKMARKS[gid]  = this.user.bookmarks || [];
+        window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
       },
 
       showAddForm() {
@@ -246,6 +251,10 @@
       },
 
       async gotoSpatialBookmark({ extent, crs }) {
+        // automatically hide sidebar on mobile
+        if (window.innerWidth < 767) {
+          GUI.hideSidebar();
+        }
         if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
           const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
           extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())

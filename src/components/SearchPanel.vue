@@ -6,11 +6,26 @@
 <template>
   <div
     class      = "g3w-search-panel form-group"
-    v-disabled = "state.searching"
+    v-disabled = "state.searching || loading || reload"
   >
-
+    <bar-loader :loading = "state.searching || loading || reload"/>
     <h4><b>{{ state.title }}</b></h4>
 
+    <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
+      <!-- HELP DIV -->
+      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
+        <div v-t = "'Search values are limited based on the active filter. Remove the filter to search all data.'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
+      </div>
+      <button
+        v-t-tooltip:left = "'Remove Filter'"
+        @click.stop      = "clearFilters"
+        class            = "btn skin-border-color"
+        style            = "background-color: transparent; margin: 5px 0"
+      >
+        <i class = "skin-color" :class="$fa('clear')"></i>
+      </button>
+    </section>
     <!-- SEARCH TOOLS -->
     <slot name = "tools"></slot>
 
@@ -109,7 +124,7 @@
             <div :ref = "'date_' + input.id" class = "input-group date">
               <input :id = "input.id" type = 'text' class = "form-control" />
               <span class = "input-group-addon skin-color">
-                <span :class = "g3wtemplate.getFontClass(input.options.format.time ? 'time': 'calendar')"></span>
+                <span :class = "$fa(input.options.format.time ? 'time': 'calendar')"></span>
               </span>
             </div>
           </div>
@@ -117,14 +132,15 @@
           <sub>{{ input.options.description }}</sub>
 
           <!-- DEBUG INFO -->
-          <sub v-if = "is_staff">
-            <br v-if = "input.options.description">
-            <span class = "skin-color">{{ input.type }}</span> | <span class = "skin-color">{{ input.widget_type }}</span>
-            <template v-if = "input.options.value">: { key: "{{ input.options.key }}", value: "{{ input.options.value }} }"</template>
-            <template v-if = "input.options.layer_id"><br><span class = "skin-color">layer_id:</span> "{{ input.options.layer_id }}"</template>
-            <template v-if = "input.dependance"><br><span class = "skin-color">depends_on:</span> "{{ input.dependance }}"</template>
-            <template v-if = "input.dependance"><br><span class = "skin-color">strict:</span> {{ input.dependance_strict }}</template>
-          </sub>
+          <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
+            <ul style="font-size: 80%;padding-left: 15px; font-family: monospace; white-space: nowrap; overflow-x: auto; scrollbar-width: thin;">
+              <li><b class = "skin-color">{{ input.type }}</b></li>
+              <li><b class = "skin-color">{{ input.widget_type }}</b><span v-if = "input.options.value">: {<br>  key: "{{ input.options.key }}",<br>  value: "{{ input.options.value }}"<br>}</span></li>
+              <li v-if = "input.options.layer_id"><b class = "skin-color">layer_id:</b> "{{ input.options.layer_id }}"</li>
+              <li v-if = "input.dependance"><b class = "skin-color">depends_on:</b> "{{ input.dependance }}"</li>
+              <li v-if = "input.dependance"><b class = "skin-color">strict:</b> {{ input.dependance_strict }}</li>
+            </ul>
+          </details>
 
           <!-- LOGIC OPERATOR (AND | OR) -->
           <div
@@ -136,13 +152,21 @@
 
         </div>
 
+        <!-- "AUTOFILTER" -->
+        <div class = "form-group" v-disabled = "'data' !== state.return">
+          <label v-t-tooltip:right = "'Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.'" style="display: block;">
+            <input type = "checkbox" v-model = "autofilter" style="margin:0;" />
+            <span v-t="'Filter results'"></span>
+            <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
+          </label>
+        </div>
+
         <!-- SEARCH BUTTON -->
         <div class = "form-group">
           <button
             id          = "dosearch"
             class       = "sidebar-button-run btn btn-block pull-right"
             @click.stop = "doSearch"
-            data-i18n   = "dosearch"
             v-t         = "'dosearch'"
           ></button>
         </div>
@@ -154,7 +178,7 @@
     <slot name = "footer"></slot>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
-    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">Edit in admin</a></b></div>
+    <div v-if = "layers_url" style = "padding-top: 5em;"><b><a :href = "layers_url" target = "_blank">{{ $t('Edit in admin') }}</a></b></div>
 
   </div>
 </template>
@@ -165,12 +189,12 @@
     SEARCH_ALLVALUE,
   }                                            from 'g3w-constants';
   import ApplicationState                      from 'store/application';
+  import GUI                                   from 'services/gui';    
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
-  import { createSingleFieldParameter }        from 'utils/createSingleFieldParameter';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
+  import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import resizeMixin                           from 'mixins/resize';
-
-  const { t } = require('g3w-i18n');
+  import { gettext as _ }                      from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];
@@ -181,8 +205,10 @@
 
     data() {
       return {
-       state:    this.$options.service.state,
-       allvalue: SEARCH_ALLVALUE,
+       state:      this.$options.service.state,
+       autofilter: false, //@since 3.11.0
+       allvalue:   SEARCH_ALLVALUE,
+       reload:     false,
       }
     },
 
@@ -196,10 +222,46 @@
         return window.initConfig.user.is_staff;
       },
 
+      /**
+       * @since 3.11.0 loading inputs data
+       * Disabled search form during loading input data
+       * @return {*}
+       */
+      loading() {
+        return this.state.forminputs.reduce((bool, i) => bool || i.loading, false);
+      },
+
+      /**
+       * @TODO make use only of "this.state.search_layers" instead
+       */
+      search_layers() {
+        return [].concat(getRelationLayerById(this.state.search_1n_relationid) || [], this.state.search_layers);
+      },
+
+      filterlayers() {
+        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getFilterToken()) || [];
+      },
+
     },
 
     methods: {
-
+      /**
+      * @since 3.11.0
+      */
+      clearFilters() {
+        this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
+        //@since v4.0 reset all form values after clear
+        this.state.forminputs.forEach(i => {
+          if (['selectfield','autocompletefield'].includes(i.type)) {
+            i.value = 'in' === i.operator ? [i.values[0].value] : i.values[0].value; //set all or first value
+          } else {
+            i.value = null;
+          }
+          this.changeInput(i);
+        })
+        //@since 4.0.0 close content
+        GUI.closeContent();
+      },
       resize() {
         SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
       },
@@ -208,7 +270,7 @@
        * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
        */
       getLabelOperator(operator) {
-        return `[ ${FILTER_EXPRESSION_OPERATORS[operator]} ]`
+        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`
       },
 
       async onFocus(e) {
@@ -228,7 +290,7 @@
         const state  = this.state;
         let value    = input.value;
 
-        const is_empty         = v => [SEARCH_ALLVALUE, null, undefined].includes(v) || '' === v.toString().trim(); // whether father input can search on subscribers
+        const is_empty         = v => [].concat(v).find(v => [SEARCH_ALLVALUE, null, undefined].includes(v)) || '' === v.toString().trim(); // whether father input can search on subscribers
         const has_autocomplete = i => 'autocompletefield' === i.type;
 
         try {
@@ -245,7 +307,7 @@
 
           /** @TODO check if it has one reason to trim  */
           if (!['textfield', 'textField'].includes(input.type)) {
-            value = value.trim();
+            value = Array.isArray(value) ? value.map(v => v.trim()) : value.trim();
           }
 
           input.value = value;
@@ -257,12 +319,26 @@
             const filter = getDataForSearchInput.field({
               state,
               field,
-              fields: [SEARCH_ALLVALUE, undefined].includes(value) ? [] : [createSingleFieldParameter({ field, value, operator: input.operator })]
+              fields: [].concat(value).find(v => [SEARCH_ALLVALUE, undefined].includes(v)) //consider in value Array
+                ? []
+                : ['in' === input.operator //@since 4.0.0 consider in operator
+                    ? `${field}|${input.operator}|(${[].concat(value).map( v => encodeURIComponent(v))})`
+                    : [].concat(value).map(v => `${field}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|OR,`)
+                  ]
             });
 
             const cached = d.dvalues[filter];
 
-            d.value  = 'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            // In case of in operator
+            if ( 'in' === d.operator && ['selectfield', 'autocompletefield'].includes(d.type)) {
+              d.value  = [SEARCH_ALLVALUE];
+            }
+
+            //In case of no in operator
+            if ( 'in' !== d.operator) {
+              d.value  =  'selectfield' === d.type ? SEARCH_ALLVALUE : null;
+            }
+
             d.values = Array.from(new Set([                                       // ensure uniques values
               ...(!has_autocomplete(d) && !is_empty(value) ? [d.values[0]] : []), // get first value (ALL_VALUE)
               ...(!has_autocomplete(d) && is_empty(value) ? d._values      : []), // parent has an empty value (eg. ALL_VALUE) → show all original values on subscriber
@@ -288,16 +364,9 @@
             // set undefined because if it has a subscribed input with valuerelations widget
 
             /** @TODO use `getDataForSearchInput` instead ? */
-
             try {
-              const data = await state.search_layers[0].getFilterData({
-                fformatter: d.attribute,
-                ordering:   d.attribute,
-                field:      filter,
-              });
-
-              data.data = (data.data || []).map(([key, value]) => ({ key: value, value }));
-
+              // get data for all searchable layers
+              const data = await getDataForSearchInput({ state, layerid: d.alternativeuniquelayer, field: d.attribute, filter });
               // case value map
               if (!d.dependance_strict && 'selectfield' === d.type) {
                 d._values.push(...d.values);
@@ -305,7 +374,7 @@
 
               // set key value for select (!valuemap && !valuerelation)
               if (1 === d.values.length) {
-                d.values.push(...data.data);
+                d.values.push(...data);
               }
 
               // exclude first element (ALL_VALUE)
@@ -380,6 +449,7 @@
 
         const numdigaut        = input.options.numdigaut;
         const has_autocomplete = 'autocompletefield' === input.type;
+        const is_multiple      = 'in' === input.operator; //@since 4.0.0 set multiple select2 only for select box
         const ajax             = has_autocomplete ? {
           delay: 500,
           transport: async (d, ok, ko) => {
@@ -387,6 +457,7 @@
               ok({
                 results: (await getDataForSearchInput({
                   state:    this.state,
+                  layerid:  input.alternativeuniquelayer,
                   field:    input.attribute,
                   suggest: `${input.attribute}|${d.data.q}`,
                 })).map(d => ({ id: d.value, text: d.key })
@@ -404,6 +475,7 @@
           minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
           allowClear:         has_autocomplete,
           placeholder:        has_autocomplete ? '' : null,
+          multiple:           is_multiple, 
           /**
            * @param { Object } params
            * @param params.term the term that is used for searching
@@ -417,32 +489,64 @@
             return null;                                                                                    // hide the term
           },
           language: {
-            noResults:     () => t("sdk.search.no_results"),
-            errorLoading:  () => t("sdk.search.error_loading"),
-            searching:     () => t("sdk.search.searching"),
-            inputTooShort: d => `${t("sdk.search.autocomplete.inputshort.pre")} ${d.minimum - d.input.length} ${t("sdk.search.autocomplete.inputshort.post")}`,
+            noResults:     () => _('No results'),
+            errorLoading:  () => _('Error Loading Data'),
+            searching:     () => _('Searching ...'),
+            inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
           },
         });
 
         SELECTS.push(select2);
 
         select2.on('select2:select select2:unselecting', e => {
+
+          //Add/Change value
+
           if ('select2:select' === e.type || has_autocomplete) {
-            input.value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
-            this.changeInput(input);
+            const value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
+
+            
+            if (is_multiple && input.value.find(v => value === v)) {
+              input.value = input.value.filter(v => value !== v);
+            }
+
+            if (is_multiple && !input.value.find(v => value === v)) {
+              //remove alway SEARCH_ALLVALUE value
+              input.value = input.value.filter(v => !(value === SEARCH_ALLVALUE) && SEARCH_ALLVALUE !== v);
+              input.value.push(value);
+            }
+
+            if (!is_multiple) {
+              input.value = value;
+            }
+            
           }
-        });
+
+          //remove value  
+          if ('select2:unselecting' === e.type && is_multiple) {
+            input.value = input.value.filter(v => e.params?.args?.data?.id !== v);
+            //If we remove all values, we set the SEARCH_ALLVALUE
+            if (0 === input.value.length) {
+              input.value = [SEARCH_ALLVALUE];
+            }
+          }
+
+          this.changeInput(input);
+
+
+        }
+      );
 
         // trigger select2 change on input value change
         this.$watch(() => input.value, async (value, oldVal) => {
-          if (value !== oldVal && SEARCH_ALLVALUE === value) {
+          //Need to convert to an array to consider 'in' operator type
+          if ((new Set([].concat(value))).difference((new Set([].concat(oldVal)))) || [].conact(value).find(v => SEARCH_ALLVALUE === v)) {
             select2.val(value).trigger('change');
           }
         });
 
         // recreate select2 value when language change
-        const unwatch = this.$watch(() => ApplicationState.language, () => {
-          unwatch();
+        GUI.on('i18n-ready', () => {
           this.clearSelect2();
           this.initSelect2Field(input);
         });
@@ -460,8 +564,49 @@
         })
         // reset SELECTS to an empty array
         SELECTS.splice(0);
+      },
+
+      /**
+       * Reload select2Inputs
+        * @return {Promise<void>}
+       */
+      async reloadSelect2Inputs() {
+        //Already reload from another layer
+        if (this.reload) { return }
+
+        this.reload = true;
+        //wait to be sure that another layer is call to reload
+        await this.$nextTick();
+
+        try {
+          await this.$options.service.setInputs();
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.clearSelect2();
+        try {
+          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)));
+        } catch(e) {
+          console.warn(e);
+        }
+
+        this.reload = false;
       }
 
+    },
+    watch: {
+      //@since 3.11.0 Set state auto filter to a search result
+      autofilter(bool = false) {
+        this.state.autofilter.value = Number(bool); //0/1 instead true false
+      }
+    },
+
+    async created() {
+      //Listen change filtertoken on layer
+      //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
+      //because when create a new filter with new rules, the filtertoken string doesn't change
+      this.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
     },
 
     async mounted() {
@@ -475,6 +620,7 @@
     },
 
     beforeDestroy() {
+      this.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
       this.clearSelect2();
     }
 
@@ -499,7 +645,7 @@
     position: absolute;
     padding: 5px;
     top: -24px;
-    background: #222d32;
+    background: var(--bgcolor);
   }
   #dosearch {
     color: #fff;
@@ -514,5 +660,8 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
+  }
+  .search-label .skin-color {
+    font-family: monospace;
   }
 </style>

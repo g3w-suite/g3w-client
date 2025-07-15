@@ -9,9 +9,8 @@ import { $promisify } from 'utils/promisify';
 import GUI            from 'services/gui';
 
 /** @deprecated */
-const _cloneDeep = require('lodash.clonedeep');
-const deprecate  = require('util-deprecate');
-const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
+import _cloneDeep     from 'lodash.clonedeep';
+import deprecate      from 'util-deprecate';
 
 function merge(destination, source) {
   for (let key in source) {
@@ -44,8 +43,10 @@ export default class Component extends G3WObject {
 
   constructor(opts = {}) {
 
-    // BACKOMP v3.x
+    // BACKCOMP v3.x
     if (opts.iconConfig) {
+      console.warn('[G3W-CLIENT] iconConfig is deprecated');
+      console.trace();
       opts.iconColor = opts.iconConfig.color;
       opts.icon      = opts.iconConfig.icon;
       delete opts.iconConfig;
@@ -54,9 +55,9 @@ export default class Component extends G3WObject {
     // TODO: check why `GUI.getFontClass` is undefined
     opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
 
-    opts.open        = çç(opts.open, false);
-    opts.mobile      = çç(opts.mobile, true);
-    opts.collapsible = çç(opts.collapsible, true);
+    opts.open        = opts.open        ?? false;
+    opts.mobile      = opts.mobile      ?? true;
+    opts.collapsible = opts.collapsible ?? true;
 
     super({
       setters: {
@@ -96,26 +97,26 @@ export default class Component extends G3WObject {
     this._firstLayout = true;
 
     /** internal VUE component */
-    this.internalComponent = çç(opts.internalComponent, null);
+    this.internalComponent = opts.internalComponent ?? null;
 
     /** @type { Array } */
     this._components = [];
 
     /** @type { string } */
-    this.id = çç(opts.id, Math.random() * 1000);
+    this.id = opts.id ?? Math.random() * 1000;
 
     /** @type { string } */
-    this.title = çç(opts.title, '');
+    this.title = opts.title ?? '';
 
     this.state = {
       sizes:                        { width: 0, height:0 },
-      info:                         çç(opts.info, null),
-      open:                         çç(opts.open, false),
-      visible:                      çç(opts.visible, true),
-      loading:                      çç(opts.loading, false),
-      disabled:                     çç(opts.disabled, false),
-      resizable:                    çç(opts.resizable, false),
-      closewhenshowviewportcontent: çç(opts.closewhenshowviewportcontent, true),
+      info:                         opts.info                         ?? null,
+      open:                         opts.open                         ?? false,
+      visible:                      opts.visible                      ?? true,
+      loading:                      opts.loading                      ?? false,
+      disabled:                     opts.disabled                     ?? false,
+      resizable:                    opts.resizable                    ?? false,
+      closewhenshowviewportcontent: opts.closewhenshowviewportcontent ?? true,
     };
 
     this.setService(opts.service || this);
@@ -127,7 +128,7 @@ export default class Component extends G3WObject {
     merge(this, opts);
 
     // add events options
-    this.events = çç(opts.events, {});
+    this.events = opts.events ?? {};
 
     if (this.events.open) {
       const { when = "after", cb = () => {} } = this.events.open;
@@ -258,7 +259,6 @@ export default class Component extends G3WObject {
       }
 
       this.internalComponent.$nextTick(() => {
-        $(parent).localize();
         this.emit('ready');
         resolve(true);
       });
@@ -304,12 +304,14 @@ export default class Component extends G3WObject {
    * @fires internalComponent~resize-component
    * @fires layout
    */
-  layout(width, height) {
+  async layout(width, height) {
     if (this.state.resizable && this._firstLayout) {
       this.internalComponent.$on('resize-component', this.internalComponent.layout);
       this._firstLayout = false;
     }
-    this.internalComponent.$nextTick(() => { this.internalComponent.$emit('resize-component', { width, height }); });
+    await this.internalComponent.$nextTick();
+    //need to check if internal component exist becouse wehn unmount, internalcomponent is set to nul
+    this.internalComponent?.$emit('resize-component', { width, height });
     this.emit('layout');
   }
 
@@ -322,8 +324,6 @@ Object.assign(Component.prototype, {
   destroy:                           noop,
   click:                             noop,
   show:                              noop,
-  /** used by the following plugins: "cadastre", "iternet" */
+  /** used by the following plugins: "iternet" */
   overwriteServiceMethods:           deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
-  /** used by the following plugins: "cadastre" */
-  extendInternalComponent:           deprecate(function(o) { this.vueComponent ? Object.entries(o).forEach(([k, v]) => { switch (k) { case 'methods': this.extendInternalComponentMethods(v); break; case 'components': this.extendInternalComponentComponents(v); break; case 'computed':   merge(this.vueComponent[k], v); break; case 'data': merge(this.vueComponent[k], v); break; } }): (this.vueComponent = o); }, '[G3W-CLIENT] Component::extendInternalComponent(internalComponentOptions) is deprecated'),
 });

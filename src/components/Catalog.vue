@@ -26,7 +26,6 @@
             aria-controls = "layers"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "tree"
             v-t           = "'data'">
           </a>
         </li>
@@ -41,7 +40,6 @@
             aria-controls = "externalwms"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "externalwms"
             v-t           = "'externalwms'">
           </a>
         </li>
@@ -56,13 +54,12 @@
             aria-controls = "baselayers"
             role          = "tab"
             data-toggle   = "tab"
-            data-i18n     = "baselayers"
             v-t           = "'baselayers'">
           </a>
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
-          v-if   = "'tab' === state.legend.place && showlegend"
+          v-if   = "'tab' === legend_position && showlegend"
           role   = "presentation"
           :class = "{ active: ('legend' === activeTab) }"
         >
@@ -91,8 +88,6 @@
           :class = "{ active: ('layers' === activeTab) }"
         >
 
-          <helpdiv message = "catalog_items.helptext" />
-
           <!-- TOOLBAR -->
           <div
             id    = "g3w-catalog-toc-layers-toolbar"
@@ -115,12 +110,11 @@
             <catalog-tristate-tree
               v-for                      = "tree in root.tree"
               :key                       = "tree.id"
-              :highlightlayers           = "state.highlightlayers"
               :layerstree                = "tree"
               class                      = "item"
               :parentFolder              = "false"
               :root                      = "true"
-              :legendplace               = "state.legend.place"
+              :legendplace               = "legend_position"
               :parent_mutually_exclusive = "false"
               :storeid                   = "root.storeid"
             />
@@ -224,16 +218,17 @@
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
         <div
-          v-if   = "'tab' === state.legend.place"
+          v-if   = "'tab' === legend_position && 'legend' === activeTab"
           v-for  = "tree in state.layerstrees"
           :key   = "tree.id"
           role   = "tabpanel"
           id     = "legend"
           class  = "tab-pane"
+          :style = "{ backgroundColor: backgroundLegend }"
           :class = "{ active: 'legend' === activeTab }"
         >
           <div v-for = "t in tree.tree" class = "legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
-            <figure v-for = "url in t.legendurls">
+            <figure v-for = "url in t.legendurls" :key ="url.url">
               <bar-loader :loading="url.loading" />
               <img
                 v-show = "!url.loading && !url.error"
@@ -253,6 +248,37 @@
 
       </div>
 
+    </div>
+
+    <div
+      v-if="hasRelatedMaps || 'legend' !== activeTab"
+      style  = "
+        position: sticky;
+        bottom: 0;
+        background-color: var(--bgcolor);
+        display: flex;
+        text-align: center;
+        line-height: 48px;
+        color: #fff;
+        border-top: 2px solid var(--skin-color);
+        margin-top: 12px;
+        justify-content: space-around;
+      "
+    >
+      <a
+        v-if           = "'legend' !== activeTab"
+        href           = "#"
+        @click.stop = "showaddLayerModal"
+      >
+        <i :class="$fa('layers')"></i> <b v-t="'Add Layer'"></b>
+      </a>
+      <a
+        v-if           = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
+        href           = "#"
+        @click.stop = "openChangeMapMenu"
+      >
+        <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
+      </a>
     </div>
 
   </div>
@@ -289,9 +315,12 @@ export default {
   data() {
     return {
       state:            this.$options.service.state || {},
+      legend_position:  ApplicationState.project.state.legend_position || 'tab',
+      iframe:           ApplicationState.iframe,
       showlegend:       false,
+      backgroundLegend: ApplicationState.gui.layout.app.legend && ApplicationState.gui.layout.app.legend.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
       currentBaseLayer: null,
-      activeTab:        'layers',
+      activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
     }
   },
@@ -327,17 +356,26 @@ export default {
       );
     },
 
+    /**
+     * @returns {boolean} whether it should list any related projects or maps.
+     *
+     * @since 3.8.0
+     */
+     hasRelatedMaps() {
+      return window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length > 1;
+    },
+
   },
 
   methods: {
 
-    onLegendError(legendurl) {
-      legendurl.error   = true;
-      legendurl.loading = false;
+    onLegendError(url) {
+      url.error   = true;
+      url.loading = false;
     },
 
-    onLegendLoad(legendurl) {
-      legendurl.loading = false;
+    onLegendLoad(url) {
+      url.loading = false;
     },
 
     /**
@@ -347,7 +385,7 @@ export default {
      */
     getLegendSrc(change = false) {
       // skip if not active
-      if ('tab' !== this.state.legend.place) { return }
+      if ('tab' !== this.legend_position) { return }
 
       this.state.layerstrees.forEach(t => {
         let layers = this._traverseVisibleLayers(t.tree);
@@ -377,7 +415,7 @@ export default {
           _layers.push(layer);
         }
         if (null !== layer.nodes && undefined !== layer.nodes) {
-          _layers = _layers.concat(this._traverseVisibleLayers(layer.nodes, _layers));
+          this._traverseVisibleLayers(layer.nodes, _layers);
         }
       }
       return _layers;
@@ -402,7 +440,7 @@ export default {
         const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
         const catalogLayer = getCatalogLayerById(layer.id);
 
-        const url          = catalogLayer ? catalogLayer.getLegendUrl(this.state.legend.config, {
+        const url          = catalogLayer ? catalogLayer.getLegendUrl((window.initConfig.layout || {}).legend, {
           all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
           format:     'image/png',
           categories: layer.categories
@@ -482,13 +520,13 @@ export default {
                 })).blob());
           } catch (e) {
             console.warn(e);
+          } finally {
+            //set loading to false
+            obj.loading = false;
           }
-
-          obj.loading = false;
         }
       }
-
-    return legendurls;
+      return legendurls;
     },
 
     /**
@@ -687,7 +725,6 @@ export default {
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
-      
       layerstree.filter.active = await ApplicationState.catalog[storeid].getLayerById(layerstree.id).toggleFilterToken();
     },
 
@@ -712,6 +749,27 @@ export default {
     onTreeNodeSelected(node) {
       GUI.getService('map').selectLayer(node.id);
     },
+
+    /**
+     * @since 3.11.0
+     */
+    showaddLayerModal() {
+      if (window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
+      $('#modal-addlayer').modal('show');
+    },
+
+    /**
+     * @since 3.11.0
+     */
+    openChangeMapMenu() {
+      if (window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
+      $('#modal-changemap').modal('show');
+    },
+    
 
   },
 
@@ -739,9 +797,13 @@ export default {
       immediate: false
     },
 
-    activeTab(tab) {
-      if ('legend' === tab) {
+    activeTab(activeTab, oldTab) {
+      if ('legend' === activeTab) {
         this.getLegendSrc(true);
+      }
+      if (this.$el) {
+        this.$el.parentElement.classList.remove(`tab-${oldTab}`);
+        this.$el.parentElement.classList.add(`tab-${activeTab}`);
       }
     },
 
@@ -824,7 +886,7 @@ export default {
   }
   .tabbable-line > .nav-tabs > li {
     margin-right: 2px;
-    border-bottom: 4px solid #21292d;
+    border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2));
   }
   .tabbable-line > .nav-tabs > li > a {
     border: 0;
@@ -851,7 +913,7 @@ export default {
   .tabbable-line > .nav-tabs > li.active > a {
     border: 0;
     color: #fff;
-    background-color: #2c3b41;
+    background-color: hsl(from var(--bgcolor) h s calc(l + 4));
   }
   .tabbable-line > .nav-tabs > li.active > a > i {
     color: #fff;
@@ -897,16 +959,12 @@ export default {
     font-weight: bold;
   }
   .catalog ul {
-    line-height: 1.5em;
+    line-height: 1.75em;
     list-style-type: none;
-  }
-  .catalog .list-group-item {
-    color: #fff;
-    background-color: #2c3b41;
   }
   .catalog .tree-item.selected ul.layer-categories,
   .catalog #legend div.selected ul.layer-categories {
-    background-color: #222d32;
+    background-color: var(--bgcolor);
   }
   .catalog .tree-item div.tree-node-title,
   .catalog #legend div div.tree-node-title {
@@ -915,6 +973,7 @@ export default {
     width: 80%;
     display: inline-flex;
     justify-content: space-between;
+    user-select: none;
   }
   .catalog .tree-item div.tree-node-title.disabled,
   .catalog #legend div div.tree-node-title.disabled {
@@ -1019,7 +1078,7 @@ export default {
   }
   .catalog .layer-legend {
     padding: 3px 0 0 35px;
-    background-color: #222d32;
+    background-color: var(--bgcolor);
   }
   .catalog .catalalog-nav-tabs {
     display: flex;
@@ -1083,8 +1142,22 @@ export default {
   #catalog #layers .sidebar-menu > li > a {
     border: 0;
   }
+
   #catalog > a {
     display: none !important;
+  }
+
+  #catalog .tree-item > .toggle-context-menu {
+    opacity: 0;
+    position: absolute;
+    inset: 0 4px auto auto;
+    color: #fff;
+    padding: 4px 8px;
+    border: 1px solid;
+    border-radius: 3px;
+  }
+  #catalog .tree-item:not(.group):hover > .toggle-context-menu {
+    opacity: 1;
   }
 </style>
 

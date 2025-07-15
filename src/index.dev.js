@@ -3,12 +3,11 @@
  * @since v3.8
  */
 import localforage from 'localforage';
-
-// include backward compatibilies
-import './deprecated';
+import { waitFor } from 'utils/waitFor';
+import shpwrite    from '@mapbox/shp-write';
 
 // expose global variables
-import './g3w-globals';
+import 'g3w-globals';
 
 // apply dev config overrides (config.js)
 (require('../config').devConfig || (() => { })).call();
@@ -16,10 +15,48 @@ import './g3w-globals';
 // print some debug info
 window.g3wsdk.info();
 
-// dev layers
+// custom header links
+g3wsdk.core.ApplicationService.once('initconfig', () => {
+  initConfig.header_custom_links = [
+    // modal button (icon + i18n)
+    {
+      "i18n":   true,
+      "icon":   "fas fa-plus",
+      "title":  "mapcontrols.add_layer_control.header",
+      "type":   "modal",
+      "target": "#modal-addlayer",
+    },
+    // modal button (icon + i18n)
+    {
+      "i18n":   true,
+      "icon":   "fas fa-window-maximize",
+      "title":  "changemap",
+      "type":   "modal",
+      "target": "#modal-changemap",
+    },
+    // external link (with visible text)
+    {
+      "i18n":   false,
+      "text":   "<i class='fas fa-bug'></i> <span hidden>Create a new issue</span>",
+      "title":  "Report a bug",
+      "url":    "https://github.com/g3w-suite",
+      "target": "_blank",
+    },
+    // custom content (image + modal)
+    {
+      "i18n":    false,
+      "title":   'Forecast',
+      "img":     'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>',
+      "content": '<iframe src="https://www.3bmeteo.com/moduli_esterni/italia_7_giorni/ffffff/fc9b2a/5e5e5e/ffffff/it" style="width: 100%;min-height: 655px;border: none;"></iframe>',
+      "type":    'modal'
+    }
+  ];
+});
+
+// dev layers (from local storage)
 g3wsdk.core.ApplicationService.once('initconfig', () => {
 
-  const pid = initConfig.id;
+  const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
 
   // DBTM Multiscala
   const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
@@ -39,7 +76,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   };
   localStorage.setItem('externalwms', JSON.stringify(wms));
 
-  // Piazza Leopoldo
+  // piazza-leopoldo.kml
   localforage.getItem('externalLayers').then(externalLayers => {
     externalLayers  = externalLayers || {};
     externalLayers["piazza-leopoldo.kml"] = externalLayers["piazza-leopoldo.kml"] || {
@@ -58,30 +95,231 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   });
 });
 
-// run app (index.prod.js)
-require('./index.prod');
+// dev layers (modal-addlayer)
+g3wsdk.gui.GUI.once('ready', async () => {
 
-// custom map control: "Open in iframe"
+  await waitFor(() => GUI.getService('map'), 1000);
+  await GUI.getService('map').isReady();
+
+  // $('#modal-addlayer').modal('show');
+
+  const map = GUI.getService('map');
+  const q = document.querySelector.bind(document);
+
+  // set modal options
+  const setOption = async (el, value) => {
+    el = '#modal-addlayer ' + el;
+    await waitFor(() => q(el), 1000);
+    q(el).value = value;
+    q(el).dispatchEvent(new Event('input'));
+    q(el).dispatchEvent(new Event('change'));
+  }
+
+  // add file layer
+  const setFile = async (file, epsg) => {
+    await waitFor(() => !q('#add-layer-type').value, 5000);
+    if (map.getLayerByName(file.name)) {
+      return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+    }
+    setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+    await setOption('#add-layer-type', 'file');
+    await setOption('#projection-layer', epsg);
+    await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
+    const data = new DataTransfer();
+    data.items.add(file);
+    q('#addcustomlayer input[type="file"]').files = data.files;
+    q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    q('.modal-footer .btn.btn-success').click();
+    window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
+  }
+
+  // add wms layer
+  const setWms = async (wms) => {
+    await waitFor(() => !q('#add-layer-type').value, 5000);
+    await setOption('#add-layer-type', 'wms');
+    await setOption('#add_wms_url', wms.url);
+    await setOption('#add_wms_name', wms.id);
+    await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
+    q('.modal-content .btn.btn-success').click();
+    await waitFor(() => q('#g3w-wms-layers'), 5000);
+    $('#g3w-wms-layers').select2('open');
+    $('#select2-g3w-wms-layers-results li:nth-child(1)').trigger('mouseup');
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    await setOption('#position-layer', 'bottom');
+    await setOption('#g3w-wms-visible', false);
+    await setOption('#g3w-wms-opacity', 0.85);
+    const wms_name = q('#g3w-wms-layer-name').value;
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    q('.modal-footer .btn.btn-success').click();
+    window.addEventListener("beforeunload", () => { map.getLayerByName(wms_name) && map.removeExternalLayer(wms_name); });
+  };
+
+  // export layer to zip
+  const zipFile = async name => {
+    await waitFor(async () => name in (await localforage.getItem('externalLayers')), 1000);
+    const externalLayers = await localforage.getItem('externalLayers');
+    const blob           = await shpwrite.zip(
+      JSON.parse(externalLayers[name].features),
+      {
+        outputType:    "blob",
+        folder:         name,
+        prj:            externalLayers[name].options.crs,
+        types: {
+          point:        name,
+          mulipoint:    name,
+          polygon:      name,
+          multipolygon: name,
+          line:         name,
+          polyline:     name,
+          multiline:    name,
+        },
+      }
+    );
+    return new File([blob], name.replace('.kml', '.zip'), { type: 'application/zip' });
+  };
+
+  // points-xy.csv
+  await setFile(
+    new File([`Name,X,Y,
+A,11.2470052,43.7914696
+B,11.2472371,43.7912777
+C,11.2474811,43.7910709`],
+    'points-xy.csv',
+    { type: 'text/plain' }),
+    'EPSG:4326'
+  );
+
+  // points-wkt.csv
+  await setFile(
+    new File([`Name,WKT,
+A,"POINT (11.2470052 43.7914696)"
+B,"POINT (11.2472371 43.7912777)"
+C,"POINT (11.2474811 43.7910709)"`],
+    'points-wkt.csv',
+    { type: 'text/plain' }),
+    'EPSG:4326'
+  );
+
+  // piazza-leopoldo.zip
+  await setFile(
+    await zipFile('piazza-leopoldo.kml'),
+    'EPSG:3857'
+  );
+
+  // ORTOFOTO
+  await setWms({
+    id: 'ORTOFOTO',
+    url: 'https://www502.regione.toscana.it/wmsraster/com.rt.wms.RTmap/wms?map=wmsofc&map_resolution=91&language=ita&'
+  });
+
+});
+
+/**
+ * Custom editing control: “Edit in iframe”
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/pull/736
+ */
 g3wsdk.gui.GUI.once('ready', () => {
+  (new Vue).$watch(
+    () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
+    (data = []) => data.filter(d => 'editing-panel' === d.content.id).forEach(d => { //wait for editing panel
+      const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
+      let iframe_btn = document.querySelector('#edit_in_iframe');
+      if (!tolboxes || iframe_btn) {
+        return;
+      }
+      // append "edit in iframe" element immediately after toolboxes
+      tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
+      iframe_btn = document.querySelector('#edit_in_iframe');
+      iframe_btn.addEventListener('click', () => {
+        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+        w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+        w.addEventListener('message', e => {
+          if ('app:ready' === e.data.action) {
+            w.document.querySelector('iframe').contentWindow.postMessage({
+              id:      null,
+              action: 'editing:add',
+              data: {
+                qgs_layer_id: Array.from(tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]), // toolbox id = layer id
+                properties: { },
+              }
+            }, '*');
+          }
+        }, false);
+        // prevent page refresh (eg. CTRL+R)
+        w.onbeforeunload = () => w.close();
+      });
+    })
+  );
+});
 
+/**
+ * Custom query result action button: “Update feature in iframe”
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/pull/736
+ */
+g3wsdk.gui.GUI.once('ready', () => {
+  g3wsdk.gui.GUI.getService('queryresults').onafter('addActionsForLayers', (actions, layers) => {
+    Object.keys(actions)
+    .filter(id => layers.find(l => id === l.id).editable)
+    .forEach(id => {
+      //Check only if has primay key value to ge unique feature to edit
+      const pkField = g3wsdk.core.catalog.CatalogLayersStoresRegistry.getLayerById(id).getEditingFields().find(f => f.pk);
+      // in case that layer has not pk field, iframe editing action is not
+      if (!pkField) {
+        return;
+      }
+      actions[id].push({
+        id: 'update_feature_in_iframe',
+        class: 'fa fa-window-restore',
+        hint:  'Update feature in iframe',
+        style: { color: 'black !important' },
+        cbk:   (layer, feature) => {
+          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+          w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+          w.addEventListener('message', e => {
+            if ('app:ready' === e.data.action) {
+              w.document.querySelector('iframe').contentWindow.postMessage({
+                id:      null,
+                action: 'editing:update',
+                data: {
+                  qgs_layer_id: layer.id,
+                  feature: {
+                    field: pkField.name,
+                    value: feature.attributes[pkField.name]
+                  }
+                }
+              }, '*');
+            }
+          }, false);
+          // prevent page refresh (eg. CTRL+R)
+          w.onbeforeunload = () => w.close();
+        }
+      })
+    })
+  })
+});
+
+/**
+ * Custom map control: “Open in iframe”
+ */
+g3wsdk.gui.GUI.once('ready', () => {
   g3wsdk.gui.GUI.getService('map').once('ready', function() {
-    this.createMapControl('onclick',
-    {
+    this.createMapControl({
       id:            "OPENIFRAME",
       options: {
         add:         true,
         clickmap:    false,
-        name:        'OPENIFRAME',
         tipLabel:    'Open in iframe',
-        customClass: g3wsdk.gui.GUI.getFontClass('plugin'),
+        customClass: 'fa fa-window-restore',
         onclick() {
           const w = window.open('about:blank', '_blank', `fullscreen=yes`);
           w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
-          // send message to iframe when app is ready
+          // send message to iframe every time ifrema send a message con contentWindow
           w.addEventListener('message', e => {
-            if (e.data.action === 'app:ready') {
-              setTimeout(() => g3wsdk.gui.GUI.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
-            }
+            //Emit iframe:message to handle the message in config.js file
+            setTimeout(() => g3wsdk.gui.GUI.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
           }, false);
           // prevent page refresh (eg. CTRL+R)
           w.onbeforeunload = () => w.close();
@@ -91,5 +329,100 @@ g3wsdk.gui.GUI.once('ready', () => {
   });
 });
 
-window.GUI         = g3wsdk.gui.GUI,
+/**
+ * Custom search action: “Create from template”
+ */
+g3wsdk.gui.GUI.once('ready', async () => {
+  const SEARCH          = g3wsdk.gui.GUI.getComponent('search');
+  const SAVED_SEARCHES  = SEARCH.getInternalComponent().state.searches;
+  const CUSTOM_SEARCHES = JSON.parse(localStorage.getItem('custom-searches') || '[]');
+
+  SAVED_SEARCHES.unshift(...CUSTOM_SEARCHES);
+
+  SEARCH.actions.unshift({
+    id:      "widget-editor",
+    class:   `fa fa-laptop-code`,
+    tooltip: 'Create from template',
+    style: {
+      color:        '#ea9610',
+      padding:      '6px',
+      fontSize:     '1.2em',
+      borderRadius: '3px',
+      marginRight:  '5px',
+    },
+    fnc:     () => {
+      const dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */`
+          <dialog>
+            <form method="dialog">
+              <label for="template_name" style="font-size: 1.25em;">Choose template</label>
+              <select name="template_name" class="form-control" style="margin-bottom: 1em;">
+                <option value="blank">---</option>
+                ${SAVED_SEARCHES.map(opt => /* html */`<option value="${opt.id}">${opt.name}</option>`).join('')}
+              </select>
+              <pre hidden style="margin-top: 1em;" contenteditable></pre>
+              <menu style="display: flex;justify-content: space-between;">
+                <button type="submit" value="cancel" class="btn btn-secondary">Cancel</button>
+                <button disabled type="submit" value="save" class="btn btn-success">Confirm</button>
+              </menu>
+            </form>
+          </dialog>
+        `.trim()
+      }).content.firstChild;
+
+      const select = dialog.querySelector('select');
+      const preview = dialog.querySelector('pre');
+
+      // preview script
+      select.addEventListener('change', async () => {
+        dialog.querySelector('[value=save]').disabled = ('blank' === select.value);
+        if (select.value !== 'blank') {
+          preview.textContent = JSON.stringify(
+            Object.assign({}, SAVED_SEARCHES.find(opt => select.value === opt.id.toString()), { id: `my-${CUSTOM_SEARCHES.length}` }),
+            null,
+            2
+          );
+        } else {
+          preview.textContent = '';
+        }
+        preview.hidden = !preview.textContent;
+      });
+      dialog.addEventListener('close', async () => {
+        const action = dialog.returnValue;
+        if ('save' === action && select.value) {
+          CUSTOM_SEARCHES.unshift(JSON.parse(preview.textContent));
+          SAVED_SEARCHES.unshift(JSON.parse(preview.textContent));
+          localStorage.setItem('custom-searches', JSON.stringify(CUSTOM_SEARCHES));
+          window.location.reload();
+        }
+        dialog.remove();
+      });
+      document.body.appendChild(dialog);
+      dialog.showModal();
+    },
+  });
+
+  document.querySelectorAll('#search > .treeview-menu > li').forEach((li, i) => {
+    if (i < CUSTOM_SEARCHES.length) {
+      li.insertAdjacentHTML('afterbegin', /* html */`<i
+        class          = "fa fa-trash"
+        style          = "color: red;"
+      ></i>`);
+      li.querySelector('.fa-circle').hidden = true;
+      li.querySelector('.fa-trash').addEventListener('click', e => {
+        e.stopPropagation(); 
+        CUSTOM_SEARCHES.splice(i, 1);
+        localStorage.setItem('custom-searches', JSON.stringify(CUSTOM_SEARCHES));
+        window.location.reload();
+      });
+    }
+  });
+
+});
+
+
+// run app (index.prod.js)
+require('./index.prod');
+
+window.GUI         = g3wsdk.gui.GUI;
 window.localforage = localforage;

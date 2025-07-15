@@ -15,8 +15,10 @@ export default class InteractionControl extends ol.control.Control {
    * @param {Object}  options 
    * @param {string}  options.name
    * @param {boolean} options.enabled 
+   * @param {string}  options.cursorClass since 3.11.0
    */
   constructor(options = {}) {
+
     // wrapper for native ol controls
     if (options.ol) {
       super({ element: options.ol.element });
@@ -29,28 +31,28 @@ export default class InteractionControl extends ol.control.Control {
     }
 
     /** @TODO simplify */
-    options.enabled = undefined === options.enabled ? !!options.interactionClass : options.enabled;
+    options.enabled = options.enabled ?? !!options.interactionClass;
     
-    options.visible = undefined === options.visible ? true : options.visible;
+    options.visible = options.visible ?? true;
 
     const name = (options.name || '').split(' ').join('-').toLowerCase();
 
     /** ORIGINAL SOURCE: src/components/MapControlButton.js@v3.10.0 */
-    if (!options.element) {
-      options.element = (new (Vue.extend({
-        template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
-          <button type="button" v-t-tooltip="'${options.tipLabel || name}'">
-            ${ options.label || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }
-          </button>
-        </div>`,
-      }))()).$mount().$el;
-    }
+    options.element = options.element || (new (Vue.extend({
+      template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
+        <button type="button" v-t-tooltip="'${options.tipLabel || name}'">
+          ${ options.label || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }
+        </button>
+      </div>`,
+    }))()).$mount().$el;
 
     super(options);
 
     this._options        = options;
 
-    //@since v3.11.0
+    /**
+     * @since 3.11.0 
+     */
     this.cursorClass     = options.cursorClass;
 
     /**
@@ -77,7 +79,7 @@ export default class InteractionControl extends ol.control.Control {
      *
      * @FIXME add description
      */
-    this.offline         = undefined === options.offline ? true : options.offline;
+    this.offline         = options.offline ?? true;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -118,6 +120,13 @@ export default class InteractionControl extends ol.control.Control {
     this.priority        = options.priority || 0;
 
     /**
+     * @FIXME why?
+     * 
+     * @since 4.0.0 Add click map option
+     */
+    this.clickmap       = options.clickmap || false;
+
+    /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
      * button click handler
@@ -137,8 +146,6 @@ export default class InteractionControl extends ol.control.Control {
 
     this._toggled                 = false;
 
-    this._toggled                 = false;
-
     this._interactionClassOptions = options.interactionClassOptions;
 
     /** @since 3.11.0 */
@@ -153,12 +160,7 @@ export default class InteractionControl extends ol.control.Control {
    * @since 3.11.0
    */
   setMouseCursor(toggled, className = this.cursorClass) {
-    const viewport = this.getMap().getViewport()
-    if (toggled) {
-      setTimeout(() => viewport.classList.add(className));
-    } else {
-      viewport.classList.remove(className);
-    }
+    this.getMap().getViewport().classList[toggled ? 'add' : 'remove'](className);
   }
 
   initInteraction(options = {}) {
@@ -607,12 +609,16 @@ export default class InteractionControl extends ol.control.Control {
   }
 
   /**
+   * @deprecated use `this.on('toggled', ({ toggled }) => {` instead
+   *
    * @param { Object }                     toggledTool
    * @param { 'spatialMethod' | 'custom' } toggledTool.type
    * @param { 'toggled' | 'hover' }        toggledTool.how      "toggled" => (show tools when control is toggled); "hover" => (show button tool as info help)
    * @param                                toggledTool.component vue component
    */
   createControlTool(toggledTool = {}) {
+
+    console.warn('[G3W-CLIENT] this.toggledTool is deprecated');
 
     switch(toggledTool.type) {
 
@@ -652,7 +658,12 @@ export default class InteractionControl extends ol.control.Control {
     }
   }
 
+  /**
+   * @deprecated use `this.on('toggled', ({ toggled }) => {` instead
+   */
   showToggledTool(show = true) {
+    console.warn('[G3W-CLIENT] this.toggledTool is deprecated');
+
     if (show) {
       GUI.showUserMessage({
         title:     this.toggledTool.__title,

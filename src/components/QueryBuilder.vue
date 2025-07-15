@@ -9,18 +9,19 @@
     <!-- SEARCH LAYER -->
     <div
       id    = "query_builder_layers"
-      class = "margin-between-element">
+      class = "mb-5">
       <label
         class = "querybuilder-title"
-        v-t   = "'sdk.querybuilder.panel.expression'">
+        v-t   = "'EXPRESSION'">
       </label>
       <a
-        :href  = "`https://g3w-suite.readthedocs.io/en/v3.7.x/g3wsuite_client.html#search-and-query-builder`"
-        target = "_blank"
-        style  = "float: right;"
-        title  = "Docs"
+        :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
+        target          = "_blank"
+        style           = "float: right;"
+        data-i18n-title = "Docs"
+        data-placement  = "right"
       >
-        <i :class = "g3wtemplate.getFontClass('external-link')"></i>
+        <i :class = "$fa('external-link')"></i>
       </a>
       <select id = "query_builder_layers_select" class = "form-control">
         <option
@@ -40,34 +41,34 @@
     <b
       class   = "skin-color"
       v-show  = "message"
-    ><span v-t = "'sdk.querybuilder.messages.number_of_features'"></span>{{ message }}</b>
+    ><span v-t = "'Features found:'"></span>{{ message }}</b>
 
     <div class = "content-end">
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "run"
         :disabled = "disabled"
-        v-t       = "'sdk.querybuilder.panel.button.run'"
-      ><i :class = "g3wtemplate.getFontClass('run')" style = "color: green;"></i></button>
+        v-t       = "'RUN'"
+      ><i :class = "$fa('run')" style = "color: green;"></i></button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
-        v-t       = "'sdk.querybuilder.panel.button.clear'"
-      ><i :class = "g3wtemplate.getFontClass('clear')"></i></button>
+        v-t       = "'CLEAR'"
+      ><i :class = "$fa('clear')"></i></button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
-        v-t       = "'sdk.querybuilder.panel.button.save'"
-      ><i :class = "g3wtemplate.getFontClass('save')"></i></button>
+        v-t       = "'SAVE'"
+      ><i :class = "$fa('save')"></i></button>
     </div>
 
     <hr>
 
-    <label v-t = "'sdk.querybuilder.panel.fields'"></label>
+    <label v-t = "'FIELDS'"></label>
 
     <!-- SEARCH FIELDS -->
-    <select ref = "search_fields" size = "4" class = "margin-between-element">
+    <select ref = "search_fields" size = "4" class = "mb-5">
       <option selected hidden></option>
       <option
         v-for     = "field in fields"
@@ -77,7 +78,7 @@
     </select>
 
     <!-- SEARCH OPERATORS -->
-    <div class = "content-wrap margin-between-element">
+    <div class = "content-wrap mb-5">
       <button
         v-for  = "operator in operators"
         @click = "addToExpression({ value: operator, type: 'operator' })"
@@ -89,7 +90,7 @@
     <bar-loader :loading = "loading.values" />
 
     <!-- SEARCH VALUES -->
-    <select v-if = "!manual" ref = "search_values" size = "4" class = "margin-between-element">
+    <select v-if = "!manual" ref = "search_values" size = "4" class = "mb-5">
       <option selected hidden></option>
       <option
         v-for     = "[key, value] in values"
@@ -106,7 +107,7 @@
       style     = "color: #000;"
     >
       <i :class = "g3wtemplate.getFontClass('search')"></i>
-      <span v-t = "'sdk.querybuilder.panel.button.all'"></span>
+      <span v-t = "'SEARCH A VALUE'"></span>
     </button>
 
   </div>
@@ -122,8 +123,8 @@ import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-
-const { t } = require('g3w-i18n');
+import { prompt }                  from 'utils/prompt';
+import { gettext as _ }            from 'g3w-i18n';
 
 export default {
 
@@ -230,8 +231,8 @@ export default {
     async run() {
       try {
         this.loading.test = true;
-        const layer = getCatalogLayerById(this.currentlayer.id);
-        const { data } = await DataRouterService.getData('search:features', {
+        const layer       = getCatalogLayerById(this.currentlayer.id);
+        const { data }    = await DataRouterService.getData('search:features', {
           inputs: {
             layer,
             filter: createFilterFromString({ layer, filter: this.filter }),
@@ -240,14 +241,13 @@ export default {
           outputs: true,
         });
         const n         = data.length && data[0].features.length; // number of features
-        this.message    = undefined !== n ? ` ${n}` : '';
+        this.message    = undefined === n ? '' : ` ${n}`;
         return data;
       } catch(e) {
         console.warn(e);
       } finally {
         this.loading.test = false;
       }
-      
     },
 
     /**
@@ -256,8 +256,8 @@ export default {
     async save() {
       const id      = this.projectId || ApplicationState.project.getId();
       const edit_id = this.edit && this.$options.options.id;
-      const item   = window.localStorage.getItem('QUERYBUILDERSEARCHES');
-      let searches = item ? JSON.parse(item) : undefined;
+      const item    = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      let searches  = item ? JSON.parse(item) : undefined;
 
       let query;
 
@@ -266,7 +266,11 @@ export default {
           layerId:   this.currentlayer.id,
           filter:    this.filter,
           layerName: getCatalogLayerById(this.currentlayer.id).getName(),
-          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => { GUI.dialog.prompt(t('sdk.querybuilder.additem'), d => d ? res(d) : rej()) })),
+          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => prompt({
+            label: _('Insert the name of the new search'),
+            value: '',
+            callback: d => d ? res(d) : rej()
+          }))),
           id:        edit_id || getUniqueDomId(),
         };
 
@@ -303,7 +307,7 @@ export default {
 
       setTimeout(() => { searches[id].forEach(q => ITEMS[id].push(q)); }, 0);
       ITEMS[id].splice(0);
-      GUI.showUserMessage({ type: 'success', message: t("sdk.querybuilder.messages.changed"), autoclose: true });
+      GUI.showUserMessage({ type: 'success', message: _('Saved'), autoclose: true });
     },
 
   },
@@ -372,7 +376,6 @@ export default {
 
 <style scoped>
 #query_builder {
-  font-family: monospace;
   margin-bottom: 0;
   height: 100%;
   display: flex;
@@ -418,7 +421,7 @@ option:nth-of-type(2n+1) {
   justify-content: flex-end;
   margin-top: 5px;
 }
-.margin-between-element {
+.mb-5 {
   margin-bottom: 5px;
 }
 #query_builder_expression_content {

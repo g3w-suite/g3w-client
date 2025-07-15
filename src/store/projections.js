@@ -4,6 +4,7 @@
  * @since 3.11.0
  */
 import { normalizeEpsg } from 'utils/normalizeEpsg';
+import proj4             from 'proj4';
 
 /**
  * ORIGINAL SOURCE: src/app/g3w-ol/projection/projection.js@v3.10.1
@@ -12,22 +13,32 @@ import { normalizeEpsg } from 'utils/normalizeEpsg';
 export default {
 
   get(crs = {}) {
-    let p = ol.proj.get(crs.epsg);
+    let p = ol.proj.get(normalizeEpsg(crs.epsg));
+    const proj = !p && {
+      code:            crs.epsg,
+      extent:          crs.extent,
+      axisOrientation: crs.axisinverted ? 'neu' : 'enu',
+      units:           crs.geographic ? 'degrees' : 'm'
+    };
+
+    // crs not yet registered
     if (!p) {
-      if (crs.proj4) {
-        proj4.defs(crs.epsg, crs.proj4);
-      }
-      const proj = {
-        code:            crs.epsg,
-        extent:          crs.extent,
-        axisOrientation: crs.axisinverted ? 'neu' : 'enu',
-        units:           crs.geographic ? 'degrees' : 'm'
-      };
       p = new ol.proj.Projection(proj);
       p.getAxisOrientation = () => proj.axisOrientation;
       ol.proj.addProjection(p);
+    }
+
+    // crs is a proj4 object
+    if (proj && crs.proj4) {
+      proj4.defs(crs.epsg, crs.proj4);
       ol.proj.proj4.register(proj4);
     }
+
+    // crs has no extent
+    if (crs.extent && !p.getExtent()){
+      p.setExtent(crs.extent);
+    }
+
     return p;
   },
 
@@ -45,7 +56,7 @@ export default {
 
     // check if already registered
     if (!p) {
-      const { result, data } = await fetch(`/crs/${epsg.split(':')[1]}`);
+      const { result, data } = await (await fetch(`/crs/${epsg.split(':')[1]}/`)).json();
       if (result)  {
         data.epsg  = normalizeEpsg(data.epsg);
         p = this.get(data);

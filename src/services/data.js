@@ -10,8 +10,7 @@ import { groupBy }                        from 'utils/groupBy';
 import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
 import { $promisify, promisify }          from 'utils/promisify';
-
-const { t }  = require('g3w-i18n');
+import { gettext as _ }                   from 'g3w-i18n';
 
 const handleQueryPromises = async (promises = []) => {
   const responses = await Promise.allSettled(promises);
@@ -105,17 +104,15 @@ export default {
     feature_count      = ApplicationState.project.state.feature_count || 5,
     filterConfig       = {},
     multilayers        = false,
-    condition          = { filtrable: { ows: 'WFS' } },
     /** @since 3.8.0 **/
     excludeSelected    = null,
     /** @since 3.8.0 **/
     addExternal = true,
-    layersFilterObject = { SELECTED_OR_ALL: true, FILTERABLE: true, VISIBLE: true }
+    layersFilterObject = { SELECTED_OR_ALL: true, QUERYABLE: true, VISIBLE: true }
   } = {}) {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
-    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false)
-
+    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
     try {
       return {
         result: true,
@@ -133,7 +130,7 @@ export default {
         },
         data: (!external && await this.getQueryLayersPromisesByGeometry(
           // layers
-          getMapLayersByFilter(layersFilterObject, condition),
+          getMapLayersByFilter(layersFilterObject),
           // options
           {
             geometry: ol.geom.Polygon.fromExtent(bbox),
@@ -159,7 +156,6 @@ export default {
     feature_count   = ApplicationState.project.state.feature_count || 5,
     filterConfig    = {},
     multilayers     = false,
-    condition       = { filtrable: { ows: 'WFS' } },
     /** @since 3.8.0 */
     layerName       = '',
     /** @since 3.8.0 */
@@ -191,7 +187,7 @@ export default {
         },
         usermessage: !geometry && {
           type:        'warning',
-          message:     `${layerName} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+          message:     `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
           messagetext: true,
           autoclose:   false
         },
@@ -203,9 +199,9 @@ export default {
                 ? { SELECTED: !excludeSelected }
                 : { SELECTED_OR_ALL: true }
             ),
-            FILTERABLE: true,
+            QUERYABLE: true,
             VISIBLE: true
-          }, condition),
+          }),
           // options
           {
             geometry,
@@ -232,6 +228,7 @@ export default {
    * @param options.feature_count
    * @param options.formatter
    * @param options.ordering
+   * @param options.autofilter //@since 3.11.0
    * 
    * @returns { Promise<{ data: [], query: { type: 'search', search: * }, type: 'api' | 'ows' }> }
    */
@@ -243,22 +240,67 @@ export default {
     feature_count,
     formatter: 1,
     ordering,
+    autofilter: 0,
+    //@since 3.11.0 pagination
+    page,
+    page_sizes,
   }) {
     const { layer, ...params } = options;
-    params.filter              = [].concat(params.filter); // check if filter is array
-    
+    params.filter              = [].concat(params.filter); // check if filter is an array
+    params.page_size           = (params.page_sizes || [])[0]; //get page size
+    //@since 3.11.0 count features returned by
+    const counts     = [];
+    const page_sizes = []; //set pages based on count feature returned by server
+    const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
-          if (options.raw)                                        { return { data: value }; }
+          //@since 3.11.0 In case autofilter set
+          if (1 === params.autofilter) {
+            (value.data || [])
+              .forEach(({ layer, filtertoken }) => {
+                //in the case of filtertoken response attribute set, need to set it to layer
+                if (filtertoken) {
+                  layer.state.selection.active = layer.state.filter.active = true;
+                  layer.setFilterToken(filtertoken); }
+              })
+          }
+
+          if (params.page_sizes)  {
+            const features = (value.data || [])[0].features;
+            //get max number of elements per page
+            const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
+            //Check if count (total number of elements of search is more o less than max)
+            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
+            //add a count element on counts array
+            counts.push(value.count);
+            paginate.push(features && value.count > features.length);
+          }
+          if (params.raw)                                         { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
         }),
       query: {
-        type:   'search',
-        search: options.filter,
+        type:       'search',
+        search:     params.filter, //filter search (array of filter)
+        autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
+        //@since 3.11.0 pagination
+        pagination: params.page_size && {
+          pages:         params.page && counts.map(count => Math.ceil(count / params.page_size)), //set number of pages
+          current:       params.page && counts.map(() => params.page), //current page
+          page_sizes,    //Array contains a number of features that want get with pagination
+          current_sizes: counts.map((_, i) => page_sizes[i][0]), // @since 3.11.8 current page size how many features are get
+          counts,
+          paginate,
+          //Object contains info for do another request by another part of code
+          getData: {
+            params: params.filter.map(filter => ({ ...params, filter })),
+            method: 'searchFeatures',
+            layers: [].concat(layer)
+          }
+        },
       },
       type: 'api',
     };
@@ -295,7 +337,7 @@ export default {
         layer,
         features
       }],
-      query: { type: 'search' },
+      query: { type: 'search', fids },
     };
   },
 
@@ -347,7 +389,7 @@ export default {
         data:        JSON.stringify(params),
       });
 
-      return response.result ? (response.vector.data.features || []) : null;
+      return response.result ? (response.vector.data.features || []) : Promise.reject(JSON.stringify(response.error));
     } catch(e) {
       console.warn(e);
       return Promise.reject(e);
@@ -368,12 +410,19 @@ export default {
    * @param params.formatter
    * @param params.parent
    */
-  'expression:expression_eval'(params = {}) {
-    return XHR.post({
-      url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
-      contentType: 'application/json',
-      data:        JSON.stringify(params),
-    });
+  async 'expression:expression_eval'(params = {}) {
+    try {
+      const {result, value, error } = await XHR.post({
+        url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+        contentType: 'application/json',
+        data:        JSON.stringify(params),
+      });
+      return result ? value : Promise.reject(JSON.stringify(error));
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
+    }
+
   },
 
   /**
@@ -403,23 +452,6 @@ export default {
    * Generic proxy data function
    */
   'proxy:data'(params = {}) {},
-
-  /**
-   * @param params
-   * 
-   * @returns {Promise<{data: string, response: *}>}
-   */
-  async 'ows:wmsCapabilities'({url} ={}) {
-    try {
-      return await XHR.post({
-        url:         `${window.initConfig.interfaceowsurl}`,
-        contentType: 'application/json',
-        data:        JSON.stringify({ url, service: "wms" })
-      });
-    } catch(e) {
-      console.warn(e);
-    }
-  },
 
   /**
    * used by the following plugins: "archiweb"

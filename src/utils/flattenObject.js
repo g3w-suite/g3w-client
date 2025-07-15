@@ -31,14 +31,14 @@
  * 
  * @since 3.9.0
  */
-export function flattenObject(obj, parent, res = {}) {
+export function flattenObject(obj, sep = '_', parent = '', out = {}) {
   for (let key in obj) {
-    let propName = parent ? parent + '_' + key : key;
+    let prop = parent ? parent + sep + key : key;
     if ('object' === typeof obj[key]) {
-      flattenObject(obj[key], propName, res);
+      flattenObject(obj[key], sep, prop, out);
     } else {
-      res[propName] = obj[key];
+      out[prop] = obj[key];
     }
   }
-  return res;
+  return out;
 }

@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.11.0-alpha.1
+# G3W-CLIENT v4.1.0-alpha.0
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -93,33 +93,11 @@ cd ./g3w-client
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up      # backend server   (g3w-admin)
+npm run docker:up # start g3w-admin server (backend)
 ```
 
 ```sh
-npm run dev            # frontend server  (g3w-client)
-```
-
-If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
-
-```sh
-# EXAMPLE 1:
-# project_group = "countries";
-# project_type  = "qdjango";
-# project_id    = "1"
-
-http://localhost:8000/en/map/countries/qdjango/1 # g3w-admin  (production)
-http://localhost:3000/en/map/countries/qdjango/1 # g3w-client (development)
-```
-
-```sh
-# EXAMPLE 2:
-# project_group = "eleprofile";
-# project_type  = "qdjango";
-# project_id    = "2"
-
-http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
-http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
+npm run dev       # watch g3w-client assets (frontend)
 ```
 
 ### Plugins
@@ -341,12 +319,107 @@ If you are looking for an alternative workflow, also try to take a look at [git 
 
 <details>
 
-<summary>4. How can I translate this project?</summary>
+<summary>4. How can I add a custom item to main menu?</summary>
 
-Depending on your current project version, you can edit one of the following files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request):
+Example, adding a custom link to "change map" modal:
 
-- `/g3w-client/src/locales/` (> v3.4)
-- `/g3w-client/src/config/i18n/index.js` (<= v3.4)
+![image](https://github.com/user-attachments/assets/a1fd6d45-fb34-48bd-847c-c6d6f6a36057)
+
+You can achieve this through the following python setting:
+
+```py
+# g3w-suite-docker/config/g3w-suite/settings_docker.py
+
+G3W_CLIENT_HEADER_CUSTOM_LINKS = [{
+  "i18n":   True,
+  "icon":   "fas fa-sync-alt",
+  "title":  "changemap",
+  "type":   "modal",
+  "target": "#modal-changemap"
+}]
+```
+
+which is roughly equivalent to:
+
+```js
+// path/to/your/custom.js
+
+g3wsdk.core.ApplicationService.once('initconfig', () => {
+  initConfig.header_custom_links = [{
+    "i18n":   true,
+    "icon":   "fas fa-sync-alt",
+    "title":  "changemap",
+    "type":   "modal",
+    "target": "#modal-changemap"
+  }];
+});
+```
+
+For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.io/en/v3.10.x/settings.html#g3w-client-header-custom-links)
+
+</details>
+
+<details>
+
+<summary>5. How can I change the default colors?</summary>
+
+There are several options (depending on your coding skills 👨‍💻), but our basic advice is almost always the same 👉 [`G3WSUITE_CUSTOM_CSS`](https://g3w-suite.readthedocs.io/en/v3.10.x/branding.html#g3wsuite-custom-css).
+
+![image](https://github.com/user-attachments/assets/a0f86d7e-e501-4bb7-8a16-03022278d9fc)
+
+Here is a foundation you can use for create a your own custom theme:
+
+```css
+/* Custom G3W-CLIENT theme (v4.0.0) */
+
+:root {
+  --skin-color: red;
+}
+
+.main-sidebar {
+  --bgcolor: #eee;
+  border-right: 1px solid #d6d6d6;
+}
+
+.main-sidebar *:not(legend) {
+  color: initial !important;
+}
+
+.sidebar-aside-toggle {
+  --bgcolor: #555;
+}
+
+.main-sidebar .panel-button.fa-circle {
+  display: none;
+}
+
+.ol-scale-line-inner {
+  color: #fff;
+  border-color: hsl(from currentColor h s l / 80%);
+}
+```
+
+</details>
+
+<details>
+
+<summary>6. How can I translate this project?</summary>
+
+Language files are stored into the [`src/assets/locales`](https://github.com/g3w-suite/g3w-client/blob/dev/src/assets/locales) folder.
+
+By adding some of these lines (eg. into your `plugin.js` or `custom.js`) you can change or add custom translation entries:
+
+```js
+const gettext = g3wsdk.core.i18n.t;
+const GUI     = g3wsdk.gui.GUI;
+
+GUI.isReady().then(() => {
+  gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" locale: `Credits` (en) → `Impressum` (en)
+  gettext.register('it', { 'Credits': 'Impressum' }); // change default "it" locale: `Credits` (en) → `Impressum` (it)
+});
+```
+
+Otherwise, edit one of that files and then submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) with appropriate changes.
 
 </details>
 
@@ -357,8 +430,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.8-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.8.x)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.8-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.8.x)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.10-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.10.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.10-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.10.x)
 
 ---
 

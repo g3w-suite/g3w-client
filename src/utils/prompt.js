@@ -21,7 +21,7 @@ export async function prompt({
   };
 
   let vueInput = new Vue({
-    template:`
+    template: /* html */ `
       <div>
         <label :for="id">${ label }</label>
         <input
@@ -57,6 +57,7 @@ export async function prompt({
     })
   )
     .then(callback)
+    .catch(e => console.warn(e))
     .finally(() => {
       vueInput.$destroy();
       vueInput = null;

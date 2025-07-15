@@ -3,49 +3,171 @@
  * @since v3.7
  */
 
-import ApplicationState            from 'store/application';
-import { watch, unwatch, trigger } from 'directives/utils';
+import GUI              from 'services/gui';
+import { gettext as _ } from 'g3w-i18n';
 
-const { t, tPlugin } = require('g3w-i18n');
+// show tooltip as "popover" (ie. always on top over other DOM elements) 
+$(document).on('shown.bs.tooltip', function (e) {
+  console.warn('[G3W-CLIENT] $.fn.tooltip is deprecated');
+  const tip = $(e.target).data('bs.tooltip').tip()[0];
+  tip.popover = 'manual';
+  tip.style.margin = tip.style.border = tip.style.background= 'unset';
+  tip.showPopover();
+  // hide tooltip on mobile after click
+  if (GUI.isMobile()) {
+    setTimeout(() => $(e.target).tooltip('hide'), 600);
+  }
+});
 
-const attr = 'g3w-v-t-tooltip-id';
+document.head.insertAdjacentHTML('beforeend', `<style>
+  #tooltip {
+    margin: unset;
+    inset: unset;
+    font-weight: 700;
+    color: #fff;
+    background-color: #222;
+    border: none;
+    border-radius: 4px;
+    padding: 5px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 12.5px;
+    opacity: 0.9;
+    padding: 8px;
+    overflow: visible;
+  }
+  #tooltip[data-placement]:after {
+    content: '';
+    position: absolute;
+    border-color: transparent;
+    border-style: solid;
+  }
+  #tooltip[data-placement="left"]:after {
+    top: 50%;
+    right: -8px;
+    margin-top: -5px;
+    border-left-color: #000;
+    border-width: 4px;
+  }
+  #tooltip[data-placement="top"]:after {
+    left: 50%;
+    bottom: -6px;
+    margin-left: -5px;
+    border-top-color: #000;
+    border-width: 5px 5px 0;
+  }
+  #tooltip[data-placement="right"]:after {
+    top: 50%;
+    left: -6px;
+    margin-top: -5px;
+    border-right-color: #000;
+    border-width: 5px 5px 5px 0;
+  }
+  #tooltip[data-placement="bottom"]:after {
+    left: 50%;
+    top: -5px;
+    margin-left: -5px;
+    border-bottom-color: #000;
+    border-width: 0 5px 5px;
+  }
+</style>`);
 
-export default {
-  bind(_el, binding) {
-    // Automatically create tooltip
-    if (binding.modifiers.create) {
-      if (binding.arg) {
-        _el.setAttribute('data-placement', binding.arg);
-        _el.classList.add(`skin-tooltip-${binding.arg}`);
-      }
-      _el.setAttribute('data-container',"body");
-      $(_el)
-        .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true })
-        // hide tooltip on mobile after click
-        .on('shown.bs.tooltip', () => { ApplicationState.ismobile && setTimeout(()=>$(_el).tooltip('hide'), 600) });
+const tooltip = Object.assign(document.createElement('template'), {
+  innerHTML: /* html */`
+    <div popover="manual" id="tooltip"></div>
+  `.trim()
+}).content.firstChild;
+
+document.querySelector('#app').insertAdjacentElement('afterend', tooltip);
+document.addEventListener('mousemove', showTooltip);
+document.addEventListener('mousedown', showTooltip);
+
+function showTooltip(e) {
+  const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-i18n-title], [title]');
+  const title   = element?.getAttribute('data-i18n-title') ?? element?.getAttribute('title');
+
+  if (!element || !title || element?.closest('.select2')) {
+    tooltip.hidePopover();
+    return;
+  }
+
+  tooltip.addEventListener('toggle',e => {
+    if (e.newState === "closed") {
+      element.removeAttribute('aria-describedby');
     }
-    watch({
-      el: _el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        ({el = _el}) => {
-          let value = el.getAttribute('current-tooltip');
-          if (null === value) { value = binding.value; }
-          el.setAttribute('data-original-title', binding.modifiers.text ? value : ('plugin' === binding.arg ? tPlugin : t)(value));
-        }
-      ]
-    });
-  },
-  componentUpdated(el, oldVnode) {
-    const value = el.getAttribute('current-tooltip');
-    //in case of null or empty value, need to hide tooltip
-    if ([null, ''].includes(value)) {
-      $(el).tooltip('hide');
+  }, { once: true });
+
+  element.removeAttribute('title');
+  element.setAttribute('aria-describedby', "tooltip");
+  element.setAttribute('data-i18n-title', title);
+
+  let value = element.getAttribute('current-tooltip') ?? title;
+  value = element.hasAttribute('data-i18n-raw') ? value : _(element.hasAttribute('data-i18n-plugin') ? `plugins.${value}` : value);
+
+  tooltip.innerHTML = value;
+  tooltip.showPopover();
+
+
+  let position = element.getAttribute('data-placement') || 'left';
+
+  const rect = element.getBoundingClientRect();
+  const pad = 4;
+  let left, top, attempts = 0;
+
+  do {
+    if ('top' === position) {
+      top  = (rect.top + window.scrollY - tooltip.clientHeight - pad);
+      left = (rect.left + window.scrollX + (rect.width / 2) - (tooltip.clientWidth / 2));
     }
-    if (null != value && value !== oldVnode.oldValue) {
-      trigger({ el, attr, data: { el } });
+    if ('bottom' === position) {
+      top  = (rect.bottom + window.scrollY + pad);
+      left = (rect.left + window.scrollX + (rect.width / 2) - (tooltip.clientWidth / 2));
     }
-  },
-  unbind: el => { $(el).tooltip('hide'); unwatch({ el, attr }); }
+    if ('left' === position) {
+      top  = (rect.top + window.scrollY + (rect.height / 2) - (tooltip.clientHeight / 2));
+      left = (rect.left + window.scrollX - tooltip.clientWidth - pad);
+    }
+    if ('right' === position) {
+      top  = (rect.top + window.scrollY + (rect.height / 2) - (tooltip.clientHeight / 2));
+      left = (rect.right + window.scrollX + pad);
+    }
+    if (top < 0) {
+      position = 'bottom';
+    }
+    if (top > window.innerHeight) {
+      position = 'top';
+    }
+    if (left > window.innerWidth) {
+      position = 'left';
+    }
+    if (left < 0) {
+      position = 'right';
+    }
+    attempts++;
+  } while (attempts < 10 && (left < 0 || top < 0 || top > window.innerHeight || left > window.innerWidth));
+
+  tooltip.setAttribute('data-placement', position);
+
+  Object.assign(tooltip.style, { top: top + 'px', left: left + 'px' });
+
+  // hide tooltip on mobile after click
+  if (GUI.isMobile()) {
+    setTimeout(() => tooltip.hidePopover(), 600);
+  }
+}
+
+export default function(el, binding) {
+  if (binding.arg) {
+    el.setAttribute('data-placement', binding.arg);
+  }
+  if ([null, '', undefined].includes(binding.value)) {
+    el.removeAttribute('data-i18n-title');
+  } else {
+    el.setAttribute('data-i18n-title', binding.value);
+  }
+  if (binding.modifiers.text) {
+    el.setAttribute('data-i18n-raw', '');
+  }
+  if ('plugin' === binding.arg) {
+    el.setAttribute('data-i18n-plugin', '');
+  }
 };

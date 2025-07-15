@@ -3,52 +3,38 @@
  * @since v3.7
  */
 
-import ApplicationState   from 'store/application';
-import { watch, unwatch } from 'directives/utils';
+import GUI              from 'services/gui';
+import { gettext as _ } from 'g3w-i18n';
 
-const { t } = require('g3w-i18n');
+const update = (el, binding) => {
+  let value = '';
 
-const attr = 'g3w-v-t-id';
+  // v-t-plugin
+  if ('t-plugin' === binding.name && null !== el.__currentBinding.value) {
+    value = _(`plugins.${el.__currentBinding.value}`);
+  }
+  
+  // v-t
+  if ('t' === binding.name) {
+    value = _(el.__currentBinding.value ?? '');
+  }
 
-/**
- * @since 3.8.7
- */
-const handleInnerHTML = ({ el } = {}) => {
-  const value = null === el.__currentBinding.value ? '' : t(el.__currentBinding.value);
-  switch(el.__currentBinding.arg ? el.__currentBinding.arg : 'post') {
-    case 'pre':  el.innerHTML = `${value} ${el.__innerHTML}`; break;
-    case 'post': el.innerHTML = `${el.__innerHTML} ${value}`; break;
+  el.innerHTML = 'pre' === el.__currentBinding.arg ? `${value} ${el.__innerHTML}` : `${el.__innerHTML} ${value}`;
+
+  // unlisten for "i18n-ready" event
+  if (!el.isConnected) {
+    return true;
   }
 }
 
 export default {
   bind(el, binding) {
-    /**
-     * @since 3.8.7
-     */
-    // set init innerHTML value of element
-    el.__innerHTML = el.innerHTML;
-    //set current binging
-    el.__currentBinding = binding;
-    watch({
-      el,
-      attr,
-      watcher: [
-        () => ApplicationState.language,
-        () => handleInnerHTML({ el })
-      ]
-    });
+    el.__innerHTML      = el.innerHTML; // set init innerHTML value of element
+    el.__currentBinding = binding;      // set current binging
+    update(el, binding);
+    GUI.on('i18n-ready', update.bind(null, el, binding));
   },
-  /**
-   * @since 3.8.7
-   */
-  componentUpdated(el, binding) {
-    if (el.__currentBinding.value !== binding.value) {
-      //reset currentBinding to get last value;
-      el.__currentBinding = binding;
-      handleInnerHTML({ el })
-    }
-  },
-
-  unbind: el => unwatch({ el, attr })
-}
+  update(el, binding) {
+    update(el, binding);
+  }
+};

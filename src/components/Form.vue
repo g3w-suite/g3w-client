@@ -29,7 +29,6 @@
       <keep-alive>
         <component
           :handleRelation   = "handleRelation"
-          @hook:activated   = "reloadLayout"
           @addtovalidate    = "addToValidate"
           @removetovalidate = "removeToValidate"
           @changeinput      = "changeInput"
@@ -108,16 +107,6 @@ export default {
     },
     removeToValidate(input) {
       this.$options.service.removeToValidate(input);
-    },
-    // set layout
-    reloadLayout() {
-      const height = $(this.$el).height();
-      if (!height) { return };
-      const footerDOM    = $(this.$refs.g3w_form_footer.$el);
-      const bodyFromDOM  = $(this.$refs.g3wform_body);
-      const footerHeight = footerDOM.height() ? footerDOM.height() + 50 : 50;
-      const bodyHeight   = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
-      bodyFromDOM.height(bodyHeight);
     },
   },
   async updated() {

@@ -5,12 +5,13 @@
 
 import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
+import DataRouterService              from 'services/data';
 import ApplicationState               from 'store/application'
 import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
-import { createSingleFieldParameter } from 'utils/createSingleFieldParameter';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
+import { waitFor }                    from 'utils/waitFor';
 
 /**
  * @param epsg: Number Code of epsg Ex.4326
@@ -265,37 +266,23 @@ class BaseIframeService extends G3WObject {
     layers = {}
   } = {}) {
     this.layers = layers;
+
     // skip when plugin is not in configuration (ie. added to the application)
-    if (!ApplicationState.configurationPlugins.includes(this.pluginName)) {
+    if ('editing' !== this.pluginName || !ApplicationState.configurationPlugins.includes('editing')) {
       return;
     }
-    const plugin = PluginsRegistry.getPlugin(this.pluginName);
-    if (plugin) {
-      this.setDependencyApi(plugin.getApi());
-      this.setReady(true);
-    } else {
-      PluginsRegistry
-        .onafter('registerPlugin', async plugin => {
-          await plugin.isReady();
-          if (plugin.getName() === this.pluginName) {
-            this.setDependencyApi(plugin.getApi());
-            this.setReady(true);
-          }
-        })
-    }
-  }
 
-  /**
-   * ORIGINAL SOURCE: src/app/core/iframe/services/plugins/service.js@3.9.0
-   * 
-   * @virtual method need to be implemented by subclasses 
-   * 
-   * @since 3.9.1
-   */
-  setDependencyApi(api = {}) {
-    this.dependencyApi = api;
-  }
+    // wait until "editing" plugin is loaded
+    await waitFor(() => PluginsRegistry.getPlugin('editing'));
 
+    // BACKOMP v3.x
+    this.dependencyApi                     = PluginsRegistry.getPlugin('editing');
+    this.dependencyApi.getEditableLayersId = this.dependencyApi.getEditableLayersId || (() => Object.keys(this.dependencyApi.getEditableLayers()));
+    this.dependencyApi.hidePanel           = this.dependencyApi.hidePanel           || this.dependencyApi.hideEditingPanel;
+    this.dependencyApi.resetDefault        = this.dependencyApi.resetDefault        || this.dependencyApi.resetAPIDefault;
+
+    this.setReady(true);
+  }
   /**
    * ORIGINAL SOURCE: src/app/core/iframe/services/plugins/service.js@3.9.0
    * 
@@ -334,12 +321,10 @@ class BaseIframeService extends G3WObject {
     layer,
     feature,
   }) {
-    const { field, value }  = feature;
-    const DataRouterService = require('services/data').default;
-    const { data = [] }     = await DataRouterService.getData('search:features', {
+    const { data = [] } = await DataRouterService.getData('search:features', {
       inputs: {
         layer,
-        filter: createSingleFieldParameter({ field, value, operator: 'eq' })
+        filter: [].concat(feature.value).map(v => `${feature.field}|eq|${encodeURIComponent(v)}`).join('|OR,')
       },
       outputs: false
     });
@@ -388,7 +373,7 @@ class BaseIframeService extends G3WObject {
     }
     // in case of no response zoom to an initial extent
     if (!response.found) {
-      this.zoomToExtent(this.mapService.project.state.initextent)
+      this.mapService.zoomToExtent(this.mapService.project.state.initextent)
     }
     return response;
   }
@@ -460,7 +445,7 @@ class AppService extends BaseIframeService {
       this.mapService.once('ready', () => {
         this._map                           = this.mapService.getMap();
         this._mapCrs                        = this.mapService.getCrs();
-        this.mapControls.screenshot.control = this.mapService.getMapControlByType({ type: 'screenshot' });
+        this.mapControls.screenshot.control = this.mapService.getMapControlByType('screenshot');
         this.setReady(true);
         resolve();
       });
@@ -489,10 +474,10 @@ class AppService extends BaseIframeService {
       return;
     }
 
-    this.mapControls.screenshot.control.overwriteOnClickEvent(async() => {
+    this.mapControls.screenshot.control.overwriteOnClickEvent((blob) => {
       let response;
       try {
-        response = { result: true, data: await this.mapService.createMapImage() };
+        response = { result: true, data: blob };
       } catch(e) {
         console.warn(e);
         response = { result: false, data: e };
@@ -829,20 +814,19 @@ class EditingService extends BaseIframeService {
 
       // call method common
       await this.startAction({ toolboxes: qgs_layer_id, resolve, reject });
-
-      // return all toolboxes
+        // return all toolboxes
       const toolboxes = (
-        await this.startEditing(qgs_layer_id, {
-          tools:            this.config.tools.add,
-          startstopediting: false,
-          action :          'add',
-          selected:         1 === qgs_layer_id.length,
-        })
-      )
-      .filter(p => 'fulfilled' === p.status)
-      .map(p => p.value);
+          await this.startEditing(qgs_layer_id, {
+            tools:            this.config.tools.add,
+            startstopediting: false,
+            action :          'add',
+            selected:         1 === qgs_layer_id.length,
+          })
+        )
+        .filter(p => 'fulfilled' === p.status)
+        .map(p => p.value);
 
-      /** @FIXME add description */
+           /** @FIXME add description */
       if (!GUI.isSidebarVisible()) {
         GUI.showSidebar();
       }
@@ -897,9 +881,9 @@ class EditingService extends BaseIframeService {
       // return all toolboxes
       await this.startEditing([response.qgs_layer_id], {
         feature,
-        tools: this.config.tools.update,
+        tools:            this.config.tools.update,
         startstopediting: false,
-        action: 'update',
+        action:           'update',
       });
 
       if (!GUI.isSidebarVisible()) {
@@ -931,9 +915,10 @@ class EditingService extends BaseIframeService {
       case 'add':    filter.nofeatures = true;                                   break;
       case 'update': filter.field      = `${feature.field}|eq|${feature.value}`; break;
     }
-    const promises = [];
-    qgs_layer_id.forEach(id => { promises.push(this.dependencyApi.startEditing(id, options)) });
-    return await Promise.allSettled(promises);
+    //only in case of one layer id start editing otherwise client need to click on the layer
+    return await Promise.allSettled((1 === qgs_layer_id.length ? qgs_layer_id : [])
+      .map(id => this.dependencyApi.startEditing(id, options) ));
+
   }
 
   /**

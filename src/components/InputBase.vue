@@ -14,7 +14,7 @@
       <label
         :for       = "state.name"
         v-disabled = "!editable"
-        class      = "col-sm-12 control-label"
+        class      = "control-label"
       >
         <span v-if = "state.i18nLabel" v-t = "state.label"></span>
         <span v-else>{{ state.label }}</span>
@@ -36,10 +36,10 @@
       style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
     >
       <span :class = "g3wtemplate.getFontClass('warning')"></span>
-      <span v-t = "'sdk.relations.field'"></span>
+      <span v-t = "'Relation key field'"></span>
     </div>
 
-    <div class = "col-sm-12">
+    <div class = "">
 
       <!-- SLOT LOADING -->
       <slot name = "loading">
@@ -73,8 +73,9 @@
       <div
         v-if   = "state.help && this.state.help.visible"
         v-html = "state.help.message"
-        class  = "g3w_input_help skin-background-color extralighten">
-      </div>
+        class  = "g3w_input_help skin-background-color"
+        style  = "background-color: hsl(from var(--skin-color) h s calc(l + 48)) !important;"
+      ></div>
 
     </div>
   </div>

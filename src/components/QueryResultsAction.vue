@@ -5,13 +5,13 @@
 
 <template>
    <span
-     v-if                      = "show"
+     v-if                      = "show && (undefined === (action.state || {}).show ? show : action.state.show)"
      @contextmenu.prevent.stop = ""
      @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
-     v-download                = "action.download"
-     :class                    = "{'toggled': action.state && action.state.toggled[featureIndex] }"
+     :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[featureIndex] }"
      class                     = "action-button"
-     v-t-tooltip:top.create    = "action.hint">
+     v-disabled                = "ApplicationState.download || !!(action.state || {}).disabled"
+     v-t-tooltip:top           = "action.hint">
      <span
        style  = "padding: 2px;"
        :style = "action.style"
@@ -21,12 +21,14 @@
 </template>
 
 <script>
-  const { t } = require('g3w-i18n');
+  import ApplicationState from 'store/application';
 
   export default {
     name: "action",
     data() {
       return {
+        /** @since 4.0.0 */
+        ApplicationState,
         show: true
       }
     },
@@ -51,27 +53,22 @@
     methods: {
       async clickAction(action, layer, feature, featureIndex, event) {
         await this.trigger(action, layer, feature, featureIndex);
-        if (action.hint_change) {
-          const element = $(event.target).parent();
-          const originalDataTitle = element.attr('data-original-title');
-          element.attr('data-original-title', t(action.hint_change.hint));
-          element.tooltip('show');
-          setTimeout(() => {
-            element.attr('data-original-title', originalDataTitle);
-            element.tooltip('show');
-          }, action.hint_change.duration || 600)
-        }
         this.$emit('action-clicked', action)
       }
     },
     async created() {
       if (this.action.init) {
-        this.action.init({layer: this.layer, feature: this.feature, index:this.featureIndex, action:this.action});
+        this.action.init({ layer: this.layer, feature: this.feature, index: this.featureIndex, action: this.action });
       }
       if (typeof this.action.condition === 'function') {
         const show = this.action.condition({ layer: this.layer, feature: this.feature });
         this.show = show instanceof Promise ? await show: show;
       }
     },
+    beforeDestroy() {
+      if (typeof this.action.clear === 'function') {
+        this.action.clear({ action: this.action, layer: this.layer, feature: this.feature });
+      }
+    }
   }
 </script>

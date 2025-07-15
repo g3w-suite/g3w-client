@@ -14,23 +14,18 @@ import ApplicationState                         from 'store/application';
 
 import DataRouterService                        from 'services/data';
 
-import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
-import QueryPolygonCsvAttributesComponent       from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { printAtlas }                           from 'utils/printAtlas';
-import { downloadFile }                         from 'utils/downloadFile';
+import { saveBlob }                             from 'utils/saveBlob';
 import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
-import { copyUrl }                              from 'utils/copyUrl';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 import { Layer }                                from 'map/layers/layer';
 import { VectorLayer }                          from 'map/layers/vectorlayer';
-
-const { t } = require('g3w-i18n');
+import { gettext as _ }                         from 'g3w-i18n';
 
 function _setRelationField(node) {
   if (node.nodes) {
@@ -40,7 +35,7 @@ function _setRelationField(node) {
   } else if (node.name) {
     node.relation = true;
   }
-};
+}
 
 export default new (class QueryResultsService extends G3WObject {
 
@@ -51,328 +46,19 @@ export default new (class QueryResultsService extends G3WObject {
     /**
      * Core methods used from other classes to react before or after its call
      */
-    this.setters = {
-
-      /**
-       * Hook method called when response is handled by Data Provider
-       *
-       * @param { Object }                             queryResponse
-       * @param { Array }                              queryResponse.data
-       * @param { 'coordinates' | 'bbox' | 'polygon' } queryResponse.type
-       * @param { Object }                             queryResponse.query
-       * @param { Object }                             queryResponse.query.external
-       * @param { boolean }                            queryResponse.query.external.add       - whether add external layers to response
-       * @param { Object }                             queryResponse.query.external.filter
-       * @param { boolean }                            queryResponse.query.external.SELECTED
-       * @param { Object }                             options
-       * @param { boolean }                            options.add                            - whether is a new query request (add/remove query request)
-       */
-      setQueryResponse(queryResponse, options = { add: false }) {
-
-        // set mandatory queryResponse fields
-        if (!queryResponse.data)           queryResponse.data           = [];
-        if (!queryResponse.query)          queryResponse.query          = { external: { add: false, filter: { SELECTED: false } } };
-        if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: { SELECTED: false }};
-
-        // whether add response to current results using addLayerFeaturesToResultsAction
-        if (false === options.add) {
-          // in case of new request results reset the query otherwise maintain the previous request
-          this.clearState();
-          this.state.query = queryResponse.query;
-          this.state.type  = queryResponse.type;
-        }
-
-        // whether add external layers to response
-        if (true === queryResponse.query.external.add && false === options.add) {
-          const catalog = GUI.getService('catalog');
-
-          /** @type { boolean | undefined } */
-          const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
-      
-          // add visible layers to query response (vector layers)
-          this._vectorLayers.forEach(layer => {
-            const id = layer.get('id');
-            // TODO: extract this into `layer.isSomething()` ?
-            if (layer.getVisible() && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)) {
-              queryResponse.data[
-                '__g3w_marker' === id // keep geocoding control "marker" layer at top
-                ? 'unshift'
-                : 'push'
-              ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
-            }
-          });
-        }
-
-        const geom = false === options.add && ({
-          'coordinates': 2 === (this.state.query.coordinates || []).length && new ol.geom.Point(this.state.query.coordinates),
-          'bbox':        4 === (this.state.query.bbox || []).length        && ol.geom.Polygon.fromExtent(this.state.query.bbox),
-          'polygon':     this.state.query.geometry,
-          'drawpolygon': this.state.query.geometry,
-          'circle':      this.state.query.geometry,
-        })[this.state.query.type];
-
-        // show query result on map
-        if (geom) {
-          const feature = new ol.Feature(geom);
-          feature.setId(undefined);
-          this.resultsQueryLayer.getSource().clear();
-          GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
-          this.resultsQueryLayer.getSource().addFeature(feature);
-          GUI.getService('map').getMap().addLayer(this.resultsQueryLayer);
-          this.resultsQueryLayer.setZIndex(GUI.getService('map').getMap().getLayers().getLength()); // ensure layer is on top of others
-        }
-
-        // Convert response from DataProvider into a QueryResult component data structure
-        // Skip when layer has no features or rawdata is undefined (external wms)
-        const layers = queryResponse.data
-          .flatMap(d => [].concat(d))
-          .filter(d => d && (undefined !== d.rawdata || (Array.isArray(d.features) && d.features.length > 0)))
-          .map(({
-            layer,
-            features,
-            rawdata, // rawdata response
-            error
-          } = {}) => {
-
-            const is_layer  = layer instanceof Layer;
-            const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
-            const is_string = 'string' === typeof layer || layer instanceof String; // can be created by string
-
-            let sourceType;
-
-            if (is_string) {
-              sourceType = Layer.LayerTypes.VECTOR;
-            } else if (is_layer) {
-              try {
-                sourceType = layer.getSourceType();
-              } catch (error) {
-                console.warn('uknown source type for layer:', error, layer);
-              }
-            }
-            
-            const name = is_string && layer.split('_');
-
-            const id = (is_layer ? layer.getId() : undefined) ||
-              (is_vector ? layer.get('id') : undefined) ||
-              (is_string ? layer : undefined);
-
-            let attributes;
-            let layerAttrs;
-
-            // sanity check (eg. external layers ?)
-            if (!features || !features.length) {
-              attributes = [];
-            }
-        
-            // Sanitize OWS Layer attributes
-            if (!attributes && layer instanceof Layer) {
-              layerAttrs = layer.getAttributes().map(attr => 'ows' === this.state.type ? ({ ...attr, name: attr.name.replace(/ /g, '_') }) : attr);
-            }
-        
-            if (!attributes && layer instanceof ol.layer.Vector) {
-              layerAttrs = layer.getProperties();
-            }
-        
-            if (!attributes && 'string' === typeof layer || layer instanceof String) {
-              layerAttrs = (features[0] ? features[0].getProperties() : [])
-            }
-        
-            const specialAttrs = (!attributes && layer instanceof Layer && layerAttrs || []).filter(attr => {
-                try {
-                  return ('_' === attr.name[0] || Number.isInteger(1 * attr.name[0]))
-                } catch(e) {
-                  return false;
-                }
-              }).map(attr => ({ alias: attr.name.replace(/_/, ''), name: attr.name }));
-        
-            if (!attributes && specialAttrs.length) {
-              features.forEach(f => {
-                // get attributes special keys from feature properties received by server request
-                const attrs = Object.keys(f.getProperties());
-                specialAttrs.forEach(layerAttr => {
-                  attrs.find(attr => {
-                    if (attr === layerAttr.alias) {
-                      f.set(layerAttr.name, f.get(attr));
-                      return true
-                    }
-                  })
-                });
-              });
-            }
-        
-            // Parse attributes to show on result based on field
-        
-            let attrs = !attributes && getAlphanumericPropertiesFromFeature(
-              Object.keys(features[0] instanceof ol.Feature ? features[0].getProperties() : features[0].properties)
-            );
-        
-            if (!attributes) {
-              attributes = (layerAttrs && layerAttrs.length > 0)
-                ? layerAttrs.filter(attr => attrs.indexOf(attr.name) > -1)
-                : attrs.map(featureAttr => ({
-                    name: featureAttr,
-                    label: featureAttr,
-                    show: G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
-                    type: 'varchar'
-                  }));
-            }
-
-            const external   = (is_vector || is_string);
-            const structure  = is_layer && layer.hasFormStructure() && layer.getLayerEditingFormStructure();
-            const has_form   = structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0;
-
-            if (has_form) {
-              for (const node of structure) {
-                _setRelationField(node);
-              }
-            }
-
-            // layerObj
-            return {
-              id,
-              attributes,
-              external,
-              features: (!rawdata && features || []).map(f => ({
-                id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
-                attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
-                geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-                selection:  f.selection,
-                show:       true,
-              })),
-              hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
-              hasImageField:          Array.isArray(features) && !rawdata && features.length && attributes.some(attr => 'image' === attr.type),
-              loading:                false,
-              show:                   true,
-              expandable:             true,
-              addfeaturesresults:     { active: false },
-              downloadformats:        { active: false },
-              editable:               is_layer   ? layer.isEditable()             : false,
-              inediting:              is_layer   ? layer.isInEditing()            : false,
-              source:                 is_layer   ? layer.getSource()              : undefined,
-              infoformat:             is_layer   ? layer.getInfoFormat()          : undefined,
-              infoformats:            is_layer   ? layer.getInfoFormats()         : [],
-              downloads:              is_layer   ? layer.getDownloadableFormats() : [],
-              formStructure:          has_form   ? {
-                structure,
-                fields: layer.getFields().filter(f => f.show).concat(
-                  (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
-                ), // get field show
-              } : undefined,
-              relationsattributes:    (is_layer || is_vector || is_string)                       ? []                     : undefined,
-              filter:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-              selection:              (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || {},
-              title:                  (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
-              atlas:                  this.getAtlasByLayerId(id),
-              rawdata:                rawdata  || null,
-              error:                  error    || '',
-              toc:                    external || layer.state.toc, //@since v3.10.0
-            };
-          });
-
-        this.setLayersData(layers, options);
-
-      },
-
-      /**
-       * Setter method called when adding layer and feature for response
-       *
-       * @param layers
-       * @param options
-       */
-      setLayersData(layers = [], options = { add: false }) {
-        if (false === options.add) {
-          // sort layers as Catalog project layers.
-          //external layer always on bottom
-          layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
-        }
-        // get features from added pick layer in case of a new request query
-        layers.forEach(l => options.add ? this.updateLayerResultFeatures(l) : this.state.layers.push(l));
-        this.setActionsForLayers(layers, { add: options.add });
-        this.state.changed = true;
-      },
-
-      /**
-       * Add custom component in query result
-       *
-       * @param component
-       */
-      addComponent(component) {
-        this.state.components.push(component)
-      },
-
-      /**
-       * @FIXME add description
-       *
-       * @param actions
-       * @param layers
-       */
-      addActionsForLayers(actions, layers) {},
-
-      /**
-       * @FIXME add description
-       *
-       * @param element
-       */
-      postRender(element) {},
-
-      /**
-       * @FIXME add description
-       */
-      closeComponent() {},
-
-      /**
-       * Called when layer result features is changed
-       *
-       * @param layer
-       */
-      changeLayerResult(layer) {
-        this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
-        // reset layer current actions tools
-        (layer.features || []).forEach((_, idx) => {
-            const tool = this.state.currentactiontools[layer.id];
-            if (undefined === tool) {
-              return;
-            }
-            if (undefined === tool[idx]) {
-              Vue.set(tool, idx, null);
-            }
-            tool[idx] = null;
-          });
-      },
-
-      /**
-       * @FIXME add description
-       */
-      activeMapInteraction() {},
-
-      /**
-       * Setter method related to relation table
-       */
-      editFeature({layer, feature}={}) {},
-
-      /**
-       * Setter method called when opening/closing feature info data content.
-       *
-       * @param opts.open
-       * @param opts.layer
-       * @param opts.feature
-       * @param opts.container
-       */
-      openCloseFeatureResult({open, layer, feature, container}={}) {},
-
-      /**
-       * Remove a feature from current layer result
-       *
-       * @param layer
-       * @param feature
-       * 
-       * @since 3.9.0
-       */
-      removeFeatureLayerFromResult(layer, feature) {
-        this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
-      }
-
-    };
+    this.setters = [
+      'setQueryResponse',
+      'setLayersData',
+      'addComponent',
+      'addActionsForLayers',
+      'postRender',
+      'closeComponent',
+      'changeLayerResult',
+      'activeMapInteraction',
+      'editFeature',
+      'openCloseFeatureResult',
+      'removeFeatureLayerFromResult',
+    ];
 
     /**
      * @FIXME add description
@@ -398,12 +84,8 @@ export default new (class QueryResultsService extends G3WObject {
      * Set reactive state
      */
     this.state = {
-      logged: undefined !== ApplicationState.user.id,
 
-      /**
-       * @FIXME add description
-       */
-      zoomToResult: true,
+      logged: undefined !== ApplicationState.user.id,
 
       /**
        * @FIXME add description
@@ -453,7 +135,7 @@ export default new (class QueryResultsService extends G3WObject {
       /**
        * Add action tools (for features)
        */
-      actiontools:{},
+      actiontools: {},
 
       /**
        * Current action tools contain component
@@ -542,18 +224,6 @@ export default new (class QueryResultsService extends G3WObject {
     });
 
     /**
-     * @deprecated since 3.8
-     * It used to register a change project from Change map button
-     */
-    g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', project => {
-      this._project = project;
-      this._setRelations(project);
-      this._atlas = project.getPrint().filter(p => p.atlas) || [];
-      this.state.download_data = false;
-      this.plotLayerIds = [];
-    });
-
-    /**
      * Current project <Project>
      */
     this._project = ApplicationState.project;
@@ -596,6 +266,355 @@ export default new (class QueryResultsService extends G3WObject {
 
   }
 
+  /**
+   * Hook method called when response is handled by Data Provider
+   *
+   * @param { Object }                             queryResponse
+   * @param { Array }                              queryResponse.data
+   * @param { 'coordinates' | 'bbox' | 'polygon' } queryResponse.type
+   * @param { Object }                             queryResponse.query
+   * @param { Object }                             queryResponse.query.external
+   * @param { boolean }                            queryResponse.query.external.add       - whether add external layers to response
+   * @param { Object }                             queryResponse.query.external.filter
+   * @param { boolean }                            queryResponse.query.external.SELECTED
+   * @param { Object }                             options
+   * @param { boolean }                            options.add                            - whether is a new query request (add/remove query request)
+   * 
+   * @since 4.0.0
+   */
+  setQueryResponse(queryResponse, options = { add: false, update: false }) {
+    // set mandatory queryResponse fields
+    if (!queryResponse.data)           queryResponse.data           = [];
+    if (!queryResponse.query)          queryResponse.query          = { external: { add: false, filter: { SELECTED: false } } };
+    if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: { SELECTED: false }};
+
+
+    if (false === options.add && !!options.update) {
+      // in case of new request results reset the query otherwise maintain the previous request
+      this.state.query      = queryResponse.query;
+      this.state.type       = queryResponse.type;
+    }
+    // whether add response to current results using addLayerFeaturesToResultsAction
+    if (false === options.add && !options.update) {
+      // in case of new request results reset the query otherwise maintain the previous request
+      this.clearState();
+      this.state.query      = queryResponse.query;
+      this.state.type       = queryResponse.type;
+    }
+    // whether add external layers to response
+    if (true === queryResponse.query.external.add && false === options.add) {
+      const catalog = GUI.getService('catalog');
+
+      /** @type { boolean | undefined } */
+      const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
+  
+      // add visible layers to query response (vector layers)
+      this._vectorLayers.forEach(layer => {
+        const id = layer.get('id');
+        // TODO: extract this into `layer.isSomething()` ?
+        if (
+          layer.getVisible()
+          && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)
+        ) {
+          queryResponse.data[
+            '__g3w_marker' === id // keep geocoding control "marker" layer at the top
+            ? 'unshift'
+            : 'push'
+          ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+        }
+      });
+    }
+
+    const geom = false === options.add && ({
+      'coordinates': 2 === (this.state.query.coordinates || []).length && new ol.geom.Point(this.state.query.coordinates),
+      'bbox':        4 === (this.state.query.bbox || []).length        && ol.geom.Polygon.fromExtent(this.state.query.bbox),
+      'polygon':     this.state.query.geometry,
+      'drawpolygon': this.state.query.geometry,
+      'circle':      this.state.query.geometry,
+    })[this.state.query.type];
+
+    // show a query result on map
+    if (geom) {
+      const feature = new ol.Feature(geom);
+      feature.setId(undefined);
+      this.resultsQueryLayer.getSource().clear();
+      GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
+      this.resultsQueryLayer.getSource().addFeature(feature);
+      GUI.getService('map').getMap().addLayer(this.resultsQueryLayer);
+      this.resultsQueryLayer.setZIndex(GUI.getService('map').getMap().getLayers().getLength()); // ensure layer is on top of others
+    }
+
+    // Convert response from DataProvider into a QueryResult component data structure
+    // Skip when the layer has no features or rawdata is undefined (external wms)
+    const layers = queryResponse.data
+      .flatMap(d => [].concat(d))
+      .filter(d => d && (undefined !== d.rawdata || (Array.isArray(d.features) && d.features.length > 0)))
+      .map(({
+        layer,
+        features,
+        rawdata, // rawdata response
+        error
+      } = {}) => {
+
+        const is_layer  = layer instanceof Layer;
+        const is_vector = layer instanceof ol.layer.Vector;                     // instance of openlayers layer Vector Class
+        const is_string = 'string' === typeof layer || layer instanceof String; // can be created by string
+
+        let sourceType;
+
+        if (is_string) {
+          sourceType = Layer.LayerTypes.VECTOR;
+        } else if (is_layer) {
+          try {
+            sourceType = layer.getSourceType();
+          } catch (error) {
+            console.warn('uknown source type for layer:', error, layer);
+          }
+        }
+        
+        const name = is_string && layer.split('_');
+
+        const id = (is_layer ? layer.getId() : undefined) ||
+          (is_vector ? layer.get('id') : undefined) ||
+          (is_string ? layer : undefined);
+
+        let attributes;
+        let layerAttrs;
+
+        // sanity check (eg. external layers ?)
+        if (!features || !features.length) {
+          attributes = [];
+        }
+    
+        // Sanitize OWS Layer attributes
+        if (!attributes && layer instanceof Layer) {
+          layerAttrs = layer.getAttributes().map(attr => 'ows' === this.state.type ? ({ ...attr, name: attr.name.replace(/ /g, '_') }) : attr);
+        }
+    
+        if (!attributes && layer instanceof ol.layer.Vector) {
+          layerAttrs = layer.getProperties();
+        }
+    
+        if (!attributes && 'string' === typeof layer || layer instanceof String) {
+          layerAttrs = (features[0] ? features[0].getProperties() : [])
+        }
+    
+        const specialAttrs = (!attributes && layer instanceof Layer && layerAttrs || []).filter(attr => {
+            try {
+              return ('_' === attr.name[0] || Number.isInteger(1 * attr.name[0]))
+            } catch(e) {
+              return false;
+            }
+          }).map(attr => ({ alias: attr.name.replace(/_/, ''), name: attr.name }));
+    
+        if (!attributes && specialAttrs.length) {
+          features.forEach(f => {
+            // get attributes special keys from feature properties received by server request
+            const attrs = Object.keys(f.getProperties());
+            specialAttrs.forEach(layerAttr => {
+              attrs.find(attr => {
+                if (attr === layerAttr.alias) {
+                  f.set(layerAttr.name, f.get(attr));
+                  return true
+                }
+              })
+            });
+          });
+        }
+    
+        // Parse attributes to show on a result based on field
+    
+        let attrs = !attributes && getAlphanumericPropertiesFromFeature(
+          Object.keys(features[0] instanceof ol.Feature ? features[0].getProperties() : features[0].properties)
+        );
+    
+        if (!attributes) {
+          attributes = (layerAttrs && layerAttrs.length > 0)
+            ? layerAttrs.filter(attr => attrs.includes(attr.name))
+            : attrs.map(featureAttr => ({
+              name:  featureAttr,
+              label: featureAttr,
+              show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
+              type:  'varchar'
+            }));
+        }
+
+        const external   = (is_vector || is_string);
+        const structure  = is_layer && layer.hasFormStructure() && layer.getLayerEditingFormStructure();
+
+        if (structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0) {
+          for (const node of structure) {
+            _setRelationField(node);
+          }
+        }
+        // layerObj
+        return {
+          id,
+          attributes,
+          external,
+          features: (!rawdata && features || []).map(f => ({
+            id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
+            attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
+            geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
+            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.state.selection.active)}, //@since 3.11.8 check if autofilter is set
+            show:       true,
+          })),
+          hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
+          hasImageField:          Array.isArray(features) && !rawdata && features.length && attributes.some(attr => 'image' === attr.type),
+          loading:                false,
+          show:                   true,
+          expandable:             true,
+          addfeaturesresults:     { active: false },
+          downloadformats:        { active: false },
+          editable:               is_layer   ? layer.isEditable() && layer.config.editing.visible : false,
+          inediting:              is_layer   ? layer.isInEditing()                                : false,
+          source:                 is_layer   ? layer.getSource()                                  : undefined,
+          infoformat:             is_layer   ? layer.getInfoFormat()                              : undefined,
+          infoformats:            is_layer   ? layer.getInfoFormats()                             : [],
+          downloads:              is_layer   ? layer.getDownloadableFormats()                     : [],
+          formStructure:          structure  ? {
+            structure,
+            // get field show
+            fields: layer.getFields().filter(f => f.show).concat(
+              (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
+            ),
+          } : undefined,
+          relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
+          hasdownloadablerelations:  !external && layer.hasDowloadableRelations(), //@since 3.11.7
+          filter:                    (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
+          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: false },
+          title:                     (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
+          atlas:                     this._atlas.filter(a => a.atlas.qgs_layer_id === id),
+          rawdata:                   rawdata  || null,
+          error:                     error    || '',
+          toc:                       external || layer.state.toc, //@since v3.10.0
+          max_preview_fields:        layer.state?.max_preview_fields || 3, //@since 4.0.0 
+        };
+      });
+    this.setLayersData(layers, options);
+  }
+
+  /**
+   * Setter method called when adding layer and feature for response
+   *
+   * @param layers
+   * @param options
+   */
+  setLayersData(layers = [], options = { add: false, update: false }) {
+    // sort layers as Catalog project layers (external layer always on bottom)
+    if (false === options.add) {
+      layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
+    }
+    // get features from added pick layer in case of a new request query
+    layers.forEach((l, index) => {
+      // whether result comes from pagination
+      l.filter.pagination = l.filter.active && this.state.query?.pagination?.paginate?.at(index);
+      if (options.add || options.update) {
+        this.updateLayerResultFeatures(l, options.update);
+      } else {
+        this.state.layers.push(l);
+      }
+    });
+    this.setActionsForLayers(layers, { add: options.add, update: options.update });
+    this.state.changed = true;
+  }
+
+  /**
+   * Add custom component in query result
+   *
+   * @param component
+   * 
+   * @since 4.0.0
+   */
+  addComponent(component) {
+    this.state.components.push(component)
+  }
+
+  /**
+   * @FIXME add description
+   *
+   * @param actions
+   * @param layers
+   * 
+   * @since 4.0.0
+   */
+  addActionsForLayers(actions, layers) {}
+
+  /**
+   * @FIXME add description
+   *
+   * @param element
+   * 
+   * @since 4.0.0
+   */
+  postRender(element) {}
+
+  /**
+   * @FIXME add description
+   * 
+   * @since 4.0.0
+   */
+  closeComponent() {}
+
+  /**
+   * Called when layer result features is changed
+   *
+   * @param layer
+   * 
+   * @since 4.0.0
+   */
+  changeLayerResult(layer) {
+    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
+    // reset layer current actions tools
+    (layer.features || []).forEach((_, idx) => {
+        const tool = this.state.currentactiontools[layer.id];
+        if (undefined === tool) {
+          return;
+        }
+        if (undefined === tool[idx]) {
+          Vue.set(tool, idx, null);
+        }
+        tool[idx] = null;
+      });
+  }
+
+  /**
+   * @FIXME add description
+   * 
+   * @since 4.0.0
+   */
+  activeMapInteraction() {}
+
+  /**
+   * Setter method related to relation table
+   * 
+   * @since 4.0.0
+   */
+  editFeature({ layer, feature } = {}) {}
+
+  /**
+   * Setter method called when opening/closing feature info data content.
+   *
+   * @param opts.open
+   * @param opts.layer
+   * @param opts.feature
+   * @param opts.container
+   * 
+   * @since 4.0.0
+   */
+  openCloseFeatureResult({ open, layer, feature, container } = {}) {}
+
+  /**
+   * Remove a feature from current layer result
+   *
+   * @param layer
+   * @param feature
+   * 
+   * @since 4.0.0
+   */
+  removeFeatureLayerFromResult(layer, feature) {
+    this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
+  }
 
   /**
    * used by the following plugins: "qplotly"
@@ -639,30 +658,47 @@ export default new (class QueryResultsService extends G3WObject {
    * current `state.layers` results.
    *
    * @param responseLayer layer structure coming from request
+   * @param replace    @since 3.11.0 mean replace current state layer features
    *
    * @since 3.8.0
    */
-  updateLayerResultFeatures(responseLayer) {
-    const layer        = this.state.layers.find(l => l.id === responseLayer.id)                   // get layer from current `state.layers` showed on a result
-      responseFeatures = responseLayer.features || [],                                            // extract features from responseLayer object
-      external         = (this.state.layers.find(l => l.id === responseLayer.id) || {}).external, // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
-      has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
-
+  updateLayerResultFeatures(responseLayer, replace = false) {
+    const layer            = this.state.layers.find(l => l.id === responseLayer.id);                // get layer from current `state.layers` showed on a result
+    const responseFeatures = responseLayer.features || [];                                            // extract features from responseLayer object
+    const external         = (layer || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
+    const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
     if (has_features) {
-      const features_ids = layer.features.map(f => external ? f.id : f.attributes[G3W_FID]) // get features id from current layer on a result
-      responseFeatures.forEach(feat => {
+      const features_ids = replace ? [] : layer.features.map(f => this._getFeatureId(f, external)) // get features id from current layer on a result
+      //get action selection;
+      const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
+      if (replace) {
+        layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
+        layer.features.splice(0);
+      }
+      responseFeatures.forEach((feat, index) => {
         const feature_id = this._getFeatureId(feat, external);
-        if (features_ids.some(id => id === feature_id)) {                     // remove feature (because is already loaded)
-          setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]);
-          layer.features = (layer.features || []).filter(f => this._getFeatureId(f, external) !== feature_id);
+        // If true, remove the feature because is already loaded
+        if (features_ids.some(id => id === feature_id)) {
+          //@since 3.11.0
+          if (action && feat.selection.selected) {
+            (external ? layer : getCatalogLayerById(layer.id)).excludeSelectionFid(feature_id, layer.filter.active);
+          }
+          //filter feature
+          layer.features = layer.features.filter(f => feature_id !== this._getFeatureId(f, external));
+          delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
+          if (action) {
+            delete action.state.toggled[index];
+            //need to reset toggled state in reactive mode
+            action.state.toggled = Vue.observable(layer.features.reduce((a,f,i) => { a[i] = f.selection.selected; return a }, {}));
+          }
         } else {                                                              // add feature
           layer.features.push(feat);
         }
       });
       // toggle layer feature box
-      (layer.features || []).forEach(feature => {
+      (layer.features || []).forEach(f => {
         const collapsed = (layer.features || []).length > 1;
-        const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)];
+        const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, f)];
         if (box) {
           setTimeout(() => box.collapsed = collapsed); // due to vue reactivity, wait a little bit before update layers
         }
@@ -708,8 +744,8 @@ export default new (class QueryResultsService extends G3WObject {
    * @param layers
    * @param options
    */
-  setActionsForLayers(layers, options = { add: false }) {
-    if (options.add) {
+  setActionsForLayers(layers, options = { add: false, update: false }) {
+    if (options.add || options.update) {
       return;
     }
 
@@ -717,43 +753,12 @@ export default new (class QueryResultsService extends G3WObject {
     this.unlistenerlayeractionevents = [];
 
     // loop results
-    layers.forEach(layer => {
-
-      // set eventually layer action tool and need to be reactive
+    layers.forEach((layer, index) => {
+      // eventually set layer action tool and need to be reactive
       this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.currentactionfeaturelayer[layer.id] = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.layersactions[layer.id]             = this.state.layersactions[layer.id] || [];
-
-      const download_format  = 1 === layer.downloads.length && (layer.downloads || []).at(0); // NB: format == layer.downloads[0]
-      const relations        = (this._relations[layer.id] || []).filter(r => 'MANY' === r.type);
-      const chartRelationIds = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
-
-      if (download_format) {
-        layer[download_format] = Vue.observable({ active: false });
-      }
-
-      // set actionstools configs
-      if (layer.downloads.length > 1) {
-        this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
-        this.state.actiontools.downloadformats[layer.id] = {
-          downloads: layer.downloads.map(format => ({
-            id:       `download_${format}_feature`,
-            download: true,
-            format,
-            class:    GUI.getFontClass(format),
-            hint:     `sdk.tooltips.download_${format}`,
-            cbk: (layer, feature, action, index, html) => {
-              // un-toggle downloads action
-              this.downloadFeatures(format, layer, feature, action, index, html);
-              if ('polygon' !== this.state.query.type) {
-                const downloadsaction = this.state.layersactions[layer.id].find(a => 'downloads' === a.id);
-                downloadsaction.cbk(layer, feature, downloadsaction, index, html);
-              }
-            }
-          }))
-        };
-      }
 
       this.state.layersactions[layer.id].push(...([
 
@@ -762,24 +767,24 @@ export default new (class QueryResultsService extends G3WObject {
           id:        'gotogeometry',
           mouseover: true,
           class:     GUI.getFontClass('marker'),
-          hint:      'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
+          hint:      'Zoom to feature',
           cbk:       throttle(this.goToGeometry.bind(this))
         },
 
         // show relations (query)
-        relations.length && {
+        (this._relations[layer.id] || []).some(r => 'MANY' === r.type) && {
           id:       'show-query-relations',
           class:    GUI.getFontClass('relation'),
-          hint:     'sdk.mapcontrols.query.actions.relations.hint',
+          hint:     'Show Relations',
           cbk(layer, feature, action) {
-            GUI.setCurrentContentOptions({ crumb: { text: true, title: layer.title } });
+            GUI.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             GUI.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
+                internalComponent: new (Vue.extend(require('components/RelationsPage.vue').default))({
                   relations:        action.relations,
-                  chartRelationIds: action.chartRelationIds,
+                  chartRelationIds: action.relations.map(r => GUI.getService('queryresults').plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
                   feature,
-                  layer
+                  layer,
                 })
               }),
               backonclose: true,
@@ -792,72 +797,16 @@ export default new (class QueryResultsService extends G3WObject {
               closable: false
             });
           },
-          relations,
-          chartRelationIds
-        },
-
-        // show relations (plot)
-        chartRelationIds.length && {
-          id:       'show-plots-relations',
-          opened:   true,
-          class:    GUI.getFontClass('chart'),
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
-          hint:     'sdk.mapcontrols.query.actions.relations_charts.hint',
-          cbk: throttle((layer, feature, action, index, container) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            if (action.state.toggled[index]) {
-              this.emit('show-chart', chartRelationIds, container, {
-                relations: this._relations[layer.id],
-                fid:       feature.attributes[G3W_FID],
-                height:    400
-              });
-            } else {
-              this.hideChart(container);
-            }
-          }),
+          relations: (this._relations[layer.id] || []).filter(r => 'MANY' === r.type),
         },
 
         // print (atlas)
-        this.getAtlasByLayerId(layer.id).length && {
+        this._atlas.filter(a => a.atlas.qgs_layer_id === layer.id).length && {
           id:       'printatlas',
           download: true,
           class:    GUI.getFontClass('print'),
-          hint:     'sdk.tooltips.atlas',
+          hint:     'Print Atlas',
           cbk:      this.printAtlas.bind(this)
-        },
-
-        // download features (single)
-        download_format && {
-          id:       `download_${download_format}_feature`,
-          download: true,
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => {a[i] = null; return a; }, {}) }),
-          class:    GUI.getFontClass('download'),
-          hint:     `sdk.tooltips.download_${download_format}`,
-          cbk: (layer, feature, action, index, container) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            if (action.state.toggled[index]) {
-              this.downloadFeatures(download_format, layer, feature, action, index, ('pdf' === download_format ? container[0].innerHTML : null));
-            } else {
-              this.setCurrentActionLayerFeatureTool({ index, action, layer })
-            }
-          }
-        },
-
-        // download features (multi)
-        layer.downloads.length > 1 && {
-          id:         'downloads',
-          download:   true,
-          class:      GUI.getFontClass('download'),
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
-          toggleable: true,
-          hint:       'Downloads',
-          change({ features }) {
-            features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
-          },
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-          }
         },
 
         // remove feature
@@ -866,46 +815,63 @@ export default new (class QueryResultsService extends G3WObject {
           mouseover: true,
           class:     GUI.getFontClass('minus-square'),
           style:     { color: 'red' },
-          hint:      'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-          cbk:       this.removeFeatureLayerFromResult.bind(this)
+          /** @since 3.11.0 hide element in case of pagination (show = false) */
+          state:     Vue.observable({ show: !layer.filter.pagination }),
+          hint:      'Remove feature from results',
+          cbk:       this.removeFeatureLayerFromResult.bind(this),
+          init() {
+            this.unwatch = VM.$watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
+          },
+          clear() {
+            this.unwatch && this.unwatch(); // remove action when destroy
+          },
+          change() {
+            this.state.disabled = !layer.filter.pagination;
+          }
         },
 
         // select feature
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
           class:    GUI.getFontClass('success'),
-          hint:     'sdk.mapcontrols.query.actions.add_selection.hint',
-          state:    Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => { a[i] = null; return a; }, {}) }),
-          // check feature selection
-          init:     ({ feature, index, action } = {}) => {
-            if (layer.external && undefined !== layer.selection.active) { // external layer
-              action.state.toggled[index] = feature.selection.selected;
-            } else if (feature && undefined !== layer.selection.active) { // project layer
-              const pLayer = getCatalogLayerById(layer.id);
-              action.state.toggled[index] = (
-                //need to check if set active filter and no saved filter is set
-                (pLayer.state.filter.active && null == pLayer.state.filter.current) ||
-                //or if feature fid is in selected array
-                pLayer.hasSelectionFid(feature ? this._getFeatureId(feature, layer.external): null)
-              );
+          hint:     'Add/Remove Selection',
+          state:    Vue.observable({
+            toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
+            show:    !layer.filter.pagination // show action when filter with pagination is not set
+          }),
+          init({ layer, feature, index, action } = {}) {
+            if (!feature) {
+              return console.trace('Invalid feature');
+            }
+            const _layer                = getCatalogLayerById(layer.id);
+            const fid                   = feature.attributes[G3W_FID] || feature.id;
+            const selected              = layer.external ? feature.selection.selected : (_layer.state.filter.active || _layer.hasSelectionFid(fid));
+            action.state.toggled[index] = selected;
+            layer.selection.active      = (0 === index || layer.selection.active) && selected;
+            if (_layer && selected && !_layer.hasSelectionFid(fid)) {
+              _layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
+              _layer.includeSelectionFid(fid, false);
             }
           },
-          /** @since 3.9.0 reactive `toggled` when adding new feature and then bind click on query result context (exclude existing features and add reactive array property) */
-          change({ features }) { features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false)) },
-          cbk: throttle(this.addToSelection.bind(this))
+          change({ features }) {
+            // wait for pagination change request
+            setTimeout(() => {
+              this.state.show = !layer.filter.pagination; 
+              features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
+            })
+          },
+          cbk: throttle(this.toggleSelection.bind(this))
         },
 
         // permalink (click to copy)
         (layer.hasgeometry && !layer.external && 'wms' !== (layer.source || {}).type) && {
           id:          'link_zoom_to_fid',
           class:       GUI.getFontClass('share-alt'),
-          hint:        'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
-          hint_change: { hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change', duration: 1000 },
+          hint:        'Share via link',
           cbk(layer, feature, action) {
             const url = new URL(location.href);
             url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
-            copyUrl(url.toString());
-            action.hint_changed = true;
+            GUI.getPermalink(url, {});
           }
         },
 
@@ -913,7 +879,7 @@ export default new (class QueryResultsService extends G3WObject {
         (layer.editable && false === layer.inediting) && {
           id:    'editing',
           class: GUI.getFontClass('pencil'),
-          hint:  'sdk.tooltips.editing',
+          hint:  'Editing',
           cbk:   (layer, feature) => this.editFeature({ layer, feature })
         },
 
@@ -922,8 +888,10 @@ export default new (class QueryResultsService extends G3WObject {
 
       // In case of external layer don't listen to `selection` event
       if (layer.external && layer.toc && undefined !== layer.selection.active) {
+        //in case 
+        layer.selection.features = layer.selection.features || [];
         layer.features.forEach(f => f.selection = (layer.selection.features.find(s => f.id === s.getId()) || ({ selection: { selected: false }})).selection);
-      } else if(!layer.external && layer.toc && undefined !== layer.selection.active) {
+      } else if (!layer.external && layer.toc && undefined !== layer.selection.active) {
         const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
         getCatalogLayerById(layer.id).on('unselectionall', handler);
         this.unlistenerlayeractionevents.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
@@ -984,30 +952,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @TODO rename misleading method name: `addActionToolsLayer`
-   * @param {Object } opts
-   * @param opts.id     action layer id
-   * @param opts.layer  layer
-   * @param opts.config configuration object
-   * @param opts.action (since 3.9.0) configuration object
-   */
-  addCurrentActionToolsLayer({
-    id,
-    layer,
-    config = {},
-    action
-  }) {
-    if (!layer) {
-      return;
-    }
-    this.state.actiontools[id] = { [layer.id]: config };
-    if (action) {
-      this.state.layersactions[layer.id] = this.state.layersactions[layer.id] || [];
-      this.state.layersactions[layer.id].push(action);
-    }
-  }
-
-  /**
    * @FIXME add description
    * @param {Object } opts
    * @param opts.layer current layer
@@ -1040,6 +984,7 @@ export default new (class QueryResultsService extends G3WObject {
       highLightLayerFeatures:    { async: false },
       goToGeometry:              { async: false },
     };
+    //reset pagination
     this.clearState();
     this.closeComponent();
     this.resultsQueryLayer.getSource().clear();
@@ -1187,11 +1132,21 @@ export default new (class QueryResultsService extends G3WObject {
    */
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this._asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), layer.features || [], options);
+      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), features, options);
     } else {
-      GUI.getService('map').zoomToFeatures(layer.features || [], options);
+      GUI.getService('map').zoomToFeatures(features, options);
     }
+  }
+
+  /**
+   * @returns { boolean } whether show feature in results (show + active filter + selected)
+   * 
+   * @since 3.11.8
+   */
+  showFeature(layer, feature) {
+    return feature.show && ((layer.filter || {}).active ? feature.selection.selected : true);
   }
 
   /**
@@ -1201,10 +1156,11 @@ export default new (class QueryResultsService extends G3WObject {
    * @param options
    */
   highLightLayerFeatures(layer, options = {}) {
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this._asyncFnc.highLightLayerFeatures.async) {
-      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), layer.features || [], options);
+      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), features, options);
     } else {
-      GUI.getService('map').highlightFeatures(layer.features || [], options);
+      GUI.getService('map').highlightFeatures(features, options);
     }
   }
 
@@ -1216,8 +1172,6 @@ export default new (class QueryResultsService extends G3WObject {
     this.state.query               = null;
     this.state.querytitle          = "";
     this.state.changed             = false;
-    // clear actions
-    Object.values(this.state.layersactions).forEach(l => l.forEach(a => a.clear && a.clear()));
     this.state.layersactions       = {};
     this.state.actiontools         = {};
     this.state.layeractiontool     = {};
@@ -1256,13 +1210,6 @@ export default new (class QueryResultsService extends G3WObject {
   }
 
   /**
-   * @param layerId
-   */
-  getAtlasByLayerId(layerId) {
-    return this._atlas.filter(a => a.atlas.qgs_layer_id === layerId);
-  }
-
-  /**
    * @FIXME add description
    *
    * @param querytitle
@@ -1280,7 +1227,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @param index
    * @param container
    */
-  async trigger(actionId, layer, feature, index, container) {
+  async triggerAction(actionId, layer, feature, index, container) {
     if ('highlightgeometry' === actionId) {
       this.highlightGeometry(layer, feature, index);
     }
@@ -1369,9 +1316,9 @@ export default new (class QueryResultsService extends G3WObject {
       vectorLayer.getSource().getFeatures().forEach(f => {
         let add;
         switch (filterConfig.spatialMethod) {
-          case 'intersects': add = intersects(geometry, f.getGeometry());                  break;
           case 'within':     add = within(geometry, f.getGeometry());                      break;
-          default:           add = geometry.intersectsExtent(f.getGeometry().getExtent()); break;
+          case 'intersects':
+          default:           add = intersects(geometry, f.getGeometry());                  break;
         }
         if (true === add) {
           features.push(f);
@@ -1389,18 +1336,37 @@ export default new (class QueryResultsService extends G3WObject {
   /**
    *  @FIXME add description
    */
-  _printSingleAtlas({
+  async _printSingleAtlas({
     atlas    = {},
     features = [],
   } = {}) {
-    let field = atlas.atlas && atlas.atlas.field_name ? atlas.atlas.field_name : '$id';
-    return printAtlas({
-      field,
-      values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
-      template: atlas.name,
-      download: true
-    })
-    .then(({ url }) => GUI.downloadWrapper(downloadFile, { url, filename: atlas.name, mime_type: 'application/pdf' }));
+    let field = atlas.atlas?.field_name || '$id';
+
+    ApplicationState.download = true;
+
+    GUI.setLoadingContent(true);
+
+    try {
+      const { url } = await printAtlas({
+        field,
+        values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
+        template: atlas.name,
+        download: true
+      });
+      const response = url && await fetch(url);
+
+      if (!response?.ok) {
+        throw (await response.json()).message;
+      }
+
+      saveBlob(await response.blob(), atlas.name || (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(1));
+    } catch(e) {
+      GUI.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
+    }
+
+    ApplicationState.download = false;
+
+    GUI.setLoadingContent(false);
   }
 
   /**
@@ -1431,7 +1397,7 @@ export default new (class QueryResultsService extends G3WObject {
    */
   printAtlas(layer, feature) {
     const features   = feature ? [feature] : layer.features;
-    const atlasLayer = this.getAtlasByLayerId(layer.id);
+    const atlasLayer = this._atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
 
     /** @FIXME add description */
     if (atlasLayer.length <= 1) {
@@ -1443,13 +1409,11 @@ export default new (class QueryResultsService extends G3WObject {
 
     atlasLayer.forEach((atlas, index) => {
       const id = getUniqueDomId();
-      inputs += `<input id="${id}" g3w_atlas_index="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>`;
-      inputs += `<label for="${id}">${atlas.name}</label>`;
-      inputs += `<br>`;
+      inputs += /* html */`<label for="${id}"><input id="${id}" g3w_atlas_index="${index}" type="radio" name="template" value="${atlas.name}" /> ${atlas.name}</label><br>`;
     });
 
     GUI.showModalDialog({
-      title: t('sdk.atlas.template_dialog.title'),
+      title: _('Select Template'),
       message: inputs,
       buttons: {
         success: {
@@ -1465,171 +1429,6 @@ export default new (class QueryResultsService extends G3WObject {
         }
       }
     });
-
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param layer
-   */
-  showLayerDownloadFormats(layer) {
-    layer.downloadformats.active = !layer.downloadformats.active;
-    this.setLayerActionTool({
-      layer,
-      component: layer.downloadformats.active ? DownloadFormats : null,
-      config: layer.downloadformats.active
-        ? {
-            ...this.state.actiontools.downloadformats[layer.id],
-            //for download layer need to filter pdf format because it works only for a single feature
-            downloads: this.state.actiontools.downloadformats[layer.id].downloads.filter(d => 'pdf' !== d.format)
-          }
-        : null
-    })
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param type
-   * @param layer
-   * @param features
-   * @param action
-   * @param index
-   * @param html
-   */
-  async downloadFeatures(type, layer, features = [], action, index, html) {
-
-    if (features && !Array.isArray(features)) {
-      features = [features];
-    }
-
-    const { query = {} } = this.state;
-    const data           = {
-      fids: features.map(f => f.attributes[G3W_FID]).join(',')
-    };
-
-    //In the case of pdf type need to add html element
-    if ('pdf' === type) {
-      data.html = html;
-    }
-
-    /**
-     * A function that che be called in case of querybypolygon
-     *
-     * @param active
-     */
-    const runDownload = async (active=false) => {
-
-      if (features.length > 1) {
-        layer.downloadformats.active = active;
-        this.setLayerActionTool({ layer });
-      }
-
-      await GUI.downloadWrapper(
-        ({layer, type, data}= {}) => getCatalogLayerById(layer.id).getDownloadFilefromDownloadDataType(type, { data }) || Promise.resolve(),
-        {
-          layer,
-          type,
-          data
-        }
-      );
-
-      const downloadsactions = this.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-
-      /** @FIXME add description */
-      if (features.length > 1 && undefined === downloadsactions) {
-        layer[type].active = false;
-        this.setLayerActionTool({ layer });
-      }
-
-      /** @FIXME add description */
-      if (features.length > 1 && undefined !== downloadsactions) {
-        layer.downloadformats.active = false;
-      }
-
-      /** @FIXME add description */
-      if (features.length <= 1 && undefined === downloadsactions) {
-        action.state.toggled[index] = false;
-      }
-
-      /** @FIXME add description */
-      if (features.length <= 1 && undefined !== downloadsactions) {
-        downloadsactions.state.toggled[index] = false;
-      }
-
-      /** @FIXME add description */
-      if (features.length <= 1) {
-        this.setCurrentActionLayerFeatureTool({ index, action, layer });
-      }
-    };
-
-    /** @FIXME add description */
-    if ('polygon' !== query.type) {
-      await runDownload();
-      return;
-    }
-
-    // check if multi-download if present
-    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-
-    const config = {
-      choices: [
-        {
-          id: getUniqueDomId(),
-          type: 'feature',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature.label',
-        },
-        {
-          id: getUniqueDomId(),
-          type: 'polygon',
-          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
-        },
-      ],
-      // choose between only feature attribute or also polygon attribute
-      download: (type) => {
-        if ('polygon' === type) { // id type polygon add parameters to api download
-          data.sbp_qgs_layer_id = layer.id;
-          data.sbp_fid          = query.fid;
-        } else {                  // force to remove
-          delete data.sbp_fid;
-          delete data.sbp_qgs_layer_id;
-        }
-        runDownload(true)
-      }
-    };
-
-    /** @FIXME add description */
-    if (1 === features.length && undefined === downloadsactions) {
-      action.state.toggled[index] = true;
-    }
-
-    /** @FIXME add description */
-    if (1 === features.length) {
-      this.state.actiontools[QueryPolygonCsvAttributesComponent.name] = this.state.actiontools[layer.id] || {};
-      this.state.actiontools[QueryPolygonCsvAttributesComponent.name][layer.id] = config;
-      this.setCurrentActionLayerFeatureTool({
-        layer,
-        index,
-        action,
-        component: QueryPolygonCsvAttributesComponent,
-      });
-    }
-
-    /** @FIXME add description */
-    if (undefined === downloadsactions && 1 !== features.length) {
-      layer[type].active = !layer[type].active;
-    }
-
-    /** @FIXME add description */
-    if (1 !== features.length) {
-      const has_config = (downloadsactions || (layer[type].active && undefined === downloadsactions));
-      this.setLayerActionTool({
-        layer,
-        component: has_config ? QueryPolygonCsvAttributesComponent : null,
-        config:    has_config ? config : null,
-      });
-    }
 
   }
 
@@ -1679,9 +1478,6 @@ export default new (class QueryResultsService extends G3WObject {
    */
   clearHighlightGeometry(layer) {
     GUI.getService('map').clearHighlightGeometry();
-    if (this.isOneLayerResult()) {
-      GUI.getService('map').highlightFeatures(layer.features, { duration: Infinity });
-    }
   }
 
   /**
@@ -1699,21 +1495,21 @@ export default new (class QueryResultsService extends G3WObject {
     const projectRelation = this._project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
-        internalComponent: new (Vue.extend(require('components/RelationsPage.vue')))({
-          currentview:      'relation',
-          relations:        [projectRelation],
-          chartRelationIds: this.findPlotId(projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
+        vueComponentObject: require('components/Relation.vue').default,
+        propsData: {
+          relation:         projectRelation,
+          chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
           nmRelation:       this._project.getRelationById(relation.nmRelationId),
           layer:            { id: layerId },
           feature,
-        })
+        }
       }),
       crumb: {
         title: projectRelation.name,
-        text: true,
+        text:  true,
       },
-      title: projectRelation.name,
-      text  : true,
+      title:    projectRelation.name,
+      text  :   true,
       closable: false
     })
   };
@@ -1724,177 +1520,167 @@ export default new (class QueryResultsService extends G3WObject {
    * @since 3.9.0
    */
   _getFeatureId(feature, external) {
-    return external ? feature.id : feature.attributes[G3W_FID];
+    return external ? feature.id : (feature.attributes[G3W_FID] || feature.id); // in case of query by geometry, features are returned without G3W_FID. They have id 
   }
 
   /**
-   * @TODO make it simpler..
-   * @TODO make it a Layers class function ? 
-   * 
    * Add / Remove features from selection
    * 
    * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::addToSelection
    * 
-   * @since 3.9.0
+   * @param layer queried layer instance
+   * @param feature when provided, the feature to be toggled (otherwise, toggle all features)
+   * 
+   * @since 4.0.0
    */
-  addToSelection(layer, feature, action, index) {
-    const service          = GUI.getService('queryresults');
-    const map              = GUI.getService('map');
+  async toggleSelection(layer, feature) {
+    
+    const query         = GUI.getService('queryresults'); //get query service
+    const action        = query.getActionLayerById({ layer, id: 'selection' }); //get selction action
+    const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
+    const toggled       = layer.selection.active; 
+    const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
+    const features      = [].concat(feature || layer.features || []);
 
-    // TODO: avoid referencing this private stuff
-    const getFeatureId       = service._getFeatureId.bind(service);
-    const getActionLayerById = service.getActionLayerById.bind(service);
-
-    const GIVE_ME_A_NAME = undefined === feature && undefined === action && undefined === index;
-    const _action        = GIVE_ME_A_NAME ? getActionLayerById({ layer, id: 'selection' })                  : action;
-    const toggled        = GIVE_ME_A_NAME && Object.values(_action.state.toggled).reduce((prev, curr) => prev && curr, true);
-    const _layer         = GIVE_ME_A_NAME ? (layer.external ? layer : getCatalogLayerById(layer.id))        : (((service.state.layers.find(l => l.id === layer.id) || {}).external || false) ? layer : getCatalogLayerById(layer.id));
-    const features       = GIVE_ME_A_NAME ? (layer.features && layer.features.length ? layer.features : []) : [feature];
-    const params         = GIVE_ME_A_NAME ? {
-      fids: features.length > 0 ? features.map(f => _layer.external ? f.id : f.attributes[G3W_FID]) : null,
-      features,
-      force: toggled ? 'remove' : 'add'
-    } : {
-      fids: [feature ? getFeatureId(feature, _layer.external) : null],
-      features,
-      index,
-      force: undefined
-    };
-
-    if (!GIVE_ME_A_NAME) {
-      _action.state.toggled[index] = !_action.state.toggled[index];
+    if (!features.length) {
+      return console.warn('no features');
     }
 
-    /**
-     * PROJECT LAYER
-     */
-    if (!layer.external && ![null, undefined].includes(params.fids)) {
-      let layer                     = _layer;
-      let { fids, features, force } = params;
+    // toggle selection
+    layer.features.forEach((f, i) => {
+      if (!feature) {
+        action.state.toggled[i] = !toggled;
+      } else if (i === index) {
+        action.state.toggled[i] = !action.state.toggled[i];
+      }
+      f.selection.selected = action.state.toggled[i];
+    });
 
-      fids     = Array.isArray(fids) ? fids : [fids];
-      features = Array.isArray(features) ? features : [features];
-    
-      const include = []; // fid of features to include
-      const exclude = []; // fid of features to exclude
-    
-      fids.forEach((fid, idx) => {
-        const feature     = features[idx];
-        const is_selected = layer.state.filter.active || layer.hasSelectionFid(fid);
-      
-        // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
-        if (!is_selected && feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-          layer.addOlSelectionFeature({ id: fid, feature });
-        }
-      
-        // force action
-        if (undefined === force) {
-          layer[is_selected ? 'excludeSelectionFid' : 'includeSelectionFid'](fid);
-        }
-    
-        // force add
-        if ('add' === force && !is_selected) {
-          include.push(fid);
-        }
-    
-        // force remove
-        if ('remove' === force) {
-          exclude.push(fid);
-        }
-      });
-    
-      layer.includeSelectionFids(include, false);
-      layer.excludeSelectionFids(exclude, false);
-
-      (
-        layer.state.filter.active
-          ? layer.createFilterToken()
-          : Promise.resolve()
-      ).then(() => {
-        const { layers } = GUI.getService('queryresults').getState();
-    
-        /** @TODO add description */
-        fids.forEach((fid, idx) => {
-          const currentLayer = (
-            !layer.hasSelectionFid(fid) &&
-            layer.state.filter.active &&
-            layer.getSelectionFids().size > 0 &&
-            layers.find(l => l.id === layer.getId())
-          );
-          if (currentLayer) {
-            currentLayer.features.splice(undefined === index ? idx : index, 1);
-          }
-        })
-      
-        map.clearHighlightGeometry();
-      
-        /** @TODO add description */
-        if (1 === layers.length && !layers[0].features.length) {
-          layers.splice(0);
-        }
-      });
-
+    // handle pagination
+    if (!layer.external && !feature && toggled) {
+      catalog_layer.clearSelectionFids();
+      return;
     }
 
-    /**
-     * EXTERNAL LAYER
-     */
-    if (layer.external && ![null, undefined].includes(params.fids)) {
+    // ensure "layer.selection.features" is defined
+    layer.selection.features = layer.selection.features || [];
 
-      let layer                     = _layer;
-      let { fids, features, force } = params;
+    // external layer (click on layer)
+    if (layer.external && !feature) {
+      // set selection to all features
+      layer.selection.active = !toggled;
+      layer.features.forEach(feature => {
+        let feat       = layer.selection.features.find(f => feature.id === f.getId()); // check feature if has been already added to selection
+        if (!feat) {
+          feat = new ol.Feature(feature.geometry);
+          feat.setId(feature.id);
+          Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+          layer.selection.features.push(
+            Object.assign(feat, {
+            __layerId: layer.id,
+            selection: { selected: layer.selection.active },
+          }));
+        }
+        // set current selection selected attribute
+        feat.selection.selected = layer.selection.active;
+        // add remove selection feature
+        GUI.getService('map').setSelectionFeatures(
+          layer.selection.active ? 'add' : 'remove',
+          { feature: feat }
+        );
+      });
+    
+      return;
+    }
 
-      //Take in account array or single fid
-      features = Array.isArray(features) ? features : [features];
+    // external layer (click on feature)
+    if (layer.external && feature) {
+      let feat = catalog_layer.selection.features.find(f => feature.id === f.getId()); // check feature if has been already added to selection
+      if (feat) {
+        feat.selection.selected = action.state.toggled[index];
+      }
+      // create selection feature for external if not yet added
+      if (!feat) {
+        feat = new ol.Feature(feature.geometry);
+        feat.setId(feature.id); 
+        Object.keys(feature.attributes).forEach(attr => feat.set(attr, feature.attributes[attr]));
+        // add feature to selection layer features
+        catalog_layer.selection.features.push(
+            Object.assign(feat, {
+            __layerId: catalog_layer.id,
+            selection: { selected: true }, // NB: default true because otherwise it means that is clicked on selection
+          })
+        );
+      }
 
-      //check if layer.selection.features is undefined
-      if (undefined === layer.selection.features) {
-        //set array
-        layer.selection.features = [];
+      // handle map selection layer adding or remove feature based on selection boolean value
+      GUI.getService('map').setSelectionFeatures(
+        feat.selection.selected ? 'add' : 'remove',
+        { feature: feat }
+      );
+
+      // set selection property (external layer)
+      catalog_layer.selection.active = Object.values(action.state.toggled).every(t => t);;
+      
+      return;
+    }
+
+    // get fids (unique id) of features
+    const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
+
+    fids.forEach((fid, i) => {
+      const is_selected = catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid);
+
+      // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
+      if (!is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
+        catalog_layer.addOlSelectionFeature({ id: fid, feature: features[i] });
       }
     
-      fids.forEach((fid, i) => {
-        const feature = features[i];
+      // exclude
+      if (feature && is_selected) {
+        catalog_layer.excludeSelectionFid(fid);
+      }
 
-        // Set feature used in selection tool action
-        if (undefined === layer.selection.features.find(f => f.getId() === fid)) {
-          // create ol feature from object
-          let feat = feature;
-          const { attributes } = feature;
-          if (feature.geometry) {
-            feat = new ol.Feature(feature.geometry);
-            feat.setId(fid);
-          }
-          Object.keys(attributes).forEach(attr => feat.set(attr, attributes[attr]));
-          feat.__layerId = layer.id;
-          feat.selection = feature.selection;
-          layer.selection.features.push(feat);
-        }
-    
-        //check if feature is already select or feature is already removed (no selected)
-        /** If not changes to apply return */
-        if (('add' === force && feature.selection.selected) || ('remove' === force && !feature.selection.selected)) {
-          return;
-        }
-    
-        /**Switch selected boolean value */
-        feature.selection.selected = !feature.selection.selected;
-    
-        /** Need to add selection on map */
-        map.setSelectionFeatures(
-          (feature.selection.selected ? 'add' : 'remove'),
-          {
-            feature: layer.selection.features.find(selectionFeature => fid === selectionFeature.getId())
-          }
-        );
-      })
+      // include
+      if (feature && !is_selected) {
+        catalog_layer.includeSelectionFid(fid);
+      }
+  
+      // add
+      if (!feature && !toggled && !is_selected) {
+        catalog_layer.includeSelectionFid(fid, false);
+      }
+  
+      // remove
+      if (!feature && toggled) {
+        catalog_layer.excludeSelectionFid(fid, false);
+      }
 
-      // Set selection layer active based on features selection selected properties.
-      layer.selection.active = layer.selection.features.reduce((acc, feature) => acc || feature.selection.selected, false);
+    });
+
+    // set layer selection state
+
+    // PROJECT LAYER
+    if (catalog_layer.state.filter.active) {
+      fids.forEach((_, idx) => {
+        // index of feature to remove
+        const i = feature ? index : idx;
+        layer.features.splice(i, 1);
+        // delete related action
+        delete action.state.toggled[i];
+        // reset toggled state 
+        action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
+      });
     }
 
-    if (GIVE_ME_A_NAME) {
-      layer.features.forEach((f, i) => _action.state.toggled[i] = !toggled);
+    catalog_layer.state.selection.active = Object.values(action.state.toggled).every(t => t);
+
+    //remove Highlight geometry layer fetures
+    GUI.getService('map').clearHighlightGeometry();
+    
+    // PROJECT LAYER - In case of single layer and no features, remove layer
+    if (1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
+      query.getState().layers.splice(0);
     }
 
   }

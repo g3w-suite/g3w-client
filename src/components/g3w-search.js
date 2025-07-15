@@ -3,7 +3,10 @@
  * @since 3.10.0
  */
 
-import { SEARCH_ALLVALUE }            from 'g3w-constants';
+import {
+  SEARCH_ALLVALUE,
+  PAGELENGTHS
+}                                     from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
 import Panel                          from 'g3w-panel';
 import ApplicationState               from 'store/application'
@@ -16,7 +19,7 @@ import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
-import * as vueSearchComp             from 'components/SearchPanel.vue';
+import vueSearchComp                  from 'components/SearchPanel.vue';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/search/vue/panel/searchpanel.js@v3.9.3
@@ -31,13 +34,18 @@ export function SearchPanel(opts = {}, show = false) {
     type:                 opts.type || 'search',
     /** @TODO check if deprecated */
     queryurl:             (opts.options || {}).queryurl,
+    layerid:              (opts.options || {}).layerid,
+    otherquerylayerids:   (opts.options|| {}).otherquerylayerids || [],
     /** @deprecated will be removed in v4.x */
     search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
-    /** Layers that will be searchable for that search form. The First one is a layer owner of the search set on admin. */
-    search_layers:        [(opts.options || {}).querylayerid || (opts.options || {}).layerid || null, ...((opts.options || {}).otherquerylayerids || [])].map(id => getCatalogLayerById(id)),
+    /** Layers that will be searchable for that search form. 
+     * The First one is a layer owner of the search set on admin. 
+     * Need to ser layer TOC layer olorder on results.
+     * */
+    search_layers: (GUI.getService('queryresults')._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
-    forminputs:           ((opts.options || {}).filter || []).map((d, i) => ({
+    forminputs:    ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
       type:        d.input.type || 'textfield',
       widget_type: d.input.widget_type,
@@ -54,7 +62,7 @@ export function SearchPanel(opts = {}, show = false) {
        *        will contain the filtered values consistent with the
        *        value of the dependent parent field
        */
-      dependance_strict: d.input.options.dependance_strict || false,
+      dependance_strict:      d.input.options.dependance_strict || false,
       /**
        * true → the select is not disabled and will contain all possible values
        *        (since at the beginning the parent will have the value ALL).
@@ -62,51 +70,82 @@ export function SearchPanel(opts = {}, show = false) {
        *        select list will be filtered in a manner consistent with the value
        *        of the parent
        */
-      dependance: d.input.options.dependance || false,
-      value:     'selectfield' === d.input.type ? SEARCH_ALLVALUE : null,
-      operator:  d.op,
-      logicop:   i === (opts.options.filter.length - 1) ? null : d.logicop,
-      loading:   true,
-      disabled:  d.input.options.disabled || false, 
+      dependance:             d.input.options.dependance || false,
+      alternativeuniquelayer: d.input.alternativeuniquelayer, //@since 4.0.0 layers to get selectbox data eventually
+      value:                  'selectfield' === d.input.type ? SEARCH_ALLVALUE : null,
+      operator:               d.op,
+      logicop:                i === (opts.options.filter.length - 1) ? null : d.logicop,
+      loading:                true,
+      disabled:               d.input.options.disabled || false, 
       /** keep a reference to initial search options (you shouldn't mutate them..) */
-      options:   d.input.options,
+      options:                d.input.options,
     })),
+    /** @since 3.11.0 whether layers are filtered (value = 0/1, see: https://github.com/g3w-suite/g3w-client/issues/676) */
+    autofilter: { value: 0 }, //
+    /** @since 3.11.0 whether paginate results */
+    paginate:  !!opts.options.paginate,
+    /** @type { 'search' | 'data' } @since 3.11.0 */
+    return:    (opts.options || {}).return  || 'data',
+    /** @since 3.11.0 whether search is coming from another search */
+    child:     !!opts.child,
   };
 
-  // create search form structure 
-  state.mounted = (async function(state) {
+  // see: https://github.com/g3w-suite/g3w-client/pull/785#discussion_r2044936089
+  if (state.search_layers.some(l => !l)) {
+    state.search_layers = state.search_layers.filter(l => l);
+    GUI.showUserMessage({
+      type: 'warning',
+      message: `Invalid <code>search_layers</code> config. Have you deleted some layers from your QGIS project recently?`
+    });
+  }
 
+  const setInputs = async () => {
+    
     for (let i = 0; i <= state.forminputs.length - 1; i++) {
-  
-      const input            = state.forminputs[i];
-      const has_autocomplete = 'autocompletefield' === input.type;
-  
+
+      const input = state.forminputs[i];
+
+      /**@since v4.0.0 set array value for in (only for SelectBox) */
+      if ('in' === input.operator) {
+        input.value = [].concat(input.value);
+      }
+
+      const no_value = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
       // set key-values for select
       input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),          // set `SEARCH_ALLVALUE` as first element
-        ...(input.dependance_strict || has_autocomplete
-            ? input.values
-            : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server
-          )
+        ...('selectfield' === input.type 
+            // set `SEARCH_ALLVALUE` as first element and retrive input values from server (set empty in case of strict dependance)
+            ? [SEARCH_ALLVALUE].concat(no_value ? [] : await getDataForSearchInput({ state, layerid: input.alternativeuniquelayer, field: input.attribute })) 
+            : []
+          ), 
+
       ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-  
-      // there is a dependence
+
+      //In case of search with autofilter that return no data, need to setup select input to all
+      if (1 === input.values.length && SEARCH_ALLVALUE === input.values[0].value && ['selectfield', 'autocompletefield'].includes(input.type)) {
+        input.value = 'in' === input.operator ? [SEARCH_ALLVALUE] : SEARCH_ALLVALUE; // set default value for select
+      };
+
+      // there is a dependance
       if (input.dependance) {
         state.loading[input.dependance] = false;
-        input.disabled                  = input.dependance_strict; // disabled for BACKCOMP
+        input.disabled                  = no_value; // disabled for BACKCOMP
       }
-  
+
       // save a copy of original values
       input._values = [...input.values];
-  
+
       input.loading = false;
     }
-  
-  })(state);
+
+  }
+  // create search form structure 
+  state.mounted = setInputs();
 
   const service = opts.service || Object.assign(new G3WObject, {
     state,
     doSearch,
+    setInputs,
     run: debounce((...args) => {
       const [w, h] = GUI.getService('map').getMap().getSize();
       const hide   = GUI.isMobile() && (0 === w || 0 === h);
@@ -122,7 +161,7 @@ export function SearchPanel(opts = {}, show = false) {
     },
     createFilter: () => createFilterFormInputs({
       layer:  state.search_layers,
-      inputs: state.forminputs.filter(i => ![null, undefined, SEARCH_ALLVALUE].includes(i.value) && '' !== i.value.toString().trim()), // Filter input by NONVALIDVALUES
+      inputs: state.forminputs.filter(i => ![null, undefined, SEARCH_ALLVALUE].includes(i.value) && '' !== i.value.toString().trim()), // filter out INVALID VALUES
     }),
   });
 
@@ -145,7 +184,7 @@ export function SearchPanel(opts = {}, show = false) {
  * @param opts.filter
  * @param opts.queryUrl
  * @param opts.feature_count
- * @param opts.show            - false = internal request (No output data)
+ * @param { boolean } opts.show false = internal request (No output data)
  * 
  * @returns { Promise<void|unknown> }
  */
@@ -158,11 +197,12 @@ async function doSearch({
 } = {}) {
 
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
-  show     = undefined === show     ? 'search' === state.type : show;
+  show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
 
   state.searching = true;
 
   let data, parsed;
+  const search_1n  = !show && ('search_1n' === state.type);
 
   try {
     data = await DataRouterService.getData('search:features', {
@@ -170,40 +210,58 @@ async function doSearch({
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
           layer:   state.search_layers,
-          inputs:  state.forminputs.filter(input => -1 === [null, undefined, SEARCH_ALLVALUE].indexOf(input.value) && '' !== input.value.toString().trim()), // Filter input by NONVALIDVALUES
+          inputs:  state.forminputs.filter(input => [].concat(input.value).find(v => ![null, undefined, SEARCH_ALLVALUE].includes(v) && '' !== input.value.toString().trim())), // Filter input by NONVALIDVALUES
         }),
         queryUrl,
         formatter: 1,
         feature_count,
-        raw:       false // in order to get a raw response
+        raw:        'search' === state.return,                                        // whether get a raw response
+        autofilter: Number(show && state.autofilter.value),                           // 0/1 = autofilter (by server)
+        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}) // @since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
 
-    // auto zoom to query
-    if (show && ApplicationState.project.state.autozoom_query && data && data.data && 1 === data.data.length) {
+    /* Used by the following plugins: "cadastre" ************************************/
+    const has_values = Object.keys((data.data[0] || {}).data || {}).length > 0;
+    // has search response (values) → show panel
+    if (has_values && 'search' === state.return) {
+      await GUI.closeContent();
+      new SearchPanel(Object.assign((data.data[0] || {}).data, { child: true }), true); // TODO: remove "child: true" it from core
+    }
+    // no search response (values) → show an empty result
+    if (!has_values && 'search' === state.return) {
+      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      data = [];
+    }
+    /********************************************************************************/
+
+    // auto zoom to query (response)
+    if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
       GUI.getService('map').zoomToFeatures(data.data[0].features);
     }
 
-    const search_1n = !show           && ('search_1n' === state.type);
     const features  = search_1n       && (data.data[0] || {}).features || []
     const relation  = features.length && ApplicationState.project.getRelationById(state.search_1n_relationid); // child and father relation fields (search father layer id based on result of child layer)
     const layer     = relation        && ApplicationState.project.getLayerById(relation.referencedLayer);      // father layer id
 
-    // no features on result → show an empty message
-    if (search_1n && !features.length) {
+    // no features on result or no relation found (@since 3.11.0) → show an empty message
+    if (search_1n && (0 === features.length || !relation)) {
       GUI.outputDataPlace(Promise.resolve({ data: [] }));
       parsed = [];
     }
 
     // parse search_1n
     if (relation) {
-      const { referencedField, referencingField } = relation.fieldRef;
+      let { referencedField, referencingField } = relation.fieldRef;
+      //@since 3.11.0 Backport old relation with relation fields not array (no multiple field)
+      referencedField  = [].concat(referencedField);
+      referencingField = [].concat(referencingField);
       parsed = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
           filter: createFilterFormInputs({
-            layer,
+            layer:  [layer],
             inputs: features.map(f => ({
               attribute: (1 === referencedField.length ? referencedField[0] : referencedField),
               logicop:   'OR',
@@ -215,7 +273,9 @@ async function doSearch({
             })),
           }),
           formatter: 1,
-          feature_count
+          feature_count,
+          autofilter: state.autofilter.value,                             // 0/1 autofilter (by server)
+          ...(state.paginate ? { page: 1, page_sizes: PAGELENGTHS } : {}) //@since 3.11.0 pagination configuration
         },
         outputs: {
           title: state.title
@@ -229,5 +289,5 @@ async function doSearch({
 
   state.searching = false;
 
-  return parsed ? parsed : data;
+  return parsed || data;
 }

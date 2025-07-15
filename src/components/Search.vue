@@ -12,11 +12,11 @@
 
     <!-- SAVED SEARCHES (from g3w-admin) -->
     <li
-      v-for       = "search in state.searches"
-      class       = "menu-item"
-      @click.stop = "showPanel(search)"
+      v-for  = "search in state.searches"
+      class  = "menu-item"
+      @click = "showPanel(search)"
     >
-      <i :class = "g3wtemplate.getFontClass('empty-circle')"></i>
+      <i :class = "$fa('empty-circle')"></i>
       <span>{{ search.name }}</span>
     </li>
 
@@ -33,26 +33,21 @@
         <bar-loader :loading = "search.qbloading"/>
         <div class = "search-tools">
           <span
-            class          = "search-action skin-tooltip-bottom"
-            :class         = "g3wtemplate.getFontClass('trash')"
+            class          = "search-action"
+            :class         = "$fa('trash')"
             data-placement = "bottom"
-            data-toggle    = "tooltip"
-            data-container = "body"
-            v-t-tooltip    = "'sdk.querybuilder.search.delete'"
+            v-t-tooltip    = "'Delete'"
             @click.stop    = "remove(search, i)"
             style          = "color: red;margin-right: 5px;"
           ></span>
           <span>{{ search.name }}</span>
           <div>
             <span
-            class          = "search-action skin-tooltip-bottom"
-            :class         = "g3wtemplate.getFontClass('run')"
-            data-placement = "bottom"
-            data-toggle    = "tooltip"
-            data-container = "body"
-            v-t-tooltip    = "'sdk.querybuilder.search.run'"
-            @click.stop    = "run(search)"
-            style          = "color: green;"
+            class              = "search-action"
+            :class             = "$fa('run')"
+            v-t-tooltip:bottom = "'Run'"
+            @click.stop        = "run(search)"
+            style              = "color: green;"
           ></span>
           </div>
         </div>
@@ -71,9 +66,8 @@ import { createFilterFromString }  from 'utils/createFilterFromString';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 import G3WTool                     from 'components/Tool.vue';
-import * as vueComp                from 'components/QueryBuilder.vue';
-
-const { t } = require('g3w-i18n');
+import vueComp                     from 'components/QueryBuilder.vue';
+import { gettext as _ }            from 'g3w-i18n';
 
 export default {
 
@@ -107,7 +101,7 @@ export default {
      */
     async remove(search, index) {
       try {
-        await (new Promise((res, rej) => { GUI.dialog.confirm(t('sdk.querybuilder.delete'), d => d ? res() : rej()) }));
+        await (new Promise((res, rej) => { GUI.dialog.confirm(_('Do you want delete it?'), d => d ? res() : rej()) }));
         const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
         const items = item ? JSON.parse(item) : undefined;
         const projectId = ApplicationState.project.getId();
@@ -141,7 +135,7 @@ export default {
         name:          search.name,
         layerId:       search.layerId,
         filter:        search.filter,
-        title:         t('sdk.querybuilder.title'),
+        title:         _('Advanced search'),
         show:          true,
       };
       opts.internalPanel = new (Vue.extend(vueComp))({ options: opts });
@@ -165,16 +159,11 @@ export default {
         });
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: 'sdk.querybuilder.error_run', autoclose: true });
+        GUI.showUserMessage({ type: 'alert', message: 'An error occurs. Please check the query', autoclose: true });
       }
       search.qbloading = false;
     },
 
-  },
-
-  async mounted() {
-    await this.$nextTick();
-    $('.search-action').tooltip();
   },
 
 };

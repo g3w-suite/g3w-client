@@ -28,9 +28,9 @@ const PROJECTS = {};
  */
 function crsToCrsObject(crs) {
 
-  /** @FIXME add description */
-  if ([undefined, null].includes(crs)) {
-    return crs;
+  /**If not defined crs or nno epsg is set (exmaple epsg: 0) return null */
+  if ([undefined, null].includes(crs) || (crs && !crs.epsg)) {
+    return null;
   }
 
   /** @FIXME add description */
@@ -38,6 +38,7 @@ function crsToCrsObject(crs) {
     crs.epsg = normalizeEpsg(crs.epsg);
     return crs;
   }
+
 
   return {
     epsg:         normalizeEpsg(crs),
@@ -120,7 +121,7 @@ export async function getProject(gid, options = {}) {
     setters: {
       setBaseLayer(id) {
         window.initConfig.baselayers.forEach(l => {
-          this._layersStore.getLayerById(l.id).setVisible(id === l.id);
+          this._layersStore.getLayerById(l.id)?.setVisible(id === l.id);
           l.visible = (id === l.id);
         })
       },
@@ -128,9 +129,10 @@ export async function getProject(gid, options = {}) {
     state: PROJECTS[gid],
     /** project APIs */
     urls: {
-      map_themes:      `/${PROJECTS[gid].type}/api/prjtheme/${PROJECTS[gid].id}/`,
-      vector_data:     `${PROJECTS[gid].vectorurl}data/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
-      featurecount:    `${PROJECTS[gid].vectorurl}featurecount/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
+      map_themes:          `/${PROJECTS[gid].type}/api/prjtheme/${PROJECTS[gid].id}/`,
+      vector_data:         `${PROJECTS[gid].vectorurl}data/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
+      featurecount:        `${PROJECTS[gid].vectorurl}featurecount/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
+      editorformstructure: `${PROJECTS[gid].vectorurl}editorformstructure/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
     },
     _projection:            Projections.get(crsToCrsObject(PROJECTS[gid].crs)),
     _layersStore:           new LayersStore(),
@@ -198,11 +200,13 @@ export async function getProject(gid, options = {}) {
 
   // Layer factory: instance each layer and add to layersstore
   project._layersStore.addLayers(project.getLayers().flatMap(l => {
-    const config = Object.assign(l, {
-      crs:               crsToCrsObject(l.crs),
+    const config = Object.assign({}, l, {
+      crs:               crsToCrsObject(l.crs || project.state.crs), // @v4.0 Fix In case of missing layer crs, set project crs
       projection:        l.crs ? Projections.get(l.crs) : project._projection,
       ows_method:        project.state.ows_method,
       wms_use_layer_ids: project.state.wms_use_layer_ids,
+      //@since v4.0.0 - original config to maintain
+      styles:            l.styles && l.styles.map(s => ({...s})), // v4.0.0 pass a copy of styles
     });
 
     // Check Layer Type
@@ -223,6 +227,11 @@ export async function getProject(gid, options = {}) {
       return new TableLayer(config, { project });
     }
 
+    //@since 4.0.0 no crs exclude from layer list
+    if (config.geometrytype && 'NoGeometry' !== config.geometrytype && !config.crs) {
+      return [];
+    }
+
     // VECTOR LAYERS
     if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
       return new VectorLayer(config, { project });
@@ -241,6 +250,7 @@ export async function getProject(gid, options = {}) {
       "QGIS oracle",
       "QGIS ogr",
       "QGIS mdal",
+      "QGIS arcgisfeatureserver",
     ].includes(layerType)) {
       return new ImageLayer(config, { project });
     }

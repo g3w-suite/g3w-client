@@ -7,7 +7,7 @@ import G3WObject                   from 'g3w-object';
 import Component                   from 'g3w-component';
 import GUI                         from 'services/gui';
 
-import * as vueComp                from 'components/Form.vue';
+import vueComp                     from 'components/Form.vue';
 import BodyFormComp                from 'components/FormBody.vue';
 
 import { getDefaultExpression }    from 'utils/getDefaultExpression';
@@ -16,7 +16,7 @@ import { getFilterExpression }     from "utils/getFilterExpression";
 /**
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
  * 
- * Used by the following plugins: "editing", "cadastre", "geonotes", "iternet"  
+ * Used by the following plugins: "editing", "cadastre", "geonotes", "iternet"
  */
 export class FormComponent extends Component {
   constructor(opts = {}) {
@@ -46,7 +46,7 @@ export class FormComponent extends Component {
 
   addFormComponents(c = []) { this.getService().addComponents(c); }
   addFormComponent(c)       { c && this.getService().addComponent(c); }
-  layout()                  { this.getInternalComponent().reloadLayout(); }
+  layout()                  { this.getInternalComponent()?.reloadLayout?.(); }
 
   /** @TODO check if superflous */
   mount(parent, append)     { return super.mount(parent, append).then(() => { GUI.setModal(true); }); }
@@ -80,42 +80,78 @@ export class FormService extends G3WObject {
 
     this.layer;
 
-    this.setters = {
-
-      setInitForm(opts = {}) {
-        this._setInitForm(opts);
-      },
-
-      setFormStructure(formStructure) {
-        this.state.formstructure = formStructure;
-      },
-
-      setFormFields(fields = []) {
-        this.state.fields = fields;
-        this.handleFieldsWithExpression(fields);
-      },
-
-      setupFields() {},
-
-      setFormData(fields = []) {
-        this.setFormFields(fields);
-      },
-
-      setField(field) {},
-
-      setState(state) {
-        this._setState(state);
-      },
-
-      addActionsForForm(actions) {},
-
-      postRender(element) {
-        // hook for listener to chenge DOM
-      }
-
-    };
+    this.setters = [
+      'setInitForm',
+      'setFormStructure',
+      'setFormFields',
+      'setupFields',
+      'setFormData',
+      'setField',
+      'setState',
+      'addActionsForForm',
+      'postRender',
+    ];
 
   }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setInitForm(opts = {}) {
+    this._setInitForm(opts);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setFormStructure(formStructure) {
+    this.state.formstructure = formStructure;
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setFormFields(fields = []) {
+    this.state.fields = fields;
+    this.handleFieldsWithExpression(fields);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setupFields() {}
+
+  /**
+   * @since 4.0.0. 
+   */
+  setFormData(fields = []) {
+    this.setFormFields(fields);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  setField(field) {}
+
+  /**
+   * @since 4.0.0. 
+   */
+  setState(state) {
+    this._setState(state);
+  }
+
+  /**
+   * @since 4.0.0. 
+   */
+  addActionsForForm(actions) {}
+
+  /**
+   * @since 4.0.0. 
+   */
+  postRender(element) {
+    // hook for listener to change DOM
+  }
+
   init(opts = {}) {
     this._setInitForm(opts);
   }
@@ -162,7 +198,7 @@ export class FormService extends G3WObject {
 
     /**
      * Force update state of the service
-     * (eg. setted on a child to parent form service relation)
+     * (e.g., setted on a child to parent form service relation)
      */
     this.state = {
       layerid:              layer.getId(),
@@ -180,7 +216,7 @@ export class FormService extends G3WObject {
       update:               feature.isNew(), // set update in case or not is a new feature
       // when input change will be updated
       tovalidate:           {},
-      feature,
+      feature:              this.feature, //need to get feature cloned
       componentstovalidate: {},
       footer,
       ready:                false
@@ -203,13 +239,6 @@ export class FormService extends G3WObject {
      */
     this.default_expression_fields_on_update = [];
 
-    /**
-     * Wheter to listen for changes when `saveDefaultExpressionFieldsNotDependencies` is called
-     *
-     * @since 3.8.0
-     */
-    this.listenChangeInput = true;
-
     this.setFormFields(fields);
 
     if (this.layer && options.formStructure) {
@@ -227,13 +256,19 @@ export class FormService extends G3WObject {
    *
    * @param input
    */
-  changeInput(input) {
-    if (true === this.listenChangeInput) {
-      this.evaluateFilterExpressionFields(input);
-      this.evaluateDefaultExpressionFields(input);
+  async changeInput(input) {
+    try {
+      //need to set property
+      this.feature.set(input.name, input.value);
+      await this.evaluateFilterExpressionFields(input);
+      await this.evaluateDefaultExpressionFields(input);
       this.isValid(input);
       this.isUpdated(input);
+    } catch(e) {
+      console.warn(e);
     }
+    //emit event changeInput
+    this.emit('changeInput', input);
   };
 
   /**
@@ -269,19 +304,19 @@ export class FormService extends G3WObject {
    * Evaluate filter expression
    *
    * @param input
+   * @return Promise
    */
   evaluateDefaultExpressionFields(input = {}) {
     const filter = this.default_expression_fields_dependencies[input.name];
     if (filter) {
-      this.feature.set(input.name, input.value);
-      filter.forEach(dependency_field => {
+      return Promise.allSettled(filter.map(dependency_field =>
         getDefaultExpression({
           parentData:   this.parentData,
           qgs_layer_id: this.layer.getId(),
           field:        this._getField(dependency_field),
           feature:      this.feature,
         })
-      })
+      ))
     }
   };
 
@@ -289,22 +324,21 @@ export class FormService extends G3WObject {
    * Evaluate filter expression fields
    *
    * @param input
+   * @return Promise
    */
   evaluateFilterExpressionFields(input = {}) {
     const filter = this.filter_expression_fields_dependencies[input.name];
     if (filter) {
-      // on form service inititalization `filter_expression` option has
+      // on form service initialization `filter_expression` option has
       // `referencing_fields` or `referenced_columns` from another layer
-      const fieldForm = this._getField(input.name);
-      if (fieldForm) { this.feature.set(fieldForm.name, fieldForm.value) }
-      filter.forEach(dependency_field => {
+      return Promise.allSettled(filter.map(dependency_field =>
         getFilterExpression({
           parentData:   this.parentData,
           qgs_layer_id: this.layer.getId(),
           field:        this._getField(dependency_field),
           feature:      this.feature,
         })
-      })
+      ))
     }
   };
 
@@ -622,6 +656,7 @@ export class FormService extends G3WObject {
   };
 
   /**
+   * Method to get default expression of field that has no dependencies fields listen when save form
    * @returns {Promise<void>}
    *
    * @since 3.8.0
@@ -629,72 +664,34 @@ export class FormService extends G3WObject {
   async saveDefaultExpressionFieldsNotDependencies() {
     if (0 === this.default_expression_fields_on_update.length) { return }
 
-    // disable listen changeInput
-    this.listenChangeInput      = false;
-    // Array contains field name already resolved with server default_expression request
-    const requested_expressions = [];
-    // array of defaultExpressionPromises request
-    const pending_expressions   = [];
-
-    // loop through default_expression_fields
-    for (let i = 0; i < this.default_expression_fields_on_update.length; i++) {
-
-      // extract all dependency fields of current field
-      const dFs = Object.keys(this.default_expression_fields_dependencies)
-        .filter(field => {
-          return (
-            // check if dependency field is field on update
-            this.default_expression_fields_on_update.find(({ name }) => name === field) &&
-            // if it has bind current field
-            this.default_expression_fields_dependencies[field].find(name => name === this.default_expression_fields_on_update[i].name)
-          )
-        });
-
-      // id current field has an Array (at least one) dependency fields
-      // need to evaluate its value and after evaluate field value expression
-      for (let i = 0; i < dFs.length; i++) {
-        // in case already done a default_expression request evaluation from server
-        if (undefined !== requested_expressions.find(name => dFs[i] === name)) {
-          continue;
-        }
-        // get value. Need to wait response
-        try {
-          const value = await getDefaultExpression({
-            field:        this._getField(dFs[i]),
-            feature:      this.feature,
-            qgs_layer_id: this.layer.getId(),
-            parentData:   this.parentData
-          });
-          // update field with evaluated value to feature
-          this.feature.set(dFs[i], value);
-          // add to array
-          requested_expressions.push(dFs[i]);
-        } catch(e) {
-          console.warn(e);
-        }
-      }
-
-    }
-
-    this.default_expression_fields_on_update.forEach(field => {
-      if (undefined === requested_expressions.find(name => field.name === name)) {
-        pending_expressions.push(getDefaultExpression({
-          field,
-          feature:      this.feature,
-          qgs_layer_id: this.layer.getId(),
-          parentData:   this.parentData
-        }))
-      }
-    });
-
     try {
-      await Promise.allSettled(pending_expressions);
+      //@since 3.11.0 get unique field names that has dependencies from another fields
+      const fields_with_dependencies = new Set(Object.values(this.default_expression_fields_dependencies).flat());
+      //get all fields with default expression without dependencies
+      const fields_without_dependencies = this.default_expression_fields_on_update
+        .filter(({ name }) => !fields_with_dependencies.has(name))
+      //set property value of field by default expression result from server
+      await Promise.allSettled(fields_without_dependencies
+        .map(field => new Promise(async (resolve, reject) => {
+            try {
+              //await until default expression is resolved and set value to field
+              await getDefaultExpression({
+                field,
+                feature:      this.feature,
+                qgs_layer_id: this.layer.getId(),
+                parentData:   this.parentData
+              });
+              resolve();
+            } catch(e) {
+              console.warn(e);
+              reject();
+            }
+          })
+        )
+      )
     } catch(e) {
       console.warn(e);
     }
-
-    // enable listen changeInput
-    this.listenChangeInput = true;
 
   };
 }

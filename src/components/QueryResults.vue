@@ -26,25 +26,25 @@
         >
           <li
             v-show = "showLayer(layer)"
-            v-for = "layer in state.layers"
+            v-for = "(layer, index) in state.layers"
           >
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class      = "box-header with-border"
-                :class     = "{'mobile': isMobile()}"
-                @mouseover = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout  = "highLightLayerFeatures(layer, { highlight: false })"
-                @click     = "collapseSidebar"
+                class            = "box-header with-border"
+                :class           = "{'mobile': isMobile()}"
+                @mouseover.stop  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout.stop   = "highLightLayerFeatures(layer, { highlight: false })"
+                @click.stop      = "collapseSidebar"
               >
                 <div
                   class  = "box-title query-layer-title"
                   :style = "{fontSize: isMobile() && '1em !important'}">
                   <span
-                    v-if                    = "!layer.external"
-                    @click.stop             = "openAttributeTable(layer)"
-                    class                   = "action-button"
-                    v-t-tooltip:left.create = "'catalog_items.contextmenu.open_attribute_table'"
+                    v-if             = "!layer.external"
+                    @click.stop      = "openAttributeTable(layer)"
+                    class            = "action-button"
+                    v-t-tooltip:left = "'Open Attribute Table'"
                   >
                     <span
                       class  = "action-button-icon"
@@ -52,9 +52,13 @@
                     ></span>
                   </span>
                   {{ layer.title }}
-                  <span
-                    v-show = "!layer.rawdata"
-                    class  = "query-layer-feature-count">({{ layer.features.length }})</span>
+                  <span v-if = "!layer.rawdata">
+                    ({{
+                      canPaginate(layer)
+                        ? (layer.features.length + ((state.query.pagination.current.at(index) - 1) * state.query.pagination.getData.params.at(index).page_size)) + ' - ' + state.query.pagination.counts[index]
+                        : layer.features.length
+                    }})
+                  </span>
                 </div>
                 <div
                   class       = "box-features-action"
@@ -64,10 +68,10 @@
                   <infoformats :layer = "layer"/>
                   <template v-if = "layer.features.length > 1">
                     <span
-                      v-if                    = "layer.hasgeometry"
-                      @click.stop             = "zoomToLayerFeaturesExtent(layer)"
-                       class                  = "action-button"
-                      v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'"
+                      v-if             = "layer.hasgeometry"
+                      @click.stop      = "zoomToLayerFeaturesExtent(layer)"
+                       class           = "action-button"
+                      v-t-tooltip:left = "'Zoom to features extent'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -75,11 +79,11 @@
                       </span>
                     </span>
                     <span
-                      v-if                    = "layer.atlas.length"
-                      @click.stop             = "printAtlas(layer)"
-                      class                   = "action-button"
-                      v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.atlas.hint'"
-                      v-download
+                      v-if             = "layer.atlas.length"
+                      @click.stop      = "printAtlas(layer)"
+                      class            = "action-button"
+                      v-t-tooltip:left = "'Print Atlas'"
+                      v-disabled       = "ApplicationState.download"
                     >
                       <span
                         class  = "action-button-icon"
@@ -87,26 +91,12 @@
                       </span>
                     </span>
                     <!--        DOWNLOAD        -->
-                    <template v-if = "1 === getLayerDownloads(layer.downloads).length ">
+                    <template v-if = "getLayerDownloads(layer.downloads).length > 0">
                       <span
-                        class                   = "action-button"
-                        :class                  = "{'toggled': layer.downloadformats.active}"
-                        v-t-tooltip:left.create = "`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`"
-                        v-download
-                      >
-                        <span
-                          class       = "action-button-icon"
-                          :class      = "g3wtemplate.getFontClass('download')"
-                          @click.stop = "saveLayerResult(layer, getLayerDownloads(layer.downloads)[0])"
-                        ></span>
-                      </span>
-                    </template>
-                    <template v-else-if = "getLayerDownloads(layer.downloads).length > 1">
-                      <span
-                        class                   = "action-button"
-                        :class                  = "{'toggled': layer.downloadformats.active}"
-                        v-t-tooltip:left.create = "'Downloads'"
-                        v-download
+                        class            = "action-button"
+                        :class           = "{'toggled': layer.downloadformats.active}"
+                        v-t-tooltip:left = "'Downloads'"
+                        v-disabled       = "ApplicationState.download"
                       >
                         <span
                           class       = "action-button-icon"
@@ -118,41 +108,40 @@
                     <!--        END DOWNLOAD        -->
                   </template>
                   <span
-                    v-if                    = "layer.external || (layer.source && 'wms' !== layer.source.type )"
-                    @click.stop             = "addLayerFeaturesToResults(layer)"
-                    class                   = "action-button"
-                    :class                  = "{'toggled': layer.addfeaturesresults.active}"
-                    v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_features_to_results.hint'"
+                    v-if             = "layer.external || (layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                    @click.stop      = "addLayerFeaturesToResults(layer)"
+                    class            = "action-button"
+                    :class           = "{'toggled': layer.addfeaturesresults.active}"
+                    v-t-tooltip:left = "'Add/Remove features to results'"
                   >
                     <span
                       class  = "action-button-icon"
                       :class = "g3wtemplate.getFontClass('plus-square')"
                     ></span>
                   </span>
+
+                  <!-- TOGGLE LAYER SELECTION -->
                   <span
-                    v-if                    = "
-                      layer.toc &&
-                      layer.id !== '__g3w_marker' &&
-                      layer.features.length > 1 &&
-                      (layer.external || (layer.source && layer.source.type !== 'wms'))
-                    "
-                    @click.stop             = "addToSelection(layer)"
-                    class                   = "action-button skin-tooltip-left"
-                    v-t-tooltip:left.create = "'sdk.mapcontrols.query.actions.add_selection.hint'"
-                    :class                  = "{'toggled': layer.selection.active}"
+                    v-if             = "canSelect(layer)"
+                    @click.stop      = "toggleSelection(layer)"
+                    class            = "action-button"
+                    v-t-tooltip:left = "'Add/Remove Selection'"
+                    :class           = "{'toggled': layer.selection.active}"
                   >
                     <span
                       class  = "action-button-icon"
                       :class = "g3wtemplate.getFontClass('success')"
                     ></span>
                   </span>
+
                   <!-- Filter template tools -->
                   <template v-if = "!layer.external && layer.selection.active">
                     <span
-                      @click.stop             = "addRemoveFilter(layer)"
-                      class                   = "action-button skin-tooltip-left"
-                      :class                  = "{'toggled': layer.filter.active}"
-                      v-t-tooltip:left.create = "'layer_selection_filter.tools.filter'"
+                      v-if             = !layer.filter.pagination
+                      @click.stop      = "addRemoveFilter(layer)"
+                      class            = "action-button"
+                      :class           = "{'toggled': layer.filter.active}"
+                      v-t-tooltip:left = "'Enable/Disable filter'"
                     >
                       <span
                         class  = "action-button-icon"
@@ -166,16 +155,15 @@
                         && layer.filter.active
                         && (null === layer.filter.current || layer.selection.active)
                       "
-                      @click.stop             = "saveFilter(layer)"
-                      class                   = "action-button skin-tooltip-left"
-                      v-t-tooltip:left.create = "'layer_selection_filter.tools.savefilter'"
+                      @click.stop      = "saveFilter(layer)"
+                      class            = "action-button"
+                      v-t-tooltip:left = "'Save Filter'"
                     >
                       <span
                         class  = "action-button-icon"
                         :class = "g3wtemplate.getFontClass('save')"
                       ></span>
                     </span>
-
                   </template>
 
                 </div>
@@ -206,6 +194,103 @@
                 :is   = "component"
                 :layer = "layer"/>
               <!--   End custom layer component         -->
+
+              <!-- PAGINATION -->
+              <div
+                v-if       = "state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
+                id         = "g3w-queryresults-pagination"
+                v-disabled = "layer.loading"
+              >
+
+                <!-- PAGE SIZE -->
+                <select
+                  class   = "form-control"
+                  @change = "changePage(index, 1, Number($event.target.value))"
+                  style   = "width: auto;"
+                >
+                  <option
+                    v-for  = "page in state.query.pagination.page_sizes[index]"
+                    :key   = "page"
+                    :value = "page"
+                  >{{ page }}</option>
+                </select>
+
+                <!-- PAGINATION BUTTONS -->
+                <ul :disabled ="!layer.loading" style="display: flex; align-items: center;">
+
+                  <!-- GOTO: PREVIOUS PAGE -->
+                  <li>
+                    <button
+                      v-if        =  "state.query.pagination.counts[index] > layer.features.length"
+                      class       = "btn fas fa-angle-left"
+                      :disabled   = "1 === state.query.pagination.current[index]"
+                      @click.stop = "changePage(index, state.query.pagination.current[index] - 1)"
+                    ></button>
+                  </li>
+
+                  <!-- GOTO: FIRST PAGE -->
+                  <li>
+                    <button
+                      class       = "btn"
+                      :class      = "{ 'skin-background-color': 1 === state.query.pagination.current[index] }"
+                      v-disabled  = "layer.features.length === state.query.pagination.counts[index]"
+                      @click.stop = "changePage(index, 1)"
+                    >1</button>
+                  </li>
+
+                  <!-- ELLIPSIS SEPARATOR -->
+                  <li
+                    v-if = "state.query.pagination.counts[index] > layer.features.length && state.query.pagination.pages[index] > 4 && state.query.pagination.current[index] > 2"
+                  >…</li>
+
+                  <li>
+                    <template v-if = "state.query.pagination.pages[index] > 1 && state.query.pagination.counts[index] > layer.features.length">
+                      <button
+                        v-for= "page in (
+                        (state.query.pagination.pages[index] < 4 || state.query.pagination.current[index] < 3)
+                          ? Array.from(Array(state.query.pagination.pages[index] - 2).keys()).slice(0, 2).map(i => i + 2)
+                          : (state.query.pagination.pages[index] - state.query.pagination.current[index]) > 2
+                          ? [state.query.pagination.current[index], state.query.pagination.current[index] + 1 ]
+                          : [state.query.pagination.pages[index] - 2, state.query.pagination.pages[index] - 1 ]
+                        )"
+                        class       = "btn"
+                        :class      = "{ 'skin-background-color': page === state.query.pagination.current[index]  }"
+                        @click.stop = "changePage(index, page)"
+                      >{{ page }}
+                      </button>
+                    </template>
+                  </li>
+
+                  <!-- ELLIPSIS SEPARATOR -->
+                  <li
+                    v-if = "state.query.pagination.counts[index] > layer.features.length && state.query.pagination.pages[index] > 4 && (state.query.pagination.current[index] < state.query.pagination.pages[index] - 2)"
+                  >…</li>
+
+                  <!-- GOTO: LAST PAGE  -->
+                  <li>
+                    <button
+                      v-if        = "state.query.pagination.counts[index] > layer.features.length && state.query.pagination.pages[index] > 1"
+                      class       = "btn"
+                      :class      = "{ 'skin-background-color': state.query.pagination.pages[index] === state.query.pagination.current[index]  }"
+                      @click.stop = "changePage(index, state.query.pagination.pages[index])"
+                    >
+                      {{ state.query.pagination.pages[index] }}
+                    </button>
+                  </li>
+
+                  <!-- GOTO: NEXT PAGE -->
+                  <li>
+                    <button
+                      v-if="state.query.pagination.counts[index] > layer.features.length"
+                      :disabled   = "state.query.pagination.pages[index] === state.query.pagination.current[index]"
+                      class       = "btn fas fa-angle-right"
+                      @click.stop = "changePage(index, state.query.pagination.current[index] + 1)"
+                    ></button>
+                  </li>
+
+                </ul>
+              </div>
+
               <div class = "box-body" :class = "{'mobile': isMobile()}">
                 <template v-if = "layer.rawdata">
                   <div
@@ -217,8 +302,11 @@
                 <!-- CASE FORM STRUCTURE LAYER-->
                 <template v-else-if = "hasFormStructure(layer)">
                   <table class = "table" :class = "{'mobile': isMobile()}">
-                    <tbody>
-                      <template v-if = "feature.show" v-for = "(feature, index) in layer.features">
+                    <tbody 
+                      v-for = "(feature, index) in layer.features"
+                      v-if  = "showFeature(layer, feature)"
+                      :key  = "feature.id"
+                      > 
                         <header-feature-actions-body
                           :colspan                 = "getColSpan(layer)"
                           :actions                 = "state.layersactions[layer.id]"
@@ -313,7 +401,6 @@
                               :feature = "feature"/>
                           </td>
                         </tr>
-                      </template>
                     </tbody>
                   </table>
                 </template>
@@ -321,8 +408,8 @@
                   <!-- CASE SIMPLE LAYER WITH NO STRUCTURE -->
                   <table class = "table" :class = "{'mobile': isMobile()}">
                     <tbody
-                      v-if  = "feature.show"
                       v-for = "(feature, index) in layer.features"
+                      v-if  = "showFeature(layer, feature)"
                       :key  = "feature.id"
                     >
                       <header-feature-actions-body
@@ -372,7 +459,7 @@
                         </td>
                       </tr>
                       <header-feature-body
-                        v-if="!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                        v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                         :actions                 = "state.layersactions[layer.id]"
                         :layer                   = "layer"
                         :feature                 = "feature"
@@ -436,7 +523,6 @@
                         </td>
                       </tr>
                     </tbody>
-                    <tbody v-else></tbody>
                   </table>
                 </template>
               </div>
@@ -468,10 +554,21 @@
       </template>
 
     </div>
+
+    <!-- TODO: SHOW SELECTED LAYER -->
+    <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
+      <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
+      <select style="flex: 1;">
+        <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
+        <option :selected="!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
+      </select>
+    </div>
+
   </div>
 </template>
 
 <script>
+  import ApplicationState            from 'store/application';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';
@@ -480,9 +577,11 @@
   import { toRawType }               from 'utils/toRawType';
   import { throttle }                from 'utils/throttle';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
+  import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
+  import { downloadFeatures }        from 'utils/downloadFeatures';
+  import { showDownloadFormats }     from 'utils/downloadFeatures';
   import GUI                         from 'services/gui';
-
-  const MAX_SUBSET_LENGTH           = 3;
+  
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth      = 10;
   const HEADERTYPESFIELD            = [
@@ -500,6 +599,8 @@
 
     data() {
       return {
+        /** @since 4.0.0 */
+        ApplicationState,
         state:                       this.$options.service.state,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth:      headerActionsCellWidth,
@@ -573,10 +674,36 @@
 
         return { icon: null, message: null };
 
-      }
+      },
+
+      queryableLayers() {
+        return getMapLayersByFilter({ QUERYABLE: true });
+      },
+
+      selectedLayer() {
+        return GUI.getService('map').getSelectedLayer();
+      },
 
     },
     methods: {
+
+      /**
+       * @returns { boolean } whether can paginate layer results
+       */
+      canPaginate(layer) {
+        return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[this.state.layers.findIndex(l => l == layer)]);
+      },
+
+      /**
+       * @returns { boolean } whether can show "add to select" action
+       */
+      canSelect(layer) {
+        return (
+          GUI.getService('queryresults').getActionLayerById({ layer, id: 'selection' })
+          && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
+          && layer.features.length > 1
+        );
+      },
 
       /**
        * @since v3.10.0
@@ -651,13 +778,13 @@
         this.$options.service.printAtlas(layer);
       },
       showLayerDownloadFormats(layer) {
-        this.$options.service.showLayerDownloadFormats(layer)
+        showDownloadFormats(layer);
       },
-      saveLayerResult(layer, type="csv") {
-        this.$options.service.downloadFeatures(type, layer, layer.features);
+      saveLayerResult(layer, type = "csv") {
+        downloadFeatures(type, layer, layer.features);
       },
       hasLayerOneFeature(layer) {
-        return layer.features.length === 1;
+        return 1 === layer.features.length;
       },
 
       /**
@@ -668,11 +795,9 @@
       saveFilter(layer) {
         getCatalogLayerById(layer.id).saveFilter();
       },
-
-      addRemoveFilter(layer) {
-        getCatalogLayerById(layer.id).toggleFilterToken();
+      async addRemoveFilter(layer) {
+        await getCatalogLayerById(layer.id).toggleFilterToken();
       },
-
       getContainerFromFeatureLayer({ layer, index } = {}) {
         return $(`#${layer.id}_${index} > td`);
       },
@@ -685,8 +810,8 @@
       layerHasFeatures(layer) {
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
-      addToSelection(layer) {
-        this.$options.service.addToSelection(layer);
+      toggleSelection(layer) {
+        this.$options.service.toggleSelection(layer);
       },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
@@ -717,7 +842,7 @@
           : layer.attributes;
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.includes(attribute.type));
         // TODO: find a clever way to handle geocoding results..
-        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ MAX_SUBSET_LENGTH, attributes.length);
+        const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.max_preview_fields, attributes.length);
         return _attributes.slice(0, end);
       },
       attributesSubsetLength(layer) {
@@ -760,6 +885,14 @@
           show: box ? !box.collapsed : false,
         });
       },
+
+      /**
+       * @since 3.11.8
+       * Show only features that have show true and in case of active filter, only selected 
+       */
+      showFeature(layer, feature) {
+        return this.$options.service.showFeature(layer, feature);
+      },
       getBoxId(layer, feature, relation_index) {
         return this.$options.service.getBoxId(layer, feature, relation_index);
       },
@@ -777,7 +910,7 @@
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        await this.$options.service.trigger(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
+        await this.$options.service.triggerAction(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
@@ -822,12 +955,97 @@
         box.querySelector(".btn-collapser").classList.add('fa-minus', collapsed);
       },
 
+      /**
+       * @param { number } index index of layer
+       * @param { number } page  page number
+       * @param { number } size  features per page
+       */
+      async changePage(index, page, size) {
+        const { query, layers } = this.state;
+
+        layers[index].loading = true;
+
+        try {
+          // set current features count shown by selection 
+          if (undefined !== size) {
+            query.pagination.current_sizes[index] = size;
+          }
+
+          const page_size = query.pagination.current_sizes[index];
+
+          // remove "autofilter" parameter (on first request)
+          if (query.autofilter && query.pagination.paginate[index]) {
+            query.autofilter = false;
+            query.pagination.getData.params.forEach(p => delete p.autofilter);
+          }
+
+          // set page size
+          if (page_size) {
+            query.pagination.getData.params[index].page_size = page_size;
+          }
+
+          // get config from getData object
+          const { method, params } = query.pagination.getData;
+          const layer              = (query.pagination.getData.layers || [])[index];
+
+          // whehter layer has filter
+          const has_filtertoken = !!layer.getFilterToken();
+
+          // get layer pagination data
+          const data = await layer[method]({ ...params[index], page });
+          
+          // set response data
+          this.$options.service.setQueryResponse(
+            { ...data, query },
+            { add: false, update: true }
+          );
+
+          // set paginate base of change amount of features request changing select value on query result
+          query.pagination.paginate[index] = data.count > (data.data || [])[0].features.length;
+
+          // set new number of pages
+          query.pagination.pages[index]    = Math.ceil(data.count / page_size);
+
+          // set filter pagination in case of all features are get from pagination
+          layers[index].filter.pagination  = layers[index].filter.active && query.pagination.paginate[index];
+
+          // set the current page
+          query.pagination.current[index]  = page;
+
+          const page_size_change = layer.state.selection.active || has_filtertoken ;
+
+          // get selection action
+          const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
+
+          layers[index].features.forEach((f, i) => {
+            if (page_size_change && !f.selection.selected && f.geometry && layer.isGeoLayer()) {
+              const fid = layers[index].external ? f.id : (f.attributes[G3W_FID] || f.id);
+              layer.addOlSelectionFeature({ id: fid, feature:f }).selected = true;
+              layer.includeSelectionFid(fid, false);
+            }
+            f.selection.selected    = page_size_change;
+            action.state.toggled[i] = page_size_change;
+          });
+
+          layer.state.filter.active    = page_size_change;
+          layer.state.selection.active = page_size_change;
+
+          // zoom to features when layer has geometry
+          if (layers[index].hasgeometry) {
+            this.$options.service.highLightLayerFeatures(layers[index]);
+          }
+        } catch(e) {
+          console.warn(e);
+        }
+
+        layers[index].loading = false;
+      },
     },
 
     watch: {
       async 'state.layers'(layers = []) {
         layers.forEach(layer => {
-          if (layer.attributes.length <= MAX_SUBSET_LENGTH && !layer.hasImageField) {
+          if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
           }
           layer.features.forEach(feature => {
@@ -855,7 +1073,7 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool) {
+        if (bool && !this.state.query.pagination?.paginate?.at(0) && !this.state.layers[0].filter.active) {
           GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
         }
       }
@@ -865,9 +1083,6 @@
       this.zoomToLayerFeaturesExtent = throttle(layer => {
         this.$options.service.zoomToLayerFeaturesExtent(layer);
       })
-    },
-    beforeDestroy() {
-      this.state.zoomToResult = true;
     },
     destroyed() {
       this.$options.service.clear();
@@ -881,5 +1096,19 @@
 }
 .featurebox-body + tr {
   border-top: 2px groove #000;
+}
+#g3w-queryresults-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  margin-left: 10px;
+}
+#g3w-queryresults-pagination > ul > li > * {
+  background-color: transparent;
+  margin: 2px;
+  font-weight: bold;
+  font-size: 0.8em;
 }
 </style>

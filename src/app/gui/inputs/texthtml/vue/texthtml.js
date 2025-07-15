@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputTextHtml.vue';
+import vueComponentOptions from 'components/InputTextHtml.vue';
 
 const TextHtmlInput = Vue.extend(vueComponentOptions);
 

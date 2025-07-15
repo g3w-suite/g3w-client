@@ -8,15 +8,7 @@
 /**
  * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
  */
-// import { version } from '../package.json';
-import version      from './version';
-
-/**
- * Same as "package.json" version
- * 
- * @type {string}
- */
-export const APP_VERSION = version;
+export { version as APP_VERSION } from '../package.json';
 
 /**
  * Default editing capabilities
@@ -29,23 +21,6 @@ export const DEFAULT_EDITING_CAPABILITIES = [
   'change_feature',
   'change_attr_feature',
   'delete_feature'
-];
-
-/**
- * @type {string[]}
- */
-export const EPSG = [
-  "EPSG:3003",
-  "EPSG:3004",
-  "EPSG:3045",
-  "EPSG:3857",
-  "EPSG:4326",
-  "EPSG:6708",
-  "EPSG:23032",
-  "EPSG:23033",
-  "EPSG:25833",
-  "EPSG:32632",
-  "EPSG:32633",
 ];
 
 /**
@@ -66,7 +41,7 @@ export const FILTER_OPERATORS = {
   eq:       '=',
   gt:       '>',
   lt:       '<',
-  IN:       'IN',
+  in:        'IN',
   LIKE:     'LIKE',
   ILIKE:    'ILIKE',
   AND:      'AND',
@@ -207,159 +182,160 @@ export const SEARCH_ALLVALUE = '__G3W_ALL__';
 export const TIMEOUT = 60000;
 
 /**
- * @type {{resize: Object<string, { min: number }>}}
- * @since v3.5
- */
-export const VIEWPORT = {
-  resize: {
-    map:     { min: 200 },
-    content: { min: 200 },
-  }
-};
-
-/**
  * List of default Font Awesome classes for current project
  * 
  * @type {Object<string, string>}
  * @since v3.8
  */
 export const FONT_AWESOME_ICONS = {
-  'change-map': "fas fa-map-signs",
-  map: "far fa-map",
-  file: "fas fa-file-code",
-  marker: "fas fa-map-marker-alt",
-  relation: "fas fa-sitemap",
-  tools: "fas fa-cogs",
-  tool: "fas fa-cog",
-  search: "fas fa-search",
-  print: "fas fa-print",
-  info: "fas fa-info-circle",
-  'info-circle': "fas fa-info-circle",
-  globe: "fas fa-globe",
-  mail: "fas fa-envelope",
-  mobile: "fas fa-mobile",
-  fax: "fas fa-fax",
-  user: "fas fa-user",
-  bars: "fas fa-bars",
-  uncheck: "far fa-square",
-  check: "far fa-check-square",
+  'change-map':     "fas fa-map-signs",
+  map:              "far fa-map",
+  file:             "fas fa-file-code",
+  marker:           "fas fa-map-marker-alt",
+  relation:         "fas fa-sitemap",
+  tools:            "fas fa-cogs",
+  tool:             "fas fa-cog",
+  search:           "fas fa-search",
+  print:            "fas fa-print",
+  info:             "fas fa-info-circle",
+  'info-circle':    "fas fa-info-circle",
+  globe:            "fas fa-globe",
+  mail:             "fas fa-envelope",
+  mobile:           "fas fa-mobile",
+  fax:              "fas fa-fax",
+  user:             "fas fa-user",
+  bars:             "fas fa-bars",
+  uncheck:          "far fa-square",
+  check:            "far fa-check-square",
   /** @since 3.10.0 */
-  checkmark: "fa fa-check",
-  filluncheck: "fas fa-square",
-  table: "fas fa-table",
-  trash: "fas fa-trash",
-  'trash-o':"far fa-trash-alt",
-  pencil: "fas fa-pencil-alt",
-  'ellips-h': "fas fa-ellipsis-h",
-  'ellips-v': "fas fa-ellipsis-v",
-  'arrow-up': "fas fa-chevron-up",
-  'arrow-down': "fas fa-chevron-down",
-  'arrow-left': "fas fa-chevron-left",
-  'arrow-right': "fas fa-chevron-right",
-  'resize-h': "fas fa-arrows-alt-h",
-  'resize-v': "fas fa-arrows-alt-v",
+  checkmark:        "fa fa-check",
+  filluncheck:      "fas fa-square",
+  table:            "fas fa-table",
+  trash:            "fas fa-trash",
+  'trash-o':        "far fa-trash-alt",
+  pencil:           "fas fa-pencil-alt",
+  'ellips-h':       "fas fa-ellipsis-h",
+  'ellips-v':       "fas fa-ellipsis-v",
+  'arrow-up':       "fas fa-chevron-up",
+  'arrow-down':     "fas fa-chevron-down",
+  'arrow-left':     "fas fa-chevron-left",
+  'arrow-right':    "fas fa-chevron-right",
+  'resize-h':       "fas fa-arrows-alt-h",
+  'resize-v':       "fas fa-arrows-alt-v",
   'resize-default': "fas fa-compress",
-  'caret-up': "fas fa-caret-up",
-  'caret-down': "fas fa-caret-down",
-  'caret-left': "fas fa-caret-left",
-  'caret-right': "fas fa-caret-right",
-  'empty-circle': "far fa-circle",
-  'cloud-upload': "fas fa-cloud-upload-alt",
-  spinner: "fas fa-spinner",
-  minus: "fas fa-minus",
-  "minus-square":"far fa-minus-square",
-  plus: "fas fa-plus",
-  'plus-circle': "fas fa-plus-circle",
-  'plus-square': "far fa-plus-square",
-  grid: "fas fa-th",
-  home: "fas fa-home",
-  folder: "fas fa-folder",
-  'sign-out': "fas fa-sign-out-alt",
-  close: "fas fa-times",
-  time: "far fa-clock",
-  calendar: "fas fa-calendar-alt",
-  list: "fas fa-list-alt",
-  link: "fas fa-link",
-  unlink: "fas fa-unlink",
-  eye: "far fa-eye",
-  'eye-close': "far fa-eye-slash",
-  save: "far fa-save",
-  pdf: "fas fa-file-pdf",
-  image: "far fa-image",
-  video: "far fa-file-video",
-  unknow:"far fa-question-circle",
-  zip: "far fa-file-archive",
-  text: "far fa-file-alt",
-  excel: "far fa-file-excel",
-  xls:"far fa-file-excel",
-  gpx: "fas fa-location-arrow",
-  gpkg: "fas fa-box-open",
-  shapefile:"fas fa-file-archive",
-  csv: "fas fa-file-csv",
-  geotiff: "fas fa-th",
-  ppt: "far fa-file-powerpoint",
-  circle: "fas fa-circle",
-  calculator: "fas fa-calculator",
-  picture: "far fa-image",
-  keyboard: "far fa-keyboard",
-  'file-download':"fas fa-file-download",
-  copy: "far fa-copy",
-  draw: "fas fa-draw-polygon",
-  chart: "fas fa-chart-bar",
-  'chart-line': "fas fa-chart-line",
-  'chart-area': "fas fa-chart-area",
-  'chart-pie': "fas fa-chart-pie",
-  run: "fas fa-play",
-  warning: "fas fa-exclamation-circle",
-  alert: "fas fa-exclamation-triangle",
-  crosshairs: "fas fa-crosshairs",
-  success: "far fa-check-circle",
-  back: "fas fa-chevron-circle-left",
-  'file-upload': "fas fa-file-upload",
-  wifi: "fas fa-wifi",
-  mouse: "fas fa-mouse",
-  'copy-paste': "far fa-copy",
-  'vector-square': "fas fa-vector-square",
-  download: "fas fa-download",
-  credits: "fas fa-euro-sign",
-  filter: "fas fa-filter",
-  plugin: "fas fa-plug",
-  invert: "fas fa-exchange-alt",
-  clear: "fas fa-broom",
-  palette: "fas fa-palette",
-  layers: "fas fa-layer-group",
-  'sign-in': "fas fa-sign-in-alt",
-  language: "fas fa-language",
-  target: "fas fa-bullseye",
-  pin: "fas fa-map-pin",
-  square: "far fa-square",
-  move: "fas fa-arrows-alt",
-  moon: "fas fa-moon",
-  sun: "fas fa-sun",
-  refresh: "fas fa-sync-alt",
-  pause:"fas fa-pause",
-  'step-backward': "fas fa-step-backward",
-  'fast-backward': "fas fa-fast-backward",
-  'step-forward': "fas fa-step-forward",
-  'fast-forward': "fas fa-fast-forward",
-  crop: "fas fa-crop-alt",
-  exit: "fas fa-door-open",
-  slider: "fas fa-sliders-h",
+  'caret-up':       "fas fa-caret-up",
+  'caret-down':     "fas fa-caret-down",
+  'caret-left':     "fas fa-caret-left",
+  'caret-right':    "fas fa-caret-right",
+  'empty-circle':   "far fa-circle",
+  'cloud-upload':   "fas fa-cloud-upload-alt",
+  spinner:          "fas fa-spinner",
+  minus:            "fas fa-minus",
+  "minus-square":   "far fa-minus-square",
+  plus:             "fas fa-plus",
+  'plus-circle':    "fas fa-plus-circle",
+  'plus-square':    "far fa-plus-square",
+  grid:             "fas fa-th",
+  home:             "fas fa-home",
+  folder:           "fas fa-folder",
+  'sign-out':       "fas fa-sign-out-alt",
+  close:            "fas fa-times",
+  time:             "far fa-clock",
+  calendar:         "fas fa-calendar-alt",
+  list:             "fas fa-list-alt",
+  link:             "fas fa-link",
+  unlink:           "fas fa-unlink",
+  eye:              "far fa-eye",
+  'eye-close':      "far fa-eye-slash",
+  save:             "far fa-save",
+  pdf:              "fas fa-file-pdf",
+  image:            "far fa-image",
+  video:            "far fa-file-video",
+  unknow:           "far fa-question-circle",
+  zip:              "far fa-file-archive",
+  text:             "far fa-file-alt",
+  excel:            "far fa-file-excel",
+  xls:              "far fa-file-excel",
+  gpx:              "fas fa-location-arrow",
+  gpkg:             "fas fa-box-open",
+  shapefile:        "fas fa-file-archive",
+  csv:              "fas fa-file-csv",
+  geotiff:          "fas fa-th",
+  ppt:              "far fa-file-powerpoint",
+  circle:           "fas fa-circle",
+  calculator:       "fas fa-calculator",
+  picture:          "far fa-image",
+  keyboard:         "far fa-keyboard",
+  'file-download':  "fas fa-file-download",
+  copy:             "far fa-copy",
+  draw:             "fas fa-draw-polygon",
+  chart:            "fas fa-chart-bar",
+  'chart-line':     "fas fa-chart-line",
+  'chart-area':     "fas fa-chart-area",
+  'chart-pie':      "fas fa-chart-pie",
+  run:              "fas fa-play",
+  warning:          "fas fa-exclamation-circle",
+  alert:            "fas fa-exclamation-triangle",
+  crosshairs:       "fas fa-crosshairs",
+  success:          "far fa-check-circle",
+  back:             "fas fa-chevron-circle-left",
+  'file-upload':    "fas fa-file-upload",
+  wifi:             "fas fa-wifi",
+  mouse:            "fas fa-mouse",
+  'copy-paste':     "far fa-copy",
+  'vector-square':  "fas fa-vector-square",
+  download:         "fas fa-download",
+  credits:          "fas fa-euro-sign",
+  filter:           "fas fa-filter",
+  plugin:           "fas fa-plug",
+  invert:           "fas fa-exchange-alt",
+  clear:            "fas fa-broom",
+  palette:          "fas fa-palette",
+  layers:           "fas fa-layer-group",
+  'sign-in':        "fas fa-sign-in-alt",
+  language:         "fas fa-language",
+  target:           "fas fa-bullseye",
+  pin:              "fas fa-map-pin",
+  square:           "far fa-square",
+  move:             "fas fa-arrows-alt",
+  moon:             "fas fa-moon",
+  sun:              "fas fa-sun",
+  refresh:          "fas fa-sync-alt",
+  pause:            "fas fa-pause",
+  'step-backward':  "fas fa-step-backward",
+  'fast-backward':  "fas fa-fast-backward",
+  'step-forward':   "fas fa-step-forward",
+  'fast-forward':   "fas fa-fast-forward",
+  crop:             "fas fa-crop-alt",
+  exit:             "fas fa-door-open",
+  slider:           "fas fa-sliders-h",
   /** @since 3.8.0 */
-  bookmark: "fas fa-bookmark",
+  bookmark:         "fas fa-bookmark",
   /** @since 3.8.0 */
-  reply: "fas fa-reply",
+  reply:            "fas fa-reply",
   /** @since 3.8.0 */
-  share: "fas fa-share",
+  share:            "fas fa-share",
   /** @since 3.10.0 */
-  'share-alt': 'fa fa-share-alt',
+  'share-alt':      'fa fa-share-alt',
   /**@since 3.10.0 */
-  'external-link': "fa fa-external-link-alt",
+  'external-link':  "fa fa-external-link-alt",
   /** @since 3.11.0 */
-  'pointer': 'fa fa-hand-pointer',
+  pointer:          'fa fa-hand-pointer',
   /** @since 3.11.0 */
-  camera: 'fas fa-camera-retro',
-  measure: 'fas fa-ruler-horizontal',
+  camera:           'fas fa-camera-retro',
+  /** @since 3.11.0 */
+  measure:          'fas fa-ruler-horizontal',
+  /** @since 3.11.0 */
+  tint:             'fa fa-tint',
+  /** @since 3.11.0 */
+  sort:             'fa fa-sort',
+  /** @since 3.11.0 */
+  copyright:        'fa fa-copyright',
+  /** @since 3.11.0 **/
+  "forward":        'fas fa-angle-double-right',
+  "backward":       'fas fa-angle-double-left',
+  //@since 3.12.0 **/
+  "annotation":     'fas fa-font', 
 };
 
 /**
@@ -367,27 +343,6 @@ export const FONT_AWESOME_ICONS = {
  * @property {string} id unique identifier
  * @property {any} value initial value
  */
-
-/**
- * LOCAL ITEM IDS - used to store id used by application
- * 
- * @type {Object<string, LocalItem>}
- * 
- * @since v3.8
- */
-export const LOCAL_ITEM_IDS = {
-
-  MESSAGES: {
-    id:   'MESSAGES',
-    value: {}
-  },
-
-  SPATIALBOOKMARKS: {
-    id:    'SPATIALBOOKMARKS',
-    value: {}
-  },
-
-};
 
 /**
  * List of Open Layers spatial methods used to find features
@@ -423,8 +378,14 @@ export const SELECTION = {
   EXCLUDE: '__EXCLUDE__'
 };
 
+/**
+ * @since 3.11.0
+ * Page length for pagination
+ * @type {number[]}
+ */
+export const PAGELENGTHS = [10, 25, 50, 100];
+
 export default {
-  APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
   DOTS_PER_INCH,
   FILTER_OPERATORS,
@@ -434,11 +395,10 @@ export default {
   GEOMETRY_FIELDS,
   GEOMETRY_TYPES,
   INCHES_PER_UNIT,
-  LOCAL_ITEM_IDS,
   PRINT_SCALES,
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
   SPATIAL_METHODS,
   TIMEOUT,
-  VIEWPORT,
+  PAGELENGTHS,
 };

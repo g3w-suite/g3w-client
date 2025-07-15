@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/InputFloat.vue';
+import vueComponentOptions from 'components/InputFloat.vue';
 
 const FloatInput = Vue.extend(vueComponentOptions);
 

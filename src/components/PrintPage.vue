@@ -29,14 +29,12 @@
           <div :class = "{ 'g3w-disabled': !!(state.downloading && state.layers) }">
             <a :href = "state.url" :download = "`download.${format}`">
               <button
-                @click.stop        = "downloadImage"
-                class              = "btn skin-button skin-tooltip-left"
-                data-placement     = "left"
-                data-toggle        = "tooltip"
-                data-container     = "body"
-                v-t-tooltip.create = "'sdk.print.download_image'"
-                :class             = "g3wtemplate.getFontClass('download')"
-                role               = "button">
+                @click.stop    = "downloadImage"
+                class          = "btn skin-button"
+                data-placement = "left"
+                v-t-tooltip    = "'Download Image'"
+                :class         = "$fa('download')"
+                role           = "button">
               </button>
             </a>
           </div>
@@ -59,7 +57,7 @@
     <!---NO PRINT LAYERS-->
     <h4
       v-else
-      v-t = "'sdk.print.no_layers'">
+      v-t = "'No Layer to print'">
     </h4>
 
   </div>
@@ -139,7 +137,7 @@ export default {
 
   beforeDestroy() {
     if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
-      window.URL.revokeObjectURL(this.state.url);
+      URL.revokeObjectURL(this.state.url);
     }
   },
 

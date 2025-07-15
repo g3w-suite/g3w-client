@@ -11,9 +11,9 @@ import ApplicationService                          from 'services/application';
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
-import { addZValueToOLFeatureGeometry }            from 'utils/addZValueToOLFeatureGeometry';
+import { addZValue }                               from 'utils/addZValue';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
-import { removeZValueToOLFeatureGeometry }         from 'utils/removeZValueToOLFeatureGeometry';
+import { removeZValue }                            from 'utils/removeZValue';
 import { getOLGeometry }                           from 'utils/getOLGeometry';
 import { isMultiGeometry }                         from 'utils/isMultiGeometry';
 import { isPointGeometryType }                     from 'utils/isPointGeometryType';
@@ -28,11 +28,14 @@ import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
+import { waitFor }                                 from 'utils/waitFor';
+
+//used by editing plugin
+import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
 import { getFilterExpression }                     from "utils/getFilterExpression";
 import { getProjectUrl }                           from 'utils/getProjectUrl';
-import { setProjectAliasUrl }                      from 'utils/setProjectAliasUrl';
 import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
 import { getProject }                              from 'utils/getProject';
@@ -50,17 +53,16 @@ import DataRouterService                           from 'services/data';
 import PluginsRegistry                             from 'store/plugins';
 import TaskService                                 from 'services/tasks';
 import GUI                                         from 'services/gui';
-import { MeasureInteraction }                      from 'map/controls/measurecontrol';
+import { MeasureInteraction }                      from 'map/controls/measure';
 
 //MIXINS
 import Mixins                                      from 'mixins';
 
-import { createMeasureTooltip }                    from 'utils/createMeasureTooltip';
-import { removeMeasureTooltip }                    from 'utils/removeMeasureTooltip';
-import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
-import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
-import { ResponseParser }                          from 'utils/parsers';
-import { $promisify }                              from 'utils/promisify';
+import { createMeasureTooltip, removeMeasureTooltip } from 'utils/createMeasureTooltip';
+import { getResolutionFromScale }                     from 'utils/getResolutionFromScale';
+import { getScaleFromResolution }                     from 'utils/getScaleFromResolution';
+import { ResponseParser }                             from 'utils/parsers';
+import { $promisify }                                 from 'utils/promisify';
 
 import G3WObject                                   from 'g3w-object';
 import Panel                                       from 'g3w-panel';
@@ -83,22 +85,46 @@ import { throttle }                                from 'utils/throttle';
 import { debounce }                                from 'utils/debounce';
 import { XHR }                                     from 'utils/XHR';
 import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
-import { colorHEXToRGB }                           from 'utils/colorHEXToRGB';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 
-const i18n                        = require('g3w-i18n');
-const { Plugin }                  = require('./g3w-plugin');
-const { PluginService }           = require('./g3w-plugin');
+import { gettext as _ }                            from 'g3w-i18n';
+import { Plugin, PluginService }                   from 'g3w-plugin';
+import { MapLayersStoresRegistry }                 from 'services/map';
+import { SearchPanel }                             from 'components/g3w-search';
+import { FormComponent, FormService }              from 'components/g3w-form';
+
+const deprecate                   = require('util-deprecate');
+
+/**
+ * BACKCOMP: v3.x (proxy "esbuild" classes for legacy plugins, still based on babel)
+ */
+function babelify(Class) {
+  return new Proxy(Class, {
+      // construct(target, args) {
+      //   if (new.target) {
+      //     console.warn('[G3W-CLIENT] class constructors must be invoked with "new"');
+      //     console.trace();
+      //     return Reflect.construct(target, args);
+      //   }
+      //   return new target(...args);
+      // },
+      apply(target, thisArg, argList) {
+        if ('Function' === target.constructor.name && target instanceof Function) {
+          console.warn('[G3W-CLIENT] class constructors must be invoked with "new"');
+          console.trace();
+          return Object.assign(thisArg, Reflect.construct(target, argList, /*thisArg.constructor*/));
+        }
+        return target.apply(thisArg, argList);
+      }
+  });
+}
+
 
 /**
  * GUI modules
  */
-const { MapLayersStoresRegistry } = require('services/map').default;
 const FieldsService               = require('gui/fields/fieldsservice');
-const { SearchPanel }             = require('components/g3w-search');
-const { FormComponent }           = require('components/g3w-form');
-const { FormService }             = require('components/g3w-form');
 const Fields                      = require('gui/fields/fields');
 
 const g3wsdk = {
@@ -108,7 +134,7 @@ const g3wsdk = {
 
   // CORE API METHODS AND OBJECTS
   core: {
-    G3WObject,
+    G3WObject: babelify(G3WObject),
     utils: {
       base,
       inherit,
@@ -118,12 +144,12 @@ const g3wsdk = {
       throttle,
       debounce,
       toRawType,
-      colorHEXToRGB,
       createFilterFormInputs,
       noop,
+      waitFor,
     },
     geoutils: {
-      createVectorLayerFromFile,
+      createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
@@ -133,11 +159,12 @@ const g3wsdk = {
       convertSingleMultiGeometry,
       within,
       intersects,
+      dissolve,
       distance,
       Geometry: {
-        GeometryTypes: G3W_CONSTANT.GEOMETRY_TYPES,
-        removeZValueToOLFeatureGeometry,
-        addZValueToOLFeatureGeometry,
+        GeometryTypes:                   G3W_CONSTANT.GEOMETRY_TYPES,
+        removeZValueToOLFeatureGeometry: removeZValue,
+        addZValueToOLFeatureGeometry:    addZValue,
         getOLGeometry,
         isMultiGeometry,
         isPointGeometryType,
@@ -148,7 +175,7 @@ const g3wsdk = {
     },
     ApplicationService,
     ApplicationState,
-    i18n,
+    i18n: { t: _ },
     task: {
       TaskService
     },
@@ -164,7 +191,6 @@ const g3wsdk = {
       ProjectsRegistry: Object.assign(new G3WObject, {
         setters: { setCurrentProject(project) {} },
         getProjectUrl,
-        setProjectAliasUrl,
         getProjectConfigByGid,
         getListableProjects,
         getProject,
@@ -181,13 +207,13 @@ const g3wsdk = {
       }
     },
     layer: {
-      LayersStore,
-      Layer,
-      TableLayer,
-      VectorLayer,
+      LayersStore:     babelify(LayersStore),
+      Layer:           babelify(Layer),
+      TableLayer:      babelify(TableLayer),
+      VectorLayer:     babelify(VectorLayer),
       features: {
-        Feature,
-        FeaturesStore,
+        Feature:       babelify(Feature),
+        FeaturesStore: babelify(FeaturesStore),
       },
     },
     interaction: {
@@ -195,9 +221,9 @@ const g3wsdk = {
       PickFeatureInteraction
     },
     plugin: {
-      Plugin,
-      PluginsRegistry,
-      PluginService
+      Plugin:          babelify(Plugin),
+      PluginsRegistry: babelify(PluginsRegistry),
+      PluginService:   babelify(PluginService)
     },
     input: {
       inputService: {
@@ -295,7 +321,7 @@ ${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __
   version: G3W_CONSTANT.APP_VERSION
 };
 
-// BACKOMP v3.x
+// BACKCOMP v3.x
 g3wsdk.core.geometry                             = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
 g3wsdk.ol.interactions.measure                   = {};
 g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
@@ -313,15 +339,28 @@ g3wsdk.core.ApplicationService.getLocalItem         = id => window.localStorage.
 /** used by the following plugins: "bforest" */
 g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.user;
 /** used by the following plugins: "archiweb", "iframe" */
-g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
-/** used by the following plugins: "openrouteservice" */
-g3wsdk.core.ApplicationService.reloadCurrentProject = () => g3wsdk.core.ApplicationService.changeProject({ gid: ApplicationState.project.getGid() });
+g3wsdk.core.ApplicationService.changeProject        = ({ gid } = {}) => $promisify(async () => { const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); });
 /** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
-/** used by the following plugins: "editing", "openrouteservice" */
+/** used by the following plugins: "editing" */
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
+
+/** used by the following plugins: "archiweb" */
+g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = window.initConfig.projects.find(p => alias.gid === p.gid); if (p) { p.url = `${alias.host || ''}${alias.url}` } };
+
+/** used by the following plugins: "datasinc" */
+g3wsdk.core.i18n.getAppLanguage = () => window.initConfig.user.i18n || "en";
+/* function to translate plugins */
+g3wsdk.core.i18n.tPlugin        = text => _(`plugins.${text}`);
+/** used by the following plugins: "iframe", "law", "bforest", "sispi-worksite", "gsk", "arpalombardia-charts", "simplereporting", "politowps", "billboards", "ws-trento", "br-service", "datasinc", "archiweb", "fsimulator", "skeleton", "elevation-profile" */
+g3wsdk.core.i18n.addI18nPlugin  = ({ name, config }) =>  {
+  console.warn('[G3W-I18N] g3wsdk.core.i18n.addI18nPlugin is deprecated, please use `g3wsdk.core.plugin.Plugin.setLocale` instead')
+  for (const lang in config) {
+    _.register(lang, { plugins: { [name]: config[lang] } });
+  }
+};
 
 /**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances

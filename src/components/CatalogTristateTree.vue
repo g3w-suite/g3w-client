@@ -11,13 +11,14 @@
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
     :style="{
-      marginLeft: !isGroup ? '5px' : '0'
+      marginLeft: !isGroup ? '5px' : '0',
+      position: 'relative',
     }"
     :class                    = "{
-      selected: !isGroup || !isTable ? layerstree.selected : false,
+      selected:         !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
-      disabled: isInGrey,
-      group: isGroup
+      disabled:         isInGrey,
+      group:            isGroup
     }"
   >
     <!-- GROUP LAYER -->
@@ -59,14 +60,6 @@
         style       = "color: red; padding-left: 1px;"
         :class      = "g3wtemplate.getFontClass('trash')"
         @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
-      ></span>
-
-      <!-- EXTERNAL LAYER (DOWNLOADABLE NODE) -->
-      <span
-        v-if   = "layerstree.external && layerstree.download"
-        style  = "color: #ffffff; margin-left: 5px;"
-        :class = "g3wtemplate.getFontClass('download')"
-        @click = "downloadExternalLayer(layerstree.download)"
       ></span>
 
       <!-- HIDDEN NODE (LAYER) -->
@@ -115,21 +108,22 @@
 
       <span
         :class           = "{
-          highlightlayer: isHighLight,
+          highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass
         }"
-        class            = "skin-tooltip-top g3w-long-text"
-        data-placement   = "top"
-        v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        :current-tooltip = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        class                = "g3w-long-text"
+        :data-i18n-title     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        data-placement       = "top"
+        data-i18n-raw        = ""
       >
         <!-- SHOW CURRENT FILTER  -->
         <span
-          v-if                        = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
-          :current-tooltip            = "layerstree.filter.current.name"
-          v-t-tooltip:top.create.text = "layerstree.filter.current.name"
-          style                       = "cursor: pointer"
-          @click.stop                 = "removeCurrentFilter"
+          v-if             = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          :data-i18n-title = "layerstree.filter.current.name"
+          data-placement   = "top"
+          data-i18n-raw    = ""
+          style            = "cursor: pointer"
+          @click.stop      = "removeCurrentFilter"
         >
           <span
             style  = "color: red"
@@ -151,39 +145,34 @@
         <!-- CLEAR SELECTION -->
         <span
           v-if                         = "layerstree.selection.active"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
-          data-container="body"
           :class                       = "g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop = "clearSelection"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.clear'"
+          v-t-tooltip                  = "'Invert Selection'"
         ></span>
 
         <!-- TOGGLE FILTER  -->
         <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active)"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
-          data-container="body"
           :class                       = "[
             g3wtemplate.getFontClass('filter'),
             layerstree.filter.active  ? 'active' : '',
           ]"
           @click.caputure.prevent.stop = "toggleFilterLayer"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.filter'"
+          v-t-tooltip                  = "'Enable/Disable filter'"
         ></span>
 
         <!-- SAVE FILTER  -->
         <span
           v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
-          class                        = "action-button skin-tooltip-left selection-filter-icon"
+          class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          data-toggle                  = "tooltip"
           :class                       = "g3wtemplate.getFontClass('save')"
           @click.caputure.prevent.stop = "saveFilter(layerstree)"
-          v-t-tooltip.create           = "'layer_selection_filter.tools.savefilter'"
+          v-t-tooltip                  = "'Save Filter'"
         ></span>
 
       </div>
@@ -211,7 +200,6 @@
           :root                      = "false"
           :legendConfig              = "legend"
           :legendplace               = "legendplace"
-          :highlightlayers           = "highlightlayers"
           :parentFolder              = "isGroup"
           :layerstree                = "_layerstree"
           :storeid                   = "storeid"
@@ -221,6 +209,14 @@
 
       </span>
     </ul>
+
+    <a
+      v-if                    = "!isGroup"
+      :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
+      @click.prevent.stop     = "showContextMenu"
+      href                    = "#"
+      v-t-tooltip:left        = "'Open menu'"
+    ></a>
 
   </li>
 
@@ -232,7 +228,6 @@ import ApplicationState            from "store/application";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';
-import { downloadFile }            from 'utils/downloadFile';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
 function _setAllLayersVisible(layers) {
@@ -255,7 +250,6 @@ export default {
     'storeid',
     'legend',
     'legendplace',
-    'highlightlayers',
     'parent_mutually_exclusive',
     'parentFolder',
     'externallayers',
@@ -328,22 +322,8 @@ export default {
     },
 
     isHighLight() {
-      return (
-        // project layer
-        (
-          this.highlightlayers &&
-          !this.isGroup &&
-          getCatalogLayerById(this.layerstree.id).getTocHighlightable() &&
-          this.layerstree.visible
-        ) ||
-        // external layer
-          (
-          this.layerstree.external &&
-          this.layerstree.visible &&
-          "vector" /* <-- what the heck? */ && this.layerstree._type &&
-          true === this.layerstree.tochighlightable
-        )
-      );
+      const layer = getCatalogLayerById(this.layerstree.id) || this.layerstree;
+      return !this.isGroup && ApplicationState.highlightlayers && layer && layer.isVisible() && layer.getTocHighlightable();
     },
 
     isInGrey() {
@@ -390,7 +370,6 @@ export default {
      * @param {uknown}  group.nodes
      */
     handleGroupChecked(group) {
-      const map = GUI.getService('map');
 
       if (!group.checked) {
         group.nodes.forEach(n => {
@@ -558,14 +537,6 @@ export default {
       return this.g3wtemplate.getFontClass(this.layerstree.checked ? 'check' : 'uncheck');
     },
 
-    downloadExternalLayer(download) {
-      if (download.file) {
-        downloadFile(download.file);
-      } else if (download.url) {
-        /** @FIXME missing implementation */
-      }
-    },
-
     removeExternalLayer(name) {
       GUI.getService('map').removeExternalLayer(name);
     },
@@ -573,24 +544,12 @@ export default {
     /**
      * @param evt
      * 
-     * @fires VM~hide-layer-context-menu
-     * @fires VM~hide-project-context-menu
-     * @fires VM~show-layer-context-menu
-     * @fires VM~show-project-context-menu
+     * @fires VM~context-menu
      * 
      * @since 3.10.0
      */
     showContextMenu(evt) {
-      if (
-        !this.isGroup &&
-        (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)
-      ) {
-        VM.$emit('hide-project-context-menu');
-        VM.$emit('show-layer-context-menu', this.layerstree, evt);
-      } else if (this.isGroup && true === this.layerstree.root) {
-        VM.$emit('hide-layer-context-menu');
-        VM.$emit('show-project-context-menu', evt);
-      }
+      VM.$emit('context-menu', evt, this.layerstree);
     },
 
   },
@@ -606,11 +565,6 @@ export default {
       this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
     }
   },
-
-  async mounted() {
-    await this.$nextTick();
-    $('span.scalevisibility').tooltip();
-  }
 
 };
 </script>

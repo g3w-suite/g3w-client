@@ -8,6 +8,7 @@
     v-if   = "loading"
     class  = "bar-loader"
     style  = "border: 0"
+    :class = "{ color: color ? 'skin-background-color' : null }"
     :style = "{ backgroundColor: color }">
   </div>
 </template>
@@ -22,7 +23,7 @@
       },
       color: {
         type:     String,
-        default: '#FFFFFF'
+        default:  null
       }
     }
   };

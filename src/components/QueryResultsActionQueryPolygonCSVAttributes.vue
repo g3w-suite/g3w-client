@@ -7,7 +7,7 @@
   <div style = "width:100%">
     <h5
       class = "skin-background-color g3w-polygonattributes-types-title"
-      v-t   = "'sdk.mapcontrols.querybypolygon.download.title'">
+      v-t   = "'mapcontrols.querybypolygon.download.title'">
     </h5>
     <div class = "g3w-polygonattributes-types-content">
       <select
@@ -38,8 +38,7 @@
 
 <script>
   import ApplicationState from 'store/application'
-  
-  const {t} = require('g3w-i18n');
+  import { gettext as _ } from 'g3w-i18n';
 
   export default {
 
@@ -64,7 +63,7 @@
       this.unwatch = this.$watch(
         () => ApplicationState.language,
         () => {
-          this.config.choices.forEach(c => $(this.$refs[c.type]).text(t(c.label)));
+          this.config.choices.forEach(c => $(this.$refs[c.type]).text(_(c.label)));
           $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
         }
       )

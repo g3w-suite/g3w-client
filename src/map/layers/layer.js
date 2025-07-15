@@ -9,29 +9,30 @@ import {
   DOTS_PER_INCH,
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
-}                                from 'g3w-constants';
-import ApplicationState          from 'store/application';
-import DataRouterService         from 'services/data';
-import GUI                       from 'services/gui';
-import G3WObject                 from 'g3w-object';
-import { parseAttributes }       from 'utils/parseAttributes';
-import { promisify, $promisify } from 'utils/promisify';
-import { downloadFile }          from 'utils/downloadFile';
-import { XHR }                   from 'utils/XHR';
-import { prompt }                from 'utils/prompt';
-import Table                     from 'components/Table.vue';
+  G3W_FID,
+}                                 from 'g3w-constants';
+import G3WObject                  from 'g3w-object';
+import { gettext as _ }           from 'g3w-i18n';
+import ApplicationState           from 'store/application';
+import Projections                from 'store/projections';
+import DataRouterService          from 'services/data';
+import GUI                        from 'services/gui';
 
-import { ResponseParser }        from 'utils/parsers';
-import { get_legend_params }     from 'utils/get_legend_params';
-import { createRelationsUrl }    from 'utils/createRelationsUrl';
+import Table                      from 'components/Table.vue';
 
-import { Feature }               from 'map/layers/feature';
+import { promisify, $promisify }  from 'utils/promisify';
+import { saveBlob }               from 'utils/saveBlob';
+import { XHR }                    from 'utils/XHR';
+import { prompt }                 from 'utils/prompt';
+import { ResponseParser }         from 'utils/parsers';
+import { get_legend_params }      from 'utils/get_legend_params';
+import { createRelationsUrl }     from 'utils/createRelationsUrl';
+import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 
-const { t }                      = require('g3w-i18n');
-
+import { Feature }                from 'map/layers/feature';
 
 const is_defined = d => undefined !== d;
-const çç         = (a, b) => undefined !== a ? a : b; // like a ?? (coalesce operator)
 
 // BACKCOMP v3.x
 function createProvider(name, layer) {
@@ -92,7 +93,7 @@ const Providers = {
 
         // in case not alphanumeric layer set projection
         if (!is_table) {
-          this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+          this._projections.map = ApplicationState.project.getProjection() || this._projections.layer;
         }
 
         const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
@@ -103,7 +104,7 @@ const Providers = {
         }
 
         let filter = [].concat(opts.filter)
-          // BACKOMP v3.x
+          // BACKCOMP v3.x
           .map(f => ({
             type:  f._type || f.type,
             value: (f._filter || f.value)
@@ -168,14 +169,12 @@ const Providers = {
       });
 
       return $promisify(async () => {
-
-        params = new URLSearchParams(params || {}).toString();
-        params = (params ? '?' : '') + params;
-
         // read mode
         if (!options.editing) {
-          const { vector } = await XHR.get({
-            url: this._layer.getUrl('data') + params,
+          const { vector } = await XHR.post({
+            url:         this._layer.getUrl('data'),
+            data:        JSON.stringify(params),
+            contentType: 'application/json',
           });
           return {
             data: vector.data,
@@ -187,41 +186,54 @@ const Providers = {
         try {
 
           let response;
-
           if (!options.filter) {
             response = await XHR.post({
-              url:         this._layer.getUrl('editing') + params,
+              url:         this._layer.getUrl('editing'),
+              data:        JSON.stringify(params),
               contentType: 'application/json',
             });
           } else if (is_defined(options.filter.bbox)) { // bbox filter
             response = await XHR.post({
-              url:  this._layer.getUrl('editing') + params,
+              url:  this._layer.getUrl('editing'),
               data: JSON.stringify({
+                ...params,
                 in_bbox:     options.filter.bbox.join(','),
-                filtertoken: ApplicationState.tokens.filtertoken
+                filtertoken: this._layer.getFilterToken(),
               }),
               contentType: 'application/json',
             })
           } else if (is_defined(options.filter.fid)) { // fid filter
-            response = await XHR.get({ url: createRelationsUrl(options.filter.fid) });
+            response = await XHR.post({
+              url:         createRelationsUrl(options.filter.fid),
+              contentType: 'application/json',
+              data:        JSON.stringify({ formatter: 1 }),
+            });
           } else if (options.filter.field) {
             response = await XHR.post({
-              url:         this._layer.getUrl('editing') + params,
-              data:        JSON.stringify(options.filter),
+              url:         this._layer.getUrl('editing'),
+              data:        JSON.stringify({ 
+                ...params,
+                ...options.filter,
+              }),
               contentType: 'application/json',
             })
           } else if (is_defined(options.filter.fids)) {
-            response = await XHR.get({
-              url:    this._layer.getUrl('editing') + params,
-              params: options.filter
+            response = await XHR.post({
+              url:    this._layer.getUrl('editing'),
+              data:   JSON.stringify({
+                ...params,
+                ...options.filter,
+              }),
+              contentType: 'application/json',
             })
           } else if (is_defined(options.filter.nofeatures)) {
             response = await XHR.post({
-              url:  this._layer.getUrl('editing') + params,
+              url:  this._layer.getUrl('editing'),
               data: JSON.stringify({
+                ...params,
                 field: `${options.filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
               }),
-              contentType: 'application/json'
+              contentType: 'application/json',
             })
           }
 
@@ -248,7 +260,7 @@ const Providers = {
         } catch (e) {
           console.warn(e);
         }
-        return Promise.reject({ message: t("info.server_error")});
+        return Promise.reject({ message: _("info.server_error")});
       });
     }
 
@@ -269,8 +281,8 @@ const Providers = {
       const dy   = resolution * size[1] / 2;
       const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
-      const projection = this._layer.getMapProjection() || this._layer.getProjection();
-      const tolerance  = çç(opts.query_point_tolerance, QUERY_POINT_TOLERANCE);
+      const projection = ApplicationState.project.getProjection() || this._layer.getProjection();
+      const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
       const url    = layers[0].getQueryUrl();
       const method = layers[0].getOwsMethod();
@@ -287,7 +299,7 @@ const Providers = {
         QUERY_LAYERS:         (layers || [this._layer.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
         filtertoken:          ApplicationState.tokens.filtertoken,
         INFO_FORMAT:          this._layer.getInfoFormat() || 'application/vnd.ogc.gml',
-        FEATURE_COUNT:        çç(opts.feature_count, 10),
+        FEATURE_COUNT:        opts.feature_count ?? 10,
         WITH_GEOMETRY:        true,
         DPI:                  DOTS_PER_INCH,
         FILTER_GEOM:          'map' === tolerance.unit ? (new ol.format.WKT()).writeGeometry(ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, tolerance.value))) : undefined,
@@ -299,7 +311,7 @@ const Providers = {
         J:                    'map' === tolerance.unit ? undefined : Math.floor((bbox[3] - coordinates[1]) / resolution), // y
         WIDTH:                size[0],
         HEIGHT:               size[1],
-        STYLES:               '',
+        STYLES:               (layers || []).map(l => l.getStyle()).join(','),
         BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
         // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
         LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
@@ -353,9 +365,8 @@ const Providers = {
 
     }
   },
-
+  //backward compatibilities v3.11.6
   wfs: class {
-  
     // query method
     query(opts = {}, params = {}) {
       const filter = opts.filter || {};
@@ -374,18 +385,18 @@ const Providers = {
         SERVICE:      'WFS',
         VERSION:      '1.1.0',
         REQUEST:      'GetFeature',
-        MAXFEATURES:  çç(opts.feature_count, 10),
+        MAXFEATURES:  opts.feature_count ?? 10,
         TYPENAME:     layers.map(l => l.getWFSLayerName()).join(','),
         OUTPUTFORMAT: layers[0].getInfoFormat(),
-        SRSNAME:      (opts.reproject ? layers[0].getProjection() : this._layer.getMapProjection()).getCode(),
+        SRSNAME:      (opts.reproject ? layers[0].getProjection() : ApplicationState.project.getProjection()).getCode(),
         FILTER:       'all' !== filter.type ? `(${(
           new ol.format.WFS().writeGetFeature({
-            featureTypes: [layers[0]],
+            featureTypes: [''], //v3.11.0 @TODO need to check https://openlayers.org/en/v5.3.0/apidoc/module-ol_format_WFS-WFS.html#writeGetFeature
             filter:       ({
-              'bbox':       ol.format.filter.bbox('the_geom', filter.value),
-              'geometry':   ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
-              'expression': null,
-            })[filter.type],
+              'bbox':       () => ol.format.filter.bbox('the_geom', filter.value),
+              'geometry':   () => ol.format.filter[filter.config.spatialMethod || 'intersects']('the_geom', filter.value),
+              'expression': () => null,
+            })[filter.type](),
           })
         ).children[0].innerHTML})`.repeat(layers.length || 1) : undefined
       });
@@ -413,7 +424,7 @@ const Providers = {
             const data = ResponseParser.get(layers[0].getInfoFormat())({
               response,
               projections: {
-                map:   this._layer.getMapProjection(),
+                map:   ApplicationState.project.getProjection(),
                 layer: (opts.reproject ? this._layer.getProjection() : null)
               },
               layers,
@@ -434,9 +445,52 @@ const Providers = {
       ]));
 
     }
-
   },
+  //Changed based on https://github.com/g3w-suite/g3w-admin/issues/1070
+  //@since 3.11.7
+  g3w: class {
+    async query(opts = {}, params = {}) {
+      const filter = opts.filter || {};
+      const spatialMethod = filter.config.spatialMethod || 'intersects';
+      switch(filter.type) {
+        case 'bbox':
+        case 'geometry':
+          params.geo_filter_mode = 'within' === spatialMethod ? 'contains' : spatialMethod;
+          params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: filter.value }));
+          params.formatter       = 1;
+          params.filtertoken     = ApplicationState.tokens.filtertoken; // add filtertoken
+          break;
+        case 'expression':
+          break;    
+      }
 
+      const data = [];
+
+      try {
+        const response = await XHR.post({ 
+          url :  this._layer.getUrl('data'),
+          contentType: 'application/json',
+          data:        JSON.stringify(params),
+         });
+         if (response && response.result) {
+          data.push({ 
+            layer:    this._layer,
+            features: ResponseParser.get('g3w-vector/json')(
+              response.vector && response.vector.data || {},
+              { projections: { map: ApplicationState.project.getProjection() || this._layer.getProjection(), layer: null }})
+              .map(f => { f.set(G3W_FID, f.getId()); return f; }) //set g3w_fid to have G3W_FID property,
+          })
+         } else {
+          throw response.error;
+         }
+      } catch(e) {
+        console.warn(e);
+      }
+
+      return { data }
+      
+    }  
+  }
 };
 
 const DOWNLOAD_FORMATS = {
@@ -458,21 +512,28 @@ class Layer extends G3WObject {
 
     super();
 
-    //get current project object
+    // get current project
     const project   = options.project || ApplicationState.project;
     const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
     const vectorUrl = config.baselayer ? '' : project.state.vectorurl;
     const rasterUrl = config.baselayer ? '' : project.state.rasterurl;
 
-    // assign some attributes
+    // default layer style (layerstree)
+    const defaultstyle = config.styles && config.styles.find(s => s.current).name;
 
-    this.config = Object.assign(config, {
+    /**
+     * Global state
+     * 
+     * @TODO simplify further, some propertiy names seems to be duplicated
+     * 
+     */
+    this.config = this.state = Object.assign(config, {
       id:        config.id || 'Layer',
       title:     config.title || config.name,
       download:  !!config.download,
-      geolayer:  false,
       baselayer: !!config.baselayer,
       fields:    config.fields || {},
+
       // URLs to get various type of data
       urls:      {
         query: config.infourl || config.wmsUrl,
@@ -494,17 +555,130 @@ class Layer extends G3WObject {
               unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
             },
             /** @since 3.8.0 */
-            featurecount: project.getUrl('featurecount'),
+            featurecount:         project.getUrl('featurecount'),
+            editorformstructure : project.getUrl('editorformstructure'),
             /** @since 3.10.0 */
             pdf:         `/html2pdf/`,
           })
       },
+
       /** Custom parameters based on a project qgis version */
       ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
+
       /** @deprecated since 3.10.0. Will be removed in v.4.x. */
       search_endpoint: 'api',
+
+      map_crs:            options.project?.getProjection()?.getCode(),
+      multilayerid:       config.multilayer,
+      projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : Projections.get(config.crs)) : undefined,
+      attributions:       config.attributions,
+      selected:           config.selected || false,
+      disabled:           config.disabled || false,
+      metadata:           config.metadata,
+      removable:          config.removable || false,
+      source:             config.source,
+      styles:             config.styles,
+      defaultstyle,
+      infoformats:        config.infoformats || [],
+      projectLayer:       true,
+      geolayer:           "NoGeometry" !== config.geometrytype,
+      attributetable:     { pageLength: null },
+      visible:            !!config.visible,
+      tochighlightable:   false,
+
+      /** state of if is in editing (setted by editing plugin) */
+      inediting:          false,
+
+      /** Reactive selection attribute */
+      selection:          { active: false },
+
+      /** Open layer features (key = fid, value = feature object) */
+      ol_selection: {},
+
+      /** selections feature `fids` */
+      selectionFids: new Set(),
+
+      /** Reactive filter attribute */
+      filter: {
+        active:     false,
+        /** @since 3.9.0 whether filter is set from a previously saved filter */
+        current:    null,
+        /** @since v3.11.0 **/
+        pagination: false,
+      },
+
+      /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
+      filters:            config.filters || [],
+
+      /** @type {number} since 3.8.0 */
+      featurecount:       config.featurecount,
+
+      /** @type { boolean | Object<number, number> } since 3.8.0 */
+      stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
+
+      /** @type { string } since 3.10.0 */
+      name:               config.name,
+
+      /** @type { number } legend item state (expandend or collapsed) in catalog layers (TOC) (since 3.10.0) */
+      expanded:           config.expanded,
+
+      /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
+      toc:                config.toc ?? true,
+
+      /** @since 4.0.0 */
+      legend: {
+        url:     null,
+        loading: false,
+        error:   false,
+        /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
+        show:    true,
+        /** used when categories changed (checkbox on TOC) and legend is on TAB */
+        change:  false,
+        categories: {},
+      },
+
+      /** @type { boolean } since 4.0.0 */
+      exclude_from_legend: config.exclude_from_legend ?? true,
+
+      /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
+      categories: false,
+
+      /** @since 4.0.0 */
+      external:             config.source && config.source.external,
+
+      /** @since 4.0.0 */
+      bbox:                 config.bbox,
+
+      /** @since 4.0.0 checked config attribute is passed by vector layer on editing */
+      checked:              config.checked ?? !!config.visible,
+
+      /** @since 4.0.0 */
+      epsg:                 config.crs.epsg,
+
+      /** @since 4.0.0 */
+      hidden:               !!config.hidden,
+
+      /** @since 4.0.0 */
+      scalebasedvisibility: !!config.scalebasedvisibility,
+
+      /** @since 4.0.0 */
+      minscale:             config.minscale,
+
+      /** @since 4.0.0 */
+      maxscale:             config.maxscale,
+
+      /** @since 4.0.0 */
+      ows_method:           config.ows_method,
+   
+      /** @type {number} opacity range = [0, 100] (since 3.8) */
+      opacity: config.opacity || 100,
+
+      /** cached proxy params (eg. external wms server) */
+      proxyData: { wms: null },
+
+      /** @since 4.0.0 @type {number } number of preview fields on result */
+      max_preview_fields: config.max_preview_fields, 
     });
-    
 
     const relations = project.getRelations().filter(r => [r.referencedLayer, r.referencingLayer].includes(this.getId()));
 
@@ -661,59 +835,11 @@ class Layer extends G3WObject {
 
     this._relations._reloadRelationsInfo();
 
-    // dinamic layer values useful for layerstree
-    const defaultstyle = config.styles && config.styles.find(s => s.current).name;
-
-    /**
-     * @TODO make it simpler, `this.config` and `this.state` are essentially duplicated data
-     */
-    this.state = {
-      id:                 config.id,
-      title:              config.title,
-      selected:           config.selected || false,
-      disabled:           config.disabled || false,
-      metadata:           config.metadata,
+    Object.assign(this.config, {
       openattributetable: this.canShowTable(),
-      removable:          config.removable || false,
       downloadable:       this.isDownloadable(),
-      source:             config.source,
-      styles:             config.styles,
-      defaultstyle,
       infoformat:         this.getInfoFormat(),
-      infoformats:        this.config.infoformats || [],
-      projectLayer:       true,
-      geolayer:           false,
-      attributetable:     { pageLength: null },
-      visible:            config.visible || false,
-      tochighlightable:   false,
-      /** state of if is in editing (setted by editing plugin) */
-      inediting:          false,
-      /** Reactive selection attribute */
-      selection:          { active: false },
-      /** Reactive filter attribute */
-      filter: {
-        active:  false,
-        /** @since 3.9.0 whether filter is set from a previously saved filter */
-        current: null,
-      },
-      /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
-      filters:            config.filters || [],
-      /** @type {number} since 3.8.0 */
-      featurecount:       config.featurecount,
-      /** @type { boolean | Object<number, number> } since 3.8.0 */
-      stylesfeaturecount: config.featurecount && defaultstyle && { [defaultstyle]: config.featurecount },
-      /** @type { string } since 3.10.0 */
-      name:               config.name,
-      /** @type { boolean } since 3.10.0 */
-      expanded:           config.expanded,
-      /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
-      toc:                'boolean' === typeof config.toc ? config.toc: true,
-    };
-
-    /**
-     * Store all selections feature `fids`
-     */
-    this.selectionFids = new Set();
+    });
 
     // referred to (layersstore);
     this._layersstore = config.layersstore || null;
@@ -761,7 +887,8 @@ class Layer extends G3WObject {
         'QGIS wmst',
         'QGIS wcs',
         'QGIS wms',
-      ].includes(layerType) && createProvider('wfs', this),
+        "QGIS arcgisfeatureserver",
+      ].includes(layerType) && createProvider('g3w', this),
 
       filtertoken: [
         'QGIS virtual',
@@ -792,6 +919,7 @@ class Layer extends G3WObject {
           'QGIS vector-tile',
           'QGIS vectortile',
           'QGIS arcgismapserver',
+          'QGIS arcgisfeatureserver', //@since 4.0.0
           'QGIS mdal',
           'OGC wms',
         ].includes(layerType)) {
@@ -811,17 +939,20 @@ class Layer extends G3WObject {
         'QGIS ogr',
         'QGIS delimitedtext',
         'QGIS wfs',
+        "QGIS arcgisfeatureserver",
       ].includes(layerType) && createProvider('qgis', this),
 
     };
 
-    /**
-     * Store last proxy params (useful for repeat request info formats for wms external layer)
-     */
-    this.proxyData = {
-      wms: null // at the moment only wms data from server
-    };
-
+    // sanitize source url (ie. discard any reserved WMS params)
+    if (config?.source?.url) {
+      const url = new URL(this.config.source.url);
+      ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
+        this.config.source.url = this.config.source.url
+          .replace(`${p.toUpperCase()}=${url.searchParams.get(p.toUpperCase())}`, '')
+          .replace(`${p.toLowerCase()}=${url.searchParams.get(p.toLowerCase())}`, '');
+      });
+    }
   }
 
   /******************************************************************************************
@@ -831,24 +962,37 @@ class Layer extends G3WObject {
   /** 
    * @returns { Promise }
    */
-  getDownloadFilefromDownloadDataType(type, { data = {} }) {
+  async getDownloadFilefromDownloadDataType(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
 
-    if ('pdf' === type) {
-      return downloadFile({
-        url:        this.getUrl('pdf'),
-        headers:    { 'Content-Type': 'application/json; charset=utf-8' },
-        data:       JSON.stringify(data),
-        mime_type: 'application/pdf',
-        method:    'POST'
-      });
+    let url, response;
+    switch(type) {
+      case 'pdf':
+        url       = this.getUrl('pdf');
+        response  = url && await fetch(url, {
+          body:    JSON.stringify(data),
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Expose-Headers': 'Content-Disposition' },
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+        break;
+      default:
+        url       = this.getUrl('shapefile' === type ? 'shp' : type);
+        response  = url && await fetch(url, {
+          body:     Object.keys(data || {}).reduce((a, k) => { a.append(k, data[k]); return a; }, new FormData()),
+          method:  'POST',
+          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
+          signal:  AbortSignal.timeout(TIMEOUT),
+        });
+        break;
     }
 
-    return XHR.fileDownload({
-      url: this.getUrl('shapefile' === type ? 'shp' : type),
-      data,
-      httpMethod: "POST"
-    });
+    if (!response?.ok) {
+      throw (await response.json()).message;
+    }
+
+    saveBlob(await response.blob(), response.headers.get('content-disposition'));
+
   }
 
   getGeoTIFF({ data = {} } = {}) { return this.getDownloadFilefromDownloadDataType('geotiff',   { data }); }
@@ -861,7 +1005,15 @@ class Layer extends G3WObject {
   /**
    * @returns { string[] } download formats
    */
-  getDownloadableFormats() { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+  getDownloadableFormats()  { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.config[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+
+  /**
+   * @returns { boolean } whether at least one layer has a download format not equal to pdf
+   * 
+   * @since 3.11.7  
+   */
+  hasDowloadableRelations() { 
+    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
 
   /**
    * @param download url
@@ -875,13 +1027,13 @@ class Layer extends G3WObject {
   /**
    * @returns { boolean } whether it has a format to download
    */
-  isDownloadable()       { return !!(this.getDownloadableFormats().length); }
-  isGeoTIFFDownlodable() { return !this.isBaseLayer() && this.config.download && 'gdal' === this.config.source.type ; }
-  isShpDownlodable()     { return !this.isBaseLayer() && this.config.download && 'gdal' !== this.config.source.type; }
-  isXlsDownlodable()     { return !this.isBaseLayer() && !!this.config.download_xls; }
-  isGpxDownlodable()     { return !this.isBaseLayer() && !!this.config.download_gpx; }
-  isGpkgDownlodable()    { return !this.isBaseLayer() && !!this.config.download_gpkg; }
-  isCsvDownlodable()     { return !this.isBaseLayer() && !!this.config.download_csv; }
+  isDownloadable()        { return !!(this.getDownloadableFormats().length); }
+  isGeoTIFFDownloadable() { return !this.isBaseLayer() && this.config.download && 'gdal' === this.config.source.type ; }
+  isShpDownloadable()     { return !this.isBaseLayer() && this.config.download && 'gdal' !== this.config.source.type; }
+  isXlsDownloadable()     { return !this.isBaseLayer() && !!this.config.download_xls; }
+  isGpxDownloadable()     { return !this.isBaseLayer() && !!this.config.download_gpx; }
+  isGpkgDownloadable()    { return !this.isBaseLayer() && !!this.config.download_gpkg; }
+  isCsvDownloadable()     { return !this.isBaseLayer() && !!this.config.download_csv; }
 
   /******************************************************************************************
    * LAYER RELATIONS
@@ -1003,7 +1155,7 @@ class Layer extends G3WObject {
    * 
    * @fires unselectionall
    */
-  async setSelection(bool=false) {
+  async setSelection(bool = false) {
     this.state.selection.active = bool;
 
     // skip when selection is active
@@ -1053,12 +1205,12 @@ class Layer extends G3WObject {
    * @param {boolean} bool
    */
   setFilter(bool = false) {
-    this.state.filter.active = bool;
+    this.state.filter.active     = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
-      this.hideOlSelectionFeatures();
+      GUI.getService('map').toggleSelection(false, this.state.id); // hide selection features (open layers)
     }
     if (this.isGeoLayer() && !this.state.filter.active) {
-      this.updateMapOlSelectionFeatures();
+      this.#updateOlSelection(); // update selection features (open layers)
     }
   }
 
@@ -1098,7 +1250,7 @@ class Layer extends G3WObject {
       }
       this.setFilter(false);
       this.state.filter.current = filter;
-      this.setFilterToken(response.data);
+      this.setFilterToken(response.data.filtertoken);
     } catch(e) {
       console.warn(e);
     }
@@ -1110,20 +1262,18 @@ class Layer extends G3WObject {
   saveFilter() {
 
     // skip when ..
-    if (!this.providers['filtertoken'] || !this.selectionFids.size > 0) {
+    if (!this.providers['filtertoken'] || !this.state.selectionFids.size > 0) {
       return;
     }
 
-    const layer = this;
-
     prompt({
-      label: t('layer_selection_filter.tools.savefilter'),
-      value: layer.state.filter.current ? layer.state.filter.current.name : '' ,
+      label: _('Save Filter'),
+      value: this.state.filter.current?.name || '',
       callback: async(name) => {
 
         /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved> */
         const response = await XHR.get({
-          url:    layer.providers['filtertoken']._layer.getUrl('filtertoken'),
+          url:    this.providers['filtertoken']._layer.getUrl('filtertoken'),
           params: { mode: 'save', name } }
         );
 
@@ -1132,7 +1282,7 @@ class Layer extends G3WObject {
           return;
         }
 
-        let filter = layer.state.filters.find(f => response.data.fid === f.fid);
+        let filter = this.state.filters.find(f => response.data.fid === f.fid);
       
         // add saved filter to filters array
         if (undefined === filter) {
@@ -1140,23 +1290,29 @@ class Layer extends G3WObject {
             fid:  response.data.fid, //get fid
             name: response.data.name //get name
           }
-          layer.state.filters.push(filter);
+          this.state.filters.push(filter);
         }
 
-        layer.state.filter.current = filter; // set current filter
-        layer.setFilter(false);              // set to false
-        layer.getSelection().active = false; // reset selection to false
-        layer.selectionFids.clear();         // clear current fids
-      
-        //in the case of geolayer
-        if (layer.isGeoLayer()) {
-          //remove selection feature from map
-          layer.setOlSelectionFeatures();
+        this.state.filter.current = filter; // set current filter
+        this.setFilter(false);              // set to false
+        this.getSelection().active = false; // reset selection to false
+        this.state.selectionFids.clear();   // clear current fids
+
+        // remove selection feature from map
+        if (this.isGeoLayer()) {
+          Object
+            .values(this.state.ol_selection)
+            .forEach(feat => {
+              //remove selection feature
+              if (feat.added) {
+                GUI.getService('map').setSelectionFeatures('remove', { feature: feat.feature });
+              }
+              feat.added    = false;
+              feat.selected = false;
+            });
         }
-      
-        //emit unselectionall
-        layer.emit('unselectionall', layer.getId());
-      
+
+        this.emit('unselectionall', this.getId());
       },
     });
 
@@ -1216,19 +1372,21 @@ class Layer extends G3WObject {
           filtertoken = response.data.filtertoken;
         }
       } catch(e) {
-        console.warn(e)
+        console.warn(e);
       }
 
       // remove it from filters list when deleting a saved filter (since v3.9.0)
       if (undefined !== fid) {
         this.state.filters = this.state.filters.filter(f => fid !== f.fid);
       }
-
-      this.state.filter.current = null  // set current filter set to null
+      if (this.state.filter.active && this.state.filter.pagination) {
+        this.state.selection.active  = false; //in case of pagination, set selected to false
+      }
+      this.state.filter.pagination = false; //set pagination to false
+      this.state.filter.current    = null  // set current filter set to null
+      this.setFilterToken(filtertoken); //set filtertoken 
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
-      this.setFilterToken(filtertoken); // pass `filtertoken` to application
-
     } catch(e) {
       console.warn(e);
     }
@@ -1243,8 +1401,9 @@ class Layer extends G3WObject {
    * 
    * @since 3.9.0
    */
-  setFilterToken(filtertoken = null) {
+  setFilterToken(filtertoken = undefined) {
     ApplicationState.tokens.filtertoken = filtertoken;
+    this.setFilter(!!filtertoken);
     this.emit('filtertokenchange', { layerId: this.getId() });
   }
 
@@ -1255,7 +1414,7 @@ class Layer extends G3WObject {
     try {
 
       const provider  = this.providers['filtertoken'];
-      const selection = this.selectionFids;
+      const selection = this.state.selectionFids;
 
       // skip when no filter token provider is set or selectionFids is empty
       if (!provider || !selection.size > 0) {
@@ -1280,11 +1439,12 @@ class Layer extends G3WObject {
 
       const fids = Array.from(selection);
 
-      const { data = {} } = await XHR.get({
+      const { data = {} } = await XHR.post({
         url:    provider._layer.getUrl('filtertoken'),
-        params: selection.has(SELECTION.EXCLUDE)
+        contentType: 'application/json',
+        data: JSON.stringify(selection.has(SELECTION.EXCLUDE)
           ? { fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') } // exclude features from selection
-          : { fidsin: fids.join(',') }                                         // include features in selection
+          : { fidsin: fids.join(',') })                                   // include features in selection
       });
 
       this.setFilterToken(data.filtertoken);
@@ -1300,21 +1460,20 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getFilterToken() {
-    return ApplicationState.tokens.filtertoken;
+    return this.state.filter.active ? ApplicationState.tokens.filtertoken : undefined;
   }
 
   /**
    * @TODO add description
    */
   setSelectionFidsAll() {
-    this.selectionFids.clear();
-    this.selectionFids.add(SELECTION.ALL);
+    this.state.selectionFids.clear();
+    this.state.selectionFids.add(SELECTION.ALL);
 
-    /** @TODO add description */
+    // select all features (open layers)
     if (this.isGeoLayer()) {
-      //set all features selected
-      Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = true);
-      this.updateMapOlSelectionFeatures();
+      Object.values(this.state.ol_selection).forEach(feat => feat.selected = true);
+      this.#updateOlSelection();
     }
 
     /** @TODO add description */
@@ -1328,23 +1487,32 @@ class Layer extends G3WObject {
    * @returns {Set<any>} stored selection `fids` 
    */
   getSelectionFids() {
-    return this.selectionFids;
+    return this.state.selectionFids;
   }
 
   /**
    * Invert current selection fids
    */
   invertSelectionFids() {
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     /** @TODO add description */
     if (selection.has(SELECTION.EXCLUDE))  { selection.delete(SELECTION.EXCLUDE); }
     else if (selection.has(SELECTION.ALL)) { selection.delete(SELECTION.ALL); }
     else if (selection.size > 0)           { selection.add(SELECTION.EXCLUDE); }
 
-    /** @TODO add description */
+    // invert selection (state)
     if (this.isGeoLayer()) {
-      this.setInversionOlSelectionFeatures();
+      const map = GUI.getService('map');
+      Object
+        .values(this.state.ol_selection)
+        .forEach(f => {
+          f.selected = !f.selected;
+          if (f.selected !== f.added) {
+            map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+            f.added = f.selected;
+          }
+        });
     }
 
     /** In the case of tocken filter active create */
@@ -1361,7 +1529,7 @@ class Layer extends G3WObject {
    * @returns {boolean}
    */
   hasSelectionFid(fid) {
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     /** In case contain selection ALL, mean all features selected */
     if (selection.has(SELECTION.ALL)) { return true }
@@ -1384,7 +1552,7 @@ class Layer extends G3WObject {
    */
   async includeSelectionFid(fid, createToken = true) {
 
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     // whether fid is excluded from selection
     const is_excluded = selection.has(SELECTION.EXCLUDE) && selection.has(fid);
@@ -1401,9 +1569,11 @@ class Layer extends G3WObject {
     /** @TODO add description */
     if (!is_excluded && !this.isSelectionActive()) { this.setSelection(true) }
 
-    /** @TODO add description */
-    if (this.isGeoLayer()) {
-      this.setOlSelectionFeatureByFid(fid, is_excluded ? 'remove' : 'add');
+    // update selection (state)
+    if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
+      this.state.ol_selection[fid].selected          = !is_excluded;
+      this.state.ol_selection[fid].feature.__layerId = (!is_excluded && !this.state.ol_selection[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+      this.#updateOlSelection();
     }
 
     /** @TODO add description */
@@ -1423,7 +1593,7 @@ class Layer extends G3WObject {
    */
   async excludeSelectionFid(fid, createToken = true) {
 
-    const selection = this.selectionFids;
+    const selection = this.state.selectionFids;
 
     /**In case all features are selected or no features are selected */
     if (selection.has(SELECTION.ALL) || 0 === selection.size) {
@@ -1453,11 +1623,13 @@ class Layer extends G3WObject {
       this.setselectionFidsAll();
     }
 
+    const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
 
-    if (this.isGeoLayer()) {
-      // whether fid is excluded from selection
-      const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
-      this.setOlSelectionFeatureByFid(fid, is_excluded  ? 'remove' : 'add');
+    // update selection (state)
+    if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
+      this.state.ol_selection[fid].selected          = !is_excluded;
+      this.state.ol_selection[fid].feature.__layerId = (!is_excluded && !this.state.ol_selection[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
+      this.#updateOlSelection();
     }
 
     /** If there is a filterActive */
@@ -1468,49 +1640,17 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @param { Array }   fids
-   * @param { boolean } createToken since 3.9.0
-   * 
-   * @returns { Promise<void> }
-   */
-  async includeSelectionFids(fids = [], createToken = true) {
-    // pass false because eventually token filter creation needs to be called after
-    fids.forEach(fid => this.includeSelectionFid(fid, false));
-
-    /** @TODO add description */
-    if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
-    }
-  }
-
-  /**
-   * Exclude fids from selection
-   * 
-   * @param { Array }   fids
-   * @param { boolean } createToken since 3.9.0
-   * 
-   * @returns { Promise<void> }
-   */
-  async excludeSelectionFids(fids = [], createToken = true) {
-    //pass false because eventually token filter creation needs to be called after
-    fids.forEach(fid => this.excludeSelectionFid(fid, false));
-
-    /** @TODO add description */
-    if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
-    }
-  }
-
-  /**
    * Clear selection
    */
   async clearSelectionFids() {
-    this.selectionFids.clear();
-    // remove selected feature on a map
+    //clear all selection fids from set
+    this.state.selectionFids.clear();
+    // unselect all features (open layers)
     if (this.isGeoLayer()) {
-      //set all features unselected
-      Object.values(this.olSelectionFeatures).forEach(feat => feat.selected = false);
-      this.updateMapOlSelectionFeatures();
+      //set false selection
+      Object.values(this.state.ol_selection).forEach(feat => feat.selected = false);
+      //update selection
+      this.#updateOlSelection();
     }
     // set selection false
     await this.setSelection(false);
@@ -1524,7 +1664,7 @@ class Layer extends G3WObject {
    * Proxy params data
    */
   getProxyData(type) {
-    return type ? this.proxyData[type] : this.proxyData;
+    return type ? this.state.proxyData[type] : this.state.proxyData;
   }
 
   /**
@@ -1534,7 +1674,7 @@ class Layer extends G3WObject {
    * @param data
    */
   setProxyData(type, data = {}) {
-    this.proxyData[type] = data;
+    this.state.proxyData[type] = data;
   }
 
   /**
@@ -1543,7 +1683,7 @@ class Layer extends G3WObject {
    * @param type
    */
   clearProxyData(type) {
-    this.proxyData[type] = null;
+    this.state.proxyData[type] = null;
   }
 
   /**
@@ -1578,10 +1718,10 @@ class Layer extends G3WObject {
   changeProxyDataAndReloadFromServer(type = 'wms', changes = {}) {
     Object.keys(changes).forEach(c => {
       Object.keys(changes[c]).forEach(p => {
-        this.proxyData[type][c][p] = changes[c][p];
+        this.state.proxyData[type][c][p] = changes[c][p];
       })
     });
-    return this.getDataProxyFromServer(type, this.proxyData[type]);
+    return this.getDataProxyFromServer(type, this.state.proxyData[type]);
   }
 
   /**
@@ -1635,20 +1775,6 @@ class Layer extends G3WObject {
    */
   getAttributeTablePageLength() {
     return this.state.attributetable.pageLength;
-  }
-
-  /**
-   * @returns { string } wms layer name for wms request
-   */
-  getWMSLayerName() {
-    return this.isWmsUseLayerIds() ? this.getId() : this.getName()
-  }
-
-  /**
-   * @returns { boolean | *} whether request need to use `layer.id` or `layer.name`
-   */
-  isWmsUseLayerIds() {
-    return this.config.wms_use_layer_ids;
   }
 
   /**
@@ -1713,13 +1839,22 @@ class Layer extends G3WObject {
             formatter,
             suggest,
             in_bbox,
-            filtertoken: ApplicationState.tokens.filtertoken
+            filtertoken: this.getFilterToken()
           })
       );
-      const features = response.data.features && response.data.features || [];
+
+      const features          = response.data.features && response.data.features || [];
+      const layerAttributes   = this.getAttributes() || [];
+      const featureAttributes = (features.length ? features[0].properties : []);
+
       return {
-        headers: parseAttributes(this.getAttributes(), (features.length ? features[0].properties : [])),
         features,
+        headers: (layerAttributes && layerAttributes.length > 0)
+        ? layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
+        : Object
+            .keys(featureAttributes)
+            .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
+            .map(name => ({ name, label: name })),
         title: this.getTitle(),
         count: response.count
       };
@@ -1767,6 +1902,7 @@ class Layer extends G3WObject {
    * @param options.unique
    * @param options.queryUrl
    * @param options.ordering
+   * @param options.autofilter //@since 3.11.0
    * @param { Object }        params - OWS search params
    * 
    * @returns { Promise }
@@ -1798,6 +1934,10 @@ class Layer extends G3WObject {
                 suggest:   options.suggest,
                 /** @since 3.9.0 */
                 formatter: undefined !== options.formatter ? options.formatter : 1,
+                /** @since 3.11.0 */
+                autofilter: options.autofilter,
+                page:       options.page,
+                page_size:  options.page_size,
               })
             );
           } catch(e) {
@@ -1834,6 +1974,9 @@ class Layer extends G3WObject {
     formatter = 1,
     queryUrl,
     ordering,
+    autofilter, //@since 3.11.0
+    page,  //@since 3.11.0
+    page_size, //@since 3.11.0
   } = {}) {
     const provider        = this.getProvider('data');
     provider._projections = provider._projections || { map: null, layer: null };
@@ -1845,17 +1988,17 @@ class Layer extends G3WObject {
       unique,
       fformatter,
       ffield,
-      filtertoken: ApplicationState.tokens.filtertoken
+      filtertoken: ApplicationState.tokens.filtertoken,
+      autofilter,
+      page,
+      page_size,
     };
     try {
       const url = queryUrl ? queryUrl : provider._layer.getUrl('data');
-      const response = field                                                                    // check `field` parameter
-        ? await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}) // since g3w-admin@v3.7
-        : await XHR.get({ url, params });                                                       // BACKCOMP (`unique` and `ordering` were only GET parameters)
-
+      const response =  await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}); // since g3w-admin@v3.7
       // vector layer
       if ('table' !== provider._layer.getType()) {
-        provider._projections.map = provider._layer.getMapProjection() || provider._projections.layer;
+        provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;
       }
 
       if (raw)                           { return response }
@@ -1867,9 +2010,11 @@ class Layer extends G3WObject {
           data: ResponseParser.get('application/json')({
             layers:      [provider._layer],
             response:    response.vector.data,
+            filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
             projections: provider._projections,
-          })
-        };
+          }),
+          count: response.vector.count, //@since v3.11.0 take in account feature count (all). It use for pagination purpose
+        }
       }
 
     } catch(e) {
@@ -1894,7 +2039,7 @@ class Layer extends G3WObject {
       if (provider) {
         return await promisify(provider.query(options));
       }
-      return Promise.reject(t('sdk.search.layer_not_searchable'));
+      return Promise.reject(_('Layer is not searchable'));
     });
   }
 
@@ -1907,7 +2052,7 @@ class Layer extends G3WObject {
       if (provider) {
         return await promisify(provider.query(options));
       }
-      return Promise.reject(t('sdk.search.layer_not_querable'));
+      return Promise.reject(_('Layer is not querable'));
     });
   }
 
@@ -2069,7 +2214,7 @@ class Layer extends G3WObject {
    * @returns { string } Server type
    */
   getServerType() {
-    return this.config.servertype || Layer.ServerTypes.QGIS;
+    return this.config.servertype || "QGIS";
   }
 
   /**
@@ -2092,15 +2237,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * Set disabled
-   *
-   * @param bool
-   */
-  setDisabled(bool) {
-    this.state.disabled = bool;
-  }
-
-  /**
    * @returns {boolean} whether it is disabled
    */
   isDisabled() {
@@ -2112,15 +2248,6 @@ class Layer extends G3WObject {
    */
   isVisible() {
     return this.state.visible;
-  }
-
-  /**
-   * Set visibility
-   *
-   * @param bool
-   */
-  setVisible(bool) {
-    this.state.visible = bool;
   }
 
   /**
@@ -2145,7 +2272,7 @@ class Layer extends G3WObject {
    *
    * @param bool
    */
-  setTocHighlightable(bool=false) {
+  setTocHighlightable(bool = false) {
     this.state.tochighlightable = bool;
   }
 
@@ -2219,7 +2346,7 @@ class Layer extends G3WObject {
    * @returns {*}
    */
   getQueryLayerOrigName() {
-    return this.state.infolayer && '' !== this.config.infolayer ? this.config.infolayer :  this.config.origname;
+    return this.config?.infolayer || this.config.origname;
   }
 
   /**
@@ -2343,39 +2470,17 @@ class Layer extends G3WObject {
   }
 
   /**
-   * Return if it is possible to show table of attribute
-   *
-   * @returns {boolean}
+   * @returns { boolean } whether is possible to show attributes table 
    */
   canShowTable() {
-    if (this.config.not_show_attributes_table || this.isBaseLayer()) {
-      return false;
-    }
-
-    if (
-      Layer.ServerTypes.QGIS === this.getServerType()
-      && ([
-        Layer.SourceTypes.POSTGIS,
-        Layer.SourceTypes.ORACLE,
-        Layer.SourceTypes.WFS,
-        Layer.SourceTypes.OGR,
-        Layer.SourceTypes.MSSQL,
-        Layer.SourceTypes.SPATIALITE
-      ].includes(this.config.source.type))
-      && this.isQueryable()
-    ) {
-      return this.getTableFields().length > 0;
-    }
-    
-    if (Layer.ServerTypes.G3WSUITE === this.getServerType() && "geojson" === this.get('source').type) {
-      return true
-    }
-
-    if (Layer.ServerTypes.G3WSUITE !== this.getServerType() && this.isFilterable()) {
-      return true;
-    }
-
-    return false;
+    return (
+      !this.config.not_show_attributes_table && !this.isBaseLayer() && 
+      (
+        (this.isQueryable() && this.getTableFields().length > 0 && ["QGIS postgres", "QGIS oracle", "QGIS wfs", "QGIS ogr", "QGIS mssql", "QGIS spatialite"].includes(`${this.getServerType()} ${this.config.source.type}`))
+        || ("G3WSUITE geojson" === `${this.getServerType()} ${this.get('source').type}`)
+        || (this.isFilterable() && "G3WSUITE" !== this.getServerType())
+      )
+    );
   }
 
   /**
@@ -2464,6 +2569,59 @@ class Layer extends G3WObject {
    * 
    * @returns { Promise<Object | void>}
    * 
+   * Change featurecount and editor form structure for a specific style
+   * 
+   * @since 4.0.0
+   */
+  async changeCurrentStyle(style) {
+    //check if style is current set on layer. If not change
+    if (!(this.config.styles.find(s => style === s.name) || {}).current) {
+      try {
+        //get feature count for a specific style
+        await this.getStyleFeatureCount(style);
+        //get editor form structure for a specific style
+        await this.getStyleEditorFormStructure(style);
+        //set as current the style passed
+        this.config.styles.forEach(s => s.current = style === s.name);
+        //In case of change need to call change function
+        this.change();
+      } catch(e) {
+        console.warn(e);    
+      }
+    }
+  }
+
+  /**
+   * Get editor from structure for a specific style
+   * @param {String} style 
+   */
+  async getStyleEditorFormStructure(style) {
+    try {
+      const { result, data = {} } = await XHR.post({
+        url:          `${this.config.urls.editorformstructure}${this.getId()}/`,
+        data:         JSON.stringify({ style }),
+        contentType: 'application/json'
+      });
+      if (result) {
+        //set form structure
+        this.config.editor_form_structure = data?.editor_form_structure;
+        //@since 4.0.0 set scale visibility on change style
+        this.state.scalebasedvisibility   = data?.scalebasedvisibility;
+        this.state.minscale               = data?.minscale;
+        this.state.maxscale               = data?.maxscale;
+        return data ?? {};
+      }
+    } catch(e) {
+      console.warn(e);
+      throw e;
+    }
+  }
+
+  /**
+   * @param style
+   * 
+   * @returns { Promise<Object | void>}
+   * 
    * @since 3.8.0
    */
   async getStyleFeatureCount(style) {
@@ -2480,11 +2638,14 @@ class Layer extends G3WObject {
         });
         this.state.stylesfeaturecount[style] = (true === result ? data : {});
       } catch(e) {
-        cansole.warn(e);
+        console.warn(e);
         this.state.stylesfeaturecount[style] = {};
+        throw e;
       }
-    }
-    return this.state.stylesfeaturecount[style];
+    };
+    //set current feature count to change
+    this.state.featurecount = this.state.stylesfeaturecount[style];
+    return this.state.stylesfeaturecount[style]
   }
 
   /**
@@ -2505,6 +2666,352 @@ class Layer extends G3WObject {
     new (Vue.extend(Table))({ ...opts, layerId: this.state.id });
   }
 
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * Set layer categories legend
+   * 
+   * @param { Array } categories
+   * 
+   * @since 4.0.0
+   */
+  setCategories(categories = []) {
+    this.state.legend.categories[this.getCurrentStyle().name] = categories;
+    //set categories state attribute to true only if exist at least a rule key
+    this.state.categories = (categories || []).filter(category => category.ruleKey).length > 0;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns legend categories of layer
+   * 
+   * @param { Array } categories
+   * 
+   * @since 4.0.0
+   */
+  getCategories() {
+    return this.state.legend.categories[this.getCurrentStyle().name];
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Clear all categories
+   *
+   * @since 4.0.0
+   */
+  clearCategories() {
+    this.state.legend.categories = {};
+    this.state.categories = false;
+  }
+
+  /**
+   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * Get OpenLayer selection feature by feature id
+   * 
+   * @param id
+   * 
+   * @since 4.0.0
+   */
+  getOlSelectionFeature(id) {
+    return this.state.ol_selection[id];
+  }
+
+  /**
+   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  addOlSelectionFeature({ id, feature: feat } = {}) {
+    //create a new ol feature
+    const feature = new ol.Feature(feat.geometry);
+    feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
+    Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
+    this.state.ol_selection[id] = this.state.ol_selection[id] || {
+      feature,
+      added:    false,
+      selected: false, /** @since 3.9.9 */
+    };
+    return this.state.ol_selection[id];
+  }
+
+  /**
+   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Show all selection features
+   *
+   * @since 4.0.0
+   */
+  #updateOlSelection() {
+    const map = GUI.getService('map');
+    // Loop `added` features (selected)
+    Object
+      .values(this.state.ol_selection)
+      .forEach(f => {
+        if (f.selected !== f.added) {
+          map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+          f.added = f.selected;
+        }
+      });
+    // Ensures selection layer is always visible on map
+    map.toggleSelection(
+      !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected),
+      this.state.id
+    );
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Set layer legend item `checked` state (TOC)
+   *
+   * @param { boolean } bool
+   *
+   * @since 4.0.0
+   */
+  setChecked(bool) {
+    this.state.checked = bool;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @returns { boolean } whether layer legend item is checked (TOC)
+   *
+   * @since 4.0.0
+   */
+  isChecked() {
+    return this.state.checked;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @param { Boolean } bool
+   * 
+   * @returns {*} whether visiblitity is disabled (based on scalevisibility) and checked on toc
+   *
+   * @since 4.0.0
+   */
+  setVisible(bool) {
+    const visible  = this.state.visible;
+    this.state.visible = bool && this.isChecked();
+    // emit 'change' event
+    if (visible !== this.state.visible) {
+      this.change?.();
+    }
+    return this.state.visible;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  isPrintable({ scale } = {}) {
+    // find out if layer and all parents are checked
+    let checked = this.isChecked();
+    if (checked) {
+      let parentGroup = this.state.parentGroup;
+      //loop from bottom to top
+      while(checked && parentGroup) {
+        checked     = checked && parentGroup.checked;
+        parentGroup = parentGroup.parentGroup;
+      }
+    }
+    return checked
+      && (
+        !this.state.scalebasedvisibility
+        || (scale >= this.state.maxscale && scale <= this.state.minscale)
+      );
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns style for layer
+   *
+   * @since 4.0.0
+   */
+  getStyles() {
+    return this.config.source.external ? this.config.source.styles : this.config.styles;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getStyle() {
+    return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(s => s.current).name : '';
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * 
+   * @returns { number } transparency property
+   *
+   * @since 4.0.0
+   */
+  getOpacity() {
+    return this.state.opacity;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getCurrentStyle() {
+    return this.config.styles.find(s => s.current);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * Disable layer by check scalevisibility configuration value
+   *
+   * @param resolution
+   * @param mapUnits
+   *
+   * @since 4.0.0
+   */
+  setDisabled(resolution, mapUnits = 'm') {
+
+    if ('boolean' === typeof resolution) {
+      return this.state.disabled = resolution;
+    }
+    if (this.state.scalebasedvisibility) {
+      const mapScale      = getScaleFromResolution(resolution, mapUnits);
+      this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
+      this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
+      // needed to check if call setVisible is change disable property
+      // looping through parentfolter checked
+      let setVisible = true;
+      let parentGroup = this.state.parentGroup;
+      while (parentGroup) {
+        setVisible  = setVisible && parentGroup.checked;
+        parentGroup = parentGroup.parentGroup;
+      }
+      if (setVisible) {
+        this.setVisible(!this.state.disabled);
+      }
+      // change toc highlight property based on disabled otr not
+      if (this.isFilterable()) {
+        this.setTocHighlightable(!this.state.disabled);
+      }
+    } else {
+      this.state.disabled = false;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getMultiLayerId() {
+    return this.config.multilayerid;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getGeometryType() {
+    return this.config.geometrytype;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getOwsMethod() {
+    return this.config.ows_method;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  setProjection(crs = {}) {
+    this.config.projection = Projections.get(crs);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getProjection() {
+    return this.config.projection;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getEpsg() {
+    return this.config.crs.epsg;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getCrs() {
+    return this.config.projection ? this.config.projection.getCode() : null;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  isCached() {
+    return this.config.cache_url && '' !== this.config.cache_url;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @since 4.0.0
+   */
+  getCacheUrl() {
+    // mapproxy provider → cache_url already contains "{z}/{x}/{-y}.png"
+    if (this.isCached() && this.config.cache_provider && 'mapproxy' === this.config.cache_provider) {
+      return this.config.cache_url;
+    }
+    if (this.isCached()) {
+      return `${this.config.cache_url}/{z}/{x}/{y}.png`;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   *
+   * @virtual method need to be implemented by subclasses
+   * 
+   * @since 4.0.0
+   */
+  getMapLayer() {
+    console.log('overwrite by single layer')
+  }
+
+  /**
+   * @returns { string } wms layer name for wms request
+   */
+  getWMSLayerName() {
+    return this.config.wms_use_layer_ids ? this.getId() : this.getName()
+  }
+
 }
 
 /******************************************************************************************
@@ -2521,49 +3028,6 @@ Layer.LayerTypes = {
 };
 
 /**
- * Server Types
- */
-Layer.ServerTypes = {
-  OGC:             "OGC",
-  QGIS:            "QGIS",
-  Mapserver:       "Mapserver",
-  Geoserver:       "Geoserver",
-  ARCGISMAPSERVER: "ARCGISMAPSERVER",
-  OSM:             "OSM",
-  BING:            "Bing",
-  LOCAL:           "Local",
-  TMS:             "TMS",
-  WMS:             "WMS",
-  WMTS:            "WMTS",
-  G3WSUITE:        "G3WSUITE"
-};
-
-/**
- * Source Types
- */
-Layer.SourceTypes = {
-  VIRTUAL:         "virtual",
-  POSTGIS:         "postgres",
-  SPATIALITE:      "spatialite",
-  ORACLE:          "oracle",
-  MSSQL:           "mssql",
-  CSV:             "delimitedtext",
-  OGR:             "ogr",
-  GDAL:            "gdal",
-  WMS:             "wms",
-  WMST:            "wmst",
-  WFS:             "wfs",
-  WCS:             "wcs",
-  MDAL:            "mdal",
-  'VECTOR-TILE':   "vector-tile",
-  VECTORTILE:      "vectortile",
-  ARCGISMAPSERVER: "arcgismapserver",
-  GEOJSON:         "geojson",
-  /** @since 3.9.0 */
-  POSTGRESRASTER:  "postgresraster",
-};
-
-/**
  * Layer Capabilities
  */
 Layer.CAPABILITIES = {
@@ -2571,10 +3035,5 @@ Layer.CAPABILITIES = {
   FILTERABLE: 2,
   EDITABLE:   4,
 };
-
-/**
- * BACKOMP v3.x
- */
-Layer.SELECTION_STATE = SELECTION;
 
 export { Layer };

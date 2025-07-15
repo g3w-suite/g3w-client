@@ -44,7 +44,7 @@
               <div
                 v-if        = "showRelationByField"
                 v-disabled  = "isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
-                @click.stop = "handleRelation({relation: getNode(row, column), feature:feature, layerId: layerid})"
+                @click.stop = "handleRelation({ relation: getNode(row, column), feature:feature, layerId: layerid })"
                 :style      = "{cursor: showRelationByField && 'pointer'}"
               >
                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
@@ -188,10 +188,10 @@
       isRelationChildLayerNotEditable(relation) {
         // HANDLE N:M RELATION AS 1:N RELATION
         const projectRelation = ApplicationState.project.getRelationById(relation.name);
-        const relationLayerId = projectRelation.referencingLayer;
-        const relationLayer   = ApplicationState.project.getLayerById(relationLayerId);
+        const relationLayer   = ApplicationState.project.getLayerById(projectRelation.referencingLayer);
         // check if is editable. In the case of nmRelation layer need to be table to be editable
-        return !relationLayer.isEditable();
+        //Need to check if layer exists. Sometime can happen that layer is not in the list based on user capabilities
+        return !(relationLayer && relationLayer.isEditable());
       },
       /**
        *
@@ -244,9 +244,12 @@
 </script>
 
 <style scoped>
-  .tab-node{
+  .tab-node {
     min-width: 0;
     overflow: hidden;
+  }
+  .tab-node.odd {
+    background-color: hsl(from var(--skin-color) h s l / 0.1);
   }
   .title {
     font-weight: bold;
