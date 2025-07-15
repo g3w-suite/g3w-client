@@ -180,7 +180,6 @@ import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
 import { saveBlob }                 from 'utils/saveBlob';
 import { printAtlas }               from 'utils/printAtlas';
-import { promisify }                from 'utils/promisify';
 import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 
 import resizeMixin                  from 'mixins/resize';
@@ -457,7 +456,7 @@ export default {
 
         // close print page if already open
         if (this._page) {
-          await promisify(GUI.closeContent());
+          await GUI.closeContent();
         }
 
         // ATLAS PRINT

@@ -45,7 +45,6 @@ import vT                          from "directives/v-t";
 // utils
 import { noop }                    from 'utils/noop';
 import { XHR }                     from 'utils/XHR';
-import { $promisify }              from 'utils/promisify';
 import { getProject }              from 'utils/getProject';
 
 
@@ -386,7 +385,7 @@ $.ajaxSetup({
           showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
           getTitle()                { return this.title },
           removeTools()             { this.state.tools.splice(0) },
-          stop(d)                   { return $promisify(Promise.resolve(d)) },
+          async stop(d)             { return d },
           removeTool()              {},
         }),
         actions:     [

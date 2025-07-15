@@ -505,7 +505,6 @@ import Component          from 'g3w-component';
 import GUI                from 'services/gui';
 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-import { promisify }      from 'utils/promisify';
 import { sameOrigin }     from 'utils/sameOrigin';
 import { waitFor }        from 'utils/waitFor';
 
@@ -850,7 +849,7 @@ export default {
       if (data.length) {
         await Promise.allSettled(data.map(async d => {
           if (d.content instanceof Component || d.content instanceof Panel) {
-            await promisify(d.content.unmount());
+            await d.content.unmount();
           } else {
             $(ApplicationState.sidebar.parent).empty();
           }

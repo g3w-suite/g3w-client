@@ -9,7 +9,6 @@ import IFrameRouterService       from 'services/iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
 import { toRawType }             from 'utils/toRawType';
-import { promisify, $promisify } from 'utils/promisify';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
@@ -505,11 +504,11 @@ export default new (class GUI extends G3WObject {
       // Check a duplicate element by component id (if already exist)
       let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
       if (-1 !== id) {
-        await promisify(data[id].content.unmount());
+        await data[id].content.unmount();
         data.splice(id, 1);
       }
       // Mount vue component
-      await promisify(content.mount(parent, options.append || false));
+      await content.mount(parent, options.append || false);
       data.push({ content, options });
     }
 
@@ -528,7 +527,7 @@ export default new (class GUI extends G3WObject {
     }
     const panel = data.slice(-1)[0].content;
     if (panel instanceof Component || panel instanceof Panel) {
-      await promisify(panel.unmount());
+      await panel.unmount();
     } else {
       $(ApplicationState.sidebar.parent).empty();
     }
@@ -700,11 +699,11 @@ export default new (class GUI extends G3WObject {
             description: p.description,
             thumbnail:   p.thumbnail,
             gid:         p.gid,
-            cbk:         opts.cbk || ((o = {}) => $promisify(async () => {
+            cbk:         opts.cbk || ((o = {}) => async () => {
               const url = await GUI.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
               try { history.replaceState(null, null, url); }
-              catch (e) { console.warn(e); } location.replace(url);}
-            )),
+              catch (e) { console.warn(e); } location.replace(url);
+            }),
           }))
         },
       }),
@@ -801,11 +800,11 @@ export default new (class GUI extends G3WObject {
       // Check a duplicate element by component id (if already exist)
       let id = ApplicationState.contentsdata.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
       if (-1 !== id) {
-        await promisify(ApplicationState.contentsdata[id].content.unmount());
+        await ApplicationState.contentsdata[id].content.unmount();
         ApplicationState.contentsdata.splice(id, 1);
       }
       // Mount vue component
-      await promisify(content.mount(contents.parent, opts.append || false));
+      await content.mount(contents.parent, opts.append || false);
       ApplicationState.contentsdata.push({ content, options: opts });
     }
 
@@ -894,7 +893,7 @@ export default new (class GUI extends G3WObject {
     const content = ApplicationState.contentsdata.slice(-1)[0].content;
 
     if (content instanceof Component || content instanceof Panel) {
-      await promisify(content.unmount());
+      await content.unmount();
     } else {
       content.remove();
     }
@@ -1201,7 +1200,7 @@ export default new (class GUI extends G3WObject {
   async #clearContents() {
     await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
       if (d.content instanceof Component || d.content instanceof Panel) {
-        await promisify(d.content.unmount());
+        await d.content.unmount();
       } else {
         $(g3wsdk.gui.GUI.getComponent('contents').parent).empty();
       }

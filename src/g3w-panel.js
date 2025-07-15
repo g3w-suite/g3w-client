@@ -5,7 +5,6 @@
 
 import GUI            from 'services/gui';
 import G3WObject      from 'g3w-object';
-import { $promisify } from 'utils/promisify';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/panel.js@v3.9.3 
@@ -64,17 +63,17 @@ export default class Panel extends G3WObject {
     GUI.closePanel();
   }
 
-  mount(parent) {
+  async mount(parent) {
     const panel = this.internalPanel;
     const vueComp = panel.$mount();
     $(parent).append(vueComp.$el);
     vueComp.$nextTick(() => {
       if (panel.onShow) { panel.onShow();}
     });
-    return $promisify(Promise.resolve(true));
+    return true;
   }
 
-  unmount() {
+  async unmount() {
     const panel = this.internalPanel;
     panel.$destroy(true);
     $(panel.$el).remove();
@@ -83,7 +82,6 @@ export default class Panel extends G3WObject {
     if (this.service && this.service.clear) {
       this.service.clear();
     }
-    return $promisify(Promise.resolve());
   }
 
 }

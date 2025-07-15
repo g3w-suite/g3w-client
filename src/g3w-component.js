@@ -5,7 +5,6 @@
 
 import G3WObject      from 'g3w-object';
 import { noop }       from 'utils/noop';
-import { $promisify } from 'utils/promisify';
 import { cloneDeep }  from 'utils/cloneDeep';
 import GUI            from 'services/gui';
 
@@ -243,28 +242,27 @@ export default class Component extends G3WObject {
    * @fires internalComponent~ready
    * @fires mount event
    */
-  mount(parent, append) {
-    return $promisify(new Promise((resolve) => {
-      if (!this.internalComponent) {
-        this.setInternalComponent();
-      }
+  async mount(parent, append) {
+   
+    if (!this.internalComponent) {
+      this.setInternalComponent();
+    }
 
-      if (append) {
-        $(parent).append(this.internalComponent.$mount().$el);
-      }
+    if (append) {
+      $(parent).append(this.internalComponent.$mount().$el);
+    }
 
-      if (!append){
-        this.internalComponent.$mount(parent);
-      }
+    if (!append){
+      this.internalComponent.$mount(parent);
+    }
 
-      this.internalComponent.$nextTick(() => {
-        this.emit('ready');
-        resolve(true);
-      });
-
-      // emit mount event
-      this.emit('mount');
-    }))
+    await this.internalComponent.$nextTick();
+  
+    this.emit('ready');      
+    // emit mount event
+    this.emit('mount');
+    return true;
+    
   }
 
   /**
@@ -272,20 +270,20 @@ export default class Component extends G3WObject {
    * 
    * @fires unmount
    */
-  unmount() {
-    return $promisify(async () => {
-      if (!this.internalComponent) {
-        return;
-      }
-      if (this.state.resizable) {
-        this.internalComponent.$off('resize-component', this.internalComponent.layout);
-      }
-      this.state.open = false;
-      this.internalComponent.$destroy(true);  // destroy vue component
-      $(this.internalComponent.$el).remove(); // remove dom element
-      this.internalComponent = null;          // set internal componet to null (for GC)
-      this.emit('unmount');                   // emit unmount event
-    })
+  async unmount() {
+   
+    if (!this.internalComponent) {
+      return;
+    }
+    if (this.state.resizable) {
+      this.internalComponent.$off('resize-component', this.internalComponent.layout);
+    }
+    this.state.open = false;
+    this.internalComponent.$destroy(true);  // destroy vue component
+    $(this.internalComponent.$el).remove(); // remove dom element
+    this.internalComponent = null;          // set internal componet to null (for GC)
+    this.emit('unmount');                   // emit unmount event
+    
   }
 
   /**

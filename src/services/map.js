@@ -454,7 +454,7 @@ class MapService extends G3WObject {
         resolution:    this.getResolution(),
       })
       .then((response) => resolve(response))
-      .fail(e => { console.warn(e); reject(e); })
+      .catch(e => { console.warn(e); reject(e); })
     })
   }
 

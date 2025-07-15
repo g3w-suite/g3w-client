@@ -37,7 +37,6 @@ import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { isPointGeometryType }    from 'utils/isPointGeometryType';
 import { isLineGeometryType }     from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }  from 'utils/isPolygonGeometryType';
-import { $promisify, promisify }  from 'utils/promisify';
 import { cloneDeep }              from 'utils/cloneDeep';
 
 import { Feature }                from 'map/layers/feature';
@@ -1049,23 +1048,21 @@ class Layer extends G3WObject {
       addFeature(feature)        { this._features.push(feature); },
       clone()                    { return cloneDeep(this); },
       getProvider:               () => this.getProvider('data'),
-      unlock:                    () => $promisify(async () => await XHR.post({ url: this.getProvider('data')._layer.getUrl('unlock') })),
+      unlock:              async () => await XHR.post({ url: this.getProvider('data')._layer.getUrl('unlock') }),
       getLockIds()               { return this._lockIds; },
       getFeatureById(id)         { return this._features.find(f => id == f.getId()); },
       setFeatures(features = []) { this._features = features; },
       readFeatures()             { return this._features; },
-      commit: (commitItems, featurestore)=> {
-        return $promisify(async () => {
-          if (commitItems && this.getProvider('data')) {
-            commitItems.lockids = this._featuresstore._lockIds;
-            return await XHR.post({
-              url:         this.getProvider('data')._layer.getUrl('commit'),
-              data:        JSON.stringify(commitItems),
-              contentType: 'application/json',
-            });
-          }
-          return Promise.reject();
-        });
+      commit: async (commitItems, featurestore)=> {
+        if (commitItems && this.getProvider('data')) {
+          commitItems.lockids = this._featuresstore._lockIds;
+          return await XHR.post({
+            url:         this.getProvider('data')._layer.getUrl('commit'),
+            data:        JSON.stringify(commitItems),
+            contentType: 'application/json',
+          });
+        }
+        return Promise.reject();
       },
     });
 
@@ -2232,7 +2229,7 @@ class Layer extends G3WObject {
           this
             .search(options, params)
             .then(results => { resolve(({ data: results })); })
-            .fail(e => { console.warn(e); reject(e) });
+            .catch(e => { console.warn(e); reject(e) });
           break;
 
         case 'api':
@@ -3483,34 +3480,34 @@ class Layer extends G3WObject {
       //@since 3.11.0 to has the same compatibility with table layer
       this._mapLayer._olLayer.getEditingSource = () => super.getEditingSource();
 
-      Object.assign(this._mapLayer, {
-        _olLayer:      this._mapLayer._olLayer,
-        mapService:    GUI.getService('map'),
-        geometryType:  this.getGeometryType(),
-        geometrytype:  null,
-        type:          null,
-        crs:           null,
-        id:            this.getId(),
-        name:          _g3w_geojson && this.getName() || '',
-        style,
-        color:         this.getColor(),
-        projection:    _g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
-        url:           _g3w_geojson ? this.get('source').url : undefined,
-        provider:      this.getProvider('data'),
-        getProvider:   ()           => this._mapLayer.provider,
-        resetSource:   (feats = []) => this._mapLayer.setSource(new ol.source.Vector({ features: feats })),
-        getFeatures:   (opts = {})  => $promisify(async () => this._mapLayer.addFeatures(await promisify(this._mapLayer.provider.getFeatures(opts)))),
-        addFeatures:   (feats = []) => this._mapLayer.getSource().addFeatures(feats),
-        addFeature:    feat         => feat && this.getSource().addFeature(feat),
-        getOLLayer:    ()           => this._mapLayer._olLayer,
-        getSource:     ()           => this._mapLayer._olLayer.getSource(),
-        setSource:     source       => this._mapLayer._olLayer.setSource(source),
-        setStyle:       style       => this._mapLayer._olLayer.setStyle(style),
-        getFeatureById:    id       => id ? this._mapLayer._olLayer.getSource().getFeatureById(id) : null,
-        isVisible:         ()       => this._mapLayer._olLayer.getVisible(),
-        setVisible:      bool       => this._mapLayer._olLayer.setVisible(bool),
-        clear:             ()       => this._mapLayer.getSource().clear(),
-        addToMap:         map       => map.addLayer(this._mapLayer._olLayer),
+    Object.assign(this._mapLayer, {
+      _olLayer:      this._mapLayer._olLayer,
+      mapService:    GUI.getService('map'),
+      geometryType:  this.getGeometryType(),
+      geometrytype:  null,
+      type:          null,
+      crs:           null,
+      id:            this.getId(),
+      name:          _g3w_geojson && this.getName() || '',
+      style,
+      color:         this.getColor(),
+      projection:    _g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
+      url:           _g3w_geojson ? this.get('source').url : undefined,
+      provider:      this.getProvider('data'),
+      getProvider:   ()           => this._mapLayer.provider,
+      resetSource:   (feats = []) => this._mapLayer.setSource(new ol.source.Vector({ features: feats })),
+      getFeatures:   async (opts = {})  => this._mapLayer.addFeatures(await this._mapLayer.provider.getFeatures(opts)),
+      addFeatures:   (feats = []) => this._mapLayer.getSource().addFeatures(feats),
+      addFeature:    feat         => feat && this.getSource().addFeature(feat),
+      getOLLayer:    ()           => this._mapLayer._olLayer,
+      getSource:     ()           => this._mapLayer._olLayer.getSource(),
+      setSource:     source       => this._mapLayer._olLayer.setSource(source),
+      setStyle:       style       => this._mapLayer._olLayer.setStyle(style),
+      getFeatureById:    id       => id ? this._mapLayer._olLayer.getSource().getFeatureById(id) : null,
+      isVisible:         ()       => this._mapLayer._olLayer.getVisible(),
+      setVisible:      bool       => this._mapLayer._olLayer.setVisible(bool),
+      clear:             ()       => this._mapLayer.getSource().clear(),
+      addToMap:         map       => map.addLayer(this._mapLayer._olLayer),
 
       });
 
@@ -3583,47 +3580,43 @@ class Layer extends G3WObject {
    * 
    * @since 4.1.0
    */
-  getFeatures(opts = {}) {
-    return $promisify(async () => {
-      const features = await promisify(this._featuresstore.getFeatures(opts));
-      this.emit('getFeatures', features);
-      return features;
-    });
+  async getFeatures(opts = {}) {
+    const features = await this._featuresstore.getFeatures(opts);
+    this.emit('getFeatures', features);
+    return features;
   }
 
   /**
    * @since 4.1.0 
    */
-  commit(commitItems) {
-    return $promisify(async () => {
-      const response = await promisify(this._featuresstore.commit(commitItems));
-      // sync selection filter features
-      if (response && response.result) {
-        try {
-          const layer = getCatalogLayerById(this.getId());
-          //if layer has geometry
-          if (layer.isGeoLayer()) {
-            commitItems.update.forEach(({ id, geometry } = {}) => {
-              if (layer.getOlSelectionFeature(id)) {
-                const selected = layer.getOlSelectionFeature(id);
-                if (selected) {
-                  selected.feature = geometry;
-                  GUI.getService('map').setSelectionFeatures('update', { feature: geometry });
-                }
+  async commit(commitItems) {
+    const response = await this._featuresstore.commit(commitItems);
+    // sync selection filter features
+    if (response && response.result) {
+      try {
+        const layer = getCatalogLayerById(this.getId());
+        //if layer has geometry
+        if (layer.isGeoLayer()) {
+          commitItems.update.forEach(({ id, geometry } = {}) => {
+            if (layer.getOlSelectionFeature(id)) {
+              const selected = layer.getOlSelectionFeature(id);
+              if (selected) {
+                selected.feature = geometry;
+                GUI.getService('map').setSelectionFeatures('update', { feature: geometry });
               }
-            });
-          }
-          commitItems.delete.forEach(id => {
-            if (layer.hasSelectionFid(id)) {
-              layer.excludeSelectionFid(id);
             }
-          })
-        } catch(e) {
-          console.warn(e);
+          });
         }
+        commitItems.delete.forEach(id => {
+          if (layer.hasSelectionFid(id)) {
+            layer.excludeSelectionFid(id);
+          }
+        })
+      } catch(e) {
+        console.warn(e);
       }
-      return response;
-    });
+    }
+    return response;
   }
 
   /**
@@ -3648,8 +3641,8 @@ class Layer extends G3WObject {
    * 
    * @since 4.1.0
    */
-  unlock() {
-    return $promisify(async () => await promisify(this._featuresstore.unlock()));
+  async unlock() {
+    return await this._featuresstore.unlock();
   }
 
   /**

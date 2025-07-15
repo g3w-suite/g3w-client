@@ -9,7 +9,6 @@ import GUI                                from 'services/gui';
 import { groupBy }                        from 'utils/groupBy';
 import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
-import { $promisify, promisify }          from 'utils/promisify';
 import { gettext as _ }                   from 'g3w-i18n';
 
 const handleQueryPromises = async (promises = []) => {
@@ -75,12 +74,12 @@ export default {
             }
           }
         },
-        data: ((!external || layerIds.length > 0) && await promisify(this.getQueryLayersPromisesByCoordinates(layers, {
+        data: ((!external || layerIds.length > 0) && await this.getQueryLayersPromisesByCoordinates(layers, {
           multilayers,
           feature_count,
           query_point_tolerance,
           coordinates
-        })) || []).flatMap(({ data = [] }) => data),
+        }) || []).flatMap(({ data = [] }) => data),
         
       };
     } catch (error) {
@@ -468,7 +467,7 @@ export default {
    * 
    * @since 3.11.0
    */
-  getQueryLayersPromisesByCoordinates(layers, {
+  async getQueryLayersPromisesByCoordinates(layers, {
     coordinates,
     feature_count         = 10,
     query_point_tolerance = QUERY_POINT_TOLERANCE,
@@ -477,7 +476,7 @@ export default {
   } = {}) {
     // skip when no features
     if (0 === layers.length) {
-      return $promisify(Promise.resolve(layers));
+      return layers;
     }
 
     const map            = GUI.getService('map').getMap();
@@ -485,18 +484,18 @@ export default {
     const mapProjection  = map.getView().getProjection();
     const resolution     = map.getView().getResolution();
 
-    return $promisify(async () => await handleQueryPromises(Object.values(
+    return await handleQueryPromises(Object.values(
       multilayers
         ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
         : layers
-    ).map(layers => promisify(
+    ).map(layers => 
       [].concat(layers)[0].query(
         multilayers
           ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers }
           : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
         )
       )
-    )));
+    );
 
   },
 
@@ -542,11 +541,11 @@ export default {
         // Convert filter geometry from map to layer CRS
         value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
       };
-      return promisify(layer.query(
+      return layer.query(
         multilayers
           ? { filter, feature_count, layers }
           : { filter, feature_count, filterConfig }
-      ))
+      )
     }));
   },
 
