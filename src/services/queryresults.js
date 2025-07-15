@@ -590,7 +590,7 @@ export default new (class QueryResultsService extends G3WObject {
    * 
    * @since 4.0.0
    */
-  editFeature({layer, feature}={}) {}
+  editFeature({ layer, feature } = {}) {}
 
   /**
    * Setter method called when opening/closing feature info data content.
@@ -602,7 +602,7 @@ export default new (class QueryResultsService extends G3WObject {
    * 
    * @since 4.0.0
    */
-  openCloseFeatureResult({open, layer, feature, container}={}) {}
+  openCloseFeatureResult({ open, layer, feature, container } = {}) {}
 
   /**
    * Remove a feature from current layer result
@@ -1227,7 +1227,7 @@ export default new (class QueryResultsService extends G3WObject {
    * @param index
    * @param container
    */
-  async trigger(actionId, layer, feature, index, container) {
+  async triggerAction(actionId, layer, feature, index, container) {
     if ('highlightgeometry' === actionId) {
       this.highlightGeometry(layer, feature, index);
     }

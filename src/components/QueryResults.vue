@@ -910,7 +910,7 @@
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        await this.$options.service.trigger(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
+        await this.$options.service.triggerAction(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
