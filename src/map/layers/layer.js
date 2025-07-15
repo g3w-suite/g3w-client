@@ -41,9 +41,6 @@ import { cloneDeep }              from 'utils/cloneDeep';
 
 import { Feature }                from 'map/layers/feature';
 
-
-const is_defined = d => undefined !== d;
-
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
  * 
@@ -54,54 +51,6 @@ const is_defined = d => undefined !== d;
  */
 function __(name, value) {
   return [null, undefined].includes(value) ? value : `${name}${value}`;
-}
-
-/**
- * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v3.10.0
- * 
- * @since 3.11.0
- */
-function _makeOlLayer(opts = {}, method = 'GET') {
-  return new (opts.tiled ? ol.layer.Tile : ol.layer.Image)({
-    id:            opts.layerObj.id,
-    name:          opts.layerObj.name,
-    opacity:       undefined !== opts.layerObj.opacity ? opts.layerObj.opacity : 1.0,
-    visible:       opts.layerObj.visible,
-    extent:        opts.layerObj.extent,
-    maxResolution: opts.layerObj.maxResolution,
-    source:        new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
-      ratio:      1,
-      url:        opts.layerObj.url,
-      projection: (opts.layerObj.projection) ? opts.layerObj.projection.getCode() : null,
-      params:     {
-        ...Object.fromEntries(
-          Object.entries({
-            DPI:         DOTS_PER_INCH,
-            TRANSPARENT: true,
-            FORMAT:      opts.layerObj.format,
-            LAYERS:      undefined !== opts.layerObj.layers      ? opts.layerObj.layers : '',
-            VERSION:     undefined !== opts.layerObj.version     ? opts.layerObj.version : '1.3.0',
-            SLD_VERSION: undefined !== opts.layerObj.sld_version ? opts.layerObj.sld_version : '1.1.0',
-          })
-          // prevents sending "FORMAT" parameter when undefined
-          .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
-      ),
-      ...(opts.extraParams || {})
-      },
-      imageLoadFunction: (opts.layerObj.iframe_internal || 'POST' === method)
-        ? (tile, url) => {
-          fetch('POST' === method ? (url || '').split('?')[0] : url, {
-            method,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-            body:    'POST' === method ? url.split('?')[1] : undefined,
-          })
-          .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
-          .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
-        }
-        : undefined,
-    })
-  });
-
 }
 
 // BACKCOMP v3.x
@@ -260,7 +209,7 @@ const Providers = {
             data:        JSON.stringify(params),
             contentType: 'application/json',
           });
-        } else if (is_defined(options.filter.bbox)) { // bbox filter
+        } else if (undefined !== options.filter.bbox) { // bbox filter
           response = await XHR.post({
             url:  this._layer.getUrl('editing'),
             data: JSON.stringify({
@@ -270,7 +219,7 @@ const Providers = {
             }),
             contentType: 'application/json',
           })
-        } else if (is_defined(options.filter.fid)) { // fid filter
+        } else if (undefined !== options.filter.fid) { // fid filter
           response = await XHR.post({
             url:         createRelationsUrl(options.filter.fid),
             contentType: 'application/json',
@@ -285,7 +234,7 @@ const Providers = {
             }),
             contentType: 'application/json',
           })
-        } else if (is_defined(options.filter.fids)) {
+        } else if (undefined !== options.filter.fids) {
           response = await XHR.post({
             url:    this._layer.getUrl('editing'),
             data:   JSON.stringify({
@@ -294,7 +243,7 @@ const Providers = {
             }),
             contentType: 'application/json',
           })
-        } else if (is_defined(options.filter.nofeatures)) {
+        } else if (undefined !== options.filter.nofeatures) {
           response = await XHR.post({
             url:  this._layer.getUrl('editing'),
             data: JSON.stringify({
@@ -1304,7 +1253,7 @@ class Layer extends G3WObject {
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
     if ('WMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => _makeOlLayer({
+      this._makeOlLayer = () => this.__makeOlLayer({
         layerObj: {
           url:          this.config.url,
           projection:   this.getProjectionFromCrs(this.config.crs),
@@ -4210,7 +4159,7 @@ class Layer extends G3WObject {
   /**
    * @param {boolean} withLayers
    * 
-   * @returns { _makeOlLayer }
+   * @returns { Layer.__makeOlLayer }
    * 
    * @listens ol.source.ImageWMS~imageloadstart
    * @listens ol.source.ImageWMS~imageloadend
@@ -4276,7 +4225,7 @@ class Layer extends G3WObject {
             transparent: false,
           })
         })
-        : _makeOlLayer({
+        : this.__makeOlLayer({
           layerObj,
           extraParams: this.extraParams || {},
           tiled:       true
@@ -4321,7 +4270,7 @@ class Layer extends G3WObject {
 
     // WMS LAYER
     else {
-      olLayer = _makeOlLayer({
+      olLayer = this.__makeOlLayer({
         layerObj: {
           url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
           id:              this.config.id,
@@ -4340,6 +4289,53 @@ class Layer extends G3WObject {
     olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
 
     return olLayer
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.1.0
+   * 
+   * @since 4.1.0
+   */
+  __makeOlLayer(opts = {}, method = 'GET') {
+    return new (opts.tiled ? ol.layer.Tile : ol.layer.Image)({
+      id:            opts.layerObj.id,
+      name:          opts.layerObj.name,
+      opacity:       undefined !== opts.layerObj.opacity ? opts.layerObj.opacity : 1.0,
+      visible:       opts.layerObj.visible,
+      extent:        opts.layerObj.extent,
+      maxResolution: opts.layerObj.maxResolution,
+      source:        new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
+        ratio:      1,
+        url:        opts.layerObj.url,
+        projection: (opts.layerObj.projection) ? opts.layerObj.projection.getCode() : null,
+        params:     {
+          ...Object.fromEntries(
+            Object.entries({
+              DPI:         DOTS_PER_INCH,
+              TRANSPARENT: true,
+              FORMAT:      opts.layerObj.format,
+              LAYERS:      undefined !== opts.layerObj.layers      ? opts.layerObj.layers : '',
+              VERSION:     undefined !== opts.layerObj.version     ? opts.layerObj.version : '1.3.0',
+              SLD_VERSION: undefined !== opts.layerObj.sld_version ? opts.layerObj.sld_version : '1.1.0',
+            })
+            // prevents sending "FORMAT" parameter when undefined
+            .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
+        ),
+        ...(opts.extraParams || {})
+        },
+        imageLoadFunction: (opts.layerObj.iframe_internal || 'POST' === method)
+          ? (tile, url) => {
+            fetch('POST' === method ? (url || '').split('?')[0] : url, {
+              method,
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+              body:    'POST' === method ? url.split('?')[1] : undefined,
+            })
+            .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
+            .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
+          }
+          : undefined,
+      })
+    });
   }
 
   /**
