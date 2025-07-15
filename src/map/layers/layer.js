@@ -1266,7 +1266,7 @@ class Layer extends G3WObject {
         tiled: this.state.tiled,
       });
       this._mapLayer.addLayer(this);
-    } else if (this._makeOlLayer) {
+    } else if (this._makeOlLayer && Layer.LayerTypes.IMAGE === this.type) {
       this._mapLayer = this;
     }
   }

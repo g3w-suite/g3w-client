@@ -70,6 +70,7 @@ import Component                                   from 'g3w-component';
 import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
 import { LayersStore }                             from 'map/layers/layersstore';
+import { Layer }                                   from 'map/layers/layer';
 import { Feature }                                 from 'map/layers/feature';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
@@ -205,6 +206,9 @@ const g3wsdk = {
     },
     layer: {
       LayersStore:     babelify(LayersStore),
+      Layer:           {
+        LayerTypes: Layer.LayerTypes
+      },
       features: {
         Feature:       babelify(Feature),
       },
