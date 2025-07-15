@@ -9,10 +9,8 @@ import ApplicationState   from 'store/application';
 import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
+import { cloneDeep }      from 'utils/cloneDeep';
 import { gettext as _ }   from 'g3w-i18n';
-
-/** @deprecated */
-import _cloneDeep         from 'lodash.clonedeep';
 
 const TIMEOUT = 10000;
 
@@ -179,7 +177,7 @@ export class Plugin extends G3WObject {
    * @see g3wsdk.core.ApplicationState.gui.layout
    */
   setLayout(config) {
-    config = undefined !== config ? config : _cloneDeep(ApplicationState.gui.layout.app);
+    config = undefined !== config ? config : cloneDeep(ApplicationState.gui.layout.app);
 
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%

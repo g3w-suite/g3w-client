@@ -74,7 +74,6 @@ import { Layer }                                   from 'map/layers/layer';
 import { TableLayer }                              from 'map/layers/tablelayer';
 import { VectorLayer }                             from 'map/layers/vectorlayer';
 import { Feature }                                 from 'map/layers/feature';
-import { FeaturesStore }                           from 'map/layers/featuresstore';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
 import { inherit }                                 from 'utils/inherit';
@@ -87,6 +86,7 @@ import { XHR }                                     from 'utils/XHR';
 import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
+import { cloneDeep }                               from 'utils/cloneDeep';
 
 import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
@@ -147,6 +147,7 @@ const g3wsdk = {
       createFilterFormInputs,
       noop,
       waitFor,
+      cloneDeep
     },
     geoutils: {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
@@ -213,7 +214,6 @@ const g3wsdk = {
       VectorLayer:     babelify(VectorLayer),
       features: {
         Feature:       babelify(Feature),
-        FeaturesStore: babelify(FeaturesStore),
       },
     },
     interaction: {

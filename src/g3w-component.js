@@ -6,10 +6,9 @@
 import G3WObject      from 'g3w-object';
 import { noop }       from 'utils/noop';
 import { $promisify } from 'utils/promisify';
+import { cloneDeep }  from 'utils/cloneDeep';
 import GUI            from 'services/gui';
 
-/** @deprecated */
-import _cloneDeep     from 'lodash.clonedeep';
 import deprecate      from 'util-deprecate';
 
 function merge(destination, source) {
@@ -150,7 +149,7 @@ export default class Component extends G3WObject {
    * @param opts.propsData
    */
   init(opts = {}) {
-    this.vueComponent = _cloneDeep(opts.vueComponentObject);
+    this.vueComponent = cloneDeep(opts.vueComponentObject);
     this._components  = opts.components || [];
 
     this.setService(opts.service || this._service || noop);
