@@ -3,9 +3,9 @@
  * @since 4.0.0
  */
 
-import GUI            from 'services/gui';
-import { getProject } from 'utils/getProject';
-import { RasterLayer} from "map/layers/imagelayer";
+import GUI             from 'services/gui';
+import { getProject }  from 'utils/getProject';
+import { RasterLayer } from 'map/layers/layer';
 
 // wait for map ready
 GUI.once('ready', async () => {

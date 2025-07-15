@@ -372,7 +372,7 @@ import Projections         from 'store/projections';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
-import { RasterLayer }     from 'map/layers/imagelayer';
+import { RasterLayer }     from 'map/layers/layer';
 
 Object
   .entries({

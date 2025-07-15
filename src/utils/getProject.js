@@ -6,13 +6,11 @@ import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';
 
 import { Layer }                   from 'map/layers/layer';
-import { ImageLayer }              from 'map/layers/imagelayer';
 import { LayersStore }             from 'map/layers/layersstore';
 
 Object
   .entries({
     Layer,
-    ImageLayer,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
@@ -250,7 +248,7 @@ export async function getProject(gid, options = {}) {
       "QGIS mdal",
       "QGIS arcgisfeatureserver",
     ].includes(layerType)) {
-      return new ImageLayer(config, { project });
+      return new Layer(config, { project, _TYPE: Layer.LayerTypes.IMAGE });
     }
 
     // RASTER LAYERS
@@ -266,12 +264,12 @@ export async function getProject(gid, options = {}) {
       "QGIS mdal",
       "QGIS arcgismapserver",
     ].includes(layerType)) {
-      return new ImageLayer(config, { project });
+      return new Layer(config, { project, _TYPE: Layer.LayerTypes.IMAGE });
     }
 
     // BASE LAYERS
     if (['OSM', 'Bing', 'TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)) {
-      return new ImageLayer(config, { project, _BASE_LAYER: config.servertype });
+      return new Layer(config, { project, _TYPE: Layer.LayerTypes.IMAGE, _BASE_LAYER: config.servertype });
     }
 
     console.warn('Uknown layer type', config);
