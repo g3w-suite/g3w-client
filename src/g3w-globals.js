@@ -118,12 +118,6 @@ function babelify(Class) {
   });
 }
 
-class VectorLayer extends Layer {
-  constructor(config = {}, opts = {}) {
-    super(config, Object.assign(opts, { _TYPE: Layer.LayerTypes.VECTOR }))
-  }
-}
-
 /**
  * GUI modules
  */
@@ -213,7 +207,6 @@ const g3wsdk = {
     layer: {
       LayersStore:     babelify(LayersStore),
       Layer:           babelify(Layer),
-      VectorLayer:     babelify(VectorLayer),
       features: {
         Feature:       babelify(Feature),
       },
