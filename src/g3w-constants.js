@@ -11,19 +11,6 @@
 export { version as APP_VERSION } from '../package.json';
 
 /**
- * Default editing capabilities
- * @deprecated  Will be removed in 4.x. Moved to g3w-client-plugin-editing
- * 
- * @type {string[]}
- */
-export const DEFAULT_EDITING_CAPABILITIES = [
-  'add_feature',
-  'change_feature',
-  'change_attr_feature',
-  'delete_feature'
-];
-
-/**
  * fid name field referred to fid feature
  * 
  * @type {string}
@@ -386,7 +373,6 @@ export const SELECTION = {
 export const PAGELENGTHS = [10, 25, 50, 100];
 
 export default {
-  DEFAULT_EDITING_CAPABILITIES,
   DOTS_PER_INCH,
   FILTER_OPERATORS,
   FILTER_EXPRESSION_OPERATORS,
