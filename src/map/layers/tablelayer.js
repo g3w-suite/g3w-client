@@ -73,7 +73,6 @@ export class TableLayer extends Layer {
       clear()                    { this._features  = null; this._features  = []; this._lockIds   = []; this._loadedIds = []; },
       clone()                    { return cloneDeep(this); },
       getProvider:               () => this.getProvider('data'),
-      getDataProvider:           () => this.getProvider('data'),
       unlock:                    () => $promisify(async () => await XHR.post({ url: this.getProvider('data')._layer.getUrl('unlock') })),
       getLockIds()               { return this._lockIds; },
       getFeatureById(id)         { return this._features.find(f => id == f.getId()); },
