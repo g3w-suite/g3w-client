@@ -1005,17 +1005,13 @@ class Layer extends G3WObject {
       _features: [],
       _loadedIds: [], // store features id load by current user
       _lockIds: [], // store locked features
-      setters: [
-        'addFeature',
-        'removeFeature',
-        'updateFeature',
-        'clear',
-      ],
-      addFeatures(features = []) { features.forEach(f => this._features.push(f)) },
+      setters: {
+        addFeatures(features = []) { features.forEach(f => this._features.push(f)) },
+        removeFeature(feature)     { this._features = this._features.filter(f => feature.getUid() !== f.getUid()) },
+        updateFeature(feature)     { this._features.find((feat, idx) => { if (feature.getUid() === feat.getUid() ) { this._features[idx] = feature; return true; } }); },
+        clear()                    { this._features  = null; this._features  = []; this._lockIds   = []; this._loadedIds = []; },
+      },
       addFeature(feature)        { this._features.push(feature); },
-      removeFeature(feature)     { this._features = this._features.filter(f => feature.getUid() !== f.getUid()) },
-      updateFeature(feature)     { this._features.find((feat, idx) => { if (feature.getUid() === feat.getUid() ) { this._features[idx] = feature; return true; } }); },
-      clear()                    { this._features  = null; this._features  = []; this._lockIds   = []; this._loadedIds = []; },
       clone()                    { return cloneDeep(this); },
       getProvider:               () => this.getProvider('data'),
       unlock:                    () => $promisify(async () => await XHR.post({ url: this.getProvider('data')._layer.getUrl('unlock') })),
