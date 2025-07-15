@@ -5,15 +5,13 @@ import Projections                 from 'store/projections';
 import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';
 
-import { TableLayer }              from 'map/layers/tablelayer';
-import { VectorLayer }             from 'map/layers/vectorlayer';
+import { Layer }                   from 'map/layers/layer';
 import { ImageLayer }              from 'map/layers/imagelayer';
 import { LayersStore }             from 'map/layers/layersstore';
 
 Object
   .entries({
-    TableLayer,
-    VectorLayer,
+    Layer,
     ImageLayer,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -224,7 +222,7 @@ export async function getProject(gid, options = {}) {
       "QGIS ogr",
       "QGIS mdal",
     ].includes(layerType)) {
-      return new TableLayer(config, { project });
+      return new Layer(config, { project, _TYPE: Layer.LayerTypes.TABLE });
     }
 
     //@since 4.0.0 no crs exclude from layer list
@@ -234,7 +232,7 @@ export async function getProject(gid, options = {}) {
 
     // VECTOR LAYERS
     if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
-      return new VectorLayer(config, { project });
+      return new Layer(config, { project, _TYPE: Layer.LayerTypes.VECTOR });
     }
 
     // RASTER LAYERS

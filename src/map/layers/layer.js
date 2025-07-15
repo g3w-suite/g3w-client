@@ -1,5 +1,10 @@
 /**
- * @file ORIGINAL SOURCE: src/app/core/layers/layer.js@v3.10.2
+ * @file
+ * 
+ * ORIGINAL SOURCE: src/app/core/layers/layer.js@v3.10.2
+ * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
+ * ORIGINAL SOURCE: src/map/layers/tablelayer.js@v4.0.0
+ * 
  * @since 3.11.0
  */
 
@@ -28,8 +33,14 @@ import { get_legend_params }      from 'utils/get_legend_params';
 import { createRelationsUrl }     from 'utils/createRelationsUrl';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
+import { isPointGeometryType }    from 'utils/isPointGeometryType';
+import { isLineGeometryType }     from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }  from 'utils/isPolygonGeometryType';
+import { $promisify, promisify }  from 'utils/promisify';
+import { cloneDeep }              from 'utils/cloneDeep';
 
 import { Feature }                from 'map/layers/feature';
+
 
 const is_defined = d => undefined !== d;
 
@@ -509,6 +520,17 @@ class Layer extends G3WObject {
 
     super();
 
+    /**
+     * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+     */
+    this.setters = [
+      'addFeature',
+      'updateFeature',
+      'setFeatures',
+      'getFeatures',
+      'commit',
+    ];
+
     // get current project
     const project   = options.project || ApplicationState.project;
     const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
@@ -950,6 +972,76 @@ class Layer extends G3WObject {
           .replace(`${p.toLowerCase()}=${url.searchParams.get(p.toLowerCase())}`, '');
       });
     }
+
+    /**
+     * @since 4.1.0
+     */
+    this._color = null;
+
+    /**
+     * EDITING API URL: /api/vector/<type of request: data/editing/config>/<project_type>/<project_id>/<layer_id>
+     *
+     * @example /api/vector/config/qdjango/10/points273849503023
+     * 
+     * @since 4.1.0
+     */
+    this.type = Layer.LayerTypes.TABLE === options._TYPE ? Layer.LayerTypes.TABLE : Layer.LayerTypes.VECTOR;
+
+    /**
+     * @TODO check if unusued
+     * 
+     * @since 4.1.0
+     */
+    this.layerId = config.id;
+
+    /**
+     * Feature wrapper (to store feature)
+     * 
+     * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
+     * 
+     * @since 4.1.0
+     */
+    this._featuresstore = Object.assign(new G3WObject, {
+      _features: [],
+      _loadedIds: [], // store features id load by current user
+      _lockIds: [], // store locked features
+      setters: [
+        'addFeature',
+        'removeFeature',
+        'updateFeature',
+        'clear',
+      ],
+      addFeatures(features = []) { features.forEach(f => this._features.push(f)) },
+      addFeature(feature)        { this._features.push(feature); },
+      removeFeature(feature)     { this._features = this._features.filter(f => feature.getUid() !== f.getUid()) },
+      updateFeature(feature)     { this._features.find((feat, idx) => { if (feature.getUid() === feat.getUid() ) { this._features[idx] = feature; return true; } }); },
+      clear()                    { this._features  = null; this._features  = []; this._lockIds   = []; this._loadedIds = []; },
+      clone()                    { return cloneDeep(this); },
+      getProvider:               () => this.getProvider('data'),
+      unlock:                    () => $promisify(async () => await XHR.post({ url: this.getProvider('data')._layer.getUrl('unlock') })),
+      getLockIds()               { return this._lockIds; },
+      getFeatureById(id)         { return this._features.find(f => id == f.getId()); },
+      setFeatures(features = []) { this._features = features; },
+      readFeatures()             { return this._features; },
+      commit: (commitItems, featurestore)=> {
+        return $promisify(async () => {
+          if (commitItems && this.getProvider('data')) {
+            commitItems.lockids = this._featuresstore._lockIds;
+            return await XHR.post({
+              url:         this.getProvider('data')._layer.getUrl('commit'),
+              data:        JSON.stringify(commitItems),
+              contentType: 'application/json',
+            });
+          }
+          return Promise.reject();
+        });
+      },
+    });
+
+    /**
+     * @since 4.1.0
+     */
+    this._mapLayer = null; // later that will be added to the map
   }
 
   /******************************************************************************************
@@ -2063,9 +2155,16 @@ class Layer extends G3WObject {
   }
 
   /**
-   * @returns { Array } editing fields
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * 
+   * @param { Boolean }  editable In case we want only editable fields
+   * 
+   * @returns { Array } layer fields
    */
-  getEditingFields() {
+  getEditingFields(editable = false) {
+    if (Layer.LayerTypes.TABLE === this.type) {
+      return editable ? (this.config.editing.fields || []).filter(f => f.editable) : (this.config.editing.fields || []);
+    }
     return this.config.editing.fields;
   }
 
@@ -2132,13 +2231,19 @@ class Layer extends G3WObject {
    * @returns {*} layer source (ex. ogr, spatialite, etc..)
    */
   getSource() {
-    return this.state.source;
+    return this.type === Layer.LayerTypes.TABLE ? this._featuresstore : this.state.source;
   }
 
   /**
    * @returns {*} editing version of layer
    */
   getEditingLayer() {
+    if (this.type === Layer.LayerTypes.TABLE) {
+      return this;
+    }
+    if (this.type === Layer.LayerTypes.VECTOR) {
+      return this.getMapLayer().getOLLayer();
+    }
     return this._editingLayer;
   }
 
@@ -2987,14 +3092,117 @@ class Layer extends G3WObject {
   }
 
   /**
-   * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
+   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
    *
-   * @virtual method need to be implemented by subclasses
-   * 
-   * @since 4.0.0
+   * @since 4.1.0
    */
   getMapLayer() {
-    console.log('overwrite by single layer')
+    if (Layer.LayerTypes.VECTOR !== this.type) {
+      return;
+    }
+
+    if (this._mapLayer) {
+      return this._mapLayer;
+    }
+
+    this._mapLayer = new G3WObject;
+
+    const _g3w_geojson = 'G3WSUITE geojson' === `${this.config.servertype} ${this.config.source?.type}`;
+    
+    const style = _g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
+
+    let olStyle = style ? new ol.style.Style(
+      Object
+        .entries(style || {})
+        .reduce((styles, [type, config]) => {
+          if ('point' === type && config.icon) {
+            styles.image = new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width });
+          }
+          if ('line' === type) {
+            styles.stroke = new ol.style.Stroke({ color: config.color, width: config.width });
+          }
+          if ('polygon' === type) {
+            styles.fill = new ol.style.Fill({ color: config.color });
+          }
+          return styles;
+        }, {})
+        )
+    : null;
+  
+    // create ol layer to add to map
+    this._mapLayer._olLayer = new ol.layer.Vector({
+      id:             this.getId(),
+      __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+      source:         new ol.source.Vector({ features: (this?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() })
+    });
+  
+    if (!olStyle && isPointGeometryType(this.getGeometryType())) {
+      olStyle = new ol.style.Style({
+        image: new ol.style.Circle({
+          fill:   new ol.style.Fill({ color: this.getColor() }),
+          radius: 5,
+        }),
+      });
+    }
+  
+    if (!olStyle && isLineGeometryType(this.getGeometryType())) {
+      olStyle = new ol.style.Style({
+        stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 })
+      });
+    }
+  
+    if (!olStyle && isPolygonGeometryType(this.getGeometryType())) {
+      olStyle =  new ol.style.Style({
+        stroke: new ol.style.Stroke({ color: '#000', width: 1 }),
+        fill:   new ol.style.Fill({ color: this.getColor() }),
+      });
+      this._mapLayer._olLayer.setOpacity(0.6);
+    }
+
+    this._mapLayer._olLayer.setStyle(olStyle);
+
+    //@since 3.11.0 to has the same compatibility with table layer
+    this._mapLayer._olLayer.getEditingSource = () => super.getEditingSource();
+
+    Object.assign(this._mapLayer, {
+      _olLayer:      this._mapLayer._olLayer,
+      mapService:    GUI.getService('map'),
+      geometryType:  this.getGeometryType(),
+      geometrytype:  null,
+      type:          null,
+      crs:           null,
+      id:            this.getId(),
+      name:          _g3w_geojson && this.getName() || '',
+      style,
+      color:         this.getColor(),
+      projection:    _g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
+      url:           _g3w_geojson ? this.get('source').url : undefined,
+      provider:      this.getProvider('data'),
+      getProvider:   ()           => this._mapLayer.provider,
+      resetSource:   (feats = []) => this._mapLayer.setSource(new ol.source.Vector({ features: feats })),
+      getFeatures:   (opts = {})  => $promisify(async () => this._mapLayer.addFeatures(await promisify(this._mapLayer.provider.getFeatures(opts)))),
+      addFeatures:   (feats = []) => this._mapLayer.getSource().addFeatures(feats),
+      addFeature:    feat         => feat && this.getSource().addFeature(feat),
+      getOLLayer:    ()           => this._mapLayer._olLayer,
+      getSource:     ()           => this._mapLayer._olLayer.getSource(),
+      setSource:     source       => this._mapLayer._olLayer.setSource(source),
+      setStyle:       style       => this._mapLayer._olLayer.setStyle(style),
+      getFeatureById:    id       => id ? this._mapLayer._olLayer.getSource().getFeatureById(id) : null,
+      isVisible:         ()       => this._mapLayer._olLayer.getVisible(),
+      setVisible:      bool       => this._mapLayer._olLayer.setVisible(bool),
+      clear:             ()       => this._mapLayer.getSource().clear(),
+      addToMap:         map       => map.addLayer(this._mapLayer._olLayer),
+
+    });
+
+    if (_g3w_geojson) {
+      this._mapLayer.getFeatures({
+        url:           this.get('source').url,
+        mapProjection: GUI.getService('map').getProjection().getCode()
+      });
+    }
+
+    return this._mapLayer;
   }
 
   /**
@@ -3002,6 +3210,191 @@ class Layer extends G3WObject {
    */
   getWMSLayerName() {
     return this.config.wms_use_layer_ids ? this.getId() : this.getName()
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  getColor() {
+    return this._color;
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  setColor(color) {
+    this._color = color;
+  }
+
+  /**
+   * @since 4.1.0 
+   */
+  addFeature(feature)    { this._featuresstore.addFeature(feature); }
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.1.0
+   */
+  updateFeature(feature) { this._featuresstore.updateFeature(feature);}
+
+  /**
+   * @TODO check if it unusued
+   * 
+   * @since 4.1.0
+   */
+  setFeatures(features)  { this._featuresstore.setFeatures(features); }
+
+  /**
+   * get data from every sources (server, wms, etc..)
+   * through provider related to featuresstore
+   *
+   * @param {*} opts
+   * 
+   * @since 4.1.0
+   */
+  getFeatures(opts = {}) {
+    return $promisify(async () => {
+      const features = await promisify(this._featuresstore.getFeatures(opts));
+      this.emit('getFeatures', features);
+      return features;
+    });
+  }
+
+  /**
+   * @since 4.1.0 
+   */
+  commit(commitItems) {
+    return $promisify(async () => {
+      const response = await promisify(this._featuresstore.commit(commitItems));
+      // sync selection filter features
+      if (response && response.result) {
+        try {
+          const layer = getCatalogLayerById(this.getId());
+          //if layer has geometry
+          if (layer.isGeoLayer()) {
+            commitItems.update.forEach(({ id, geometry } = {}) => {
+              if (layer.getOlSelectionFeature(id)) {
+                const selected = layer.getOlSelectionFeature(id);
+                if (selected) {
+                  selected.feature = geometry;
+                  GUI.getService('map').setSelectionFeatures('update', { feature: geometry });
+                }
+              }
+            });
+          }
+          commitItems.delete.forEach(id => {
+            if (layer.hasSelectionFid(id)) {
+              layer.excludeSelectionFid(id);
+            }
+          })
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+      return response;
+    });
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  clone() {
+    return cloneDeep(this);
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  readFeatures() {
+    return this._featuresstore.readFeatures();
+  }
+
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * Unlock editing features
+   *
+   * @returns jQuery Promise
+   * 
+   * @since 4.1.0
+   */
+  unlock() {
+    return $promisify(async () => await promisify(this._featuresstore.unlock()));
+  }
+
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * 
+   * @returns {boolean}
+   * 
+   * @since 4.1.0
+   */
+  isReady() {
+    return this.state.editing.ready;
+  };
+
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * 
+   * @param bool
+   * 
+   * @since 4.1.0
+   */
+  setReady(bool = false) {
+    this.state.editing.ready = bool;
+  }
+
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * 
+   * @since 4.1.0
+   */
+  getEditor() {
+    return this._editor;
+  }
+
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * 
+   * @since 4.1.0
+   */
+  isStarted() {
+    return this._editor.isStarted()
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  getFeaturesStore() {
+    return this._featuresstore;
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  setSource(source) {
+    this._featuresstore = source;
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  addFeatures(features = []) {
+    features.forEach(f => this.addFeature(f));
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  resetEditingSource(features = []) {
+    this.getMapLayer().resetSource(features)
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  getEditingGeometryType() {
+    return this.config.editing.geometrytype;
   }
 
 }

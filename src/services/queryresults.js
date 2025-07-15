@@ -24,7 +24,6 @@ import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
 import { Layer }                                from 'map/layers/layer';
-import { VectorLayer }                          from 'map/layers/vectorlayer';
 import { gettext as _ }                         from 'g3w-i18n';
 
 function _setRelationField(node) {
@@ -1310,7 +1309,7 @@ export default new (class QueryResultsService extends G3WObject {
     const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
 
     // check query geometry (Polygon or MultiPolygon)
-    if (is_poly && !has_coords && VectorLayer === vectorLayer.constructor) {
+    if (is_poly && !has_coords && Layer.LayerTypes.VECTOR === vectorLayer?.getType?.()) {
       features = vectorLayer.getIntersectedFeatures(geometry);
     } else if (is_poly && !has_coords && ol.layer.Vector === vectorLayer.constructor) {
       vectorLayer.getSource().getFeatures().forEach(f => {

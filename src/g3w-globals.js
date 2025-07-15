@@ -71,8 +71,6 @@ import PickFeatureInteraction                      from 'map/interactions/pickfe
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
 import { LayersStore }                             from 'map/layers/layersstore';
 import { Layer }                                   from 'map/layers/layer';
-import { TableLayer }                              from 'map/layers/tablelayer';
-import { VectorLayer }                             from 'map/layers/vectorlayer';
 import { Feature }                                 from 'map/layers/feature';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
@@ -120,6 +118,11 @@ function babelify(Class) {
   });
 }
 
+class VectorLayer extends Layer {
+  constructor(config = {}, opts = {}) {
+    super(config, Object.assign(opts, { _TYPE: Layer.LayerTypes.VECTOR }))
+  }
+}
 
 /**
  * GUI modules
@@ -210,7 +213,6 @@ const g3wsdk = {
     layer: {
       LayersStore:     babelify(LayersStore),
       Layer:           babelify(Layer),
-      TableLayer:      babelify(TableLayer),
       VectorLayer:     babelify(VectorLayer),
       features: {
         Feature:       babelify(Feature),

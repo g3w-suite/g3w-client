@@ -33,7 +33,7 @@ import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 import { waitFor }                          from 'utils/waitFor';
 import { debounce }                         from 'utils/debounce';
 
-import { VectorLayer }                      from 'map/layers/vectorlayer';
+import { Layer }                            from 'map/layers/layer';
 
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
@@ -422,28 +422,22 @@ class MapService extends G3WObject {
         });
       } else if (4 === coordinates.length) {
         intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
-        switch (vectorLayer.constructor) {
-          case VectorLayer:
-            features = vectorLayer.getIntersectedFeatures(intersectGeom);
-            break;
-          case ol.layer.Vector:
-            vectorLayer.getSource().getFeatures()
-              .forEach(f => intersectGeom.intersectsExtent(f.getGeometry().getExtent()) && features.push(f))
-            break;
+        if (Layer.LayerTypes.VECTOR === vectorLayer?.getType?.()) {
+          features = vectorLayer.getIntersectedFeatures(intersectGeom);
+        } else if (ol.layer.Vector === vectorLayer.constructor) {
+          vectorLayer.getSource().getFeatures()
+            .forEach(f => intersectGeom.intersectsExtent(f.getGeometry().getExtent()) && features.push(f))
         }
       }
     } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
       intersectGeom = coordinates;
-      switch (vectorLayer.constructor) {
-        case VectorLayer:
-          features = vectorLayer.getIntersectedFeatures(intersectGeom);
-          break;
-        case ol.layer.Vector:
-          vectorLayer
-            .getSource()
-            .getFeatures()
-            .forEach(f => intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(f))
-          break;
+      if (Layer.LayerTypes.VECTOR === vectorLayer?.getType?.()) {
+        features = vectorLayer.getIntersectedFeatures(intersectGeom);
+      } else if (ol.layer.Vector === vectorLayer.constructor) {
+        vectorLayer
+          .getSource()
+          .getFeatures()
+          .forEach(f => intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(f))
       }
     }
     return features;

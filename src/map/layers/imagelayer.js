@@ -8,7 +8,6 @@ import G3WObject              from 'g3w-object';
 import ApplicationState       from 'store/application';
 import Projections            from 'store/projections';
 import { Layer }              from 'map/layers/layer';
-import { VectorLayer }        from 'map/layers/vectorlayer';
 import { get_legend_params }  from 'utils/get_legend_params';
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
