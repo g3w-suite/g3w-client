@@ -3825,7 +3825,7 @@ export class Layer extends G3WObject {
           ),
         }), {
           /** @since 3.11.0 to have same compatibility with table layer */
-          getEditingSource: this.getEditingSource.bind(this),
+          getEditingSource: () => this?.getEditor?.()?.getEditingSource?.(),
         }),
         mapService:    GUI.getService('map'),
         geometryType:  this.getGeometryType(),
