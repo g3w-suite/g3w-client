@@ -32,7 +32,9 @@ export default new (class GUI extends G3WObject {
       'setContent',
       'getPermalink',
       'getPrintParams',
-      'registerPlugin'
+      'registerPlugin',
+      'online',
+      'offline',
     ];
 
     this.isready           = false;
@@ -269,6 +271,8 @@ export default new (class GUI extends G3WObject {
 
   /**
    * Store plugin instance into registry
+   * 
+   * @since 4.1.0
    */
   registerPlugin(plugin) {
     ApplicationState.plugins_registry[plugin.name] = ApplicationState.plugins_registry[plugin.name] || plugin;
@@ -1223,6 +1227,22 @@ export default new (class GUI extends G3WObject {
       }
     }));
     ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  online() {
+    ApplicationState.online = true;
+    GUI.emit('online');
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  offline() {
+    ApplicationState.online = false;
+    GUI.emit('offline');
   }
 
 });

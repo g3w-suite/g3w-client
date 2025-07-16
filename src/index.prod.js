@@ -21,7 +21,6 @@ import Panel                       from 'g3w-panel';
 import Component                   from 'g3w-component';
 
 // services
-import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
 import IframePluginService         from 'services/iframe';
 
@@ -58,7 +57,6 @@ Object
     G3WObject,
     Panel,
     Component,
-    ApplicationService,
     GUI,
     IframePluginService,
     App,
@@ -186,7 +184,7 @@ const initConfig = window.initConfig;
 // set application user
 ApplicationState.user = initConfig.user
 
-ApplicationService.emit('initconfig', initConfig);
+GUI.emit('initconfig', initConfig);
 
 const vendorkeys = initConfig.vendorkeys || {};
 initConfig.baselayers.forEach(l => {
@@ -243,9 +241,6 @@ $.ajaxSetup({
 
 /**
  * Application starting point
- *
- * create the ApplicationTemplate instance passing template interface configuration
- * and the applicationService instance that is useful to work with project API
  */
 (async () => { try {
 
@@ -308,17 +303,11 @@ $.ajaxSetup({
   // BACKCOMP v3.x
   g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
 
-  window.addEventListener('online', () => {
-    ApplicationState.online = true;
-    ApplicationService.online();
-  });
+  window.addEventListener('online', () => { GUI.online(); } );
+  window.addEventListener('offline', () => { GUI.offline(); });
 
-  window.addEventListener('offline', () => {
-    ApplicationState.online = false;
-    ApplicationService.offline();
-  });
-
-  ApplicationService.emit('ready');
+  /** @since 4.1.0 */
+  GUI.emit('app-ready');
 
   if (ApplicationState.iframe) {
     IframePluginService.init({ project })
@@ -656,10 +645,8 @@ $.ajaxSetup({
     console.warn(e);
   }
 
-  // trigger 'complete' event
-  ApplicationService.complete = true;
-  ApplicationService.emit('complete');
-
+  /** @since 4.1.0 */
+  GUI.emit('app-complete');
 } catch(error) {
   console.error(error);
   error = error.responseJSON?.error?.data ?? error?.statusText ?? error

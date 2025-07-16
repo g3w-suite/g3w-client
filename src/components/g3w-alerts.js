@@ -4,14 +4,13 @@
  */
 
 import ApplicationState   from 'store/application';
-import ApplicationService from 'services/application';
 import GUI                from 'services/gui';
 import { gettext as _ }   from 'g3w-i18n';
 
 /**
  * Custom navbar item: "alerts"
  */
-ApplicationService.on('ready', function() {
+GUI.on('app-ready', function() {
   if (ApplicationState.project.state.messages?.items?.length) {
     initConfig.header_custom_links.unshift({
       id:     'alerts',

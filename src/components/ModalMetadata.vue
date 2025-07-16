@@ -295,9 +295,9 @@
 
 <script>
 
-  import ApplicationState   from 'store/application';
-  import ApplicationService from 'services/application';
+  import ApplicationState from 'store/application';
   import { XHR }          from 'utils/XHR';
+  import { waitFor }      from 'utils/waitFor';
 
   export default {
 
@@ -374,7 +374,7 @@
       await Promise
         .allSettled([
           new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
-          new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
+          new Promise((resolve) => g3wsdk.core.ApplicationService.complete ? resolve() : g3wsdk.core.ApplicationService.on('complete', resolve))
         ]);
 
         /** @since 3.8.0 */

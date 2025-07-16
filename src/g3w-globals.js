@@ -5,7 +5,6 @@
 
 import G3W_CONSTANT                                from 'g3w-constants';
 import ApplicationState                            from 'store/application';
-import ApplicationService                          from 'services/application';
 
 
 /**
@@ -168,7 +167,7 @@ const g3wsdk = {
         is3DGeometry,
       },
     },
-    ApplicationService,
+    ApplicationService: new G3WObject({ setters: { online(){}, offline(){} }}),
     ApplicationState,
     i18n: { t: _ },
     task: {
@@ -294,7 +293,7 @@ const g3wsdk = {
     Promise
       .allSettled([
         new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
-        new Promise((resolve) => ApplicationService.complete ? resolve() : ApplicationService.on('complete', resolve))
+        new Promise((resolve) => g3wsdk.core.ApplicationService.complete ? resolve() : g3wsdk.core.ApplicationService.on('complete', resolve))
       ])
       .finally(async () => {
         /** @since 3.8.0 */
@@ -341,6 +340,13 @@ g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => Applicati
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
+
+
+GUI.on('initconfig',   () => g3wsdk.core.ApplicationService.emit('initconfig', window.initConfig));
+GUI.on('online',       () => g3wsdk.core.ApplicationService.online());
+GUI.on('offline',      () => g3wsdk.core.ApplicationService.offline());
+GUI.on('app-ready',    () => g3wsdk.core.ApplicationService.emit('ready'));
+GUI.on('app-complete', () => { g3wsdk.core.ApplicationService.complete = true; g3wsdk.core.ApplicationService.emit('complete'); });
 
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = window.initConfig.projects.find(p => alias.gid === p.gid); if (p) { p.url = `${alias.host || ''}${alias.url}` } };

@@ -10,7 +10,6 @@ import ApplicationState                     from 'store/application';
 import Projections                          from "store/projections";
 
 import DataRouterService                    from 'services/data';
-import ApplicationService                   from 'services/application';
 import GUI                                  from 'services/gui';
 
 import InteractionControl                   from 'map/controls/interactioncontrol';
@@ -2158,9 +2157,9 @@ class MapService extends G3WObject {
 }
 
 /** @since 3.8.0 */
-ApplicationService.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
+GUI.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
 
 /** @since 3.8.0 */
-ApplicationService.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
+GUI.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
 
 export default MapService;
