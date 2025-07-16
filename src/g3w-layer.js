@@ -3667,7 +3667,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   update(mapState = {}, extraParams = {}) {
-    if (this._RASTER_LAYER) {
+    if (this._RASTER_LAYER && this._olLayer) {
       let { force, ...params } = extraParams;
 
       // check which layers have to be disabled
@@ -3916,10 +3916,6 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   getOLLayer(withLayers) {
-    if (Layer.LayerTypes.IMAGE !== this.type || !this._RASTER_LAYER) {
-      return;
-    }
-
     if (this._olLayer) {
       return this._olLayer;
     }
@@ -4202,16 +4198,21 @@ export class Layer extends G3WObject {
 
     }
 
+    if (!olLayer) {
+      console.warn('[G3W-LAYER] invalid OL layer');
+      return;
+    }
+
     // register loading event
     olLayer.getSource().on(`${image}loadstart`, () => this.emit('loadstart'));
     olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
     olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
 
-    if (!withLayers && this._mapLayer.config.attributions) {
+    if (!withLayers && this._mapLayer?.config?.attributions) {
       olLayer.getSource().setAttributions(this._mapLayer.config.attributions);
     }
 
-    if (!withLayers) {
+    if (!withLayers && this._mapLayer?.state) {
       olLayer.setVisible(this._mapLayer.state.visible);
     }
 
