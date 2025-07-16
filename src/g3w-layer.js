@@ -2780,78 +2780,50 @@ export class Layer extends G3WObject {
    * @since 4.0.0
    */
   async changeCurrentStyle(style) {
-    //check if style is current set on layer. If not change
-    if (!(this.config.styles.find(s => style === s.name) || {}).current) {
-      try {
-        //get feature count for a specific style
-        await this.getStyleFeatureCount(style);
-        //get editor form structure for a specific style
-        await this.getStyleEditorFormStructure(style);
-        //set as current the style passed
-        this.config.styles.forEach(s => s.current = style === s.name);
-        //In case of change need to call change function
-        this.change();
-      } catch(e) {
-        console.warn(e);    
-      }
-    }
-  }
-
-  /**
-   * Get editor from structure for a specific style
-   * @param {String} style 
-   */
-  async getStyleEditorFormStructure(style) {
     try {
+      // skip if style is currently set on layer
+      if ((this.config.styles.find(s => style === s.name) || {}).current) {
+        return;
+      }
+
+      // get feature count (skipped when layer hasn't feature count option set on QGIS project)
+      if (undefined !== this.state.stylesfeaturecount && undefined === this.state.stylesfeaturecount[style]) {
+          const { result, data } = await XHR.post({
+            url:          `${this.config.urls.featurecount}${this.getId()}/`,
+            data:         JSON.stringify({ style }),
+            contentType: 'application/json'
+          });
+          this.state.stylesfeaturecount[style] = (true === result ? data : {});
+      }
+
+      // set current feature count
+      if (undefined !== this.state.stylesfeaturecount) {
+        this.state.featurecount = this.state.stylesfeaturecount[style];
+      }
+
+      // get editor form structure
       const { result, data = {} } = await XHR.post({
         url:          `${this.config.urls.editorformstructure}${this.getId()}/`,
         data:         JSON.stringify({ style }),
         contentType: 'application/json'
       });
+
+      // set form structure
       if (result) {
-        //set form structure
         this.config.editor_form_structure = data?.editor_form_structure;
-        //@since 4.0.0 set scale visibility on change style
         this.state.scalebasedvisibility   = data?.scalebasedvisibility;
         this.state.minscale               = data?.minscale;
         this.state.maxscale               = data?.maxscale;
-        return data ?? {};
       }
+
+      // set as current style
+      this.config.styles.forEach(s => s.current = style === s.name);
+
+      this.change();
     } catch(e) {
       console.warn(e);
-      throw e;
+      this.state.stylesfeaturecount[style] = {};
     }
-  }
-
-  /**
-   * @param style
-   * 
-   * @returns { Promise<Object | void>}
-   * 
-   * @since 3.8.0
-   */
-  async getStyleFeatureCount(style) {
-    // skip when layer hasn't feature count option set on QGIS project
-    if (undefined === this.state.stylesfeaturecount) {
-      return;
-    }
-    if (undefined === this.state.stylesfeaturecount[style]) {
-      try {
-        const { result, data } = await XHR.post({
-          url:          `${this.config.urls.featurecount}${this.getId()}/`,
-          data:         JSON.stringify({ style }),
-          contentType: 'application/json'
-        });
-        this.state.stylesfeaturecount[style] = (true === result ? data : {});
-      } catch(e) {
-        console.warn(e);
-        this.state.stylesfeaturecount[style] = {};
-        throw e;
-      }
-    };
-    //set current feature count to change
-    this.state.featurecount = this.state.stylesfeaturecount[style];
-    return this.state.stylesfeaturecount[style]
   }
 
   /**
