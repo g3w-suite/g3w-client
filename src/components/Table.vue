@@ -148,7 +148,7 @@ import {
   PAGELENGTHS
 }                                  from 'g3w-constants';
 import Component                   from 'g3w-component';
-import ApplicationState            from 'store/application';
+import ApplicationState            from 'g3w-state';
 import Field                       from 'components/FieldG3W.vue';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';

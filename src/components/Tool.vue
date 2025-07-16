@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import ApplicationState   from 'store/application';
+import ApplicationState   from 'g3w-state';
 import GUI                from 'services/gui';
 
 export default {

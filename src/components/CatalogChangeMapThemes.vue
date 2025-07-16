@@ -177,7 +177,7 @@
 
 import InputText          from "./InputText.vue";
 import GUI                from "services/gui";
-import ApplicationState   from 'store/application';
+import ApplicationState   from 'g3w-state';
 import { XHR }            from 'utils/XHR';
 import { gettext as _ }   from 'g3w-i18n';
 

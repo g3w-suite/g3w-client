@@ -4,7 +4,7 @@
  */
 
 import G3W_CONSTANT                                from 'g3w-constants';
-import ApplicationState                            from 'store/application';
+import ApplicationState                            from 'g3w-state';
 
 
 /**

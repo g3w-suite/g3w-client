@@ -11,7 +11,7 @@ import { VM }                         from 'g3w-eventbus';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 
-import ApplicationState               from 'store/application'
+import ApplicationState               from 'g3w-state'
 import InteractionControl             from 'map/controls/interactioncontrol';
 import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }                   from 'utils/throttle';

@@ -1,4 +1,4 @@
-import ApplicationState            from 'store/application';
+import ApplicationState            from 'g3w-state';
 
 /** used by the following plugins: "iframe", "archiweb" */
 export function getListableProjects() {

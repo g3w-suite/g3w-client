@@ -1,7 +1,7 @@
 /**
  * @TODO move all of these utils within "annotation" or "measure" map control
  */
-import ApplicationState from 'store/application';
+import ApplicationState from 'g3w-state';
 
 const round = val      => (Math.round(val * 100) / 100).toFixed(2);
 

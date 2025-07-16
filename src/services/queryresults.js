@@ -10,7 +10,7 @@ import G3WObject                                from 'g3w-object';
 import Component                                from 'g3w-component';
 import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
 
-import ApplicationState                         from 'store/application';
+import ApplicationState                         from 'g3w-state';
 
 import DataRouterService                        from 'services/data';
 

@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import ApplicationState from 'store/application';
+import ApplicationState from 'g3w-state';
 import resizeMixin      from 'mixins/resize';
 
 export default {

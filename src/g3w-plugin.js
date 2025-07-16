@@ -5,7 +5,7 @@
 
 import G3WObject          from 'g3w-object';
 import Component          from 'g3w-component';
-import ApplicationState   from 'store/application';
+import ApplicationState   from 'g3w-state';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
 import { cloneDeep }      from 'utils/cloneDeep';

@@ -568,7 +568,7 @@
 </template>
 
 <script>
-  import ApplicationState            from 'store/application';
+  import ApplicationState            from 'g3w-state';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats                 from 'components/QueryResultsActionInfoFormats.vue';

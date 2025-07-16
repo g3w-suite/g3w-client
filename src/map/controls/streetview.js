@@ -4,7 +4,7 @@
  */
 
 import { gettext as _ }           from 'g3w-i18n';
-import ApplicationState           from 'store/application';
+import ApplicationState           from 'g3w-state';
 import GUI                        from 'services/gui';
 import { XHR }                    from 'utils/XHR';
 import InteractionControl         from 'map/controls/interactioncontrol';

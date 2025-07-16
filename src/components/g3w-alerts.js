@@ -3,7 +3,7 @@
  * @since 4.0.0
  */
 
-import ApplicationState   from 'store/application';
+import ApplicationState   from 'g3w-state';
 import GUI                from 'services/gui';
 import { gettext as _ }   from 'g3w-i18n';
 

@@ -287,7 +287,7 @@
 <script>
 
 import { VM }                      from 'g3w-eventbus';
-import ApplicationState            from 'store/application';
+import ApplicationState            from 'g3w-state';
 import GUI                         from 'services/gui';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';

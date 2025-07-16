@@ -9,7 +9,7 @@ import {
 }                                     from 'g3w-constants';
 import G3WObject                      from 'g3w-object';
 import Panel                          from 'g3w-panel';
-import ApplicationState               from 'store/application'
+import ApplicationState               from 'g3w-state'
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';

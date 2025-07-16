@@ -6,8 +6,7 @@
 import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
-import ApplicationState               from 'store/application'
-import Projections                    from 'store/projections';
+import ApplicationState               from 'g3w-state'
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { waitFor }                    from 'utils/waitFor';
@@ -21,7 +20,7 @@ import { waitFor }                    from 'utils/waitFor';
  */
 async function _getEpsgFromParam(epsg) {
   epsg = normalizeEpsg(epsg)
-  await Projections.registerProjection(epsg);
+  await ApplicationState.projections.set(epsg);
   return epsg;
 }
 

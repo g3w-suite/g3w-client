@@ -15,7 +15,7 @@ import {
 }                                  from 'g3w-constants';
 
 // core
-import ApplicationState            from 'store/application';
+import ApplicationState            from 'g3w-state';
 import G3WObject                   from 'g3w-object';
 import Panel                       from 'g3w-panel';
 import Component                   from 'g3w-component';

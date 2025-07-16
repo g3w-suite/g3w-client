@@ -6,8 +6,7 @@
 import localforage                          from 'localforage';
 import G3WObject                            from 'g3w-object';
 
-import ApplicationState                     from 'store/application';
-import Projections                          from "store/projections";
+import ApplicationState                     from 'g3w-state';
 
 import DataRouterService                    from 'services/data';
 import GUI                                  from 'services/gui';
@@ -581,7 +580,7 @@ class MapService extends G3WObject {
     url = new URL(url);
     const changed = undefined !== epsg && epsg !== this.getEpsg();
     if (changed) {
-      await Projections.registerProjection(epsg);
+      await ApplicationState.projections.set(epsg);
     }
     url.searchParams.set(
       'map_extent',

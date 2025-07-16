@@ -116,7 +116,7 @@
 
 <script>
 import { FILTER_OPERATORS }        from 'g3w-constants';
-import ApplicationState            from 'store/application';
+import ApplicationState            from 'g3w-state';
 import DataRouterService           from 'services/data';
 import GUI                         from 'services/gui';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';

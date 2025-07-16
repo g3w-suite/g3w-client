@@ -37,7 +37,7 @@
 </template>
 
 <script>
-  import ApplicationState from 'store/application'
+  import ApplicationState from 'g3w-state'
   import { gettext as _ } from 'g3w-i18n';
 
   export default {

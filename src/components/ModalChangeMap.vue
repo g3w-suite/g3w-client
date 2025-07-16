@@ -103,8 +103,7 @@
 
 <script>
 
-import ApplicationState        from 'store/application';
-import Projections             from 'store/projections';
+import ApplicationState        from 'g3w-state';
 import { XHR }                 from 'utils/XHR';
 import { getListableProjects } from 'utils/getListableProjects';
 import GUI                     from 'services/gui';
@@ -276,7 +275,7 @@ export default {
       let url;
       const base_url = window.initConfig.urls.baseurl;
       const epsg     = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
-      await Projections.registerProjection(epsg);
+      await ApplicationState.projections.set(epsg);
       try {
         new URL(base_url);
         url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;

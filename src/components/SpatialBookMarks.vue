@@ -137,9 +137,8 @@
 </template>
 
 <script>
-  import ApplicationState     from 'store/application'
+  import ApplicationState     from 'g3w-state'
   import GUI                  from 'services/gui';
-  import Projections          from 'store/projections';
   import InputText            from "components/InputText.vue";
   import { getUniqueDomId }   from 'utils/getUniqueDomId';
   import { gettext as _ }     from 'g3w-i18n';
@@ -256,7 +255,7 @@
           GUI.hideSidebar();
         }
         if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
-          const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
+          const projection = await ApplicationState.projections.set(`EPSG:${crs.epsg}`);
           extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
         }
         // make use of `force: true` parameter to get resolution from computed `extent`

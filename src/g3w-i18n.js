@@ -1,7 +1,7 @@
 /**
  * @file inspired by "leaflet-i18n"
  */
-import ApplicationState  from 'store/application';
+import ApplicationState  from 'g3w-state';
 import { flattenObject } from 'utils/flattenObject';
 
 /**

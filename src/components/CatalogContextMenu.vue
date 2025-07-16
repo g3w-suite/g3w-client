@@ -358,7 +358,7 @@
   import { Chrome as ChromeComponent } from 'vue-color';
 
   import { VM }                        from 'g3w-eventbus';
-  import ApplicationState              from 'store/application';
+  import ApplicationState              from 'g3w-state';
   import GUI                           from 'services/gui';
   import { getCatalogLayerById }       from 'utils/getCatalogLayerById';
   import { downloadFeatures }          from 'utils/downloadFeatures';

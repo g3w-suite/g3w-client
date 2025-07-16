@@ -1,7 +1,6 @@
 import { QUERY_POINT_TOLERANCE }   from 'g3w-constants';
 import G3WObject                   from 'g3w-object';
-import ApplicationState            from 'store/application';
-import Projections                 from 'store/projections';
+import ApplicationState            from 'g3w-state';
 import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
@@ -114,7 +113,7 @@ export async function getProject(gid, options = {}) {
       })),
   });
 
-  const _projection = Projections.get(crsToCrsObject(PROJECTS[gid].crs));
+  const _projection = ApplicationState.projections.get(crsToCrsObject(PROJECTS[gid].crs));
 
   const project = Object.assign(new G3WObject, {
     setters: {
@@ -198,7 +197,7 @@ export async function getProject(gid, options = {}) {
   project._layersStore.addLayers(project.getLayers().flatMap(l => {
     const config = Object.assign({}, l, {
       crs:               crsToCrsObject(l.crs || project.state.crs), // @v4.0 Fix In case of missing layer crs, set project crs
-      projection:        l.crs ? Projections.get(l.crs) : project._projection,
+      projection:        l.crs ? ApplicationState.projections.get(l.crs) : project._projection,
       ows_method:        project.state.ows_method,
       wms_use_layer_ids: project.state.wms_use_layer_ids,
       //@since v4.0.0 - original config to maintain

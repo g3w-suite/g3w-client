@@ -32,7 +32,7 @@
 </template>
 
 <script>
-  import ApplicationState   from 'store/application';
+  import ApplicationState   from 'g3w-state';
   import { getUniqueDomId } from 'utils/getUniqueDomId';
 
   export default {

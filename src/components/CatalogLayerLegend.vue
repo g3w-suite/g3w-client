@@ -72,7 +72,7 @@
 
 <script>
   import GUI                         from 'services/gui';
-  import ApplicationState            from 'store/application';
+  import ApplicationState            from 'g3w-state';
   import ClickMixin                  from 'mixins/click';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
   import { XHR }                     from 'utils/XHR';

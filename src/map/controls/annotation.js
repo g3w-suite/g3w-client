@@ -3,7 +3,7 @@
  * @since 4.0.0
  */
 import localforage                from 'localforage';
-import ApplicationState           from 'store/application';
+import ApplicationState           from 'g3w-state';
 import GUI                        from 'services/gui';
 import InteractionControl         from 'map/controls/interactioncontrol';
 import { saveBlob }               from 'utils/saveBlob';

@@ -184,7 +184,7 @@
 <script>
 
   import { G3W_FID, PAGELENGTHS, TIMEOUT }        from 'g3w-constants';
-  import ApplicationState                         from 'store/application';
+  import ApplicationState                         from 'g3w-state';
   import Component                                from 'g3w-component';
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';

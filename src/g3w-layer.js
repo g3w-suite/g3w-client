@@ -19,8 +19,7 @@ import {
 }                                 from 'g3w-constants';
 import G3WObject                  from 'g3w-object';
 import { gettext as _ }           from 'g3w-i18n';
-import ApplicationState           from 'store/application';
-import Projections                from 'store/projections';
+import ApplicationState           from 'g3w-state';
 import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';
 
@@ -649,7 +648,7 @@ export class Layer extends G3WObject {
 
       map_crs:            options.project?.getProjection()?.getCode(),
       multilayerid:       config.multilayer,
-      projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : Projections.get(config.crs)) : undefined,
+      projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : ApplicationState.projections.get(config.crs)) : undefined,
       attributions:       config.attributions,
       selected:           config.selected || false,
       disabled:           config.disabled || false,
@@ -3054,7 +3053,7 @@ export class Layer extends G3WObject {
    * @since 4.0.0
    */
   setProjection(crs = {}) {
-    this.config.projection = Projections.get(crs);
+    this.config.projection = ApplicationState.projections.get(crs);
   }
 
   /**
@@ -3586,7 +3585,7 @@ export class Layer extends G3WObject {
   getProjectionFromCrs(crs = {}) {
     if (Layer.LayerTypes.IMAGE === this.type) {
       crs.epsg = crs.epsg ? crs.epsg : 'EPSG:3857';
-      return Projections.get(crs);
+      return ApplicationState.projections.get(crs);
     }
   }
 

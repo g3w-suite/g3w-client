@@ -367,8 +367,7 @@ import JSZip                         from 'jszip/dist/jszip.min';
 import shp                           from 'shpjs';
 
 import { GEOMETRY_FIELDS } from 'g3w-constants';
-import ApplicationState    from 'store/application';
-import Projections         from 'store/projections';
+import ApplicationState    from 'g3w-state';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
@@ -650,7 +649,7 @@ export default {
         this.layer_crs  = ['kml','kmz'].includes(this.file_type) ? 'EPSG:4326' : this.layer_crs;
 
         // register EPSG
-        await Projections.registerProjection(this.layer_crs);
+        await ApplicationState.projections.set(this.layer_crs);
 
         this.layer_data = data;
 
@@ -921,7 +920,7 @@ export default {
         this.name  = config.title + suffix;
 
         // register projections
-        config.layers.forEach(({ crss }) => crss.forEach(crs => Projections.registerProjection(crs.epsg)));
+        config.layers.forEach(({ crss }) => crss.forEach(crs => ApplicationState.projections.set(crs.epsg)));
 
         /** Layers of wms */
         this.layers = config.layers;

@@ -10,8 +10,7 @@
  */
 
 import GUI                            from 'services/gui';
-import ApplicationState               from 'store/application';
-import Projections                    from 'store/projections';
+import ApplicationState               from 'g3w-state';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { flattenObject }              from 'utils/flattenObject';
 import { addZValue }                  from 'utils/addZValue';
@@ -286,7 +285,7 @@ class GeocodingControl extends ol.control.Control {
     let transform      = false;
     const [x, y, epsg] = (q || '').split(',');
     // get projection of coordinates is pass as third value
-    const projection   = epsg && await Projections.registerProjection(`EPSG:${epsg.trim()}`);
+    const projection   = epsg && await ApplicationState.projections.set(`EPSG:${epsg.trim()}`);
     const update_on_move = this.element?.querySelector?.('input[name="update_on_move"]')?.checked;
 
     /** @TODO add a checkbox to let user choose whether include searches only from current map extent */

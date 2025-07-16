@@ -67,7 +67,7 @@
 
 <script>
   import G3wInput         from 'components/InputG3W.vue';
-  import ApplicationState from 'store/application'
+  import ApplicationState from 'g3w-state'
 
   const Fields = require('gui/fields/fields');
 

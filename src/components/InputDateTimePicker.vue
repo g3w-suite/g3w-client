@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import ApplicationState   from 'store/application';
+import ApplicationState   from 'g3w-state';
 import { resizeMixin }    from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 

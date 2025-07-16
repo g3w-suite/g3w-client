@@ -224,7 +224,7 @@
 
 <script>
 import { VM }                      from 'g3w-eventbus';
-import ApplicationState            from "store/application";
+import ApplicationState            from "g3w-state";
 import GUI                         from 'services/gui';
 import ClickMixin                  from 'mixins/click';
 import CatalogLayerLegend          from 'components/CatalogLayerLegend.vue';

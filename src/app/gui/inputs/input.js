@@ -1,4 +1,4 @@
-import ApplicationState                     from 'store/application';
+import ApplicationState                     from 'g3w-state';
 import BaseInputComponent                   from 'components/InputBase.vue'
 import { baseInputMixin as BaseInputMixin } from 'mixins';
 

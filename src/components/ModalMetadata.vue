@@ -295,7 +295,7 @@
 
 <script>
 
-  import ApplicationState from 'store/application';
+  import ApplicationState from 'g3w-state';
   import { XHR }          from 'utils/XHR';
   import { waitFor }      from 'utils/waitFor';
 

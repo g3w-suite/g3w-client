@@ -3,7 +3,7 @@ import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
 import { gettext as _ }          from 'g3w-i18n';
 
-import ApplicationState          from 'store/application';
+import ApplicationState          from 'g3w-state';
 
 import IFrameRouterService       from 'services/iframe';
 
