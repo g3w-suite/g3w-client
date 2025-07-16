@@ -1100,187 +1100,11 @@ class Layer extends G3WObject {
     this.customParams = {};
 
     /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('OSM' === this._BASE_LAYER) {
-      this._makeOlLayer = () => new ol.layer.Tile({
-        source:  new ol.source.OSM({ url: this.config.url }),
-        id:      this.config.name  || 'osm',
-        title:   this.config.title || 'OSM',
-        basemap: true
-      });
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('Bing' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        const name = ({
-          streets:          'Road',
-          aerial:           'Aerial',
-          aerialwithlabels: 'AerialWithLabels'
-        })[this.config.source && this.config.source.subtype] || 'Aerial';
-        return new ol.layer.Tile({
-          name,
-          visible: false,
-          preload: Infinity,
-          source: new ol.source.BingMaps({ imagerySet: name, key: ApplicationState.keys.vendorkeys.bing }),
-          basemap: true,
-        });
-      };
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('TMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        const url        = undefined !== this.config.url ? this.config.url : null;
-        const projection = url && this.getProjectionFromCrs(this.config.crs);
-        if (!url) {
-          return;
-        }
-        return new ol.layer.Tile({
-          visible:    false,
-          projection,
-          source:     new ol.source.XYZ({
-            url,
-            maxZoom:     this.config.maxZoom,
-            minZoom:     this.config.minZoom,
-            projection,
-            crossOrigin: 'anonymous',
-            // tileLoadFunction:  undefined,
-            /** @since 3.10.0 - Map Proxy cache_provider **/
-            tileGrid:    'degrees' === projection.getUnits() ? new ol.tilegrid.TileGrid({
-              // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
-              // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
-              // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
-              // we need to calculate to Math.min instead, so we have to remove the first resolution
-              resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: this.config.maxZoom }).getResolutions().slice(1),
-              extent:      projection.getExtent(),
-            }) : undefined,
-          })
-        });
-      };
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('WMTS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        // use this config to get params
-        const {
-          url,
-          layer,
-          attributions,
-          matrixSet,
-          format = 'image/png',
-          style  = 'default',
-          requestEncoding,
-          grid, /** @since 3.10.0*/
-          grid_extent, /** @since 3.10.0 */
-        } = this.config;
-  
-        /** @since 3.10.0 */
-        let projection = this.config.projection || this.getProjectionFromCrs(this.config.crs);
-  
-        if (matrixSet) {
-          const size = ol.extent.getWidth(projection.getExtent()) / 256;
-          return new ol.layer.Tile({
-            opacity: .7,
-            source: new ol.source.WMTS({
-              url,
-              projection,
-              layer,
-              matrixSet,
-              requestEncoding,
-              format,
-              attributions,
-              tileGrid: new ol.tilegrid.WMTS({
-                origin:      ol.extent.getTopLeft(projection.getExtent()),
-                resolutions: Array.from({ length: 14 }, (_, z) => size / Math.pow(2, z)),
-                matrixIds:   Array.from({ length: 14 }, (_, z) => z),
-              }),
-              style
-            })
-          });
-        }
-  
-        /** @since 3.10.0 WMTS based on mapproxy*/
-        if (grid && grid_extent) {
-          const resolutions = ol.tilegrid.createXYZ({ extent: grid_extent }).getResolutions();
-          return new ol.layer.Tile({
-            source: new ol.source.WMTS({
-              url,
-              layer,
-              projection,
-              matrixSet: grid,
-              format:    format || 'png',
-              tileGrid:  new ol.tilegrid.WMTS({
-                           origin: ol.extent.getTopLeft(grid_extent),
-                           resolutions,
-                           matrixIds: resolutions.map((_, z) => z),
-                         }),
-              style,
-              transparent: false,
-            })
-          });
-        }
-
-      };
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('WMS' === this._BASE_LAYER) {
-      this._makeOlLayer = () => this.__makeOlLayer({
-        layerObj: {
-          url:          this.config.url,
-          projection:   this.getProjectionFromCrs(this.config.crs),
-          attributions: this.config.attributions,
-          layers:       this.config.layers,
-          tiled:        undefined === this.config.singleTile ? false : this.config.singleTile,
-          opacity:      undefined === this.config.opacity ? 1 : this.config.opacity,
-        },
-      });
-    }
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
-     */
-    if ('ARCGISMAPSERVER' === this._BASE_LAYER) {
-      this._makeOlLayer = () => {
-        const {
-          url,
-          visible = true,
-          extent,
-          projection,
-          attributions,
-          crossOrigin
-        } = this.config;
-
-        return new ol.layer.Tile({
-          extent,
-          visible,
-          source :new ol.source.TileArcGISRest({
-            url,
-            projection,
-            attributions,
-            crossOrigin
-          })
-        })
-      };
-    }
-
-    /**
      * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
      * 
      * @since 3.11.0
      */
-    if (this._makeOlLayer && this.isWMS()) {
+    if (this.isWMS()) {
       this._mapLayer = new Layer(
         {
           url:   this.getWmsUrl(),
@@ -1290,7 +1114,7 @@ class Layer extends G3WObject {
         { _RASTER_LAYER: true }
       );
       this._mapLayer.addLayer(this);
-    } else if (this._makeOlLayer && Layer.LayerTypes.IMAGE === this.type) {
+    } else if (Layer.LayerTypes.IMAGE === this.type) {
       this._mapLayer = this;
     }
   }
@@ -3401,186 +3225,6 @@ class Layer extends G3WObject {
   }
 
   /**
-   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
-   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
-   *
-   * @since 4.1.0
-   */
-  getMapLayer(options = {}, extraParams) {
-
-    if (Layer.LayerTypes.IMAGE === this.type) {
-      /**
-       * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
-       * 
-       * @since 3.11.0
-       */
-      if (this._mapLayer) {
-        return this._mapLayer;
-      }
-
-      options.iframe_internal   = ApplicationState.iframe && !this.isExternalWMS();
-      const method              = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
-      const extent              = (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null);
-      const source              = this.config.source;
-      /** @since  3.10.0 Cache info **/
-      const cache_provider      = this.config.cache_provider;
-      const cache_service_type  = this.config.cache_service_type || 'tms'; //default tile
-      const cache_layer         = this.config.cache_layer;
-      const cache_extent        = this.config.cache_extent;
-      const cache_grid          = this.config.cache_grid;
-      const cache_grid_extent   = this.config.cache_grid_extent;
-      //get layer url
-      const url                 = this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl());
-
-      if (this.isCached() && 'tms' === cache_service_type) {
-        return new Layer(
-          { ...options, extent, url, cache_provider, type: 'XYZ' },
-          { _RASTER_LAYER: { params: {}, method } }
-        );
-      }
-
-      if (this.isExternalWMS() && source && "arcgismapserver" === source.type) {
-        return new Layer(
-          { ...options, ...source },
-          { _RASTER_LAYER: { params: extraParams } }
-        );
-      }
-
-      if (this.isCached() && 'wmts' === cache_service_type) {
-        return new Layer({
-            ...options,
-            url,
-            cache_provider,
-            cache_layer,
-            cache_extent,
-            cache_grid,
-            cache_grid_extent,
-            type: 'WMTS',
-          },
-          { _RASTER_LAYER: { params: extraParams, method } }
-        );
-      }
-
-      if (this.isExternalWMS() && source && "wmst" === source.type) {
-        return new Layer(
-          {...options, url, cache_provider, type: 'WMTS' },
-          { _RASTER_LAYER: { params: extraParams, method } }
-        );
-      }
-
-      return new Layer(
-        { ...options, url },
-        { _RASTER_LAYER: { params: extraParams, method } }
-      );
-    }
-
-    if (Layer.LayerTypes.VECTOR === this.type) {
-      if (this._mapLayer) {
-        return this._mapLayer;
-      }
-
-      this._mapLayer = new G3WObject;
-
-      const _g3w_geojson = 'G3WSUITE geojson' === `${this.config.servertype} ${this.config.source?.type}`;
-      
-      const style = _g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
-
-      let olStyle = style ? new ol.style.Style(
-        Object
-          .entries(style || {})
-          .reduce((styles, [type, config]) => {
-            if ('point' === type && config.icon) {
-              styles.image = new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width });
-            }
-            if ('line' === type) {
-              styles.stroke = new ol.style.Stroke({ color: config.color, width: config.width });
-            }
-            if ('polygon' === type) {
-              styles.fill = new ol.style.Fill({ color: config.color });
-            }
-            return styles;
-          }, {})
-          )
-      : null;
-    
-      // create ol layer to add to map
-      this._mapLayer._olLayer = new ol.layer.Vector({
-        id:             this.getId(),
-        __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
-        source:         new ol.source.Vector({ features: (this?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() })
-      });
-    
-      if (!olStyle && isPointGeometryType(this.getGeometryType())) {
-        olStyle = new ol.style.Style({
-          image: new ol.style.Circle({
-            fill:   new ol.style.Fill({ color: this.getColor() }),
-            radius: 5,
-          }),
-        });
-      }
-    
-      if (!olStyle && isLineGeometryType(this.getGeometryType())) {
-        olStyle = new ol.style.Style({
-          stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 })
-        });
-      }
-    
-      if (!olStyle && isPolygonGeometryType(this.getGeometryType())) {
-        olStyle =  new ol.style.Style({
-          stroke: new ol.style.Stroke({ color: '#000', width: 1 }),
-          fill:   new ol.style.Fill({ color: this.getColor() }),
-        });
-        this._mapLayer._olLayer.setOpacity(0.6);
-      }
-
-      this._mapLayer._olLayer.setStyle(olStyle);
-
-      //@since 3.11.0 to has the same compatibility with table layer
-      this._mapLayer._olLayer.getEditingSource = () => super.getEditingSource();
-
-    Object.assign(this._mapLayer, {
-      _olLayer:      this._mapLayer._olLayer,
-      mapService:    GUI.getService('map'),
-      geometryType:  this.getGeometryType(),
-      geometrytype:  null,
-      type:          null,
-      crs:           null,
-      id:            this.getId(),
-      name:          _g3w_geojson && this.getName() || '',
-      style,
-      color:         this.getColor(),
-      projection:    _g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
-      url:           _g3w_geojson ? this.get('source').url : undefined,
-      provider:      this.getProvider('data'),
-      getProvider:   ()           => this._mapLayer.provider,
-      resetSource:   (feats = []) => this._mapLayer.setSource(new ol.source.Vector({ features: feats })),
-      getFeatures:   async (opts = {})  => this._mapLayer.addFeatures(await this._mapLayer.provider.getFeatures(opts)),
-      addFeatures:   (feats = []) => this._mapLayer.getSource().addFeatures(feats),
-      addFeature:    feat         => feat && this.getSource().addFeature(feat),
-      getOLLayer:    ()           => this._mapLayer._olLayer,
-      getSource:     ()           => this._mapLayer._olLayer.getSource(),
-      setSource:     source       => this._mapLayer._olLayer.setSource(source),
-      setStyle:       style       => this._mapLayer._olLayer.setStyle(style),
-      getFeatureById:    id       => id ? this._mapLayer._olLayer.getSource().getFeatureById(id) : null,
-      isVisible:         ()       => this._mapLayer._olLayer.getVisible(),
-      setVisible:      bool       => this._mapLayer._olLayer.setVisible(bool),
-      clear:             ()       => this._mapLayer.getSource().clear(),
-      addToMap:         map       => map.addLayer(this._mapLayer._olLayer),
-
-      });
-
-      if (_g3w_geojson) {
-        this._mapLayer.getFeatures({
-          url:           this.get('source').url,
-          mapProjection: GUI.getService('map').getProjection().getCode()
-        });
-      }
-
-      return this._mapLayer;
-    }
-  }
-
-  /**
    * @returns { string } wms layer name for wms request
    */
   getWMSLayerName({ type = 'map' } = {}) {
@@ -4090,69 +3734,180 @@ class Layer extends G3WObject {
     }
   }
 
+    /**
+   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
+   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  getMapLayer(options = {}, extraParams) {
+
+    if (this._mapLayer) {
+      return this._mapLayer;
+    }
+
+    if (Layer.LayerTypes.IMAGE === this.type) {
+      options.iframe_internal   = ApplicationState.iframe && !this.isExternalWMS();
+
+      if (this.isCached() && 'tms' === (this.config.cache_service_type || 'tms')) {
+        return new Layer(
+          {
+            ...options,
+            extent: (this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null),
+            url: this.getCacheUrl(),
+            cache_provider: this.config.cache_provider,
+            type: 'XYZ'
+          },
+          { _RASTER_LAYER: { params: {}, method: this.isExternalWMS() ? 'GET' : this.getOwsMethod() } }
+        );
+      }
+
+      if (this.isExternalWMS() && "arcgismapserver" === this.config?.source?.type) {
+        return new Layer(
+          { ...options, ...this.config.source },
+          { _RASTER_LAYER: { params: extraParams } }
+        );
+      }
+
+      if (this.isCached() && 'wmts' === this.config.cache_service_type) {
+        return new Layer({
+            ...options,
+            url:               this.getCacheUrl(),
+            cache_provider:    this.config.cache_provider,
+            cache_layer:       this.config.cache_layer,
+            cache_extent:      this.config.cache_extent,
+            cache_grid:        this.config.cache_grid,
+            cache_grid_extent: this.config.cache_grid_extent,
+            type: 'WMTS',
+          },
+          { _RASTER_LAYER: { params: extraParams, method: this.isExternalWMS() ? 'GET' : this.getOwsMethod() } }
+        );
+      }
+
+      if (this.isExternalWMS() && "wmst" === this.config?.source?.type) {
+        return new Layer(
+          {
+            ...options,
+            url: this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl()),
+            cache_provider: this.config.cache_provider,
+            type: 'WMTS'
+          },
+          { _RASTER_LAYER: { params: extraParams, method: 'GET' } }
+        );
+      }
+
+      return new Layer(
+        { ...options, url: this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl()) },
+        { _RASTER_LAYER: { params: extraParams, method: this.isExternalWMS() ? 'GET' : this.getOwsMethod() } }
+      );
+    }
+
+    if (Layer.LayerTypes.VECTOR === this.type) {
+      this._mapLayer = new G3WObject;
+
+      const _g3w_geojson = 'G3WSUITE geojson' === `${this.config.servertype} ${this.config.source?.type}`;
+      
+      const style = _g3w_geojson ? this.get('style') : (this.config.editing ? this.config.editing.style : this.getCustomStyle());
+
+      let olStyle = style ? new ol.style.Style(
+        Object
+          .entries(style || {})
+          .reduce((styles, [type, config]) => {
+            if ('point' === type && config.icon) {
+              styles.image = new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width });
+            }
+            if ('line' === type) {
+              styles.stroke = new ol.style.Stroke({ color: config.color, width: config.width });
+            }
+            if ('polygon' === type) {
+              styles.fill = new ol.style.Fill({ color: config.color });
+            }
+            return styles;
+          }, {})
+          )
+      : null;
+    
+      // create ol layer to add to map
+      this._mapLayer._olLayer = new ol.layer.Vector({
+        id:             this.getId(),
+        __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+        source:         new ol.source.Vector({ features: (this?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() })
+      });
+    
+      if (!olStyle && isPointGeometryType(this.getGeometryType())) {
+        olStyle = new ol.style.Style({
+          image: new ol.style.Circle({
+            fill:   new ol.style.Fill({ color: this.getColor() }),
+            radius: 5,
+          }),
+        });
+      }
+    
+      if (!olStyle && isLineGeometryType(this.getGeometryType())) {
+        olStyle = new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 })
+        });
+      }
+    
+      if (!olStyle && isPolygonGeometryType(this.getGeometryType())) {
+        olStyle =  new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#000', width: 1 }),
+          fill:   new ol.style.Fill({ color: this.getColor() }),
+        });
+        this._mapLayer._olLayer.setOpacity(0.6);
+      }
+
+      this._mapLayer._olLayer.setStyle(olStyle);
+
+      //@since 3.11.0 to has the same compatibility with table layer
+      this._mapLayer._olLayer.getEditingSource = () => super.getEditingSource();
+
+    Object.assign(this._mapLayer, {
+      _olLayer:      this._mapLayer._olLayer,
+      mapService:    GUI.getService('map'),
+      geometryType:  this.getGeometryType(),
+      geometrytype:  null,
+      type:          null,
+      crs:           null,
+      id:            this.getId(),
+      name:          _g3w_geojson && this.getName() || '',
+      style,
+      color:         this.getColor(),
+      projection:    _g3w_geojson ? this.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
+      url:           _g3w_geojson ? this.get('source').url : undefined,
+      provider:      this.getProvider('data'),
+      getProvider:   ()           => this._mapLayer.provider,
+      resetSource:   (feats = []) => this._mapLayer.setSource(new ol.source.Vector({ features: feats })),
+      getFeatures:   async (opts = {})  => this._mapLayer.addFeatures(await this._mapLayer.provider.getFeatures(opts)),
+      addFeatures:   (feats = []) => this._mapLayer.getSource().addFeatures(feats),
+      addFeature:    feat         => feat && this.getSource().addFeature(feat),
+      getOLLayer:    ()           => this._mapLayer._olLayer,
+      getSource:     ()           => this._mapLayer._olLayer.getSource(),
+      setSource:     source       => this._mapLayer._olLayer.setSource(source),
+      setStyle:       style       => this._mapLayer._olLayer.setStyle(style),
+      getFeatureById:    id       => id ? this._mapLayer._olLayer.getSource().getFeatureById(id) : null,
+      isVisible:         ()       => this._mapLayer._olLayer.getVisible(),
+      setVisible:      bool       => this._mapLayer._olLayer.setVisible(bool),
+      clear:             ()       => this._mapLayer.getSource().clear(),
+      addToMap:         map       => map.addLayer(this._mapLayer._olLayer),
+
+      });
+
+      if (_g3w_geojson) {
+        this._mapLayer.getFeatures({
+          url:           this.get('source').url,
+          mapProjection: GUI.getService('map').getProjection().getCode()
+        });
+      }
+
+      return this._mapLayer;
+    }
+  }
+
   /**
    * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
    * 
-   * @since 4.1.0
-   */
-  getOLLayer(withLayers) {
-    if(this._RASTER_LAYER) {
-      if (!this._olLayer) {
-        this._olLayer = this._makeOlLayer(withLayers);
-      }
-      return this._olLayer;
-    }
-
-    if (Layer.LayerTypes.IMAGE !== this.type) {
-      return;
-    }
-
-    if (!this._olLayer && this._makeOlLayer) {
-      this._olLayer = this._makeOlLayer();
-      // register loading event
-      this._olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
-      this._olLayer.getSource().on('imageloadend',   () => this.emit("loadend"));
-      if (this._mapLayer.config.attributions) {
-        this._olLayer.getSource().setAttributions(this._mapLayer.config.attributions);
-      }
-      this._olLayer.setVisible(this._mapLayer.state.visible)
-    }
-    return this._olLayer;
-  }
-
-  /**
-   * @since 4.1.0
-   */
-   getLayerConfigs() {
-    if (this._RASTER_LAYER) {
-      return this.layers;
-    }
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  addLayer(layer) {
-    if (this._RASTER_LAYER) {
-      if (!this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
-      if (!this.layers.find(l => layer === l))    { this.layers.push(layer); }
-      if ('XYZ' === this.config.type)             { this.layer = layer; }
-    }
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  removeLayer(layer) {
-    if (this._RASTER_LAYER) {
-      this.layers = this.layers.filter(l => layer !== l);
-    }
-  }
-
-  /**
    * @param {boolean} withLayers
-   * 
-   * @returns { Layer.__makeOlLayer }
    * 
    * @listens ol.source.ImageWMS~imageloadstart
    * @listens ol.source.ImageWMS~imageloadend
@@ -4160,18 +3915,143 @@ class Layer extends G3WObject {
    * 
    * @since 4.1.0
    */
-  _makeOlLayer(withLayers) {
-    if(!this._RASTER_LAYER) {
+  getOLLayer(withLayers) {
+    if (Layer.LayerTypes.IMAGE !== this.type || !this._RASTER_LAYER) {
       return;
+    }
+
+    if (this._olLayer) {
+      return this._olLayer;
     }
 
     let olLayer;
 
     /** @type { 'image' | 'tile' } */
     let image = 'image';
-    
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('OSM' === this._BASE_LAYER) {
+      olLayer = new ol.layer.Tile({
+        source:  new ol.source.OSM({ url: this.config.url }),
+        id:      this.config.name  || 'osm',
+        title:   this.config.title || 'OSM',
+        basemap: true
+      });
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('Bing' === this._BASE_LAYER) {
+      const name = ({
+        streets:          'Road',
+        aerial:           'Aerial',
+        aerialwithlabels: 'AerialWithLabels'
+      })[this.config?.source?.subtype] || 'Aerial';
+      olLayer = new ol.layer.Tile({
+        source: new ol.source.BingMaps({ imagerySet: name, key: ApplicationState.keys.vendorkeys.bing }),
+        name,
+        visible: false,
+        preload: Infinity,
+        basemap: true,
+      });
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('TMS' === this._BASE_LAYER && (undefined !== this.config.url ? this.config.url : null)) {
+      const projection = this.getProjectionFromCrs(this.config.crs);
+      olLayer = new ol.layer.Tile({
+        visible:    false,
+        projection,
+        source:     new ol.source.XYZ({
+          url:         undefined !== this.config.url ? this.config.url : null,
+          maxZoom:     this.config.maxZoom,
+          minZoom:     this.config.minZoom,
+          projection,
+          crossOrigin: 'anonymous',
+          tileGrid:    'degrees' === projection.getUnits() ? new ol.tilegrid.TileGrid({
+            // Need to remove the first resolution because in this version of ol createXYZ doesn't accept maxResolution options.
+            // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculated
+            // by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
+            // we need to calculate to Math.min instead, so we have to remove the first resolution
+            resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: this.config.maxZoom }).getResolutions().slice(1),
+            extent:      projection.getExtent(),
+          }) : undefined,
+        })
+      });
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     * 
+     * @since 3.10.0
+     */
+    if ('WMTS' === this._BASE_LAYER && this.config.matrixSet) {
+      let projection = this.config.projection || this.getProjectionFromCrs(this.config.crs);
+      const size = ol.extent.getWidth(projection.getExtent()) / 256;
+      olLayer = new ol.layer.Tile({
+        opacity: .7,
+        source: new ol.source.WMTS({
+          url:             this.config.url,
+          projection,
+          layer:           this.config.layer,
+          matrixSet:       this.config.matrixSet,
+          requestEncoding: this.config.requestEncoding,
+          format:          this.config.format ?? 'image/png',
+          attributions:    this.config.attributions,
+          tileGrid: new ol.tilegrid.WMTS({
+            origin:      ol.extent.getTopLeft(projection.getExtent()),
+            resolutions: Array.from({ length: 14 }, (_, z) => size / Math.pow(2, z)),
+            matrixIds:   Array.from({ length: 14 }, (_, z) => z),
+          }),
+          style: (this.config.style ?? 'default')
+        })
+      });
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     * 
+     * @since 3.10.0 WMTS based on mapproxy
+     */
+    if ('WMTS' === this._BASE_LAYER && !this.config.matrixSet && this.config.grid && this.config.grid_extent) {
+      const resolutions = ol.tilegrid.createXYZ({ extent: this.config.grid_extent }).getResolutions();
+      olLayer = new ol.layer.Tile({
+        source: new ol.source.WMTS({
+          url:         this.config.url,
+          layer:       this.config.layer,
+          projection,
+          matrixSet:   this.config.grid,
+          format:      (this.config.format ?? 'image/png') || 'png',
+          tileGrid:    new ol.tilegrid.WMTS({ origin: ol.extent.getTopLeft(this.config.grid_extent), resolutions, matrixIds: resolutions.map((_, z) => z), }),
+          style:       (this.config.style ?? 'default'),
+          transparent: false,
+        })
+      });
+    }
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('ARCGISMAPSERVER' === this._BASE_LAYER) {
+      olLayer = new ol.layer.Tile({
+        extent:  this.config.extent,
+        visible: this.config.visible ?? true,
+        source : new ol.source.TileArcGISRest({
+          url:          this.config.url,
+          projection:   this.config.projection,
+          attributions: this.config.attributions,
+          crossOrigin:  this.config.crossOrigin,
+        })
+      });
+    }
+
     // ARCGIS LAYER
-    if ('ARCGISMAPSERVER' === this.config.type) {
+    if (this._RASTER_LAYER && 'ARCGISMAPSERVER' === this.config.type) {
       olLayer = new ol.layer.Tile({
         visible: true,
         source:  new ol.source.TileArcGISRest({
@@ -4181,54 +4061,33 @@ class Layer extends G3WObject {
       });
     }
 
+    /** @since 3.10.0 - MapProxy WMTS layer **/
+    const resolutions = 'mapproxy' === this.config.cache_provider && ol.tilegrid.createXYZ({ extent: this.config.cache_grid_extent }).getResolutions();
+
     // WMTS LAYER
-    else if ('WMTS' === this.config.type) {
+    if (this._RASTER_LAYER && 'WMTS' === this.config.type && resolutions) {
       image = 'tile';
-      const layerObj = {
-        url:               ('mapproxy' === this.config.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.config.url : this.layers[0].getWmsUrl(),
-        id:                this.config.id,
-        projection:        this.config.projection,
-        iframe_internal:   this.iframe_internal,
-        layers:            (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
-        cache_provider:    this.config.cache_provider, /** @since 3.10.0 **/
-        cache_type:        this.config.cache_type, /** @since 3.10.0  tms, wms**/
-        cache_layer:       this.config.cache_layer,
-        cache_extent:      this.config.cache_extent,
-        cache_grid:        this.config.cache_grid,
-        cache_grid_extent: this.config.cache_grid_extent,
-      };
-  
-      /** @since 3.10.0 - MapProxy WMTS layer **/
-      const resolutions = 'mapproxy' === layerObj.cache_provider && ol.tilegrid.createXYZ({ extent: layerObj.cache_grid_extent }).getResolutions();
-  
-      olLayer = resolutions
-        ? new ol.layer.Tile({
-          source: new ol.source.WMTS({
-            url:         layerObj.url,
-            layer:       layerObj.cache_layer,
-            matrixSet:   layerObj.cache_grid,
-            format:      layerObj.cache_format || 'png',
-            projection:  layerObj.layers[0].getProjection(),
-            tileGrid:    new ol.tilegrid.WMTS({
-                           resolutions,
-                           origin:    ol.extent.getTopLeft(layerObj.cache_grid_extent),
-                           matrixIds: resolutions.map((_, i) => i),
-                         }),
-            style:       layerObj.style || '',
-            transparent: false,
-          })
+      olLayer = new ol.layer.Tile({
+        source: new ol.source.WMTS({
+          url:         ('mapproxy' === this.config.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.config.url : this.layers[0].getWmsUrl(),
+          layer:       this.config.cache_layer,
+          matrixSet:   this.config.cache_grid,
+          format:      'png',
+          projection:  (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers)[0].getProjection(),
+          tileGrid:    new ol.tilegrid.WMTS({
+                        resolutions,
+                        origin:    ol.extent.getTopLeft(this.config.cache_grid_extent),
+                        matrixIds: resolutions.map((_, i) => i),
+                      }),
+          style:       '',
+          transparent: false,
         })
-        : this.__makeOlLayer({
-          layerObj,
-          extraParams: this.extraParams || {},
-          tiled:       true
-        }); 
+      });
     }
 
     // XYZ LAYER
-    else if ('XYZ' === this.config.type) {
+    if (this._RASTER_LAYER && 'XYZ' === this.config.type) {
       const projection = this.config.url && this.projection ? this.projection : this.layer.getProjection();
-
       olLayer = new ol.layer.Tile({
         visible:    true,
         projection,
@@ -4261,74 +4120,131 @@ class Layer extends G3WObject {
 
     }
 
-    // WMS LAYER
-    else {
-      olLayer = this.__makeOlLayer({
-        layerObj: {
-          url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
-          id:              this.config.id,
-          projection:      this.config.projection,
-          iframe_internal: this.iframe_internal,
-          layers:          (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
-          /** @since 3.9.1 */
-          format:          this.config.format,
-        },
-        extraParams: this.extraParams,
-      }, this._method);
+    let layerObj;
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
+     */
+    if ('WMS' === this._BASE_LAYER) {
+      layerObj = {
+        url:          this.config.url,
+        projection:   this.getProjectionFromCrs(this.config.crs),
+        layers:       this.config.layers,
+        tiled:        undefined === this.config.singleTile ? false : this.config.singleTile,
+        opacity:      undefined === this.config.opacity ? 1 : this.config.opacity,
+      };
     }
 
+    if (this._RASTER_LAYER && 'WMTS' === this.config.type && !resolutions) {
+      image = 'tile';
+      layerObj = {
+        url:               ('mapproxy' === this.config.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.config.url : this.layers[0].getWmsUrl(),
+        id:                this.config.id,
+        projection:        this.config.projection,
+        iframe_internal:   this.iframe_internal,
+        layers:            (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers),
+      };
+    }
+
+    // WMS LAYER
+    if (this._RASTER_LAYER && !olLayer) {
+      layerObj = {
+        url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.config.url,
+        id:              this.config.id,
+        projection:      this.config.projection,
+        iframe_internal: this.iframe_internal,
+        layers:          (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
+        /** @since 3.9.1 */
+        format:          this.config.format,
+      };
+    }
+
+    if (layerObj) {
+      olLayer = new ('tile' === image ? ol.layer.Tile : ol.layer.Image)({
+        id:            layerObj.id,
+        name:          layerObj.name,
+        opacity:       undefined !== layerObj.opacity ? layerObj.opacity : 1.0,
+        visible:       layerObj.visible,
+        extent:        layerObj.extent,
+        maxResolution: layerObj.maxResolution,
+        source:        new ('tile' === image ? ol.source.TileWMS : ol.source.ImageWMS)({
+          ratio:      1,
+          url:        layerObj.url,
+          projection: (layerObj.projection) ? layerObj.projection.getCode() : null,
+          params:     {
+            ...Object.fromEntries(
+              Object.entries({
+                DPI:         DOTS_PER_INCH,
+                TRANSPARENT: true,
+                FORMAT:      layerObj.format,
+                LAYERS:      undefined !== layerObj.layers      ? layerObj.layers : '',
+                VERSION:     undefined !== layerObj.version     ? layerObj.version : '1.3.0',
+                SLD_VERSION: undefined !== layerObj.sld_version ? layerObj.sld_version : '1.1.0',
+              })
+              // prevents sending "FORMAT" parameter when undefined
+              .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
+          ),
+          ...(this.extraParams || {})
+          },
+          imageLoadFunction: (layerObj.iframe_internal || 'POST' === this._method)
+            ? (tile, url) => {
+              fetch('POST' === this._method ? (url || '').split('?')[0] : url, {
+                method: this._method,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body:    'POST' === this._method ? url.split('?')[1] : undefined,
+              })
+              .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
+              .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
+            }
+            : undefined,
+        })
+      });
+
+    }
+
+    // register loading event
     olLayer.getSource().on(`${image}loadstart`, () => this.emit('loadstart'));
     olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
     olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
 
-    return olLayer
+    if (!withLayers && this._mapLayer.config.attributions) {
+      olLayer.getSource().setAttributions(this._mapLayer.config.attributions);
+    }
+
+    if (!withLayers) {
+      olLayer.setVisible(this._mapLayer.state.visible);
+    }
+
+    return (this._olLayer = olLayer);
   }
 
   /**
-   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.1.0
-   * 
    * @since 4.1.0
    */
-  __makeOlLayer(opts = {}, method = 'GET') {
-    return new (opts.tiled ? ol.layer.Tile : ol.layer.Image)({
-      id:            opts.layerObj.id,
-      name:          opts.layerObj.name,
-      opacity:       undefined !== opts.layerObj.opacity ? opts.layerObj.opacity : 1.0,
-      visible:       opts.layerObj.visible,
-      extent:        opts.layerObj.extent,
-      maxResolution: opts.layerObj.maxResolution,
-      source:        new (opts.tiled ? ol.source.TileWMS : ol.source.ImageWMS)({
-        ratio:      1,
-        url:        opts.layerObj.url,
-        projection: (opts.layerObj.projection) ? opts.layerObj.projection.getCode() : null,
-        params:     {
-          ...Object.fromEntries(
-            Object.entries({
-              DPI:         DOTS_PER_INCH,
-              TRANSPARENT: true,
-              FORMAT:      opts.layerObj.format,
-              LAYERS:      undefined !== opts.layerObj.layers      ? opts.layerObj.layers : '',
-              VERSION:     undefined !== opts.layerObj.version     ? opts.layerObj.version : '1.3.0',
-              SLD_VERSION: undefined !== opts.layerObj.sld_version ? opts.layerObj.sld_version : '1.1.0',
-            })
-            // prevents sending "FORMAT" parameter when undefined
-            .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
-        ),
-        ...(opts.extraParams || {})
-        },
-        imageLoadFunction: (opts.layerObj.iframe_internal || 'POST' === method)
-          ? (tile, url) => {
-            fetch('POST' === method ? (url || '').split('?')[0] : url, {
-              method,
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-              body:    'POST' === method ? url.split('?')[1] : undefined,
-            })
-            .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
-            .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
-          }
-          : undefined,
-      })
-    });
+   getLayerConfigs() {
+    if (this._RASTER_LAYER) {
+      return this.layers;
+    }
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  addLayer(layer) {
+    if (this._RASTER_LAYER) {
+      if (!this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
+      if (!this.layers.find(l => layer === l))    { this.layers.push(layer); }
+      if ('XYZ' === this.config.type)             { this.layer = layer; }
+    }
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  removeLayer(layer) {
+    if (this._RASTER_LAYER) {
+      this.layers = this.layers.filter(l => layer !== l);
+    }
   }
 
   /**
