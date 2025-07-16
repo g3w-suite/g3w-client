@@ -2892,8 +2892,14 @@ export class Layer extends G3WObject {
    * @since 4.0.0
    */
   setVisible(bool) {
-    if (Layer.LayerTypes.IMAGE === this.type && this._mapLayer) {
+    if (this.getMapLayer()) {
+      this.getMapLayer().setVisible(bool)
+    }
+    if (this.getOLLayer()) {
       this.getOLLayer().setVisible(bool)
+    }
+    if (!this.state) {
+      return bool;
     }
     const visible  = this.state.visible;
     this.state.visible = bool && this.isChecked();
@@ -2978,7 +2984,6 @@ export class Layer extends G3WObject {
    * @since 4.0.0
    */
   setDisabled(resolution, mapUnits = 'm') {
-
     if ('boolean' === typeof resolution) {
       return this.state.disabled = resolution;
     }
