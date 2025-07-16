@@ -33,7 +33,7 @@ import { getCatalogLayers }                 from 'utils/getCatalogLayers';
 import { waitFor }                          from 'utils/waitFor';
 import { debounce }                         from 'utils/debounce';
 
-import { Layer }                            from 'map/layers/layer';
+import { Layer }                            from 'g3w-layer';
 
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)

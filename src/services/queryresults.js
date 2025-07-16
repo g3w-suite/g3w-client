@@ -23,7 +23,7 @@ import { throttle }                             from 'utils/throttle';
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
-import { Layer }                                from 'map/layers/layer';
+import { Layer }                                from 'g3w-layer';
 import { gettext as _ }                         from 'g3w-i18n';
 
 function _setRelationField(node) {

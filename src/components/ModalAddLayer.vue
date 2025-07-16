@@ -372,7 +372,7 @@ import Projections         from 'store/projections';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
-import { Layer }           from 'map/layers/layer';
+import { Layer }           from 'g3w-layer';
 
 Object
   .entries({

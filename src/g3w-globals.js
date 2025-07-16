@@ -69,7 +69,7 @@ import Component                                   from 'g3w-component';
 import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
 import { LayersStore }                             from 'map/layers/layersstore';
-import { Layer }                                   from 'map/layers/layer';
+import { Layer }                                   from 'g3w-layer';
 import { Feature }                                 from 'map/layers/feature';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';

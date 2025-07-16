@@ -5,7 +5,7 @@ import Projections                 from 'store/projections';
 import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';
 
-import { Layer }                   from 'map/layers/layer';
+import { Layer }                   from 'g3w-layer';
 import { LayersStore }             from 'map/layers/layersstore';
 
 Object

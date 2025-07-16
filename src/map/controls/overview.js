@@ -5,7 +5,7 @@
 
 import GUI             from 'services/gui';
 import { getProject }  from 'utils/getProject';
-import { Layer }       from 'map/layers/layer';
+import { Layer }       from 'g3w-layer';
 
 // wait for map ready
 GUI.once('ready', async () => {

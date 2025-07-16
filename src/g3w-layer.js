@@ -1,12 +1,12 @@
 /**
  * @file
  * 
- * ORIGINAL SOURCE: src/app/core/layers/layer.js@v3.10.2
+ * ORIGINAL SOURCE: src/map/layers/layer.js@v4.0.0
  * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
  * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
  * ORIGINAL SOURCE: src/map/layers/tablelayer.js@v4.0.0
  * 
- * @since 3.11.0
+ * @since 4.1.0
  */
 
 import {
@@ -523,7 +523,7 @@ const DOWNLOAD_FORMATS = {
 /**
  * Base class for all layers
  */
-class Layer extends G3WObject {
+export class Layer extends G3WObject {
   
   /**
    * @param config.id
@@ -4288,5 +4288,3 @@ Layer.CAPABILITIES = {
   FILTERABLE: 2,
   EDITABLE:   4,
 };
-
-export { Layer };
