@@ -4,6 +4,7 @@ import ApplicationState            from 'store/application';
 import Projections                 from 'store/projections';
 import { normalizeEpsg }           from 'utils/normalizeEpsg';
 import { XHR }                     from 'utils/XHR';
+import { getUniqueDomId }          from 'utils/getUniqueDomId';
 
 import { Layer }                   from 'g3w-layer';
 import { LayersStore }             from 'map/layers/layersstore';
@@ -113,6 +114,8 @@ export async function getProject(gid, options = {}) {
       })),
   });
 
+  const _projection = Projections.get(crsToCrsObject(PROJECTS[gid].crs));
+
   const project = Object.assign(new G3WObject, {
     setters: {
       setBaseLayer(id) {
@@ -130,8 +133,15 @@ export async function getProject(gid, options = {}) {
       featurecount:        `${PROJECTS[gid].vectorurl}featurecount/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`,
       editorformstructure: `${PROJECTS[gid].vectorurl}editorformstructure/${PROJECTS[gid].type}/${PROJECTS[gid].id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
     },
-    _projection:            Projections.get(crsToCrsObject(PROJECTS[gid].crs)),
-    _layersStore:           new LayersStore(),
+    _projection:            _projection,
+    _layersStore:           new LayersStore({
+      id:         PROJECTS[gid].gid,
+      projection: _projection,
+      extent:     PROJECTS[gid].extent,
+      initextent: PROJECTS[gid].initextent,
+      wmsUrl:     PROJECTS[gid].WMSUrl,
+      catalog:    window.initConfig.overviewproject !== PROJECTS[gid].gid,
+    }),
     getQueryPointTolerance: () => project.state.query_point_tolerance,
     getRelations:           () => project.state.relations,
     getRelationById:        id => project.state.relations.find(r => id === r.id),
@@ -181,16 +191,6 @@ export async function getProject(gid, options = {}) {
   };
 
   traverse(project.state.layerstree);
-
-  // Build layersstore 
-  project._layersStore.setOptions({
-    id:         project.state.gid,
-    projection: project._projection,
-    extent:     project.state.extent,
-    initextent: project.state.initextent,
-    wmsUrl:     project.state.WMSUrl,
-    catalog:    window.initConfig.overviewproject !== project.state.gid,
-  });
 
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
@@ -276,11 +276,132 @@ export async function getProject(gid, options = {}) {
     return [];
   }));
   
-  // create layerstree from layerstore
-  project._layersStore.createLayersTree(project.state.name, {
-    layerstree: project.state.layerstree,
-    expanded:   'not_collapsed' === project.state.toc_layers_init_status // config to show layerstrees toc expanded or not
-  });
+  // create layerstree
+  let layerstree = [];
+  if (!project.state.layerstree) {
+    // retrieve all project layers that have geometry
+    layerstree = project._layersStore.getLayers({ GEOLAYER: true }).map(l => ({
+      id:      l.getId(),
+      name:    l.getName(),
+      title:   l.getTitle(),
+      visible: l.isVisible() || false
+    }));
+  } else {
+    const _traverse = (nodes, layerstree, tocLayersId) => {
+      nodes.forEach(n => {
+        let lightlayer = null;
+        // case TOC has layer ID
+        if (null !== n.id && undefined !== n.id && tocLayersId.find(id => n.id === id)) {
+          lightlayer = ({ ...lightlayer, ...n });
+        }
+        // case group
+        if (null !== n.nodes && undefined !== n.nodes) {
+          lightlayer = ({
+            ...lightlayer,
+            name:                 n.name, /** @since 3.10.0 **/
+            title:                n.name,
+            groupId:              getUniqueDomId(),
+            root:                 false,
+            nodes:                [],
+            checked:              n.checked,
+            mutually_exclusive:   n["mutually-exclusive"],
+            'mutually-exclusive': n["mutually-exclusive"], /** @since 3.10.0 */
+          });
+          _traverse(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
+        }
+        // check if lightlayer is not null
+        if (null !== lightlayer) {
+          lightlayer.expanded = n.expanded; // expand legend item (TOC)
+          layerstree.push(lightlayer);
+        }
+      });
+    };
+    // compare all layer ids from server config with all layer nodes on layerstree server property
+    _traverse(
+      project.state.layerstree,
+      layerstree,
+      project._layersStore.getLayers({ BASELAYER: false }).map(l => l.getId())
+    );
+  }
+
+  // setLayerstree
+  if (layerstree.length) {
+    const rootGroup = {
+      title:       project.state.name || project.state.gid,
+      root:        true,
+      parentGroup: null,
+      expanded:    'not_collapsed' === project.state.toc_layers_init_status,
+      disabled:    false,
+      checked:     true,
+      bbox:        {
+        minx: project.state.initextent.at(0),
+        miny: project.state.initextent.at(1),
+        maxx: project.state.initextent.at(2),
+        maxy: project.state.initextent.at(3)
+      },
+      nodes:       layerstree,
+      legendurls:  [],
+    };
+    const _traverseBBox =(group, { bbox, epsg } = {}) => {
+      const project_epsg = project._projection.getCode();
+
+      // translate bbox epsg to project epsg code (when they differ)
+      if ((epsg !== project_epsg)) {
+        const [minx, miny, maxx, maxy] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
+        bbox = { minx, miny, maxx, maxy }
+      }
+      // get current bbox or compute bbox from an ol extent
+      if (undefined === group.bbox) {
+        group.bbox = bbox
+      } else {
+        group.bbox = ol.extent
+          .extend(
+            [ group.bbox.minx, group.bbox.miny, group.bbox.maxx, group.bbox.maxy ],
+            [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
+          )
+          .reduce(
+            (bbox, extentCoordinate, index) => {
+              switch(index){
+                case 0: bbox.minx = extentCoordinate; break;
+                case 1: bbox.miny = extentCoordinate; break;
+                case 2: bbox.maxx = extentCoordinate; break;
+                case 3: bbox.maxy = extentCoordinate; break;
+              }
+              return bbox;
+            },
+            { minxx:null, miny: null, maxx: null, maxy: null }
+          );
+      }
+      // Recursion
+      if (group.parentGroup && false === group.parentGroup.root) {
+        _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
+      }
+    };
+    const _traverse = (nodes, parentGroup) => {
+      nodes.forEach((node, index) => {
+        // substitute node layer with layer state
+        if (undefined !== node.id) {
+          nodes[index] = project._layersStore.getLayerById(node.id).getState();
+        }
+        // case of layer substitute node with layer state
+        if (undefined !== node.id) {
+          nodes[index] = project._layersStore.getLayerById(node.id).getState();
+          // pass bbox and epsg of layer
+          if (nodes[index].bbox) {
+            _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
+          }
+        }
+        if (Array.isArray(node.nodes)) {
+          node.nodes.forEach(n => n.parentGroup = parentGroup);
+          _traverse(node.nodes, node);
+        }
+        //SET PARENT GROUP
+        nodes[index].parentGroup = parentGroup;
+      });
+    }
+    _traverse(layerstree, rootGroup);
+    project._layersStore.state.layerstree.splice(0, 0, rootGroup); // at the end
+  }
 
   /** @deprecated since 3.10.0. Will be removed in v.4.x. */
   (project.state.search || []).forEach(s => s.search_endpoint = 'api');
