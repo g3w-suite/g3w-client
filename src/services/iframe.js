@@ -7,7 +7,6 @@ import G3WObject                      from 'g3w-object';
 import GUI                            from 'services/gui';
 import DataRouterService              from 'services/data';
 import ApplicationState               from 'store/application'
-import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { normalizeEpsg }              from 'utils/normalizeEpsg';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
@@ -273,10 +272,10 @@ class BaseIframeService extends G3WObject {
     }
 
     // wait until "editing" plugin is loaded
-    await waitFor(() => PluginsRegistry.getPlugin('editing'));
+    await waitFor(() => GUI.getPlugin('editing'));
 
     // BACKOMP v3.x
-    this.dependencyApi                     = PluginsRegistry.getPlugin('editing');
+    this.dependencyApi                     = GUI.getPlugin('editing');
     this.dependencyApi.getEditableLayersId = this.dependencyApi.getEditableLayersId || (() => Object.keys(this.dependencyApi.getEditableLayers()));
     this.dependencyApi.hidePanel           = this.dependencyApi.hidePanel           || this.dependencyApi.hideEditingPanel;
     this.dependencyApi.resetDefault        = this.dependencyApi.resetDefault        || this.dependencyApi.resetAPIDefault;

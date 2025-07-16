@@ -11,7 +11,6 @@
 
 import GUI                            from 'services/gui';
 import ApplicationState               from 'store/application';
-import PluginsRegistry                from 'store/plugins';
 import Projections                    from 'store/projections';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { flattenObject }              from 'utils/flattenObject';
@@ -537,7 +536,7 @@ class GeocodingControl extends ol.control.Control {
    * Create new feature on selected Point/Multipoint layer
    */
   async #editItem(layerId, feature) {
-    const editing = PluginsRegistry.getPlugin('editing');
+    const editing = GUI.getPlugin('editing');
 
     // skip on missing plugin dependency
     if (!editing) {

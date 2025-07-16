@@ -65,6 +65,9 @@ const STATE = Vue.observable({
    */
   plugins: [],
 
+  /** @since 4.1.0 store g3w-plugin instances */
+  plugins_registry: {},
+
   /** @since 3.11.0 - plugin configs filtered by gid */
   pluginsConfigs: {},
 
@@ -245,8 +248,8 @@ const STATE = Vue.observable({
   /** @since 3.11.0 */
   catalog: {},
 
-  /** @since 4.1.0 */
-  layers:             {},
+  /** @since 4.1.0 store layersstore instances */
+  layers: {},
 
   /** @since 3.11.0 */
   highlightlayers: false,

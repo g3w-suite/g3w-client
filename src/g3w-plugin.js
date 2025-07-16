@@ -6,7 +6,6 @@
 import G3WObject          from 'g3w-object';
 import Component          from 'g3w-component';
 import ApplicationState   from 'store/application';
-import PluginsRegistry    from 'store/plugins';
 import GUI                from 'services/gui';
 import { toRawType }      from 'utils/toRawType';
 import { cloneDeep }      from 'utils/cloneDeep';
@@ -248,7 +247,7 @@ export class Plugin extends G3WObject {
   registerPlugin(gid) {
     const iscompatible  = this.isCurrentProjectCompatible(gid);
     if (iscompatible) {
-      PluginsRegistry.registerPlugin(this);
+      GUI.registerPlugin(this);
     } else {
       ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
       clearTimeout(this._timeout);
@@ -287,13 +286,13 @@ export class Plugin extends G3WObject {
     // is there a plugin
     if (ApplicationState.pluginsConfigs[pluginName]) {
       return new Promise((resolve) => {
-        const plugin = PluginsRegistry.getPlugin(pluginName);
+        const plugin = GUI.getPlugin(pluginName);
         /**
          * @TODO refactor weird shortcircuiting logic
          */
         plugin
         && plugin.isReady().then(() => resolve(plugin.getApi()))
-        || PluginsRegistry.onafter('registerPlugin', plugin => {
+        || GUI.onafter('registerPlugin', plugin => {
           (pluginName === plugin.name) && plugin.isReady().then(() => resolve(plugin.getApi()))
         });
       })

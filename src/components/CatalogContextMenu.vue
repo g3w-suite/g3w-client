@@ -620,7 +620,7 @@
        * @since 3.11.0
        */
        canEdit(layer) {
-        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing.visible: g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing');
+        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing.visible: GUI.getPlugin('editing');
       },
 
       /**
@@ -628,7 +628,7 @@
        */
        startEditing(layer) {
         this.closeMenu();
-        const editing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('editing');
+        const editing = GUI.getPlugin('editing');
         editing.showPanel(layer ? { toolboxes: [layer.id] } : undefined);
         if (layer) {
           editing.startEditing(layer.id);

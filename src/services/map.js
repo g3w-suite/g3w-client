@@ -7,7 +7,6 @@ import localforage                          from 'localforage';
 import G3WObject                            from 'g3w-object';
 
 import ApplicationState                     from 'store/application';
-import PluginsRegistry                      from 'store/plugins';
 import Projections                          from "store/projections";
 
 import DataRouterService                    from 'services/data';
@@ -929,7 +928,7 @@ class MapService extends G3WObject {
 
     // set mouse cursor (dragging)
     (new Vue()).$watch(
-      () => [this.getCurrentToggledMapControl(), (PluginsRegistry.getPlugin('editing') && PluginsRegistry.getPlugin('editing').getActiveTool())],
+      () => [this.getCurrentToggledMapControl(), (GUI.getPlugin('editing') && GUI.getPlugin('editing').getActiveTool())],
       ([control, activeTool]) => {
         currentControl = control
         can_drag = !control && !activeTool;
@@ -1020,7 +1019,7 @@ class MapService extends G3WObject {
     this.setUpMapOlEvents();
 
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    Object.values(ApplicationState.layers).getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
+    Object.values(ApplicationState.layers).forEach(this._setUpEventsKeysToLayersStore.bind(this));
     Vue.watch(
       () => ApplicationState.layers,
       (newVal, oldVal) => {

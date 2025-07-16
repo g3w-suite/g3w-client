@@ -50,7 +50,6 @@ import G3wFormInputs                               from 'components/InputG3WForm
  * CORE modules
  */
 import DataRouterService                           from 'services/data';
-import PluginsRegistry                             from 'store/plugins';
 import TaskService                                 from 'services/tasks';
 import GUI                                         from 'services/gui';
 import { MeasureInteraction }                      from 'map/controls/measure';
@@ -219,7 +218,6 @@ const g3wsdk = {
     },
     plugin: {
       Plugin:          babelify(Plugin),
-      PluginsRegistry: babelify(PluginsRegistry),
       PluginService:   babelify(PluginService)
     },
     input: {
@@ -358,6 +356,17 @@ g3wsdk.core.i18n.addI18nPlugin  = ({ name, config }) =>  {
     _.register(lang, { plugins: { [name]: config[lang] } });
   }
 };
+
+g3wsdk.core.plugin.PluginsRegistry = babelify(Object.assign(new G3WObject, { setters: {
+  registerPlugin(plugin) {
+    console.warn('[G3W-CLIENT] PluginsRegistry.registerPlugin is deprecated, use GUI.registerPlugin instead');
+    GUI.registerPlugin(plugin);
+  } },
+  getPlugin(name) {
+    console.warn('[G3W-CLIENT] PluginsRegistry.getPlugin is deprecated, use GUI.getPlugin instead');
+    return GUI.getPlugin(name);
+  }
+}));
 
 /**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances

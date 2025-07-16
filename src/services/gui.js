@@ -32,6 +32,7 @@ export default new (class GUI extends G3WObject {
       'setContent',
       'getPermalink',
       'getPrintParams',
+      'registerPlugin'
     ];
 
     this.isready           = false;
@@ -255,6 +256,22 @@ export default new (class GUI extends G3WObject {
   getService(componentId) {
     const component = this.getComponent(componentId);
     return component && component.getService();
+  }
+
+  /**
+   * @returns plugin instance
+   * 
+   * @since 4.1.0
+   */
+  getPlugin(name) {
+    return ApplicationState.plugins_registry[name];
+  }
+
+  /**
+   * Store plugin instance into registry
+   */
+  registerPlugin(plugin) {
+    ApplicationState.plugins_registry[plugin.name] = ApplicationState.plugins_registry[plugin.name] || plugin;
   }
 
   /* end spinner */
