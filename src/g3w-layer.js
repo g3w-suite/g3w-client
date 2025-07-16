@@ -3241,28 +3241,6 @@ export class Layer extends G3WObject {
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
    * 
-   * @returns {boolean}
-   * 
-   * @since 4.1.0
-   */
-  isReady() {
-    return this.state.editing.ready;
-  };
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * 
-   * @param bool
-   * 
-   * @since 4.1.0
-   */
-  setReady(bool = false) {
-    this.state.editing.ready = bool;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * 
    * @since 4.1.0
    */
   getEditor() {
@@ -3304,13 +3282,6 @@ export class Layer extends G3WObject {
    */
   resetEditingSource(features = []) {
     this.getMapLayer().resetSource(features)
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  getEditingGeometryType() {
-    return this.config.editing.geometrytype;
   }
 
   /**
@@ -3375,17 +3346,14 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   getWFSLayerName() {
-    if (Layer.LayerTypes.IMAGE !== this.type) {
-      return;
-    }
-    return (this.config.infolayer || this.getName()).replace(/\s/g, '_').replaceAll( ':', '-' );
+    return Layer.LayerTypes.IMAGE === this.type && (this.config.infolayer || this.getName()).replace(/\s/g, '_').replaceAll( ':', '-' );
   }
 
   /**
    * @since 4.1.0
    */
   useProxy() {
-    return Layer.LayerTypes.IMAGE === this.type && this.isExternalWMS() && this.config.crs.epsg === this.config.map_crs && this.getInfoFormats();
+    return this.isExternalWMS() && this.config.crs.epsg === this.config.map_crs && this.getInfoFormats();
   }
 
   /**
@@ -3395,9 +3363,13 @@ export class Layer extends G3WObject {
     if (Layer.LayerTypes.IMAGE !== this.type) {
       return;
     }
-    return this.useProxy()
-      ? this.getSource().layers
-      : (this.config.wms_use_layer_ids ? this.getId() : this.getName());
+    if (this.useProxy()) {
+      return this.getSource().layers;
+    }
+    if (this.config.wms_use_layer_ids) {
+      return this.getId();
+    }
+    return this.getName();
   }
 
   /**
@@ -3407,7 +3379,10 @@ export class Layer extends G3WObject {
     if (Layer.LayerTypes.IMAGE !== this.type) {
       return;
     }
-    return this.config.wms_use_layer_ids ? this.getId() : this.getName();
+    if (this.config.wms_use_layer_ids) {
+      return this.getId();
+    }
+    return this.getName();
   }
 
   /**
@@ -3421,10 +3396,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   getWfsUrl() {
-    if (Layer.LayerTypes.IMAGE !== this.type) {
-      return;
-    }
-    return ApplicationState.project.state.metadata.wms_url || this.config.wmsUrl;
+    return Layer.LayerTypes.IMAGE === this.type && (ApplicationState.project.state.metadata.wms_url || this.config.wmsUrl);
   }
 
   /**
@@ -3592,22 +3564,19 @@ export class Layer extends G3WObject {
       })
 
       this._olLayer.setVisible(true);
-      //check if a layer source has with updateParams method
-      /** @TODO Check a better way to do this */
-      if (this._olLayer.getSource().updateParams) {
-        this._olLayer.getSource().updateParams({
-          ...params,
-          LEGEND_ON,
-          LEGEND_OFF,
-          filtertoken: ApplicationState.tokens.filtertoken,
-          LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
-          STYLES:      STYLES.join(','),
-          /** @since 3.8 */
-          OPACITIES:   OPACITIES.join(','),
-        });
-      }
+      this._olLayer.getSource()?.updateParams?.({
+        ...params,
+        LEGEND_ON,
+        LEGEND_OFF,
+        filtertoken: ApplicationState.tokens.filtertoken,
+        LAYERS:      `${layers[0].isArcgisMapserver() ? 'show:' : ''}${layers.map(l => l.getWMSLayerName()).join(',')}`,
+        STYLES:      STYLES.join(','),
+        /** @since 3.8 */
+        OPACITIES:   OPACITIES.join(','),
+      });
       return;
     }
+    
     if (Layer.LayerTypes.IMAGE === this.type && this.isWMS()) {
       this._mapLayer.update(mapState, extraParams)
     }
