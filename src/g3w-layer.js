@@ -2317,15 +2317,6 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * Set editing layer
-   *
-   * @param editingLayer
-   */
-  setEditingLayer(editingLayer) {
-    this._editingLayer = editingLayer;
-  }
-
-  /**
    * @returns {string|string[]|boolean|string|*} whether is hidden
    */
   isHidden() {
