@@ -2428,11 +2428,10 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @param { Object } param
-   * @param param.map check if request from map point of view or just a capabilities info layer
+   * @returns { boolean } whether layer is queryable
    */
   isQueryable() {
-    return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
+    return !!(this.config?.capabilities & 1);
   }
 
   /**
@@ -2455,18 +2454,19 @@ export class Layer extends G3WObject {
 
   /**
    * @param conditions plain object with configuration layer attribute and value
+   * 
+   * @returns { boolean } whether layer is filterable
    */
   isFilterable(conditions=null) {
-    let isFiltrable = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
+    let isFiltrable = !!(this.config?.capabilities & 2);
     if (isFiltrable && conditions) {
-      const conditionalFiltrable = Object.keys(conditions).reduce((bool, attribute) => {
+      isFiltrable = Object.keys(conditions).reduce((bool, attribute) => {
         const layer_config_value = this.get(attribute);
         const condition_attribute_values = conditions[attribute];
         return bool && Array.isArray(layer_config_value) ?
           layer_config_value.includes(condition_attribute_values) :
           condition_attribute_values === layer_config_value;
       }, true);
-      isFiltrable = isFiltrable && conditionalFiltrable;
     }
     return isFiltrable;
   }
@@ -2479,10 +2479,10 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @returns { boolean } whether is editable
+   * @returns { boolean } whether layer is editable
    */
   isEditable() {
-    return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
+    return !!(this.config?.capabilities & 4);
   }
 
   /**
@@ -4188,7 +4188,7 @@ export class Layer extends G3WObject {
   /**
    * @since 4.1.0
    */
-   getLayerConfigs() {
+  getLayerConfigs() {
     if (this._RASTER_LAYER) {
       return this.layers;
     }
@@ -4198,11 +4198,9 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   addLayer(layer) {
-    if (this._RASTER_LAYER) {
-      if (!this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
-      if (!this.layers.find(l => layer === l))    { this.layers.push(layer); }
-      if ('XYZ' === this.config.type)             { this.layer = layer; }
-    }
+    if (this._RASTER_LAYER && !this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
+    if (this._RASTER_LAYER && !this.layers.find(l => layer === l))    { this.layers.push(layer); }
+    if (this._RASTER_LAYER && 'XYZ' === this.config.type)             { this.layer = layer; }
   }
 
   /**
@@ -4245,13 +4243,4 @@ Layer.LayerTypes = {
   TABLE:  "table",
   IMAGE:  "image",
   VECTOR: "vector"
-};
-
-/**
- * Layer Capabilities
- */
-Layer.CAPABILITIES = {
-  QUERYABLE:  1,
-  FILTERABLE: 2,
-  EDITABLE:   4,
 };
