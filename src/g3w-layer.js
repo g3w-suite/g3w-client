@@ -1114,9 +1114,9 @@ export class Layer extends G3WObject {
    *****************************************************************************************/
 
   /** 
-   * @returns { Promise }
+   * @since 4.1.0
    */
-  async getDownloadFilefromDownloadDataType(type, { data = {} }) {
+  async downloadAsFile(type, { data = {} }) {
     data.filtertoken = this.getFilterToken();
 
     let url, response;
@@ -1149,12 +1149,12 @@ export class Layer extends G3WObject {
 
   }
 
-  getGeoTIFF({ data = {} } = {}) { return this.getDownloadFilefromDownloadDataType('geotiff',   { data }); }
-  getXls({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('xls',       { data }); }
-  getShp({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('shapefile', { data }); }
-  getGpx({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('gpx',       { data }); }
-  getGpkg({ data = {} } = {})    { return this.getDownloadFilefromDownloadDataType('gpkg',      { data }); }
-  getCsv({ data = {} } = {})     { return this.getDownloadFilefromDownloadDataType('csv',       { data }); }
+  getGeoTIFF({ data = {} } = {}) { return this.downloadAsFile('geotiff',   { data }); }
+  getXls({ data = {} } = {})     { return this.downloadAsFile('xls',       { data }); }
+  getShp({ data = {} } = {})     { return this.downloadAsFile('shapefile', { data }); }
+  getGpx({ data = {} } = {})     { return this.downloadAsFile('gpx',       { data }); }
+  getGpkg({ data = {} } = {})    { return this.downloadAsFile('gpkg',      { data }); }
+  getCsv({ data = {} } = {})     { return this.downloadAsFile('csv',       { data }); }
 
   /**
    * @returns { string[] } download formats
