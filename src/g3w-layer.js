@@ -3249,7 +3249,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   isStarted() {
-    return this._editor.isStarted()
+    return this._editor?.isStarted()
   }
 
   /**
