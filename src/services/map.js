@@ -43,19 +43,8 @@ const MAP = {
   controls:           {},
   offlineids:         [],
   selectedLayer:      null,
-  stores:             {},
   externalLayers:     [],
   animatingHighlight: false,
-  layers:             Object.assign(new G3WObject({ setters: {
-    addLayersStore:          store  => { MAP.stores[store.getId()] = store; },
-    removeLayersStore:       store  => { if (store) { delete MAP.layers.stores[store.getId()]; } },
-  }}), {
-    getLayerById:            id     => Object.values(MAP.stores).map(s => s.getLayerById(id)).find(l => l),
-    getLayers:               filter => Object.values(MAP.stores).flatMap(s => s.getLayers(filter)),
-    getQuerableLayersStores: ()     => Object.values(MAP.stores).filter(s => s.isQueryable()),
-    getLayersStore:          id     => MAP.stores[id],
-    getLayersStores:         ()     => Object.values(MAP.stores),
-  }),
 };
 
 class MapService extends G3WObject {
@@ -281,7 +270,7 @@ class MapService extends G3WObject {
     this.removeListener('extraParamsSet', this.onExtraParamsSet);
     this._keyEvents.ol.forEach(key => ol.Observable.unByKey(key));
     this._keyEvents.ol.splice(0);
-    MAP.layers.getLayersStores().forEach(this._removeEventsKeysToLayersStore.bind(this))
+    Object.values(ApplicationState.layers).forEach(this._removeEventsKeysToLayersStore.bind(this))
   }
 
   /**
@@ -770,7 +759,7 @@ class MapService extends G3WObject {
   }
 
   getProjectLayer(id) {
-    return MAP.layers.getLayerById(id);
+    return Object.values(ApplicationState.layers).map(s => s.getLayerById(id)).find(l => l);
   }
 
   /**
@@ -1031,9 +1020,16 @@ class MapService extends G3WObject {
     this.setUpMapOlEvents();
 
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MAP.layers.getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
-    MAP.layers.onafter('addLayersStore',    this._setUpEventsKeysToLayersStore.bind(this));
-    MAP.layers.onafter('removeLayersStore', this._removeEventsKeysToLayersStore.bind(this));
+    Object.values(ApplicationState.layers).getLayersStores().forEach(this._setUpEventsKeysToLayersStore.bind(this));
+    Vue.watch(
+      () => ApplicationState.layers,
+      (newVal, oldVal) => {
+        const added   = Object.keys(newVal).filter(key => !(key in oldVal));
+        const removed = Object.keys(oldVal).filter(key => !(key in newVal));
+        added.forEach(key => this._setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
+        removed.forEach(key => this._removeEventsKeysToLayersStore(ApplicationState.layers[key]));
+      }
+    );
 
     this.emit('viewerset');
     await this.setupControls();
@@ -2168,11 +2164,4 @@ ApplicationService.onbefore('offline', () => MAP.offlineids.forEach(c => { c.ena
 /** @since 3.8.0 */
 ApplicationService.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
 
-export const MapLayersStoresRegistry = MAP.layers;
-
-export default {
-
-  MapService,
-
-  MapLayersStoresRegistry,
-};
+export default MapService;

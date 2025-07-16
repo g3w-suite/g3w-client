@@ -87,7 +87,6 @@ import { cloneDeep }                               from 'utils/cloneDeep';
 
 import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
-import { MapLayersStoresRegistry }                 from 'services/map';
 import { SearchPanel }                             from 'components/g3w-search';
 import { FormComponent, FormService }              from 'components/g3w-form';
 
@@ -195,7 +194,10 @@ const g3wsdk = {
       })
     },
     map: {
-      MapLayersStoreRegistry: MapLayersStoresRegistry
+      MapLayersStoreRegistry: Object.assign(new G3WObject({ setters: {
+        addLayersStore:          store  => { ApplicationState.layers._stores[store.getId()] = store; },
+        removeLayersStore:       store  => { if (store) { delete ApplicationState.layers._stores[store.getId()]; } },
+      }})),
     },
     catalog: {
       CatalogLayersStoresRegistry: {

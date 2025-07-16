@@ -673,8 +673,7 @@ function _hasVisible(control) {
  * @TODO get rid of `s.getLayers` call
  */
 function _getAvailableLayers(type) {
-  const { MapLayersStoresRegistry } = require('services/map').default;
-  const queryable = MapLayersStoresRegistry.getQuerableLayersStores();
+  const queryable = Object.values(ApplicationState.layers).filter(s => s.isQueryable());
   return [...new Set([
 
     // QUERYABLE

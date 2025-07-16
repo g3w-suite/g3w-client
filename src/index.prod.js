@@ -23,7 +23,6 @@ import Component                   from 'g3w-component';
 // services
 import ApplicationService          from 'services/application';
 import GUI                         from 'services/gui';
-import { MapLayersStoresRegistry } from 'services/map';
 import IframePluginService         from 'services/iframe';
 
 // components
@@ -61,7 +60,6 @@ Object
     Component,
     ApplicationService,
     GUI,
-    MapLayersStoresRegistry,
     IframePluginService,
     App,
     BarLoader,
@@ -303,9 +301,9 @@ $.ajaxSetup({
 
   // set in first position (map and catalog)
   const store = project.getLayersStore();
-  ApplicationState.catalog[store.getId()] = store;
 
-  MapLayersStoresRegistry.addLayersStore(store);
+  ApplicationState.catalog[store.getId()] = store;
+  ApplicationState.layers[store.getId()] = store;
 
   // BACKCOMP v3.x
   g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
@@ -581,7 +579,7 @@ $.ajaxSetup({
 
   GUI.setComponent(new Component({
     id:                 'map',
-    service:            new (require('services/map').default).MapService(),
+    service:            new (require('services/map').default),
     vueComponentObject: require('components/Map.vue').default,
   }));
 
