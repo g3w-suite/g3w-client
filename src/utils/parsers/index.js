@@ -87,7 +87,7 @@ export const ResponseParser = {
         return function({ data, layer } = {}) {
           try {
             return (
-              new ol.format.WMSGetFeatureInfo({ layers: layer.getQueryLayerOrigName() })
+              new ol.format.WMSGetFeatureInfo({ layers: layer.config?.infolayer || layer.config.origname })
               ).readFeatures(
                 // extract gml from multiple (Tuscany region)
                 '--' === data.substr(0, 2)

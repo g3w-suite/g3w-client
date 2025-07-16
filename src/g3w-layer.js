@@ -1906,14 +1906,6 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @deprecated since 3.10.0. Will be removed in v.4.x.
-   */
-  getSearchEndPoint() {
-    console.warn('getSearchEndPoint is deprecated')
-    return 'api';
-  }
-
-  /**
    * @TODO Add description
    *
    * @param pageLength
@@ -2378,6 +2370,8 @@ export class Layer extends G3WObject {
   }
 
   /**
+   * Used by the following plugins "geonotes"
+   * 
    * @returns {*} origin name
    */
   getOrigName() {
@@ -2546,15 +2540,6 @@ export class Layer extends G3WObject {
   /**
    * @TODO Description
    *
-   * @returns {*}
-   */
-  getQueryLayerOrigName() {
-    return this.config?.infolayer || this.config.origname;
-  }
-
-  /**
-   * @TODO Description
-   *
    * @param ogcService
    *
    * @returns { default.watch.infoformat | * | string }
@@ -2612,23 +2597,6 @@ export class Layer extends G3WObject {
   /**
    * @TODO Description
    *
-   * @param attribute
-   * @param type
-   * @param options
-   */
-  changeAttribute(attribute, type, options) {
-    for (const field of this.config.fields) {
-      if (field.name === attribute) {
-        field.type    = type;
-        field.options = options;
-        break;
-      }
-    }
-  }
-
-  /**
-   * @TODO Description
-   *
    * @param name
    *
    * @returns {*}
@@ -2646,15 +2614,6 @@ export class Layer extends G3WObject {
    */
   getProvider(type) {
     return this.providers[type];
-  }
-
-  /**
-   * Return all providers
-   *
-   * @returns {*|{filter: null, search: null, data: null, query: null, filtertoken: null}}
-   */
-  getProviders() {
-    return this.providers;
   }
 
   /**
@@ -2690,24 +2649,10 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @TODO Description
-   *
-   * @param { Object } field
-   * @param field.name
-   * @param field.type
-   * @param field.options
-   * @param field.reset
-   *
-   * @returns {*}
+   * Used by the following plugins: "law"
    */
-  changeFieldType({
-    name,
-    type,
-    options = {},
-    reset   = false,
-  } = {}) {
+  changeConfigFieldType({ name, type, options = {}, reset = false, }) {
     const field = this.getFields().find(f => name === f.name);
-    
     if (field && reset) {
       field.type = field._type;
       delete field._type;
@@ -2721,27 +2666,6 @@ export class Layer extends G3WObject {
       field[`${type}options`] = options;
       return field._type;
     }
-
-  }
-
-  /**
-   * @TODO Description
-   *
-   * @param { Object } config
-   * @param config.name
-   * @param config.type
-   * @param config.options
-   * @param config.reset
-   *
-   * @returns {*}
-   */
-  changeConfigFieldType({
-    name,
-    type,
-    options = {},
-    reset   = false,
-  }) {
-    return this.changeFieldType({ name, type, options, reset });
   }
 
   /**
