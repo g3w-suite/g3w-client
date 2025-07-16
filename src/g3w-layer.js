@@ -2306,24 +2306,25 @@ export class Layer extends G3WObject {
    * @returns {*} layer source (ex. ogr, spatialite, etc..)
    */
   getSource() {
-    if(this._RASTER_LAYER) {
-      return this.getOLLayer().getSource();
+    if (this._RASTER_LAYER || (Layer.LayerTypes.IMAGE === this.type && this._mapLayer)) {
+      return this.getMapLayer().getOLLayer().getSource();
     }
 
-    if (this.type === Layer.LayerTypes.IMAGE && this._mapLayer) {
-      return this.getOLLayer().getSource();
+    if (Layer.LayerTypes.TABLE === this.type) {
+      return this._featuresstore;
     }
-    return this.type === Layer.LayerTypes.TABLE ? this._featuresstore : this.state.source;
+
+    return this.state.source;
   }
 
   /**
    * @returns {*} editing version of layer
    */
   getEditingLayer() {
-    if (this.type === Layer.LayerTypes.TABLE) {
+    if (Layer.LayerTypes.TABLE === this.type) {
       return this;
     }
-    if (this.type === Layer.LayerTypes.VECTOR) {
+    if (Layer.LayerTypes.VECTOR === this.type) {
       return this.getMapLayer().getOLLayer();
     }
     return this._editingLayer;
@@ -3734,7 +3735,7 @@ export class Layer extends G3WObject {
     }
   }
 
-    /**
+  /**
    * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
    * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
    *
