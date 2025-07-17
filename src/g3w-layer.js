@@ -2211,20 +2211,6 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * 
-   * @param { Boolean }  editable In case we want only editable fields
-   * 
-   * @returns { Array } layer fields
-   */
-  getEditingFields(editable = false) {
-    if (Layer.LayerTypes.TABLE === this.type) {
-      return editable ? (this.config.editing.fields || []).filter(f => f.editable) : (this.config.editing.fields || []);
-    }
-    return this.config.editing.fields;
-  }
-
-  /**
    * @returns { Array } only show fields
    */
   getTableFields() {
@@ -3240,6 +3226,20 @@ export class Layer extends G3WObject {
    */
   isStarted() {
     return this._editor?.isStarted()
+  }
+
+  /**
+   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+   * 
+   * @param { Boolean }  editable In case we want only editable fields
+   * 
+   * @returns { Array } layer fields
+   */
+  getEditingFields(editable = false) {
+    if (Layer.LayerTypes.TABLE === this.type) {
+      return editable ? (this.config.editing.fields || []).filter(f => f.editable) : (this.config.editing.fields || []);
+    }
+    return this.config.editing.fields;
   }
 
   /**

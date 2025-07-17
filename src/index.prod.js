@@ -295,9 +295,7 @@ $.ajaxSetup({
   Object.assign(ApplicationState.project, project);
 
   // set in first position
-  const store = project.getLayersStore();
-
-  ApplicationState.layers[store.getId()] = store;
+  ApplicationState.layers[project.getLayersStore().getId()] = project.getLayersStore();
 
   // BACKCOMP v3.x
   g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
