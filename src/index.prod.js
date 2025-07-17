@@ -591,11 +591,11 @@ $.ajaxSetup({
 
   // init plugins
   try {
-    const gidProject = ApplicationState.project.getGid(); // current project
+    const gid = ApplicationState.project.getGid(); // current project
 
     // set plugin config filtered by gid
     const enabledPlugins = {};
-    Object.entries(window.initConfig.plugins).filter(([,p]) => p.gid === gidProject).forEach(([name, config]) => enabledPlugins[name] = config);
+    Object.entries(window.initConfig.plugins).filter(([,p]) => p.gid === gid).forEach(([name, config]) => enabledPlugins[name] = config);
     Object.assign(ApplicationState.pluginsConfigs, enabledPlugins);
 
     Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
