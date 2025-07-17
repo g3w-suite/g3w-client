@@ -294,10 +294,9 @@ $.ajaxSetup({
 
   Object.assign(ApplicationState.project, project);
 
-  // set in first position (map and catalog)
+  // set in first position
   const store = project.getLayersStore();
 
-  ApplicationState.catalog[store.getId()] = store;
   ApplicationState.layers[store.getId()] = store;
 
   // BACKCOMP v3.x
@@ -500,7 +499,7 @@ $.ajaxSetup({
             wms:    [], // added by wms sidebar component
             vector: []  // added to map controls for the moment
           },
-          layerstrees:  Object.values(ApplicationState.catalog).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
+          layerstrees:  Object.values(ApplicationState.layers).filter(s => s.showOnCatalog()).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
           layersgroups: [],
         };
       

@@ -257,9 +257,6 @@ const STATE = Vue.observable({
   /** @since 3.11.0 */
   project: new G3WObject,
 
-  /** @since 3.11.0 */
-  catalog: {},
-
   /** @since 4.1.0 store layersstore instances */
   layers: observe({}),
 

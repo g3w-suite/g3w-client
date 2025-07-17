@@ -613,7 +613,8 @@ class GeocodingControl extends ol.control.Control {
 
     // Get editing layers that has Point/MultiPoint Geometry type
     const editable_point_layers = Object
-      .values(ApplicationState.catalog)
+      .values(ApplicationState.layers)
+      .filter(s => s.showOnCatalog())
       .flatMap(s => s.getLayers({ EDITABLE: true, GEOLAYER: true }))
       .filter(l => /^(Point|MultiPoint)/.test(l.getGeometryType()))
       .map((l) => ({ id: l.getId(), name: l.getName(), inediting: l.isInEditing() }));

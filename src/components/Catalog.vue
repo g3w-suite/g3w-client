@@ -699,7 +699,7 @@ export default {
 
       // PROJECT LAYER
       if (!layer.external && storeid) {
-        ApplicationState.catalog[storeid].getLayerById(layer.id).clearSelectionFids();
+        ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
       }
 
       // EXTERNAL LAYER
@@ -725,7 +725,7 @@ export default {
      * @since 3.10.0
      */
     async onActiveFilterTokenLayer(storeid, layerstree) {
-      layerstree.filter.active = await ApplicationState.catalog[storeid].getLayerById(layerstree.id).toggleFilterToken();
+      layerstree.filter.active = await ApplicationState.layers[storeid].getLayerById(layerstree.id).toggleFilterToken();
     },
 
     /**
