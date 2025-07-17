@@ -221,7 +221,7 @@ C,"POINT (11.2474811 43.7910709)"`],
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
 g3wsdk.gui.GUI.once('ready', () => {
-  (new Vue).$watch(
+  Vue.watch(
     () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
     (data = []) => data.filter(d => 'editing-panel' === d.content.id).forEach(d => { //wait for editing panel
       const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');

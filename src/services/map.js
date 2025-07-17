@@ -925,7 +925,7 @@ class MapService extends G3WObject {
     let can_drag = false;
 
     // set mouse cursor (dragging)
-    (new Vue()).$watch(
+    Vue.watch(
       () => [this.getCurrentToggledMapControl(), (GUI.getPlugin('editing') && GUI.getPlugin('editing').getActiveTool())],
       ([control, activeTool]) => {
         currentControl = control
