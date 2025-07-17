@@ -39,9 +39,8 @@ import GUI              from 'services/gui';
  * @param opts.download
  */
 export async function printAtlas(opts = {}) {
-  const store = ApplicationState.project.getLayersStore();
   const multi = opts.values.length > 1; 
-  const response = await fetch(store.getWmsUrl(), {
+  const response = await fetch(ApplicationState.project.state.WMSUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
     body:  new URLSearchParams(await GUI.getPrintParams({
