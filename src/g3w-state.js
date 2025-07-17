@@ -8,6 +8,14 @@ import G3WObject         from 'g3w-object';
 import { normalizeEpsg } from 'utils/normalizeEpsg';
 import proj4             from 'proj4';
 
+/** make "reactive" a native JS Object */
+const observe = obj => new Proxy(obj, {
+  set(target, property, value) {
+    Vue.set(target, property, value);
+    return true;
+  },
+});
+
 /**
  * Global state of application (reactive)
  * 
@@ -253,7 +261,7 @@ const STATE = Vue.observable({
   catalog: {},
 
   /** @since 4.1.0 store layersstore instances */
-  layers: {},
+  layers: observe({}),
 
   /** @since 3.11.0 */
   highlightlayers: false,

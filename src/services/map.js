@@ -1019,10 +1019,10 @@ class MapService extends G3WObject {
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
     Object.values(ApplicationState.layers).forEach(this._setUpEventsKeysToLayersStore.bind(this));
     Vue.watch(
-      () => ApplicationState.layers,
+      () => Object.keys(ApplicationState.layers),
       (newVal, oldVal) => {
-        const added   = Object.keys(newVal).filter(key => !(key in oldVal));
-        const removed = Object.keys(oldVal).filter(key => !(key in newVal));
+        const added   = newVal.filter(key => !(key in oldVal));
+        const removed = oldVal.filter(key => !(key in newVal));
         added.forEach(key => this._setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
         removed.forEach(key => this._removeEventsKeysToLayersStore(ApplicationState.layers[key]));
       }

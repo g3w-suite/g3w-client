@@ -193,8 +193,8 @@ const g3wsdk = {
     },
     map: {
       MapLayersStoreRegistry: Object.assign(new G3WObject({ setters: {
-        addLayersStore:          store  => { ApplicationState.layers._stores[store.getId()] = store; },
-        removeLayersStore:       store  => { if (store) { delete ApplicationState.layers._stores[store.getId()]; } },
+        addLayersStore:          store  => { ApplicationState.layers[store.getId()] = store; },
+        removeLayersStore:       store  => { if (store) { delete ApplicationState.layers[store.getId()]; } },
       }})),
     },
     catalog: {
