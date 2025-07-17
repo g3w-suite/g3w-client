@@ -2616,15 +2616,6 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @TODO Description
-   *
-   * @param layerstore
-   */
-  setLayersStore(layerstore) {
-    this._layersstore = layerstore;
-  }
-
-  /**
    * @returns { boolean } whether is possible to show attributes table 
    */
   canShowTable() {
