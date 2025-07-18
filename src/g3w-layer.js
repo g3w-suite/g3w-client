@@ -646,7 +646,7 @@ export class Layer extends G3WObject {
       /** @deprecated since 3.10.0. Will be removed in v.4.x. */
       search_endpoint: 'api',
 
-      map_crs:            options.project?.getProjection()?.getCode(),
+      map_crs:            project.getProjection()?.getCode(),
       multilayerid:       config.multilayer,
       projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : ApplicationState.projections.get(config.crs)) : undefined,
       attributions:       config.attributions,
