@@ -40,13 +40,13 @@ GUI.once('ready', async () => {
                     return group;
                   }, {}) || []
               ).map(([id, layers]) => {
-                const mapLayer = new Layer({
+                const layer = new Layer({
                   url:   project.state.WMSUrl,
                   id:    `overview_layer_${id}`,
                   tiled: layers[0].state.tiled,
                 },
                 { _RASTER_LAYER: true });
-                layers.reverse().forEach(l => mapLayer.addLayer(l));
+                layers.reverse().forEach(l => layer.addLayer(l));
                 return mapLayer.getOLLayer(true);
               }).reverse()
           }),
