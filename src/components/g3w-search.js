@@ -112,19 +112,14 @@ export function SearchPanel(opts = {}, show = false) {
 
       const no_value = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
       // set key-values for select
-      input.values = [
-        ...('selectfield' === input.type 
-            // set `SEARCH_ALLVALUE` as first element and retrive input values from server (set empty in case of strict dependance)
-            ? [SEARCH_ALLVALUE].concat(no_value ? [] : await getDataForSearchInput({ state, layerid: input.alternativeuniquelayer, field: input.attribute })) 
-            : []
-          ), 
-
-      ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
-
-      //In case of search with autofilter that return no data, need to setup select input to all
-      if (1 === input.values.length && SEARCH_ALLVALUE === input.values[0].value && ['selectfield', 'autocompletefield'].includes(input.type)) {
-        input.value = 'in' === input.operator ? [SEARCH_ALLVALUE] : SEARCH_ALLVALUE; // set default value for select
-      };
+      input.values = 'selectfield' === input.type  ? (
+         [
+          SEARCH_ALLVALUE, // set `SEARCH_ALLVALUE` as first element
+          ...(no_value 
+              ? [] //set empty in case of strict dependance
+              : (Array.isArray(input.options.values) && input.options.values.length > 0) && input.options.values || await getDataForSearchInput({ state, field: input.attribute })) // if values is array and provide by search config input (case of serarch that return type is a search) othrewise get values from server
+          ]
+        ).map(value => 'Object' === toRawType(value) ? value : ({ key: value, value })) : [];
 
       // there is a dependance
       if (input.dependance) {
