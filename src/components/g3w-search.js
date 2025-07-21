@@ -103,13 +103,15 @@ export function SearchPanel(opts = {}, show = false) {
       const input = state.forminputs[i];
 
       const no_value = input.dependance_strict && [SEARCH_ALLVALUE, '', null, undefined].includes(state.forminputs.find(i => input.dependance === i.attribute).value);
-
       // set key-values for select
-      input.values = [
-        ...('selectfield' === input.type ? [SEARCH_ALLVALUE] : []),                        // set `SEARCH_ALLVALUE` as first element
-        ...(no_value ? [] : await getDataForSearchInput({ state, field: input.attribute }) // retrieve input values from server (set empty in case of strict dependance)
-          )
-      ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
+      input.values = 'selectfield' === input.type  ? (
+         [
+          SEARCH_ALLVALUE, // set `SEARCH_ALLVALUE` as first element
+          ...(no_value 
+              ? [] //set empty in case of strict dependance
+              : (Array.isArray(input.options.values) && input.options.values.length > 0) && input.options.values || await getDataForSearchInput({ state, field: input.attribute })) // if values is array and provide by search config input (case of serarch that return type is a search) othrewise get values from server
+          ]
+        ).map(value => 'Object' === toRawType(value) ? value : ({ key: value, value })) : [];
 
       // there is a dependance
       if (input.dependance) {
