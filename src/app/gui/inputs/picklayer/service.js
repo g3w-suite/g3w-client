@@ -81,7 +81,7 @@ module.exports = class PickLayerService {
                const feature = data.length && data[0].features[0] || null;
                afterPick(feature);
              })
-              .cactch(e => console.warn(e) )
+              .catch(e => console.warn(e) )
           }
         }
       })
