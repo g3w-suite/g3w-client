@@ -5,6 +5,8 @@ export default {
   'Logout': "Изход",
   'No more project for this group': "Няма повече проекти за тази група",
   'No more groups for this Macrogroup': "Няма повече групи за тази макрогрупа",
+  'No other projects': 'Няма други проекти',
+  'No other groups': 'Няма друга група',
   yes: "Да",
   no: "Не",
   back: "Назад",
@@ -376,5 +378,4 @@ export default {
   'sdk.form.messages.qgis_input_widget_relation': 'Управлявай релациите чрез специална форма',
   'sdk.wps.list_process': 'Списък с процеси',
   'sdk.wps.tooltip': 'Натисни на картата',
-  'no_other_projects': "Няма други проекти",
 };

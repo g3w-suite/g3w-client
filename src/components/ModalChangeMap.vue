@@ -82,7 +82,7 @@
 
           <h3 v-else
             style = "font-weight: bold"
-            v-t   = "`no_other_${current}`">
+            v-t   = "`No other ${current}`">
           </h3>
 
         </div>
