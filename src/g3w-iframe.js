@@ -54,7 +54,7 @@ export class IframeApp extends G3WObject {
       if (!message?.data?.action?.startsWith('app:')) {
         return;
       }
-      const id = undefined !== message.data.id ?  message.data.id : getUniqueDomId();
+      const id = message.data.id ?? getUniqueDomId();
       try {
         // stop pending actions
         if (message.data.single ?? true) {
