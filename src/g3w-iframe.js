@@ -43,10 +43,7 @@ import { waitFor }        from 'utils/waitFor';
 
 export class IframeApp extends G3WObject {
 
-  pending = {};
-
   constructor() {
-
     super();
 
     // handle all messages from the window
@@ -56,14 +53,6 @@ export class IframeApp extends G3WObject {
       }
       const id = message.data.id ?? getUniqueDomId();
       try {
-        // stop pending actions
-        if (message.data.single ?? true) {
-          await Promise.allSettled(Object.keys(this.pending).map(id => {
-            delete this.pending[id];
-            return this['app:stop']();
-          }));
-        }
-        this.pending[id] = {};
         window.parent?.postMessage?.({
           id,
           action: message.data.action,
@@ -83,7 +72,6 @@ export class IframeApp extends G3WObject {
           }
         }, '*');
       }
-      delete this.pending[id];
     }, false);
 
     // emit 'app:ready' message when ready
@@ -120,8 +108,9 @@ export class IframeApp extends G3WObject {
     qgs_layer_id,
     noValue,
   }) {
-    noValue = undefined !== noValue ? noValue : ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name }));
-    return qgs_layer_id ? [].concat(qgs_layer_id) : noValue;
+    return qgs_layer_id
+      ? [].concat(qgs_layer_id)
+      : (noValue ?? ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name })));
   };
 
   /**
@@ -191,61 +180,29 @@ export class IframeApp extends G3WObject {
   }
 
   /**
-   * Overwrite single service: Usefult to stop eventually running action
-   * 
-   * @returns { Promise<void> }
-   */
-  async 'app:stop'() {}
-
-  /**
-   * Overwrite each single service
-   */
-  'app:clear'() {}
-
-  /**
    * @returns { Promise<Array> }
    */
-  async 'app:results'({
-    capture = true,
-  }) {
-    GUI.currentoutputplace = capture ? 'iframe' : 'gui';
+  async 'app:results'(params) {
+    GUI.currentoutputplace = (params.capture ?? true) ? 'iframe' : 'gui';
     return [];
   }
 
   /**
    * @returns { Promise<void> }
    */
-  async 'app:screenshot'({
-    capture = true,
-  }) {
-    // skip when ..
-    if (!capture) {
+  async 'app:screenshot'(params) {
+    if (params.capture ?? true) {
+      GUI.getService('map').getMapControlByType('screenshot').overwriteOnClickEvent(blob => {
+        try {
+          window.parent?.postMessage?.({ id: null, action: 'app:screenshot', response: { result: true, data: blob } }, '*');
+        } catch(e) {
+          console.warn(e);
+          window.parent?.postMessage?.({ id: null, action: 'app:screenshot', response: { result: false, data: e } }, '*');
+        }
+      });
+    } else {
       GUI.getService('map').getMapControlByType('screenshot').resetOriginalOnClickEvent();
-      return;
     }
-
-    GUI.getService('map').getMapControlByType('screenshot').overwriteOnClickEvent((blob) => {
-      try {
-        window.parent?.postMessage?.({
-          id: null,
-          action: 'app:screenshot',
-          response: {
-            result: true,
-            data: blob
-          }
-        }, '*');
-      } catch(e) {
-        console.warn(e);
-        window.parent?.postMessage?.({
-          id: null,
-          action: 'app:screenshot',
-          response: {
-            result: false,
-            data: e
-          }
-        }, '*');
-      }
-    });
   }
 
   /**
