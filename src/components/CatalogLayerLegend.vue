@@ -312,6 +312,8 @@
               const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
               const disabled    = undefined === c.checked  || c.checked;
               c.disabled        = disabled && undefined === findSymbol;
+              //@since 4.0.x In case of icon change base on map. Check icon in case of same title
+              c.icon            = (symbols.find(s => s.title === c.title && s.icon !== c.icon) || { icon: c.icon }).icon;
             });
           })
         } else {
