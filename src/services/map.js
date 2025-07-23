@@ -240,7 +240,7 @@ class MapService extends G3WObject {
     // set change resolution
     this._keyEvents.ol.forEach(k => ol.Observable.unByKey(k));
     this._keyEvents.ol.push(
-      this.viewer.map.getView().on('change:resolution', () => {
+      this.viewer.map.getView().on('change:resolution', debounce(() => {
         this.state.bbox       = this.getMapBBOX();
         this.state.resolution = this.viewer.getResolution();
         this.state.center     = this.viewer.getCenter();
@@ -248,7 +248,7 @@ class MapService extends G3WObject {
         if (dynamicLegend) {
           this.setupCustomMapParamsToLegendUrl();
         }
-      })
+      }))
     );
     if (dynamicLegend) {
       this._keyEvents.ol.push(
