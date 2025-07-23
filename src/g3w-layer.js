@@ -2878,9 +2878,7 @@ export class Layer extends G3WObject {
     if (this.getMapLayer()) {
       this.getMapLayer().setVisible(bool)
     }
-    if (this.getOLLayer()) {
-      this.getOLLayer().setVisible(bool)
-    }
+    
     if (!this.state) {
       return bool;
     }
