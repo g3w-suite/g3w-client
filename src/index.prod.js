@@ -22,7 +22,6 @@ import Component                   from 'g3w-component';
 
 // services
 import GUI                         from 'services/gui';
-import IframePluginService         from 'services/iframe';
 
 // components
 import App                         from 'components/App.vue';
@@ -58,7 +57,6 @@ Object
     Panel,
     Component,
     GUI,
-    IframePluginService,
     App,
     BarLoader,
     Progressbar,
@@ -305,10 +303,6 @@ $.ajaxSetup({
 
   /** @since 4.1.0 */
   GUI.emit('app-ready');
-
-  if (ApplicationState.iframe) {
-    IframePluginService.init({ project })
-  }
 
   if (isMobile.any || (window.initConfig.layout || {}).iframe) {
     $('body').addClass('sidebar-collapse');

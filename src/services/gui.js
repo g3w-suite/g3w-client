@@ -5,10 +5,11 @@ import { gettext as _ }          from 'g3w-i18n';
 
 import ApplicationState          from 'g3w-state';
 
-import IFrameRouterService       from 'services/iframe';
+import { IframeApp }             from 'g3w-iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
 import { toRawType }             from 'utils/toRawType';
+import { waitFor }               from 'utils/waitFor';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
@@ -242,6 +243,17 @@ export default new (class GUI extends G3WObject {
     };
     requestAnimationFrame(sidebarFix);
 
+    // initialize all services (emit 'app:ready' message when ready)
+    if (ApplicationState.iframe) {
+      this.getService('map').isReady().then(async () => {
+      // wait until "editing" plugin is loaded
+      if (window.initConfig.plugins.editing) {
+        await waitFor(() => ApplicationState.configurationPlugins.includes('editing'));
+      }
+        new IframeApp();
+      });
+    }
+
     this.emit('ready');
     this.isready = true;
   }
@@ -334,9 +346,25 @@ export default new (class GUI extends G3WObject {
 
     /** @type { String[] } cached requests (by id) */
     this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
-    /** In the case of a current output result is iframe, send to IFrameRouterService.outputDataPlace*/
+
+    // in case of iframe
     if ('iframe' === this.currentoutputplace) {
-      return IFrameRouterService.outputDataPlace(promise, output);
+      try {
+        let response = await promise;
+        const json   = new ol.format.GeoJSON();
+        window.parent?.postMessage?.({
+          id: null,
+          action: output.action ?? 'app:results',
+          response: {
+            data: (response.data || []).map(({ layer, features }) => ({ [layer.getId()]: { features: json.writeFeatures(features) } })),
+            result: response.result
+          }
+        }, '*');
+      } catch(e) {
+        console.warn(e);
+        window.parent?.postMessage?.({ id: null, action: output.action ?? 'app:results', response: { data: e, result: false } }, '*');
+      }
+      return;
     }
 
     //set loading state
