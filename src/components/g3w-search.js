@@ -110,14 +110,16 @@ export function SearchPanel(opts = {}, show = false) {
         input.value = [].concat(input.value);
       }
 
-      const no_value = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
+      const no_value    = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
+      const has_value   = !no_value;
+      const is_cadastre = Array.isArray(input.options.values) && input.options.values.length > 0;              // HOTFIX for cadastre plugin
+
       // set key-values for select
       input.values = 'selectfield' === input.type  ? (
          [
-          SEARCH_ALLVALUE, // set `SEARCH_ALLVALUE` as first element
-          ...(no_value 
-              ? [] //set empty in case of strict dependance
-              : (Array.isArray(input.options.values) && input.options.values.length > 0) && input.options.values || await getDataForSearchInput({ state, field: input.attribute })) // if values is array and provide by search config input (case of serarch that return type is a search) othrewise get values from server
+          SEARCH_ALLVALUE,                                                                                     // set `SEARCH_ALLVALUE` as first element
+          ...(has_value && is_cadastre ? input.options.values : []),                                           // ref: https://github.com/g3w-suite/g3w-client/pull/834
+          ...(has_value && !is_cadastre ? await getDataForSearchInput({ state, field: input.attribute }) : []) // get values from server
           ]
         ).map(value => 'Object' === toRawType(value) ? value : ({ key: value, value })) : [];
 
