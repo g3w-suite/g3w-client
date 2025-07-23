@@ -182,7 +182,7 @@ export class IframeApp extends G3WObject {
   /**
    * @returns { Promise<Array> }
    */
-  async 'app:results'(params) {
+  async 'app:results'(params = {}) {
     GUI.currentoutputplace = (params.capture ?? true) ? 'iframe' : 'gui';
     return [];
   }
@@ -190,7 +190,7 @@ export class IframeApp extends G3WObject {
   /**
    * @returns { Promise<void> }
    */
-  async 'app:screenshot'(params) {
+  async 'app:screenshot'(params = {}) {
     if (params.capture ?? true) {
       GUI.getService('map').getMapControlByType('screenshot').overwriteOnClickEvent(blob => {
         try {
