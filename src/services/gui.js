@@ -9,7 +9,6 @@ import { IframeApp }             from 'g3w-iframe';
 
 import { getUniqueDomId }        from 'utils/getUniqueDomId';
 import { toRawType }             from 'utils/toRawType';
-import { waitFor }               from 'utils/waitFor';
 import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
@@ -243,15 +242,9 @@ export default new (class GUI extends G3WObject {
     };
     requestAnimationFrame(sidebarFix);
 
-    // initialize all services (emit 'app:ready' message when ready)
+    // initialize iframe services
     if (ApplicationState.iframe) {
-      this.getService('map').isReady().then(async () => {
-      // wait until "editing" plugin is loaded
-      if (window.initConfig.plugins.editing) {
-        await waitFor(() => ApplicationState.configurationPlugins.includes('editing'));
-      }
-        new IframeApp();
-      });
+      new IframeApp();
     }
 
     this.emit('ready');

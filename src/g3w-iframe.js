@@ -39,6 +39,7 @@ import DataRouterService  from 'services/data';
 import ApplicationState   from 'g3w-state'
 import { normalizeEpsg }  from 'utils/normalizeEpsg';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { waitFor }        from 'utils/waitFor';
 
 export class IframeApp extends G3WObject {
 
@@ -50,7 +51,7 @@ export class IframeApp extends G3WObject {
 
     // handle all messages from the window
     window.addEventListener('message', async message => {
-      if (!message?.data || !message.data.action?.startsWith('app:') || 'app:ready' === message.data.action || 'function' !== typeof this[message.data.action]) {
+      if (!message?.data?.action?.startsWith('app:')) {
         return;
       }
       const id = undefined !== message.data.id ?  message.data.id : getUniqueDomId();
@@ -68,7 +69,7 @@ export class IframeApp extends G3WObject {
           action: message.data.action,
           response: {
             result: true,
-            data:   await this[message.data.action](message.data.data)
+            data:   'function' === typeof this[message.data.action] ? await this[message.data.action](message.data.data) : undefined
           }
         }, '*');
       } catch(e) {
@@ -85,16 +86,23 @@ export class IframeApp extends G3WObject {
       delete this.pending[id];
     }, false);
 
-    window.parent?.postMessage?.({
-      id:        null,
-      action:   'app:ready',
-      response: {
-        result: true,
-        data: {
-          layers: ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name }))
-        }
-      },
-    }, '*');
+    // emit 'app:ready' message when ready
+    GUI.getService('map').isReady().then(async () => {
+      // wait until "editing" plugin is loaded
+      if (window.initConfig.plugins.editing) {
+        await waitFor(() => ApplicationState.configurationPlugins.includes('editing'));
+      }
+      window.parent?.postMessage?.({
+        id:        null,
+        action:   'app:ready',
+        response: {
+          result: true,
+          data: {
+            layers: ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name }))
+          }
+        },
+      }, '*');
+    });
   }
 
   /**
