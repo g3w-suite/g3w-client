@@ -159,9 +159,7 @@
                   value:  values[this.state.input.options.key]
                 });
               }
-              //need to sort values
-              this.service.sortValues();
-                //set new value to this.state.value
+              //set new value to this.state.value
               await this.changeSelect(value);
               //trigger change value on select2
               this.select2.val(this.multiple ? this.getMultiValues() : value).trigger('change');
