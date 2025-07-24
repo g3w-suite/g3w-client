@@ -524,14 +524,13 @@
                 value,
                 layer_id
               } = this.state.input.options;
-
+              
               //create pick layer service
               this.pickLayerInputService = new PickLayerInputService({
                 layer_id,
                 fields :    [value, key], //fields are key, and values
-                //need to check if dependency layer is on editing,
                 // so we can pick vector map layer, otherwise wms request is done
-                pick_type : dependencyLayer?.isStarted() ? 'map' : null
+                pick_type : 'wms'
               });
             }
 

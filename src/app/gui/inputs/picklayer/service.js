@@ -10,6 +10,7 @@ module.exports = class PickLayerService {
     this.fields      = opts.fields || [opts.value];
     this.layerId     = opts.layer_id;
     this.mapService  = GUI.getService('map');
+    //'map' referred to a v4.0.x where getEditingLayer was a method of Layer.  
     this.interaction = 'map' === this.pick_type  ? new PickFeatureInteraction({
       layers: [this.mapService.getLayerById(this.layerId)]
     }) : new PickCoordinatesInteraction();
