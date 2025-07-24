@@ -30,15 +30,12 @@ import { XHR }                    from 'utils/XHR';
 import { prompt }                 from 'utils/prompt';
 import { ResponseParser }         from 'utils/parsers';
 import { get_legend_params }      from 'utils/get_legend_params';
-import { createRelationsUrl }     from 'utils/createRelationsUrl';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { isPointGeometryType }    from 'utils/isPointGeometryType';
 import { isLineGeometryType }     from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }  from 'utils/isPolygonGeometryType';
 import { cloneDeep }              from 'utils/cloneDeep';
-
-import { Feature }                from 'map/layers/feature';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -184,100 +181,23 @@ const Providers = {
           }
       });
 
-      
-      // read mode
-      if (!options.editing) {
-        const { vector } = await XHR.post({
-          url:         this._layer.getUrl('data'),
-          data:        JSON.stringify(params),
-          contentType: 'application/json',
-        });
-        return {
-          data: vector.data,
-          count: vector.count
-        };
-      }
-
       // editing mode
-      try {
-
-        let response;
-        if (!options.filter) {
-          response = await XHR.post({
-            url:         this._layer.getUrl('editing'),
-            data:        JSON.stringify(params),
-            contentType: 'application/json',
-          });
-        } else if (undefined !== options.filter.bbox) { // bbox filter
-          response = await XHR.post({
-            url:  this._layer.getUrl('editing'),
-            data: JSON.stringify({
-              ...params,
-              in_bbox:     options.filter.bbox.join(','),
-              filtertoken: this._layer.getFilterToken(),
-            }),
-            contentType: 'application/json',
-          })
-        } else if (undefined !== options.filter.fid) { // fid filter
-          response = await XHR.post({
-            url:         createRelationsUrl(options.filter.fid),
-            contentType: 'application/json',
-            data:        JSON.stringify({ formatter: 1 }),
-          });
-        } else if (options.filter.field) {
-          response = await XHR.post({
-            url:         this._layer.getUrl('editing'),
-            data:        JSON.stringify({ 
-              ...params,
-              ...options.filter,
-            }),
-            contentType: 'application/json',
-          })
-        } else if (undefined !== options.filter.fids) {
-          response = await XHR.post({
-            url:    this._layer.getUrl('editing'),
-            data:   JSON.stringify({
-              ...params,
-              ...options.filter,
-            }),
-            contentType: 'application/json',
-          })
-        } else if (undefined !== options.filter.nofeatures) {
-          response = await XHR.post({
-            url:  this._layer.getUrl('editing'),
-            data: JSON.stringify({
-              ...params,
-              field: `${options.filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
-            }),
-            contentType: 'application/json',
-          })
-        }
-
-        // invalid response
-        if (!response.result) {
-          return;
-        }
-
-        const lockIds  = response.featurelocks.map(lk => lk.featureid);
-
-        // resolves with features locked and requested
-        return {
-          count:        response.vector.count, // real number of features that request will return
-          featurelocks: response.featurelocks,
-          features:     ResponseParser.get(`g3w-${this._layer.getType()}/json`)(
-            response.vector.data,
-            'NoGeometry' === response.vector.geometrytype
-              ? {}
-              : { crs: this._layer.getCrs() }
-          )
-            .filter(f => lockIds.includes(`${f.getId()}`))
-            .map(feature => new Feature({ feature })),
-        };
-      } catch (e) {
-        console.warn(e);
+      if (options.editing) {
+        return await GUI.getPlugin('editing').fetchVectorData(this._layer, options, params);
       }
-      return Promise.reject({ message: _("info.server_error")});
-      
+
+      // read mode
+      const response = await XHR.post({
+        url:         this._layer.getUrl('data'),
+        data:        JSON.stringify(params),
+        contentType: 'application/json',
+      });
+
+      return {
+        data: response.vector.data,
+        count: response.vector.count
+      };
+
     }
 
   },
