@@ -265,7 +265,7 @@ g3wsdk.gui.GUI.once('ready', () => {
     .filter(id => layers.find(l => id === l.id).editable)
     .forEach(id => {
       //Check only if has primay key value to ge unique feature to edit
-      const pkField = g3wsdk.core.catalog.CatalogLayersStoresRegistry.getLayerById(id).getEditingFields().find(f => f.pk);
+      const pkField = g3wsdk.gui.GUI.getPlugin('editing').getEditingFields(id).find(f => f.pk);
       // in case that layer has not pk field, iframe editing action is not
       if (!pkField) {
         return;
