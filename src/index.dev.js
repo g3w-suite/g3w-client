@@ -222,7 +222,7 @@ C,"POINT (11.2474811 43.7910709)"`],
  */
 g3wsdk.gui.GUI.once('ready', () => {
   Vue.watch(
-    () => g3wsdk.core.ApplicationState.sidebar.contentsdata,
+    g3wsdk.core.ApplicationState.sidebar.contentsdata,
     (data = []) => data.filter(d => 'editing-panel' === d.content.id).forEach(d => { //wait for editing panel
       const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
       let iframe_btn = document.querySelector('#edit_in_iframe');
