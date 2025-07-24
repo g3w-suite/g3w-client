@@ -976,11 +976,13 @@ export default {
     await this.$nextTick();
 
     $('#startingspinner').remove();
-   
-    document.body.classList.add('sidebar-mini');
-    
+
     document.body.classList.toggle('is-mobile', this.isMobile());
     document.body.classList.toggle('is-iframe', ApplicationState.iframe);
+
+    if (!ApplicationState.iframe) {
+      document.body.classList.add('sidebar-mini');
+    }
   },
 
 };
