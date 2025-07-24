@@ -78,7 +78,7 @@ export class IframeApp extends G3WObject {
     GUI.getService('map').isReady().then(async () => {
       // wait until "editing" plugin is loaded
       if (window.initConfig.plugins.editing) {
-        await waitFor(() => ApplicationState.configurationPlugins.includes('editing'));
+        await waitFor(() => GUI.getPlugin('editing'));
       }
       window.parent?.postMessage?.({
         id:        null,
