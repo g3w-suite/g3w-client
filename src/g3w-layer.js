@@ -2296,19 +2296,6 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @returns {*} editing version of layer
-   */
-  getEditingLayer() {
-    if (Layer.LayerTypes.TABLE === this.type) {
-      return this;
-    }
-    if (Layer.LayerTypes.VECTOR === this.type) {
-      return this.getMapLayer().getOLLayer();
-    }
-    return this._editingLayer;
-  }
-
-  /**
    * @returns {string|string[]|boolean|string|*} whether is hidden
    */
   isHidden() {

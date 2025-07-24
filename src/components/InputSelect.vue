@@ -515,9 +515,7 @@
         const dependencyLayerId = this.state.input.options.layer_id;
         if (dependencyLayerId) {
           try {
-            const dependencyLayer = GUI.getService('map')
-              .getProjectLayer(dependencyLayerId)
-              .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
+            const dependencyLayer = getCatalogLayerById(dependencyLayerId);
             // in case layer is on project, check if is non an alphanumeric layer
             this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
             if (this.showPickLayer) {
