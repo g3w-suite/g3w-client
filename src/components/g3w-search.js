@@ -110,22 +110,24 @@ export function SearchPanel(opts = {}, show = false) {
         input.value = [].concat(input.value);
       }
 
-      const no_value = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
-      // set key-values for select
-      input.values = [
-        ...('selectfield' === input.type 
-            // set `SEARCH_ALLVALUE` as first element and retrive input values from server (set empty in case of strict dependance)
-            ? [SEARCH_ALLVALUE].concat(no_value ? [] : await getDataForSearchInput({ state, layerid: input.alternativeuniquelayer, field: input.attribute })) 
-            : []
-          ), 
+      const no_value    = input.dependance_strict && [].concat(state.forminputs.find(i => input.dependance === i.attribute).value).find(v => [SEARCH_ALLVALUE, '', null, undefined].includes(v));
+      const has_value   = !no_value;
+      const is_cadastre = Array.isArray(input.options.values) && input.options.values.length > 0;              // HOTFIX for cadastre plugin
 
-      ].map(value => 'Object' === toRawType(value) ? value : ({ key: value, value }));
+      // set key-values for select
+      input.values = 'selectfield' === input.type  ? (
+         [
+          SEARCH_ALLVALUE,                                                                                     // set `SEARCH_ALLVALUE` as first element
+          ...(has_value && is_cadastre ? input.options.values : []),                                           // ref: https://github.com/g3w-suite/g3w-client/pull/834
+          ...(has_value && !is_cadastre ? await getDataForSearchInput({ state, field: input.attribute }) : []) // get values from server
+          ]
+        ).map(value => 'Object' === toRawType(value) ? value : ({ key: value, value })) : [];
 
       //In case of search with autofilter that return no data, need to setup select input to all
       if (1 === input.values.length && SEARCH_ALLVALUE === input.values[0].value && ['selectfield', 'autocompletefield'].includes(input.type)) {
         input.value = 'in' === input.operator ? [SEARCH_ALLVALUE] : SEARCH_ALLVALUE; // set default value for select
       };
-
+      
       // there is a dependance
       if (input.dependance) {
         state.loading[input.dependance] = false;
