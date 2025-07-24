@@ -94,92 +94,6 @@ export class IframeApp extends G3WObject {
   }
 
   /**
-   * Return a qgs_layer_id array based on passed qgis_layer_id
-   * 
-   * @param { Object } opts
-   * @param { string | string[] | null | undefined } opts.qgs_layer_id
-   * @param { Array } noValue
-   * 
-   * @returns { string[] } qgs_layer_id
-   * 
-   * @private
-   */
-  'app:getQgsLayerId'({
-    qgs_layer_id,
-    noValue,
-  }) {
-    return qgs_layer_id
-      ? [].concat(qgs_layer_id)
-      : (noValue ?? ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name })));
-  };
-
-  /**
-   * getFeature from DataProvider
-   * 
-   * @private
-   */
-  async 'app:searchFeature'({
-    layer,
-    feature,
-  }) {
-    const { data = [] } = await DataRouterService.getData('search:features', {
-      inputs: {
-        layer,
-        filter: [].concat(feature.value).map(v => `${feature.field}|eq|${encodeURIComponent(v)}`).join('|OR,')
-      },
-      outputs: false
-    });
-    return data;
-  };
-
-  /**
-   * Search feature(s) by field and value
-   * 
-   * @param { Object } opts
-   * @param opts.qgs_layer_id
-   * @param opts.feature
-   * @param opts.zoom
-   * @param opts.highlight
-   * 
-   * @returns { Promise<{ qgs_layer_id: null, features: [], found: boolean }>}
-   */
-  async 'app:findFeaturesWithGeometry'({
-    feature,
-    qgs_layer_id = [],
-    zoom         = false,
-    highlight    = false,
-  } = {}) {
-    const response = {
-      found:        false,
-      features:     [],
-      qgs_layer_id: null
-    };
-    let layersCount = qgs_layer_id.length;
-    let i = 0;
-    while (!response.found && i < layersCount) {
-      const layer = ApplicationState.project.getLayerById(qgs_layer_id[i]);
-      try {
-        const data     = layer && await this['app:searchFeature']({ layer, feature });
-        const features = data.length && data[0].features;
-        response.found = features && features.length > 0 && !!features.find(f => f.getGeometry());
-        if (!features || !response.found) {
-          throw 'invalid response';
-        }
-        response.features     = features;
-        response.qgs_layer_id = qgs_layer_id[i];
-        if (zoom) {
-          await GUI.getService('map').zoomToFeatures(features, { highlight });
-        }
-      } catch(e) { i++; console.warn(e);}
-    }
-    // in case of no response zoom to an initial extent
-    if (!response.found) {
-      GUI.getService('map').zoomToExtent(GUI.getService('map').project.state.initextent)
-    }
-    return response;
-  }
-
-  /**
    * @returns { Promise<Array> }
    */
   async 'app:results'(params = {}) {
@@ -206,10 +120,8 @@ export class IframeApp extends G3WObject {
   }
 
   /**
-   * Eventually send as param the projection in which we would like get center of map
-   * 
    * @param { Object } params
-   * @param params.epsg since 3.9.1
+   * @param params.epsg since 3.9.1 - projection in which we would like get map center
    * 
    * @returns { Promise<void> }
    */
@@ -228,7 +140,7 @@ export class IframeApp extends G3WObject {
    * 
    * @param { Object } params
    * @param { Array } params.coordinates
-   * @param params.epsg since 3.9.1
+   * @param params.epsg since 3.9.1 - projection in which we would like get map coordinates
    * 
    * @returns { Promise<Array> }
    */
@@ -248,16 +160,13 @@ export class IframeApp extends G3WObject {
   }
 
   /**
-   * Eventually send as param the projection in which we would like get center of map
-   * 
    * @param { Object } params
-   * @param params.epsg since 3.9.1
+   * @param params.epsg since 3.9.1 - projection in which we would like get map extent
    * 
    * @returns { Promise<void> }
    */
   async 'app:getextent'(params = {}) {
     const extent = GUI.getService('map').getMapExtent();
-    /** @FIXME add description */
     if (undefined !== params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
@@ -269,7 +178,7 @@ export class IframeApp extends G3WObject {
   /**
    * @param { Object } params
    * @param { Array } params.extent
-   * @param params.epsg since 3.9.1
+   * @param params.epsg since 3.9.1 - projection in which we would like get map extent
    * 
    * @returns { Promise<Array> }
    */
@@ -291,8 +200,6 @@ export class IframeApp extends G3WObject {
   };
 
   /**
-   * Zoom to features
-   * 
    * @param { Object } params
    * @param params.qgs_layer_id
    * @param params.feature
@@ -301,20 +208,45 @@ export class IframeApp extends G3WObject {
    * @returns { Promise } qgs_layer_id
    */
   async 'app:zoomtofeature'(params = {}) {
-    let {
-      qgs_layer_id,
-      feature,
-      highlight = false,
-    } = params;
+    params.qgs_layer_id = params.qgs_layer_id ? [].concat(params.qgs_layer_id) : ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name }));
+    
+    let found = false;
 
-    qgs_layer_id = this['app:getQgsLayerId']({ qgs_layer_id });
+    const response = {
+      features:     [],
+      qgs_layer_id: null
+    };
 
-    const response = await this['app:findFeaturesWithGeometry']({
-      qgs_layer_id,
-      feature,
-      zoom: true,
-      highlight,
-    });
+    let i = 0;
+
+    while (!found && i < params.qgs_layer_id.length) {
+      const layer = ApplicationState.project.getLayerById(params.qgs_layer_id[i]);
+      try {
+        const data = layer && (await DataRouterService.getData('search:features', {
+          inputs: {
+            layer,
+            filter: [].concat(params.feature.value).map(v => `${params.feature.field}|eq|${encodeURIComponent(v)}`).join('|OR,')
+          },
+          outputs: false
+        }))?.data || [];
+        const features = data?.[0]?.features;
+        found = !!features?.find(f => f.getGeometry());
+        if (!features || !found) {
+          throw 'invalid response';
+        }
+        response.features     = features;
+        response.qgs_layer_id = params.qgs_layer_id[i];
+        await GUI.getService('map').zoomToFeatures(features, { highlight: (params.highlight ?? false) });
+      } catch(e) {
+        i++;
+        console.warn(e);
+      }
+    }
+
+    // feature not found → zoom to initial extent
+    if (!found) {
+      GUI.getService('map').zoomToExtent(GUI.getService('map').project.state.initextent)
+    }
 
     return response.qgs_layer_id;
   }
