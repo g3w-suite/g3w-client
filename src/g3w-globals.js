@@ -6,7 +6,6 @@
 import G3W_CONSTANT                                from 'g3w-constants';
 import ApplicationState                            from 'g3w-state';
 
-
 /**
  * @file ORIGINAL SOURCE: src/app/core/utils/geo.js@3.8
  */
@@ -59,7 +58,6 @@ import Mixins                                      from 'mixins';
 import { createMeasureTooltip, removeMeasureTooltip } from 'utils/createMeasureTooltip';
 import { getResolutionFromScale }                     from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                     from 'utils/getScaleFromResolution';
-import { ResponseParser }                             from 'utils/parsers';
 
 import G3WObject                                   from 'g3w-object';
 import Panel                                       from 'g3w-panel';
@@ -68,7 +66,6 @@ import PickFeatureInteraction                      from 'map/interactions/pickfe
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
 import { LayersStore }                             from 'map/layers/layersstore';
 import { Layer }                                   from 'g3w-layer';
-import { Feature }                                 from 'map/layers/feature';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
 import { inherit }                                 from 'utils/inherit';
@@ -178,7 +175,27 @@ const g3wsdk = {
     },
     errors: {
       parsers: {
-        Server: ResponseParser.get('g3w-error')
+        Server: function(opts = {}) {
+          const _traverse = (err, message = 'Error in server saving') => {
+            try {
+              const entries   = Object.entries(err);
+              const entry     = entries.find(([key, _]) => 'fields' === key);
+              const [, value] = (entry || entries[0]);
+              if (!entry && !Array.isArray(value) && 'object' === typeof value) { return _traverse(value, message) }
+              if (entry && 'string' === typeof value)                           { message = `[${ entries.find(([key]) => 'fields' !== key)[0] }] ${value}`; }
+              if (entry && 'string' !== typeof value)                           { message = Object.entries(value).reduce((text, [field, error]) => `${text}${field} ${ Array.isArray(error) ? error[0] : error }\n`, ''); }
+              if (entry)                                                        { return message.replace(/\:|\./g, ''); }
+            } catch(e) { console.warn(e); }
+          }
+          return ({
+            parse({ type = 'responseJSON' } = {}) {
+              if ('responseJSON' === type && opts?.error?.responseJSON?.error?.message) { return opts.error.responseJSON.error.message; }
+              if ('responseJSON' === type && opts?.error?.errors)                       { return _traverse(opts.error.errors); }
+              if ('String' === type && 'string' === typeof opts.error)                  { return opts.error; }
+              if ('String' === type)                                                    { return _traverse(opts.error); }
+              return _('Error in server saving');
+          }})
+        }
       }
     },
     project: {
@@ -208,7 +225,40 @@ const g3wsdk = {
       Layer:           babelify(Layer),
       VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { _TYPE: Layer.LayerTypes.VECTOR })) } }),
       features: {
-        Feature:       babelify(Feature),
+        /** ORIGINAL SOURCE: src/map/layers/feature.js@v4.0.0 */
+        Feature:       babelify(class Feature extends ol.Feature {
+          constructor(opts = {}) {
+            GUI.showUserMessage({ type: 'alert', message: 'g3wsdk.core.layer.features.Feature is deprecated' });
+            super();
+            this.state      = { new: false, state: null, visible: true };                
+            this._uid       = getUniqueDomId();
+            this._geometry  = false;
+            if (opts.feature && Array.isArray(opts.properties)) { opts.properties.forEach(p => this.set(p, opts.feature.get(p))); }
+            else if (opts.feature)                              { this.setProperties(opts.feature.getProperties()); }
+            if (opts.feature)                                   { this.setId(opts.feature.getId()); this.setGeometryName(opts.feature.getGeometryName()); }
+            if (opts?.feature?.getGeometry?.())                 { this._geometry = true; this.setGeometry(opts.feature.getGeometry()); }
+            if (this.getStyle())                                { this.setStyle(this.getStyle()); }
+          }
+          getUid()                    { return this._uid }
+          isGeometry()                { return this._geometry; }
+          cloneNew(pk)                { const c = this.clone(); c._uid = getUniqueDomId(); c.setTemporaryId(); if (pk && false === pk.editable) { c.set(pk.name, null); } return c; }
+          clone()                     { const f = super.clone(); f.setId(this.getId()); if (this.isGeometry()) { f.setGeometry(f.getGeometry().clone()); } const c = new g3wsdk.core.layer.features.Feature({ feature: f }); c._uid = this.getUid(); c.setState(this.getState()); if (this.isNew()) { c.setNew(); } return c; }
+          setTemporaryId()            { this.setId(`_new_${getUniqueDomId()}`); this.setNew(); }
+          setNew()                    { this.state.new = true; }
+          delete()                    { this.state.state = 'delete'; return this; }
+          update()                    { this.state.state = 'update'; return this; }
+          add()                       { this.state.state = 'add'; return this; }
+          isNew()                     { return this.state.new; }
+          isAdded()                   { return 'add' === this.state.state; }
+          isUpdated()                 { return 'update' === this.state.state; }
+          isDeleted()                 { return 'delete' === this.state.state; }
+          setState(state)             { this.state.state = state; }
+          getState()                  { return this.state.state; }
+          getAlphanumericProperties() { return Object.entries(this.getProperties()).filter(([name, _]) => !G3W_CONSTANT.GEOMETRY_FIELDS.includes(name)).reduce((attrs, [n, v]) => { attrs[n] = v; return attrs }, {}) }
+          clearState()                { this.state.state = null; this.state.new = false; }
+          isVisible()                 { return this.state.visible; }
+          setVisible(bool = true)     { this.state.visible = bool; }
+        }),
       },
     },
     interaction: {

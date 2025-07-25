@@ -23,7 +23,7 @@
 
 <script>
 import GUI                                      from 'services/gui';
-import { ResponseParser }                       from 'utils/parsers';
+import { Parsers }                             from 'g3w-layer';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 
@@ -72,7 +72,7 @@ export default {
         });
         this.layer.infoformat = contenttype;
         this.projectLayer.setInfoFormat(this.layer.infoformat);
-        const [data] = ResponseParser.get(contenttype)({ layers: [this.projectLayer], response });
+        const [data] = Parsers[contenttype]({ layers: [this.projectLayer], response });
         if (data.features) {
           this.__parsedata(data);
         } else {
