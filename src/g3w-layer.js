@@ -2000,9 +2000,7 @@ export class Layer extends G3WObject {
    * @param opts.I                         wms request parameter 
    * @param opts.J                         wms request parameter 
    */
-  async #queryQGIS(opts = {}) {
-    const provider = this.getProvider('qgis');
-
+  async #queryQGIS(provider, opts = {}) {
     provider._projections      = provider._projections || { map: null, layer: null };
   
     const is_table = 'table' === provider.getLayer().getType();
@@ -2061,7 +2059,7 @@ export class Layer extends G3WObject {
   }
 
   /** Load editing features (Read / Write) */
-  async #getFeaturesQGIS(options = {}, params = {}) {
+  async #getFeaturesQGIS(provider, options = {}, params = {}) {
     // filter null values
     Object.entries(params).forEach(([key, value]) => { if ([null, undefined].includes(value)) { delete params[key]; } });
 
@@ -2084,7 +2082,7 @@ export class Layer extends G3WObject {
 
   }
 
-  async #getFeaturesJSON(opts = {}) {
+  async #getFeaturesJSON(provider, opts = {}) {
     return (new ol.format.GeoJSON()).readFeatures(
       opts.data || (await XHR.get({ url: opts.url || provider.get('source').url })).results, {
       featureProjection: opts.mapProjection,
@@ -2092,7 +2090,7 @@ export class Layer extends G3WObject {
     })
   }
 
-  async #queryG3W(opts = {}, params = {}) {
+  async #queryG3W(provider, opts = {}, params = {}) {
     const filter = opts.filter || {};
     const spatialMethod = filter.config.spatialMethod || 'intersects';
     switch(filter.type) {
@@ -2134,7 +2132,7 @@ export class Layer extends G3WObject {
     return { data }
   }
 
-  #queryWMS(opts = {}) {
+  #queryWMS(provider, opts = {}) {
     const {
       layers        = [provider.getLayer()],
       size          = [101, 101],
@@ -2258,8 +2256,8 @@ export class Layer extends G3WObject {
       provider = {
         getName:     () => 'qgis',
         getLayer:    () => this,
-        getFeatures: this.#getFeaturesQGIS,
-        query:       this.#queryQGIS,
+        getFeatures: (...args) => this.#getFeaturesQGIS(provider, ...args),
+        query:       (...args) => this.#queryQGIS(provider, ...args),
       };
     }
 
@@ -2268,7 +2266,7 @@ export class Layer extends G3WObject {
       provider = {
         getName:     () => 'geojson',
         getLayer:    () => this,
-        getFeatures: this.#getFeaturesJSON,
+        getFeatures: (...args) => this.#getFeaturesJSON(provider, ...args),
         query:       () => [],
       };
     }
@@ -2292,7 +2290,7 @@ export class Layer extends G3WObject {
         getName:     () => 'g3w',
         getLayer:    () => this,
         getFeatures: (() => console.log('overwriteby single provider')),
-        query:       this.#queryG3W,
+        query:       (...args) => this.#queryG3W(provider, ...args),
       };
     }
 
@@ -2324,7 +2322,7 @@ export class Layer extends G3WObject {
         getName:     () => 'wms',
         getLayer:    () => this,
         getFeatures: (() => console.log('overwriteby single provider')),
-        query:       this.#queryWMS,
+        query:       (...args) => this.#queryWMS(provider, ...args),
       };
     }
 
