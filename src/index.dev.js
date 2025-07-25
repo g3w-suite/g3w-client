@@ -220,38 +220,37 @@ C,"POINT (11.2474811 43.7910709)"`],
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3wsdk.gui.GUI.once('ready', () => {
-  Vue.watch(
-    g3wsdk.core.ApplicationState.sidebar.contentsdata,
-    (data = []) => data.filter(d => 'editing-panel' === d.content.id).forEach(d => { //wait for editing panel
-      const tolboxes = d.content.internalPanel.$el.querySelector('#toolboxes');
-      let iframe_btn = document.querySelector('#edit_in_iframe');
-      if (!tolboxes || iframe_btn) {
-        return;
-      }
-      // append "edit in iframe" element immediately after toolboxes
-      tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
-      iframe_btn = document.querySelector('#edit_in_iframe');
-      iframe_btn.addEventListener('click', () => {
-        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
-        w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
-        w.addEventListener('message', e => {
-          if ('app:ready' === e.data.action) {
-            w.document.querySelector('iframe').contentWindow.postMessage({
-              id:      null,
-              action: 'editing:add',
-              data: {
-                qgs_layer_id: Array.from(tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]), // toolbox id = layer id
-                properties: { },
-              }
-            }, '*');
+g3wsdk.gui.GUI.onafter('showPanel', panel => {
+  if ('editing-panel' !== panel.getId()) {
+    return;
+  }
+  
+  const tolboxes = panel.internalPanel.$el.querySelector('#toolboxes');
+  let iframe_btn = document.querySelector('#edit_in_iframe');
+  if (!tolboxes || iframe_btn) {
+    return;
+  }
+  // append "edit in iframe" element immediately after toolboxes
+  tolboxes.insertAdjacentHTML('afterend', `<p><a href="#" id="edit_in_iframe">&#x270f; Edit in iframe</a></p>`);
+  iframe_btn = document.querySelector('#edit_in_iframe');
+  iframe_btn.addEventListener('click', () => {
+    const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+    w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+    w.addEventListener('message', e => {
+      if ('app:ready' === e.data.action) {
+        w.document.querySelector('iframe').contentWindow.postMessage({
+          id:      null,
+          action: 'editing:add',
+          data: {
+            qgs_layer_id: Array.from(tolboxes.children).filter(item => item.classList.contains('toolbox') && 'none' !== item.style.display).map(item => item.id.split('id_toolbox_')[1]), // toolbox id = layer id
+            properties: { },
           }
-        }, false);
-        // prevent page refresh (eg. CTRL+R)
-        w.onbeforeunload = () => w.close();
-      });
-    })
-  );
+        }, '*');
+      }
+    }, false);
+    // prevent page refresh (eg. CTRL+R)
+    w.onbeforeunload = () => w.close();
+  });
 });
 
 /**

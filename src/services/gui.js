@@ -35,6 +35,8 @@ export default new (class GUI extends G3WObject {
       'registerPlugin',
       'online',
       'offline',
+      /** @since 4.1.0 */
+      'showPanel',
     ];
 
     this.isready           = false;
