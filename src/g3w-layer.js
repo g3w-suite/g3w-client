@@ -2258,6 +2258,7 @@ export class Layer extends G3WObject {
         getLayer:    () => this,
         getFeatures: (...args) => this.#getFeaturesQGIS(provider, ...args),
         query:       (...args) => this.#queryQGIS(provider, ...args),
+        getConfig:   () => XHR.get({ url: this.getUrl('config') }),
       };
     }
 
