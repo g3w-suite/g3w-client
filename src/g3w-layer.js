@@ -3521,11 +3521,15 @@ export class Layer extends G3WObject {
     }
 
     // WMS Layer
-    if (this.isWMS()) {
-       mapLayer = new Layer(
+    if (Layer.LayerTypes.IMAGE === this.type) {
+       mapLayer = Object.assign(new Layer(
         { ...options, url: this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl()) },
         { _RASTER_LAYER: { params: extraParams, method: this.isExternalWMS() ? 'GET' : this.getOwsMethod() } }
-      );
+      ), {
+        getSource() {
+          return this.getOLLayer().getSource();
+        }
+      })
     }
 
     // Vector Layer
