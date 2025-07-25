@@ -64,12 +64,11 @@ export default class Panel extends G3WObject {
   }
 
   async mount(parent) {
-    const panel = this.internalPanel;
+    const panel   = this.internalPanel;
     const vueComp = panel.$mount();
     $(parent).append(vueComp.$el);
-    vueComp.$nextTick(() => {
-      if (panel.onShow) { panel.onShow();}
-    });
+    await vueComp.$nextTick();
+    if (panel.onShow) { panel.onShow();}
     return true;
   }
 
