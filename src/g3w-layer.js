@@ -169,7 +169,7 @@ const Providers = {
 
       const _layers = undefined === opts.layers ? [this._layer] : opts.layers;
 
-      return opts.raw ? response : Parsers[_layers[0].getInfoFormat()]({
+      return opts.raw ? response : Layer._parse(_layers[0].getInfoFormat(), {
         response,
         projections: this._projections,
         layers:      _layers,
@@ -300,7 +300,7 @@ const Providers = {
               console.warn('unsupported method: ', method);
             }
             return {
-              data: Parsers[layers[0].getInfoFormat()]({
+              data: Layer._parse(layers[0].getInfoFormat(), {
                 response,
                 layers,
                 wms:         true,
@@ -374,7 +374,7 @@ const Providers = {
               response = await XHR.post({ url, data: params })
             }
 
-            const data = Parsers[layers[0].getInfoFormat()]({
+            const data = Layer._parse(layers[0].getInfoFormat(), {
               response,
               projections: {
                 map:   ApplicationState.project.getProjection(),
@@ -428,9 +428,10 @@ const Providers = {
          if (response && response.result) {
           data.push({ 
             layer:    this._layer,
-            features: Parsers['g3w-vector/json'](
+            features: Layer._parse('g3w-vector/json',
               response.vector && response.vector.data || {},
-              { projections: { map: ApplicationState.project.getProjection() || this._layer.getProjection(), layer: null }})
+              { projections: { map: ApplicationState.project.getProjection() || this._layer.getProjection(), layer: null }}
+            )
               .map(f => { f.set(G3W_FID, f.getId()); return f; }) //set g3w_fid to have G3W_FID property,
           })
          } else {
@@ -445,253 +446,6 @@ const Providers = {
     }  
   }
 };
-
-/**
- * Response parser (content types)
- * 
- * ORIGINAL SOURCE: src/utils/parsers/index.js@v4.0.0
- * 
- * @example Parse('application/vnd.ogc.gml')({ layers, response });
- */
-export const Parsers = new Proxy({
-
-  'g3w-vector/gml'({ data, layer } = {}) {
-    try {
-      return (
-        new ol.format.WMSGetFeatureInfo({ layers: layer.config?.infolayer || layer.config.origname })
-        ).readFeatures(
-          // extract gml from multiple (Tuscany region)
-          '--' === data.substr(0, 2)
-            ? data
-              .split(/\r\n--/)
-              .filter(part => /<([^ ]*)FeatureCollection/.test(part) || /<([^ ]*)msGMLOutput/.test(part))
-              .map(part => part.substr(part.indexOf('<?xml')))
-              .pop()
-            : data
-        );
-    } catch(e) {
-      console.warn(e);
-      return [];
-    }
-  },
-
-  'g3w-vector/json'(data, options) {
-    try {
-      return (new ol.format.GeoJSON({
-        geometryName:      'geometry',
-        dataProjection:    options.crs,
-        featureProjection: options.mapCrs || options.crs,
-      })).readFeatures('string' === typeof data ? JSON.parse(data) : data)
-    } catch (e) {
-      console.warn(e);
-      return [];
-    }
-  },
-
-  'application/json'({ response, projections, layers = [], wms = true, filtertoken } = {}) {
-    const layersFeatures = layers.map(layer => ({ layer, features: [], filtertoken }));
-    const layersId       = layers.map(l => wms ? l.getWMSLayerName() : l.getWFSLayerName());
-    // features
-    (
-      response
-        ? (new ol.format.GeoJSON({
-            geometryName:          'geometry',
-            defaultDataProjection: projections.layer || projections.map,
-          })).readFeatures(response)
-        : []
-    ).filter(feature => {
-      const featureId = feature.getId();
-      const g3w_fid   = sanitizeFidFeature(featureId);
-      // in the case of wms getfeature without a filter return string contain layerName or layerid
-      const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
-      // skip when ..
-      if (-1 === index) {
-        return false;
-      }
-      const props = feature.getProperties();
-      feature.set(G3W_FID, g3w_fid);
-      // fields
-      layersFeatures[index]
-        .layer
-        .getFields()
-        .filter(f => f.show && undefined === props[f.name] && undefined !== props[f.label])
-        .forEach(f => feature.set(f.name, props[f.label]));
-      // features
-      layersFeatures[index].features.push(feature);
-    });
-    return layersFeatures;
-  },
-
-  'application/geojson'({ layers, response } = {}) {
-    return response ? layers.map(layer => ({ layer, features: Parsers['g3w-vector/json'](response, {}) })) : [];
-  },
-
-  'text/plain'({ layers, response } = {}) {
-    return layers.map(layer => ({ layer, rawdata: response }));
-  },
-
-  'text/gml'({ layers, response }) {
-    return layers.map(layer => ({ layer, features: Parsers['g3w-vector/gml']({ data: response, layer: layers[0] }) }));
-  },
-
-  'application/vnd.ogc.gml'({ response, projections, layers, wms = true } = {}) {
-    // convert XML response to string
-    if (response && 'string' !== typeof response && !(response instanceof String)) {
-      response = new XMLSerializer().serializeToString(response);
-    }
-
-    // sanitize layer name (removes: whitespaces, quotes, parenthesis, slashes)
-    if (response) {
-      response = layers.reduce((acc, layer, i) => {
-        let id = (wms && layer.config.wms_use_layer_ids ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
-        if (!wms) {
-          id = id.replace(/[/\\]+/g, '').replaceAll(':', '-');
-        }
-        return acc.replace(new RegExp(`qgs:${id}`, 'g'), `qgs:layer${i}`);
-      }, response);
-    }
-
-    // fields starting with an invalid key
-    const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)|qgs:(\w+):(\w+)/g)).filter((_, i) => 0 === i % 2);
-
-    // numeric value (integer or float)
-    if (invalids) {
-      response = invalids.reduce((acc, find) => acc.replace(new RegExp(find[0], 'g'), `qgs:${NUMERIC_FIELD}${find[1]}${find[2]}`), response);
-    }
-
-    // HOTFIX: null characther ("\u0000")
-    if (response) {
-      response = response.replace(new RegExp(String.fromCharCode(0), 'g'), '0');
-    }
-
-    const parsed = []; //Array contains item object ({layer, features})
-    let xml;
-
-    try {
-      xml = (new DOMParser).parseFromString(response, "text/xml");
-
-      // skip when response has no features
-      if (!xml.querySelector('FeatureCollection > featureMember')) {
-        throw 'no features in response';
-      }
-
-      layers.forEach((layer, i) => {
-
-        const cloned = xml.cloneNode(true);
-        let feats = [];
-
-        // get layers by name (eg. "qgs:layer0")
-        const qgs = [...cloned.querySelectorAll(`FeatureCollection > featureMember > layer${i}`)];
-
-        // set "g3w_fid" attribute from `fid="<layer_name_or_id.fid>"`
-        qgs.forEach(feat => {
-          const fid = (feat.getAttribute('fid') || '.').split('.')[1];
-          if (fid) {
-            const g3w_fid = cloned.createElement('gml:' + G3W_FID);
-            feat.setAttribute('fid', fid);
-            g3w_fid.textContent = fid;
-            feat.appendChild(g3w_fid);
-          }
-          feats.push(feat.parentNode);
-        });
-
-        // get multi layers wms (eg. "layer0" → "layer0_0" + "layer1_0")
-        if (qgs.length > 1) {
-          const grouped = groupBy(qgs, feat => Object.values(feat.children).map(d => d.nodeName));
-          if (Object.keys(grouped).length > 1) {
-            Object.keys(grouped).forEach((key, i) => grouped[key].forEach((node, j) => {
-              // see: https://andreiglingeanu.me/rename-element-tag/
-              const renamed = cloned.createElement(`qgs:layer${i}_${j}`);
-              [...node.attributes].map(({ name, value }) => { renamed.setAttribute(name, value); });
-              while (node.firstChild) { renamed.appendChild(node.firstChild); }
-              const feat = cloned.createElement('gml:featureMember');
-              feat.appendChild(renamed);
-              node.parentNode.insertAdjacentElement('beforebegin', feat);
-              if (1 === node.parentNode.children.length) {
-                node.parentNode.parentNode.removeChild(node.parentNode);
-              } else {
-                node.parentNode.removeChild(node);
-              }
-              feats.push(feat);
-            }));
-          }
-        }
-
-        // keep only current layer features
-        cloned.querySelectorAll('FeatureCollection > featureMember').forEach(node => {
-          if (!feats.includes(node)) {
-            node.parentNode.removeChild(node);
-          }
-        });
-
-        feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(cloned.documentElement.outerHTML);
-
-        // whether need to re-project features
-        const is_reprojected = projections.layer && projections.layer.getCode() !== projections.map.getCode() && feats.length && !!feats[0].getGeometry();
-
-        /** @FIXME add description */
-        if (feats.length && invalids) {
-          const fields = Object.keys(feats[0].getProperties()).filter(p => -1 !== p.indexOf(NUMERIC_FIELD));
-          feats.forEach(f => {
-            fields.forEach(_field => {
-              const invalid = invalids.find(find => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
-              f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
-              f.unset(_field);
-            })
-          });
-        }
-
-        // transform features
-        if (is_reprojected) {
-          //filter feature with geometry
-          feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
-        }
-
-        // inverted axis --> reverse features coordinates
-        if ('ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
-          //filter feature with geometry
-          feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
-        }
-
-        // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
-        if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
-          feats.forEach(f => removeZValue({ feature: f }));
-        }
-
-        parsed.unshift({ layer, features: feats });
-
-      });
-    } catch (e) {
-      console.warn(e);
-    }
-
-    /** @since 3.9.1 handle server errors */
-    if (xml.querySelector('ServiceException')) {
-      GUI.showUserMessage({
-        type:        'warning',
-        textMessage: true,
-        message:     `${layers[0].getName()} - ${xml.querySelector('ServiceException').innerText}`
-      })
-    }
-
-    return parsed;
-  },
-}, {
-  get(target, prop, receiver) {
-    if (prop in target) {
-      return Reflect.get(target, prop, receiver);
-    } else {
-      return function({ layers = [] } = {}) {
-        return layers.map(layer => ({ layer, rawdata: _('Not supported format') }))
-      }
-    }
-  }
-});
-
-
-Parsers['g3w-vector/geojson'] = Parsers['g3w-vector/json']; 
-Parsers['text/html']          = Parsers['text/plain']; 
-
 
 /**
  * Base class for all layers
@@ -2309,7 +2063,7 @@ export class Layer extends G3WObject {
 
       if (response.result) {
         return {
-          data: Parsers['application/json']({
+          data: Layer._parse('application/json', {
             layers:      [provider._layer],
             response:    response.vector.data,
             filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
@@ -4213,4 +3967,262 @@ Layer.LayerTypes = {
   TABLE:  "table",
   IMAGE:  "image",
   VECTOR: "vector"
+};
+
+Layer._getProvider = function(name, layer) {
+  const provider = new Providers[name];
+  // BACKCOMP v3.x
+  return Object.assign(provider, {
+    _name:       name,
+    _layer:      layer,
+    getLayer:    () => provider._layer,
+    setLayer:    l  => provider._layer = l,
+    getFeatures: provider.getFeatures || (() => console.log('overwriteby single provider')),
+    query:       provider.query       || (() => console.log('overwriteby single provider')),
+    getName:     () => provider._name,
+  });
+}
+
+/**
+ * Response parser (content types)
+ * 
+ * ORIGINAL SOURCE: src/utils/parsers/index.js@v4.0.0
+ * 
+ * @example Layer._parse('application/vnd.ogc.gml', { layers, response });
+ */
+Layer._parse = function(type, params, opts) {
+
+  const Parsers = this.parsers = (this.parsers || {
+
+    'g3w-vector/gml'({ data, layer } = {}) {
+      try {
+        return (
+          new ol.format.WMSGetFeatureInfo({ layers: layer.config?.infolayer || layer.config.origname })
+          ).readFeatures(
+            // extract gml from multiple (Tuscany region)
+            '--' === data.substr(0, 2)
+              ? data
+                .split(/\r\n--/)
+                .filter(part => /<([^ ]*)FeatureCollection/.test(part) || /<([^ ]*)msGMLOutput/.test(part))
+                .map(part => part.substr(part.indexOf('<?xml')))
+                .pop()
+              : data
+          );
+      } catch(e) {
+        console.warn(e);
+        return [];
+      }
+    },
+
+    'g3w-vector/json'(data, options) {
+      try {
+        return (new ol.format.GeoJSON({
+          geometryName:      'geometry',
+          dataProjection:    options.crs,
+          featureProjection: options.mapCrs || options.crs,
+        })).readFeatures('string' === typeof data ? JSON.parse(data) : data)
+      } catch (e) {
+        console.warn(e);
+        return [];
+      }
+    },
+
+    'application/json'({ response, projections, layers = [], wms = true, filtertoken } = {}) {
+      const layersFeatures = layers.map(layer => ({ layer, features: [], filtertoken }));
+      const layersId       = layers.map(l => wms ? l.getWMSLayerName() : l.getWFSLayerName());
+      // features
+      (
+        response
+          ? (new ol.format.GeoJSON({
+              geometryName:          'geometry',
+              defaultDataProjection: projections.layer || projections.map,
+            })).readFeatures(response)
+          : []
+      ).filter(feature => {
+        const featureId = feature.getId();
+        const g3w_fid   = sanitizeFidFeature(featureId);
+        // in the case of wms getfeature without a filter return string contain layerName or layerid
+        const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
+        // skip when ..
+        if (-1 === index) {
+          return false;
+        }
+        const props = feature.getProperties();
+        feature.set(G3W_FID, g3w_fid);
+        // fields
+        layersFeatures[index]
+          .layer
+          .getFields()
+          .filter(f => f.show && undefined === props[f.name] && undefined !== props[f.label])
+          .forEach(f => feature.set(f.name, props[f.label]));
+        // features
+        layersFeatures[index].features.push(feature);
+      });
+      return layersFeatures;
+    },
+
+    'application/geojson'({ layers, response } = {}) {
+      return response ? layers.map(layer => ({ layer, features: Layer._parse('g3w-vector/json', response, {}) })) : [];
+    },
+
+    'text/plain'({ layers, response } = {}) {
+      return layers.map(layer => ({ layer, rawdata: response }));
+    },
+
+    'text/gml'({ layers, response }) {
+      return layers.map(layer => ({ layer, features: Layer._parse('g3w-vector/gml', { data: response, layer: layers[0] }) }));
+    },
+
+    'application/vnd.ogc.gml'({ response, projections, layers, wms = true } = {}) {
+      // convert XML response to string
+      if (response && 'string' !== typeof response && !(response instanceof String)) {
+        response = new XMLSerializer().serializeToString(response);
+      }
+
+      // sanitize layer name (removes: whitespaces, quotes, parenthesis, slashes)
+      if (response) {
+        response = layers.reduce((acc, layer, i) => {
+          let id = (wms && layer.config.wms_use_layer_ids ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
+          if (!wms) {
+            id = id.replace(/[/\\]+/g, '').replaceAll(':', '-');
+          }
+          return acc.replace(new RegExp(`qgs:${id}`, 'g'), `qgs:layer${i}`);
+        }, response);
+      }
+
+      // fields starting with an invalid key
+      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)|qgs:(\w+):(\w+)/g)).filter((_, i) => 0 === i % 2);
+
+      // numeric value (integer or float)
+      if (invalids) {
+        response = invalids.reduce((acc, find) => acc.replace(new RegExp(find[0], 'g'), `qgs:${NUMERIC_FIELD}${find[1]}${find[2]}`), response);
+      }
+
+      // HOTFIX: null characther ("\u0000")
+      if (response) {
+        response = response.replace(new RegExp(String.fromCharCode(0), 'g'), '0');
+      }
+
+      const parsed = []; //Array contains item object ({layer, features})
+      let xml;
+
+      try {
+        xml = (new DOMParser).parseFromString(response, "text/xml");
+
+        // skip when response has no features
+        if (!xml.querySelector('FeatureCollection > featureMember')) {
+          throw 'no features in response';
+        }
+
+        layers.forEach((layer, i) => {
+
+          const cloned = xml.cloneNode(true);
+          let feats = [];
+
+          // get layers by name (eg. "qgs:layer0")
+          const qgs = [...cloned.querySelectorAll(`FeatureCollection > featureMember > layer${i}`)];
+
+          // set "g3w_fid" attribute from `fid="<layer_name_or_id.fid>"`
+          qgs.forEach(feat => {
+            const fid = (feat.getAttribute('fid') || '.').split('.')[1];
+            if (fid) {
+              const g3w_fid = cloned.createElement('gml:' + G3W_FID);
+              feat.setAttribute('fid', fid);
+              g3w_fid.textContent = fid;
+              feat.appendChild(g3w_fid);
+            }
+            feats.push(feat.parentNode);
+          });
+
+          // get multi layers wms (eg. "layer0" → "layer0_0" + "layer1_0")
+          if (qgs.length > 1) {
+            const grouped = groupBy(qgs, feat => Object.values(feat.children).map(d => d.nodeName));
+            if (Object.keys(grouped).length > 1) {
+              Object.keys(grouped).forEach((key, i) => grouped[key].forEach((node, j) => {
+                // see: https://andreiglingeanu.me/rename-element-tag/
+                const renamed = cloned.createElement(`qgs:layer${i}_${j}`);
+                [...node.attributes].map(({ name, value }) => { renamed.setAttribute(name, value); });
+                while (node.firstChild) { renamed.appendChild(node.firstChild); }
+                const feat = cloned.createElement('gml:featureMember');
+                feat.appendChild(renamed);
+                node.parentNode.insertAdjacentElement('beforebegin', feat);
+                if (1 === node.parentNode.children.length) {
+                  node.parentNode.parentNode.removeChild(node.parentNode);
+                } else {
+                  node.parentNode.removeChild(node);
+                }
+                feats.push(feat);
+              }));
+            }
+          }
+
+          // keep only current layer features
+          cloned.querySelectorAll('FeatureCollection > featureMember').forEach(node => {
+            if (!feats.includes(node)) {
+              node.parentNode.removeChild(node);
+            }
+          });
+
+          feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(cloned.documentElement.outerHTML);
+
+          // whether need to re-project features
+          const is_reprojected = projections.layer && projections.layer.getCode() !== projections.map.getCode() && feats.length && !!feats[0].getGeometry();
+
+          /** @FIXME add description */
+          if (feats.length && invalids) {
+            const fields = Object.keys(feats[0].getProperties()).filter(p => -1 !== p.indexOf(NUMERIC_FIELD));
+            feats.forEach(f => {
+              fields.forEach(_field => {
+                const invalid = invalids.find(find => `${find[1]}${find[2]}` === _field.replace(NUMERIC_FIELD, ''));
+                f.set(invalid[0].replace('qgs:', ''), [].concat(f.get(_field))[0]);
+                f.unset(_field);
+              })
+            });
+          }
+
+          // transform features
+          if (is_reprojected) {
+            //filter feature with geometry
+            feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(f.getGeometry().transform(projections.layer.getCode(), projections.map.getCode())));
+          }
+
+          // inverted axis --> reverse features coordinates
+          if ('ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
+            //filter feature with geometry
+            feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+          }
+
+          // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
+          if (layer.isGeoLayer() && !is3DGeometry(layer.getGeometryType())) {
+            feats.forEach(f => removeZValue({ feature: f }));
+          }
+
+          parsed.unshift({ layer, features: feats });
+
+        });
+      } catch (e) {
+        console.warn(e);
+      }
+
+      /** @since 3.9.1 handle server errors */
+      if (xml.querySelector('ServiceException')) {
+        GUI.showUserMessage({
+          type:        'warning',
+          textMessage: true,
+          message:     `${layers[0].getName()} - ${xml.querySelector('ServiceException').innerText}`
+        })
+      }
+
+      return parsed;
+    },
+  });
+
+  Parsers['g3w-vector/geojson'] = Parsers['g3w-vector/json']; 
+  Parsers['text/html']          = Parsers['text/plain']; 
+
+  if (Parsers[type]) {
+    return Parsers[type](params, opts);
+  }
+
+  return (params?.layers || []).map(layer => ({ layer, rawdata: _('Not supported format') }));
 };
