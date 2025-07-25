@@ -1266,27 +1266,6 @@ export class Layer extends G3WObject {
 
     this.customParams = {};
 
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/layers/baselayer.js@v3.10.0
-     * 
-     * @since 3.11.0
-     */
-    if (this.isWMS()) {
-      this._mapLayer = new Layer(
-        {
-          url:   this.getWmsUrl(),
-          id:    this.state.id,
-          tiled: this.state.tiled,
-        },
-        { _RASTER_LAYER: true }
-      );
-      this._mapLayer.addLayer(this);
-    } else if (Layer.LayerTypes.IMAGE === this.type) {
-      this._mapLayer = this;
-    } else {
-      this._mapLayer = null; // later that will be added to the map
-    }
   }
 
   /******************************************************************************************
@@ -2454,18 +2433,6 @@ export class Layer extends G3WObject {
    * @returns {*} layer source (ex. ogr, spatialite, etc..)
    */
   getSource() {
-    if (this.getMapLayer()) {
-      return this.getMapLayer().getOLLayer().getSource();
-    }
-
-    if (this.getOLLayer()) {
-      return this.getOLLayer().getSource();
-    }
-
-    if (Layer.LayerTypes.TABLE === this.type) {
-      return this._featuresstore;
-    }
-
     return this.state.source;
   }
 
@@ -3744,13 +3711,13 @@ export class Layer extends G3WObject {
       return this._mapLayer;
     }
 
-    let mapLayer = this._mapLayer;
+    let mapLayer;
 
     options.iframe_internal  = Layer.LayerTypes.IMAGE === this.type ? ApplicationState.iframe && !this.isExternalWMS() : options.iframe_internal;
 
     // TMS Layer
     if (Layer.LayerTypes.IMAGE === this.type && this.isCached() && 'tms' === (this.state.cache_service_type || 'tms')) {
-      return new Layer(
+      mapLayer = new Layer(
         {
           ...options,
           extent:         (this.state.bbox ? [this.state.bbox.minx, this.state.bbox.miny, this.state.bbox.maxx, this.state.bbox.maxy] : null),
@@ -3764,7 +3731,7 @@ export class Layer extends G3WObject {
 
     // ARCGIS Layer
     if (Layer.LayerTypes.IMAGE === this.type && this.isExternalWMS() && "arcgismapserver" === this.state?.source?.type) {
-      return new Layer(
+      mapLayer = new Layer(
         { ...options, ...this.state.source },
         { _RASTER_LAYER: { params: extraParams } }
       );
@@ -3772,7 +3739,7 @@ export class Layer extends G3WObject {
 
     // WMTS Layer
     if (Layer.LayerTypes.IMAGE === this.type && this.isCached() && 'wmts' === this.state.cache_service_type) {
-      return new Layer({
+      mapLayer = new Layer({
           ...options,
           url:               this.getCacheUrl(),
           cache_provider:    this.state.cache_provider,
@@ -3788,7 +3755,7 @@ export class Layer extends G3WObject {
 
     // WMST Layer
     if (Layer.LayerTypes.IMAGE === this.type && this.isExternalWMS() && "wmst" === this.state?.source?.type) {
-      return new Layer(
+      mapLayer = new Layer(
         {
           ...options,
           url: this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl()),
@@ -3800,8 +3767,8 @@ export class Layer extends G3WObject {
     }
 
     // WMS Layer
-    if (Layer.LayerTypes.IMAGE === this.type) {
-      return new Layer(
+    if (this.isWMS()) {
+       mapLayer = new Layer(
         { ...options, url: this.isCached() ? this.getCacheUrl() : (options.url || this.getWmsUrl()) },
         { _RASTER_LAYER: { params: extraParams, method: this.isExternalWMS() ? 'GET' : this.getOwsMethod() } }
       );
