@@ -2269,6 +2269,7 @@ export class Layer extends G3WObject {
         getLayer:    () => this,
         getFeatures: (...args) => this.#getFeaturesJSON(provider, ...args),
         query:       () => [],
+        getConfig:   () => {},
       };
     }
 
@@ -2292,6 +2293,7 @@ export class Layer extends G3WObject {
         getLayer:    () => this,
         getFeatures: (() => console.log('overwriteby single provider')),
         query:       (...args) => this.#queryG3W(provider, ...args),
+        getConfig:   () => {},
       };
     }
 
@@ -2324,6 +2326,7 @@ export class Layer extends G3WObject {
         getLayer:    () => this,
         getFeatures: (() => console.log('overwriteby single provider')),
         query:       (...args) => this.#queryWMS(provider, ...args),
+        getConfig:   () => {},
       };
     }
 
