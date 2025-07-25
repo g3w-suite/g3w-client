@@ -1554,8 +1554,7 @@ export class Layer extends G3WObject {
     page,  //@since 3.11.0
     page_size, //@since 3.11.0
   } = {}) {
-    const provider        = this.getProvider('data');
-    provider._projections = provider._projections || { map: null, layer: null };
+    const projections     = { map: null, layer: null };
     const params   =  {
       field,
       suggest,
@@ -1570,11 +1569,11 @@ export class Layer extends G3WObject {
       page_size,
     };
     try {
-      const url = queryUrl ? queryUrl : provider.getLayer().getUrl('data');
+      const url = queryUrl ? queryUrl : this.getUrl('data');
       const response =  await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}); // since g3w-admin@v3.7
       // vector layer
-      if ('table' !== provider.getLayer().getType()) {
-        provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;
+      if ('table' !== this.getType()) {
+        projections.map = ApplicationState.project.getProjection() || projections.layer;
       }
 
       if (raw)                           { return response }
@@ -1584,10 +1583,10 @@ export class Layer extends G3WObject {
       if (response.result) {
         return {
           data: Layer._parse('application/json', {
-            layers:      [provider.getLayer()],
+            layers:      [this],
             response:    response.vector.data,
             filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
-            projections: provider._projections,
+            projections,
           }),
           count: response.vector.count, //@since v3.11.0 take in account feature count (all). It use for pagination purpose
         }
@@ -2000,17 +1999,17 @@ export class Layer extends G3WObject {
    * @param opts.I                         wms request parameter 
    * @param opts.J                         wms request parameter 
    */
-  async #queryQGIS(provider, opts = {}) {
-    provider._projections      = provider._projections || { map: null, layer: null };
+  async #queryQGIS(opts = {}) {
+    const projections      = { map: null, layer: null };
   
-    const is_table = 'table' === provider.getLayer().getType();
+    const is_table = 'table' === this.getType();
 
     // in case not alphanumeric layer set projection
     if (!is_table) {
-      provider._projections.map = ApplicationState.project.getProjection() || provider._projections.layer;
+      projections.map = ApplicationState.project.getProjection() || projections.layer;
     }
 
-    const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : provider.getLayer().getWMSLayerName();
+    const layers = opts.layers ? opts.layers.map(l => l.getWMSLayerName()).join(',') : this.getWMSLayerName();
 
     // skip when ..
     if (!opts.filter) {
@@ -2023,13 +2022,13 @@ export class Layer extends G3WObject {
 
     // check if geometry filter. If not i have to remove projection layer
     if ('geometry' !== filter[0].type) {
-      provider._projections.layer = null;
+      projections.layer = null;
     }
 
     filter = filter.filter(f => f.value);
 
     const response = await XHR.get({
-      url: opts.queryUrl || provider.getLayer().getUrl('query'),
+      url: opts.queryUrl || this.getUrl('query'),
       params: {
         SERVICE:       'WMS',
         VERSION:       '1.3.0',
@@ -2037,9 +2036,9 @@ export class Layer extends G3WObject {
         filtertoken:   ApplicationState.tokens.filtertoken,
         LAYERS:        layers,
         QUERY_LAYERS:  layers,
-        INFO_FORMAT:   provider.getLayer().getInfoFormat() || 'application/vnd.ogc.gml',
+        INFO_FORMAT:   this.getInfoFormat() || 'application/vnd.ogc.gml',
         FEATURE_COUNT: opts.feature_count || 10,
-        CRS:           (is_table ? ApplicationState.map.epsg : provider._projections.map.getCode()),
+        CRS:           (is_table ? ApplicationState.map.epsg : projections.map.getCode()),
         I:             opts.I,
         J:             opts.J,
         FILTER:        filter.length ? filter.map(f => f.value).join(';') : undefined,
@@ -2047,11 +2046,11 @@ export class Layer extends G3WObject {
       },
     });
 
-    const _layers = undefined === opts.layers ? [provider.getLayer()] : opts.layers;
+    const _layers = undefined === opts.layers ? [this] : opts.layers;
 
     return opts.raw ? response : Layer._parse(_layers[0].getInfoFormat(), {
       response,
-      projections: provider._projections,
+      projections,
       layers:      _layers,
       wms:         true,
     });
@@ -2059,18 +2058,18 @@ export class Layer extends G3WObject {
   }
 
   /** Load editing features (Read / Write) */
-  async #getFeaturesQGIS(provider, options = {}, params = {}) {
+  async #getFeaturesQGIS(options = {}, params = {}) {
     // filter null values
     Object.entries(params).forEach(([key, value]) => { if ([null, undefined].includes(value)) { delete params[key]; } });
 
     // editing mode
     if (options.editing) {
-      return await GUI.getPlugin('editing').fetchVectorData(provider.getLayer(), options, params);
+      return await GUI.getPlugin('editing').fetchVectorData(this, options, params);
     }
 
     // read mode
     const response = await XHR.post({
-      url:         provider.getLayer().getUrl('data'),
+      url:         this.getUrl('data'),
       data:        JSON.stringify(params),
       contentType: 'application/json',
     });
@@ -2082,15 +2081,15 @@ export class Layer extends G3WObject {
 
   }
 
-  async #getFeaturesJSON(provider, opts = {}) {
+  async #getFeaturesJSON(opts = {}) {
     return (new ol.format.GeoJSON()).readFeatures(
-      opts.data || (await XHR.get({ url: opts.url || provider.get('source').url })).results, {
+      opts.data || (await XHR.get({ url: opts.url || this.get('source').url })).results, {
       featureProjection: opts.mapProjection,
       dataProjection:    opts.projection || 'EPSG:4326',
     })
   }
 
-  async #queryG3W(provider, opts = {}, params = {}) {
+  async #queryG3W(opts = {}, params = {}) {
     const filter = opts.filter || {};
     const spatialMethod = filter.config.spatialMethod || 'intersects';
     switch(filter.type) {
@@ -2109,16 +2108,16 @@ export class Layer extends G3WObject {
 
     try {
       const response = await XHR.post({ 
-        url :  provider.getLayer().getUrl('data'),
+        url :  this.getUrl('data'),
         contentType: 'application/json',
         data:        JSON.stringify(params),
       });
       if (response && response.result) {
         data.push({ 
-          layer:    provider.getLayer(),
+          layer:    this,
           features: Layer._parse('g3w-vector/json',
             response.vector && response.vector.data || {},
-            { projections: { map: ApplicationState.project.getProjection() || provider.getLayer().getProjection(), layer: null }}
+            { projections: { map: ApplicationState.project.getProjection() || this.getProjection(), layer: null }}
           )
             .map(f => { f.set(G3W_FID, f.getId()); return f; }) //set g3w_fid to have G3W_FID property,
         })
@@ -2132,9 +2131,9 @@ export class Layer extends G3WObject {
     return { data }
   }
 
-  #queryWMS(provider, opts = {}) {
+  #queryWMS(opts = {}) {
     const {
-      layers        = [provider.getLayer()],
+      layers        = [this],
       size          = [101, 101],
       coordinates   = [],
       resolution,
@@ -2145,7 +2144,7 @@ export class Layer extends G3WObject {
     const dy   = resolution * size[1] / 2;
     const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
-    const projection = ApplicationState.project.getProjection() || provider.getLayer().getProjection();
+    const projection = ApplicationState.project.getProjection() || this.getLayer().getProjection();
     const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
     const url    = layers[0].getQueryUrl();
@@ -2159,10 +2158,10 @@ export class Layer extends G3WObject {
       VERSION:              '1.3.0',
       REQUEST:              'GetFeatureInfo',
       CRS:                  projection.getCode(),
-      LAYERS:               (layers || [provider.getLayer().getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
-      QUERY_LAYERS:         (layers || [provider.getLayer().getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+      LAYERS:               (layers || [this.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
+      QUERY_LAYERS:         (layers || [this.getWMSInfoLayerName()]).map(l => l.getWMSInfoLayerName()).join(','),
       filtertoken:          ApplicationState.tokens.filtertoken,
-      INFO_FORMAT:          provider.getLayer().getInfoFormat() || 'application/vnd.ogc.gml',
+      INFO_FORMAT:          this.getInfoFormat() || 'application/vnd.ogc.gml',
       FEATURE_COUNT:        opts.feature_count ?? 10,
       WITH_GEOMETRY:        true,
       DPI:                  DOTS_PER_INCH,
@@ -2256,8 +2255,8 @@ export class Layer extends G3WObject {
       provider = {
         getName:     () => 'qgis',
         getLayer:    () => this,
-        getFeatures: (...args) => this.#getFeaturesQGIS(provider, ...args),
-        query:       (...args) => this.#queryQGIS(provider, ...args),
+        getFeatures: this.#getFeaturesQGIS.bind(this),
+        query:       this.#queryQGIS.bind(this),
         getConfig:   () => XHR.get({ url: this.getUrl('config') }),
       };
     }
@@ -2267,7 +2266,7 @@ export class Layer extends G3WObject {
       provider = {
         getName:     () => 'geojson',
         getLayer:    () => this,
-        getFeatures: (...args) => this.#getFeaturesJSON(provider, ...args),
+        getFeatures: this.#getFeaturesJSON.bind(this),
         query:       () => [],
         getConfig:   () => {},
       };
@@ -2292,7 +2291,7 @@ export class Layer extends G3WObject {
         getName:     () => 'g3w',
         getLayer:    () => this,
         getFeatures: (() => console.log('overwriteby single provider')),
-        query:       (...args) => this.#queryG3W(provider, ...args),
+        query:       this.#queryG3W.bind(this),
         getConfig:   () => {},
       };
     }
@@ -2325,7 +2324,7 @@ export class Layer extends G3WObject {
         getName:     () => 'wms',
         getLayer:    () => this,
         getFeatures: (() => console.log('overwriteby single provider')),
-        query:       (...args) => this.#queryWMS(provider, ...args),
+        query:       this.#queryWMS.bind(this),
         getConfig:   () => {},
       };
     }
