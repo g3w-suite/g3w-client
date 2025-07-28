@@ -577,7 +577,6 @@
   import { toRawType }               from 'utils/toRawType';
   import { throttle }                from 'utils/throttle';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-  import { getMapLayersByFilter }    from 'utils/getMapLayersByFilter';
   import { downloadFeatures }        from 'utils/downloadFeatures';
   import { showDownloadFormats }     from 'utils/downloadFeatures';
   import GUI                         from 'services/gui';
@@ -677,7 +676,10 @@
       },
 
       queryableLayers() {
-        return getMapLayersByFilter({ QUERYABLE: true });
+        return Object.values(ApplicationState.layers)
+          .filter(s => s.isQueryable())
+          .flatMap(s => s.getLayers())
+          .filter(l => l.isGeoLayer() && l.isQueryable());
       },
 
       selectedLayer() {

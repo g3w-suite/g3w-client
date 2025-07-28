@@ -7,7 +7,6 @@ import ApplicationState                   from 'g3w-state'
 import GUI                                from 'services/gui';
 
 import { groupBy }                        from 'utils/groupBy';
-import { getMapLayersByFilter }           from 'utils/getMapLayersByFilter';
 import { XHR }                            from 'utils/XHR';
 import { gettext as _ }                   from 'g3w-i18n';
 
@@ -52,12 +51,15 @@ export default {
   } = {}) {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
-    const layers  = getMapLayersByFilter({
-      QUERYABLE:       true,
-      SELECTED_OR_ALL: (0 === layerIds.length),
-      VISIBLE:         true,
-      IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
-    });
+    const layers  = Object.values(ApplicationState.layers)
+      .filter(s => s.isQueryable())
+      .flatMap(s => s.getLayers({
+        GEOLAYER:        true,
+        QUERYABLE:       true,
+        SELECTED_OR_ALL: (0 === layerIds.length),
+        VISIBLE:         true,
+        IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
+      }));
     try {
       return {
         result: true,
@@ -129,7 +131,9 @@ export default {
         },
         data: (!external && await this.getQueryLayersPromisesByGeometry(
           // layers
-          getMapLayersByFilter(layersFilterObject),
+          Object.values(ApplicationState.layers)
+            .filter(s => s.isQueryable())
+            .flatMap(s => s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) })),
           // options
           {
             geometry: ol.geom.Polygon.fromExtent(bbox),
@@ -192,15 +196,14 @@ export default {
         },
         data: (await this.getQueryLayersPromisesByGeometry(
           // layers
-          getMapLayersByFilter({
-            ...(
-              "boolean" === typeof excludeSelected
-                ? { SELECTED: !excludeSelected }
-                : { SELECTED_OR_ALL: true }
-            ),
-            QUERYABLE: true,
-            VISIBLE: true
-          }),
+          Object.values(ApplicationState.layers)
+            .filter(s => s.isQueryable())
+            .flatMap(s => s.getLayers({
+              GEOLAYER: true,
+              ...( "boolean" === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true } ),
+              QUERYABLE: true,
+              VISIBLE: true
+            })),
           // options
           {
             geometry,

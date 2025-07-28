@@ -219,7 +219,7 @@ export async function getProject(gid, options = {}) {
       "QGIS ogr",
       "QGIS mdal",
     ].includes(layerType)) {
-      return new Layer(config, { project, _TYPE: Layer.LayerTypes.TABLE });
+      return new Layer(config, { project, _TYPE: 'table' });
     }
 
     //@since 4.0.0 no crs exclude from layer list
@@ -229,7 +229,7 @@ export async function getProject(gid, options = {}) {
 
     // VECTOR LAYERS
     if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
-      return new Layer(config, { project, _TYPE: Layer.LayerTypes.VECTOR });
+      return new Layer(config, { project, _TYPE: 'vector' });
     }
 
     // RASTER LAYERS
@@ -247,7 +247,7 @@ export async function getProject(gid, options = {}) {
       "QGIS mdal",
       "QGIS arcgisfeatureserver",
     ].includes(layerType)) {
-      return new Layer(config, { project, _TYPE: Layer.LayerTypes.IMAGE });
+      return new Layer(config, { project, _TYPE: 'image' });
     }
 
     // RASTER LAYERS
@@ -263,12 +263,12 @@ export async function getProject(gid, options = {}) {
       "QGIS mdal",
       "QGIS arcgismapserver",
     ].includes(layerType)) {
-      return new Layer(config, { project, _TYPE: Layer.LayerTypes.IMAGE });
+      return new Layer(config, { project, _TYPE: 'image' });
     }
 
     // BASE LAYERS
     if (['OSM', 'Bing', 'TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)) {
-      return new Layer(config, { project, _TYPE: Layer.LayerTypes.IMAGE, _BASE_LAYER: config.servertype });
+      return new Layer(config, { project, _TYPE: 'image', _BASE_LAYER: config.servertype });
     }
 
     console.warn('Uknown layer type', config);

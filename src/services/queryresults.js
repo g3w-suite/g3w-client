@@ -362,7 +362,7 @@ export default new (class QueryResultsService extends G3WObject {
         let sourceType;
 
         if (is_string) {
-          sourceType = Layer.LayerTypes.VECTOR;
+          sourceType = 'vector';
         } else if (is_layer) {
           try {
             sourceType = layer.getSourceType();
@@ -1309,7 +1309,7 @@ export default new (class QueryResultsService extends G3WObject {
     const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
 
     // check query geometry (Polygon or MultiPolygon)
-    if (is_poly && !has_coords && Layer.LayerTypes.VECTOR === vectorLayer?.getType?.()) {
+    if (is_poly && !has_coords && 'vector' === vectorLayer?.getType?.()) {
       features = vectorLayer.getIntersectedFeatures(geometry);
     } else if (is_poly && !has_coords && ol.layer.Vector === vectorLayer.constructor) {
       vectorLayer.getSource().getFeatures().forEach(f => {

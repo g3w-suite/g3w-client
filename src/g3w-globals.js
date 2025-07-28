@@ -20,7 +20,6 @@ import { isPolygonGeometryType }                   from 'utils/isPolygonGeometry
 import { createVectorLayerFromFile }               from 'utils/createVectorLayerFromFile';
 import { createSelectedStyle }                     from 'utils/createSelectedStyle';
 import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
-import { getMapLayersByFilter }                    from 'utils/getMapLayersByFilter';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
@@ -144,7 +143,7 @@ const g3wsdk = {
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
-      getMapLayersByFilter,
+      getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).filter(s => s.isQueryable()).flatMap(s => s.getLayers({ GEOLAYER: true, ...(f || {}) }, o)),
       areCoordinatesEqual,
       splitFeature,
       convertSingleMultiGeometry,
@@ -223,7 +222,7 @@ const g3wsdk = {
     layer: {
       LayersStore:     babelify(LayersStore),
       Layer:           babelify(Layer),
-      VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { _TYPE: Layer.LayerTypes.VECTOR })) } }),
+      VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { _TYPE: 'vector' })) } }),
       features: {
         /** ORIGINAL SOURCE: src/map/layers/feature.js@v4.0.0 */
         Feature:       babelify(class Feature extends ol.Feature {
@@ -390,7 +389,6 @@ g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => Applicati
 g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
-
 
 GUI.on('initconfig',   () => g3wsdk.core.ApplicationService.emit('initconfig', window.initConfig));
 GUI.on('online',       () => g3wsdk.core.ApplicationService.online());

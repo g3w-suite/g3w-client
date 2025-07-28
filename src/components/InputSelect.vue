@@ -515,7 +515,7 @@
           try {
             const dependencyLayer = getCatalogLayerById(dependencyLayerId);
             // in case layer is on project, check if is non an alphanumeric layer
-            this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
+            this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType();
             if (this.showPickLayer) {
               const {
                 key,

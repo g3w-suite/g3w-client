@@ -19,7 +19,6 @@ import { isPointGeometryType }              from 'utils/isPointGeometryType';
 import { isLineGeometryType }               from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }            from 'utils/isPolygonGeometryType';
 import { createSelectedStyle }              from 'utils/createSelectedStyle';
-import { getMapLayersByFilter }             from 'utils/getMapLayersByFilter';
 import { getScaleFromResolution }           from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }           from 'utils/getResolutionFromScale';
 import { getUniqueDomId }                   from 'utils/getUniqueDomId';
@@ -32,38 +31,95 @@ import { debounce }                         from 'utils/debounce';
 
 import { Layer }                            from 'g3w-layer';
 
+
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
 const MAP = {
-  maxZoom:            1000,
-  controls:           {},
-  offlineids:         [],
-  selectedLayer:      null,
-  externalLayers:     [],
-  animatingHighlight: false,
+  controls:   {},
+  offlineids: [],
 };
 
 class MapService extends G3WObject {
 
-  setupControl = {}
+  #maxZoom = 1000;
+
+  #selectedLayer = null;
+
+  #animatingHighlight = false;
+
+  setupControl = {};
+
+  /** @since 4.1.0 */
+  get config() {
+    return window.initConfig;
+  }
+
+  /** @since 4.1.0 */
+  get project() {
+    return ApplicationState.project;
+  }
+
+  state = {
+    mapUnits:   'm',
+    bbox:       [],
+    hidemaps:   [],
+    resolution: null,
+    center:     null,
+    loading:    false,
+    hidden:     true,
+    scale:      0,
+    map_info:   { info: null, style: null },
+    mapunits:   ['metric']
+  };
+
+  viewer = null;
+
+  target = 'map';
+
+  /** Zindex to layer order on map */
+  layersCount = 0; // 
+
+  _controls = [];
+
+  _layers = {
+    base:            {},
+    g3w:             [],
+    external_wms:    [],
+    external_vector: [],
+    external:        [],
+  };
+
+  /* Store interactions added by plugin or external application*/
+  _interactions = [];
+
+  /** layers extra params */
+  _params = {};
+
+  /** draw shadow */
+  _shadow = {
+    type:     'coordinate',
+    outer:    [],
+    inner:    [],
+    scale:    null,
+    rotation: null,
+    listener: null,
+  };
+
+  /** how many are loading */
+  _loading = 0;
+
+  _marker = null;
+
+  _keyEvents = {
+    ol:           [],
+    stores:       [], // layers stores
+    unwatches:    [],
+  };
 
   constructor() {
 
     super();
-
-    this.state = {
-      mapUnits:   'm',
-      bbox:       [],
-      hidemaps:   [],
-      resolution: null,
-      center:     null,
-      loading:    false,
-      hidden:     true,
-      scale:      0,
-      map_info:   { info: null, style: null },
-      mapunits:   ['metric']
-    };
 
     /**
      * internal promise. Resolved when view is set
@@ -71,29 +127,6 @@ class MapService extends G3WObject {
      * @since 3.8.3
      */
     this._ready = new Promise(res => this.once('viewerset', res));
-
-    this.viewer = null;
-
-    this.target = 'map';
-
-    this.layersCount = 0; // useful to set Zindex to layer order on map
-
-    this.project = ApplicationState.project;
-
-    this._controls = [];
-
-    this._layers = {
-      base:            {},
-      g3w:             [],
-      external_wms:    [],
-      external_vector: [],
-      external:        [],
-    };
-
-    /**
-     * Store interactions added by plugin or external application
-     */
-    this._externalInteractions = [];
 
     /**
      * Default layers are OL layers that are add to map by default.
@@ -132,36 +165,16 @@ class MapService extends G3WObject {
 
     };
 
-    this.layersExtraParams = {};
-
-    this._drawShadow = {
-      type:     'coordinate',
-      outer:    [],
-      inner:    [],
-      scale:    null,
-      rotation: null,
-      listener: null,
-    };
-
-    this.config = window.initConfig;
-
-    this._howManyAreLoading = 0;
-
-    this._marker = null;
-
     this.onLayerLoadStart    = this.onLayerLoadStart.bind(this);
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
     this.onExtraParamsSet    = this.onExtraParamsSet.bind(this);
-    this.updateMapLayers     = this.updateMapLayers.bind(this);
 
-    this._keyEvents = {
-      ol:           [],
-      stores:       [], // layers stores
-      unwatches:    [],
-    };
-
-    this.project.onafter('setBaseLayer', () => this.updateMapLayers()); // base layer
+    // base layer
+    ApplicationState.project.onafter('setBaseLayer', () => {
+      this._layers.g3w.forEach(l => this.updateMapLayer(l, {}));
+      Object.values(this._layers.base).forEach(l => l.update(this.state, this._params));
+    });
 
     this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
 
@@ -183,7 +196,7 @@ class MapService extends G3WObject {
    */
   onExtraParamsSet(extraParams, update) {
     if (update) {
-      this.getMapLayers().forEach(l => l.update(this.state, extraParams));
+      this._layers.g3w.forEach(l => l.update(this.state, extraParams));
     }
   }
 
@@ -193,19 +206,19 @@ class MapService extends G3WObject {
    * @since 3.11.0
    */
   onLayerLoadStart() {
-    if (0 === this._howManyAreLoading) {
+    if (0 === this._loading) {
       this.emit('loadstart');
       GUI.showSpinner({ container: $('#map-spinner'), id: 'maploadspinner', style: 'transparent' });
     }
-    this._howManyAreLoading += 1;
+    this._loading += 1;
   }
 
   /**
    * @since 3.11.0
    */
   onLayerLoadEnd() {
-    this._howManyAreLoading -= 1;
-    if (0 === this._howManyAreLoading) {
+    this._loading -= 1;
+    if (0 === this._loading) {
       this.emit('loadend');
       GUI.hideSpinner('maploadspinner');
     }
@@ -216,7 +229,7 @@ class MapService extends G3WObject {
    */
   onLayerLoadError() {
     /** @since 3.10.0 - fails silently */
-    if (!this.project.state.show_load_layer_error) {
+    if (!ApplicationState.project.state.show_load_layer_error) {
       return;
     }
     if (!this.onLayerLoadError.shown) {
@@ -233,31 +246,6 @@ class MapService extends G3WObject {
    */
   isReady() {
     return this._ready;
-  }
-
-  setUpMapOlEvents() {
-    const dynamicLegend = this.project.state.context_base_legend;
-    // set change resolution
-    this._keyEvents.ol.forEach(k => ol.Observable.unByKey(k));
-    this._keyEvents.ol.push(
-      this.viewer.map.getView().on('change:resolution', debounce(() => {
-        this.state.bbox       = this.getMapBBOX();
-        this.state.resolution = this.viewer.getResolution();
-        this.state.center     = this.viewer.getCenter();
-        this.updateMapLayers();
-        if (dynamicLegend) {
-          this.setupCustomMapParamsToLegendUrl();
-        }
-      }))
-    );
-    if (dynamicLegend) {
-      this._keyEvents.ol.push(
-        this.viewer.map.on('moveend', () => this.setupCustomMapParamsToLegendUrl())
-      );
-    } else {
-      //set always to show legend at the start
-      this.setupCustomMapParamsToLegendUrl();
-    }
   }
 
   /**
@@ -330,7 +318,7 @@ class MapService extends G3WObject {
   }
 
   getProject() {
-    return this.project;
+    return ApplicationState.project;
   }
 
   getMap() {
@@ -342,7 +330,7 @@ class MapService extends G3WObject {
   }
 
   getProjection() {
-    return this.project.getProjection();
+    return ApplicationState.project.getProjection();
   }
 
   isMapHidden() {
@@ -350,7 +338,7 @@ class MapService extends G3WObject {
   }
 
   getCrs() {
-    return this.project.getProjection().getCode();
+    return ApplicationState.project.getProjection().getCode();
   }
 
   getViewport() {
@@ -408,7 +396,7 @@ class MapService extends G3WObject {
         });
       } else if (4 === coordinates.length) {
         intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
-        if (Layer.LayerTypes.VECTOR === vectorLayer?.getType?.()) {
+        if ('vector' === vectorLayer?.getType?.()) {
           features = vectorLayer.getIntersectedFeatures(intersectGeom);
         } else if (ol.layer.Vector === vectorLayer.constructor) {
           vectorLayer.getSource().getFeatures()
@@ -417,7 +405,7 @@ class MapService extends G3WObject {
       }
     } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
       intersectGeom = coordinates;
-      if (Layer.LayerTypes.VECTOR === vectorLayer?.getType?.()) {
+      if ('vector' === vectorLayer?.getType?.()) {
         features = vectorLayer.getIntersectedFeatures(intersectGeom);
       } else if (ol.layer.Vector === vectorLayer.constructor) {
         vectorLayer
@@ -488,7 +476,7 @@ class MapService extends G3WObject {
       return;
     }
 
-    const layer = this.project.getLayerById(layerId);
+    const layer = ApplicationState.project.getLayerById(layerId);
 
     const { data = [] } = await DataRouterService.getData('search:fids', {
       inputs: {
@@ -529,13 +517,13 @@ class MapService extends G3WObject {
       }
 
       // find project layer
-      const pLayer = this.project.getLayers().find(l =>
+      const pLayer = ApplicationState.project.getLayers().find(l =>
         id === l.id ||
         id === l.name ||
         id === l.origname
       );
 
-      const layer = pLayer && this.project.getLayerById(pLayer.id);
+      const layer = pLayer && ApplicationState.project.getLayerById(pLayer.id);
 
       const r = pLayer && await DataRouterService.getData('search:features', {
         inputs: {
@@ -624,7 +612,7 @@ class MapService extends G3WObject {
     control.on('controlclick', ({ target: mapcontrol }) => {
       const clickmap = !!(mapcontrol.isClickMap && mapcontrol.isClickMap());
       if (clickmap) {
-        this._externalInteractions.forEach(int => int.setActive(false));
+        this._interactions.forEach(int => int.setActive(false));
       }
       this.controlClick(mapcontrol, { clickmap })
     });
@@ -729,34 +717,14 @@ class MapService extends G3WObject {
     if (bool) {
       const map  = this.getMap();
       const size = (map && map.getSize().filter(v => v > 0)) || null;
-      const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : this.project.state.initextent;
-      this.getMapLayers().forEach(l => l.setupCustomMapParamsToLegendUrl && l.setupCustomMapParamsToLegendUrl({
+      const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : ApplicationState.project.state.initextent;
+      this._layers.g3w.forEach(l => l?.setupCustomMapParamsToLegendUrl?.({
         crs: this.getEpsg(),
         // in the case of axis orientation inverted if it needs to invert the axis
         bbox: "neu" === map.getView().getProjection().getAxisOrientation()  ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
       }));
       this.emit('change-map-legend-params');
     }
-  }
-
-  getMapLayerByLayerId(id) {
-    return this.getMapLayers().find(l => l.getLayerConfigs().find(l => id === l.getId()))
-  }
-
-  getMapLayers() {
-    return this._layers.g3w;
-  }
-
-  getBaseLayers() {
-    return this._layers.base;
-  }
-
-  getMapLayerForLayer(layer) {
-    return this.getMapLayers().find(ml => `layer_${layer.getMultiLayerId()}` ===  ml.getId());
-  }
-
-  getProjectLayer(id) {
-    return Object.values(ApplicationState.layers).map(s => s.getLayerById(id)).find(l => l);
   }
 
   /**
@@ -864,7 +832,7 @@ class MapService extends G3WObject {
       view:                new ol.View(this._calculateViewOptions({
         width,
         height,
-        project: this.project,
+        project:    ApplicationState.project,
         map_extent: search.get('map_extent'), /** @since 3.10.0 */
       })),
     });
@@ -962,20 +930,20 @@ class MapService extends G3WObject {
 
     // iframe → hide map controls (empty object)
     if ('map' === iframetype) {
-      this.config.mapcontrols = {};
+      window.initConfig.mapcontrols = {};
     }
 
     // update max scale
-    MAP.maxZoom = Math.min(
-      getScaleFromResolution(this.getMap().getView().getResolutionForExtent(this.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
-      MAP.maxZoom
+    this.#maxZoom = Math.min(
+      getScaleFromResolution(this.getMap().getView().getResolutionForExtent(ApplicationState.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
+      this.#maxZoom
     );
 
     this.state.size     = this.viewer.map.getSize();
     this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
 
-    if (this.config.background_color) {
-      $('#' + this.target).css('background-color', this.config.background_color);
+    if (window.initConfig.background_color) {
+      $('#' + this.target).css('background-color', window.initConfig.background_color);
     }
 
     $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
@@ -1013,8 +981,123 @@ class MapService extends G3WObject {
     this.state.bbox       = this.getMapBBOX();
     this.state.resolution = this.viewer.getResolution();
     this.state.center     = this.viewer.getCenter();
-    this._setupAllLayers();
-    this.setUpMapOlEvents();
+
+    // setup layers
+
+    const LAYERS = Object.values(ApplicationState.layers)
+      .filter(s => s.isQueryable())
+      .flatMap(s => s.getLayers())
+      .filter(l => l.isGeoLayer());
+
+    //store incremental value for qtimesriable layer with same multilayer id
+    const cache     = {};
+    const mapLayers = [];
+
+    // base layers
+    LAYERS
+      .forEach(l => {
+        if (l.isBaseLayer()) {
+          this.registerMapLayerListeners(l);
+          this._layers.base[l.getId()] = l;
+        }
+      });
+
+    Object.values(this._layers.base).reverse().forEach(l => {
+      l.update(this.state, this._params);
+      const olLayer = l.getOLLayer();
+      if (l) {
+        this.getMap().addLayer(olLayer);
+      }
+    });
+
+    Object
+      .entries(
+        // Group layers by multilayer property (from project config) to speed up "qtimeseriesries" loading for single layers
+        groupBy(LAYERS.filter(l => !l.isBaseLayer() && !l.isVector()), layer => {
+          let id = layer.getMultiLayerId();
+          if (layer.isQtimeseries()) {
+            cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
+            return `${id}_${cache[id]}`;
+          }
+          return undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
+        })
+      )
+      .forEach(([id, layers]) => {
+        const mapLayer = this.createLayer(layers[0],
+          {
+            id: `layer_${id}`,
+            projection: this.getProjection(),
+            format: layers[0].getFormat()
+          },
+          this._params
+        );
+        layers.reverse().forEach(l => mapLayer.addLayer(l));
+        mapLayers.push(mapLayer);
+        this.registerMapLayerListeners(mapLayer);
+      });
+
+    mapLayers.reverse().forEach(l => {
+      this._layers.g3w.push(l);
+      const olLayer = l.getOLLayer();
+      if (l) {
+        this.getMap().addLayer(olLayer);
+      }
+    });
+
+    this._layers.g3w.forEach(l => this.updateMapLayer(l, {}));
+    Object.values(this._layers.base).forEach(l => l.update(this.state, this._params));
+
+    // vector layers
+    LAYERS.forEach(l => {
+      if (l.isVector()) {
+        const olLayer = this.createLayer(l).getOLLayer();
+        if (l) {
+          this.getMap().addLayer(olLayer);
+        }
+      }
+    });
+
+    // set default layers order
+    this.getMap().addLayer(this.defaultsLayers.mapcenter);
+    this.getMap().addLayer(this.defaultsLayers.selectionLayer);
+    this.getMap().addLayer(this.defaultsLayers.highlightLayer);
+
+    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
+    localforage.getItem('externalLayers').then(externalLayers => {
+      Object.entries(externalLayers || {}).forEach(([id, layer]) => {
+        const olLayer = new ol.layer.Vector({
+          source: new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(layer.features) })
+        });
+        olLayer.set('name', id);
+        this.addExternalLayer(olLayer, { ...layer.options, zoomToExtent: false });
+      });
+    });
+    
+    // setup ol events
+
+    const dynamicLegend = ApplicationState.project.state.context_base_legend;
+    // set change resolution
+    this._keyEvents.ol.forEach(k => ol.Observable.unByKey(k));
+    this._keyEvents.ol.push(
+      this.viewer.map.getView().on('change:resolution', debounce(() => {
+        this.state.bbox       = this.getMapBBOX();
+        this.state.resolution = this.viewer.getResolution();
+        this.state.center     = this.viewer.getCenter();
+        this._layers.g3w.forEach(l => this.updateMapLayer(l, {}));
+        Object.values(this._layers.base).forEach(l => l.update(this.state, this._params));
+        if (dynamicLegend) {
+          this.setupCustomMapParamsToLegendUrl();
+        }
+      }))
+    );
+    if (dynamicLegend) {
+      this._keyEvents.ol.push(
+        this.viewer.map.on('moveend', () => this.setupCustomMapParamsToLegendUrl())
+      );
+    } else {
+      //set always to show legend at the start
+      this.setupCustomMapParamsToLegendUrl();
+    }
 
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
     Object.values(ApplicationState.layers).forEach(this._setUpEventsKeysToLayersStore.bind(this));
@@ -1066,105 +1149,41 @@ class MapService extends G3WObject {
     this._keyEvents.stores[id] = [];
 
     //In the case of store that has layers @since 3.10.0
-    store.getLayers().forEach(l => 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()));
+    store.getLayers().forEach(l => {
+      if ('vector' === l.getType()) {
+        const olLayer = this.createLayer(l).getOLLayer();
+        if (l) {
+          this.getMap().addLayer(olLayer);
+        }
+      }
+    });
 
     this._keyEvents.stores[id].push({
-      addLayer: store.onafter('addLayer', l => { 'vector' === l.getType() && this.addLayerToMap(l.getMapLayer()) }),
+      addLayer: store.onafter('addLayer', l => {
+      if ('vector' === l.getType()) {
+        const olLayer = this.createLayer(l).getOLLayer();
+        if (l) {
+          this.getMap().addLayer(olLayer);
+        }
+      }
+    }),
     });
     this._keyEvents.stores[id].push({
       removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.viewer.map.removeLayer(l.getOLLayer()) }),
     });
   }
 
-  // SETUP ALL LAYERS
-  _setupAllLayers() {
-
-    // base layers
-    const blayers = getMapLayersByFilter({ BASELAYER: true });
-    blayers.forEach(l => {
-      const base = l.getMapLayer();
-      this.registerMapLayerListeners(base);
-      this._layers.base[l.getId()] = base;
-    });
-
-    Object.values(blayers.length ? this._layers.base : {}).reverse().forEach(l => {
-      l.update(this.state, this.layersExtraParams);
-      this.addLayerToMap(l);
-    });
-
-    // map layers: geolayers exclude baselayers and eventually vector layers
-    const layers = getMapLayersByFilter({ BASELAYER: false, VECTORLAYER: false });
-
-    //store incremental value for qtimesriable layer with same multilayer id
-    const cache     = {};
-    const mapLayers = [];
-
-  Object
-    .entries(
-      // Group layers by multilayer property (from project config)
-      // to speed up "qtimeseriesries" loading for single layers
-      groupBy(layers, layer => {
-        let id = layer.getMultiLayerId();
-        if (layer.isQtimeseries()) {
-          cache[id] = undefined === cache[id] ? 0 : cache[id] + 1;
-          return `${id}_${cache[id]}`;
-        }
-        return undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
-      })
-    )
-    .forEach(([id, layers]) => {
-      const layer    = layers[0] || [];
-      const mapLayer = layer.getMapLayer(
-        {
-          id: `layer_${id}`,
-          projection: this.getProjection(),
-          format: layer.getFormat()
-        },
-        this.layersExtraParams
-      );
-      layers.reverse().forEach(l => mapLayer.addLayer(l));
-      mapLayers.push(mapLayer);
-      this.registerMapLayerListeners(mapLayer);
-    });
-
-    mapLayers.reverse().forEach(l => {
-      this._layers.g3w.push(l);
-      this.addLayerToMap(l);
-    });
-
-    this.updateMapLayers();
-
-    // vector layers
-    const vlayers = getMapLayersByFilter({ VECTORLAYER: true });
-    // set map projection on each layer
-    vlayers.forEach(l => this.addLayerToMap(l.getMapLayer()));
-
-    // set default layers order
-    const map = this.getMap();
-
-    map.addLayer(this.defaultsLayers.mapcenter);
-    map.addLayer(this.defaultsLayers.selectionLayer);
-    map.addLayer(this.defaultsLayers.highlightLayer);
-
-    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
-    localforage.getItem('externalLayers').then(externalLayers => {
-      Object.entries(externalLayers || {}).forEach(([id, layer]) => {
-        const olLayer = new ol.layer.Vector({
-          source: new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(layer.features) })
-        });
-        olLayer.set('name', id);
-        this.addExternalLayer(olLayer, { ...layer.options, zoomToExtent: false });
-      });
-    });
-
-  }
-
   removeLayers() {
     Object.keys(this._layers.base).forEach(id => this.viewer.map.removeLayer(this._layers.base[id].getOLLayer()))
-    this.getMapLayers().forEach(l => { this.unregisterMapLayerListeners(l); this.viewer.map.removeLayer(l.getOLLayer()); });
-    this._layers.g3w = [];
+    this._layers.g3w.forEach(l => {
+      this.unregisterMapLayerListeners(l);
+      this.viewer.map.removeLayer(l.getOLLayer());
+    });
+    this._layers.g3w.splice(0);
     // remove external layers
-    this._layers.external.forEach(layer => { this.removeExternalLayer(layer.get('name')); });
+    this._layers.external.forEach(layer => {
+      this.removeExternalLayer(layer.get('name'));
+    });
     this._layers.external.splice(0);
     // remove default layers
     this.defaultsLayers.mapcenter.getSource().clear();
@@ -1185,24 +1204,13 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Add olLayer to mapLayer
-   * @param layer
-   */
-  addLayerToMap(layer) {
-    const olLayer = layer.getOLLayer();
-    if (olLayer) {
-      this.getMap().addLayer(olLayer);
-    }
-  }
-
-  /**
    * Used by the following plugins: "cdu"
    */
   createMapLayer(layer) {
-    const mapLayer = layer.getMapLayer({
+    const mapLayer = this.createLayer(layer, {
       id:         `layer_${layer.getMultiLayerId()}`,
       projection:  this.getProjection()
-    }, this.layersExtraParams);
+    }, this._params);
     mapLayer.addLayer(layer);
   return mapLayer;
   }
@@ -1237,12 +1245,6 @@ class MapService extends G3WObject {
     }
     layer.update(this.state, options);
     return layer;
-  }
-
-  // run update function on each mapLayer
-  updateMapLayers(opts = {}) {
-    this.getMapLayers().forEach(l => this.updateMapLayer(l, opts));
-    Object.values(this.getBaseLayers()).forEach(l => l.update(this.state, this.layersExtraParams));
   }
 
   // register map Layer listeners of creation
@@ -1302,7 +1304,7 @@ class MapService extends G3WObject {
     }
     this.getMap().addInteraction(interaction);
     interaction.setActive(active);
-    this._externalInteractions.push(interaction);
+    this._interactions.push(interaction);
     return {
       control,
       toggled// return current toggled map control if toggled
@@ -1314,7 +1316,7 @@ class MapService extends G3WObject {
       interaction.setActive(false);
     }
     this.viewer.map.removeInteraction(interaction);
-    this._externalInteractions = this._externalInteractions.filter(_interaction => interaction !== _interaction);
+    this._interactions = this._interactions.filter(_interaction => interaction !== _interaction);
   }
 
   _watchInteraction(interaction) {
@@ -1467,8 +1469,8 @@ class MapService extends G3WObject {
     let resolution;
 
     // if outside project extent, return max resolution
-    if (false === ol.extent.containsExtent(this.project.state.extent, extent)) {
-      resolution = map.getView().getResolutionForExtent(this.project.state.extent, map.getSize());
+    if (false === ol.extent.containsExtent(ApplicationState.project.state.extent, extent)) {
+      resolution = map.getView().getResolutionForExtent(ApplicationState.project.state.extent, map.getSize());
     }
 
     // retrieve resolution from given `extent`
@@ -1480,7 +1482,7 @@ class MapService extends G3WObject {
     else {
       const curr = map.getView().getResolution();
       // max resolution of the map
-      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(MAP.maxZoom, this.getMapUnits()));
+      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
@@ -1496,7 +1498,7 @@ class MapService extends G3WObject {
   goToBBox(bbox, epsg = this.getEpsg()) {
     bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
     // compare bbox extent with a project max extent
-    this.viewer.fit(ol.extent.containsExtent(this.project.state.extent, bbox) ? bbox : this.project.state.extent);
+    this.viewer.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
   }
 
   /**
@@ -1614,7 +1616,7 @@ class MapService extends G3WObject {
           hlayer.setStyle(feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: options.color, fill: true })]);
         }
         if (!hide) {
-          MAP.animatingHighlight = false;
+          this.#animatingHighlight = false;
         }
         resolve();
       }
@@ -1624,7 +1626,7 @@ class MapService extends G3WObject {
       }
 
       if (duration && duration !== Infinity && !hide) {
-        MAP.animatingHighlight = true;
+        this.#animatingHighlight = true;
         setTimeout(cb, duration);
       }
 
@@ -1632,7 +1634,7 @@ class MapService extends G3WObject {
   }
 
   clearHighlightGeometry() {
-    if (!MAP.animatingHighlight) {
+    if (!this.#animatingHighlight) {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
     // reset default layer style
@@ -1644,7 +1646,8 @@ class MapService extends G3WObject {
    * @param options
    */
   refreshMap(options = { force: true }) {
-    this.updateMapLayers(options);
+    this._layers.g3w.forEach(l => this.updateMapLayer(l, options));
+    Object.values(this._layers.base).forEach(l => l.update(this.state, this._params));
   }
 
   // called when layout (window) resizes
@@ -1665,7 +1668,8 @@ class MapService extends G3WObject {
       this.state.bbox       = this.getMapBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center     = this.viewer.getCenter();
-      this.updateMapLayers();
+      this._layers.g3w.forEach(l => this.updateMapLayer(l, {}));
+      Object.values(this._layers.base).forEach(l => l.update(this.state, this._params));
     }
 
     if (!has_viewer) {
@@ -1696,16 +1700,16 @@ class MapService extends G3WObject {
           upperRight = map.getPixelFromCoordinate([opts.inner[2], opts.inner[3]]);
           break;
       }
-      this._drawShadow.inner[0] = lowerLeft[0]  * ol.has.DEVICE_PIXEL_RATIO; // x_min
-      this._drawShadow.inner[1] = lowerLeft[1]  * ol.has.DEVICE_PIXEL_RATIO; // y_min
-      this._drawShadow.inner[2] = upperRight[0] * ol.has.DEVICE_PIXEL_RATIO; // x_max
-      this._drawShadow.inner[3] = upperRight[1] * ol.has.DEVICE_PIXEL_RATIO; // y_max
+      this._shadow.inner[0] = lowerLeft[0]  * ol.has.DEVICE_PIXEL_RATIO; // x_min
+      this._shadow.inner[1] = lowerLeft[1]  * ol.has.DEVICE_PIXEL_RATIO; // y_min
+      this._shadow.inner[2] = upperRight[0] * ol.has.DEVICE_PIXEL_RATIO; // x_max
+      this._shadow.inner[3] = upperRight[1] * ol.has.DEVICE_PIXEL_RATIO; // y_max
     }
 
-    this._drawShadow.scale    = [null, undefined].includes(opts.scale) ? this._drawShadow.scale || 1 : opts.scale;
-    this._drawShadow.rotation = [null, undefined].includes(opts.rotation) ? this._drawShadow.rotation || 0 : opts.rotation;
+    this._shadow.scale    = [null, undefined].includes(opts.scale) ? this._shadow.scale || 1 : opts.scale;
+    this._shadow.rotation = [null, undefined].includes(opts.rotation) ? this._shadow.rotation || 0 : opts.rotation;
 
-    if (this._drawShadow.outer) {
+    if (this._shadow.outer) {
       map.render();
     }
   }
@@ -1716,13 +1720,13 @@ class MapService extends G3WObject {
     const map = this.viewer.map;
     let x_min, x_max, y_min, y_max, rotation, scale;
     this.stopDrawGreyCover();
-    this._drawShadow.listener = map.on('postcompose', e => {
+    this._shadow.listener = map.on('postcompose', e => {
       const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
       const size = this.getMap().getSize();
       // Inner polygon must be counter-clockwise
       const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
       const width  = size[0] * ol.has.DEVICE_PIXEL_RATIO;
-      this._drawShadow.outer = [0,0,width, height];
+      this._shadow.outer = [0,0,width, height];
       ctx.restore();
       ctx.beginPath();
       // Outside polygon must be clockwise
@@ -1733,14 +1737,14 @@ class MapService extends G3WObject {
       ctx.lineTo(0, 0);
       ctx.closePath();
       // end external bbox (map is cover)
-      if (this._drawShadow.inner.length) {
+      if (this._shadow.inner.length) {
         ctx.save();
-        x_min    = this._drawShadow.inner[0];
-        y_min    = this._drawShadow.inner[3];
-        x_max    = this._drawShadow.inner[2];
-        y_max    = this._drawShadow.inner[1];
-        rotation = this._drawShadow.rotation;
-        scale    = this._drawShadow.scale;
+        x_min    = this._shadow.inner[0];
+        y_min    = this._shadow.inner[3];
+        x_max    = this._shadow.inner[2];
+        y_max    = this._shadow.inner[1];
+        rotation = this._shadow.rotation;
+        scale    = this._shadow.scale;
         // Inner polygon must be counter-clockwise antiorario
         ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
         ctx.rotate(rotation*Math.PI / 180);
@@ -1765,11 +1769,11 @@ class MapService extends G3WObject {
   }
 
   stopDrawGreyCover() {
-    if (this._drawShadow.listener) {
-      ol.Observable.unByKey(this._drawShadow.listener);
+    if (this._shadow.listener) {
+      ol.Observable.unByKey(this._shadow.listener);
       // reset inner draw shadow
-      if (this._drawShadow.inner.length) {
-        this._drawShadow = {
+      if (this._shadow.inner.length) {
+        this._shadow = {
           type:     'coordinate',
           outer:    [],
           inner:    [],
@@ -1777,7 +1781,7 @@ class MapService extends G3WObject {
           rotation: null
         };
       }
-      this._drawShadow.listener = null;
+      this._shadow.listener = null;
     }
     this.getMap().render();
   }
@@ -1828,8 +1832,8 @@ class MapService extends G3WObject {
           return true;
         }
         Object.values(MAP.controls).forEach(c => c.onRemoveExternalLayer && c.onRemoveExternalLayer(l));
-        if (l === MAP.selectedLayer) {
-          MAP.selectedLayer = null;
+        if (l === this.#selectedLayer) {
+          this.#selectedLayer = null;
         }
       });
     }
@@ -1861,11 +1865,176 @@ class MapService extends G3WObject {
 
   /**
    * Return external layers added to map
-   * @param {String} type 'vector' or 'wms' @since 3.11.0
-   * @returns {[]|*[]|T[]}
+   * 
+   * @param {'vector' | 'wms'} type since 3.11.0
    */
   getExternalLayers(type) {
-    return undefined === type ? this._layers.external : this._layers.external.filter(l => type === l._type);
+    return this._layers.external.filter(l => undefined !== type ? type === l._type : true);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
+   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
+   * 
+   * @param { Layer } layer
+   * 
+   * @since 4.1.0
+   */
+  createLayer(layer, options = {}, extraParams) {
+
+    if (layer._mapLayer) {
+      return layer._mapLayer;
+    }
+
+    let mapLayer;
+
+    options.iframe_internal  = layer.isRaster() ? ApplicationState.iframe && !layer.isExternalWMS() : options.iframe_internal;
+
+    // TMS Layer
+    if (layer.isRaster() && layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms')) {
+      mapLayer = new Layer(
+        {
+          ...options,
+          extent:         (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null),
+          url:            layer.getCacheUrl(),
+          cache_provider: layer.state.cache_provider,
+          type:           'XYZ'
+        },
+        { _RASTER_LAYER: { params: {}, method: layer.isExternalWMS() ? 'GET' : layer.getOwsMethod() } }
+      );
+    }
+
+    // ARCGIS Layer
+    if (layer.isRaster() && layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type) {
+      mapLayer = new Layer(
+        { ...options, ...layer.state.source },
+        { _RASTER_LAYER: { params: extraParams } }
+      );
+    }
+
+    // WMTS Layer
+    if (layer.isRaster() && layer.isCached() && 'wmts' === layer.state.cache_service_type) {
+      mapLayer = new Layer({
+          ...options,
+          url:               layer.getCacheUrl(),
+          cache_provider:    layer.state.cache_provider,
+          cache_layer:       layer.state.cache_layer,
+          cache_extent:      layer.state.cache_extent,
+          cache_grid:        layer.state.cache_grid,
+          cache_grid_extent: layer.state.cache_grid_extent,
+          type: 'WMTS',
+        },
+        { _RASTER_LAYER: { params: extraParams, method: layer.isExternalWMS() ? 'GET' : layer.getOwsMethod() } }
+      );
+    }
+
+    // WMST Layer
+    if (layer.isRaster() && layer.isExternalWMS() && "wmst" === layer.state?.source?.type) {
+      mapLayer = new Layer(
+        {
+          ...options,
+          url: layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()),
+          cache_provider: layer.state.cache_provider,
+          type: 'WMTS'
+        },
+        { _RASTER_LAYER: { params: extraParams, method: 'GET' } }
+      );
+    }
+
+    // WMS Layer
+    if (layer.isRaster()) {
+       mapLayer = Object.assign(new Layer(
+        { ...options, url: layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()) },
+        { _RASTER_LAYER: { params: extraParams, method: layer.isExternalWMS() ? 'GET' : layer.getOwsMethod() } }
+      ), {
+        getSource: () => layer._mapLayer.getOLLayer().getSource()
+      })
+    }
+
+    // Vector Layer
+    if (layer.isVector()) {
+      const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
+
+      mapLayer = Object.assign(new G3WObject, {
+        _olLayer:      Object.assign(new ol.layer.Vector({
+          id:             layer.getId(),
+          __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+          source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
+          style:          new ol.style.Style(
+            (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
+              image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
+              stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
+              fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
+            }), {}))
+            || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
+            || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
+            || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
+          ),
+        }), {
+          /** @since 3.11.0 to have same compatibility with table layer */
+          getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
+        }),
+        mapService:    GUI.getService('map'),
+        geometryType:  layer.getGeometryType(),
+        geometrytype:  null,
+        type:          null,
+        crs:           null,
+        id:            layer.getId(),
+        name:          'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` && layer.getName() || '',
+        style,
+        color:         layer.getColor(),
+        projection:    'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
+        url:           'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('source').url : undefined,
+        provider:      layer.getProvider('data'),
+        getProvider:   ()           => layer._mapLayer.provider,
+        resetSource:   (feats = []) => layer._mapLayer.setSource(new ol.source.Vector({ features: feats })),
+        getFeatures:   async (opts = {})  => layer._mapLayer.addFeatures(await layer._mapLayer.provider.getFeatures(opts)),
+        addFeatures:   (feats = []) => layer._mapLayer.getSource().addFeatures(feats),
+        addFeature:    feat         => feat && layer.getSource().addFeature(feat),
+        getOLLayer:    ()           => layer._mapLayer._olLayer,
+        getSource:     ()           => layer._mapLayer._olLayer.getSource(),
+        setSource:     source       => layer._mapLayer._olLayer.setSource(source),
+        setStyle:       style       => layer._mapLayer._olLayer.setStyle(style),
+        getFeatureById:    id       => id ? layer._mapLayer._olLayer.getSource().getFeatureById(id) : null,
+        isVisible:         ()       => layer._mapLayer._olLayer.getVisible(),
+        setVisible:      bool       => layer._mapLayer._olLayer.setVisible(bool),
+        clear:             ()       => layer._mapLayer.getSource().clear(),
+        addToMap:         map       => map.addLayer(layer._mapLayer._olLayer),
+      });
+
+      if (!style && isPolygonGeometryType(layer.getGeometryType())) {
+        mapLayer._olLayer.setOpacity(0.6);
+      }
+
+      if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
+        layer.getProvider('data').getFeatures({
+          url:           layer.get('source').url,
+          mapProjection: GUI.getService('map').getProjection().getCode()
+        }).then(feats => layer._mapLayer._olLayer.getSource().addFeatures(feats));
+      }
+    }
+
+    return (layer._mapLayer = mapLayer);
+  }
+
+  getMapLayerByLayerId(id) {
+    return this._layers.g3w.find(l => l.getLayerConfigs().find(l => id === l.getId()))
+  }
+
+  getMapLayers() {
+    return this._layers.g3w;
+  }
+
+  getBaseLayers() {
+    return this._layers.base;
+  }
+
+  getMapLayerForLayer(layer) {
+    return this._layers.g3w.find(ml => `layer_${layer.getMultiLayerId()}` ===  ml.getId());
+  }
+
+  getProjectLayer(id) {
+    return Object.values(ApplicationState.layers).map(s => s.getLayerById(id)).find(l => l);
   }
 
   /**
@@ -2132,7 +2301,7 @@ class MapService extends G3WObject {
     let id = 'string'=== typeof layer ? layer : layer && layer.getId();
 
     // toggle previous selection
-    if (MAP.selectedLayer && id === MAP.selectedLayer.getId()) {
+    if (this.#selectedLayer && id === this.#selectedLayer.getId()) {
       id = null;
     }
 
@@ -2141,16 +2310,16 @@ class MapService extends G3WObject {
     // select layer by id
     getCatalogLayers().concat(this.getLegacyExternalLayers()).forEach(l => l.setSelected(l.getId() === id));
 
-    MAP.selectedLayer = layer && layer.isSelected() ? layer : null;
+    this.#selectedLayer = layer && layer.isSelected() ? layer : null;
 
-    Object.values(MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(MAP.selectedLayer));
+    Object.values(MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
   }
 
   /**
    * @since 3.11.0
    */
   getSelectedLayer() {
-    return MAP.selectedLayer;
+    return this.#selectedLayer;
   }
 
 }
