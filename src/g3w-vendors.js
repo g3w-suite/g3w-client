@@ -101,31 +101,15 @@ if (initConfig.baseurl) {
   }
 }
 
-// BACKCOMP v3.x (initConfig → initConfig.group)
-initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEntries(Object.keys(initConfig).filter(key => ![
-  "i18n",
-  "staticurl",
-  "client",
-  "mediaurl",
-  "user",
-  "baseurl",
-  "vectorurl",
-  "proxyurl",
-  "rasterurl",
-  "interfaceowsurl",
-  "main_map_title",
-  'main_map_title',
-  "g3wsuite_logo_img",
-  "credits",
-  "version",
-  "group",
-  "frontendurl",
-].includes(key)).map(key => ([key, initConfig[key]]))), {
-  get(target, prop, receiver) {
-    console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`);
-    return Reflect.get(...arguments);
-  }
-}));
+Object.defineProperty(initConfig, 'group', {
+  get() {
+    console.warn(`[G3W-CLIENT] initConfig.group has been removed from core since 4.1.0`);
+    console.trace();
+    return initConfig;
+  },
+  configurable: false,
+  enumerable: true
+});
 
 // gid of panoramic map project
 initConfig.overviewproject = initConfig.overviewproject ? initConfig.overviewproject.gid : null;
