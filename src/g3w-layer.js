@@ -517,7 +517,7 @@ export class Layer extends G3WObject {
       addFeature(feature)        { this._features.push(feature); },
       clone()                    { return cloneDeep(this); },
       getProvider:               () => this.getProvider('data'),
-      unlock:              async () => await XHR.post({ url: this.getProvider('data').getLayer().getUrl('unlock') }),
+      unlock:              async () => await XHR.post({ url: this.getUrl('unlock') }),
       getLockIds()               { return this._lockIds; },
       getFeatureById(id)         { return this._features.find(f => id == f.getId()); },
       setFeatures(features = []) { this._features = features; },
@@ -526,7 +526,7 @@ export class Layer extends G3WObject {
         if (commitItems && this.getProvider('data')) {
           commitItems.lockids = this._featuresstore._lockIds;
           return await XHR.post({
-            url:         this.getProvider('data').getLayer().getUrl('commit'),
+            url:         this.getUrl('commit'),
             data:        JSON.stringify(commitItems),
             contentType: 'application/json',
           });
@@ -827,7 +827,7 @@ export class Layer extends G3WObject {
     try {
       /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
       const response = await XHR.get({
-        url:    this.getProvider('filtertoken').getLayer().getUrl('filtertoken'),
+        url:    this.getUrl('filtertoken'),
         params: { mode: 'apply', fid: filter.fid }
       });
       if (!response || !response.result || !response.data) {
@@ -858,7 +858,7 @@ export class Layer extends G3WObject {
 
         /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved> */
         const response = await XHR.get({
-          url:    this.getProvider('filtertoken').getLayer().getUrl('filtertoken'),
+          url:    this.getUrl('filtertoken'),
           params: { mode: 'save', name } }
         );
 
@@ -949,7 +949,7 @@ export class Layer extends G3WObject {
         // Delete saved filter from server --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete_saved&fid=<fid_filter_saved>|name=<name_filter_saved>`
         // Delete current filter           --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete`
         const response = await XHR.get({
-          url:    this.getProvider('filtertoken').getLayer().getUrl('filtertoken'),
+          url:    this.getUrl('filtertoken'),
           params: { fid, mode: undefined === fid ? 'delete': 'delete_saved' }
         });
         // filter token if another layer is filtered otherwise filtertoken is undefined
@@ -1010,7 +1010,7 @@ export class Layer extends G3WObject {
         try {
           // Delete current filter --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete`
           await XHR.get({
-            url:    this.getProvider('filtertoken').getLayer().getUrl('filtertoken'),
+            url:    this.getUrl('filtertoken'),
             params: { fid: undefined, mode: 'delete' }
           });
         } catch(e) {
@@ -1024,7 +1024,7 @@ export class Layer extends G3WObject {
       const fids = Array.from(selection);
 
       const { data = {} } = await XHR.post({
-        url:    this.getProvider('filtertoken').getLayer().getUrl('filtertoken'),
+        url:    this.getUrl('filtertoken'),
         contentType: 'application/json',
         data: JSON.stringify(selection.has(SELECTION.EXCLUDE)
           ? { fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') } // exclude features from selection
@@ -1399,23 +1399,19 @@ export class Layer extends G3WObject {
       return Promise.reject();
     }
 
-    const response = await (
-      this
-        .getProvider('data')
-        .getFeatures(
-          { editing: false }, {
-          ...custom_params,
-          field,
-          page,
-          page_size,
-          ordering,
-          search,
-          formatter,
-          suggest,
-          in_bbox,
-          filtertoken: this.getFilterToken()
-        })
-    );
+    const response = await (this.fetchFeatures(
+      { editing: false }, {
+      ...custom_params,
+      field,
+      page,
+      page_size,
+      ordering,
+      search,
+      formatter,
+      suggest,
+      in_bbox,
+      filtertoken: this.getFilterToken()
+    }));
 
     const features          = response.data.features && response.data.features || [];
     const layerAttributes   = this.getAttributes() || [];
@@ -2224,6 +2220,29 @@ export class Layer extends G3WObject {
     ]);
 
   }
+  
+  fetchFeatures(opts = {}, params = {}) {
+
+    const layerType = `${this.state.servertype} ${this.state?.source?.type}`;
+
+    // QGIS - raw layer data (editing)
+    if ([
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+      'QGIS wfs',
+    ].includes(providerType)) {
+      return this.#getFeaturesQGIS(opts, params);
+    }
+
+    if ('G3WSUITE geojson' === layerType) {
+      return this.#getFeaturesJSON();
+    }
+  }
 
   /**
    * @param { 'data' | 'filter' | 'filtertoken' |'query' | 'search' } type data provider
@@ -2235,7 +2254,11 @@ export class Layer extends G3WObject {
       return this.#providers[type]; 
     }
     const providerType = `${type} ${this.state.servertype} ${this.state?.source?.type}`;
-    let provider;
+    const provider = {
+      getLayer:    () => this,
+      query:       () => [],
+      getFeatures: (() => console.log('overwriteby single provider')),
+    };
 
     // QGIS - raw layer data (editing)
     if ([
@@ -2249,24 +2272,14 @@ export class Layer extends G3WObject {
       'data QGIS wfs',           'search QGIS wfs',
                                  'search QGIS arcgisfeatureserver'
     ].includes(providerType)) {
-      provider = {
-        getName:     () => 'qgis',
-        getLayer:    () => this,
-        getFeatures: this.#getFeaturesQGIS.bind(this),
-        query:       this.#queryQGIS.bind(this),
-        getConfig:   () => XHR.get({ url: this.getUrl('config') }),
-      };
+      provider.getFeatures = this.#getFeaturesQGIS.bind(this);
+      provider.query       = this.#queryQGIS.bind(this);
+      provider.getConfig   = () => XHR.get({ url: this.getUrl('config') });
     }
 
     // GEOJSON
     if (['data G3WSUITE geojson', 'query G3WSUITE geojson'].includes(providerType)) {
-      provider = {
-        getName:     () => 'geojson',
-        getLayer:    () => this,
-        getFeatures: this.#getFeaturesJSON.bind(this),
-        query:       () => [],
-        getConfig:   () => {},
-      };
+      provider.getFeatures = this.#getFeaturesJSON.bind(this);
     }
 
     // G3W - since 3.11.7 (see: https://github.com/g3w-suite/g3w-admin/issues/1070)
@@ -2284,13 +2297,7 @@ export class Layer extends G3WObject {
       'filter QGIS wms',
       "filter QGIS arcgisfeatureserver",
     ].includes(providerType)) {
-      provider = {
-        getName:     () => 'g3w',
-        getLayer:    () => this,
-        getFeatures: (() => console.log('overwriteby single provider')),
-        query:       this.#queryG3W.bind(this),
-        getConfig:   () => {},
-      };
+      provider.query = this.#queryG3W.bind(this);
     }
 
     // WMS
@@ -2317,13 +2324,7 @@ export class Layer extends G3WObject {
       'query QGIS mdal',
       'query OGC wms',
     ].includes(providerType)) {
-      provider = {
-        getName:     () => 'wms',
-        getLayer:    () => this,
-        getFeatures: (() => console.log('overwriteby single provider')),
-        query:       this.#queryWMS.bind(this),
-        getConfig:   () => {},
-      };
+      provider.query = this.#queryWMS.bind(this);
     }
 
     return (this.#providers[type] = provider);
@@ -3231,14 +3232,14 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   update(mapState = {}, extraParams = {}) {
-    if (this._RASTER_LAYER && this._olLayer) {
+    if (this._RASTER_LAYER && this.getOLLayer()) {
       let { force, ...params } = extraParams;
 
       // check which layers have to be disabled
       this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
       
       if ('XYZ' === this.state.type) {
-        this._olLayer.setVisible(this.layer.isVisible());
+        this.getOLLayer().setVisible(this.layer.isVisible());
         return;
       }
       
@@ -3246,7 +3247,7 @@ export class Layer extends G3WObject {
 
       // skip when ..
       if (layers.length <= 0) {
-        this._olLayer.setVisible(false);
+        this.getOLLayer().setVisible(false);
         return;
       }
 
@@ -3263,8 +3264,8 @@ export class Layer extends G3WObject {
         if (off) { LEGEND_OFF = undefined === LEGEND_OFF ? off : `${LEGEND_OFF};${off}` }
       })
 
-      this._olLayer.setVisible(true);
-      this._olLayer.getSource()?.updateParams?.({
+      this.getOLLayer().setVisible(true);
+      this.getOLLayer().getSource()?.updateParams?.({
         ...params,
         LEGEND_ON,
         LEGEND_OFF,
@@ -3665,19 +3666,6 @@ export class Layer extends G3WObject {
   }
 
 }
-
-/******************************************************************************************
- * LAYER PROPERTIES
- *****************************************************************************************/
-
-/**
- * Layer Types
- */
-Layer.LayerTypes = {
-  TABLE:  "table",
-  IMAGE:  "image",
-  VECTOR: "vector"
-};
 
 /**
  * Response parser (content types)

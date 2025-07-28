@@ -221,7 +221,7 @@ const g3wsdk = {
     },
     layer: {
       LayersStore:     babelify(LayersStore),
-      Layer:           babelify(Layer),
+      Layer:           babelify(Object.assign(Layer, { LayerTypes: { TABLE: 'table', IMAGE: 'image', VECTOR: 'vector' } })),
       VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { _TYPE: 'vector' })) } }),
       features: {
         /** ORIGINAL SOURCE: src/map/layers/feature.js@v4.0.0 */

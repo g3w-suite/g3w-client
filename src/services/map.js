@@ -1881,7 +1881,6 @@ class MapService extends G3WObject {
    * @since 4.1.0
    */
   createLayer(layer, options = {}, extraParams) {
-
     if (layer._mapLayer) {
       return layer._mapLayer;
     }
@@ -2007,7 +2006,7 @@ class MapService extends G3WObject {
       }
 
       if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
-        layer.getProvider('data').getFeatures({
+        layer.fetchFeatures({
           url:           layer.get('source').url,
           mapProjection: GUI.getService('map').getProjection().getCode()
         }).then(feats => layer._mapLayer._olLayer.getSource().addFeatures(feats));
