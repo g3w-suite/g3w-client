@@ -85,8 +85,6 @@ class MapService extends G3WObject {
   _layers = {
     base:            {},
     g3w:             [],
-    external_wms:    [],
-    external_vector: [],
     external:        [],
   };
 
@@ -120,6 +118,16 @@ class MapService extends G3WObject {
   constructor() {
 
     super();
+
+    this.setters = [
+      'setupControls',
+      'addHideMap',
+      'setHidden',
+      'setupViewer',
+      'controlClick',
+      'loadExternalLayer',
+      'unloadExternalLayer'
+    ];
 
     /**
      * internal promise. Resolved when view is set
@@ -177,16 +185,6 @@ class MapService extends G3WObject {
     });
 
     this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
-
-    this.setters = [
-      'setupControls',
-      'addHideMap',
-      'setHidden',
-      'setupViewer',
-      'controlClick',
-      'loadExternalLayer',
-      'unloadExternalLayer'
-    ];
 
     this.on('extraParamsSet', this.onExtraParamsSet);
   }
@@ -255,7 +253,7 @@ class MapService extends G3WObject {
     this.removeListener('extraParamsSet', this.onExtraParamsSet);
     this._keyEvents.ol.forEach(key => ol.Observable.unByKey(key));
     this._keyEvents.ol.splice(0);
-    Object.values(ApplicationState.layers).forEach(this._removeEventsKeysToLayersStore.bind(this))
+    Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this))
   }
 
   /**
@@ -685,7 +683,7 @@ class MapService extends G3WObject {
    * @param close GUI content
    * @private
    */
-  _unToggleControls({ close = true } = {}) {
+  #unToggleControls({ close = true } = {}) {
     this._controls.forEach(c => {
       if (c.control.isToggled && c.control.isToggled()) {
         c.control.toggle(false);
@@ -697,7 +695,7 @@ class MapService extends G3WObject {
   }
 
   deactiveMapControls() {
-    this._unToggleControls({ close: false });
+    this.#unToggleControls({ close: false });
   }
 
   /**
@@ -847,7 +845,7 @@ class MapService extends G3WObject {
       destroy:       () => { if (this.viewer.map) { this.viewer.map.dispose(); this.viewer.map = null } },
       zoomTo:        this.zoomTo.bind(this),
       goTo:          this.goTo.bind(this),
-      fit:           this._fit.bind(this),
+      fit:           this.#fit.bind(this),
       /** @TODO check if deprecated */
       changeBaseLayer: name => this.map.getLayers().insertAt(0, this.map.getLayers().find(l => name === l.get('name'))),
     };
@@ -948,8 +946,8 @@ class MapService extends G3WObject {
 
     $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
 
-    this.viewer.map.getInteractions().forEach(int => this._watchInteraction(int));
-    this.viewer.map.getInteractions().on('add', int => this._watchInteraction(int.element));
+    this.viewer.map.getInteractions().forEach(int => this.#watchInteraction(int));
+    this.viewer.map.getInteractions().on('add', int => this.#watchInteraction(int.element));
 
     this._marker = new ol.Overlay({
       position:    null,
@@ -1100,14 +1098,14 @@ class MapService extends G3WObject {
     }
 
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    Object.values(ApplicationState.layers).forEach(this._setUpEventsKeysToLayersStore.bind(this));
+    Object.values(ApplicationState.layers).forEach(this.#setUpEventsKeysToLayersStore.bind(this));
     Vue.watch(
       () => Object.keys(ApplicationState.layers),
       (newVal, oldVal) => {
         const added   = newVal.filter(key => !(key in oldVal));
         const removed = oldVal.filter(key => !(key in newVal));
-        added.forEach(key => this._setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
-        removed.forEach(key => this._removeEventsKeysToLayersStore(ApplicationState.layers[key]));
+        added.forEach(key => this.#setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
+        removed.forEach(key => this.#removeEventsKeysToLayersStore(ApplicationState.layers[key]));
       }
     );
 
@@ -1134,7 +1132,7 @@ class MapService extends G3WObject {
   unloadExternalLayer(layer) {}
 
   // remove all events of layersStore
-  _removeEventsKeysToLayersStore(store) {
+  #removeEventsKeysToLayersStore(store) {
     const id = store.getId();
     if (this._keyEvents.stores[id]) {
       this._keyEvents.stores[id].forEach(evt => { Object.entries(evt).forEach(([event, key]) => store.un(event, key)); });
@@ -1143,7 +1141,7 @@ class MapService extends G3WObject {
   }
 
   // register all events of layersStore and relative keys
-  _setUpEventsKeysToLayersStore(store) {
+  #setUpEventsKeysToLayersStore(store) {
     const id = store.getId();
     // check if already store a key of events
     this._keyEvents.stores[id] = [];
@@ -1300,7 +1298,7 @@ class MapService extends G3WObject {
     const toggled             = control && control.isToggled && control.isToggled() || false;
     const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
     if (untoggleMapControls && active) {
-      this._unToggleControls(options);
+      this.#unToggleControls(options);
     }
     this.getMap().addInteraction(interaction);
     interaction.setActive(active);
@@ -1319,7 +1317,7 @@ class MapService extends G3WObject {
     this._interactions = this._interactions.filter(_interaction => interaction !== _interaction);
   }
 
-  _watchInteraction(interaction) {
+  #watchInteraction(interaction) {
     interaction.on('change:active', e => {
       if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
         this.emit('mapcontrol:active', e.target);
@@ -1393,7 +1391,8 @@ class MapService extends G3WObject {
     }));
   }
 
-  getGeometryAndExtentFromFeatures(features = []) {
+
+  #getGeometryAndExtentFromFeatures(features = []) {
     let extent;
     let gtype;
     let geometry;
@@ -1428,7 +1427,7 @@ class MapService extends G3WObject {
   }
 
   highlightFeatures(features, options = {}) {
-    const { geometry } = this.getGeometryAndExtentFromFeatures(features);
+    const { geometry } = this.#getGeometryAndExtentFromFeatures(features);
     // force zoom false
     options.zoom = false;
     this.highlightGeometry(geometry, options);
@@ -1443,7 +1442,7 @@ class MapService extends G3WObject {
   }
 
   zoomToFeatures(features, options = { highlight: false }) {
-    let { geometry, extent } = this.getGeometryAndExtentFromFeatures(features);
+    let { geometry, extent } = this.#getGeometryAndExtentFromFeatures(features);
     if (options.highlight && extent) {
       options.highLightGeometry = geometry;
     }
@@ -1504,7 +1503,7 @@ class MapService extends G3WObject {
   /**
    * @since 3.11.0
    */
-  _fit(geometry, options = {}) {
+  #fit(geometry, options = {}) {
     const view    = this.viewer.map.getView();
     const animate = 'boolean' === typeof options.animate ? options.animate : true;
 
@@ -1787,89 +1786,15 @@ class MapService extends G3WObject {
   }
 
   /**
-   * Remove external layer
-   *
-   * @param name
-   */
-  removeExternalLayer(name) {
-    const layer = this.getLayerByName(name);
-    const type = layer._type || 'vector';
-    
-
-    GUI.getService('queryresults').unregisterVectorLayer(layer);
-    GUI.getService('catalog').removeExternalLayer({ name, type });
-
-    this.viewer.map.removeLayer(layer);
-    /**@since v4.0.0 */
-    if ('vector' === type) {  
-      const id = layer.get('id');
-      //remove eventually selection feature belong to layer
-      this.defaultsLayers.selectionLayer.getSource()
-        .getFeatures()
-        .filter(f => id === f.__layerId)
-        .forEach(f => this.defaultsLayers.selectionLayer.getSource().removeFeature(f));
-    }
-
-    if ('vector' === type) {
-      this._keyEvents.unwatches[name].forEach(unWatch => unWatch());
-      delete this._keyEvents.unwatches[name];
-    }
-
-    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
-    if ('vector' === type) {
-      localforage.getItem('externalLayers').then(externalLayers => {
-        externalLayers  = externalLayers || {}
-        if (name in externalLayers) {
-          delete externalLayers[name];
-        }
-        localforage.setItem('externalLayers', externalLayers);
-      });
-    }
-
-    if ('vector' === type) {
-      this._layers.external_vector = this._layers.external_vector.filter(l => {
-        if (name !== l.name) {
-          return true;
-        }
-        Object.values(MAP.controls).forEach(c => c.onRemoveExternalLayer && c.onRemoveExternalLayer(l));
-        if (l === this.#selectedLayer) {
-          this.#selectedLayer = null;
-        }
-      });
-    }
-
-    if ('wms' === type) {
-      this._layers.external_wms = this._layers.external_wms.filter(l => {
-        if (l.getId() !== layer.id) {
-          return true;
-        }
-        this.unregisterMapLayerListeners(l, layer.projectLayer);
-      });
-    }
-
-    this._layers.external = this._layers.external.filter(l => l.get('id') !== layer.get('id'));
-
-    this.unloadExternalLayer(layer);
-
-    this.emit('remove-external-layer', name);
-  }
-
-  /**
-   * @TODO deprecate in favour of `getExternalLayers`
-   *
-   * @since 3.11.0
-   */
-  getLegacyExternalLayers() {
-    return this._layers.external_vector;
-  }
-
-  /**
    * Return external layers added to map
    * 
    * @param {'vector' | 'wms'} type since 3.11.0
    */
   getExternalLayers(type) {
-    return this._layers.external.filter(l => undefined !== type ? type === l._type : true);
+    if ('string' !== typeof type) {
+      type = type.type;
+    }
+    return this._layers.external.filter(l => undefined !== type ? type === l._externalLayerType : true);
   }
 
   /**
@@ -2068,11 +1993,6 @@ class MapService extends G3WObject {
 
     let vectorLayer;
 
-    options.position   = undefined === options.position ? 'top': options.position;
-    options.opacity    = undefined === options.opacity ? 1: options.opacity;
-    options.visible    = undefined === options.visible || options.visible;
-    options.persistent = undefined === options.persistent || options.persistent;
-
     // vector layer
     if (externalLayer instanceof ol.layer.Vector) {
 
@@ -2145,10 +2065,10 @@ class MapService extends G3WObject {
         crs:              options.crs,
         type:             options.type,
         _type:            'vector',
-        visible:          options.visible,
+        visible:          false !== options.visible,
         checked:          true,
-        position:         options.position,
-        opacity:          options.opacity,
+        position:         options.position ?? 'top',
+        opacity:          options.opacity  ??  1,
         color:            color || 'blue',
         filter:           vectorLayer.filter,
         selection:        vectorLayer.selection,
@@ -2181,10 +2101,10 @@ class MapService extends G3WObject {
       externalLayer.name         = externalLayer.get('name');
       externalLayer.title        = externalLayer.get('name');
       externalLayer._type        = 'wms';
-      externalLayer.opacity      = options.opacity;
-      externalLayer.position     = options.position;
+      externalLayer.opacity      = options.opacity  ??  1;
+      externalLayer.position     = options.position ?? 'top';
       externalLayer.external     = true;
-      externalLayer.checked      = options.visible;
+      externalLayer.checked      = false !== options.visible;
     }
 
     // skip when another layer with the same name was already added
@@ -2199,7 +2119,7 @@ class MapService extends G3WObject {
       'wms':    externalLayer,
     })[type];
 
-    // skip if is not a valid layer
+    // invalid layer
     if (!layer) {
       console.warn('layer type: ', type, externalLayer)
       return Promise.reject('not a valid layer');
@@ -2208,8 +2128,8 @@ class MapService extends G3WObject {
     const features = ('vector' === type && layer.getSource().getFeatures()) || [];
     const extent   = ('vector' === type && layer.getSource().getExtent()) || [];
 
-    // add id value
-    features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`)); //set id with prefix of layer id
+    // prefix each feature with layer id
+    features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`));
 
     if (features.length) {
       externalLayer.geometryType = features[0].getGeometry().getType();
@@ -2220,9 +2140,9 @@ class MapService extends G3WObject {
       externalLayer.bbox = { minx: extent[0], miny: extent[1], maxx: extent[2], maxy: extent[3] };
     }
 
-    layer.set('position', options.position);
-    layer.setOpacity(options.opacity);
-    layer.setVisible(options.visible);
+    layer.set('position', options.position ?? 'top');
+    layer.setOpacity(options.opacity  ??  1);
+    layer.setVisible(false !== options.visible);
 
     /** @TODO use a common parent class (project/external layers) */
     externalLayer.set                 = externalLayer.set                 || ((a, d) => externalLayer[a] = d);
@@ -2244,18 +2164,19 @@ class MapService extends G3WObject {
       externalLayer.visible = v;
     });
 
+    // keep a reference to original "externalLayer" object
+    layer._externalLayer     = externalLayer;
+    layer._externalLayerType = type;
+
     this.viewer.map.addLayer(layer);
 
     this._layers.external.push(layer);
 
-    if ('vector' === type) {
-      this._layers.external_vector.push(externalLayer);
-    }
-
     // register and dispatch layer add event
     if ('wms' === type) {
-      this._layers.external_wms.push(externalLayer);
-      this.registerMapLayerListeners(_layer, false);
+      _layer.on('loadstart', this.onLayerLoadStart);
+      _layer.on('loadend',   this.onLayerLoadEnd);
+      _layer.on('loaderror', this.onLayerLoadError);
     }
 
     if (vectorLayer && false !== options.persistent) {
@@ -2269,7 +2190,9 @@ class MapService extends G3WObject {
         });
       });
     }
+
     GUI.getService('catalog').addExternalLayer({ layer: externalLayer, type });
+
     // invoke `onAddExternalLayer` on each map control
     if ('vector' === type) {
       //add to query result only vector layer
@@ -2285,6 +2208,73 @@ class MapService extends G3WObject {
     this.loadExternalLayer(layer);
 
     return layer;
+  }
+
+  /**
+   * Remove external layer
+   *
+   * @param name
+   */
+  removeExternalLayer(name) {
+    const layer = this.getLayerByName(name);
+    const type = layer._type || 'vector';
+    
+
+    GUI.getService('queryresults').unregisterVectorLayer(layer);
+    GUI.getService('catalog').removeExternalLayer({ name, type });
+
+    this.viewer.map.removeLayer(layer);
+    /**@since v4.0.0 */
+    if ('vector' === type) {  
+      const id = layer.get('id');
+      //remove eventually selection feature belong to layer
+      this.defaultsLayers.selectionLayer.getSource()
+        .getFeatures()
+        .filter(f => id === f.__layerId)
+        .forEach(f => this.defaultsLayers.selectionLayer.getSource().removeFeature(f));
+    }
+
+    if ('vector' === type) {
+      this._keyEvents.unwatches[name].forEach(unWatch => unWatch());
+      delete this._keyEvents.unwatches[name];
+    }
+
+    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
+    if ('vector' === type) {
+      localforage.getItem('externalLayers').then(externalLayers => {
+        externalLayers  = externalLayers || {}
+        if (name in externalLayers) {
+          delete externalLayers[name];
+        }
+        localforage.setItem('externalLayers', externalLayers);
+      });
+    }
+
+    this._layers.external = this._layers.external.filter(l => {
+      // remove layer from selection
+      if (l._externalLayer === this.#selectedLayer) {
+        this.#selectedLayer = null;
+      }
+      // vector
+      if (type === l._externalLayerType && name === l._externalLayer.name) {
+        Object.values(MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
+        return false;
+      }
+      // wms
+      if (type === l._externalLayerType && layer.id === l._externalLayer.getId()) {
+        this.unregisterMapLayerListeners(l._externalLayer, layer.projectLayer);
+        return false;
+      }
+      // other types ?
+      if (l.get('id') === layer.get('id')) {
+        return false;
+      }
+      return true;
+    });
+
+    this.unloadExternalLayer(layer);
+
+    this.emit('remove-external-layer', name);
   }
 
   getCookie(name) {
@@ -2304,10 +2294,10 @@ class MapService extends G3WObject {
       id = null;
     }
 
-    layer = getCatalogLayerById(id) || this.getLegacyExternalLayers().find(l => id === l.getId());
+    layer = getCatalogLayerById(id) || this.getExternalLayers('vector').map(l => l._externalLayer).find(l => id === l.getId());
 
     // select layer by id
-    getCatalogLayers().concat(this.getLegacyExternalLayers()).forEach(l => l.setSelected(l.getId() === id));
+    getCatalogLayers().concat(this.getExternalLayers('vector').map(l => l._externalLayer)).forEach(l => l.setSelected(l.getId() === id));
 
     this.#selectedLayer = layer && layer.isSelected() ? layer : null;
 
