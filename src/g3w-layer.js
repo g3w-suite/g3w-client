@@ -497,6 +497,8 @@ export class Layer extends G3WObject {
     this.layerId = config.id;
 
     /**
+     * @TODO check if deprecated
+     * 
      * Feature wrapper (to store feature)
      * 
      * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
@@ -2857,21 +2859,21 @@ export class Layer extends G3WObject {
   /**
    * @since 4.1.0 
    */
-  addFeature(feature)    { this._featuresstore.addFeature(feature); }
+  addFeature(feature)    { console.trace('[G3W-LAYER] addFeature is deprecated?'); this._featuresstore.addFeature(feature); }
 
   /**
    * @TODO check if it unusued
    * 
    * @since 4.1.0
    */
-  updateFeature(feature) { this._featuresstore.updateFeature(feature);}
+  updateFeature(feature) { console.trace('[G3W-LAYER] updateFeature is deprecated?'); this._featuresstore.updateFeature(feature);}
 
   /**
    * @TODO check if it unusued
    * 
    * @since 4.1.0
    */
-  setFeatures(features)  { this._featuresstore.setFeatures(features); }
+  setFeatures(features)  { console.trace('[G3W-LAYER] setFeatures is deprecated?'); this._featuresstore.setFeatures(features); }
 
   /**
    * get data from every sources (server, wms, etc..)
@@ -2882,6 +2884,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   async getFeatures(opts = {}) {
+    console.trace('[G3W-LAYER] getFeatures is deprecated?');
     const features = await this._featuresstore.getFeatures(opts);
     this.emit('getFeatures', features);
     return features;
@@ -2891,6 +2894,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0 
    */
   async commit(commitItems) {
+    console.trace('[G3W-LAYER] commit is deprecated?');
     const response = await this._featuresstore.commit(commitItems);
     // sync selection filter features
     if (response && response.result) {
@@ -2931,6 +2935,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   readFeatures() {
+    console.trace('[G3W-LAYER] readFeatures is deprecated?');
     return this._featuresstore.readFeatures();
   }
 
@@ -2943,6 +2948,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   async unlock() {
+    console.trace('[G3W-LAYER] unlock is deprecated?');
     return await this._featuresstore.unlock();
   }
 
@@ -2968,6 +2974,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   getFeaturesStore() {
+    console.trace('[G3W-LAYER] getFeaturesStore is deprecated?');
     return this._featuresstore;
   }
 
@@ -2975,6 +2982,7 @@ export class Layer extends G3WObject {
    * @since 4.1.0
    */
   setSource(source) {
+    console.trace('[G3W-LAYER] setSource is deprecated?');
     this._featuresstore = source;
   }
 

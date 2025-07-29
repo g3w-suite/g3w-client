@@ -173,7 +173,7 @@ const build_plugin = async (pluginName) => {
     ],
     banner: { js: /* js */ `
 (function() {
-  const plugins = window?.initConfig?.group?.plugins;
+  const plugins = window?.initConfig?.plugins;
   if (plugins) {
     plugins["${pluginName}"] = Object.assign(plugins["${pluginName}"] || {},
       {
