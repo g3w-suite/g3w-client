@@ -294,7 +294,7 @@ export class QueryBy extends InteractionControl {
               },
               templateLayer(state) {
                 if (!state.id || '__NEW__' === state.id) { return state.text }
-                const externalLayers = GUI.getService('map').getLegacyExternalLayers();
+                const externalLayers = GUI.getService('map').getExternalLayers('vector').map(l => l._externalLayer);
                 const layer = getCatalogLayerById(state.id) || externalLayers.find(l => l.get('id') === state.id);
                 /** @FIXME layer is undefined when removing an external layer */
                 const icon = ('__ALL__' === state.id || !layer ? '' : /*html */ `<i class="${ GUI.getFontClass( layer.isVisible() ? 'eye' : 'eye-close') }"></i>&nbsp;&nbsp;`)
@@ -594,7 +594,7 @@ export class QueryBy extends InteractionControl {
 
       //Check if some layer is selected
       const selected       = GUI.getService('map').getSelectedLayer();
-      const externalLayers = GUI.getService('map').getLegacyExternalLayers();
+      const externalLayers = GUI.getService('map').getExternalLayers('vector').map(l => l._externalLayer);
       const project        = ApplicationState.project;
 
       if ('querybbox' === type) {
@@ -681,7 +681,7 @@ function _getAvailableLayers(type) {
       .flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true })),
 
     // POLYGONS
-    ...(GUI.getService('map').getLegacyExternalLayers() || [])
+    ...GUI.getService('map').getExternalLayers('vector').map(l => l._externalLayer)
       .filter(l => 'querybypolygon' === type ? POLYGON_TYPES.includes(l.getGeometryType()) : true),
 
     // SELECTED POLYGONS
