@@ -10,27 +10,17 @@ import { groupBy }                        from 'utils/groupBy';
 import { XHR }                            from 'utils/XHR';
 import { gettext as _ }                   from 'g3w-i18n';
 
-const handleQueryPromises = async (promises = []) => {
-  const responses = await Promise.allSettled(promises);
-  // at least one response
-  if (responses.some(r => 'fulfilled' === r.status)) {
-    return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
-  }
-  // show all errors
-  return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
-}
-
 export default {
 
   /**
-   * @param { string } contextAndMethod function name (eg. "query:coordinates", "query:bbox", "query:polygon")
+   * @param { string } func function name (eg. "query:coordinates", "query:bbox", "query:polygon")
    * @param options
    * 
    * @returns {Promise<void>}
    */
-  async getData(contextAndMethod, options = {}) {
+  async getData(func, options = {}) {
     const { inputs = {}, outputs = {} } = options;
-    const promise = this[contextAndMethod](inputs);
+    const promise = this[func](inputs);
     if (outputs) {
       GUI.outputDataPlace(promise, outputs);
     }
@@ -424,7 +414,6 @@ export default {
       console.warn(e);
       return Promise.reject(e);
     }
-
   },
 
   /**
@@ -449,11 +438,6 @@ export default {
       console.warn(e);
     }
   },
-
-  /**
-   * Generic proxy data function
-   */
-  'proxy:data'(params = {}) {},
 
   /**
    * used by the following plugins: "archiweb"
@@ -487,7 +471,7 @@ export default {
     const mapProjection  = map.getView().getProjection();
     const resolution     = map.getView().getResolution();
 
-    return await handleQueryPromises(Object.values(
+    const responses = await Promise.allSettled(Object.values(
       multilayers
         ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
         : layers
@@ -499,7 +483,12 @@ export default {
         )
       )
     );
-
+    // at least one response
+    if (responses.some(r => 'fulfilled' === r.status)) {
+      return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+    }
+    // show all errors
+    return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
   },
 
   /**
@@ -531,7 +520,7 @@ export default {
 
     const mapCrs = projection.getCode();
 
-    return await handleQueryPromises(Object.values(
+    const responses = await Promise.allSettled(Object.values(
       multilayers
         ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
         : layers
@@ -550,6 +539,12 @@ export default {
           : { filter, feature_count, filterConfig }
       )
     }));
+    // at least one response
+    if (responses.some(r => 'fulfilled' === r.status)) {
+      return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+    }
+    // show all errors
+    return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
   },
 
 };
