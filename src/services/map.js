@@ -36,6 +36,10 @@ import { Layer }                            from 'g3w-layer';
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
 const MAP = {
+  colors:     {
+    highlight: undefined,
+    selection: 'red',
+  },
   controls:   {},
   offlineids: [],
 };
@@ -81,6 +85,13 @@ class MapService extends G3WObject {
   layersCount = 0; // 
 
   _controls = [];
+
+  /** Default layers added to map. */
+  defaultsLayers = {
+    mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
+    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: MAP.colors.highlight, fill: true })] }),
+    selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector() }),
+  };
 
   _layers = {
     base:            {},
@@ -135,43 +146,6 @@ class MapService extends G3WObject {
      * @since 3.8.3
      */
     this._ready = new Promise(res => this.once('viewerset', res));
-
-    /**
-     * Default layers are OL layers that are add to map by default.
-     * Are used to show selection Features and/or highlight Layer feature
-     */
-    this.defaultsLayers = {
-
-      mapcenter: new ol.layer.Vector({
-        source: new ol.source.Vector(),
-        style:  new ol.style.Style({
-          image: new ol.style.Icon({
-            opacity: 1,
-            src:     '/static/client/images/mapcentermarker.svg',
-            scale:   0.8
-          }),
-        })
-      }),
-
-      _style: {
-        highlightLayer: { color: undefined },
-        selectionLayer: { color: 'red' }
-      },
-
-      highlightLayer: new ol.layer.Vector({
-        source: new ol.source.Vector(),
-        style: feat => [createSelectedStyle({
-          geometryType: feat.getGeometry().getType(),
-          color:        this.defaultsLayers._style.highlightLayer.color,
-          fill:         true
-        })]
-      }),
-
-      selectionLayer: new ol.layer.Vector({
-        source: new ol.source.Vector(),
-      }),
-
-    };
 
     this.onLayerLoadStart    = this.onLayerLoadStart.bind(this);
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
@@ -437,7 +411,6 @@ class MapService extends G3WObject {
       lh: <options> h: horizontal: v vertical (default)
     }
   */
-
   createMapControl(type, {
     id,
     add     = true,
@@ -678,24 +651,8 @@ class MapService extends G3WObject {
     })
   }
 
-  /**
-   * untoggle mapcontrol
-   * @param close GUI content
-   * @private
-   */
-  #unToggleControls({ close = true } = {}) {
-    this._controls.forEach(c => {
-      if (c.control.isToggled && c.control.isToggled()) {
-        c.control.toggle(false);
-        if (close) {
-          GUI.closeContent();
-        }
-      }
-    });
-  }
-
   deactiveMapControls() {
-    this.#unToggleControls({ close: false });
+    this._controls.forEach(c => c.control?.isToggled?.() && c.control.toggle(false));
   }
 
   /**
@@ -704,7 +661,7 @@ class MapService extends G3WObject {
    */
   disableClickMapControls(bool = true) {
     this._controls
-      .filter(c => c.control.isClickMap && c.control.isClickMap())
+      .filter(c => c.control?.isClickMap?.())
       .forEach(c => {
         c.control.isToggled() && c.control.toggle();
         c.control[bool ? 'disable' : 'enable']();
@@ -1298,7 +1255,14 @@ class MapService extends G3WObject {
     const toggled             = control && control.isToggled && control.isToggled() || false;
     const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
     if (untoggleMapControls && active) {
-      this.#unToggleControls(options);
+      this._controls.forEach(c => {
+        if (c.control?.isToggled?.()) {
+          c.control.toggle(false);
+          if (false !== options.close) {
+            GUI.closeContent();
+          }
+        }
+      });
     }
     this.getMap().addInteraction(interaction);
     interaction.setActive(active);
@@ -1530,7 +1494,7 @@ class MapService extends G3WObject {
   * */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
-      this.defaultsLayers._style.selectionLayer = { color: opts.color };
+      MAP.colors.selection = opts.color;
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
@@ -1538,7 +1502,7 @@ class MapService extends G3WObject {
         //In case of add need to set selection style
         opts.feature.setStyle(createSelectedStyle({
           geometryType: opts.feature.getGeometry().getType(),
-          color:        this.defaultsLayers._style.selectionLayer.color,
+          color:        MAP.colors.selection,
           fill:         true
         }));
         source.addFeature(opts.feature);
@@ -1562,7 +1526,7 @@ class MapService extends G3WObject {
         .filter(f => layerId === f.__layerId)
         .forEach(f => f.setStyle(visible ? createSelectedStyle({
           geometryType: f.getGeometry().getType(),
-          color:        this.defaultsLayers._style.selectionLayer.color,
+          color:        MAP.colors.selection,
           fill:         true
         }): new ol.style.Style(null)))
     } else {
@@ -1590,7 +1554,7 @@ class MapService extends G3WObject {
     let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
     this.clearHighlightGeometry();
-    this.defaultsLayers._style.highlightLayer = { color: options.color };
+    MAP.colors.highlight = options.color;
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
@@ -1637,7 +1601,7 @@ class MapService extends G3WObject {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
     // reset default layer style
-    this.defaultsLayers._style.highlightLayer = { color: undefined };
+    MAP.colors.highlight = undefined;
   }
 
   /**
