@@ -22,7 +22,7 @@ export default {
     const { inputs = {}, outputs = {} } = options;
     const promise = this[func](inputs);
     if (outputs) {
-      GUI.outputDataPlace(promise, outputs);
+      GUI.showData(promise, outputs);
     }
     return await (await promise);
   },

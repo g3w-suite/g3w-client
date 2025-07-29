@@ -97,7 +97,7 @@ export class IframeApp extends G3WObject {
    * @returns { Promise<Array> }
    */
   async 'app:results'(params = {}) {
-    GUI.currentoutputplace = (params.capture ?? true) ? 'iframe' : 'gui';
+    GUI.showData.iframe = !!(params.capture ?? true);
     return [];
   }
 

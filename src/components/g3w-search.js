@@ -233,7 +233,7 @@ async function doSearch({
     }
     // no search response (values) → show an empty result
     if (!has_values && 'search' === state.return) {
-      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      GUI.showData({ data: [] });
       data = [];
     }
     /********************************************************************************/
@@ -249,7 +249,7 @@ async function doSearch({
 
     // no features on result or no relation found (@since 3.11.0) → show an empty message
     if (search_1n && (0 === features.length || !relation)) {
-      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      GUI.showData({ data: [] });
       parsed = [];
     }
 

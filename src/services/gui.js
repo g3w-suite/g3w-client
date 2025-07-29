@@ -25,6 +25,120 @@ export default new (class GUI extends G3WObject {
     viewport: null,
   }
 
+  isready = false;
+
+  /** whether to push new data content to result */
+  push_content = false;
+
+  _closeUserMessage = true;
+
+  /*
+  * Based on bootbox.js v4.4.0
+  * Copyright 2011-2020 Nick Payne
+  * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
+  */
+  dialog = {
+  
+    dialog(options, callback) {
+
+    // BACKCOMP: v3.x
+    if (undefined != callback) {
+      console.warn('GUI.dialog.confirm(message, callback) is deprecated')
+      options = {
+        message: options,
+        callback,
+        buttons: {
+          cancel:  { label: "Cancel" },
+          confirm: { label: "OK" }
+        }
+      };
+      options.buttons.cancel.callback  = function() { return options.callback.call(this, false); };
+      options.buttons.confirm.callback = function() { return options.callback.call(this, true); };
+    }
+
+    options = Object.assign({
+        className:   null,   // additional class string applied to the top level dialog
+        closeButton: true,   // whether or not to include a close button
+        show:        true,   // show the dialog immediately by default
+        container:   "body", // dialog container
+        buttons:     {},
+        message:     '',
+      }, options);
+  
+      const dialog = $(/* html */ `<div class="bootbox modal fade ${options.className || ''}" tabindex="-1" role="dialog">
+        <div class="modal-dialog ${({ large: "modal-lg", small: "modal-sm" })[options.size] || '' }">
+          <div class="modal-content">
+            ${ options.title ? "<div class='modal-header'><h4 class='modal-title'></h4></div>" : '' }
+            <div class="modal-body"><div class="bootbox-body"></div></div>
+          </div>
+        </div>
+      </div>`);
+
+      dialog.find(".bootbox-body").html(options.message);
+  
+      let btns = "";
+      const callbacks = {};
+  
+      Object.keys(options.buttons).forEach((key, i, arr) => {
+        if ('function' === typeof options.buttons[key]) {
+          options.buttons[key] = { callback: options.buttons[key] };
+        }
+        // the lack of an explicit label means we'll assume the key is good enough
+        if (!options.buttons[key].label) {
+          options.buttons[key].label = key;
+        }
+        // always add a primary to the main option in a two-button dialog
+        if (!options.buttons[key].className) {
+          options.buttons[key].className = arr.length <= 2 && i === arr.length - 1 ? "btn-primary" : "btn-default";
+        }
+        btns += "<button data-bbx='" + key + "' type='button' class='btn " + options.buttons[key].className + "'>" + options.buttons[key].label + "</button>";
+        callbacks[key] = options.buttons[key].callback;
+      });
+    
+      if (options.closeButton) {
+        const close = $("<button type='button' class='bootbox-close-button close' data-dismiss='modal' aria-hidden='true'>&times;</button>");
+        if (options.title) {
+          dialog.find(".modal-header").prepend(close);
+        } else {
+          close.css("margin-top", "-10px").prependTo(dialog.find(".modal-body"));
+        }
+      }
+    
+      if (options.title) {
+        dialog.find(".modal-title").html(options.title);
+      }
+    
+      if (btns) {
+        dialog.find(".modal-body").after("<div class='modal-footer'></div>");
+        dialog.find(".modal-footer").html(btns);
+      }
+  
+      const onCallback = (e, dialog, callback) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if ('function' !== typeof callback || false !== callback.call(dialog, e)) {
+          dialog.modal("hide");
+        }
+      };
+  
+      dialog.on("hidden.bs.modal",                function(e) { if (e.target === this) { dialog.remove(); } });
+      dialog.on("shown.bs.modal",                 function()  { dialog.find(".btn-primary:first").focus(); });
+      dialog.on("click", ".modal-footer button",  function(e) { onCallback(e, dialog, callbacks[$(this).data("bbx")]); });
+      dialog.on("click", ".bootbox-close-button", function(e) { onCallback(e, dialog, callbacks.cancel); });
+      dialog.on("keyup",                          function(e) { if (e.which === 27 && callbacks.cancel) { onCallback(e, dialog, callbacks.cancel); } });
+    
+      $(options.container).append(dialog);
+      dialog.modal({ backdrop: "static", keyboard: false, show: false });
+    
+      if (options.show) {
+        dialog.modal("show");
+      }
+    
+      return dialog;
+    },
+  
+  };
+
   constructor(opts) {
     super(opts);
 
@@ -39,123 +153,11 @@ export default new (class GUI extends G3WObject {
       'showPanel',
     ];
 
-    this.isready           = false;
+    // BACKOMP v3.x
+    this.outputDataPlace = this.showData.bind(this);
 
-    //property to how a result has to be adding or close all and show new
-    // false mean create new and close all open
-    this.push_content      = false;
-
-    this._closeUserMessage = true;
-
-    /*
-     * Based on bootbox.js v4.4.0
-     * Copyright 2011-2020 Nick Payne
-     * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
-     */
-    this.dialog            = {
-   
-     dialog(options, callback) {
-
-      // BACKCOMP: v3.x
-      if (undefined != callback) {
-        console.warn('GUI.dialog.confirm(message, callback) is deprecated')
-        options = {
-          message: options,
-          callback,
-          buttons: {
-            cancel:  { label: "Cancel" },
-            confirm: { label: "OK" }
-          }
-        };
-        options.buttons.cancel.callback  = function() { return options.callback.call(this, false); };
-        options.buttons.confirm.callback = function() { return options.callback.call(this, true); };
-      }
-
-      options = Object.assign({
-         className:   null,   // additional class string applied to the top level dialog
-         closeButton: true,   // whether or not to include a close button
-         show:        true,   // show the dialog immediately by default
-         container:   "body", // dialog container
-         buttons:     {},
-         message:     '',
-       }, options);
-   
-       const dialog = $(/* html */ `<div class="bootbox modal fade ${options.className || ''}" tabindex="-1" role="dialog">
-         <div class="modal-dialog ${({ large: "modal-lg", small: "modal-sm" })[options.size] || '' }">
-           <div class="modal-content">
-             ${ options.title ? "<div class='modal-header'><h4 class='modal-title'></h4></div>" : '' }
-             <div class="modal-body"><div class="bootbox-body"></div></div>
-           </div>
-         </div>
-       </div>`);
-
-       dialog.find(".bootbox-body").html(options.message);
-   
-       let btns = "";
-       const callbacks = {};
-   
-       Object.keys(options.buttons).forEach((key, i, arr) => {
-         if ('function' === typeof options.buttons[key]) {
-           options.buttons[key] = { callback: options.buttons[key] };
-         }
-         // the lack of an explicit label means we'll assume the key is good enough
-         if (!options.buttons[key].label) {
-           options.buttons[key].label = key;
-         }
-         // always add a primary to the main option in a two-button dialog
-         if (!options.buttons[key].className) {
-           options.buttons[key].className = arr.length <= 2 && i === arr.length - 1 ? "btn-primary" : "btn-default";
-         }
-         btns += "<button data-bbx='" + key + "' type='button' class='btn " + options.buttons[key].className + "'>" + options.buttons[key].label + "</button>";
-         callbacks[key] = options.buttons[key].callback;
-       });
-     
-       if (options.closeButton) {
-         const close = $("<button type='button' class='bootbox-close-button close' data-dismiss='modal' aria-hidden='true'>&times;</button>");
-         if (options.title) {
-           dialog.find(".modal-header").prepend(close);
-         } else {
-           close.css("margin-top", "-10px").prependTo(dialog.find(".modal-body"));
-         }
-       }
-     
-       if (options.title) {
-         dialog.find(".modal-title").html(options.title);
-       }
-     
-       if (btns) {
-         dialog.find(".modal-body").after("<div class='modal-footer'></div>");
-         dialog.find(".modal-footer").html(btns);
-       }
-   
-       const onCallback = (e, dialog, callback) => {
-         e.stopPropagation();
-         e.preventDefault();
-         if ('function' !== typeof callback || false !== callback.call(dialog, e)) {
-           dialog.modal("hide");
-         }
-       };
-   
-       dialog.on("hidden.bs.modal",                function(e) { if (e.target === this) { dialog.remove(); } });
-       dialog.on("shown.bs.modal",                 function()  { dialog.find(".btn-primary:first").focus(); });
-       dialog.on("click", ".modal-footer button",  function(e) { onCallback(e, dialog, callbacks[$(this).data("bbx")]); });
-       dialog.on("click", ".bootbox-close-button", function(e) { onCallback(e, dialog, callbacks.cancel); });
-       dialog.on("keyup",                          function(e) { if (e.which === 27 && callbacks.cancel) { onCallback(e, dialog, callbacks.cancel); } });
-     
-       $(options.container).append(dialog);
-       dialog.modal({ backdrop: "static", keyboard: false, show: false });
-     
-       if (options.show) {
-         dialog.modal("show");
-       }
-     
-       return dialog;
-     },
-   
-   };
-
-   // BACKCOMP: v3.x
-   this.dialog.confirm = this.dialog.dialog;
+    // BACKCOMP: v3.x
+    this.dialog.confirm = this.dialog.dialog;
 
     this.notify = {
       warning:(message, autoclose = false) => { this.showUserMessage({ type: 'warning', message, autoclose }) },
@@ -164,8 +166,6 @@ export default new (class GUI extends G3WObject {
       success:(message)                    => { this.showUserMessage({ type: 'success', message, autoclose: true }) }
     };
 
-    /** @since 3.11.0 */
-    this.currentoutputplace = 'gui';
   }
 
   addComponent(component, placeholder, options={}) {
@@ -328,22 +328,29 @@ export default new (class GUI extends G3WObject {
   /**
    * Function called from DataRouterservice for gui output
    * 
-   * @param promise // is request data promise
+   * @param { Promise | Object } promise request data or promise
    * @param { Object } output
    * @param { boolean | Function | Object } output.show set output condition (whether to show result or not)
    * @param { boolean } output.add
    * @param { String } output.title
+   * 
+   * @since 4.1.0
    */
-  async outputDataPlace(promise, output = {}) {
+  async showData(promise, output = {}) {
 
-    //set current unique request id of request
+    // convert to promise
+    if (!(promise instanceof Promise)) {
+      promise = Promise.resolve(promise);
+    }
+
+    // unique id for request
     const rid = getUniqueDomId();
 
     /** @type { String[] } cached requests (by id) */
-    this.outputDataPlace.reqs = (this.outputDataPlace.reqs || []).concat(rid);
+    this.showData.reqs = (this.showData.reqs || []).concat(rid);
 
     // in case of iframe
-    if ('iframe' === this.currentoutputplace) {
+    if (this.showData.iframe) {
       try {
         let response = await promise;
         const json   = new ol.format.GeoJSON();
@@ -385,11 +392,11 @@ export default new (class GUI extends G3WObject {
 
       //Check id we can show data
       const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-      const last = show && rid === this.outputDataPlace.reqs.at(-1);
+      const last = show && rid === this.showData.reqs.at(-1);
 
       // set request output ids empty
       if (last) {
-        this.outputDataPlace.reqs.splice(0);
+        this.showData.reqs.splice(0);
       }
 
       //if set before call method and wait
@@ -428,7 +435,7 @@ export default new (class GUI extends G3WObject {
     }
 
     //set loading to false when no pending request
-    this.setLoadingContent(this.outputDataPlace.reqs.length > 0);
+    this.setLoadingContent(this.showData.reqs.length > 0);
   }
 
   showForm(options = {}) {
