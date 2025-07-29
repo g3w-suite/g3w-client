@@ -3639,10 +3639,10 @@ export class Layer extends G3WObject {
   /**
    * @since 4.1.0
    */
-  addLayer(layer) {
-    if (this._RASTER_LAYER && !this.allLayers.find(l => layer === l)) { this.allLayers.push(layer); }
-    if (this._RASTER_LAYER && !this.layers.find(l => layer === l))    { this.layers.push(layer); }
-    if (this._RASTER_LAYER && 'XYZ' === this.state.type)             { this.layer = layer; }
+  addLayer(layer, position = 'end') {
+    if (!this.allLayers.find(l => layer === l)) { this.allLayers.splice('end' === position ? this.allLayers.length : 0, 0, layer); }
+    if (!this.layers.find(l => layer === l))    { this.layers.splice('end' === position ? this.layers.length : 0, 0, layer); }
+    if ('XYZ' === this.state.type)              { this.layer = layer; }
   }
 
   /**
