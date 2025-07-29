@@ -29,7 +29,6 @@ import Table                      from 'components/Table.vue';
 import { saveBlob }               from 'utils/saveBlob';
 import { XHR }                    from 'utils/XHR';
 import { prompt }                 from 'utils/prompt';
-import { get_legend_params }      from 'utils/get_legend_params';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { cloneDeep }              from 'utils/cloneDeep';
@@ -2170,8 +2169,8 @@ export class Layer extends G3WObject {
       STYLES:               (layers || []).map(l => l.getStyle()).join(','),
       BBOX:                 ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
       // HOTFIX for GetFeatureInfo requests and feature layer categories that are not visible (unchecked) at QGIS project setting
-      LEGEND_ON:            layers.flatMap(l => get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
-      LEGEND_OFF:           layers.flatMap(l => get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
+      LEGEND_ON:            layers.flatMap(l => this.#get_legend_params(l).LEGEND_ON).filter(Boolean).join(';')  || undefined,
+      LEGEND_OFF:           layers.flatMap(l => this.#get_legend_params(l).LEGEND_OFF).filter(Boolean).join(';') || undefined,
       SOURCE:               (!proxy && 'GET' === method && source.length > 1) ? source[1] : undefined,
     };
 
@@ -3178,7 +3177,7 @@ export class Layer extends G3WObject {
     else {
       const ctx_legend = (
         opts.categories && (['image/png', undefined].includes(opts.format) || ApplicationState.project.state.context_base_legend)
-          ? get_legend_params(this)
+          ? this.#get_legend_params(this)
           : undefined // disabled when `FORMAT=application/json` (otherwise it creates some strange behaviour on WMS `getMap` when switching between layer styles)
       );
       base_url   = this.getWmsUrl({ type: 'legend' });
@@ -3257,7 +3256,7 @@ export class Layer extends G3WObject {
       let LEGEND_OFF   = undefined;
 
       layers.forEach(l => {
-        const { LEGEND_ON: on, LEGEND_OFF: off } = get_legend_params(l);
+        const { LEGEND_ON: on, LEGEND_OFF: off } = this.#get_legend_params(l);
         STYLES.push(l.getStyle());
         OPACITIES.push(parseInt((l.getOpacity() / 100) * 255));
         if (on)  { LEGEND_ON  = undefined === LEGEND_ON  ? on  : `${LEGEND_ON};${on}` }
@@ -3663,6 +3662,37 @@ export class Layer extends G3WObject {
     if (this._RASTER_LAYER && 'XYZ' !== this.state.type) {
       return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params)
     }
+  }
+
+  /**
+   * @param layer
+   * 
+   * @returns {{ LEGEND_ON: undefined | string, LEGEND_OFF: undefined | string }} 
+   * 
+   * @since 4.1.0
+   */
+  #get_legend_params(layer) {
+    let LEGEND_ON, LEGEND_OFF;
+    (layer.getCategories() || [])
+      .forEach(({
+        checked,  // new Value
+        _checked, // old Value
+        ruleKey,
+      }) => {
+        // skip when there's no difference from original `checked` status (_checked) and current changed by toc categories (checked)
+        if (checked === _checked) {
+          return;
+        }
+        if (checked) {
+          LEGEND_ON  = (undefined === LEGEND_ON ? `${layer.getWMSLayerName()}:` : `${LEGEND_ON},`) + ruleKey;
+        } else {
+          LEGEND_OFF = (undefined === LEGEND_OFF ? `${layer.getWMSLayerName()}:` : `${LEGEND_OFF},`) + ruleKey;
+        }
+      });
+    return {
+      LEGEND_ON,
+      LEGEND_OFF,
+    };
   }
 
 }
