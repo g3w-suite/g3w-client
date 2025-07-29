@@ -143,16 +143,6 @@ Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unus
 const ACTIONS = {};
 
 /**
- * Retrieve from local storage
- */
-function _getSavedSearches() {
-  const ITEMS = ApplicationState.querybuilder.searches;
-  const id = ApplicationState.project.getId();
-  ITEMS[id] = ITEMS[id] || [];
-  return ITEMS[id];
-}
-
-/**
  * Load an external script
  */
 function _loadScript(url) {
@@ -355,7 +345,12 @@ $.ajaxSetup({
           state: {
             searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
             tools: [],
-            querybuildersearches: _getSavedSearches()
+            /** Retrieve saved searches from local storage */
+            get querybuildersearches() {
+              const id = ApplicationState.project.getId();
+              ApplicationState.querybuilder.searches[id] = ApplicationState.querybuilder.searches[id] || [];
+              return ApplicationState.querybuilder.searches[id];
+            }
           },
           title:                    ApplicationState.project.state.search_title || "search",
           addTool(t)                { this.state.tools.push(t); },
