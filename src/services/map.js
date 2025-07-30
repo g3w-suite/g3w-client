@@ -2143,7 +2143,7 @@ class MapService extends G3WObject {
       //add to query result only vector layer
       GUI.getService('queryresults').registerVectorLayer(layer);
       this._keyEvents.unwatches[externalLayer.name] = [];
-      Object.values(MAP.controls).forEach(c => c.onAddExternalLayer && c.onAddExternalLayer({ layer: externalLayer, unWatches: this._keyEvents.unwatches[externalLayer.name] }));
+      Object.values(MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this._keyEvents.unwatches[externalLayer.name] }));
     }
 
     if (extent && options.zoomToExtent) {

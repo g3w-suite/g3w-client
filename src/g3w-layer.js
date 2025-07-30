@@ -2236,7 +2236,7 @@ export class Layer extends G3WObject {
       'QGIS ogr',
       'QGIS delimitedtext',
       'QGIS wfs',
-    ].includes(providerType)) {
+    ].includes(layerType)) {
       return this.#getFeaturesQGIS(opts, params);
     }
 

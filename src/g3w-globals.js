@@ -35,7 +35,6 @@ import { getFilterExpression }                     from "utils/getFilterExpressi
 import { getProjectUrl }                           from 'utils/getProjectUrl';
 import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
-import { getProject }                              from 'utils/getProject';
 
 /**
  * Single File Components
@@ -203,7 +202,6 @@ const g3wsdk = {
         getProjectUrl,
         getProjectConfigByGid,
         getListableProjects,
-        getProject,
         getCurrentProject:     () => ApplicationState.project,
       })
     },
