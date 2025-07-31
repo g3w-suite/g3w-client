@@ -46,7 +46,6 @@ import G3wFormInputs                               from 'components/InputG3WForm
  * CORE modules
  */
 import DataRouterService                           from 'services/data';
-import TaskService                                 from 'services/tasks';
 import GUI                                         from 'services/gui';
 import { MeasureInteraction }                      from 'map/controls/measure';
 
@@ -164,9 +163,6 @@ const g3wsdk = {
     ApplicationService: new G3WObject({ setters: { online(){}, offline(){} }}),
     ApplicationState,
     i18n: { t: _ },
-    task: {
-      TaskService
-    },
     data: {
       DataRouterService
     },
@@ -418,6 +414,66 @@ g3wsdk.core.plugin.PluginsRegistry = babelify(Object.assign(new G3WObject, { set
     return GUI.getPlugin(name);
   }
 }));
+
+/** used by the following plugins: "openrouteservice", "processing" */
+g3wsdk.core.task = {};
+g3wsdk.core.task.TaskService = {
+  tasks: [],
+  async runTask(opts = {}) {
+    console.warn('[G3W-CLIENT] g3wsdk.core.task.TaskService is deprecated since 4.1.0');
+    let {
+      method = 'GET',
+      params = {},
+      url,
+      taskUrl,
+      interval = 1000,
+      timeout = Infinity,
+      listener = () => {}
+    } = opts;
+    try {
+      const r = 'GET' === method  ? await XHR.get({ url, params }): await XHR.post({ url, data: params.data || {}, contentType: params.contentType || "application/json" });
+      if (r.result) {
+        const id = setInterval(async () => {
+          // check if timeout is defined
+          timeout = timeout - interval;
+          if (timeout > 0) {
+            let r;
+            try {
+              r = await XHR.get({url: `${taskUrl}${r.task_id}`});
+            } catch(e) {
+              r = e;
+              console.warn(e);
+            }
+            listener({ task_id: r.task_id, timeout: false, response: r });
+          } else {
+            listener({ timeout: true });
+            g3wsdk.core.task.TaskService.stopTask({ task_id: r.task_id });
+          }
+        }, interval);
+
+        // add current task to list of task
+        g3wsdk.core.task.TaskService.tasks.push({ task_id: r.task_id, intervalId: id });
+
+        // run first time listener function
+        listener({ task_id: r.task_id, response: r });
+      } else {
+        return Promise.reject(r);
+      }
+
+    } catch(e) {
+      console.warn(e);
+      return Promise.reject(e);
+    }
+  },
+  stopTask(opts = {}) {
+    const task = g3wsdk.core.task.TaskService.tasks.find(t => opts.task_id === t.task_id);
+    if (task) { clearInterval(task.intervalId); }
+  },
+  clear() {
+    g3wsdk.core.task.TaskService.tasks.forEach(({ taskId }) => g3wsdk.core.task.TaskService.stopTask({ taskId }));
+    g3wsdk.core.task.TaskService.tasks.splice(0);
+  },
+};
 
 /**
  * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances
