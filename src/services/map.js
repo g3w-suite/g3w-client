@@ -1494,8 +1494,7 @@ class MapService extends G3WObject {
     // sort layers by type: [0=BASE, 1=RASTER, 2=VECTOR]
     Object
       .values(ApplicationState.layers)
-      .filter(s => s.isQueryable())
-      .flatMap(s => s.getLayers())
+      .flatMap(s => s.isQueryable() ? s.getLayers() : [])
       .filter(l => l.isGeoLayer())
       .reduce((groups, l) => {
 

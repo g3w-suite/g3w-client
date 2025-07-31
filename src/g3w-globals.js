@@ -62,7 +62,6 @@ import Panel                                       from 'g3w-panel';
 import Component                                   from 'g3w-component';
 import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
-import { LayersStore }                             from 'map/layers/layersstore';
 import { Layer }                                   from 'g3w-layer';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
@@ -142,7 +141,7 @@ const g3wsdk = {
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
       getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
-      getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).filter(s => s.isQueryable()).flatMap(s => s.getLayers({ GEOLAYER: true, ...(f || {}) }, o)),
+      getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
       areCoordinatesEqual,
       splitFeature,
       convertSingleMultiGeometry,
@@ -218,7 +217,7 @@ const g3wsdk = {
       }
     },
     layer: {
-      LayersStore:     babelify(LayersStore),
+      LayersStore:     babelify(function(opts) { GUI.showUserMessage({ type: 'alert', message: 'g3wsdk.core.layer.LayersStore is deprecated.' }); return (ApplicationState.layers[opts.id] = opts); }),
       Layer:           babelify(Object.assign(Layer, { LayerTypes: { TABLE: 'table', IMAGE: 'image', VECTOR: 'vector' } })),
       VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { _TYPE: 'vector' })) } }),
       features: {

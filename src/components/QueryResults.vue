@@ -677,8 +677,7 @@
 
       queryableLayers() {
         return Object.values(ApplicationState.layers)
-          .filter(s => s.isQueryable())
-          .flatMap(s => s.getLayers())
+          .flatMap(s => s.isQueryable() ? s.getLayers() : [])
           .filter(l => l.isGeoLayer() && l.isQueryable());
       },
 

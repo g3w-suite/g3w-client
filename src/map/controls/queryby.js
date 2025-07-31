@@ -673,22 +673,18 @@ function _hasVisible(control) {
  * @TODO get rid of `s.getLayers` call
  */
 function _getAvailableLayers(type) {
-  const queryable = Object.values(ApplicationState.layers).filter(s => s.isQueryable());
   return [...new Set([
 
     // QUERYABLE
-    ...queryable
-      .flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true })),
+    ...Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }) : []),
 
     // POLYGONS
-    ...GUI.getService('map').getExternalLayers('vector').map(l => l._externalLayer)
-      .filter(l => 'querybypolygon' === type ? POLYGON_TYPES.includes(l.getGeometryType()) : true),
+    ...GUI.getService('map').getExternalLayers('vector')
+        .map(l => l._externalLayer).filter(l => 'querybypolygon' === type ? POLYGON_TYPES.includes(l.getGeometryType()) : true),
 
     // SELECTED POLYGONS
-    ...(
-      'querybypolygon' === type
-        ? queryable.flatMap(s => s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }, {}))
-        : []
-      ),
+    ...Object.values(ApplicationState.layers)
+        .flatMap(s => 'querybypolygon' === type && s.isQueryable() ? s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }, {}) : []),
   ])];
 }

@@ -144,10 +144,7 @@ export class Layer extends G3WObject {
     }
 
     // get current project
-    const project   = options.project || ApplicationState.project;
-    const suffixUrl = config.baselayer ? '' : `${project.getType()}/${project.getId()}/${config.id}/`;
-    const vectorUrl = config.baselayer ? '' : project.state.vectorurl;
-    const rasterUrl = config.baselayer ? '' : project.state.rasterurl;
+    const project = options.project || ApplicationState.project;
 
     // default layer style (layerstree)
     const defaultstyle = config.styles && config.styles.find(s => s.current).name;
@@ -169,24 +166,24 @@ export class Layer extends G3WObject {
         query: config.infourl || config.wmsUrl,
         ...(config.urls || {}),
         ...(config.baselayer ? {} : {
-            filtertoken: `${vectorUrl}filtertoken/${suffixUrl}`,
-            data:        `${vectorUrl}data/${suffixUrl}`,
-            shp:         `${vectorUrl}shp/${suffixUrl}`,
-            csv:         `${vectorUrl}csv/${suffixUrl}`,
-            xls:         `${vectorUrl}xls/${suffixUrl}`,
-            gpx:         `${vectorUrl}gpx/${suffixUrl}`,
-            gpkg:        `${vectorUrl}gpkg/${suffixUrl}`,
-            geotiff:     `${rasterUrl}geotiff/${suffixUrl}`,
-            editing:     `${vectorUrl}editing/${suffixUrl}`,
-            commit:      `${vectorUrl}commit/${suffixUrl}`,
-            config:      `${vectorUrl}config/${suffixUrl}`,
-            unlock:      `${vectorUrl}unlock/${suffixUrl}`,
+            filtertoken: `${window.initConfig.vectorurl}filtertoken/${project.getType()}/${project.getId()}/${config.id}/`,
+            data:        `${window.initConfig.vectorurl}data/${project.getType()}/${project.getId()}/${config.id}/`,
+            shp:         `${window.initConfig.vectorurl}shp/${project.getType()}/${project.getId()}/${config.id}/`,
+            csv:         `${window.initConfig.vectorurl}csv/${project.getType()}/${project.getId()}/${config.id}/`,
+            xls:         `${window.initConfig.vectorurl}xls/${project.getType()}/${project.getId()}/${config.id}/`,
+            gpx:         `${window.initConfig.vectorurl}gpx/${project.getType()}/${project.getId()}/${config.id}/`,
+            gpkg:        `${window.initConfig.vectorurl}gpkg/${project.getType()}/${project.getId()}/${config.id}/`,
+            geotiff:     `${window.initConfig.rasterurl}geotiff/${project.getType()}/${project.getId()}/${config.id}/`,
+            editing:     `${window.initConfig.vectorurl}editing/${project.getType()}/${project.getId()}/${config.id}/`,
+            commit:      `${window.initConfig.vectorurl}commit/${project.getType()}/${project.getId()}/${config.id}/`,
+            config:      `${window.initConfig.vectorurl}config/${project.getType()}/${project.getId()}/${config.id}/`,
+            unlock:      `${window.initConfig.vectorurl}unlock/${project.getType()}/${project.getId()}/${config.id}/`,
             widget:      {
-              unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
+              unique: `${window.initConfig.vectorurl}widget/unique/data/${project.getType()}/${project.getId()}/${config.id}/`
             },
             /** @since 3.8.0 */
-            featurecount:         project.getUrl('featurecount'),
-            editorformstructure : project.getUrl('editorformstructure'),
+            featurecount:         `${window.initConfig.vectorurl}featurecount/${project.getType()}/${project.getId()}/`,
+            editorformstructure : `${window.initConfig.vectorurl}editorformstructure/${project.getType()}/${project.getId()}/`,
             /** @since 3.10.0 */
             pdf:         `/html2pdf/`,
           })

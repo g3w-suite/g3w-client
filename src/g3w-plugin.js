@@ -26,6 +26,8 @@ export class Plugin extends G3WObject {
     i18n         = null,
     fontClasses  = [],
     api          = {},
+    /** @since 4.1.0 */
+    layersStore  = { queryable: false, catalog: false },
   } = {}) {
   
     super();
@@ -56,6 +58,9 @@ export class Plugin extends G3WObject {
       }
     }, TIMEOUT);
 
+    if (name) {
+      ApplicationState.layers[name] = layersStore;
+    }
   }
 
   /**
@@ -409,25 +414,6 @@ export class Plugin extends G3WObject {
 
     return GUI.getComponent(opts.id) ;
   }
-
-  /**
-   * @deprecated since v3.4.
-   * 
-   * @virtual method need to be implemented by subclasses
-   */
-  unload() {
-    if (this.service) {
-      this.service.clearAllEvents();
-    }
-    this.emit('unload');
-  }
-
-  /**
-   * @deprecated since v3.4.
-   * 
-   * @virtual method need to be implemented by subclasses
-   */
-  load() { }
 
   /**
    * @TODO it could be depecrated after v3.4 ?

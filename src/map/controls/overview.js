@@ -42,42 +42,17 @@ GUI.once('ready', async () => {
       if (!PROJECT) {
         PROJECT = Object.assign({}, CONFIG, await XHR.get({ url:
           `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
-        }));
-
-        Object.assign(PROJECT, {
+        }), {
           _layers: {},
           _layerstree: [],
-          get state() { return PROJECT; },
-          get crs()   { return normalizeEpsg(CONFIG.crs, false) },
-          get urls() {
-            return {
-              map_themes:          `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/`,
-              vector_data:         `${window.initConfig.vectorurl}data/${CONFIG.type}/${CONFIG.id}/`,
-              featurecount:        `${window.initConfig.vectorurl}featurecount/${CONFIG.type}/${CONFIG.id}/`,
-              editorformstructure: `${window.initConfig.vectorurl}editorformstructure/${CONFIG.type}/${CONFIG.id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
-            };
-          },
-          WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
-          relations: (PROJECT.relations || []).map(r => {
-            if ("ONE" === r.type) {
-              PROJECT.layers.find(l => {
-                if (l.id === r.referencingLayer) {
-                  r.name     = l.name;
-                  r.origname = l.origname;
-                  return true;
-                }
-              });
-            }
-            return r;
-          }),
+          get crs()      { return normalizeEpsg(CONFIG.crs, false) },
           getType:       () => CONFIG.type,
           getId:         () => CONFIG.id,
-          getUrl:        type => PROJECT.urls[type],
           getProjection: () => ApplicationState.projections.get(PROJECT.crs),
-          getRelations:  () => PROJECT.relations,
+          getRelations() { return []; }
         });
 
-        // Process layerstree and baselayers of the project (useful info for catalog)
+        // loop layerstree and inject additional layer properties from server config (eg. visibile: true/false)
         const traverse = nodes => {
           nodes.forEach((node, i) => {
             if (undefined !== node.id) {
@@ -93,8 +68,6 @@ GUI.once('ready', async () => {
           });
         };
         traverse(PROJECT.layerstree);
-
-        /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
         // Layer factory: instance each layer and add to layersstore
         PROJECT.layers.flatMap(l => {
@@ -307,6 +280,11 @@ GUI.once('ready', async () => {
 
       }
 
+      // BACKOMP v3.x
+      if (!PROJECT.state) {
+        Object.defineProperty(PROJECT, 'state', { get() { return PROJECT; }, configurable: false, enumerable: true });
+      }
+
       map.createMapControl({
         id: 'overview',
         add: false,
@@ -327,7 +305,7 @@ GUI.once('ready', async () => {
               .entries(
                 // group layer by multilayerId
                 Object
-                  .values(PROJECT._layers || PROJECT._layersStore._layers)
+                  .values(PROJECT._layers)
                   .filter(l => l.isGeoLayer() && !l.isBaseLayer())
                   .reduce((group, l) => {
                     const id = l.getMultiLayerId();

@@ -42,14 +42,13 @@ export default {
 
     const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
     const layers  = Object.values(ApplicationState.layers)
-      .filter(s => s.isQueryable())
-      .flatMap(s => s.getLayers({
+      .flatMap(s => s.isQueryable() ? s.getLayers({
         GEOLAYER:        true,
         QUERYABLE:       true,
         SELECTED_OR_ALL: (0 === layerIds.length),
         VISIBLE:         true,
         IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
-      }));
+      }) : []);
     try {
       return {
         result: true,
@@ -122,8 +121,7 @@ export default {
         data: (!external && await this.getQueryLayersPromisesByGeometry(
           // layers
           Object.values(ApplicationState.layers)
-            .filter(s => s.isQueryable())
-            .flatMap(s => s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) })),
+            .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []),
           // options
           {
             geometry: ol.geom.Polygon.fromExtent(bbox),
@@ -187,13 +185,12 @@ export default {
         data: (await this.getQueryLayersPromisesByGeometry(
           // layers
           Object.values(ApplicationState.layers)
-            .filter(s => s.isQueryable())
-            .flatMap(s => s.getLayers({
+            .flatMap(s => s.isQueryable() ? s.getLayers({
               GEOLAYER: true,
               ...( "boolean" === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true } ),
               QUERYABLE: true,
               VISIBLE: true
-            })),
+            }) : []),
           // options
           {
             geometry,
