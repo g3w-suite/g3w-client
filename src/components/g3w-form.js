@@ -3,15 +3,15 @@
  * @since 3.10.0
  */
 
-import G3WObject                   from 'g3w-object';
-import Component                   from 'g3w-component';
-import GUI                         from 'services/gui';
+import Emitter                  from 'g3w-emitter';
+import Component                from 'g3w-component';
+import GUI                      from 'services/gui';
 
-import vueComp                     from 'components/Form.vue';
-import BodyFormComp                from 'components/FormBody.vue';
+import vueComp                  from 'components/Form.vue';
+import BodyFormComp             from 'components/FormBody.vue';
 
-import { getDefaultExpression }    from 'utils/getDefaultExpression';
-import { getFilterExpression }     from "utils/getFilterExpression";
+import { getDefaultExpression } from 'utils/getDefaultExpression';
+import { getFilterExpression }  from 'utils/getFilterExpression';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
@@ -57,7 +57,7 @@ export class FormComponent extends Component {
  * @file ORIGINAL SOURCE: src/app/gui/form/formservice.js@v3.10.2
  * @since 3.11.0
  */
-export class FormService extends G3WObject {
+export class FormService extends Emitter {
   constructor(opts = {}) {
     super(opts);
 

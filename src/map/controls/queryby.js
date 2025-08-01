@@ -7,7 +7,7 @@ import {
   GEOMETRY_TYPES,
   SPATIAL_METHODS
 }                                 from 'g3w-constants';
-import { VM }                     from 'g3w-eventbus';
+import { VM }                     from 'g3w-emitter';
 import GUI                        from 'services/gui';
 import DataRouterService          from 'services/data';
 

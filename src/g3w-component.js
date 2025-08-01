@@ -3,7 +3,7 @@
  * @since 3.11.0
  */
 
-import G3WObject      from 'g3w-object';
+import Emitter        from 'g3w-emitter';
 import { noop }       from 'utils/noop';
 import { cloneDeep }  from 'utils/cloneDeep';
 import GUI            from 'services/gui';
@@ -37,7 +37,7 @@ function merge(destination, source) {
  * @param opts.internalComponent since 3.10.0
  * @param opts.service since 3.10.0
  */
-export default class Component extends G3WObject {
+export default class Component extends Emitter {
 
   constructor(opts = {}) {
 

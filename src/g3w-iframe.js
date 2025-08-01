@@ -33,7 +33,7 @@
  * ```
  */
 
-import G3WObject          from 'g3w-object';
+import Emitter            from 'g3w-emitter';
 import GUI                from 'services/gui';
 import DataRouterService  from 'services/data';
 import ApplicationState   from 'g3w-state'
@@ -41,7 +41,7 @@ import { normalizeEpsg }  from 'utils/normalizeEpsg';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { waitFor }        from 'utils/waitFor';
 
-export class IframeApp extends G3WObject {
+export class IframeApp extends Emitter {
 
   constructor() {
     super();

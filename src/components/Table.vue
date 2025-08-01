@@ -153,7 +153,6 @@ import Field                       from 'components/FieldG3W.vue';
 import GUI                         from 'services/gui';
 import DataRouterService           from 'services/data';
 import { debounce }                from 'utils/debounce';
-import { promisify }               from 'utils/promisify';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { gettext as _ }            from 'g3w-i18n';
 
@@ -278,15 +277,13 @@ export default {
      async openForm(feature) {
       $('.tooltip').remove();
       try {
-        await promisify(
-          DataRouterService.getData('search:fids', {
-            inputs: {
-              layer:     this.layer,
-              fids:      [feature.id],
-              formatter: 1
-            }
-          })
-        );
+        await DataRouterService.getData('search:fids', {
+          inputs: {
+            layer:     this.layer,
+            fids:      [feature.id],
+            formatter: 1
+          }
+        });
         // zoom to feature
         if (feature.geometry) {
           GUI.getService('map').zoomToGeometry(toOLGeom(feature.geometry));

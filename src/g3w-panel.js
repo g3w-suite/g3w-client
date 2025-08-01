@@ -3,13 +3,13 @@
  * @since 3.11.0
  */
 
-import GUI            from 'services/gui';
-import G3WObject      from 'g3w-object';
+import GUI     from 'services/gui';
+import Emitter from 'g3w-emitter';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/panel.js@v3.9.3 
  */
-export default class Panel extends G3WObject {
+export default class Panel extends Emitter {
 
   constructor (opts = {}) {
     super();

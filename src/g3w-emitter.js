@@ -1,14 +1,26 @@
 /**
- * @file ORIGINAL SOURCE: src/app/core/g3w-object.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/g3w-object.js@v4.0.0
+ * 
+ * @since 4.1.0
  */
+
+/**
+ * Internal event bus
+ * 
+ * ORIGINAL SOURCE: src/g3w-eventbus.js@4.0.0
+ * 
+ * @since 4.1.0
+ */
+export const VM = new Vue();
 
 /**
  * Base class for managing events (setters and listeners).
  * 
  * Based on: EventEmitter v5.2.9 - git.io/ee
  */
-export default class G3WObject {
+export default class Emitter {
+
+  static bus = new Vue();
 
   /**
    * @TODO end support for legacy classes (ES5) and use private class fields instead (eg. `___events` → `#events`)

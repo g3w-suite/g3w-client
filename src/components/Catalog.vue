@@ -286,14 +286,14 @@
 
 <script>
 
-import { VM }                      from 'g3w-eventbus';
-import ApplicationState            from 'g3w-state';
-import GUI                         from 'services/gui';
-import { XHR }                     from 'utils/XHR';
-import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
+import { VM }                  from 'g3w-emitter';
+import ApplicationState        from 'g3w-state';
+import GUI                     from 'services/gui';
+import { XHR }                 from 'utils/XHR';
+import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
-import CatalogChangeMapThemes      from 'components/CatalogChangeMapThemes.vue';
-import CatalogTristateTree         from 'components/CatalogTristateTree.vue';
+import CatalogChangeMapThemes  from 'components/CatalogChangeMapThemes.vue';
+import CatalogTristateTree     from 'components/CatalogTristateTree.vue';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)

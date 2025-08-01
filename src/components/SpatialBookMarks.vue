@@ -137,11 +137,11 @@
 </template>
 
 <script>
-  import ApplicationState     from 'g3w-state'
-  import GUI                  from 'services/gui';
-  import InputText            from "components/InputText.vue";
-  import { getUniqueDomId }   from 'utils/getUniqueDomId';
-  import { gettext as _ }     from 'g3w-i18n';
+  import ApplicationState   from 'g3w-state'
+  import GUI                from 'services/gui';
+  import InputText          from 'components/InputText.vue';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
+  import { gettext as _ }   from 'g3w-i18n';
 
     export default {
 

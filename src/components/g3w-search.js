@@ -7,7 +7,7 @@ import {
   SEARCH_ALLVALUE,
   PAGELENGTHS
 }                                     from 'g3w-constants';
-import G3WObject                      from 'g3w-object';
+import Emitter                        from 'g3w-emitter';
 import Panel                          from 'g3w-panel';
 import ApplicationState               from 'g3w-state'
 import GUI                            from 'services/gui';
@@ -142,7 +142,7 @@ export function SearchPanel(opts = {}, show = false) {
   // create search form structure 
   state.mounted = setInputs();
 
-  const service = opts.service || Object.assign(new G3WObject, {
+  const service = opts.service || Object.assign(new Emitter, {
     state,
     doSearch,
     setInputs,

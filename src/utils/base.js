@@ -1,5 +1,3 @@
-import G3WObject from 'g3w-object';
-
 /**
  * Based on google closure library implementation
  */

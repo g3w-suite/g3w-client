@@ -6,20 +6,20 @@
 import {
   G3W_FID,
   TIMEOUT,
-}                                 from 'g3w-constants';
-import { VM }                     from 'g3w-eventbus';
-import { gettext as _ }           from 'g3w-i18n';
-import ApplicationState           from 'g3w-state';
-import GUI                        from 'services/gui';
-import { saveBlob }               from 'utils/saveBlob';
-import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
-import { getCatalogLayers }       from 'utils/getCatalogLayers';
-import { getUniqueDomId }         from 'utils/getUniqueDomId';
+}                              from 'g3w-constants';
+import { VM }                  from 'g3w-emitter';
+import { gettext as _ }        from 'g3w-i18n';
+import ApplicationState        from 'g3w-state';
+import GUI                     from 'services/gui';
+import { saveBlob }            from 'utils/saveBlob';
+import { getCatalogLayerById } from 'utils/getCatalogLayerById';
+import { getCatalogLayers }    from 'utils/getCatalogLayers';
+import { getUniqueDomId }      from 'utils/getUniqueDomId';
 
-import CsvAttributes              from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import DownloadFormats            from 'components/QueryResultsActionDownloadFormats.vue';
+import CsvAttributes           from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
+import DownloadFormats         from 'components/QueryResultsActionDownloadFormats.vue';
 
-import shpwrite                   from '@mapbox/shp-write';
+import shpwrite                from '@mapbox/shp-write';
 
 // set download action tool
 GUI.once('ready', () => {

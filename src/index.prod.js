@@ -17,7 +17,7 @@ import {
 
 // core
 import ApplicationState            from 'g3w-state';
-import G3WObject                   from 'g3w-object';
+import Emitter                     from 'g3w-emitter';
 import Panel                       from 'g3w-panel';
 import Component                   from 'g3w-component';
 
@@ -38,7 +38,7 @@ import Divider                     from 'components/GlobalDivider.vue';
 import vDisabled                   from 'directives/v-disabled';
 import vSelect2                    from 'directives/v-select2';
 import vTToltip                    from 'directives/v-t-tooltip';
-import vT                          from "directives/v-t";
+import vT                          from 'directives/v-t';
 
 // utils
 import { noop }                    from 'utils/noop';
@@ -57,7 +57,7 @@ import 'components/g3w-alerts';
 Object
   .entries({
     ApplicationState,
-    G3WObject,
+    Emitter,
     Panel,
     Component,
     GUI,
@@ -348,7 +348,7 @@ $.ajaxSetup({
 
   const _projection = ApplicationState.projections.get(normalizeEpsg(PROJECT.crs, false));
 
-  const project = Object.assign(new G3WObject, {
+  const project = Object.assign(new Emitter, {
     _layers: {},
     _isQueryable: true,
     state: PROJECT,
@@ -367,7 +367,7 @@ $.ajaxSetup({
         })
       },
     },
-    _layersStore:           Object.assign(new G3WObject, {
+    _layersStore:           Object.assign(new Emitter, {
       config: {
         id:         PROJECT.gid,
         projection: _projection,
@@ -799,7 +799,7 @@ $.ajaxSetup({
         icon:        GUI.getFontClass('search'),
         iconColor:   '#8dc3e3',
         title:       ApplicationState.project.state.search_title || 'search',
-        service: Object.assign(new G3WObject, {
+        service: Object.assign(new Emitter, {
           state: {
             searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
             tools: [],
@@ -858,7 +858,7 @@ $.ajaxSetup({
           loading: false
         };
       
-        const service = new G3WObject({ setters: {
+        const service = new Emitter({ setters: {
           addTool(tool, { title, position }) {
             let group = state.toolsGroups.find(g => g.name === title);
             if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
@@ -948,7 +948,7 @@ $.ajaxSetup({
           layersgroups: [],
         };
       
-        const service = new G3WObject({
+        const service = new Emitter({
           setters: {
             /**
              * @param {{ layer: unknown, type: 'vector' }}
@@ -1072,12 +1072,12 @@ $.ajaxSetup({
         if (!config) {
           return;
         }
-        config.baseUrl = window.initConfig.urls.staticurl;
+        config.baseUrl = window.initConfig.staticurl;
         try {
+          const modified = ApplicationState.project.state.modified + '+' + new Date().toISOString().slice(0, 13);
           // wait plugin dependencies before loading plugin
-          await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
-          const modified = g3wsdk.core.project.ProjectsRegistry.getCurrentProject().getState().modified + '+' + new Date().toISOString().slice(0, 13);
-          await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${modified}`, false);
+          await Promise.all((config.jsscripts || []).map(s => _loadScript(s)));
+          await _loadScript(`${window.initConfig.staticurl}${name}/js/plugin.js?${modified}`);
         } catch(e) {
           console.warn('[G3W-PLUGIN]', e);
           // remove loading plugin in case of error of dependencies

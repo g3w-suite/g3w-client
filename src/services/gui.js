@@ -1,4 +1,4 @@
-import G3WObject                 from 'g3w-object';
+import Emitter                   from 'g3w-emitter';
 import Component                 from 'g3w-component';
 import Panel                     from 'g3w-panel';
 import { gettext as _ }          from 'g3w-i18n';
@@ -13,7 +13,7 @@ import { getListableProjects }   from 'utils/getListableProjects';
 import { getProjectUrl }         from 'utils/getProjectUrl';
 import { getCatalogLayerById }   from 'utils/getCatalogLayerById';
 
-export default new (class GUI extends G3WObject {
+export default new (class GUI extends Emitter {
 
   /** store legacy frontend components */
   #COMPONENTS = {}

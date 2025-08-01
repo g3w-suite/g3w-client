@@ -6,7 +6,7 @@
 import localforage                from 'localforage';
 
 import ApplicationState           from 'g3w-state';
-import G3WObject                  from 'g3w-object';
+import Emitter                    from 'g3w-emitter';
 import MapControl                 from 'g3w-control';
 import { Layer }                  from 'g3w-layer';
 
@@ -57,7 +57,7 @@ const MAP = {
   offlineids: [],
 };
 
-class MapService extends G3WObject {
+class MapService extends Emitter {
 
   #maxZoom = 1000;
 
@@ -1800,7 +1800,7 @@ class MapService extends G3WObject {
     if (layer.isVector()) {
       const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
 
-      mapLayer = Object.assign(new G3WObject, {
+      mapLayer = Object.assign(new Emitter, {
         _olLayer:      Object.assign(new ol.layer.Vector({
           id:             layer.getId(),
           __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE

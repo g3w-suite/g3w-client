@@ -4,7 +4,7 @@
  * @since 4.1.0
  */
 
-import G3WObject         from 'g3w-object';
+import Emitter           from 'g3w-emitter';
 import { normalizeEpsg } from 'utils/normalizeEpsg';
 import proj4             from 'proj4';
 
@@ -255,13 +255,13 @@ const STATE = Vue.observable({
   },
 
   /** @since 3.11.0 */
-  project: new G3WObject,
+  project: new Emitter,
 
   /** @since 4.1.0 store layersstore instances */
   layers: new Proxy({}, {
     set(target, property, value) {
-      if (value && !(value instanceof G3WObject)) {
-        value = new (class extends G3WObject {
+      if (value && !(value instanceof Emitter)) {
+        value = new (class extends Emitter {
           constructor(config = {}) {
             super();
             this.config       = {

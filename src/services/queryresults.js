@@ -3,10 +3,9 @@
  * @since 3.11.0
  */
 
-import { VM }                                   from 'g3w-eventbus';
+import Emitter, { VM }                          from 'g3w-emitter';
 import GUI                                      from 'services/gui';
 import { G3W_FID }                              from 'g3w-constants';
-import G3WObject                                from 'g3w-object';
 import Component                                from 'g3w-component';
 import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
 
@@ -36,7 +35,7 @@ function _setRelationField(node) {
   }
 }
 
-export default new (class QueryResultsService extends G3WObject {
+export default new (class QueryResultsService extends Emitter {
 
   constructor() {
 

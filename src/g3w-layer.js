@@ -18,7 +18,7 @@ import {
   TIMEOUT,
   G3W_FID,
 }                                 from 'g3w-constants';
-import G3WObject                  from 'g3w-object';
+import Emitter                  from 'g3w-emitter';
 import { gettext as _ }           from 'g3w-i18n';
 import ApplicationState           from 'g3w-state';
 import DataRouterService          from 'services/data';
@@ -65,7 +65,7 @@ function __(name, value) {
 /**
  * Base class for all layers
  */
-export class Layer extends G3WObject {
+export class Layer extends Emitter {
 
   get config() {
     return this.state;
@@ -344,7 +344,7 @@ export class Layer extends G3WObject {
           /** BACKCOMP (g3w-admin < v.3.7.0) - child relation layer field name */
           childField:  [].concat(config.fieldRef.referencingField),
         }
-        relations[state.id] = Object.assign(new G3WObject(config), {
+        relations[state.id] = Object.assign(new Emitter(config), {
           state,
           getId:          () => state.id,
           setId:          id => state.id = id,
@@ -499,7 +499,7 @@ export class Layer extends G3WObject {
      * 
      * @since 4.1.0
      */
-    this._featuresstore = Object.assign(new G3WObject, {
+    this._featuresstore = Object.assign(new Emitter, {
       _features: [],
       _loadedIds: [], // store features id load by current user
       _lockIds: [], // store locked features

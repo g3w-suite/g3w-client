@@ -189,7 +189,7 @@
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
   import GUI                                      from 'services/gui';
-  import { VM }                                   from 'g3w-eventbus';
+  import { VM }                                   from 'g3w-emitter';
   import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
   import { debounce }                             from 'utils/debounce';

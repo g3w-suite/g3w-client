@@ -31,7 +31,7 @@ import { waitFor }                                 from 'utils/waitFor';
 import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
 import { getDefaultExpression }                    from 'utils/getDefaultExpression';
-import { getFilterExpression }                     from "utils/getFilterExpression";
+import { getFilterExpression }                     from 'utils/getFilterExpression';
 import { getProjectUrl }                           from 'utils/getProjectUrl';
 import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
@@ -56,7 +56,7 @@ import { createMeasureTooltip, removeMeasureTooltip } from 'utils/createMeasureT
 import { getResolutionFromScale }                     from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                     from 'utils/getScaleFromResolution';
 
-import G3WObject                                   from 'g3w-object';
+import Emitter                                     from 'g3w-emitter';
 import Panel                                       from 'g3w-panel';
 import Component                                   from 'g3w-component';
 import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
@@ -113,14 +113,38 @@ function babelify(Class) {
 const FieldsService               = require('gui/fields/fieldsservice');
 const Fields                      = require('gui/fields/fields');
 
-const g3wsdk = {
+/**
+ * Next gen API (v4.x)
+ * 
+ * @since 4.1.0 - expose "g3w" variable globally (used by plugins)
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/issues/71
+ * @see https://github.com/g3w-suite/g3w-client/issues/46
+ */
+globalThis.g3w = {
+  Emitter,
+  Component,
+  Panel,
+  Plugin,
+  gui: GUI,
+  get map() { return GUI.getService('map'); },
+  state: ApplicationState,
+  gettext: _,
+};
+
+/**
+ * Legacy API (v3.x)
+ * 
+ * @deprecated since 4.0.0 - whenever applicable, please prefer the `g3w` variable instead (ie. within your plugins).
+ */
+globalThis.g3wsdk = {
 
   // APP CONSTANTS
   constant: G3W_CONSTANT, // TODO: rename to "constants" which is more appropriate (in version 4.0)
 
   // CORE API METHODS AND OBJECTS
   core: {
-    G3WObject: babelify(G3WObject),
+    G3WObject: babelify(Emitter),
     utils: {
       base,
       inherit,
@@ -160,7 +184,7 @@ const g3wsdk = {
         is3DGeometry,
       },
     },
-    ApplicationService: new G3WObject({ setters: { online(){}, offline(){} }}),
+    ApplicationService: new Emitter({ setters: { online(){}, offline(){} }}),
     ApplicationState,
     i18n: { t: _ },
     data: {
@@ -192,7 +216,7 @@ const g3wsdk = {
       }
     },
     project: {
-      ProjectsRegistry: Object.assign(new G3WObject, {
+      ProjectsRegistry: Object.assign(new Emitter, {
         setters: { setCurrentProject(project) {} },
         getProjectUrl,
         getProjectConfigByGid,
@@ -201,7 +225,7 @@ const g3wsdk = {
       })
     },
     map: {
-      MapLayersStoreRegistry: Object.assign(new G3WObject({ setters: {
+      MapLayersStoreRegistry: Object.assign(new Emitter({ setters: {
         addLayersStore:          store  => { ApplicationState.layers[store.getId()] = store; },
         removeLayersStore:       store  => { if (store) { delete ApplicationState.layers[store.getId()]; } },
       }})),
@@ -349,7 +373,6 @@ ${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __
 - browser: __${platform.name} ${platform.version}__
 - operating system: __${platform.os.toString()}__
 `.trim());
-
       });
   },
 
@@ -404,7 +427,7 @@ g3wsdk.core.i18n.addI18nPlugin  = ({ name, config }) =>  {
   }
 };
 
-g3wsdk.core.plugin.PluginsRegistry = babelify(Object.assign(new G3WObject, { setters: {
+g3wsdk.core.plugin.PluginsRegistry = babelify(Object.assign(new Emitter, { setters: {
   registerPlugin(plugin) {
     console.warn('[G3W-CLIENT] PluginsRegistry.registerPlugin is deprecated, use GUI.registerPlugin instead');
     GUI.registerPlugin(plugin);
@@ -474,18 +497,3 @@ g3wsdk.core.task.TaskService = {
     g3wsdk.core.task.TaskService.tasks.splice(0);
   },
 };
-
-/**
- * Expose "g3wsdk" variable globally used by plugins to load sdk class and instances
- * 
- * @type {object}
- */
-window.g3wsdk = g3wsdk;
-
-/**
- * @TODO not yet implemented
- *
- * @see https://github.com/g3w-suite/g3w-client/issues/71
- * @see https://github.com/g3w-suite/g3w-client/issues/46
- */
-// window.g3w = window.g3wsdk;

@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import { VM }                                   from 'g3w-eventbus';
-import GUI                                      from "services/gui";
-import RelationsComponent                       from 'components/Relations.vue';
-import RelationComponent                        from 'components/Relation.vue';
+import { VM }             from 'g3w-emitter';
+import GUI                from 'services/gui';
+import RelationsComponent from 'components/Relations.vue';
+import RelationComponent  from 'components/Relation.vue';
 
 export default {
 

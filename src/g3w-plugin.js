@@ -3,20 +3,20 @@
  * @since 3.11.0
  */
 
-import G3WObject          from 'g3w-object';
-import Component          from 'g3w-component';
-import ApplicationState   from 'g3w-state';
-import GUI                from 'services/gui';
-import { toRawType }      from 'utils/toRawType';
-import { cloneDeep }      from 'utils/cloneDeep';
-import { gettext as _ }   from 'g3w-i18n';
+import Emitter          from 'g3w-emitter';
+import Component        from 'g3w-component';
+import ApplicationState from 'g3w-state';
+import GUI              from 'services/gui';
+import { toRawType }    from 'utils/toRawType';
+import { cloneDeep }    from 'utils/cloneDeep';
+import { gettext as _ } from 'g3w-i18n';
 
 const TIMEOUT = 10000;
 
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
-export class Plugin extends G3WObject {
+export class Plugin extends Emitter {
   
   constructor({
     name         = null,
@@ -448,7 +448,7 @@ export class Plugin extends G3WObject {
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/pluginservice.js@v3.10.2
  */
-export class PluginService extends G3WObject {
+export class PluginService extends Emitter {
 
   constructor(opts = {}) {
     super(opts);
