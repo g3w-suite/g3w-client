@@ -27,7 +27,7 @@ export class Plugin extends G3WObject {
     fontClasses  = [],
     api          = {},
     /** @since 4.1.0 */
-    layersStore  = { queryable: false, catalog: false },
+    layersStore  = false,
   } = {}) {
   
     super();
@@ -58,7 +58,7 @@ export class Plugin extends G3WObject {
       }
     }, TIMEOUT);
 
-    if (name) {
+    if (layersStore && name) {
       ApplicationState.layers[name] = layersStore;
     }
   }
