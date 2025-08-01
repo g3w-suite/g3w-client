@@ -243,7 +243,7 @@ export default {
     const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
     return {
       data: (await Promise.allSettled(
-        [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
+        [].concat(layer).map((l, i) => l.getFilterData({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
@@ -286,7 +286,7 @@ export default {
           //Object contains info for do another request by another part of code
           getData: {
             params: params.filter.map(filter => ({ ...params, filter })),
-            method: 'searchFeatures',
+            method: 'getFilterData',
             layers: [].concat(layer)
           }
         },

@@ -192,9 +192,6 @@ export class Layer extends G3WObject {
       /** Custom parameters based on a project qgis version */
       ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
 
-      /** @deprecated since 3.10.0. Will be removed in v.4.x. */
-      search_endpoint: 'api',
-
       map_crs:            project.getProjection()?.getCode(),
       multilayerid:       config.multilayer,
       projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : ApplicationState.projections.get(config.crs)) : undefined,
@@ -1456,68 +1453,7 @@ export class Layer extends G3WObject {
   }
 
   /**
-   * @TODO deprecate `search_endpoint = 'ows'`
-   *
-   * Search Features
-   * 
-   * @param { Object }        options
-   * @param { 'ows' | 'api' } options.search_endpoint
-   * @param { boolean }       options.raw
-   * @param { 0 | 1 }         options.formatter
-   * @param options.filter
-   * @param options.suggest
-   * @param options.unique
-   * @param options.queryUrl
-   * @param options.ordering
-   * @param options.autofilter //@since 3.11.0
-   * @param { Object }        params - OWS search params
-   * 
-   * @returns { Promise }
-   */
-  searchFeatures(options = {}, params = {}) {
-    const {
-      search_endpoint = this.state.search_endpoint,
-    } = options;
-
-    return new Promise(async (resolve, reject) => {
-      switch (search_endpoint) {
-
-        case 'ows':
-          this
-            .search(options, params)
-            .then(results => { resolve(({ data: results })); })
-            .catch(e => { console.warn(e); reject(e) });
-          break;
-
-        case 'api':
-          try {
-            resolve(
-              await this.getFilterData({
-                queryUrl:  options.queryUrl,
-                field:     options.filter,
-                ordering:  options.ordering,
-                unique:    options.unique,
-                raw:       undefined !== options.raw       ? options.raw       : false,
-                suggest:   options.suggest,
-                /** @since 3.9.0 */
-                formatter: undefined !== options.formatter ? options.formatter : 1,
-                /** @since 3.11.0 */
-                autofilter: options.autofilter,
-                page:       options.page,
-                page_size:  options.page_size,
-              })
-            );
-          } catch(e) {
-            console.warn(e);
-            reject(e);
-          }
-          break;
-      }
-    })
-  }
-
-  /**
-   * Get feature data based on `field` and `suggests`
+   * Search features (fetch data from server)
    * 
    * @param { Object }    opts
    * @param { boolean }   opts.raw
@@ -1525,47 +1461,46 @@ export class Layer extends G3WObject {
    * @param { 0 | 1 }     opts.formatter
    * @param { Array }     opts.field     - Array of object with type of suggest (see above)
    * @param opts.unique
-   * @param opts.fformatter  since 3.9.0
-   * @param opts.ffield      since 3.9.1
+   * @param opts.fformatter since 3.9.0
+   * @param opts.ffield     since 3.9.1
    * @param opts.queryUrl
    * @param opts.ordering
-
-  */
+   * @param opts.autofilter since 3.11.0
+   * @param opts.page       since 3.11.0
+   * @param opts.page_size  since 3.11.0
+   */
   async getFilterData({
-    raw       = false,
+    raw = false,
     suggest,
     field,
     unique,
-    fformatter, //@since v3.9
-    ffield,     //@since 3.9.1
+    fformatter,
+    ffield,
     formatter = 1,
     queryUrl,
     ordering,
-    autofilter, //@since 3.11.0
-    page,  //@since 3.11.0
-    page_size, //@since 3.11.0
+    autofilter,
+    page,
+    page_size,
   } = {}) {
-    const projections     = { map: null, layer: null };
-    const params   =  {
-      field,
-      suggest,
-      ordering,
-      formatter,
-      unique,
-      fformatter,
-      ffield,
-      filtertoken: ApplicationState.tokens.filtertoken,
-      autofilter,
-      page,
-      page_size,
-    };
     try {
-      const url = queryUrl ? queryUrl : this.getUrl('data');
-      const response =  await XHR.post({ url, contentType: 'application/json', data: JSON.stringify(params)}); // since g3w-admin@v3.7
-      // vector layer
-      if ('table' !== this.getType()) {
-        projections.map = ApplicationState.project.getProjection() || projections.layer;
-      }
+      const response =  await XHR.post({
+        url:         queryUrl ? queryUrl : this.getUrl('data'),
+        contentType: 'application/json',
+        data:        JSON.stringify({
+          field,
+          suggest,
+          ordering,
+          formatter,
+          unique,
+          fformatter,
+          ffield,
+          filtertoken: ApplicationState.tokens.filtertoken,
+          autofilter,
+          page,
+          page_size,
+        })
+      });
 
       if (raw)                           { return response }
       if (unique && response.result)     { return response.data }
@@ -1576,10 +1511,13 @@ export class Layer extends G3WObject {
           data: Layer._parse('application/json', {
             layers:      [this],
             response:    response.vector.data,
-            filtertoken: response.filtertoken, //@since v3.11.0 returned filtertoken in case of autofilter request
-            projections,
+            filtertoken: response.filtertoken, // since 3.11.0 - in case of autofilter request
+            projections: {
+              map: 'table' !== this.getType() ? ApplicationState.project.getProjection() : null,
+              layer: null
+            },
           }),
-          count: response.vector.count, //@since v3.11.0 take in account feature count (all). It use for pagination purpose
+          count: response.vector.count, // since 3.11.0 - feature count (pagination)
         }
       }
 

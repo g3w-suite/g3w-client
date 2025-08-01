@@ -36,8 +36,6 @@ export function SearchPanel(opts = {}, show = false) {
     queryurl:             (opts.options || {}).queryurl,
     layerid:              (opts.options || {}).layerid,
     otherquerylayerids:   (opts.options|| {}).otherquerylayerids || [],
-    /** @deprecated will be removed in v4.x */
-    search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. 
      * The First one is a layer owner of the search set on admin. 

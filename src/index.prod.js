@@ -738,9 +738,6 @@ $.ajaxSetup({
     project.getLayersStore().state.layerstree.splice(0, 0, rootGroup); // at the end
   }
 
-  /** @deprecated since 3.10.0. Will be removed in v.4.x. */
-  (project.state.search || []).forEach(s => s.search_endpoint = 'api');
-
   Object.assign(ApplicationState.project, project);
 
   // set in first position

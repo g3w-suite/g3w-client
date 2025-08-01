@@ -986,14 +986,13 @@
           }
 
           // get config from getData object
-          const { method, params } = query.pagination.getData;
-          const layer              = (query.pagination.getData.layers || [])[index];
+          const layer = (query.pagination.getData.layers || [])[index];
 
           // whehter layer has filter
           const has_filtertoken = !!layer.getFilterToken();
 
           // get layer pagination data
-          const data = await layer[method]({ ...params[index], page });
+          const data = await layer[query.pagination.getData.method]({ ...query.pagination.getData.params[index], page });
           
           // set response data
           this.$options.service.setQueryResponse(
