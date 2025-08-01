@@ -25,7 +25,7 @@ GUI.once('ready', async () => {
         } else {
           map.addControl('screenshot', new ScreenshotControl({
               types:   [type],
-              layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...map._layers.external],
+              layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...map.getExternalLayers()],
             })
           );
         }
