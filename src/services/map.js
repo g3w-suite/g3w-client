@@ -3,33 +3,47 @@
  * @since 3.11.0
  */
 
-import localforage                          from 'localforage';
-import G3WObject                            from 'g3w-object';
+import localforage                from 'localforage';
 
-import ApplicationState                     from 'g3w-state';
+import ApplicationState           from 'g3w-state';
+import G3WObject                  from 'g3w-object';
+import MapControl                 from 'g3w-control';
+import { Layer }                  from 'g3w-layer';
 
-import DataRouterService                    from 'services/data';
-import GUI                                  from 'services/gui';
+import DataRouterService          from 'services/data';
+import GUI                        from 'services/gui';
 
-import InteractionControl                   from 'map/controls/interactioncontrol';
+import { isPointGeometryType }    from 'utils/isPointGeometryType';
+import { isLineGeometryType }     from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }  from 'utils/isPolygonGeometryType';
+import { createSelectedStyle }    from 'utils/createSelectedStyle';
+import { getScaleFromResolution } from 'utils/getScaleFromResolution';
+import { getResolutionFromScale } from 'utils/getResolutionFromScale';
+import { getUniqueDomId }         from 'utils/getUniqueDomId';
+import { createFilterFromString } from 'utils/createFilterFromString';
+import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
+import { getCatalogLayers }       from 'utils/getCatalogLayers';
+import { waitFor }                from 'utils/waitFor';
+import { debounce }               from 'utils/debounce';
 
-import 'map/controls';
-
-import { isPointGeometryType }              from 'utils/isPointGeometryType';
-import { isLineGeometryType }               from 'utils/isLineGeometryType';
-import { isPolygonGeometryType }            from 'utils/isPolygonGeometryType';
-import { createSelectedStyle }              from 'utils/createSelectedStyle';
-import { getScaleFromResolution }           from 'utils/getScaleFromResolution';
-import { getResolutionFromScale }           from 'utils/getResolutionFromScale';
-import { getUniqueDomId }                   from 'utils/getUniqueDomId';
-import { createFilterFromString }           from 'utils/createFilterFromString';
-import { getCatalogLayerById }              from 'utils/getCatalogLayerById';
-import { getCatalogLayers }                 from 'utils/getCatalogLayers';
-import { waitFor }                          from 'utils/waitFor';
-import { debounce }                         from 'utils/debounce';
-
-import { Layer }                            from 'g3w-layer';
-
+import 'map/controls/addlayer';
+import 'map/controls/annotation';
+import 'map/controls/attribution';
+import 'map/controls/geocoding';
+import 'map/controls/geolocation';
+import 'map/controls/measure';
+import 'map/controls/mouseposition';
+import 'map/controls/overview';
+import 'map/controls/query';
+import 'map/controls/queryby';
+import 'map/controls/scale';
+import 'map/controls/scaleline';
+import 'map/controls/screenshot';
+import 'map/controls/streetview';
+import 'map/controls/zoom';
+import 'map/controls/zoombox';
+import 'map/controls/zoomhistory';
+import 'map/controls/zoomtoextent';
 
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
@@ -227,40 +241,6 @@ class MapService extends G3WObject {
   }
 
   /**
-   * @TODO refactor CDU plugin in order to remove `OlMapViewer` class
-   */
-  _addHideMap({ratio, layers=[], mainview=false} = {}) {
-    const idMap  = this.state.hidemaps.at(-1);
-    const view   = this.getMap().getView();
-
-    const olView = mainview ? view : {
-      projection: view.getProjection(),
-      center:     view.getCenter(),
-      resolution: this.getResolution()
-    };
-
-    // set Map
-    idMap.map = new ol.Map({
-      controls:            ol.control.defaults({ attribution: false, zoom: false }),
-      interactions:        ol.interaction.defaults(),
-      ol3Logo:             false,
-      view:                olView instanceof ol.View ? olView : new ol.View(olView),
-      keyboardEventTarget: document,
-      target:              idMap.id,
-    });
-
-    // in case of rate
-    if (ratio) {
-      const [w, h] = idMap.map.getSize();
-      idMap.map.setSize([w, w * ratio]);
-    }
-
-    (layers || []).forEach(l => idMap.map.addLayer(l));
-
-    return idMap.map;
-  }
-
-  /**
    * Used by the following plugins: "cdu"
    */
   removeHideMap(id) {
@@ -419,7 +399,7 @@ class MapService extends G3WObject {
       options      = type.options ?? {};
       type         = id;
     }
-    const control = new InteractionControl({ name: id, ...options });
+    const control = new MapControl({ name: id, ...options });
     this.addControl(id || type, control, add);
     return control;
   }
@@ -707,17 +687,35 @@ class MapService extends G3WObject {
     return this.state.mapUnits;
   }
 
+
   /**
+   * Used by the following plugins: "cdu"
+   * 
    * @since 4.0.0
    */
-  addHideMap({ switchable=false } = {}) {
-    const idMap = {
+  addHideMap({ layers=[] } = {}) {
+    const MAP = {
       id: `hidemap_${Date.now()}`,
       map: null,
-      switchable
     };
-    this.state.hidemaps.push(idMap);
-    return idMap;
+    this.state.hidemaps.push(MAP);
+    // create Map
+    Vue.nextTick().then(async () => {
+      MAP.map = new ol.Map({
+        controls:            ol.control.defaults({ attribution: false, zoom: false }),
+        interactions:        ol.interaction.defaults(),
+        ol3Logo:             false,
+        view:                new ol.View({
+          projection: this.getMap().getView().getProjection(),
+          center:     this.getMap().getView().getCenter(),
+          resolution: this.getMap().getView().getResolution()
+        }),
+        keyboardEventTarget: document,
+        target:              MAP.id,
+      });
+      layers.forEach(l => MAP.map.addLayer(l));
+    });
+    return MAP;
   }
 
   /**

@@ -6,16 +6,16 @@
 import {
   GEOMETRY_TYPES,
   SPATIAL_METHODS
-}                                     from 'g3w-constants';
-import { VM }                         from 'g3w-eventbus';
-import GUI                            from 'services/gui';
-import DataRouterService              from 'services/data';
+}                                 from 'g3w-constants';
+import { VM }                     from 'g3w-eventbus';
+import GUI                        from 'services/gui';
+import DataRouterService          from 'services/data';
 
-import ApplicationState               from 'g3w-state'
-import InteractionControl             from 'map/controls/interactioncontrol';
-import PickCoordinatesInteraction     from 'map/interactions/pickcoordinatesinteraction';
-import { throttle }                   from 'utils/throttle';
-import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
+import ApplicationState           from 'g3w-state'
+import MapControl                 from 'g3w-control';
+import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
+import { throttle }               from 'utils/throttle';
+import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -74,7 +74,7 @@ const QUERY = Vue.observable({
  * ORIGINAL SOURCE: src/app/g3w-ol/controls/querybypolygoncontrol.js@v3.9.10
  * ORIGINAL SOURCE: src/app/g3w-ol/controls/querybydrawpolygoncontrol.js@v3.9.10
  */
-export class QueryBy extends InteractionControl {
+export class QueryBy extends MapControl {
 
   constructor(opts = {}) {
 
@@ -342,9 +342,9 @@ export class QueryBy extends InteractionControl {
     );
 
     /**
-     * @TODO remove `InteractionControl` and use a standard `ol.interaction`
+     * @TODO remove `MapControl` and use a standard `ol.interaction`
      */
-    const control = CONTROLS[type] = new InteractionControl({
+    const control = CONTROLS[type] = new MapControl({
       name:             type,
       offline:          false,
       visible:          false,

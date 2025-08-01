@@ -232,12 +232,6 @@ export default {
 
     await this.$nextTick();
 
-    // listen of after addHideMap
-    this.service.onafter('addHideMap', async ({ratio, layers=[], mainview=false, switchable=false} = {}) => {
-      await this.$nextTick();
-      this.service._addHideMap({ratio, layers, mainview, switchable});
-    });
-
     this.service.once('ready', () => {
       if (this.service.getMapControlByType('mouseposition')) {
         this.mouse.switch_icon = (

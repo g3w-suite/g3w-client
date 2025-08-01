@@ -3,9 +3,9 @@
  * @since 4.0.0
  */
 
-import GUI                from 'services/gui';
-import InteractionControl from 'map/controls/interactioncontrol';
-import { throttle }       from 'utils/throttle';
+import GUI          from 'services/gui';
+import MapControl   from 'g3w-control';
+import { throttle } from 'utils/throttle';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -16,7 +16,7 @@ GUI.once('ready', async () => {
   };
 });
 
-class GeolocationControl extends InteractionControl {
+class GeolocationControl extends MapControl {
 
   constructor() {
 

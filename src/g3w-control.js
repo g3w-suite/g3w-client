@@ -7,9 +7,9 @@ import { SPATIAL_METHODS } from 'g3w-constants';
 import GUI                 from 'services/gui';
 
 /**
- * ORIGINAL SOURCE: src/app/g3w-ol/controls/interactioncontrol.js@v3.10.2
+ * ORIGINAL SOURCE: src/map/controls/interactioncontrol.js@v4.0.0
  */
-export default class InteractionControl extends ol.control.Control {
+export default class MapControl extends ol.control.Control {
 
   /**
    * @param {Object}  options 

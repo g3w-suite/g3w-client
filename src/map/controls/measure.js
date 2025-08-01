@@ -4,7 +4,7 @@
  */
 
 import GUI                         from 'services/gui';
-import InteractionControl          from 'map/controls/interactioncontrol';
+import MapControl                  from 'g3w-control';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { gettext as _ }            from 'g3w-i18n';
 
@@ -169,7 +169,7 @@ export class MeasureInteraction extends ol.interaction.Draw {
 }
 
 
-class MeasureControl extends InteractionControl {
+class MeasureControl extends MapControl {
 
   constructor(opts = {}) {
     super({

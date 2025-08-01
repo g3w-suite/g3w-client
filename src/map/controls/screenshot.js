@@ -3,11 +3,11 @@
  * @since 4.0.0
  */
 
-import ApplicationState         from 'g3w-state';
-import GUI                      from 'services/gui';
-import { saveBlob }             from 'utils/saveBlob';
-import { sameOrigin }           from 'utils/sameOrigin';
-import InteractionControl       from 'map/controls/interactioncontrol';
+import ApplicationState from 'g3w-state';
+import GUI              from 'services/gui';
+import { saveBlob }     from 'utils/saveBlob';
+import { sameOrigin }   from 'utils/sameOrigin';
+import MapControl       from 'g3w-control';
 
 // wait for map ready
 GUI.once('ready', async () => {
@@ -47,7 +47,7 @@ GUI.once('ready', async () => {
  * 
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
  */
-class ScreenshotControl extends InteractionControl {
+class ScreenshotControl extends MapControl {
 
   constructor(opts = {}) {
     opts.layers = undefined === opts.layers ? []: opts.layers;

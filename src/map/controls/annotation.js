@@ -5,7 +5,7 @@
 import localforage                from 'localforage';
 import ApplicationState           from 'g3w-state';
 import GUI                        from 'services/gui';
-import InteractionControl         from 'map/controls/interactioncontrol';
+import MapControl                 from 'g3w-control';
 import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
 import { get_formatted_area }     from 'utils/createMeasureTooltip';
@@ -23,7 +23,7 @@ GUI.once('ready', async () => {
   }  
 });
 
-class AnnotationControl extends InteractionControl {
+class AnnotationControl extends MapControl {
 
   /** Incremental counter for added features */
   static FID = 1;
