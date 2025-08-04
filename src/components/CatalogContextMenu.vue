@@ -357,7 +357,6 @@
 <script>
   import { Chrome as ChromeComponent } from 'vue-color';
 
-  import { VM }                  from 'g3w-emitter';
   import ApplicationState        from 'g3w-state';
   import GUI                     from 'services/gui';
   import { getCatalogLayerById } from 'utils/getCatalogLayerById';
@@ -800,7 +799,7 @@
       /**
        * @param {{ id:? string, value: number }}
        * 
-       * @fires VM~layer-change-opacity
+       * @fires GUI~layer-change-opacity since 4.1.0
        * 
        * @since 3.11.0
        */
@@ -814,7 +813,7 @@
         } else {
           const layer = getCatalogLayerById(this.layer.id);
           if (layer) {
-            VM.$emit('layer-change-opacity', { layerId: this.layer.id });
+            GUI.emit('layer-change-opacity', { layerId: this.layer.id });
             layer.change();
           }
         }
@@ -824,10 +823,10 @@
     },
 
     /**
-     * @listens VM~context-menu
+     * @listens GUI~context-menu
      */
     created() {
-      VM.$on('context-menu', this.onShowContextMenu);
+      GUI.on('context-menu', this.onShowContextMenu);
       document.addEventListener('keyup', e => 'Escape' === e.key && this.closeMenu());
     },
 

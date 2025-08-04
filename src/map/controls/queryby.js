@@ -7,7 +7,6 @@ import {
   GEOMETRY_TYPES,
   SPATIAL_METHODS
 }                                 from 'g3w-constants';
-import { VM }                     from 'g3w-emitter';
 import GUI                        from 'services/gui';
 import DataRouterService          from 'services/data';
 
@@ -483,7 +482,7 @@ export class QueryBy extends MapControl {
     this.unwatches.push(
       ...this.types.flatMap(t => {
         const control = CONTROLS[t];
-        return (control.layers || []).map(layer => VM.$watch(
+        return (control.layers || []).map(layer => Vue.watch(
           () => layer.state.visible,
           () => {
             // toggle "eye" / "eye-close" icon
@@ -541,7 +540,7 @@ export class QueryBy extends MapControl {
 
       control.layers = _getAvailableLayers(t);
       // watch `layer.selected` and `layer.visible` properties
-      unWatches.push(VM.$watch(
+      unWatches.push(Vue.watch(
         () => [layer.selected, layer.visible],
         () => {
           control.setEnable(control.isToggled() && (layer.selected ? layer.visible : _hasVisible(control)));

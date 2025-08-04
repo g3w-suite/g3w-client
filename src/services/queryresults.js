@@ -3,7 +3,7 @@
  * @since 3.11.0
  */
 
-import Emitter, { VM }                          from 'g3w-emitter';
+import Emitter                                  from 'g3w-emitter';
 import GUI                                      from 'services/gui';
 import { G3W_FID }                              from 'g3w-constants';
 import Component                                from 'g3w-component';
@@ -818,7 +818,7 @@ export default new (class QueryResultsService extends Emitter {
           hint:      'Remove feature from results',
           cbk:       this.removeFeatureLayerFromResult.bind(this),
           init() {
-            this.unwatch = VM.$watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
+            this.unwatch = Vue.watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
           },
           clear() {
             this.unwatch && this.unwatch(); // remove action when destroy
@@ -855,7 +855,7 @@ export default new (class QueryResultsService extends Emitter {
             // wait for pagination change request
             setTimeout(() => {
               this.state.show = !layer.filter.pagination; 
-              features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
+              features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
           },
           cbk: throttle(this.toggleSelection.bind(this))

@@ -286,7 +286,6 @@
 
 <script>
 
-import { VM }                  from 'g3w-emitter';
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'services/gui';
 import { XHR }                 from 'utils/XHR';
@@ -627,7 +626,7 @@ export default {
     /**
      * Change view
      *
-     * @fires VM~layer-change-style
+     * @fires GUI~layer-change-style since 4.1.0
      */
     async changeMapTheme(map_theme) {
       GUI.closeContent();
@@ -655,7 +654,7 @@ export default {
       });
 
       // apply styles on each layer
-      layers.forEach(id => VM.$emit('layer-change-style', { layerId: id, style: styles[id] }));
+      layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
 
     },
 
@@ -810,17 +809,17 @@ export default {
   },
 
   /**
-   * @listens VM~unselectionlayer
-   * @listens VM~activefiltertokenlayer
-   * @listens VM~treenodevisible
-   * @listens VM~treenodeselected
+   * @listens GUI~unselectionlayer
+   * @listens GUI~activefiltertokenlayer
+   * @listens GUI~treenodevisible
+   * @listens GUI~treenodeselected
    */
   created() {
-    VM.$on('unselectionlayer',                       this.onUnSelectionLayer);
-    VM.$on('activefiltertokenlayer',                 this.onActiveFilterTokenLayer);
-    VM.$on('treenodevisible',                        this.onTreeNodeVisible);
-    VM.$on('treenodeselected',                       this.onTreeNodeSelected);
-    VM.$on('layer-change-style',                     this.getLegendSrc);
+    GUI.on('unselectionlayer',       this.onUnSelectionLayer);
+    GUI.on('activefiltertokenlayer', this.onActiveFilterTokenLayer);
+    GUI.on('treenodevisible',        this.onTreeNodeVisible);
+    GUI.on('treenodeselected',       this.onTreeNodeSelected);
+    GUI.on('layer-change-style',     this.getLegendSrc);
   },
 
   beforeMount() {

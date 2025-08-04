@@ -5,15 +5,6 @@
  */
 
 /**
- * Internal event bus
- * 
- * ORIGINAL SOURCE: src/g3w-eventbus.js@4.0.0
- * 
- * @since 4.1.0
- */
-export const VM = new Vue();
-
-/**
  * Base class for managing events (setters and listeners).
  * 
  * Based on: EventEmitter v5.2.9 - git.io/ee

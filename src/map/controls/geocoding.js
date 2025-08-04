@@ -122,14 +122,13 @@ class GeocodingControl extends ol.control.Control {
 
     const map          = GUI.getService('map');
     const queryresults = GUI.getService('queryresults');
-    const VM           = new Vue;
 
     GUI.on('i18n-ready', () => {
       this.element.querySelector('ul').innerHTML = '';
       this.element.querySelector('input[type="search"]').placeholder = _('Search');
     })
 
-    VM.$watch(() => GUI.getCurrentContent(), is_sidebar_open => {
+    Vue.watch(() => GUI.getCurrentContent(), is_sidebar_open => {
       this.element.querySelector('button[value="toggle-sidebar"] code').style.opacity = is_sidebar_open ? 0.5 : null;
     }, { immediate: true });
 

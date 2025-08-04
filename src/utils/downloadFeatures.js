@@ -7,7 +7,6 @@ import {
   G3W_FID,
   TIMEOUT,
 }                              from 'g3w-constants';
-import { VM }                  from 'g3w-emitter';
 import { gettext as _ }        from 'g3w-i18n';
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'services/gui';
@@ -36,7 +35,7 @@ GUI.once('ready', () => {
           toggleable: true,
           hint:       'Downloads',
           change({ features }) {
-            features.forEach((_, i) => undefined === this.state.toggled[i] ? VM.$set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
+            features.forEach((_, i) => undefined === this.state.toggled[i] ? Vue.set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
           },
           cbk: (layer, feature, action, index) => {
             action.state.toggled[index] = !action.state.toggled[index];

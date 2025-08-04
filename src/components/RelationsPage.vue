@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import { VM }             from 'g3w-emitter';
 import GUI                from 'services/gui';
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent  from 'components/Relation.vue';
@@ -66,9 +65,13 @@ export default {
   },
   methods: {
 
+    /**
+     * @fires GUI~reload-relations since 4.1.0
+     */
     reloadLayout() {
-      VM.$emit('reload-relations');
+      GUI.emit('reload-relations');
     },
+
     async showRelation(relation) {
       this.loading        = true;
       this.relation       = relation;

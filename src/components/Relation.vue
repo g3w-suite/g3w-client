@@ -189,7 +189,6 @@
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
   import GUI                                      from 'services/gui';
-  import { VM }                                   from 'g3w-emitter';
   import DataRouterService                        from 'services/data';
   import { throttle }                             from 'utils/throttle';
   import { debounce }                             from 'utils/debounce';
@@ -582,7 +581,7 @@
         };
       }
 
-      VM.$on('reload-relations', () => { this.$table?.columns?.adjust(); });
+      GUI.on('reload-relations', () => { this.$table?.columns?.adjust(); });
 
       this.chart.handler = throttle(async () => {
         this.chart.toggled = !this.chart.toggled;

@@ -223,7 +223,6 @@
 </template>
 
 <script>
-import { VM }                  from 'g3w-emitter';
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'services/gui';
 import ClickMixin              from 'mixins/click';
@@ -414,6 +413,8 @@ export default {
      * @param {boolean} layer.disabled
      * @param {boolean} layer.projectLayer
      * @param {uknown}  layer.parentGroup
+     * 
+     * @fires GUI~treenodevisible since 4.1.0
      */
     handleLayerChecked(layer) {
 
@@ -444,7 +445,7 @@ export default {
         g         = g.parentGroup;
       }
 
-      VM.$emit('treenodevisible', qlayer);
+      GUI.emit('treenodevisible', qlayer);
     },
 
     /**
@@ -457,17 +458,17 @@ export default {
     },
 
     /**
-     * @fires VM~activefiltertokenlayer
+     * @fires GUI~activefiltertokenlayer since 4.1.0
      */
     toggleFilterLayer() {
-      VM.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
+      GUI.emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
     /**
-     * @fires VM~unselectionlayer
+     * @fires GUI~unselectionlayer since 4.1.0
      */
     clearSelection() {
-      VM.$emit('unselectionlayer', this.storeid, this.layerstree);
+      GUI.emit('unselectionlayer', this.storeid, this.layerstree);
     },
 
     toggle() {
@@ -481,7 +482,7 @@ export default {
     /**
      * Select legend item
      *
-     * @fires VM~treenodeselected
+     * @fires GUI~treenodeselected since 4.1.0
      */
     select() {
       // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
@@ -489,7 +490,7 @@ export default {
         undefined !== this.layerstree.selected &&
         ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
       ) {
-        VM.$emit('treenodeselected', this.layerstree);
+        GUI.emit('treenodeselected', this.layerstree);
       }
     },
 
@@ -544,12 +545,12 @@ export default {
     /**
      * @param evt
      * 
-     * @fires VM~context-menu
+     * @fires GUI~context-menu since 4.1.0
      * 
      * @since 3.10.0
      */
     showContextMenu(evt) {
-      VM.$emit('context-menu', evt, this.layerstree);
+      GUI.emit('context-menu', evt, this.layerstree);
     },
 
   },
