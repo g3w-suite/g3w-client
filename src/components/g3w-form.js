@@ -10,8 +10,6 @@ import GUI                      from 'services/gui';
 import vueComp                  from 'components/Form.vue';
 import BodyFormComp             from 'components/FormBody.vue';
 
-import { getFilterExpression }  from 'utils/getFilterExpression';
-
 import DataRouterService from 'services/data';
 
 /**
