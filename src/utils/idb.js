@@ -11,20 +11,21 @@ export const idb = {
   },
 
   async open() {
-    const db = window.indexedDB.open('default', 1)
+    const db = window.indexedDB.open('default', 1);
     return await new Promise(ok => {
       db.onsuccess       = () => { ok(db.result); };
       db.onerror         = e  => { console.error('[idb]', e); ok(undefined); };
       db.onupgradeneeded = () => {
         if (!db.result.objectStoreNames.contains('db')) {
-          db.result.createObjectStore('db');
+          const store = db.result.createObjectStore('db', { keyPath: 'name' })
+          store.createIndex('name', 'name', { unique: true })
         }
       };
     });
   },
 
   async setItem(name, value) {
-    const db = await this.open()
+    const db = await this.open();
     if (db) {
       return await new Promise(ok => {
         const store   = db.transaction('db', 'readwrite').objectStore('db');
