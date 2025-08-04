@@ -31,8 +31,6 @@ import { waitFor }                                 from 'utils/waitFor';
 //used by editing plugin
 import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
-import { getDefaultExpression }                    from 'utils/getDefaultExpression';
-import { getFilterExpression }                     from 'utils/getFilterExpression';
 import { getProjectUrl }                           from 'utils/getProjectUrl';
 import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
@@ -287,12 +285,6 @@ globalThis.g3wsdk = {
       Plugin:          babelify(Plugin),
       PluginService:   babelify(PluginService)
     },
-    input: {
-      inputService: {
-        handleFilterExpressionFormInput:  getFilterExpression,
-        handleDefaultExpressionFormInput: getDefaultExpression,
-      }
-    }
   },
 
   // APPLICATION INTERFACE (vue)

@@ -10,8 +10,153 @@ import GUI                      from 'services/gui';
 import vueComp                  from 'components/Form.vue';
 import BodyFormComp             from 'components/FormBody.vue';
 
-import { getDefaultExpression } from 'utils/getDefaultExpression';
 import { getFilterExpression }  from 'utils/getFilterExpression';
+
+import DataRouterService from 'services/data';
+
+/**
+ * ORIGINAL SOURCE: src/utils/getDefaultExpression.js@4.0.0
+ *
+ * @param expr.field        related field
+ * @param expr.feature      feature to transform in form_data
+ * @param expr.qgs_layer_id layer id owner of the feature data
+ * @param expr.parentData
+ */
+async function getDefaultExpression({
+  field,
+  feature,
+  qgs_layer_id,
+  parentData,
+} = {}) {
+
+  const {
+    layer_id = qgs_layer_id,
+    default_expression,
+    loading,
+    default: default_value,
+  } = field.input.options;
+
+  /**
+   * @FIXME should return Promise.reject('some error message') ?
+   */
+  if (!default_expression) {
+    return;
+  }
+
+  loading.state = 'loading';
+
+  // Call `expression:expression_eval` to get value from expression and set it to field
+  try {
+
+    const value = await DataRouterService.getData('expression:expression_eval', {
+      inputs: {
+        field_name: field.name,
+        layer_id, //
+        qgs_layer_id, //layer id owner of the data
+        form_data:  (new ol.format.GeoJSON()).writeFeatureObject(feature),
+        formatter:  0,
+        expression: default_expression.expression,
+        parent: parentData && {
+          form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
+          qgs_layer_id: parentData.qgs_layer_id,
+          formatter:    0
+        }
+      },
+      outputs: false
+    });
+
+    field.value = value;
+
+    return value;
+
+  } catch(e) {
+    if (undefined !== default_value) {
+      field.value = default_value
+    }
+    console.warn(e);
+    return Promise.reject(e);
+  } finally {
+    loading.state = 'ready';
+  }
+
+}
+
+/**
+ * ORIGINAL SOURCE: src/utils/getFilterExpression.js@4.0.0
+ *
+ * @param expr.field        related field
+ * @param expr.feature      feature to transform in form_data
+ * @param expr.qgs_layer_id layer id owner of the feature data
+ * @param expr.parentData
+ */
+async function getFilterExpression({
+  field,
+  feature,
+  qgs_layer_id,
+  parentData,
+} = {}) {
+  let {
+    key,
+    value,
+    layer_id = qgs_layer_id,
+    filter_expression,
+    loading,
+    orderbyvalue
+  } = field.input.options;
+
+  /**
+   * @FIXME should return Promise.reject('some error message') ?
+   */
+  if (!filter_expression) {
+    return;
+  }
+
+  loading.state = 'loading';
+
+  try {
+
+    const features = await DataRouterService.getData('expression:expression', {
+      inputs: {
+        field_name: field.name,
+        layer_id,
+        qgs_layer_id,
+        form_data: (new ol.format.GeoJSON()).writeFeatureObject(feature),
+        parent: parentData && ({
+          form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
+          qgs_layer_id: parentData.qgs_layer_id,
+          formatter:    0,
+        }),
+        formatter:  0,
+        expression: filter_expression.expression,
+        ordering:   [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
+      },
+      outputs: false,
+    });
+
+    if ('select_autocomplete' === field.input.type) {
+      field.input.options.values = [];
+      // temporary array to sort the keys
+      const values = [];
+      for (let i = 0; i < features.length; i++) {
+        values.push({
+          key:   features[i].properties[value],
+          value: features[i].properties[key]
+        })
+      }
+
+      field.input.options.values = values;
+    }
+
+    return features;
+
+  } catch(e) {
+    console.warn(e);
+    return Promise.reject(e);
+  } finally {
+    loading.state = 'ready';
+  }
+
+}
 
 /**
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
