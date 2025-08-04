@@ -2,7 +2,6 @@
  * @file
  * @since 4.0.0
  */
-import localforage                from 'localforage';
 import ApplicationState           from 'g3w-state';
 import GUI                        from 'services/gui';
 import MapControl                 from 'g3w-control';
@@ -12,13 +11,14 @@ import { get_formatted_area }     from 'utils/createMeasureTooltip';
 import { get_formatted_length }   from 'utils/createMeasureTooltip';
 import { get_formatted_radius }   from 'utils/createMeasureTooltip';
 import { get_formatted_angle }    from 'utils/createMeasureTooltip';
+import { idb }                    from 'utils/idb';
 
 // wait for map ready
 GUI.once('ready', async () => {
   const map = GUI.getService('map');
   map.setupControl.annotation = async function() {
     map.addControl('annotation', new AnnotationControl({
-      features: (await localforage.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
+      features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
     }));
   }  
 });
@@ -99,7 +99,7 @@ class AnnotationControl extends MapControl {
     // update local storage
     this._annotation.layer.on('change', async () => {
       const epsg = GUI.getService('map').getEpsg();
-      localforage.setItem('annotations', Object.assign(await localforage.getItem('annotations') || {},
+      idb.setItem('annotations', Object.assign(await idb.getItem('annotations') || {},
         {
           [ApplicationState.project.state.id] : JSON.parse(JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
             this._annotation.layer.getSource().getFeatures(), { dataProjection: epsg, featureProjection: epsg }

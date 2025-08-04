@@ -2,7 +2,7 @@
  * @file Development entry point (app.min.js)
  * @since v3.8
  */
-import localforage from 'localforage';
+import { idb }     from 'utils/idb';
 import { waitFor } from 'utils/waitFor';
 import shpwrite    from '@mapbox/shp-write';
 
@@ -16,7 +16,7 @@ import 'g3w-globals';
 window.g3wsdk.info();
 
 // custom header links
-g3wsdk.core.ApplicationService.once('initconfig', () => {
+g3w.gui.once('initconfig', () => {
   initConfig.header_custom_links = [
     // modal button (icon + i18n)
     {
@@ -54,7 +54,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
 });
 
 // dev layers (from local storage)
-g3wsdk.core.ApplicationService.once('initconfig', () => {
+g3w.gui.once('initconfig', () => {
 
   const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
 
@@ -77,7 +77,7 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
   localStorage.setItem('externalwms', JSON.stringify(wms));
 
   // piazza-leopoldo.kml
-  localforage.getItem('externalLayers').then(externalLayers => {
+  idb.getItem('externalLayers').then(externalLayers => {
     externalLayers  = externalLayers || {};
     externalLayers["piazza-leopoldo.kml"] = externalLayers["piazza-leopoldo.kml"] || {
       "features": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1252005.710667936,5433256.404732778,0],[1251977.6609369165,5433254.067255179,0],[1251945.5206201253,5433223.680046592,0],[1251947.8580977095,5433192.124099195,0],[1251992.2701718165,5433153.555719045,0],[1252019.7355334398,5433136.609006568,0],[1252068.822562715,5433129.596573813,0],[1252109.14405105,5433141.86833112,0],[1252124.9220247425,5433158.815043615,0],[1252123.1689165544,5433194.461576776,0],[1252103.8847264862,5433224.8487853855,0],[1252054.213327815,5433247.639191819,0],[1252005.710667936,5433256.404732778,0]]]},\"properties\":{\"name\":\"Piazza Leopoldo\"},\"id\":0}]}",
@@ -91,19 +91,19 @@ g3wsdk.core.ApplicationService.once('initconfig', () => {
           "visible":  true
       }
     };
-    localforage.setItem('externalLayers', externalLayers);
+    idb.setItem('externalLayers', externalLayers);
   });
 });
 
 // dev layers (modal-addlayer)
-g3wsdk.gui.GUI.once('ready', async () => {
+g3w.gui.once('ready', async () => {
 
-  await waitFor(() => GUI.getService('map'), 1000);
-  await GUI.getService('map').isReady();
+  await waitFor(() => g3w.gui.getService('map'), 1000);
+  await g3w.gui.getService('map').isReady();
 
   // $('#modal-addlayer').modal('show');
 
-  const map = GUI.getService('map');
+  const map = g3w.gui.getService('map');
   const q = document.querySelector.bind(document);
 
   // set modal options
@@ -157,8 +157,8 @@ g3wsdk.gui.GUI.once('ready', async () => {
 
   // export layer to zip
   const zipFile = async name => {
-    await waitFor(async () => name in (await localforage.getItem('externalLayers')), 1000);
-    const externalLayers = await localforage.getItem('externalLayers');
+    await waitFor(async () => name in (await idb.getItem('externalLayers')), 1000);
+    const externalLayers = await idb.getItem('externalLayers');
     const blob           = await shpwrite.zip(
       JSON.parse(externalLayers[name].features),
       {
@@ -220,7 +220,7 @@ C,"POINT (11.2474811 43.7910709)"`],
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3wsdk.gui.GUI.onafter('showPanel', panel => {
+g3w.gui.onafter('showPanel', panel => {
   if ('editing-panel' !== panel.getId()) {
     return;
   }
@@ -258,13 +258,13 @@ g3wsdk.gui.GUI.onafter('showPanel', panel => {
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3wsdk.gui.GUI.once('ready', () => {
-  g3wsdk.gui.GUI.getService('queryresults').onafter('addActionsForLayers', (actions, layers) => {
+g3w.gui.once('ready', () => {
+  g3w.gui.getService('queryresults').onafter('addActionsForLayers', (actions, layers) => {
     Object.keys(actions)
     .filter(id => layers.find(l => id === l.id).editable)
     .forEach(id => {
       //Check only if has primay key value to ge unique feature to edit
-      const pkField = g3wsdk.gui.GUI.getPlugin('editing').getEditingFields(id).find(f => f.pk);
+      const pkField = g3w.gui.getPlugin('editing').getEditingFields(id).find(f => f.pk);
       // in case that layer has not pk field, iframe editing action is not
       if (!pkField) {
         return;
@@ -303,8 +303,8 @@ g3wsdk.gui.GUI.once('ready', () => {
 /**
  * Custom map control: “Open in iframe”
  */
-g3wsdk.gui.GUI.once('ready', () => {
-  g3wsdk.gui.GUI.getService('map').once('ready', function() {
+g3w.gui.once('ready', () => {
+  g3w.gui.getService('map').once('ready', function() {
     this.createMapControl({
       id:            "OPENIFRAME",
       options: {
@@ -318,7 +318,7 @@ g3wsdk.gui.GUI.once('ready', () => {
           // send message to iframe every time ifrema send a message con contentWindow
           w.addEventListener('message', e => {
             //Emit iframe:message to handle the message in config.js file
-            setTimeout(() => g3wsdk.gui.GUI.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
+            setTimeout(() => g3w.gui.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
           }, false);
           // prevent page refresh (eg. CTRL+R)
           w.onbeforeunload = () => w.close();
@@ -331,8 +331,8 @@ g3wsdk.gui.GUI.once('ready', () => {
 /**
  * Custom search action: “Create from template”
  */
-g3wsdk.gui.GUI.once('ready', async () => {
-  const SEARCH          = g3wsdk.gui.GUI.getComponent('search');
+g3w.gui.once('ready', async () => {
+  const SEARCH          = g3w.gui.getComponent('search');
   const SAVED_SEARCHES  = SEARCH.getInternalComponent().state.searches;
   const CUSTOM_SEARCHES = JSON.parse(localStorage.getItem('custom-searches') || '[]');
 
@@ -422,6 +422,3 @@ g3wsdk.gui.GUI.once('ready', async () => {
 
 // run app (index.prod.js)
 require('./index.prod');
-
-window.GUI         = g3wsdk.gui.GUI;
-window.localforage = localforage;

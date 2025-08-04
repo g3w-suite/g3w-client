@@ -344,7 +344,7 @@ which is roughly equivalent to:
 ```js
 // path/to/your/custom.js
 
-g3wsdk.core.ApplicationService.once('initconfig', () => {
+g3w.gui.once('initconfig', () => {
   initConfig.header_custom_links = [{
     "i18n":   true,
     "icon":   "fas fa-sync-alt",
@@ -410,12 +410,9 @@ Language files are stored into the [`src/assets/locales`](https://github.com/g3w
 By adding some of these lines (eg. into your `plugin.js` or `custom.js`) you can change or add custom translation entries:
 
 ```js
-const gettext = g3wsdk.core.i18n.t;
-const GUI     = g3wsdk.gui.GUI;
-
-GUI.isReady().then(() => {
-  gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" locale: `Credits` (en) → `Impressum` (en)
-  gettext.register('it', { 'Credits': 'Impressum' }); // change default "it" locale: `Credits` (en) → `Impressum` (it)
+g3w.gui.isReady().then(() => {
+  g3w.gettext.register('en', { 'Credits': 'Impressum' }); // change default "en" locale: `Credits` (en) → `Impressum` (en)
+  g3w.gettext.register('it', { 'Credits': 'Impressum' }); // change default "it" locale: `Credits` (en) → `Impressum` (it)
 });
 ```
 

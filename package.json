@@ -37,7 +37,6 @@
     "jquery": "^2.2.1",
     "jsts": "^2.11.3",
     "jszip": "^3.10.1",
-    "localforage": "^1.10.0",
     "lodash.clonedeep": "^4.5.0",
     "moment": "^2.19.1",
     "ol": "^10.6.1",

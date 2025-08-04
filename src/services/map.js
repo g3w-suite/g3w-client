@@ -3,8 +3,6 @@
  * @since 3.11.0
  */
 
-import localforage                from 'localforage';
-
 import ApplicationState           from 'g3w-state';
 import Emitter                    from 'g3w-emitter';
 import MapControl                 from 'g3w-control';
@@ -23,6 +21,7 @@ import { getUniqueDomId }         from 'utils/getUniqueDomId';
 import { createFilterFromString } from 'utils/createFilterFromString';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 import { getCatalogLayers }       from 'utils/getCatalogLayers';
+import { idb }                    from 'utils/idb';
 import { waitFor }                from 'utils/waitFor';
 import { debounce }               from 'utils/debounce';
 
@@ -1534,7 +1533,7 @@ class MapService extends Emitter {
       });
 
     /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
-    localforage.getItem('externalLayers').then(externalLayers => {
+    idb.getItem('externalLayers').then(externalLayers => {
       Object.entries(externalLayers || {}).forEach(([id, layer]) => {
         const olLayer = new ol.layer.Vector({
           source: new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(layer.features) })
@@ -2100,8 +2099,8 @@ class MapService extends Emitter {
     }
 
     if (vectorLayer && false !== options.persistent) {
-      localforage.getItem('externalLayers').then(externalLayers => {
-        localforage.setItem('externalLayers', {
+      idb.getItem('externalLayers').then(externalLayers => {
+        idb.setItem('externalLayers', {
           ...(externalLayers || {}),
           [vectorLayer.get('name')]: {
             features: new ol.format.GeoJSON().writeFeatures(vectorLayer.getSource().getFeatures()),
@@ -2157,12 +2156,12 @@ class MapService extends Emitter {
 
     /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
     if ('vector' === type) {
-      localforage.getItem('externalLayers').then(externalLayers => {
+      idb.getItem('externalLayers').then(externalLayers => {
         externalLayers  = externalLayers || {}
         if (name in externalLayers) {
           delete externalLayers[name];
         }
-        localforage.setItem('externalLayers', externalLayers);
+        idb.setItem('externalLayers', externalLayers);
       });
     }
 

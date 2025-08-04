@@ -25,6 +25,7 @@ import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
 import { intersects }                              from 'utils/intersects';
+import { idb }                                     from 'utils/idb';
 import { waitFor }                                 from 'utils/waitFor';
 
 //used by editing plugin
@@ -128,6 +129,7 @@ globalThis.g3w = {
   Plugin,
   gui: GUI,
   get map() { return GUI.getService('map'); },
+  idb,
   state: ApplicationState,
   gettext: _,
 };
