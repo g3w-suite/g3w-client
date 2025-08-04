@@ -11,8 +11,6 @@
  */
 export default class Emitter {
 
-  static bus = new Vue();
-
   /**
    * @TODO end support for legacy classes (ES5) and use private class fields instead (eg. `___events` → `#events`)
    */
