@@ -857,7 +857,7 @@ export default {
       return new Promise((res, rej) => {
         const wmslayer = new Layer(
           { id: name || getUniqueDomId(), layers, projection: ol.proj.get(epsg), url },
-          { _RASTER_LAYER: true }
+          { TYPE: 'virtual' }
         );
         const olLayer  = wmslayer.getOLLayer();
         olLayer.getSource().once('imageloadend', res);

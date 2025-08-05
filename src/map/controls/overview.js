@@ -98,7 +98,7 @@ GUI.once('ready', async () => {
             "QGIS ogr",
             "QGIS mdal",
           ].includes(layerType)) {
-            return new Layer(config, { project: PROJECT, _TYPE: 'table' });
+            return new Layer(config, { project: PROJECT, TYPE: 'table' });
           }
 
           //@since 4.0.0 no crs exclude from layer list
@@ -108,7 +108,7 @@ GUI.once('ready', async () => {
 
           // VECTOR LAYERS
           if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
-            return new Layer(config, { project: PROJECT, _TYPE: 'vector' });
+            return new Layer(config, { project: PROJECT, TYPE: 'vector' });
           }
 
           // RASTER LAYERS
@@ -140,13 +140,10 @@ GUI.once('ready', async () => {
               "QGIS mdal",
               "QGIS arcgismapserver",
             ].includes(layerType)
-          )) {
-            return new Layer(config, { project: PROJECT, _TYPE: 'image' });
-          }
-
-          // BASE LAYERS
-          if (['TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)) {
-            return new Layer(config, { project: PROJECT, _TYPE: 'image', _BASE_LAYER: config.servertype });
+          ) || 
+            ['TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)
+          ) {
+            return new Layer(config, { project: PROJECT, TYPE: 'image' });
           }
 
           console.info('Invalid layer', config);
@@ -319,7 +316,7 @@ GUI.once('ready', async () => {
                   id:    `overview_layer_${id}`,
                   tiled: layers[0].state.tiled,
                 },
-                { _RASTER_LAYER: true });
+                { TYPE: 'virtual' });
                 layers.reverse().forEach(l => layer.addLayer(l));
                 return layer.getOLLayer(true);
               }).reverse()

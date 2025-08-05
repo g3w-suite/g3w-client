@@ -18,7 +18,7 @@ import {
   TIMEOUT,
   G3W_FID,
 }                                 from 'g3w-constants';
-import Emitter                  from 'g3w-emitter';
+import Emitter                    from 'g3w-emitter';
 import { gettext as _ }           from 'g3w-i18n';
 import ApplicationState           from 'g3w-state';
 import DataRouterService          from 'services/data';
@@ -37,6 +37,7 @@ import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { reverseGeometry }        from 'utils/reverseGeometry';
+import { getUniqueDomId }         from 'utils/getUniqueDomId';
 
 const NUMERIC_FIELD = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -76,7 +77,18 @@ export class Layer extends Emitter {
   }
 
   #providers = {};
-  
+
+  // BACKOMP v3.x
+  #LAYERTYPE;
+  get LAYERTYPE() {
+    console.warn('[G3W-LAYER] layer.LAYERTYPE is deprecated');
+    console.trace();
+    if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
+      this.#LAYERTYPE = this.#LAYERTYPE || { LAYER: 'layer', MULTILAYER: 'multilayer' };
+    }
+    return this.#LAYERTYPE;
+  }
+
   /**
    * @param config.id
    * @param config.title
@@ -124,24 +136,7 @@ export class Layer extends Emitter {
       'change',
     ];
 
-    this._BASE_LAYER   = options._BASE_LAYER;
-    this._RASTER_LAYER = options._RASTER_LAYER;
-    this.type          = options._TYPE;
-
-    if (options._RASTER_LAYER) {
-      this.state                  = config;
-      this.iframe_internal        = config.iframe_internal || false;
-      this.extent                 = config.extent;
-      this.projection             = config.projection;
-      this.layer                  = null;
-      this.layers                 = config.layers || []; // store all enabled layers
-      this.allLayers              = []; // store all layers
-      this.showSpinnerWhenLoading = true;
-      this.LAYERTYPE              = 'XYZ' !== this.state.type && { LAYER: 'layer', MULTILAYER: 'multilayer' };
-      this.extraParams            = this._RASTER_LAYER?.params || {};
-      this._method                = this._RASTER_LAYER?.method || 'GET';
-      return;
-    }
+    this.type = options.TYPE;
 
     // get current project
     const project = options.project || ApplicationState.project;
@@ -155,7 +150,7 @@ export class Layer extends Emitter {
      * @TODO simplify further, some propertiy names seems to be duplicated
      */
     this.state = Object.assign(config, {
-      id:        config.id || 'Layer',
+      id:        config.id || getUniqueDomId(),
       title:     config.title || config.name,
       download:  !!config.download,
       baselayer: !!config.baselayer,
@@ -194,7 +189,7 @@ export class Layer extends Emitter {
 
       map_crs:            project.getProjection()?.getCode(),
       multilayerid:       config.multilayer,
-      projection:         config.projection ? (config.projection.getCode() === config.crs.epsg ? config.projection : ApplicationState.projections.get(config.crs)) : undefined,
+      projection:         config.projection && config?.projection?.getCode() === config?.crs?.epsg ? config.projection : (config.crs ? ApplicationState.projections.get(config.crs) : undefined),
       attributions:       config.attributions,
       selected:           config.selected || false,
       disabled:           config.disabled || false,
@@ -277,7 +272,7 @@ export class Layer extends Emitter {
       checked: config.checked ?? !!config.visible,
 
       /** @since 4.0.0 */
-      epsg: config.crs.epsg,
+      epsg: config?.crs?.epsg,
 
       /** @since 4.0.0 */
       hidden: !!config.hidden,
@@ -301,8 +296,22 @@ export class Layer extends Emitter {
       proxyData: { wms: null },
 
       /** @since 4.0.0 @type {number } number of preview fields on result */
-      max_preview_fields: config.max_preview_fields, 
+      max_preview_fields: config.max_preview_fields,
+
+      /** @since 4.1.0 */
+      http_method: config.http_method ?? 'GET',
+
+      /** @since 4.1.0 */
+      http_params: config.http_params ?? {},
     });
+
+    this.allLayers       = [];                        // store all layers
+    this.layers          = (this.state.layers || []); // store enabled layers (wms)
+    this.showSpinner     = !!this.state.visible;
+    this.iframe_internal = this.state.iframe_internal || false;
+    this.extent          = this.state.extent;
+    this.projection      = this.state.projection;
+    this.layer           = null;
 
     const relations = project.getRelations().filter(r => [r.referencedLayer, r.referencingLayer].includes(this.getId()));
 
@@ -469,7 +478,7 @@ export class Layer extends Emitter {
     this._layersstore = config.layersstore || null;
 
     // sanitize source url (ie. discard any reserved WMS params)
-    if (config?.source?.url) {
+    if (this.state?.source?.url && !('virtual' === this.getType())) {
       const url = new URL(this.state.source.url);
       ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
         this.state.source.url = this.state.source.url
@@ -1728,10 +1737,7 @@ export class Layer extends Emitter {
    * @returns {boolean} whether is visible
    */
   isVisible() {
-    if (this._RASTER_LAYER) {
-      return this.layers.filter(l => l.isVisible()).length > 0;
-    }
-    return this.state.visible;
+    return [this].concat(this.layers).some(l => l.state.visible);
   }
 
   /**
@@ -1821,33 +1827,30 @@ export class Layer extends Emitter {
    * @returns { string }  query url based on type, external or same projection of map
    */
   getQueryUrl() {
-    if (this._RASTER_LAYER && 'XYZ' !== this.state.type) {
-      if (this.layers[0].infourl && '' !== this.layers[0].infourl) {
-        return this.layers[0].infourl;
-      }
+    /** @FIXME add description */
+    if (this.layers.at(0)?.infourl && '' !== this.layers.at(0).infourl && 'XYZ' !== this.state.type) {
+      return this.layers.at(0).infourl;
+    }
+
+    /** @FIXME add description */
+    if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
       return this.state.url;
     }
 
-    let url;
-    if (this.isRaster()) {
-      url       = this.state.urls.query;
-      const is_qgis = (
-        "QGIS" === this.getServerType()
-        && this.isExternalWMS()
-        && this.state.crs.epsg === this.state.map_crs
-      );
-
-      /** @FIXME add description */
-      if (is_qgis && this.getInfoFormats()) {
-        return this.getSource().url;
-      }
-
-      /** @FIXME add description */
-      if (is_qgis) {
-        return `${url}SOURCE=${this.state.source.type}`;
-      }
+    /** @FIXME add description */
+    if ("QGIS" === this.getServerType() && this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs && this.getInfoFormats()) {
+      return this.getSource().url;
     }
-    return url;
+
+    /** @FIXME add description */
+    if ("QGIS" === this.getServerType() && this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs) {
+      return `${this.state.urls.query}SOURCE=${this.state.source.type}`;
+    }
+
+    /** @FIXME add description */
+    if (this.isRaster()) {
+      return this.state.urls.query;
+    }
   }
 
   /**
@@ -1858,7 +1861,7 @@ export class Layer extends Emitter {
    * @returns { default.watch.infoformat | * | string }
    */
   getInfoFormat(ogcService) {
-    if (this._RASTER_LAYER && 'XYZ' !== this.state.type) {
+    if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
       return 'application/vnd.ogc.gml';
     }
     // In the case of NETCDF (qtime series)
@@ -2012,7 +2015,7 @@ export class Layer extends Emitter {
 
   async #getFeaturesJSON(opts = {}) {
     return (new ol.format.GeoJSON()).readFeatures(
-      opts.data || (await XHR.get({ url: opts.url || this.get('source').url })).results, {
+      opts.data || (await XHR.get({ url: opts.url || this.state.source.url })).results, {
       featureProjection: opts.mapProjection,
       dataProjection:    opts.projection || 'EPSG:4326',
     })
@@ -2283,7 +2286,7 @@ export class Layer extends Emitter {
       !this.state.not_show_attributes_table && !this.isBaseLayer() && 
       (
         (this.isQueryable() && this.getTableFields().length > 0 && ["QGIS postgres", "QGIS oracle", "QGIS wfs", "QGIS ogr", "QGIS mssql", "QGIS spatialite"].includes(`${this.getServerType()} ${this.state.source.type}`))
-        || ("G3WSUITE geojson" === `${this.getServerType()} ${this.get('source').type}`)
+        || ("G3WSUITE geojson" === `${this.getServerType()} ${this.state.source?.type}`)
         || (this.isFilterable() && "G3WSUITE" !== this.getServerType())
       )
     );
@@ -3173,9 +3176,9 @@ export class Layer extends Emitter {
    * 
    * @since 4.1.0
    */
-  update(mapState = {}, extraParams = {}) {
-    if (this._RASTER_LAYER && this.getOLLayer()) {
-      let { force, ...params } = extraParams;
+  update(mapState = {}, params = {}) {
+    if ('virtual' === this.getType() && this.getOLLayer()) {
+      let { force, ..._params } = params;
 
       // check which layers have to be disabled
       this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
@@ -3208,7 +3211,7 @@ export class Layer extends Emitter {
 
       this.getOLLayer().setVisible(true);
       this.getOLLayer().getSource()?.updateParams?.({
-        ...params,
+        ..._params,
         LEGEND_ON,
         LEGEND_OFF,
         filtertoken: ApplicationState.tokens.filtertoken,
@@ -3221,7 +3224,7 @@ export class Layer extends Emitter {
     }
     
     if (this.isRaster() && this.isWMS()) {
-      this._mapLayer.update(mapState, extraParams)
+      this._mapLayer.update(mapState, params)
     }
   }
 
@@ -3238,13 +3241,15 @@ export class Layer extends Emitter {
   }
 
   /**
+   * Used by the following plugins "editing", "iternet", "geonotes"
+   * 
    * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
    * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
    *
    * @since 4.1.0
    */
-  getMapLayer(options = {}, extraParams) {
-    return GUI.getService('map').createLayer(this, options, extraParams);
+  getMapLayer() {
+    return GUI.getService('map').createLayer(this);
   }
 
   /**
@@ -3271,7 +3276,7 @@ export class Layer extends Emitter {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('OSM' === this._BASE_LAYER) {
+    if ('OSM' === this.config.servertype && 'image' === this.getType()) {
       olLayer = new ol.layer.Tile({
         source:  new ol.source.OSM({ url: this.state.url }),
         id:      this.state.name  || 'osm',
@@ -3283,7 +3288,7 @@ export class Layer extends Emitter {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('Bing' === this._BASE_LAYER) {
+    if ('Bing' === this.config.servertype && 'image' === this.getType()) {
       const name = ({
         streets:          'Road',
         aerial:           'Aerial',
@@ -3301,7 +3306,7 @@ export class Layer extends Emitter {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('TMS' === this._BASE_LAYER && (undefined !== this.state.url ? this.state.url : null)) {
+    if ('TMS' === this.config.servertype && 'image' === this.getType() && (undefined !== this.state.url ? this.state.url : null)) {
       const projection = this.getProjectionFromCrs(this.state.crs);
       olLayer = new ol.layer.Tile({
         visible:    false,
@@ -3329,7 +3334,7 @@ export class Layer extends Emitter {
      * 
      * @since 3.10.0
      */
-    if ('WMTS' === this._BASE_LAYER && this.state.matrixSet) {
+    if ('WMTS' === this.config.servertype && 'image' === this.getType() && this.state.matrixSet) {
       let projection = this.state.projection || this.getProjectionFromCrs(this.state.crs);
       const size = ol.extent.getWidth(projection.getExtent()) / 256;
       olLayer = new ol.layer.Tile({
@@ -3357,7 +3362,7 @@ export class Layer extends Emitter {
      * 
      * @since 3.10.0 WMTS based on mapproxy
      */
-    if ('WMTS' === this._BASE_LAYER && !this.state.matrixSet && this.state.grid && this.state.grid_extent) {
+    if ('WMTS' === this.config.servertype && 'image' === this.getType() && !this.state.matrixSet && this.state.grid && this.state.grid_extent) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.grid_extent }).getResolutions();
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
@@ -3376,7 +3381,7 @@ export class Layer extends Emitter {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('ARCGISMAPSERVER' === this._BASE_LAYER) {
+    if ('ARCGISMAPSERVER' === this.config.servertype && 'image' === this.getType()) {
       olLayer = new ol.layer.Tile({
         extent:  this.state.extent,
         visible: this.state.visible ?? true,
@@ -3390,7 +3395,7 @@ export class Layer extends Emitter {
     }
 
     // ARCGIS LAYER
-    if (this._RASTER_LAYER && 'ARCGISMAPSERVER' === this.state.type) {
+    if ('virtual' === this.getType() && 'ARCGISMAPSERVER' === this.state.type) {
       olLayer = new ol.layer.Tile({
         visible: true,
         source:  new ol.source.TileArcGISRest({
@@ -3404,7 +3409,7 @@ export class Layer extends Emitter {
     const resolutions = 'mapproxy' === this.state.cache_provider && ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
 
     // WMTS LAYER
-    if (this._RASTER_LAYER && 'WMTS' === this.state.type && resolutions) {
+    if ('virtual' === this.getType() && 'WMTS' === this.state.type && resolutions) {
       image = 'tile';
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
@@ -3425,7 +3430,7 @@ export class Layer extends Emitter {
     }
 
     // XYZ LAYER
-    if (this._RASTER_LAYER && 'XYZ' === this.state.type) {
+    if ('virtual' === this.getType() && 'XYZ' === this.state.type) {
       const projection = this.state.url && this.projection ? this.projection : this.layer.getProjection();
       olLayer = new ol.layer.Tile({
         visible:    true,
@@ -3437,10 +3442,10 @@ export class Layer extends Emitter {
           projection,
           crossOrigin:      undefined,
           tileLoadFunction: (this.iframe_internal) ? (tile, url) => {
-            fetch('POST' === this._method ? (url || '').split('?')[0] : url, {
-              method:  this._method,
+            fetch('POST' === this.state.http_method ? (url || '').split('?')[0] : url, {
+              method:  this.state.http_method,
               headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-              body:    'POST' === this._method ? url.split('?')[1] : undefined,
+              body:    'POST' === this.state.http_method ? url.split('?')[1] : undefined,
             })
             .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
             .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
@@ -3464,7 +3469,7 @@ export class Layer extends Emitter {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('WMS' === this._BASE_LAYER) {
+    if ('WMS' === this.config.servertype && 'image' === this.getType()) {
       layerObj = {
         url:          this.state.url,
         projection:   this.getProjectionFromCrs(this.state.crs),
@@ -3474,7 +3479,7 @@ export class Layer extends Emitter {
       };
     }
 
-    if (this._RASTER_LAYER && 'WMTS' === this.state.type && !resolutions) {
+    if ('virtual' === this.getType() && 'WMTS' === this.state.type && !resolutions) {
       image = 'tile';
       layerObj = {
         url:               ('mapproxy' === this.state.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.state.url : this.layers[0].getWmsUrl(),
@@ -3486,7 +3491,7 @@ export class Layer extends Emitter {
     }
 
     // WMS LAYER
-    if (this._RASTER_LAYER && !olLayer) {
+    if ('virtual' === this.getType() && !olLayer) {
       layerObj = {
         url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.state.url,
         id:              this.state.id,
@@ -3523,14 +3528,14 @@ export class Layer extends Emitter {
               // prevents sending "FORMAT" parameter when undefined
               .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
           ),
-          ...(this.extraParams || {})
+          ...(this.state.http_params)
           },
-          imageLoadFunction: (layerObj.iframe_internal || 'POST' === this._method)
+          imageLoadFunction: (layerObj.iframe_internal || 'POST' === this.state.http_method)
             ? (tile, url) => {
-              fetch('POST' === this._method ? (url || '').split('?')[0] : url, {
-                method: this._method,
+              fetch('POST' === this.state.http_method ? (url || '').split('?')[0] : url, {
+                method: this.state.http_method || 'GET',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                body:    'POST' === this._method ? url.split('?')[1] : undefined,
+                body:    'POST' === this.state.http_method ? url.split('?')[1] : undefined,
               })
               .then(async response => tile.getImage().src = URL.createObjectURL(await response.blob()))
               .catch(e => { console.error('Invalid tile', ol.TileState.ERROR, e); tile.setState(ol.TileState.ERROR); });
@@ -3565,15 +3570,6 @@ export class Layer extends Emitter {
   /**
    * @since 4.1.0
    */
-  getLayerConfigs() {
-    if (this._RASTER_LAYER) {
-      return this.layers;
-    }
-  }
-
-  /**
-   * @since 4.1.0
-   */
   addLayer(layer, position = 'end') {
     if (!this.allLayers.find(l => layer === l)) { this.allLayers.splice('end' === position ? this.allLayers.length : 0, 0, layer); }
     if (!this.layers.find(l => layer === l))    { this.layers.splice('end' === position ? this.layers.length : 0, 0, layer); }
@@ -3584,8 +3580,9 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   removeLayer(layer) {
-    if (this._RASTER_LAYER) {
-      this.layers = this.layers.filter(l => layer !== l);
+    const i = this.layers.indexOf(l => l === layer);
+    if (i > -1) {
+      this.layers.splice(i, 1);
     }
   }
 
@@ -3593,7 +3590,7 @@ export class Layer extends Emitter {
    * @since 4.1.0 
    */
   setupCustomMapParamsToLegendUrl(params = {}) {
-    if (this._RASTER_LAYER && 'XYZ' !== this.state.type) {
+    if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
       [].concat(this.layer || this.layers).forEach(l => Object.assign(l.customParams, params));
     }
   }
@@ -3602,7 +3599,7 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   getGetFeatureInfoUrl(coordinate, resolution, epsg, params) {
-    if (this._RASTER_LAYER && 'XYZ' !== this.state.type) {
+    if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
       return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params)
     }
   }

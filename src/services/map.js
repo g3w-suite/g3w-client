@@ -160,7 +160,6 @@ class MapService extends Emitter {
     this.onLayerLoadStart    = this.onLayerLoadStart.bind(this);
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
-    this.onExtraParamsSet    = this.onExtraParamsSet.bind(this);
 
     // base layer
     ApplicationState.project.onafter('setBaseLayer', () => {
@@ -168,17 +167,6 @@ class MapService extends Emitter {
     });
 
     this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
-
-    this.on('extraParamsSet', this.onExtraParamsSet);
-  }
-
-  /**
-   * @since 3.11.0
-   */
-  onExtraParamsSet(extraParams, update) {
-    if (update) {
-      this.#layers.g3w.forEach(l => l.update(this.state, extraParams));
-    }
   }
 
   /**
@@ -233,7 +221,6 @@ class MapService extends Emitter {
    * Clear methods to remove all listeners events
    */
   clear() {
-    this.removeListener('extraParamsSet', this.onExtraParamsSet);
     this.#events.ol.forEach(key => ol.Observable.unByKey(key));
     this.#events.ol.splice(0);
     Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this))
@@ -818,8 +805,9 @@ class MapService extends Emitter {
     if (options.force) {
       options.g3w_time = Date.now();
     }
-    if (showSpinner !== layer.showSpinnerWhenLoading) {
-      layer.showSpinnerWhenLoading = showSpinner;
+
+    if (showSpinner !== layer.showSpinner) {
+      layer.showSpinner = showSpinner;
       if (showSpinner) {
         layer.on('loadstart', this.onLayerLoadStart);
         layer.on('loadend',   this.onLayerLoadEnd);
@@ -830,6 +818,7 @@ class MapService extends Emitter {
         layer.off('loaderror', this.onLayerLoadError);
       }
     }
+
     layer.update(this.state, options);
     return layer;
   }
@@ -1725,7 +1714,7 @@ class MapService extends Emitter {
    * 
    * @since 4.1.0
    */
-  createLayer(layer, options = {}, extraParams) {
+  createLayer(layer, options = {}, params) {
     if (layer._mapLayer) {
       return layer._mapLayer;
     }
@@ -1739,20 +1728,25 @@ class MapService extends Emitter {
       mapLayer = new Layer(
         {
           ...options,
+          type:           'XYZ',
           extent:         (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null),
           url:            layer.getCacheUrl(),
           cache_provider: layer.state.cache_provider,
-          type:           'XYZ'
+          http_method:    layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
         },
-        { _RASTER_LAYER: { params: {}, method: layer.isExternalWMS() ? 'GET' : layer.getOwsMethod() } }
+        { TYPE: 'virtual' }
       );
     }
 
     // ARCGIS Layer
     if (layer.isRaster() && layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type) {
       mapLayer = new Layer(
-        { ...options, ...layer.state.source },
-        { _RASTER_LAYER: { params: extraParams } }
+        {
+          ...options,
+          ...layer.state.source,
+          http_params: params
+        },
+        { TYPE: 'virtual' }
       );
     }
 
@@ -1760,15 +1754,17 @@ class MapService extends Emitter {
     if (layer.isRaster() && layer.isCached() && 'wmts' === layer.state.cache_service_type) {
       mapLayer = new Layer({
           ...options,
+          type:              'WMTS',
           url:               layer.getCacheUrl(),
           cache_provider:    layer.state.cache_provider,
           cache_layer:       layer.state.cache_layer,
           cache_extent:      layer.state.cache_extent,
           cache_grid:        layer.state.cache_grid,
           cache_grid_extent: layer.state.cache_grid_extent,
-          type: 'WMTS',
+          http_params:       params,
+          http_method:       layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
         },
-        { _RASTER_LAYER: { params: extraParams, method: layer.isExternalWMS() ? 'GET' : layer.getOwsMethod() } }
+        { TYPE: 'virtual' }
       );
     }
 
@@ -1777,19 +1773,25 @@ class MapService extends Emitter {
       mapLayer = new Layer(
         {
           ...options,
-          url: layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()),
+          type:           'WMTS',
+          url:            layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()),
           cache_provider: layer.state.cache_provider,
-          type: 'WMTS'
+          http_params:    params,
         },
-        { _RASTER_LAYER: { params: extraParams, method: 'GET' } }
+        { TYPE: 'virtual' }
       );
     }
 
     // WMS Layer
     if (layer.isRaster()) {
        mapLayer = Object.assign(new Layer(
-        { ...options, url: layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()) },
-        { _RASTER_LAYER: { params: extraParams, method: layer.isExternalWMS() ? 'GET' : layer.getOwsMethod() } }
+        {
+          ...options,
+          url:            layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()),
+          http_method:    layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
+          http_params:    params,
+        },
+        { TYPE: 'virtual' }
       ), {
         getSource: () => layer._mapLayer.getOLLayer().getSource()
       })
@@ -1865,7 +1867,7 @@ class MapService extends Emitter {
    * Used by the following plugins: "qtimeseries"
    */
   getMapLayerByLayerId(id) {
-    return this.getMapLayers().find(l => l.getLayerConfigs().find(l => id === l.getId()))
+    return this.#layers.g3w.find(l => l.layers.find(l => id === l.getId()));
   }
 
   getMapLayers() {

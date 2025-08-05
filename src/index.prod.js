@@ -556,7 +556,7 @@ $.ajaxSetup({
       "QGIS ogr",
       "QGIS mdal",
     ].includes(layerType)) {
-      return new Layer(config, { project, _TYPE: 'table' });
+      return new Layer(config, { project, TYPE: 'table' });
     }
 
     //@since 4.0.0 no crs exclude from layer list
@@ -566,7 +566,7 @@ $.ajaxSetup({
 
     // VECTOR LAYERS
     if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
-      return new Layer(config, { project, _TYPE: 'vector' });
+      return new Layer(config, { project, TYPE: 'vector' });
     }
 
     // RASTER LAYERS
@@ -598,13 +598,10 @@ $.ajaxSetup({
         "QGIS mdal",
         "QGIS arcgismapserver",
       ].includes(layerType)
-    )) {
-      return new Layer(config, { project, _TYPE: 'image' });
-    }
-
-    // BASE LAYERS
-    if (['OSM', 'Bing', 'TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)) {
-      return new Layer(config, { project, _TYPE: 'image', _BASE_LAYER: config.servertype });
+    ) || 
+    ['OSM', 'Bing', 'TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)
+    ) {
+      return new Layer(config, { project, TYPE: 'image' });
     }
 
     console.info('Invalid layer', config);
