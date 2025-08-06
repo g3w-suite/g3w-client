@@ -136,6 +136,73 @@ export class Layer extends Emitter {
       'change',
     ];
 
+    const layerType = `${config.servertype} ${config?.source?.type}`;
+
+    // Check Layer Type
+    if (!options.TYPE) {
+
+      // TABLE LAYERS
+      if ('NoGeometry' === config.geometrytype && [
+        "QGIS virtual",
+        "QGIS postgres",
+        "QGIS mssql",
+        "QGIS spatialite",
+        "QGIS wfs",
+        "QGIS delimitedtext",
+        "QGIS oracle",
+        "QGIS ogr",
+        "QGIS mdal",
+      ].includes(layerType)) {
+        options.TYPE = 'table';
+      }
+
+      //@since 4.0.0 no crs exclude from layer list
+      else if (config.geometrytype && 'NoGeometry' !== config.geometrytype && !config.crs) {
+        throw 'invalid layer';
+      }
+
+      // VECTOR LAYERS
+      else if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
+        options.TYPE = 'vector';
+      }
+
+      // RASTER LAYERS
+      else if ((
+          config.geometrytype && 'NoGeometry' !== config.geometrytype && [
+          'OGC wms',
+          'QGIS postgresraster',
+          "QGIS virtual",
+          "QGIS postgres",
+          "QGIS mssql",
+          "QGIS spatialite",
+          "QGIS wfs",
+          "QGIS delimitedtext",
+          "QGIS oracle",
+          "QGIS ogr",
+          "QGIS mdal",
+          "QGIS arcgisfeatureserver",
+        ].includes(layerType)
+      ) || (
+        !config.geometrytype && [
+          'OGC wms',
+          'QGIS postgresraster',
+          "QGIS wmst",
+          "QGIS wcs",
+          "QGIS wms",
+          "QGIS gdal",
+          "QGIS vectortile",
+          "QGIS vector-tile",
+          "QGIS mdal",
+          "QGIS arcgismapserver",
+        ].includes(layerType)
+      ) || 
+      ['OSM', 'Bing', 'TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)
+      ) {
+        options.TYPE = 'image';
+      }
+
+    }
+
     this.type = options.TYPE;
 
     // get current project
@@ -3177,24 +3244,26 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   update(mapState = {}, params = {}) {
+    // check which layers have to be disabled
+    this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
+    const layers = this.layers.filter(l => l.isVisible()) || [];
+
+    /** @FIXME add description */
+    if ('virtual' === this.getType() && 'XYZ' === this.state.type) {
+      this.getOLLayer().setVisible(this.layer.isVisible());
+      return;
+    }
+
+    /** @FIXME add description */
+    // skip when ..
+    if ('virtual' === this.getType() && layers.length <= 0) {
+      this.getOLLayer().setVisible(false);
+      return;
+    }
+
+    /** @FIXME add description */
     if ('virtual' === this.getType() && this.getOLLayer()) {
       let { force, ..._params } = params;
-
-      // check which layers have to be disabled
-      this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
-      
-      if ('XYZ' === this.state.type) {
-        this.getOLLayer().setVisible(this.layer.isVisible());
-        return;
-      }
-      
-      const layers = this.layers.filter(l => l.isVisible()) || [];
-
-      // skip when ..
-      if (layers.length <= 0) {
-        this.getOLLayer().setVisible(false);
-        return;
-      }
 
       const STYLES     = [];
       const OPACITIES  = [];
@@ -3249,7 +3318,7 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   getMapLayer() {
-    return GUI.getService('map').createLayer(this);
+    return this._mapLayer;
   }
 
   /**
@@ -3592,15 +3661,6 @@ export class Layer extends Emitter {
   setupCustomMapParamsToLegendUrl(params = {}) {
     if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
       [].concat(this.layer || this.layers).forEach(l => Object.assign(l.customParams, params));
-    }
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  getGetFeatureInfoUrl(coordinate, resolution, epsg, params) {
-    if ('virtual' === this.getType() && 'XYZ' !== this.state.type) {
-      return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params)
     }
   }
 

@@ -114,9 +114,6 @@ class MapService extends Emitter {
   /* Store interactions added by plugin or external application*/
   #interactions = [];
 
-  /** layers extra params */
-  #params = {};
-
   /** draw shadow */
   #shadow = {
     type:     'coordinate',
@@ -720,7 +717,7 @@ class MapService extends Emitter {
     //In the case of store that has layers @since 3.10.0
     store.getLayers().forEach(l => {
       if ('vector' === l.getType()) {
-        const olLayer = this.createLayer(l).getOLLayer();
+        const olLayer = this.#createVectorLayer(l).getOLLayer();
         if (olLayer) {
           this.getMap().addLayer(olLayer);
         }
@@ -730,7 +727,7 @@ class MapService extends Emitter {
     this.#events.stores[id].push({
       addLayer: store.onafter('addLayer', l => {
       if ('vector' === l.getType()) {
-        const olLayer = this.createLayer(l).getOLLayer();
+        const olLayer = this.#createVectorLayer(l).getOLLayer();
         if (olLayer) {
           this.getMap().addLayer(olLayer);
         }
@@ -771,10 +768,18 @@ class MapService extends Emitter {
    * Used by the following plugins: "cdu"
    */
   createMapLayer(layer) {
-    const mapLayer = this.createLayer(layer, {
-      id:         `layer_${layer.getMultiLayerId()}`,
-      projection:  this.getProjection()
-    }, this.#params);
+    let mapLayer;
+
+    // Raster Layer
+    if (layer.isRaster()) {
+      mapLayer = this.#createRasterLayer(layer);
+    }
+
+    // Vector Layer
+    if (layer.isVector()) {
+      mapLayer = this.#createVectorLayer(layer);
+    }
+
     mapLayer.addLayer(layer);
   return mapLayer;
   }
@@ -797,7 +802,7 @@ class MapService extends Emitter {
     }
 
     if (layer?.isBaseLayer?.()) {
-      layer.update(this.state, this.#params);
+      layer.update(this.state);
       return;
     }
 
@@ -1470,12 +1475,12 @@ class MapService extends Emitter {
 
         // vector layers
         if (l.isVector()) {
-          groups[2].unshift(this.createLayer(l));
+          groups[2].unshift(this.#createVectorLayer(l));
         }
 
         // group raster layers by "multilayerid"
         if (!l.isBaseLayer() && !l.isVector()) {
-          let id = l.getMultiLayerId();
+          const id = l.getMultiLayerId();
           let key;
           if (l.isQtimeseries()) {
             cache[id] = (cache[id] ?? -1) + 1;
@@ -1483,13 +1488,7 @@ class MapService extends Emitter {
           } else {
             key = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
           }
-          const mapLayer = LAYER_GROUPS[key] || this.createLayer(l, {
-              id: `layer_${id}`,
-              projection: this.getProjection(),
-              format: l.getFormat()
-            },
-            this.#params
-          );
+          const mapLayer = LAYER_GROUPS[key] || this.#createRasterLayer(l);
           mapLayer.addLayer(l, 'start');
           if (!LAYER_GROUPS[key]) {
             this.registerMapLayerListeners(mapLayer);
@@ -1708,26 +1707,99 @@ class MapService extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
-   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
-   * 
-   * @param { Layer } layer
    * 
    * @since 4.1.0
    */
-  createLayer(layer, options = {}, params) {
+  #createVectorLayer(layer) {
     if (layer._mapLayer) {
       return layer._mapLayer;
     }
 
     let mapLayer;
 
-    options.iframe_internal  = layer.isRaster() ? ApplicationState.iframe && !layer.isExternalWMS() : options.iframe_internal;
+    const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
+
+    mapLayer = Object.assign(new Emitter, {
+      _olLayer:      Object.assign(new ol.layer.Vector({
+        id:             layer.getId(),
+        __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+        source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
+        style:          new ol.style.Style(
+          (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
+            image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
+            stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
+            fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
+          }), {}))
+          || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
+          || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
+          || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
+        ),
+      }), {
+        /** @since 3.11.0 to have same compatibility with table layer */
+        getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
+      }),
+      mapService:    GUI.getService('map'),
+      geometryType:  layer.getGeometryType(),
+      geometrytype:  null,
+      type:          null,
+      crs:           null,
+      id:            layer.getId(),
+      name:          'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` && layer.getName() || '',
+      style,
+      color:         layer.getColor(),
+      projection:    'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
+      url:           'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('source').url : undefined,
+      provider:      layer.getProvider('data'),
+      getProvider:   ()           => layer._mapLayer.provider,
+      resetSource:   (feats = []) => layer._mapLayer.setSource(new ol.source.Vector({ features: feats })),
+      getFeatures:   async (opts = {})  => layer._mapLayer.addFeatures(await layer._mapLayer.provider.getFeatures(opts)),
+      addFeatures:   (feats = []) => layer._mapLayer.getSource().addFeatures(feats),
+      addFeature:    feat         => feat && layer.getSource().addFeature(feat),
+      getOLLayer:    ()           => layer._mapLayer._olLayer,
+      getSource:     ()           => layer._mapLayer._olLayer.getSource(),
+      setSource:     source       => layer._mapLayer._olLayer.setSource(source),
+      setStyle:       style       => layer._mapLayer._olLayer.setStyle(style),
+      getFeatureById:    id       => id ? layer._mapLayer._olLayer.getSource().getFeatureById(id) : null,
+      isVisible:         ()       => layer._mapLayer._olLayer.getVisible(),
+      setVisible:      bool       => layer._mapLayer._olLayer.setVisible(bool),
+      clear:             ()       => layer._mapLayer.getSource().clear(),
+      addToMap:         map       => map.addLayer(layer._mapLayer._olLayer),
+    });
+
+    if (!style && isPolygonGeometryType(layer.getGeometryType())) {
+      mapLayer._olLayer.setOpacity(0.6);
+    }
+
+    if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
+      layer.fetchFeatures({
+        url:           layer.get('source').url,
+        mapProjection: GUI.getService('map').getProjection().getCode()
+      }).then(feats => layer._mapLayer._olLayer.getSource().addFeatures(feats));
+    }
+
+    return (layer._mapLayer = mapLayer);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #createRasterLayer(layer) {
+    if (layer._mapLayer) {
+      return layer._mapLayer;
+    }
+
+    let mapLayer;
 
     // TMS Layer
-    if (layer.isRaster() && layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms')) {
+    if (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms')) {
       mapLayer = new Layer(
         {
-          ...options,
+          id:              `layer_${layer.getMultiLayerId()}`,
+          projection:      this.getProjection(),
+          format:          layer.getFormat(),
+          iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
           type:           'XYZ',
           extent:         (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null),
           url:            layer.getCacheUrl(),
@@ -1739,21 +1811,27 @@ class MapService extends Emitter {
     }
 
     // ARCGIS Layer
-    if (layer.isRaster() && layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type) {
+    if (layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type) {
       mapLayer = new Layer(
         {
-          ...options,
+          id:              `layer_${layer.getMultiLayerId()}`,
+          projection:      this.getProjection(),
+          format:          layer.getFormat(),
+          iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
           ...layer.state.source,
-          http_params: params
         },
         { TYPE: 'virtual' }
       );
     }
 
     // WMTS Layer
-    if (layer.isRaster() && layer.isCached() && 'wmts' === layer.state.cache_service_type) {
-      mapLayer = new Layer({
-          ...options,
+    if (layer.isCached() && 'wmts' === layer.state.cache_service_type) {
+      mapLayer = new Layer(
+        {
+          id:               `layer_${layer.getMultiLayerId()}`,
+          projection:        this.getProjection(),
+          format:            layer.getFormat(),
+          iframe_internal:   ApplicationState.iframe && !layer.isExternalWMS(),
           type:              'WMTS',
           url:               layer.getCacheUrl(),
           cache_provider:    layer.state.cache_provider,
@@ -1761,7 +1839,6 @@ class MapService extends Emitter {
           cache_extent:      layer.state.cache_extent,
           cache_grid:        layer.state.cache_grid,
           cache_grid_extent: layer.state.cache_grid_extent,
-          http_params:       params,
           http_method:       layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
         },
         { TYPE: 'virtual' }
@@ -1769,96 +1846,35 @@ class MapService extends Emitter {
     }
 
     // WMST Layer
-    if (layer.isRaster() && layer.isExternalWMS() && "wmst" === layer.state?.source?.type) {
+    if (layer.isExternalWMS() && "wmst" === layer.state?.source?.type) {
       mapLayer = new Layer(
         {
-          ...options,
+          id:              `layer_${layer.getMultiLayerId()}`,
+          projection:      this.getProjection(),
+          format:          layer.getFormat(),
+          iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
           type:           'WMTS',
-          url:            layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()),
+          url:            layer.isCached() ? layer.getCacheUrl() : layer.getWmsUrl(),
           cache_provider: layer.state.cache_provider,
-          http_params:    params,
         },
         { TYPE: 'virtual' }
       );
     }
 
     // WMS Layer
-    if (layer.isRaster()) {
-       mapLayer = Object.assign(new Layer(
-        {
-          ...options,
-          url:            layer.isCached() ? layer.getCacheUrl() : (options.url || layer.getWmsUrl()),
-          http_method:    layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
-          http_params:    params,
-        },
-        { TYPE: 'virtual' }
-      ), {
-        getSource: () => layer._mapLayer.getOLLayer().getSource()
-      })
-    }
-
-    // Vector Layer
-    if (layer.isVector()) {
-      const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
-
-      mapLayer = Object.assign(new Emitter, {
-        _olLayer:      Object.assign(new ol.layer.Vector({
-          id:             layer.getId(),
-          __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
-          source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
-          style:          new ol.style.Style(
-            (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
-              image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
-              stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
-              fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
-            }), {}))
-            || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
-            || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
-            || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
-          ),
-        }), {
-          /** @since 3.11.0 to have same compatibility with table layer */
-          getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
-        }),
-        mapService:    GUI.getService('map'),
-        geometryType:  layer.getGeometryType(),
-        geometrytype:  null,
-        type:          null,
-        crs:           null,
-        id:            layer.getId(),
-        name:          'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` && layer.getName() || '',
-        style,
-        color:         layer.getColor(),
-        projection:    'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.getProjection().getCode() : GUI.getService('map').getProjection().getCode(),
-        url:           'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('source').url : undefined,
-        provider:      layer.getProvider('data'),
-        getProvider:   ()           => layer._mapLayer.provider,
-        resetSource:   (feats = []) => layer._mapLayer.setSource(new ol.source.Vector({ features: feats })),
-        getFeatures:   async (opts = {})  => layer._mapLayer.addFeatures(await layer._mapLayer.provider.getFeatures(opts)),
-        addFeatures:   (feats = []) => layer._mapLayer.getSource().addFeatures(feats),
-        addFeature:    feat         => feat && layer.getSource().addFeature(feat),
-        getOLLayer:    ()           => layer._mapLayer._olLayer,
-        getSource:     ()           => layer._mapLayer._olLayer.getSource(),
-        setSource:     source       => layer._mapLayer._olLayer.setSource(source),
-        setStyle:       style       => layer._mapLayer._olLayer.setStyle(style),
-        getFeatureById:    id       => id ? layer._mapLayer._olLayer.getSource().getFeatureById(id) : null,
-        isVisible:         ()       => layer._mapLayer._olLayer.getVisible(),
-        setVisible:      bool       => layer._mapLayer._olLayer.setVisible(bool),
-        clear:             ()       => layer._mapLayer.getSource().clear(),
-        addToMap:         map       => map.addLayer(layer._mapLayer._olLayer),
-      });
-
-      if (!style && isPolygonGeometryType(layer.getGeometryType())) {
-        mapLayer._olLayer.setOpacity(0.6);
-      }
-
-      if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
-        layer.fetchFeatures({
-          url:           layer.get('source').url,
-          mapProjection: GUI.getService('map').getProjection().getCode()
-        }).then(feats => layer._mapLayer._olLayer.getSource().addFeatures(feats));
-      }
-    }
+    mapLayer = Object.assign(new Layer(
+      {
+        id:              `layer_${layer.getMultiLayerId()}`,
+        projection:      this.getProjection(),
+        format:          layer.getFormat(),
+        iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
+        url:            layer.isCached() ? layer.getCacheUrl() : layer.getWmsUrl(),
+        http_method:    layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
+      },
+      { TYPE: 'virtual' }
+    ), {
+      getSource: () => layer._mapLayer.getOLLayer().getSource()
+    });
 
     return (layer._mapLayer = mapLayer);
   }

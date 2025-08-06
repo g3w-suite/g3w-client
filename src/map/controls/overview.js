@@ -83,70 +83,13 @@ GUI.once('ready', async () => {
             styles:            l.styles && l.styles.map(s => ({...s})), // v4.0.0 pass a copy of styles
           });
 
-          // Check Layer Type
-          const layerType = `${config.servertype} ${config.source && config.source.type}`;
-
-          // TABLE LAYERS
-          if ('NoGeometry' === config.geometrytype && [
-            "QGIS virtual",
-            "QGIS postgres",
-            "QGIS mssql",
-            "QGIS spatialite",
-            "QGIS wfs",
-            "QGIS delimitedtext",
-            "QGIS oracle",
-            "QGIS ogr",
-            "QGIS mdal",
-          ].includes(layerType)) {
-            return new Layer(config, { project: PROJECT, TYPE: 'table' });
+          try {
+            if (!['OSM', 'Bing'].includes(config.servertype)) { // skip base layers
+              return new Layer(config, { project: PROJECT });
+            }
+          } catch (e) {
+            console.warn(e);
           }
-
-          //@since 4.0.0 no crs exclude from layer list
-          if (config.geometrytype && 'NoGeometry' !== config.geometrytype && !config.crs) {
-            return [];
-          }
-
-          // VECTOR LAYERS
-          if (['OGC wfs', 'G3WSUITE geojson'].includes(layerType) || ["Local", "G3WSUITE"].includes(config.servertype))  {
-            return new Layer(config, { project: PROJECT, TYPE: 'vector' });
-          }
-
-          // RASTER LAYERS
-          if ((
-              config.geometrytype && 'NoGeometry' !== config.geometrytype && [
-              'OGC wms',
-              'QGIS postgresraster',
-              "QGIS virtual",
-              "QGIS postgres",
-              "QGIS mssql",
-              "QGIS spatialite",
-              "QGIS wfs",
-              "QGIS delimitedtext",
-              "QGIS oracle",
-              "QGIS ogr",
-              "QGIS mdal",
-              "QGIS arcgisfeatureserver",
-            ].includes(layerType)
-          ) || (
-            !config.geometrytype && [
-              'OGC wms',
-              'QGIS postgresraster',
-              "QGIS wmst",
-              "QGIS wcs",
-              "QGIS wms",
-              "QGIS gdal",
-              "QGIS vectortile",
-              "QGIS vector-tile",
-              "QGIS mdal",
-              "QGIS arcgismapserver",
-            ].includes(layerType)
-          ) || 
-            ['TMS', 'ARCGISMAPSERVER', 'WMTS', 'WMS'].includes(config.servertype)
-          ) {
-            return new Layer(config, { project: PROJECT, TYPE: 'image' });
-          }
-
-          console.info('Invalid layer', config);
           return [];
         }).forEach(l => PROJECT._layers[l.getId()] = l);
         

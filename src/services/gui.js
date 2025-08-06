@@ -965,9 +965,9 @@ export default new (class GUI extends Emitter {
   }
 
   setModal(bool=false, message) {
-    const mapService = this.getService('map');
-    if (bool) { mapService.startDrawGreyCover(message) }
-    else { mapService.stopDrawGreyCover() }
+    const map = this.getService('map');
+    if (bool) { map.startDrawGreyCover(message) }
+    else { map.stopDrawGreyCover() }
   }
 
   showSidebar() {

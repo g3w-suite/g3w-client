@@ -1064,10 +1064,7 @@ export default new (class QueryResultsService extends Emitter {
 
       const external_layer = (this.state.layers.find(l => l.id === layer.id) || {}).external;
 
-      interaction.mapcontrol  =
-        interaction.mapcontrol ||
-        GUI.getService('map').getCurrentToggledMapControl() ||
-        null; //need to be set null when this.mapService.getCurrentToggledMapControl() is undefined
+      interaction.mapcontrol  = interaction.mapcontrol || GUI.getService('map').getCurrentToggledMapControl() || null;
       interaction.interaction = new PickCoordinatesInteraction();
 
       GUI.getService('map').addInteraction(interaction.interaction, { close: false });

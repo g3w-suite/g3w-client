@@ -856,7 +856,12 @@ export default {
     } = {}) {
       return new Promise((res, rej) => {
         const wmslayer = new Layer(
-          { id: name || getUniqueDomId(), layers, projection: ol.proj.get(epsg), url },
+          {
+            id:         name || getUniqueDomId(),
+            projection: ol.proj.get(epsg),
+            layers,
+            url,
+          },
           { TYPE: 'virtual' }
         );
         const olLayer  = wmslayer.getOLLayer();
