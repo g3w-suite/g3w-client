@@ -119,7 +119,7 @@ export function SearchPanel(opts = {}, show = false) {
          [
           SEARCH_ALLVALUE,                                                                                     // set `SEARCH_ALLVALUE` as first element
           ...(has_value && is_cadastre ? input.options.values : []),                                           // ref: https://github.com/g3w-suite/g3w-client/pull/834
-          ...(has_value && !is_cadastre ? await getDataForSearchInput({ state, field: input.attribute }) : []) // get values from server
+          ...(has_value && !is_cadastre ? await getDataForSearchInput({ state, layerid: input.alternativeuniquelayer, field: input.attribute }) : []) // get values from server
           ]
         ).map(value => 'Object' === toRawType(value) ? value : ({ key: value, value })) : [];
 
