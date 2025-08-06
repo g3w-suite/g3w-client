@@ -3464,7 +3464,7 @@ export class Layer extends Emitter {
     }
 
     // ARCGIS LAYER
-    if ('virtual' === this.getType() && 'ARCGISMAPSERVER' === this.state.type) {
+    if ('ARCGISMAPSERVER' === this.state.type && 'virtual' === this.getType()) {
       olLayer = new ol.layer.Tile({
         visible: true,
         source:  new ol.source.TileArcGISRest({

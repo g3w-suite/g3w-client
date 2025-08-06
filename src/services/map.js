@@ -1853,9 +1853,9 @@ class MapService extends Emitter {
           projection:      this.getProjection(),
           format:          layer.getFormat(),
           iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
-          type:           'WMTS',
-          url:            layer.isCached() ? layer.getCacheUrl() : layer.getWmsUrl(),
-          cache_provider: layer.state.cache_provider,
+          type:            'WMTS',
+          url:             layer.isCached() ? layer.getCacheUrl() : layer.getWmsUrl(),
+          cache_provider:  layer.state.cache_provider,
         },
         { TYPE: 'virtual' }
       );
@@ -1868,8 +1868,8 @@ class MapService extends Emitter {
         projection:      this.getProjection(),
         format:          layer.getFormat(),
         iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
-        url:            layer.isCached() ? layer.getCacheUrl() : layer.getWmsUrl(),
-        http_method:    layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
+        url:             layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
+        http_method:     layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
       },
       { TYPE: 'virtual' }
     ), {
