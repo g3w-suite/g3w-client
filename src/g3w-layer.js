@@ -1486,7 +1486,7 @@ export class Layer extends Emitter {
       'QGIS delimitedtext',
       'QGIS wfs',
     ].includes(layerType)) {
-      response = this.#getFeaturesQGIS({ editing: false }, {
+      response = await this.#getFeaturesQGIS({ editing: false }, {
         ...custom_params,
         field,
         page,
@@ -1501,7 +1501,7 @@ export class Layer extends Emitter {
     }
 
     if ('G3WSUITE geojson' === layerType) {
-      response = this.#getFeaturesJSON();
+      response = await this.#getFeaturesJSON();
     }
 
     const features          = response.data.features && response.data.features || [];
