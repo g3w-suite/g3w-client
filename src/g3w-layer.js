@@ -1472,19 +1472,37 @@ export class Layer extends Emitter {
       return Promise.reject();
     }
 
-    const response = await (this.fetchFeatures(
-      { editing: false }, {
-      ...custom_params,
-      field,
-      page,
-      page_size,
-      ordering,
-      search,
-      formatter,
-      suggest,
-      in_bbox,
-      filtertoken: this.getFilterToken()
-    }));
+    const layerType = `${this.state.servertype} ${this.state?.source?.type}`;
+    let response;
+
+    // QGIS - raw layer data (editing)
+    if ([
+      'QGIS virtual',
+      'QGIS postgres',
+      'QGIS oracle',
+      'QGIS mssql',
+      'QGIS spatialite',
+      'QGIS ogr',
+      'QGIS delimitedtext',
+      'QGIS wfs',
+    ].includes(layerType)) {
+      response = this.#getFeaturesQGIS({ editing: false }, {
+        ...custom_params,
+        field,
+        page,
+        page_size,
+        ordering,
+        search,
+        formatter,
+        suggest,
+        in_bbox,
+        filtertoken: this.getFilterToken()
+      });
+    }
+
+    if ('G3WSUITE geojson' === layerType) {
+      response = this.#getFeaturesJSON();
+    }
 
     const features          = response.data.features && response.data.features || [];
     const layerAttributes   = this.getAttributes() || [];
@@ -2228,28 +2246,6 @@ export class Layer extends Emitter {
     ]);
 
   }
-  
-  fetchFeatures(opts = {}, params = {}) {
-    const layerType = `${this.state.servertype} ${this.state?.source?.type}`;
-
-    // QGIS - raw layer data (editing)
-    if ([
-      'QGIS virtual',
-      'QGIS postgres',
-      'QGIS oracle',
-      'QGIS mssql',
-      'QGIS spatialite',
-      'QGIS ogr',
-      'QGIS delimitedtext',
-      'QGIS wfs',
-    ].includes(layerType)) {
-      return this.#getFeaturesQGIS(opts, params);
-    }
-
-    if ('G3WSUITE geojson' === layerType) {
-      return this.#getFeaturesJSON();
-    }
-  }
 
   /**
    * @param { 'data' | 'filter' | 'filtertoken' |'query' | 'search' } type data provider
@@ -2354,8 +2350,8 @@ export class Layer extends Emitter {
       !this.state.not_show_attributes_table && !this.isBaseLayer() && 
       (
         (this.isQueryable() && this.getTableFields().length > 0 && ["QGIS postgres", "QGIS oracle", "QGIS wfs", "QGIS ogr", "QGIS mssql", "QGIS spatialite"].includes(`${this.getServerType()} ${this.state.source.type}`))
-        || ("G3WSUITE geojson" === `${this.getServerType()} ${this.state.source?.type}`)
-        || (this.isFilterable() && "G3WSUITE" !== this.getServerType())
+        || ('G3WSUITE geojson' === `${this.getServerType()} ${this.state.source?.type}`)
+        || (this.isFilterable() && 'G3WSUITE' !== this.getServerType())
       )
     );
   }

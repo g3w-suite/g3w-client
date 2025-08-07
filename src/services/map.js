@@ -24,6 +24,7 @@ import { getCatalogLayers }       from 'utils/getCatalogLayers';
 import { idb }                    from 'utils/idb';
 import { waitFor }                from 'utils/waitFor';
 import { debounce }               from 'utils/debounce';
+import { XHR }                    from 'utils/XHR';
 
 import 'map/controls/addlayer';
 import 'map/controls/annotation';
@@ -1704,6 +1705,7 @@ class MapService extends Emitter {
         id:             layer.getId(),
         __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
         source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
+        opacity:        !style && isPolygonGeometryType(layer.getGeometryType()) ? 0.6 : 1,
         style:          new ol.style.Style(
           (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
             image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
@@ -1746,15 +1748,14 @@ class MapService extends Emitter {
       addToMap:         map       => map.addLayer(layer._mapLayer._olLayer),
     });
 
-    if (!style && isPolygonGeometryType(layer.getGeometryType())) {
-      mapLayer._olLayer.setOpacity(0.6);
-    }
-
     if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
-      layer.fetchFeatures({
-        url:           layer.get('source').url,
-        mapProjection: GUI.getService('map').getProjection().getCode()
-      }).then(feats => layer._mapLayer._olLayer.getSource().addFeatures(feats));
+      XHR.get({ url: layer.get('source').url }).then(d => {
+        const feats = (new ol.format.GeoJSON()).readFeatures(d.results, {
+          featureProjection: GUI.getService('map').getProjection().getCode(),
+          dataProjection:    'EPSG:4326',
+        });
+        layer._mapLayer._olLayer.getSource().addFeatures(feats);
+      });
     }
 
     return (layer._mapLayer = mapLayer);
@@ -2029,9 +2030,8 @@ class MapService extends Emitter {
 
     GUI.getService('catalog').addExternalLayer({ layer: externalLayer, type });
 
-    // invoke `onAddExternalLayer` on each map control
+    // invoke `onAddExternalLayer` on each map control + add vector layer "queryresults" 
     if ('vector' === type) {
-      //add to query result only vector layer
       GUI.getService('queryresults').registerVectorLayer(layer);
       this.#events.unwatches[externalLayer.name] = [];
       Object.values(MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
