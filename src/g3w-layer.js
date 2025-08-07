@@ -547,7 +547,7 @@ export class Layer extends Emitter {
     this._layersstore = config.layersstore || null;
 
     // sanitize source url (ie. discard any reserved WMS params)
-    if (this.state?.source?.url && !('virtual' === this.getType())) {
+    if (this.state?.source?.url && 'virtual' !== this.getType()) {
       const url = new URL(this.state.source.url);
       ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
         this.state.source.url = this.state.source.url
@@ -3095,19 +3095,6 @@ export class Layer extends Emitter {
   /**
    * @since 4.1.0
    */
-  getPrintLayerName() {
-    if (!this.isRaster()) {
-      return;
-    }
-    if (this.state.wms_use_layer_ids) {
-      return this.getId();
-    }
-    return this.getName();
-  }
-
-  /**
-   * @since 4.1.0
-   */
   isWfsActive() {
     return this.isRaster() && Array.isArray(this.state.ows) && this.state.ows.some(t => 'WFS' === t);
   }
@@ -3308,11 +3295,9 @@ export class Layer extends Emitter {
    * 
    * @since 4.1.0
    */
-  getProjectionFromCrs(crs = {}) {
-    if (this.isRaster()) {
-      crs.epsg = crs.epsg ? crs.epsg : 'EPSG:3857';
-      return ApplicationState.projections.get(crs);
-    }
+  #getProjectionFromCrs(crs = {}) {
+    crs.epsg = crs.epsg ? crs.epsg : 'EPSG:3857';
+    return ApplicationState.projections.get(crs);
   }
 
   /**
@@ -3382,7 +3367,7 @@ export class Layer extends Emitter {
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
     if ('TMS' === this.config.servertype && 'image' === this.getType() && (undefined !== this.state.url ? this.state.url : null)) {
-      const projection = this.getProjectionFromCrs(this.state.crs);
+      const projection = this.#getProjectionFromCrs(this.state.crs);
       olLayer = new ol.layer.Tile({
         visible:    false,
         projection,
@@ -3410,7 +3395,7 @@ export class Layer extends Emitter {
      * @since 3.10.0
      */
     if ('WMTS' === this.config.servertype && 'image' === this.getType() && this.state.matrixSet) {
-      let projection = this.state.projection || this.getProjectionFromCrs(this.state.crs);
+      let projection = this.state.projection || this.#getProjectionFromCrs(this.state.crs);
       const size = ol.extent.getWidth(projection.getExtent()) / 256;
       olLayer = new ol.layer.Tile({
         opacity: .7,
@@ -3547,7 +3532,7 @@ export class Layer extends Emitter {
     if ('WMS' === this.config.servertype && 'image' === this.getType()) {
       layerObj = {
         url:          this.state.url,
-        projection:   this.getProjectionFromCrs(this.state.crs),
+        projection:   this.#getProjectionFromCrs(this.state.crs),
         layers:       this.state.layers,
         tiled:        undefined === this.state.singleTile ? false : this.state.singleTile,
         opacity:      undefined === this.state.opacity ? 1 : this.state.opacity,

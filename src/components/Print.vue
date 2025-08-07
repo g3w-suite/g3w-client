@@ -496,7 +496,7 @@ export default {
           const has_theme = this.state.maps.some(m => undefined !== m.preset_theme);
           const store     = ApplicationState.project.getLayersStore();
           const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
-          const LAYERS    = (layers || []).map(l => l.getPrintLayerName()).join();
+          const LAYERS    = (layers || []).map(l => l.isRaster() ? (l.state.wms_use_layer_ids ? l.getId() : l.getName()) : undefined).join();
           const url       = ApplicationState.project.state.WMSUrl;
           const params    = layers.length && new URLSearchParams(await GUI.getPrintParams({
             SERVICE:       'WMS',

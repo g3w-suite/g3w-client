@@ -752,10 +752,8 @@ class MapService extends Emitter {
       this.viewer.map.removeLayer(l.getOLLayer());
     });
     this.#layers.g3w.splice(0);
-    // remove external layers
     this.#layers.external.forEach(layer => this.removeExternalLayer(layer.get('name')));
     this.#layers.external.splice(0);
-    // remove default layers
     this.defaultsLayers.mapcenter     .getSource().clear();
     this.defaultsLayers.highlightLayer.getSource().clear();
     this.defaultsLayers.selectionLayer.getSource().clear();
@@ -1823,7 +1821,7 @@ class MapService extends Emitter {
   /**
    * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
    *
-   * @param { ol.layer.Vector | ol.layer.Image | unknown } externalLayer
+   * @param { ol.layer.Vector | ol.layer.Image | ol.layer.Tile | unknown } externalLayer
    * @param { Object }  options
    * @param { unknown } options.position
    * @param { number }  options.opacity
@@ -1837,18 +1835,6 @@ class MapService extends Emitter {
    * @returns { Promise<unknown> }
    */
   async addExternalLayer(externalLayer, options = {}) {
-
-    //@since 3.11.0 Get original layer passed to method. It used for wms layer to register load/start/end/error event
-    const _layer = externalLayer;
-    // extract OL layer from a G3W layer
-    const olLayer = externalLayer.getOLLayer ? externalLayer.getOLLayer() : externalLayer;
-
-    if (olLayer !== externalLayer) {
-      olLayer.set('id',   externalLayer.getId());
-      olLayer.set('name', externalLayer.getId());
-    }
-
-    externalLayer = olLayer;
 
     let vectorLayer;
 
@@ -1953,17 +1939,25 @@ class MapService extends Emitter {
     }
 
     // image layer
-    if (externalLayer instanceof ol.layer.Image) {
-      externalLayer.id           = externalLayer.get('id');
-      externalLayer.removable    = true;
-      externalLayer.projectLayer = false;
-      externalLayer.name         = externalLayer.get('name');
-      externalLayer.title        = externalLayer.get('name');
-      externalLayer._type        = 'wms';
-      externalLayer.opacity      = options.opacity  ??  1;
-      externalLayer.position     = options.position ?? 'top';
-      externalLayer.external     = true;
-      externalLayer.checked      = false !== options.visible;
+    if (externalLayer instanceof ol.layer.Image || externalLayer instanceof ol.layer.Tile) {
+      Object.assign(externalLayer, {
+        id:           externalLayer.get('id'),
+        name:         externalLayer.get('name'),
+        removable:    true,
+        projectLayer: false,
+        title:        externalLayer.get('name'),
+        _type:        'wms',
+        opacity:      options.opacity  ??  1,
+        position:     options.position ?? 'top',
+        external:     true,
+        checked:      false !== options.visible,
+      });
+
+      // register loading events (spinner)
+      const image = externalLayer instanceof ol.layer.Image ? 'image' : 'tile';
+      externalLayer.getSource().on(`${image}loadstart`, this.onLayerLoadStart);
+      externalLayer.getSource().on(`${image}loadend`,   this.onLayerLoadEnd);
+      externalLayer.getSource().on(`${image}loaderror`, this.onLayerLoadError);
     }
 
     // skip when another layer with the same name was already added
@@ -1973,19 +1967,9 @@ class MapService extends Emitter {
 
     const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();
 
-    const layer = ({
-      'vector': vectorLayer,
-      'wms':    externalLayer,
-    })[type];
-
-    // invalid layer
-    if (!layer) {
-      console.warn('layer type: ', type, externalLayer)
-      return Promise.reject('not a valid layer');
-    }
-
-    const features = ('vector' === type && layer.getSource().getFeatures()) || [];
-    const extent   = ('vector' === type && layer.getSource().getExtent()) || [];
+    const layer    = 'vector' === type ? vectorLayer : externalLayer;
+    const features = 'vector' === type && layer.getSource().getFeatures() || [];
+    const extent   = 'vector' === type && layer.getSource().getExtent()   || [];
 
     // prefix each feature with layer id
     features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`));
@@ -2030,13 +2014,6 @@ class MapService extends Emitter {
     this.viewer.map.addLayer(layer);
 
     this.#layers.external.push(layer);
-
-    // register and dispatch layer add event
-    if ('wms' === type) {
-      _layer.on('loadstart', this.onLayerLoadStart);
-      _layer.on('loadend',   this.onLayerLoadEnd);
-      _layer.on('loaderror', this.onLayerLoadError);
-    }
 
     if (vectorLayer && false !== options.persistent) {
       idb.getItem('externalLayers').then(externalLayers => {

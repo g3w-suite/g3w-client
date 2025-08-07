@@ -8,6 +8,7 @@
  * @since 4.0.0
  */
 
+import { DOTS_PER_INCH }         from 'g3w-constants';
 import GUI                       from 'services/gui';
 import { Layer }                 from 'g3w-layer';
 
@@ -253,16 +254,23 @@ GUI.once('ready', async () => {
                     group[id].push(l);
                     return group;
                   }, {}) || []
-              ).map(([id, layers]) => {
-                const layer = new Layer({
-                  url:   `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
-                  id:    `overview_layer_${id}`,
-                  tiled: layers[0].state.tiled,
-                },
-                { TYPE: 'virtual' });
-                layers.reverse().forEach(l => layer.addLayer(l));
-                return layer.getOLLayer(true);
-              }).reverse()
+              ).map(([id, layers]) => new ol.layer.Image({
+                id:            `overview_layer_${id}`,
+                opacity:       1.0,
+                source:        new ol.source.ImageWMS({
+                  ratio:      1,
+                  url:        layers?.at(-1)?.getWmsUrl?.() ?? `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
+                  params:     Object.fromEntries(
+                    Object.entries({
+                      DPI:         DOTS_PER_INCH,
+                      TRANSPARENT: true,
+                      LAYERS:      layers.map(l => l.getWMSLayerName()).reverse() ?? '',
+                      VERSION:     '1.3.0',
+                      SLD_VERSION: '1.1.0',
+                    })
+                  ),
+                })
+              })).reverse()
           }),
           position: 'bl',
         }

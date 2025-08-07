@@ -37,6 +37,7 @@
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
               <option disabled :value="undefined" v-t="'Choose type'"></option>
               <option value="wms"  v-t="'WMS (URL)'"></option>
+              <option value="tms"  v-t="'TMS (URL)'"></option>
               <option value="file" v-t="'Local file'"></option>
             </select>
           </div>
@@ -196,6 +197,86 @@
 
           </div>
 
+          <div v-if = "'tms' === layer_type" class = "form-group">
+            <!-- DOCS -->
+            <a
+              :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#tms`"
+              target          = "_blank"
+              style           = "float: right;"
+              data-i18n-title = "Docs"
+              data-placement  = "bottom"
+            >
+              <i :class = "$fa('external-link')"></i>
+            </a>
+            <!-- TMS URL -->
+            <fieldset class = "form-group">
+              <label for = "add_tms_url">URL</label>
+              <input
+                id           = "add_tms_url"
+                v-model.trim = "tms_url"
+                class        = "form-control"
+                placeholder  = "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                type         = "url"
+                required
+              />
+              <small v-t="'Inserisci l\'URL del servizio TMS (XYZ)'" />
+            </fieldset>
+            <!-- TMS NAME -->
+            <fieldset class = "form-group">
+              <label for = "add_tms_name" title = "required">
+                <span v-t = "'Name'"></span>
+                <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
+              </label>
+              <input
+                id           = "add_tms_name"
+                v-model.trim = "tms_name"
+                class        = "form-control"
+                required
+              />
+            </fieldset>
+            <!-- EPSG PROJECTIONS -->
+            <div class = "form-group">
+              <label for = "g3w-tms-projections" v-t = "'Projection'"></label>
+              <select id = "g3w-tms-projections" class = "form-control" v-model = "tms_projection">
+                <option>EPSG:3857</option>
+                <option>EPSG:4326</option>
+              </select>
+            </div>
+            <!-- LAYER POSITION -->
+            <div class = "form-group">
+              <label for = "position-layer-tms" v-t = "'layer_position.message'"></label>
+              <select id = "position-layer-tms" class = "form-control" v-model = "position">
+                <option :value = "'top'"    v-t = "'layer_position.top'"></option>
+                <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
+              </select>
+            </div>
+            <!-- LAYER VISIBILITY -->
+            <select id = "g3w-tms-visible" v-model = "tms_visible" hidden>
+              <option :value="false"></option>
+              <option :value="true"></option>
+            </select>
+            <!-- LAYER OPACITY -->
+            <div class = "form-group">
+              <label for = "g3w-tms-opacity" v-t = "'Opacity'"></label>
+              <input
+                id      = "g3w-tms-opacity"
+                type    = "range"
+                v-model = "tms_opacity"
+                min     = "0"
+                max     = "1"
+                step    = "0.01"
+                list    = "tms-opacity-markers"
+              >
+              <datalist id="tms-opacity-markers" style="  display: flex; justify-content: space-between;">
+                <option value="0">0</option>
+                <option value="0.25">0.25</option>
+                <option value="0.50">0.50</option>
+                <option value="0.75">0.75</option>
+                <option value="1">1</option>
+              </datalist>
+            </div>
+          </div>
+
           <div v-if = "'file' === layer_type" class = "form-group">
 
             <button
@@ -351,7 +432,7 @@
             type        = "button"
             class       = "btn btn-success"
             @click.stop = "addLayer"
-            :disabled  = "'wms' === layer_type ? !wms_layers.length : !layer_data"
+            :disabled   = "('wms' === layer_type ? !wms_layers.length : ('tms' === layer_type ? !(tms_url && tms_name) : !layer_data))"
           ></button>
 
           </div>
@@ -366,18 +447,14 @@ import { Chrome as ChromeComponent } from 'vue-color';
 import JSZip                         from 'jszip/dist/jszip.min';
 import shp                           from 'shpjs';
 
-import { GEOMETRY_FIELDS } from 'g3w-constants';
+import {
+  GEOMETRY_FIELDS,
+  DOTS_PER_INCH,
+}                          from 'g3w-constants';
 import ApplicationState    from 'g3w-state';
 import GUI                 from 'services/gui';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
-import { Layer }           from 'g3w-layer';
-
-Object
-  .entries({
-    Layer,
-  })
-  .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
   
 /**
@@ -462,6 +539,11 @@ export default {
       projections:      [],         // projections
       error_message:    '',
       parse_errors:     [],
+      tms_url:         '',
+      tms_name:        '',
+      tms_projection:  'EPSG:3857',
+      tms_visible:     true,
+      tms_opacity:     1,
     }
   },
 
@@ -742,6 +824,40 @@ export default {
         }
       }
 
+      if ('tms' === this.layer_type) {
+        try {
+          GUI.getService('map').addExternalLayer(
+            new ol.layer.Tile({
+              source:  new ol.source.XYZ({
+                  url: this.tms_url,
+                  projection: ol.proj.get(this.tms_projection),
+                  crossOrigin: 'anonymous',
+                }),
+              opacity: +this.tms_opacity,
+              visible: this.tms_visible,
+              id:      this.tms_name,
+              name:    this.tms_name,
+            }), {
+              position: this.position,
+              opacity: +this.tms_opacity,
+              visible: this.tms_visible,
+              crs: this.tms_projection,
+              type: 'tms',
+            }
+          );
+          $(this.$refs.modal_addlayer).modal('hide');
+          // reset tms fields
+          this.tms_url = '';
+          this.tms_name = '';
+          this.tms_projection = 'EPSG:3857';
+          this.tms_visible = true;
+          this.tms_opacity = 1;
+        } catch(e) {
+          console.warn(e);
+          this.error_message = `${e}`;
+        }
+      }
+
       if ('file' === this.layer_type) {
         try {
           await GUI.getService('map').addExternalLayer(this.olLayer, {
@@ -855,26 +971,32 @@ export default {
       visible  = true
     } = {}) {
       return new Promise((res, rej) => {
-        const wmslayer = new Layer(
-          {
-            id:         name || getUniqueDomId(),
-            projection: ol.proj.get(epsg),
-            layers,
+        name = name || getUniqueDomId();
+
+        let olLayer = new ol.layer.Image({
+          name,
+          id:            name,
+          opacity:       1.0,
+          source:        new ol.source.ImageWMS({
+            ratio:      1,
             url,
-          },
-          { TYPE: 'virtual' }
-        );
-        const olLayer  = wmslayer.getOLLayer();
+            projection: ol.proj.get(epsg)?.getCode?.() ?? null,
+            // crossOrigin: 'anonymous',
+            params:     Object.fromEntries(Object.entries({
+              DPI:         DOTS_PER_INCH,
+              TRANSPARENT: true,
+              LAYERS:      layers ?? '',
+              VERSION:     '1.3.0',
+              SLD_VERSION: '1.1.0',
+            })),
+          })
+        });
+
         olLayer.getSource().once('imageloadend', res);
         olLayer.getSource().once('imageloaderror', rej);
 
-        //@since 3.11.0 Need to show loading spinner on map
-        olLayer.getSource().on(`imageloadend`,   () => wmslayer.emit('loadstart'));
-        olLayer.getSource().on(`imageloadend`,   () => wmslayer.emit('loadend'));
-        olLayer.getSource().on(`imageloaderror`, () => wmslayer.emit('loaderror'));
-        //
+        GUI.getService('map').addExternalLayer(olLayer, { position, opacity, visible });
 
-        GUI.getService('map').addExternalLayer(wmslayer, { position, opacity, visible });
         // HOTFIX: for hidden wms layers
         if (!this.wms_visible || !this.wms_opacity) {
           setTimeout(res, 1000);

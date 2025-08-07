@@ -207,11 +207,15 @@ function isCrossOrigin(layer) {
   if ((layer.getVisible && !layer.getVisible()) || layer instanceof ol.layer.Vector) {
     return false;
   }
+
+  if (layer instanceof ol.layer.Layer && layer.getSource().crossOrigin) {
+    return false;
+  }
   
   // image layer (OpenLayers)
   if (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image) { 
-    source_url = layer.getSource().getUrl();
-    return source_url && !sameOrigin(source_url, location);
+    const urls = [layer.getSource()?.getUrl?.(), layer.getSource()?.getUrls?.()].filter(Boolean);
+    return urls.length && urls.some(url => !sameOrigin(url, location));
   }
 
   // external image layer (eg: "core/layers/imagelayer.js")
