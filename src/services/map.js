@@ -62,7 +62,7 @@ class MapService extends Emitter {
 
   #selectedLayer = null;
 
-  #animatingHighlight = false;
+  #highlighting = false;
 
   setupControl = {};
 
@@ -109,6 +109,7 @@ class MapService extends Emitter {
     base:     [],
     g3w:      [],
     external: [],
+    index:    {}, // store layers by multilayer id (performance)
   };
 
   /* Store interactions added by plugin or external application*/
@@ -163,7 +164,7 @@ class MapService extends Emitter {
       this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
     });
 
-    this.setupCustomMapParamsToLegendUrl = debounce(this.setupCustomMapParamsToLegendUrl.bind(this), 1000);
+    this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
   }
 
   /**
@@ -484,8 +485,7 @@ class MapService extends Emitter {
   }
 
   getMapExtent() {
-    const map = this.getMap();
-    return map.getView().calculateExtent(map.getSize());
+    return this.getMap().getView().calculateExtent(this.getMap().getSize());
   }
 
   /**
@@ -626,16 +626,20 @@ class MapService extends Emitter {
     })
   }
 
-  setupCustomMapParamsToLegendUrl(bool = true) {
+  _setLegendParams(bool = true) {
     if (bool) {
       const map  = this.getMap();
       const size = (map && map.getSize().filter(v => v > 0)) || null;
       const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : ApplicationState.project.state.initextent;
-      this.#layers.g3w.forEach(l => l?.setupCustomMapParamsToLegendUrl?.({
-        crs: this.getEpsg(),
-        // in the case of axis orientation inverted if it needs to invert the axis
-        bbox: "neu" === map.getView().getProjection().getAxisOrientation()  ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
-      }));
+      this.#layers.g3w.forEach(l => {
+        if(!l.isXYZ()) {
+          l.setCustomParams({
+            crs: this.getEpsg(),
+            // in the case of axis orientation inverted if it needs to invert the axis
+            bbox: "neu" === map.getView().getProjection().getAxisOrientation()  ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
+          });
+        }
+      });
       this.emit('change-map-legend-params');
     }
   }
@@ -741,7 +745,12 @@ class MapService extends Emitter {
 
   removeLayers() {
     this.#layers.base.forEach(l => this.viewer.map.removeLayer(l.getOLLayer()))
-    this.#layers.g3w.forEach(l => { this.unregisterMapLayerListeners(l); this.viewer.map.removeLayer(l.getOLLayer()); });
+    this.#layers.g3w.forEach(l => {
+      l.un('loadstart', this.onLayerLoadStart);
+      l.un('loadend',   this.onLayerLoadEnd);
+      l.un('loaderror', this.onLayerLoadError);
+      this.viewer.map.removeLayer(l.getOLLayer());
+    });
     this.#layers.g3w.splice(0);
     // remove external layers
     this.#layers.external.forEach(layer => this.removeExternalLayer(layer.get('name')));
@@ -826,35 +835,6 @@ class MapService extends Emitter {
 
     layer.update(this.state, options);
     return layer;
-  }
-
-  // register map Layer listeners of creation
-  registerMapLayerListeners(layer, projectLayer = true) {
-    layer.on('loadstart', this.onLayerLoadStart);
-    layer.on('loadend',   this.onLayerLoadEnd);
-    layer.on('loaderror', this.onLayerLoadError);
-    // listen change filter token
-    if (projectLayer) {
-      layer?.layers?.forEach?.(l => {
-        l.onbefore('change',      () => this.updateMapLayer(layer, { force: true }));
-        //pass layerId to change only layer @since 3.11.0
-        l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(layer, { force: true, layerId })  })
-      });
-    }
-  }
-
-  // unregister listeners of mapLayers creation
-  unregisterMapLayerListeners(layer, projectLayer = false) {
-    layer.un('loadstart', this.onLayerLoadStart);
-    layer.un('loadend',   this.onLayerLoadEnd);
-    layer.un('loaderror', this.onLayerLoadError);
-    // try to remove layer filter token
-    if (projectLayer) {
-      layer?.layers?.forEach?.forEach(l => {
-        l.un('change');
-        l.removeEvent('filtertokenchange')
-      });
-    }
   }
 
   setTarget(elId) {
@@ -1204,7 +1184,7 @@ class MapService extends Emitter {
           hlayer.setStyle(feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: options.color, fill: true })]);
         }
         if (!hide) {
-          this.#animatingHighlight = false;
+          this.#highlighting = false;
         }
         resolve();
       }
@@ -1214,7 +1194,7 @@ class MapService extends Emitter {
       }
 
       if (duration && duration !== Infinity && !hide) {
-        this.#animatingHighlight = true;
+        this.#highlighting = true;
         setTimeout(cb, duration);
       }
 
@@ -1222,7 +1202,7 @@ class MapService extends Emitter {
   }
 
   clearHighlightGeometry() {
-    if (!this.#animatingHighlight) {
+    if (!this.#highlighting) {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
     // reset default layer style
@@ -1456,10 +1436,6 @@ class MapService extends Emitter {
 
     // setup layers
 
-    //store incremental value for qtimesriable layer with same multilayer id
-    const cache        = {};
-    const LAYER_GROUPS = {};
-
     // sort layers by type: [0=BASE, 1=RASTER, 2=VECTOR]
     Object
       .values(ApplicationState.layers)
@@ -1480,18 +1456,25 @@ class MapService extends Emitter {
 
         // group raster layers by "multilayerid"
         if (!l.isBaseLayer() && !l.isVector()) {
-          const id = l.getMultiLayerId();
-          let key;
+          let id = l.getMultiLayerId();
           if (l.isQtimeseries()) {
-            cache[id] = (cache[id] ?? -1) + 1;
-            key = `${id}_${cache[id]}`;
-          } else {
-            key = undefined === cache[id] ? id : `${id}_${cache[id] + 1}`;
+            this.#layers.index[`qtimeseries_${id}`] = (this.#layers.index[`qtimeseries_${id}`] ?? -1) + 1;
+            id = `${id}_${this.#layers.index[`qtimeseries_${id}`]}`;
+          } else if (undefined !== this.#layers.index[`qtimeseries_${id}`]) {
+            id = `${id}_${this.#layers.index[`qtimeseries_${id}`] + 1}`;
           }
-          const mapLayer = LAYER_GROUPS[key] || this.#createRasterLayer(l);
+          const mapLayer = this.#layers.index[id] || this.#createRasterLayer(l);
           mapLayer.addLayer(l, 'start');
-          if (!LAYER_GROUPS[key]) {
-            this.registerMapLayerListeners(mapLayer);
+          if (!this.#layers.index[id]) {
+            this.#layers.index[id] = mapLayer;
+            mapLayer.on('loadstart', this.onLayerLoadStart);
+            mapLayer.on('loadend',   this.onLayerLoadEnd);
+            mapLayer.on('loaderror', this.onLayerLoadError);
+            // listen change filter token
+            mapLayer?.layers?.forEach?.(l => {
+              l.onbefore('change',      () => this.updateMapLayer(mapLayer, { force: true }));
+              l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(mapLayer, { force: true, layerId })  })
+            });
             this.#layers.g3w.unshift(mapLayer);
             groups[1].unshift(mapLayer);
           }
@@ -1533,7 +1516,6 @@ class MapService extends Emitter {
     
     // setup ol events
 
-    const dynamicLegend = ApplicationState.project.state.context_base_legend;
     // set change resolution
     this.#events.ol.forEach(k => ol.Observable.unByKey(k));
     this.#events.ol.push(
@@ -1542,19 +1524,19 @@ class MapService extends Emitter {
         this.state.resolution = this.viewer.getResolution();
         this.state.center     = this.viewer.getCenter();
         this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
-        if (dynamicLegend) {
-          this.setupCustomMapParamsToLegendUrl();
+        if (ApplicationState.project.state.context_base_legend) {
+          this._setLegendParams();
         }
       }))
     );
 
-    if (dynamicLegend) {
+    if (ApplicationState.project.state.context_base_legend) {
       this.#events.ol.push(
-        this.viewer.map.on('moveend', () => this.setupCustomMapParamsToLegendUrl())
+        this.viewer.map.on('moveend', () => this._setLegendParams())
       );
     } else {
       //set always to show legend at the start
-      this.setupCustomMapParamsToLegendUrl();
+      this._setLegendParams();
     }
 
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
@@ -1790,93 +1772,33 @@ class MapService extends Emitter {
       return layer._mapLayer;
     }
 
-    let mapLayer;
-
-    // TMS Layer
-    if (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms')) {
-      mapLayer = new Layer(
-        {
-          id:              `layer_${layer.getMultiLayerId()}`,
-          projection:      this.getProjection(),
-          format:          layer.getFormat(),
-          iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
-          type:           'XYZ',
-          extent:         (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null),
-          url:            layer.getCacheUrl(),
-          cache_provider: layer.state.cache_provider,
-          http_method:    layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
-        },
-        { TYPE: 'virtual' }
-      );
-    }
-
-    // ARCGIS Layer
-    if (layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type) {
-      mapLayer = new Layer(
-        {
-          id:              `layer_${layer.getMultiLayerId()}`,
-          projection:      this.getProjection(),
-          format:          layer.getFormat(),
-          iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
-          ...layer.state.source,
-        },
-        { TYPE: 'virtual' }
-      );
-    }
-
-    // WMTS Layer
-    if (layer.isCached() && 'wmts' === layer.state.cache_service_type) {
-      mapLayer = new Layer(
-        {
-          id:               `layer_${layer.getMultiLayerId()}`,
-          projection:        this.getProjection(),
-          format:            layer.getFormat(),
-          iframe_internal:   ApplicationState.iframe && !layer.isExternalWMS(),
-          type:              'WMTS',
-          url:               layer.getCacheUrl(),
-          cache_provider:    layer.state.cache_provider,
-          cache_layer:       layer.state.cache_layer,
-          cache_extent:      layer.state.cache_extent,
-          cache_grid:        layer.state.cache_grid,
-          cache_grid_extent: layer.state.cache_grid_extent,
-          http_method:       layer.isExternalWMS() ? 'GET' : layer.getOwsMethod(),
-        },
-        { TYPE: 'virtual' }
-      );
-    }
-
-    // WMST Layer
-    if (layer.isExternalWMS() && "wmst" === layer.state?.source?.type) {
-      mapLayer = new Layer(
-        {
-          id:              `layer_${layer.getMultiLayerId()}`,
-          projection:      this.getProjection(),
-          format:          layer.getFormat(),
-          iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
-          type:            'WMTS',
-          url:             layer.isCached() ? layer.getCacheUrl() : layer.getWmsUrl(),
-          cache_provider:  layer.state.cache_provider,
-        },
-        { TYPE: 'virtual' }
-      );
-    }
-
-    // WMS Layer
-    mapLayer = Object.assign(new Layer(
+    return (layer._mapLayer = new Layer(
       {
         id:              `layer_${layer.getMultiLayerId()}`,
-        projection:      this.getProjection(),
-        format:          layer.getFormat(),
-        iframe_internal: ApplicationState.iframe && !layer.isExternalWMS(),
-        url:             layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
-        http_method:     layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
+        projection:        this.getProjection(),
+        format:            layer.getFormat(),
+        ...(
+          layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type
+          ? layer.state.source                                                                       // ARCGIS Layer (external)
+          : {
+            type:
+              (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
+              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS') ||           // WMTS Layer  (cached)
+              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS') ||           // WMS-T Layer (external)
+              layer.state.type,
+            url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
+            http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
+            extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
+            cache_provider:    layer.state.cache_provider,
+            cache_layer:       layer.state.cache_layer,
+            cache_extent:      layer.state.cache_extent,
+            cache_grid:        layer.state.cache_grid,
+            cache_grid_extent: layer.state.cache_grid_extent,
+          }
+        ),
       },
       { TYPE: 'virtual' }
-    ), {
-      getSource: () => layer._mapLayer.getOLLayer().getSource()
-    });
-
-    return (layer._mapLayer = mapLayer);
+    ));
   }
 
   /**
@@ -2195,7 +2117,16 @@ class MapService extends Emitter {
       }
       // wms
       if (type === l._externalLayerType && layer.id === l._externalLayer.getId()) {
-        this.unregisterMapLayerListeners(l._externalLayer, layer.projectLayer);
+        l._externalLayer.un('loadstart', this.onLayerLoadStart);
+        l._externalLayer.un('loadend',   this.onLayerLoadEnd);
+        l._externalLayer.un('loaderror', this.onLayerLoadError);
+        // try to remove layer filter token
+        if (layer.projectLayer) {
+          l._externalLayer?.layers?.forEach?.forEach(l => {
+            l.un('change');
+            l.removeEvent('filtertokenchange')
+          });
+        }
         return false;
       }
       // other types ?
