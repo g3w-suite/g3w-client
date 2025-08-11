@@ -81,6 +81,8 @@ export class Layer extends Emitter {
 
   #providers = {};
 
+  #features = [];
+
   // BACKOMP v3.x
   #LAYERTYPE;
   get LAYERTYPE() {
@@ -573,7 +575,7 @@ export class Layer extends Emitter {
      * 
      * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
      */
-    this._features = [];
+    this.#features = [];
 
     this.customParams = {};
 
@@ -2827,7 +2829,7 @@ export class Layer extends Emitter {
    */
   addFeature(feature) {
     console.trace('[G3W-LAYER] addFeature is deprecated?');
-    this._features.push(feature);
+    this.#features.push(feature);
   }
 
   /**
@@ -2837,7 +2839,7 @@ export class Layer extends Emitter {
    */
   setFeatures(features = []) {
     console.trace('[G3W-LAYER] setFeatures is deprecated?');
-    this._features = features;
+    this.#features = features;
   }
 
   /**
@@ -2867,7 +2869,7 @@ export class Layer extends Emitter {
    */
   readFeatures() {
     console.trace('[G3W-LAYER] readFeatures is deprecated?');
-    return this._features;
+    return this.#features;
   }
 
   /**
