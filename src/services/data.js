@@ -243,7 +243,7 @@ export default {
     const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
     return {
       data: (await Promise.allSettled(
-        [].concat(layer).map((l, i) => l.getFilterData({ ...params, filter: params.filter[i] }))
+        [].concat(layer).map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
