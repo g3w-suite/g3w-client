@@ -2605,6 +2605,9 @@ class Layer extends G3WObject {
       if (result) {
         //set form structure
         this.config.editor_form_structure = data?.editor_form_structure;
+        //@since 4.0.1 get fields from server (maybe are changed)
+        this.config.fields = data?.fields || this.config.fields;
+        
         //@since 4.0.0 set scale visibility on change style
         this.state.scalebasedvisibility   = data?.scalebasedvisibility;
         this.state.minscale               = data?.minscale;
