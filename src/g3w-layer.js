@@ -132,10 +132,10 @@ export class Layer extends Emitter {
      */
     this.setters = [
       'addFeature',
-      'updateFeature',
+      // 'updateFeature',
       'setFeatures',
-      'getFeatures',
-      'commit',
+      // 'getFeatures',
+      // 'commit',
       'change',
     ];
 
@@ -571,43 +571,9 @@ export class Layer extends Emitter {
     /**
      * @TODO check if deprecated
      * 
-     * Feature wrapper (to store feature)
-     * 
      * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
-     * 
-     * @since 4.1.0
      */
-    this._featuresstore = Object.assign(new Emitter, {
-      _features: [],
-      _loadedIds: [], // store features id load by current user
-      _lockIds: [], // store locked features
-      setters: {
-        addFeatures(features = []) { features.forEach(f => this._features.push(f)) },
-        removeFeature(feature)     { this._features = this._features.filter(f => feature.getUid() !== f.getUid()) },
-        updateFeature(feature)     { this._features.find((feat, idx) => { if (feature.getUid() === feat.getUid() ) { this._features[idx] = feature; return true; } }); },
-        clear()                    { this._features  = null; this._features  = []; this._lockIds   = []; this._loadedIds = []; },
-      },
-      addFeature(feature)        { this._features.push(feature); },
-      clone()                    { return cloneDeep(this); },
-      getProvider:               () => this.getProvider('data'),
-      unlock:              async () => await XHR.post({ url: this.getUrl('unlock') }),
-      getLockIds()               { return this._lockIds; },
-      getFeatureById(id)         { return this._features.find(f => id == f.getId()); },
-      setFeatures(features = []) { this._features = features; },
-      readFeatures()             { return this._features; },
-      commit: async (commitItems, featurestore)=> {
-        if (commitItems && this.getProvider('data')) {
-          commitItems.lockids = this._featuresstore._lockIds;
-          return await XHR.post({
-            url:         this.getUrl('commit'),
-            data:        JSON.stringify(commitItems),
-            contentType: 'application/json',
-          });
-        }
-        return Promise.reject();
-      },
-    });
-
+    this._features = [];
 
     this.customParams = {};
 
@@ -2859,21 +2825,20 @@ export class Layer extends Emitter {
   /**
    * @since 4.1.0 
    */
-  addFeature(feature)    { console.trace('[G3W-LAYER] addFeature is deprecated?'); this._featuresstore.addFeature(feature); }
+  addFeature(feature) {
+    console.trace('[G3W-LAYER] addFeature is deprecated?');
+    this._features.push(feature);
+  }
 
   /**
    * @TODO check if it unusued
    * 
    * @since 4.1.0
    */
-  updateFeature(feature) { console.trace('[G3W-LAYER] updateFeature is deprecated?'); this._featuresstore.updateFeature(feature);}
-
-  /**
-   * @TODO check if it unusued
-   * 
-   * @since 4.1.0
-   */
-  setFeatures(features)  { console.trace('[G3W-LAYER] setFeatures is deprecated?'); this._featuresstore.setFeatures(features); }
+  setFeatures(features = []) {
+    console.trace('[G3W-LAYER] setFeatures is deprecated?');
+    this._features = features;
+  }
 
   /**
    * get data from every sources (server, wms, etc..)
@@ -2883,46 +2848,12 @@ export class Layer extends Emitter {
    * 
    * @since 4.1.0
    */
-  async getFeatures(opts = {}) {
-    console.trace('[G3W-LAYER] getFeatures is deprecated?');
-    const features = await this._featuresstore.getFeatures(opts);
-    this.emit('getFeatures', features);
-    return features;
-  }
-
-  /**
-   * @since 4.1.0 
-   */
-  async commit(commitItems) {
-    console.trace('[G3W-LAYER] commit is deprecated?');
-    const response = await this._featuresstore.commit(commitItems);
-    // sync selection filter features
-    if (response && response.result) {
-      try {
-        const layer = getCatalogLayerById(this.getId());
-        //if layer has geometry
-        if (layer.isGeoLayer()) {
-          commitItems.update.forEach(({ id, geometry } = {}) => {
-            if (layer.getOlSelectionFeature(id)) {
-              const selected = layer.getOlSelectionFeature(id);
-              if (selected) {
-                selected.feature = geometry;
-                GUI.getService('map').setSelectionFeatures('update', { feature: geometry });
-              }
-            }
-          });
-        }
-        commitItems.delete.forEach(id => {
-          if (layer.hasSelectionFid(id)) {
-            layer.excludeSelectionFid(id);
-          }
-        })
-      } catch(e) {
-        console.warn(e);
-      }
-    }
-    return response;
-  }
+  // async getFeatures(opts = {}) {
+  //   console.trace('[G3W-LAYER] getFeatures is deprecated?');
+  //   const features = await this._featuresstore.getFeatures(opts);
+  //   this.emit('getFeatures', features);
+  //   return features;
+  // }
 
   /**
    * @since 4.1.0
@@ -2936,20 +2867,7 @@ export class Layer extends Emitter {
    */
   readFeatures() {
     console.trace('[G3W-LAYER] readFeatures is deprecated?');
-    return this._featuresstore.readFeatures();
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * Unlock editing features
-   *
-   * @returns jQuery Promise
-   * 
-   * @since 4.1.0
-   */
-  async unlock() {
-    console.trace('[G3W-LAYER] unlock is deprecated?');
-    return await this._featuresstore.unlock();
+    return this._features;
   }
 
   /**
@@ -2968,22 +2886,6 @@ export class Layer extends Emitter {
    */
   isStarted() {
     return this._editor?.isStarted()
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  getFeaturesStore() {
-    console.trace('[G3W-LAYER] getFeaturesStore is deprecated?');
-    return this._featuresstore;
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  setSource(source) {
-    console.trace('[G3W-LAYER] setSource is deprecated?');
-    this._featuresstore = source;
   }
 
   /**
