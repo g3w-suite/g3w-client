@@ -222,7 +222,7 @@
         const field = this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
         //in case of showlabel is true, set label to alias
         if (node.showlabel) {
-          field.label = node.alias;
+          field = {...field, label: node.alias,};
         }
         return field;
       },
