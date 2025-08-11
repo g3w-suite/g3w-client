@@ -1733,7 +1733,6 @@ class MapService extends Emitter {
       url:           'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('source').url : undefined,
       provider:      layer.getProvider('data'),
       getProvider:   ()           => layer._mapLayer.provider,
-      resetSource:   (feats = []) => layer._mapLayer.setSource(new ol.source.Vector({ features: feats })),
       getFeatures:   async (opts = {})  => layer._mapLayer.addFeatures(await layer._mapLayer.provider.getFeatures(opts)),
       addFeatures:   (feats = []) => layer._mapLayer.getSource().addFeatures(feats),
       addFeature:    feat         => feat && layer.getSource().addFeature(feat),
