@@ -37,6 +37,168 @@ function _setRelationField(node) {
 
 export default new (class QueryResultsService extends Emitter {
 
+  #events = [];
+
+  #atlas = [];
+
+  /**
+   * <Object> to store relations (key is referenceLayer of relation)
+   */
+  #relations = {};
+
+  /**
+   * @FIXME add description
+   */
+  plotLayerIds = [];
+
+  /**
+   * Reactive state
+   */
+  state = {
+
+    logged: undefined !== ApplicationState.user.id,
+
+    /**
+     * @FIXME add description
+     */
+    components: [],
+
+    /**
+     * @FIXME add description
+     */
+    layers: [],
+
+    /**
+     * @FIXME add description
+     */
+    changed: false,
+
+    /**
+     * @FIXME add description
+     */
+    query: null,
+
+    /**
+     * 'ows' = default
+     * 'api' = search
+     */
+    type: 'ows',
+
+    /**
+     * An action is an object that contains:
+     *
+     * ```
+     * {
+     *   "id":       (required) Unique action Id
+     *   "download": whether action is download or not
+     *   "class":    (required) fontawsome classname to show icon
+     *   "state":    need to be reactive. Used for example to toggled state of action icon
+     *   "hint":     Tooltip text
+     *   "init":     Method called when action is loaded
+     *   "clear":    Method called before clear the service. Used for example to clear unwatch
+     *   "change":   Method called when feature of layer is changed
+     *   "cbk":      (required) Method called when action is cliccked
+     * }
+     * ```
+     **/
+    layersactions: {},
+
+    /**
+     * Add action tools (for features)
+     */
+    actiontools: {},
+
+    /**
+     * Current action tools contain component
+     * of a specific action (eg. download)
+     */
+    currentactiontools:{},
+
+    /**
+     * Contains current action that expose vue component
+     * (useful for comparing the id other action is
+     * triggered and exposing the component)
+     */
+    currentactionfeaturelayer:{},
+
+    /**
+     * @FIXME add description
+     */
+    layeractiontool: {},
+
+    /**
+     * @FIXME add description
+     */
+    layersFeaturesBoxes:{},
+
+    /**
+     * Used to show a custom component for a layer
+     */
+    layerscustomcomponents: {}
+
+  };
+
+  /**
+   * <Array> where are store vector layer add on runtime
+   */
+  #vectorLayers = [];
+
+  /**
+   * @FIXME add description
+   */
+  #interaction = {
+
+    /**
+     * Reference to current layer
+     */
+    id: null,
+
+    /**
+     * Interaction bind to layer,
+     */
+    interaction: null,
+
+    /**
+     * Add current toggled map control if toggled
+     */
+    mapcontrol: null,
+
+    /**
+     * Method that handles interaction when a mapcontrol is toggled
+     */
+    toggleeventhandler: null
+
+  };
+
+  /**
+   * @FIXME add description
+   */
+  #asyncFnc = {
+    todo:                      () => {},
+    zoomToLayerFeaturesExtent: { async: false },
+    highLightLayerFeatures:    { async: false },
+    goToGeometry:              { async: false },
+  };
+
+  /**
+   * Vector layer used by query result to show query
+   * request as coordinates, bbox, polygon, etc ..
+   *
+   * @type {ol.layer.Vector}
+   */
+  #layer = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: feat => new ol.style.Style('Point' === feat.getGeometry().getType()
+      ? { text:   new ol.style.Text({ fill: new ol.style.Stroke({ color: 'black' }), text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 }) }
+      : { stroke: new ol.style.Stroke({ color: 'black' }) }
+    )
+  });
+
+  /**
+   * Layer ids sorted by TOC
+   */
+  #layer_ids = [];
+
   constructor() {
 
     super();
@@ -58,178 +220,7 @@ export default new (class QueryResultsService extends Emitter {
       'removeFeatureLayerFromResult',
     ];
 
-    /**
-     * @FIXME add description
-     */
-    this.unlistenerlayeractionevents = [];
-
-    /**
-     * <Object> to store relations (key is referenceLayer of relation)
-     */
-    this._relations = {};
-
-    /**
-     * @FIXME add description
-     */
-    this._atlas = [];
-
-    /**
-     * @FIXME add description
-     */
-    this.plotLayerIds = [];
-
-    /**
-     * Set reactive state
-     */
-    this.state = {
-
-      logged: undefined !== ApplicationState.user.id,
-
-      /**
-       * @FIXME add description
-       */
-      components: [],
-
-      /**
-       * @FIXME add description
-       */
-      layers: [],
-
-      /**
-       * @FIXME add description
-       */
-      changed: false,
-
-      /**
-       * @FIXME add description
-       */
-      query: null,
-
-      /**
-       * 'ows' = default
-       * 'api' = search
-       */
-      type: 'ows',
-
-      /**
-       * An action is an object that contains:
-       *
-       * ```
-       * {
-       *   "id":       (required) Unique action Id
-       *   "download": whether action is download or not
-       *   "class":    (required) fontawsome classname to show icon
-       *   "state":    need to be reactive. Used for example to toggled state of action icon
-       *   "hint":     Tooltip text
-       *   "init":     Method called when action is loaded
-       *   "clear":    Method called before clear the service. Used for example to clear unwatch
-       *   "change":   Method called when feature of layer is changed
-       *   "cbk":      (required) Method called when action is cliccked
-       * }
-       * ```
-       **/
-      layersactions: {},
-
-      /**
-       * Add action tools (for features)
-       */
-      actiontools: {},
-
-      /**
-       * Current action tools contain component
-       * of a specific action (eg. download)
-       */
-      currentactiontools:{},
-
-      /**
-       * Contains current action that expose vue component
-       * (useful for comparing the id other action is
-       * triggered and exposing the component)
-       */
-      currentactionfeaturelayer:{},
-
-      /**
-       * @FIXME add description
-       */
-      layeractiontool: {},
-
-      /**
-       * @FIXME add description
-       */
-      layersFeaturesBoxes:{},
-
-      /**
-       * Used to show a custom component for a layer
-       */
-      layerscustomcomponents: {}
-
-    };
-
-    /**
-     * <Array> where are store vector layer add on runtime
-     */
-    this._vectorLayers = [];
-
-    /**
-     * @FIXME add description
-     */
-    this._addFeaturesLayerResultInteraction = {
-
-      /**
-       * Reference to current layer
-       */
-      id: null,
-
-      /**
-       * Interaction bind to layer,
-       */
-      interaction: null,
-
-      /**
-       * Add current toggled map control if toggled
-       */
-      mapcontrol: null,
-
-      /**
-       * Method that handles interaction when a mapcontrol is toggled
-       */
-      toggleeventhandler: null
-
-    };
-
-    /**
-     * @FIXME add description
-     */
-    this._asyncFnc = {
-      todo:                      () => {},
-      zoomToLayerFeaturesExtent: { async: false },
-      highLightLayerFeatures:    { async: false },
-      goToGeometry:              { async: false },
-    };
-
-    /**
-     * Vector layer used by query result to show query
-     * request as coordinates, bbox, polygon, etc ..
-     *
-     * @type {ol.layer.Vector}
-     */
-    this.resultsQueryLayer = new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      style: feat => new ol.style.Style('Point' === feat.getGeometry().getType()
-        ? { text:   new ol.style.Text({ fill: new ol.style.Stroke({ color: 'black' }), text: '\uf3c5', font: '900 3em "Font Awesome 5 Free"', offsetY : -15 }) }
-        : { stroke: new ol.style.Stroke({ color: 'black' }) }
-      )
-    });
-
-    /**
-     * Current project <Project>
-     */
-    this._project = ApplicationState.project;
-
-    /**
-     * Keep the right order for a query result based on TOC order layers
-     */
-    this._projectLayerIds = (() => {
+    this.#layer_ids = (() => {
       const layersId = [];
       const traverse = tree => {
         (tree.nodes || [tree]).forEach(n => {
@@ -237,28 +228,32 @@ export default new (class QueryResultsService extends Emitter {
           else { traverse(n) }
         });
       };
-      this._project.state.layerstree.forEach(traverse);
+      ApplicationState.project.state.layerstree.forEach(traverse);
       return layersId;
     })()
 
     /**
      * @FIXME add description
      */
-    this._setRelations(this._project);
+    this.#relations = (ApplicationState.project.getRelations() || []).reduce((group, r) => {
+      group[r.referencedLayer] = group[r.referencedLayer] || [];
+      group[r.referencedLayer].push(r);
+      return group;
+    }, {});
 
     /**
      * @FIXME add description
      */
-    this._atlas = this._project.getPrint().filter(p => p.atlas) || [];
+    this.#atlas = ApplicationState.project.getPrint().filter(p => p.atlas) || [];
 
     /**
      * @FIXME add description
      */
     GUI.onbefore('setContent', (options) => {
       if (100 === options.perc && GUI.isMobile()) {
-        this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
-        this._asyncFnc.highLightLayerFeatures.async    = true;
-        this._asyncFnc.goToGeometry.async              = true;
+        this.#asyncFnc.zoomToLayerFeaturesExtent.async = true;
+        this.#asyncFnc.highLightLayerFeatures.async    = true;
+        this.#asyncFnc.goToGeometry.async              = true;
       }
     });
 
@@ -307,7 +302,7 @@ export default new (class QueryResultsService extends Emitter {
       const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
   
       // add visible layers to query response (vector layers)
-      this._vectorLayers.forEach(layer => {
+      this.#vectorLayers.forEach(layer => {
         const id = layer.get('id');
         // TODO: extract this into `layer.isSomething()` ?
         if (
@@ -335,11 +330,11 @@ export default new (class QueryResultsService extends Emitter {
     if (geom) {
       const feature = new ol.Feature(geom);
       feature.setId(undefined);
-      this.resultsQueryLayer.getSource().clear();
-      GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
-      this.resultsQueryLayer.getSource().addFeature(feature);
-      GUI.getService('map').getMap().addLayer(this.resultsQueryLayer);
-      this.resultsQueryLayer.setZIndex(GUI.getService('map').getMap().getLayers().getLength()); // ensure layer is on top of others
+      this.#layer.getSource().clear();
+      GUI.getService('map').getMap().removeLayer(this.#layer);
+      this.#layer.getSource().addFeature(feature);
+      GUI.getService('map').getMap().addLayer(this.#layer);
+      this.#layer.setZIndex(GUI.getService('map').getMap().getLayers().getLength()); // ensure layer is on top of others
     }
 
     // Convert response from DataProvider into a QueryResult component data structure
@@ -440,7 +435,7 @@ export default new (class QueryResultsService extends Emitter {
         const external   = (is_vector || is_string);
         const structure  = is_layer && layer.hasFormStructure() && layer.getLayerEditingFormStructure();
 
-        if (structure && Array.isArray(this._relations[layer.getId()]) && this._relations[layer.getId()].length > 0) {
+        if (structure && Array.isArray(this.#relations[layer.getId()]) && this.#relations[layer.getId()].length > 0) {
           for (const node of structure) {
             _setRelationField(node);
           }
@@ -482,7 +477,7 @@ export default new (class QueryResultsService extends Emitter {
           filter:                    (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
           selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: false },
           title:                     (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
-          atlas:                     this._atlas.filter(a => a.atlas.qgs_layer_id === id),
+          atlas:                     this.#atlas.filter(a => a.atlas.qgs_layer_id === id),
           rawdata:                   rawdata  || null,
           error:                     error    || '',
           toc:                       external || layer.state.toc, //@since v3.10.0
@@ -501,7 +496,7 @@ export default new (class QueryResultsService extends Emitter {
   setLayersData(layers = [], options = { add: false, update: false }) {
     // sort layers as Catalog project layers (external layer always on bottom)
     if (false === options.add) {
-      layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
+      layers.sort((a, b) => a.external ? 0 : (this.#layer_ids.indexOf(a.id) > this.#layer_ids.indexOf(b.id) ? 1 : -1));
     }
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
@@ -539,7 +534,7 @@ export default new (class QueryResultsService extends Emitter {
   addActionsForLayers(actions, layers) {}
 
   /**
-   * @FIXME add description
+   * Used by the following plugins: "law", "innovapuglia"
    *
    * @param element
    * 
@@ -577,7 +572,7 @@ export default new (class QueryResultsService extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Used by the following plugins: "bforest"
    * 
    * @since 4.0.0
    */
@@ -748,7 +743,7 @@ export default new (class QueryResultsService extends Emitter {
     }
 
     // reset array
-    this.unlistenerlayeractionevents = [];
+    this.#events = [];
 
     // loop results
     layers.forEach((layer, index) => {
@@ -770,7 +765,7 @@ export default new (class QueryResultsService extends Emitter {
         },
 
         // show relations (query)
-        (this._relations[layer.id] || []).some(r => 'MANY' === r.type) && {
+        (this.#relations[layer.id] || []).some(r => 'MANY' === r.type) && {
           id:       'show-query-relations',
           class:    GUI.getFontClass('relation'),
           hint:     'Show Relations',
@@ -795,11 +790,11 @@ export default new (class QueryResultsService extends Emitter {
               closable: false
             });
           },
-          relations: (this._relations[layer.id] || []).filter(r => 'MANY' === r.type),
+          relations: (this.#relations[layer.id] || []).filter(r => 'MANY' === r.type),
         },
 
         // print (atlas)
-        this._atlas.filter(a => a.atlas.qgs_layer_id === layer.id).length && {
+        this.#atlas.filter(a => a.atlas.qgs_layer_id === layer.id).length && {
           id:       'printatlas',
           download: true,
           class:    GUI.getFontClass('print'),
@@ -892,7 +887,7 @@ export default new (class QueryResultsService extends Emitter {
       } else if (!layer.external && layer.toc && undefined !== layer.selection.active) {
         const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
         getCatalogLayerById(layer.id).on('unselectionall', handler);
-        this.unlistenerlayeractionevents.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
+        this.#events.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
       }
 
     });
@@ -969,14 +964,14 @@ export default new (class QueryResultsService extends Emitter {
    * Clear all
    */
   clear() {
-    this._asyncFnc.todo()
+    this.#asyncFnc.todo()
     // unlistener events actions
-    this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
-    this.unlistenerlayeractionevents = [];
+    this.#events.forEach(obj => obj.layer.off(obj.event, obj.handler));
+    this.#events = [];
     GUI.getService('map').clearHighlightGeometry();
-    this.resultsQueryLayer.getSource().clear();
+    this.#layer.getSource().clear();
     this.removeAddFeaturesLayerResultInteraction(true);
-    this._asyncFnc = {
+    this.#asyncFnc = {
       todo:                      () => {},
       zoomToLayerFeaturesExtent: { async: false },
       highLightLayerFeatures:    { async: false },
@@ -985,8 +980,8 @@ export default new (class QueryResultsService extends Emitter {
     //reset pagination
     this.clearState();
     this.closeComponent();
-    this.resultsQueryLayer.getSource().clear();
-    GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
+    this.#layer.getSource().clear();
+    GUI.getService('map').getMap().removeLayer(this.#layer);
   }
 
   /**
@@ -1004,24 +999,22 @@ export default new (class QueryResultsService extends Emitter {
    * @param {boolean} toggle whether toggle mapcontrol
    */
   removeAddFeaturesLayerResultInteraction(toggle) {
-    const interaction = this._addFeaturesLayerResultInteraction;
-
-    if (null !== interaction.toggleeventhandler) {
-      GUI.getService('map').off('mapcontrol:toggled', interaction.toggleeventhandler);
+    if (null !== this.#interaction.toggleeventhandler) {
+      GUI.getService('map').off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
     }
 
     // remove current interaction to get features from layer
-    if (null !== interaction.interaction) {
-      GUI.getService('map').removeInteraction(interaction.interaction);
+    if (null !== this.#interaction.interaction) {
+      GUI.getService('map').removeInteraction(this.#interaction.interaction);
     }
 
     // check if query map control is toggled and registered
-    if (null !== interaction.mapcontrol) {
-      interaction.mapcontrol.toggle(toggle);
+    if (null !== this.#interaction.mapcontrol) {
+      this.#interaction.mapcontrol.toggle(toggle);
     }
 
     // reset values
-    Object.assign(interaction, {
+    Object.assign(this.#interaction, {
       interaction:        null,
       id:                 null,
       toggleeventhandler: null,
@@ -1036,10 +1029,8 @@ export default new (class QueryResultsService extends Emitter {
    * @param layer
    */
   addLayerFeaturesToResultsAction(layer) {
-    const interaction = this._addFeaturesLayerResultInteraction;
-
-    const not_current = ![null, layer.id].includes(interaction.id);
-    const new_layer   = not_current && this.state.layers.find(l => l.id === interaction.id);
+    const not_current = ![null, layer.id].includes(this.#interaction.id);
+    const new_layer   = not_current && this.state.layers.find(l => l.id === this.#interaction.id);
 
     // disable previous layer
     if (not_current && new_layer) {
@@ -1047,12 +1038,12 @@ export default new (class QueryResultsService extends Emitter {
     }
 
     // remove previous interaction
-    if (not_current && interaction.interaction) {
-      GUI.getService('map').removeInteraction(interaction.interaction);
+    if (not_current && this.#interaction.interaction) {
+      GUI.getService('map').removeInteraction(this.#interaction.interaction);
     }
 
     // set new layer
-    interaction.id = layer.id;
+    this.#interaction.id = layer.id;
 
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
 
@@ -1064,18 +1055,18 @@ export default new (class QueryResultsService extends Emitter {
 
       const external_layer = (this.state.layers.find(l => l.id === layer.id) || {}).external;
 
-      interaction.mapcontrol  = interaction.mapcontrol || GUI.getService('map').getCurrentToggledMapControl() || null;
-      interaction.interaction = new PickCoordinatesInteraction();
+      this.#interaction.mapcontrol  = this.#interaction.mapcontrol || GUI.getService('map').getCurrentToggledMapControl() || null;
+      this.#interaction.interaction = new PickCoordinatesInteraction();
 
-      GUI.getService('map').addInteraction(interaction.interaction, { close: false });
+      GUI.getService('map').addInteraction(this.#interaction.interaction, { close: false });
 
-      interaction.interaction
+      this.#interaction.interaction
         .on('picked', async ({ coordinate: coordinates }) => {
           if (external_layer) {
             // call setQueryResponse setters method directly in case of external layer 
             this.setQueryResponse(
               {
-                data:  [ this.getVectorLayerFeaturesFromQueryRequest(this._vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
+                data:  [ this.getVectorLayerFeaturesFromQueryRequest(this.#vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
                 query: { coordinates }
               },
               { add: true }
@@ -1086,7 +1077,7 @@ export default new (class QueryResultsService extends Emitter {
               {
                 inputs: {
                   coordinates,
-                  query_point_tolerance: this._project.getQueryPointTolerance(),
+                  query_point_tolerance: ApplicationState.project.getQueryPointTolerance(),
                   layerIds:              [layer.id],
                   multilayers:           false,
                 },
@@ -1098,13 +1089,13 @@ export default new (class QueryResultsService extends Emitter {
           }
         });
 
-      interaction.toggleeventhandler = (evt) => {
+      this.#interaction.toggleeventhandler = (evt) => {
         if (evt.target.isToggled() && evt.target.isClickMap()) {
           layer.addfeaturesresults.active = false;
         }
       };
 
-      GUI.getService('map').once('mapcontrol:toggled', interaction.toggleeventhandler);
+      GUI.getService('map').once('mapcontrol:toggled', this.#interaction.toggleeventhandler);
 
     }
   }
@@ -1128,8 +1119,8 @@ export default new (class QueryResultsService extends Emitter {
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
-    if (this._asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this._asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), features, options);
+    if (this.#asyncFnc.zoomToLayerFeaturesExtent.async) {
+      this.#asyncFnc.todo = GUI.getService('map').zoomToFeatures.bind(GUI.getService('map'), features, options);
     } else {
       GUI.getService('map').zoomToFeatures(features, options);
     }
@@ -1152,8 +1143,8 @@ export default new (class QueryResultsService extends Emitter {
    */
   highLightLayerFeatures(layer, options = {}) {
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
-    if (this._asyncFnc.highLightLayerFeatures.async) {
-      this._asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), features, options);
+    if (this.#asyncFnc.highLightLayerFeatures.async) {
+      this.#asyncFnc.todo = GUI.getService('map').highlightFeatures.bind(GUI.getService('map'), features, options);
     } else {
       GUI.getService('map').highlightFeatures(features, options);
     }
@@ -1189,19 +1180,6 @@ export default new (class QueryResultsService extends Emitter {
    */
   setState(state) {
     this.state = state;
-  }
-
-  /**
-   * @FIXME add description
-   *
-   * @param project
-   */
-  _setRelations(project) {
-    this._relations = (project.getRelations() || []).reduce((group, r) => {
-      group[r.referencedLayer] = group[r.referencedLayer] || [];
-      group[r.referencedLayer].push(r);
-      return group;
-    }, {});
   }
 
   /**
@@ -1249,8 +1227,8 @@ export default new (class QueryResultsService extends Emitter {
    * @param vectorLayer
    */
   registerVectorLayer(vectorLayer) {
-    if (!this._vectorLayers.includes(vectorLayer)) {
-      this._vectorLayers.push(vectorLayer);
+    if (!this.#vectorLayers.includes(vectorLayer)) {
+      this.#vectorLayers.push(vectorLayer);
     }
   }
 
@@ -1260,7 +1238,7 @@ export default new (class QueryResultsService extends Emitter {
    * @param vectorLayer
    */
   unregisterVectorLayer(vectorLayer) {
-    this._vectorLayers = this._vectorLayers.filter(vl => {
+    this.#vectorLayers = this.#vectorLayers.filter(vl => {
       this.state.layers = this.state.layers.filter(l => l.id !== vectorLayer.get('id'));
       return vl !== vectorLayer;
     });
@@ -1392,7 +1370,7 @@ export default new (class QueryResultsService extends Emitter {
    */
   printAtlas(layer, feature) {
     const features   = feature ? [feature] : layer.features;
-    const atlasLayer = this._atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
+    const atlasLayer = this.#atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
 
     /** @FIXME add description */
     if (atlasLayer.length <= 1) {
@@ -1437,8 +1415,8 @@ export default new (class QueryResultsService extends Emitter {
     if (!feature.geometry) {
       return;
     }
-    if (this._asyncFnc.goToGeometry.async) {
-      this._asyncFnc.todo = GUI.getService('map')[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'].bind(
+    if (this.#asyncFnc.goToGeometry.async) {
+      this.#asyncFnc.todo = GUI.getService('map')[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'].bind(
         GUI.getService('map'),
         this.isOneLayerResult() ? [feature] : feature.geometry,
         this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
@@ -1487,14 +1465,14 @@ export default new (class QueryResultsService extends Emitter {
     layerId,
     feature
   } = {}) {
-    const projectRelation = this._project.getRelationById(relation.name);
+    const projectRelation = ApplicationState.project.getRelationById(relation.name);
     GUI.pushContent({
       content: new Component({
         vueComponentObject: require('components/Relation.vue').default,
         propsData: {
           relation:         projectRelation,
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
-          nmRelation:       this._project.getRelationById(relation.nmRelationId),
+          nmRelation:       ApplicationState.project.getRelationById(relation.nmRelationId),
           layer:            { id: layerId },
           feature,
         }

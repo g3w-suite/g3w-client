@@ -30,7 +30,7 @@ export default new (class GUI extends Emitter {
   /** whether to push new data content to result */
   push_content = false;
 
-  _closeUserMessage = true;
+  #closeUserMessage = true;
 
   /*
   * Based on bootbox.js v4.4.0
@@ -762,7 +762,7 @@ export default new (class GUI extends Emitter {
   }
 
   toggleUserMessage(bool = true) {
-    this._closeUserMessage = bool;
+    this.#closeUserMessage = bool;
   }
 
   /**
@@ -791,7 +791,7 @@ export default new (class GUI extends Emitter {
     this.emit('opencontent', true);
 
     // close user message before set content
-    if (this._closeUserMessage) {
+    if (this.#closeUserMessage) {
       this.closeUserMessage();
     }
 

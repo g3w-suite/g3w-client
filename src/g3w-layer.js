@@ -31,15 +31,12 @@ import { XHR }                    from 'utils/XHR';
 import { prompt }                 from 'utils/prompt';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-import { cloneDeep }              from 'utils/cloneDeep';
 import { groupBy }                from 'utils/groupBy';
 import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { reverseGeometry }        from 'utils/reverseGeometry';
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
-
-const NUMERIC_FIELD = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 const DOWNLOAD_FORMATS = {
   download:        { format: 'shapefile', url: 'shp' },
@@ -81,8 +78,21 @@ export class Layer extends Emitter {
 
   #providers = {};
 
+  /**
+   * @TODO check if deprecated
+   * 
+   * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
+   */
   #features = [];
 
+  #relations;
+
+  customParams = {};
+
+  #layersstore;
+
+  #color;
+  
   // BACKOMP v3.x
   #LAYERTYPE;
   get LAYERTYPE() {
@@ -389,7 +399,7 @@ export class Layer extends Emitter {
     /**
      * Layer relations
      */
-    this._relations = {
+    this.#relations = {
 
       /**
        * ORIGINAL SOURCE: src/app/core/relations/relation.js@v3.10.1
@@ -417,7 +427,7 @@ export class Layer extends Emitter {
           type:        config.type,
           /** @since 3.9.0 */
           editable:    config.editable || false,
-          /** @type { string } relation prefix (for Relation 1:1) @since 3.9.0 */
+          /** @type { string } since 3.9.0 - relation prefix (for Relation 1:1) */
           prefix:      config.prefix,
           /** BACKCOMP (g3w-admin < v.3.7.0) - father relation field name */
           fatherField: [].concat(config.fieldRef.referencedField),
@@ -450,51 +460,16 @@ export class Layer extends Emitter {
         return relations;
       }, {}),
 
-      /**
-       * Number of relations
-       * 
-       * @type { number }
-       */
-      _length: relations ? relations.length : 0,
-
-      /**
-       * Build relations between layers.
-       *
-       * @private
-       */
-      _reloadRelationsInfo() {
-
-        this._relationsInfo = {
-          children:     {},     // hashmap: <child_layerId,  Array<father_relationId>>
-          fathers:      {},     // hashmap: <father_layerId, Array<child_relationId[]>>
-          father_child: {},     // hashmap: <relationKey, relationId>
-        };
-
-        let f, c;
-        const { father_child, fathers, children } = this._relationsInfo;
-
-        Object
-          .entries(this._relations)
-          .forEach(([relationKey, relation]) => {
-
-            f = relation.getFather();
-            c = relation.getChild();
-
-            father_child[f + c] = relationKey;       // relationKey = [father_layerId + child_layerId]
-            fathers[f]          = fathers[f]  || [];
-            children[c]         = children[c] || [];
-
-            fathers[f].push(c);
-            children[c].push(f);
-        });
+      _info: {
+        children:     {}, // hashmap: <child_layerId,  Array<father_relationId>>
+        fathers:      {}, // hashmap: <father_layerId, Array<child_relationId[]>>
+        father_child: {}, // hashmap: <relationKey, relationId>
       },
 
       /**
        * @returns { number } number of relations
        */
-      getLength() {
-        return this._length;
-      },
+      getLength() { return relations.length; },
 
       /**
        * @param relation.type
@@ -502,7 +477,6 @@ export class Layer extends Emitter {
        * @returns { {} | Relation[] } relations filtered by type
        */
       getRelations({ type = null, } = {}) {
-
         // type = null
         if (!type) {
           return this._relations;
@@ -522,22 +496,35 @@ export class Layer extends Emitter {
         return {};
       },
 
-      setRelations(relations=[])                 { this._relations = Array.isArray(relations) ? relations : []; },
       getRelationById(id)                        { return this._relations[id]; },
       getArray()                                 { return Object.entries(this._relations).map(r => r[1]); },
-      getRelationByFatherChildren(father, child) { return this.getRelationById(this._relationsInfo.father_child[father + child]); },
-      isChild(id)                                { return !!this._relationsInfo.children[id]; },
-      isFather(id)                               { return !!this._relationsInfo.fathers[id]; },
+      getRelationByFatherChildren(father, child) { return this.getRelationById(this._info.father_child[father + child]); },
+      isChild(id)                                { return !!this._info.children[id]; },
+      isFather(id)                               { return !!this._info.fathers[id]; },
       hasChildren(layer_id)                      { return (this.getChildren(layer_id) || []).length > 0; },
       hasFathers(layer_id)                       { return (this.getFathers(layer_id) || []).length > 0; },
       /** @returns { Array | null } child layers (IDs) within same relation */
-      getChildren(layer_id)                      { return this.isFather(layer_id) ? this._relationsInfo.fathers[layer_id] : null; },
+      getChildren(layer_id)                      { return this.isFather(layer_id) ? this._info.fathers[layer_id] : null; },
       /** @returns { Array | null } father layers (IDs) within same relation */
-      getFathers(layer_id)                       { return this.isChild(layer_id) ? this._relationsInfo.children[layer_id] : null; },
+      getFathers(layer_id)                       { return this.isChild(layer_id) ? this._info.children[layer_id] : null; },
 
     };
 
-    this._relations._reloadRelationsInfo();
+    // build relations between layers
+    Object
+      .entries(this.#relations._relations)
+      .forEach(([relationKey, relation]) => {
+
+        let f = relation.getFather();
+        let c = relation.getChild();
+
+        this.#relations._info.father_child[f + c] = relationKey;       // relationKey = [father_layerId + child_layerId]
+        this.#relations._info.fathers[f]          = this.#relations._info.fathers[f]  || [];
+        this.#relations._info.children[c]         = this.#relations._info.children[c] || [];
+
+        this.#relations._info.fathers[f].push(c);
+        this.#relations._info.children[c].push(f);
+    });
 
     Object.assign(this.state, {
       openattributetable: this.canShowTable(),
@@ -545,8 +532,7 @@ export class Layer extends Emitter {
       infoformat:         this.getInfoFormat(),
     });
 
-    // referred to (layersstore);
-    this._layersstore = config.layersstore || null;
+    this.#layersstore = config.layersstore || null;
 
     // sanitize source url (ie. discard any reserved WMS params)
     if (this.state?.source?.url && 'virtual' !== this.getType()) {
@@ -559,25 +545,11 @@ export class Layer extends Emitter {
     }
 
     /**
-     * @since 4.1.0
-     */
-    this._color = null;
-
-    /**
      * @TODO check if unusued
      * 
      * @since 4.1.0
      */
     this.layerId = config.id;
-
-    /**
-     * @TODO check if deprecated
-     * 
-     * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
-     */
-    this.#features = [];
-
-    this.customParams = {};
 
   }
 
@@ -669,7 +641,7 @@ export class Layer extends Emitter {
    * @returns {*} relations
    */
   getRelations() {
-    return this._relations;
+    return this.#relations;
   }
 
   /**
@@ -678,7 +650,7 @@ export class Layer extends Emitter {
    * @returns {*} relation by id
    */
   getRelationById(id) {
-    return this._relations.getArray().find(r => id === r.getId());
+    return this.#relations.getArray().find(r => id === r.getId());
   }
 
   /**
@@ -687,7 +659,7 @@ export class Layer extends Emitter {
    * @returns { * | Array } relation fields
    */
   getRelationAttributes(relationName) {
-    const relation = this._relations.find(r => relationName === r.name);
+    const relation = this.#relations.find(r => relationName === r.name);
     return relation ? relation.fields : [];
   }
 
@@ -709,49 +681,49 @@ export class Layer extends Emitter {
    * @returns { * | boolean } whether layer is a Child of a relation
    */
   isChild() {
-    return this.getRelations() ? this._relations.isChild(this.getId()) : false;
+    return this.getRelations() ? this.#relations.isChild(this.getId()) : false;
   }
 
   /**
    * @returns { * | boolean } whether layer is a Father of a relation
    */
   isFather() {
-    return this.getRelations() ? this._relations.isFather(this.getId()) : false;
+    return this.getRelations() ? this.#relations.isFather(this.getId()) : false;
   }
 
   /**
    * @returns { * |Array } children relations
    */
   getChildren() {
-    return this.isFather() ? this._relations.getChildren(this.getId()) : [];
+    return this.isFather() ? this.#relations.getChildren(this.getId()) : [];
   }
 
   /**
    * @returns { * | Array } parents relations
    */
   getFathers() {
-    return this.isChild() ? this._relations.getFathers(this.getId()) : [];
+    return this.isChild() ? this.#relations.getFathers(this.getId()) : [];
   }
 
   /**
    * @returns { * | boolean } whether it has children
    */
   hasChildren() {
-    return this.hasRelations() ? this._relations.hasChildren(this.getId()) : false;
+    return this.hasRelations() ? this.#relations.hasChildren(this.getId()) : false;
   }
 
   /**
    * @returns { * | boolean } whether it has fathers
    */
   hasFathers() {
-    return this.hasRelations() ? this._relations.hasFathers(this.getId()) : false;
+    return this.hasRelations() ? this.#relations.hasFathers(this.getId()) : false;
   }
 
   /**
    * @TODO add description
    */
   hasRelations() {
-    return !!this._relations;
+    return !!this.#relations;
   }
 
   /******************************************************************************************
@@ -2307,7 +2279,7 @@ export class Layer extends Emitter {
    * @returns {*}
    */
   getLayersStore() {
-    return this._layersstore;
+    return this.#layersstore;
   }
 
   /**
@@ -2814,14 +2786,14 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   getColor() {
-    return this._color;
+    return this.#color;
   }
 
   /**
    * @since 4.1.0
    */
   setColor(color) {
-    this._color = color;
+    this.#color = color;
   }
 
   /**
@@ -2856,13 +2828,6 @@ export class Layer extends Emitter {
   //   this.emit('getFeatures', features);
   //   return features;
   // }
-
-  /**
-   * @since 4.1.0
-   */
-  clone() {
-    return cloneDeep(this);
-  }
 
   /**
    * @since 4.1.0
@@ -3675,6 +3640,8 @@ Layer._parse = function(type, params, opts) {
     },
 
     'application/vnd.ogc.gml'({ response, projections, layers, wms = true } = {}) {
+      const NUMERIC_FIELD = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
+
       // convert XML response to string
       if (response && 'string' !== typeof response && !(response instanceof String)) {
         response = new XMLSerializer().serializeToString(response);
