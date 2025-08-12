@@ -219,11 +219,9 @@
       getField(node) {
         if (node.relation) { return node }
         //get field of layer
-        let field = this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
-        //in case of showlabel is true, set label to alias
-        if (node.showlabel) {
-          field = {...field, label: node.alias,};
-        }
+        const field = this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
+        //set showlabel
+        field.showlabel = node.showlabel;
         return field;
       },
       /**

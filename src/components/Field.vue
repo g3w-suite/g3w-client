@@ -6,7 +6,7 @@
 <template>
   <div class = "field">
     <div
-      v-if  = "state.label"
+      v-if  = "state.showlabel"
       class = "field_label"
     >
       <slot name = "label">{{state.label}}</slot>
