@@ -21,7 +21,6 @@ import {
 import Emitter                    from 'g3w-emitter';
 import { gettext as _ }           from 'g3w-i18n';
 import ApplicationState           from 'g3w-state';
-import DataRouterService          from 'services/data';
 import GUI                        from 'services/gui';
 
 import Table                      from 'components/Table.vue';

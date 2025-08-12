@@ -917,11 +917,7 @@ $.ajaxSetup({
         });
       
         service.state             = state;
-      
-        /** used by the following plugins: "stress" */
-        service.createLayersGroup = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
-        /** used by the following plugins: "stress" */
-        service.addLayersGroup    = g => { state.layersgroups.push(g); };
+
         /** used by the following plugins: "processing" */
         service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
 
@@ -943,13 +939,13 @@ $.ajaxSetup({
   // register other components
   GUI.setComponent(new Component({
     id:                 'queryresults',
-    service:            require('services/queryresults').default,
+    service:            GUI.initQueryResultsService(),
     vueComponentObject: require('components/QueryResults.vue').default,
   }));
 
   GUI.setComponent(new Component({
     id:                 'map',
-    service:            new (require('services/map').default),
+    service:            GUI.initQueryResultsService(),
     vueComponentObject: require('components/Map.vue').default,
   }));
 
