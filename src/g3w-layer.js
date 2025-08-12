@@ -2389,7 +2389,8 @@ export class Layer extends Emitter {
 
       // set form structure
       if (result) {
-        this.state.editor_form_structure = data?.editor_form_structure;
+        this.state.editor_form_structure  = data?.editor_form_structure;
+        this.state.fields                 = data?.fields || this.state.fields; // @since 4.0.1 get fields from server (maybe are changed)
         this.state.scalebasedvisibility   = data?.scalebasedvisibility;
         this.state.minscale               = data?.minscale;
         this.state.maxscale               = data?.maxscale;
