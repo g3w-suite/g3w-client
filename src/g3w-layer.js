@@ -765,7 +765,7 @@ export class Layer extends Emitter {
 
     /** @TODO add description */
     if (has_current && is_active) {
-      await this._applyFilterToken(this.state.filter.current)
+      await this.#applyFilterToken(this.state.filter.current)
     }
 
     /** @TODO add description */
@@ -828,7 +828,7 @@ export class Layer extends Emitter {
       GUI.closeContent();
     }
 
-    await this._applyFilterToken(filter);
+    await this.#applyFilterToken(filter);
   }
 
   /**
@@ -836,7 +836,7 @@ export class Layer extends Emitter {
    * 
    * @private
    */
-  async _applyFilterToken(filter) {
+  async #applyFilterToken(filter) {
     try {
       /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
       const response = await XHR.get({
@@ -3616,7 +3616,7 @@ Layer._parse = function(type, params, opts) {
     },
 
     'application/geojson'({ layers, response } = {}) {
-      return response ? layers.map(layer => ({ layer, features: Layer._parse('g3w-vector/json', response, {}) })) : [];
+      return response ? layers.map(layer => ({ layer, features: Layer._parse('g3w-vector/json', response) })) : [];
     },
 
     'text/plain'({ layers, response } = {}) {
