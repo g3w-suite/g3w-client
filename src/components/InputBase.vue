@@ -9,26 +9,29 @@
     class = "form-group"
   >
     <!-- SLOT LABEL -->
-    <slot name = "label">
-      <!-- @since 3.10.0 -->
-      <label
-        :for       = "state.name"
-        v-disabled = "!editable"
-        class      = "control-label"
-      >
-        <span v-if = "state.i18nLabel" v-t = "state.label"></span>
-        <span v-else>{{ state.label }}</span>
-        <span v-if = "state.validate && state.validate.required">*</span>
-        <i
-          v-if        = "showhelpicon"
-          :class      = "g3wtemplate.font['info']"
-          class       = "skin-color"
-          style       = "margin-left: 3px; cursor: pointer"
-          @click.stop = "showHideHelp">
-        </i>
-        <slot name = "label-action"></slot>
-      </label>
-    </slot>
+    <!--- @since 4.0.1 If showlabel is defined by editor form structure by GlobalTabsNode.vue in getField method--> 
+    <template v-if = "undefined === state.showlabel || state.showlabel">
+      <slot name="label">
+        <!-- @since 3.10.0 -->
+        <label
+          :for       = "state.name"
+          v-disabled = "!editable"
+          class      = "control-label"
+        >
+          <span v-if = "state.i18nLabel" v-t = "state.label"></span>
+          <span v-else>{{ state.label }}</span>
+          <span v-if = "state.validate && state.validate.required">*</span>
+          <i
+            v-if        = "showhelpicon"
+            :class      = "g3wtemplate.font['info']"
+            class       = "skin-color"
+            style       = "margin-left: 3px; cursor: pointer"
+            @click.stop = "showHideHelp">
+          </i>
+          <slot name = "label-action"></slot>
+        </label>
+      </slot>
+    </template>
 
     <!-- @since 3.11.0 RELATION FIELD -->
     <div
