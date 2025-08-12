@@ -218,7 +218,11 @@
        */
       getField(node) {
         if (node.relation) { return node }
-        return this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
+        //get field of layer
+        const field = this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
+        //set showlabel
+        field.showlabel = node.showlabel;
+        return field;
       },
       /**
        *
