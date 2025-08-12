@@ -414,29 +414,6 @@ export default {
   },
 
   /**
-   * @param data: Object conitans data to pass to proxy
-   */
-  async 'proxy:wms'({ url, method='GET', params={}, headers={} } = {}) {
-    if (method === 'GET') {
-      url = new URL(url);
-      Object.keys(params).forEach(p => url.searchParams.set(p, params[p]));
-      url = url.toString();
-    }
-    try {
-      return {
-        response: await XHR.post({
-          data:        JSON.stringify({ url, params, headers, method }),
-          contentType: 'application/json',
-          url:         `${window.initConfig.proxyurl}`
-        }),
-        data: JSON.stringify({ url, params, headers, method }),
-      };
-    } catch(e) {
-      console.warn(e);
-    }
-  },
-
-  /**
    * used by the following plugins: "archiweb"
    * 
    * @param layers 

@@ -38,16 +38,6 @@ import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { reverseGeometry }        from 'utils/reverseGeometry';
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
 
-const DOWNLOAD_FORMATS = {
-  download:        { format: 'shapefile', url: 'shp' },
-  download_gpkg:   { format: 'gpkg',      url: 'gpkg' },
-  download_gpx:    { format: 'gpx',       url: 'gpx' },
-  download_csv:    { format: 'csv',       url: 'csv' },
-  download_xls:    { format: 'xls',       url: 'xls' },
-  download_raster: { format: 'geotiff',   url: 'geotiff' },
-  download_pdf:    { format: 'pdf',       url: 'pdf' },
-};
-
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
  * 
@@ -603,7 +593,17 @@ export class Layer extends Emitter {
   /**
    * @returns { string[] } download formats
    */
-  getDownloadableFormats()  { return Object.keys(DOWNLOAD_FORMATS).filter(d => this.state[d]).map(d => DOWNLOAD_FORMATS[d].format); }
+  getDownloadableFormats()  {
+    return Object.entries({
+      download:        'shapefile',
+      download_gpkg:   'gpkg',
+      download_gpx:    'gpx',
+      download_csv:    'csv',
+      download_xls:    'xls',
+      download_raster: 'geotiff',
+      download_pdf:    'pdf',
+    }).filter(([key]) => this.state[key]).map(([, value]) => value);
+  }
 
   /**
    * @returns { boolean } whether at least one layer has a download format not equal to pdf
@@ -619,7 +619,7 @@ export class Layer extends Emitter {
    * @returns { string }
    */
   getDownloadUrl(format) {
-    return (Object.values(DOWNLOAD_FORMATS).find(d => d.format === format) || {}).url;
+    return 'shapefile' === format ? 'shp' : format;
   }
 
   /**
@@ -1258,23 +1258,6 @@ export class Layer extends Emitter {
    *****************************************************************************************/
 
   /**
-   * Proxy params data
-   */
-  getProxyData(type) {
-    return type ? this.state.proxyData[type] : this.state.proxyData;
-  }
-
-  /**
-   * Set proxy data
-   *
-   * @param type
-   * @param data
-   */
-  setProxyData(type, data = {}) {
-    this.state.proxyData[type] = data;
-  }
-
-  /**
    * Clear proxy data
    *
    * @param type
@@ -1284,41 +1267,45 @@ export class Layer extends Emitter {
   }
 
   /**
-   * Get a proxy request
+   * Send proxy request
    *
    * @param type
-   * @param proxyParams
+   * @param params
    *
    * @returns {Promise<*>}
    */
-  async getDataProxyFromServer(type = 'wms', proxyParams = {}) {
+  async fetchProxyData(type = 'wms', params = {}) {
+    let response;
     try {
-      const { response, data } = await DataRouterService.getData(`proxy:${type}`, {
-        inputs:  proxyParams,
-        outputs: false,
+      // update proxy params
+      if (params.changes) {
+        Object.keys(params.changes).forEach(c => {
+          Object.keys(params.changes[c]).forEach(p => { this.state.proxyData[type][c][p] = params.changes[c][p]; })
+        });
+        params = this.state.proxyData[type];
+      }
+
+      // set url params (GET)
+      if ('POST' !== params.method) {
+        const url = new URL(params.url);
+        Object.keys(params).forEach(p => url.searchParams.set(p, params.params[p]));
+        params.url = url.toString();
+      }
+
+      const data = JSON.stringify({
+        url:     params.url,
+        params:  params.params  ?? {},
+        headers: params.headers ?? {},
+        method:  params.method  ?? 'GET'
       });
-      this.setProxyData(type, JSON.parse(data));
-      return response;
+
+      response = await XHR.post({ data, contentType: 'application/json', url: `${window.initConfig.proxyurl}` });
+
+      this.state.proxyData[type] = JSON.parse(data);
     } catch(e) {
       console.warn(e);
     }
-  }
-
-  /**
-   * @TODO Add description
-   *
-   * @param type
-   * @param changes
-   *
-   * @returns {Promise<*>}
-   */
-  changeProxyDataAndReloadFromServer(type = 'wms', changes = {}) {
-    Object.keys(changes).forEach(c => {
-      Object.keys(changes[c]).forEach(p => {
-        this.state.proxyData[type][c][p] = changes[c][p];
-      })
-    });
-    return this.getDataProxyFromServer(type, this.state.proxyData[type]);
+    return response;
   }
 
   /**
@@ -2154,7 +2141,7 @@ export class Layer extends Emitter {
           let response;
 
           if (proxy) {
-            response = await layers[0].getDataProxyFromServer('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
+            response = await layers[0].fetchProxyData('wms', { url, params, method, headers: { 'Content-Type': params.INFO_FORMAT } });
           } else if ('GET' === method) {
             let uri = (source.length ? source[0] : url).replace(/[?&]$/, ''); // remove any trailing ? or &
             response = await XHR.get({

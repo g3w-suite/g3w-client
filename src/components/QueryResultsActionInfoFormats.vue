@@ -66,10 +66,10 @@ export default {
       // disable select during get data from server
       this.$el.disabled = true;
       try {
-        const response = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
+        const response = await this.projectLayer.fetchProxyData('wms', { changes: {
           headers: { 'Content-Type': contenttype },
           params:  { INFO_FORMAT: contenttype }
-        });
+        }});
         this.layer.infoformat = contenttype;
         this.projectLayer.setInfoFormat(this.layer.infoformat);
         const [data] = Layer._parse(contenttype, { layers: [this.projectLayer], response });
