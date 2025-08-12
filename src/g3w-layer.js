@@ -2774,7 +2774,7 @@ export class Layer extends Emitter {
       const source_layer = this.state?.source?.layers || this.state?.source?.layer;
 
       /** @FIXME add description */
-      if (source_layer && this._hasExternalWMSOrLegend(type)) {
+      if (source_layer && this.#hasExternalWMSOrLegend(type)) {
         return source_layer;
       }
 
@@ -2899,7 +2899,7 @@ export class Layer extends Emitter {
   /**
    * @since 4.1.0
    */
-  _hasExternalWMSOrLegend(type = 'map') {
+  #hasExternalWMSOrLegend(type = 'map') {
     return (
         this.isRaster() &&
         this.state.source && (
@@ -2921,7 +2921,7 @@ export class Layer extends Emitter {
     }
 
     /** @FIXME add description */
-    if (this.state?.source?.url && this._hasExternalWMSOrLegend(type) && ['wms', 'wmst'].includes(this.state?.source?.type)) {
+    if (this.state?.source?.url && this.#hasExternalWMSOrLegend(type) && ['wms', 'wmst'].includes(this.state?.source?.type)) {
       return this.state.source.url;
     }
 
