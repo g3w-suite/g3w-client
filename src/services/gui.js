@@ -513,13 +513,6 @@ export default new (class GUI extends Emitter {
     this.push_content = bool;
   }
 
-  setComponent(component) {
-    const id = component.getId();
-    if (undefined === this.#COMPONENTS[id]) {
-      this.#COMPONENTS[id] = component;
-    }
-  }
-
   getComponent(id) {
     return this.#COMPONENTS[id];
   }
@@ -752,7 +745,7 @@ export default new (class GUI extends Emitter {
       return comp;
     }));
 
-    this.setComponent(Object.assign(new Component({
+    this.#COMPONENTS['contents'] = Object.assign(new Component({
       id:                 'contents',
       vueComponentObject: { template: `<div id="contents" class="contents"></div>` },
     }), {
@@ -760,7 +753,7 @@ export default new (class GUI extends Emitter {
       parent:                 null,
       contentsdata:           ApplicationState.contentsdata,
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
-    }));
+    });
 
     require('map/controls/addlayer');
     require('map/controls/annotation');
