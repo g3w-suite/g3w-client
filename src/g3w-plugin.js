@@ -408,9 +408,7 @@ export class Plugin extends Emitter {
     opts.mobile             = opts.mobile         ?? true;
     opts.sidebarOptions     = opts.sidebarOptions ?? { position: 1 };
 
-    GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
-
-    this.once('unload', () => GUI.removeComponent(opts.id, 'sidebar', opts.sidebarOptions));
+    GUI.addComponent(new Component(opts), opts.sidebarOptions);
 
     return GUI.getComponent(opts.id) ;
   }

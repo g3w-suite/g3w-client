@@ -489,62 +489,21 @@ export default new (class GUI extends Emitter {
       success:(message)                    => { this.showUserMessage({ type: 'success', message, autoclose: true }) }
     };
 
-  }
-
-  initMapService() {
-
-    require('map/controls/addlayer');
-    require('map/controls/annotation');
-    require('map/controls/attribution');
-    require('map/controls/geocoding');
-    require('map/controls/geolocation');
-    require('map/controls/measure');
-    require('map/controls/mouseposition');
-    require('map/controls/overview');
-    require('map/controls/query');
-    require('map/controls/queryby');
-    require('map/controls/scale');
-    require('map/controls/scaleline');
-    require('map/controls/screenshot');
-    require('map/controls/streetview');
-    require('map/controls/zoom');
-    require('map/controls/zoombox');
-    require('map/controls/zoomhistory');
-    require('map/controls/zoomtoextent');
-
     this.onLayerLoadStart    = this.onLayerLoadStart.bind(this);
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
-
-    // base layer
-    ApplicationState.project.onafter('setBaseLayer', () => {
-      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
-    });
-
-    this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
-
-    /** @since 3.8.0 */
-    this.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
-
-    /** @since 3.8.0 */
-    this.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
-
-    return this; //new (require('services/map').default);
   }
 
-  addComponent(component, placeholder, options={}) {
-    let register = true;
-    // add component to the sidebar and set position inside the sidebar
-    if ('sidebar' === placeholder && (!isMobile.any || false !== component.mobile)) {
+  /**
+   * Add component to the sidebar and set position inside the sidebar 
+   */
+  addComponent(component, options={}) {
+    if (!isMobile.any || false !== component.mobile) {
       ApplicationState.sidebar.components.push(component);
       (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
-    } else if ('sidebar' !== placeholder && this.#SERVICES[placeholder]) {
-      register = this.#SERVICES[placeholder].addComponents([component], options);
+      const id = component?.getId?.();
+      this.#COMPONENTS[id] = this.#COMPONENTS[id] ?? component;
     }
-    if (register) {
-      this.setComponent(component);
-    }
-    return true;
   }
 
   /**
@@ -578,7 +537,7 @@ export default new (class GUI extends Emitter {
       iconColor:          '#00bcd4',
       title:              'Bookmarks',
       vueComponentObject: require('components/SpatialBookMarks.vue').default,
-    }), 'sidebar')
+    }));
 
     // G3W-PRINT
     this.addComponent(Object.assign(new Component({
@@ -592,7 +551,7 @@ export default new (class GUI extends Emitter {
     }), {
       //@since 3.11.0 use internal methods called by component setters if declared
       _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
-    }), 'sidebar')
+    }));
 
     // G3W-SEARCH
     this.addComponent(new Component({
@@ -644,7 +603,7 @@ export default new (class GUI extends Emitter {
           }
       }],
       vueComponentObject: require('components/Search.vue').default,
-    }), 'sidebar')
+    }));
 
     // G3W-TOOLS
     this.addComponent(new (function() {
@@ -731,7 +690,7 @@ export default new (class GUI extends Emitter {
       };
     
       return comp;
-    }), 'sidebar')
+    }));
 
     // G3W-CATALOG
     this.addComponent(new (function() {
@@ -791,7 +750,7 @@ export default new (class GUI extends Emitter {
       });
     
       return comp;
-    }), 'sidebar')
+    }));
 
     this.setComponent(Object.assign(new Component({
       id:                 'contents',
@@ -803,9 +762,37 @@ export default new (class GUI extends Emitter {
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     }));
 
-    $('#g3w-view-map').append(
-      (new (Vue.extend(require('components/Map.vue').default))({ service: this.initMapService() })
-    ).$mount().$el);
+    require('map/controls/addlayer');
+    require('map/controls/annotation');
+    require('map/controls/attribution');
+    require('map/controls/geocoding');
+    require('map/controls/geolocation');
+    require('map/controls/measure');
+    require('map/controls/mouseposition');
+    require('map/controls/overview');
+    require('map/controls/query');
+    require('map/controls/queryby');
+    require('map/controls/scale');
+    require('map/controls/scaleline');
+    require('map/controls/screenshot');
+    require('map/controls/streetview');
+    require('map/controls/zoom');
+    require('map/controls/zoombox');
+    require('map/controls/zoomhistory');
+    require('map/controls/zoomtoextent');
+
+    // base layer
+    ApplicationState.project.onafter('setBaseLayer', () => {
+      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
+    });
+
+    this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
+
+    /** @since 3.8.0 */
+    this.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
+
+    /** @since 3.8.0 */
+    this.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
