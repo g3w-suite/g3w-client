@@ -66,15 +66,8 @@ const ACTIONS = {};
 
 export default new (class GUI extends Emitter {
 
-  /** store legacy frontend components */
+  /** store sidebar components (left menu) */
   #COMPONENTS = {};
-
-  /* service know by the applications (standard) */
-  #SERVICES = {
-    navbar:   null,
-    sidebar:  null,
-    viewport: null,
-  }
 
   isready = false;
 
@@ -492,6 +485,8 @@ export default new (class GUI extends Emitter {
     this.onLayerLoadStart    = this.onLayerLoadStart.bind(this);
     this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
+
+    this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
   }
 
   /**
@@ -778,8 +773,6 @@ export default new (class GUI extends Emitter {
     ApplicationState.project.onafter('setBaseLayer', () => {
       this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
     });
-
-    this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
 
     /** @since 3.8.0 */
     this.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
