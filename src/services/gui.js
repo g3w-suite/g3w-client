@@ -1017,7 +1017,7 @@ export default new (class GUI extends Emitter {
 
     // show contextual content
     this.setContent({
-      content:    this,
+      content:    this.getComponent('queryresults'),
       title:      "info.title",
       crumb:      { title: "info.title", trigger: null },
       push:       this.push_content,
