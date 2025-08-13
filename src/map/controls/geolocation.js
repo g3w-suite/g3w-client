@@ -8,13 +8,11 @@ import MapControl   from 'g3w-control';
 import { throttle } from 'utils/throttle';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.geolocation = function() {
-    map.addControl('geolocation', new GeolocationControl());
-    map.getMapControlByType('geolocation').on('click', throttle(e => map.showMarker(e.coordinates)));
-  };
-});
+const map = GUI;
+map.setupControl.geolocation = function() {
+  map.addControl('geolocation', new GeolocationControl());
+  map.getMapControlByType('geolocation').on('click', throttle(e => map.showMarker(e.coordinates)));
+};
 
 class GeolocationControl extends MapControl {
 

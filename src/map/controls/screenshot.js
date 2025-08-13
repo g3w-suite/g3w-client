@@ -10,28 +10,27 @@ import { sameOrigin }   from 'utils/sameOrigin';
 import MapControl       from 'g3w-control';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.screenshot = map.setupControl.geoscreenshot = function() {
-    if (isMobile.any) {
-      return;
-    }
-    Object
-      .keys(window.initConfig.mapcontrols)
-      .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
-      .forEach(type => {
-        if (map.getMapControlByType('screenshot')) {
-          map.getMapControlByType('screenshot').addType(type)
-        } else {
-          map.addControl('screenshot', new ScreenshotControl({
-              types:   [type],
-              layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...map.getExternalLayers()],
-            })
-          );
-        }
-      });
-  };
-});
+const map = GUI;
+
+map.setupControl.screenshot = map.setupControl.geoscreenshot = function() {
+  if (isMobile.any) {
+    return;
+  }
+  Object
+    .keys(window.initConfig.mapcontrols)
+    .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
+    .forEach(type => {
+      if (map.getMapControlByType('screenshot')) {
+        map.getMapControlByType('screenshot').addType(type)
+      } else {
+        map.addControl('screenshot', new ScreenshotControl({
+            types:   [type],
+            layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...map.getExternalLayers()],
+          })
+        );
+      }
+    });
+};
 
 /**
  * @FIXME prevent tainted canvas error

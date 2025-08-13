@@ -11,12 +11,11 @@ import MapControl                 from 'g3w-control';
 import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.streetview = function() {
-    map.addControl('streetview', new StreetViewControl());
-  };
-});
+const map = GUI;
+
+map.setupControl.streetview = function() {
+  map.addControl('streetview', new StreetViewControl());
+};
 
 class StreetViewControl extends MapControl {
   constructor(opts = {}) {

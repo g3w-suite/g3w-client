@@ -98,8 +98,7 @@ g3w.gui.once('initconfig', () => {
 // dev layers (modal-addlayer)
 g3w.gui.once('ready', async () => {
 
-  await waitFor(() => g3w.gui.getService('map'), 1000);
-  await g3w.gui.getService('map').isReady();
+  await g3w.gui.isMapReady();
 
   // $('#modal-addlayer').modal('show');
 

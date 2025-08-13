@@ -6,17 +6,16 @@
 import GUI from 'services/gui';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.scaleline = function() {
-    map.createMapControl({
-      id: 'scaleline',
-      add: false,
-      options: {
-        ol: new ol.control.ScaleLine(),
-        position: 'br',
-      }
-    });
-  };
-});
+const map = GUI;
+
+map.setupControl.scaleline = function() {
+  map.createMapControl({
+    id: 'scaleline',
+    add: false,
+    options: {
+      ol: new ol.control.ScaleLine(),
+      position: 'br',
+    }
+  });
+};
 

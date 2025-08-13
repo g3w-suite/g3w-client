@@ -57,12 +57,11 @@ Object
   });
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.geocoding = function() {
-    map.addControl('geocoding', new GeocodingControl(), false);
-  };
-});
+const map = GUI;
+
+map.setupControl.geocoding = function() {
+  map.addControl('geocoding', new GeocodingControl(), false);
+};
 
 class GeocodingControl extends ol.control.Control {
 

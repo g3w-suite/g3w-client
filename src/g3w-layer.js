@@ -804,7 +804,7 @@ export class Layer extends Emitter {
   setFilter(bool = false) {
     this.state.filter.active     = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
-      GUI.getService('map').toggleSelection(false, this.state.id); // hide selection features (open layers)
+      GUI.getService('map').toggleMapSelection(false, this.state.id); // hide selection features (open layers)
     }
     if (this.isGeoLayer() && !this.state.filter.active) {
       this.#updateOlSelection(); // update selection features (open layers)
@@ -2501,7 +2501,7 @@ export class Layer extends Emitter {
         }
       });
     // Ensures selection layer is always visible on map
-    map.toggleSelection(
+    map.toggleMapSelection(
       !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected),
       this.state.id
     );

@@ -5,31 +5,30 @@
 
 import GUI from 'services/gui';
 
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.zoombox = function() {
-    if (isMobile.any){
-      return;
-    }
-    map.createMapControl({
-      id: 'zoombox',
-      options: {
-        tipLabel:         'Zoom to box',
-        interactionClass: ol.interaction.DragBox,
-        cursorClass:      'ol-crosshair',
-        onSetMap({ setter, map }) {
-          if ('after' === setter) {
-            // zoom box
+const map = GUI;
+
+map.setupControl.zoombox = function() {
+  if (isMobile.any){
+    return;
+  }
+  map.createMapControl({
+    id: 'zoombox',
+    options: {
+      tipLabel:         'Zoom to box',
+      interactionClass: ol.interaction.DragBox,
+      cursorClass:      'ol-crosshair',
+      onSetMap({ setter, map }) {
+        if ('after' === setter) {
+          // zoom box
+          this._startCoordinate = null;
+          this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
+          this._interaction.on('boxend',   e => {
+            this.dispatchEvent({ type: 'zoomend', extent: ol.extent.boundingExtent([this._startCoordinate, e.coordinate]) });
             this._startCoordinate = null;
-            this._interaction.on('boxstart', e => this._startCoordinate = e.coordinate);
-            this._interaction.on('boxend',   e => {
-              this.dispatchEvent({ type: 'zoomend', extent: ol.extent.boundingExtent([this._startCoordinate, e.coordinate]) });
-              this._startCoordinate = null;
-            });
-          }
-        },
-      }
-    });
-    map.getMapControlByType('zoombox').on('zoomend', e => map.viewer.fit(e.extent) );
-  };
-});
+          });
+        }
+      },
+    }
+  });
+  map.getMapControlByType('zoombox').on('zoomend', e => map.viewer.fit(e.extent) );
+};

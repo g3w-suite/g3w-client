@@ -14,14 +14,13 @@ import { get_formatted_angle }    from 'utils/createMeasureTooltip';
 import { idb }                    from 'utils/idb';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.annotation = async function() {
-    map.addControl('annotation', new AnnotationControl({
-      features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
-    }));
-  }  
-});
+const map = GUI;
+
+map.setupControl.annotation = async function() {
+  map.addControl('annotation', new AnnotationControl({
+    features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
+  }));
+};
 
 class AnnotationControl extends MapControl {
 

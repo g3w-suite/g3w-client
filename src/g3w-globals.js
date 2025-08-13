@@ -127,7 +127,6 @@ globalThis.g3w = {
   Plugin,
   Layer,
   gui: GUI,
-  get map() { return GUI.getService('map'); },
   idb,
   state: ApplicationState,
   gettext: _,
@@ -239,7 +238,7 @@ globalThis.g3wsdk = {
     },
     layer: {
       LayersStore:     babelify(function(opts) { GUI.showUserMessage({ type: 'alert', message: 'g3wsdk.core.layer.LayersStore is deprecated.' }); return (ApplicationState.layers[opts.id] = opts); }),
-      Layer:           babelify(Object.assign(Layer, { LayerTypes: { TABLE: 'table', IMAGE: 'image', VECTOR: 'vector' } })),
+      Layer:           Object.assign(Layer, { LayerTypes: { TABLE: 'table', IMAGE: 'image', VECTOR: 'vector' } }),
       VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { TYPE: 'vector' })) } }),
       features: {
         /** ORIGINAL SOURCE: src/map/layers/feature.js@v4.0.0 */

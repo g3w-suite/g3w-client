@@ -945,7 +945,7 @@ $.ajaxSetup({
 
   GUI.setComponent(new Component({
     id:                 'map',
-    service:            GUI.initQueryResultsService(),
+    service:            GUI.initMapService(),
     vueComponentObject: require('components/Map.vue').default,
   }));
 

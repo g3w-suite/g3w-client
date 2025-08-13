@@ -75,7 +75,7 @@ export class IframeApp extends Emitter {
     }, false);
 
     // emit 'app:ready' message when ready
-    GUI.getService('map').isReady().then(async () => {
+    GUI.isMapReady().then(async () => {
       // wait until "editing" plugin is loaded
       if (window.initConfig.plugins.editing) {
         await waitFor(() => GUI.getPlugin('editing'));

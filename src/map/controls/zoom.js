@@ -7,17 +7,16 @@ import { gettext as _ } from 'g3w-i18n';
 import GUI              from 'services/gui';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.zoom = function() {
-    map.createMapControl({
-      id: 'zoom',
-      options: {
-        ol: new ol.control.Zoom({
-          zoomInTipLabel: _('Zoom in'),
-          zoomOutLabel: _('Zoom out'),
-        }),
-      }
-    });
-  };
-});
+const map = GUI;
+
+map.setupControl.zoom = function() {
+  map.createMapControl({
+    id: 'zoom',
+    options: {
+      ol: new ol.control.Zoom({
+        zoomInTipLabel: _('Zoom in'),
+        zoomOutLabel: _('Zoom out'),
+      }),
+    }
+  });
+};

@@ -1155,8 +1155,7 @@ export default {
       this.unloadWMS();
     });
 
-    await GUI.isReady();
-    await GUI.getService('map').isReady();
+    await GUI.isMapReady();
 
     this.deleteWMS = this.deleteWMS.bind(this);
 

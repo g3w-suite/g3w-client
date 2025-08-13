@@ -5,6 +5,7 @@ import Panel                                    from 'g3w-panel';
 import { gettext as _ }                         from 'g3w-i18n';
 import ApplicationState                         from 'g3w-state';
 import { IframeApp }                            from 'g3w-iframe';
+import MapControl                               from 'g3w-control';
 
 import DataRouterService                        from 'services/data';
 
@@ -18,6 +19,18 @@ import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { saveBlob }                             from 'utils/saveBlob';
 import { throttle }                             from 'utils/throttle';
+import { isPointGeometryType }                  from 'utils/isPointGeometryType';
+import { isLineGeometryType }                   from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }                from 'utils/isPolygonGeometryType';
+import { createSelectedStyle }                  from 'utils/createSelectedStyle';
+import { getScaleFromResolution }               from 'utils/getScaleFromResolution';
+import { getResolutionFromScale }               from 'utils/getResolutionFromScale';
+import { createFilterFromString }               from 'utils/createFilterFromString';
+import { getCatalogLayers }                     from 'utils/getCatalogLayers';
+import { idb }                                  from 'utils/idb';
+import { waitFor }                              from 'utils/waitFor';
+import { debounce }                             from 'utils/debounce';
+import { XHR }                                  from 'utils/XHR';
 
 import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
 
@@ -31,8 +44,21 @@ Object
     IframeApp,
     DataRouterService,
     PickCoordinatesInteraction,
+    MapControl,
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
+
+/**
+ * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
+ */
+const MAP = {
+  colors:     {
+    highlight: undefined,
+    selection: 'red',
+  },
+  controls:   {},
+  offlineids: [],
+};
 
 export default new (class GUI extends Emitter {
 
@@ -55,8 +81,17 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
    */
-  #events = [];
+  #events = {
+    ol:           [],
+    stores:       [], // layers stores
+    unwatches:    [],
+    query:        [],
+  };
+
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
@@ -83,12 +118,160 @@ export default new (class GUI extends Emitter {
   #vectorLayers = [];
 
   /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #maxZoom = 1000;
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #selectedLayer = null;
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #highlighting = false;
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  setupControl = {};
+
+  /** @since 4.1.0 */
+  get config() {
+    return window.initConfig;
+  }
+
+  /** @since 4.1.0 */
+  get project() {
+    return ApplicationState.project;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  viewer = null;
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  target = 'map';
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Zindex to layer order on map
+   * 
+   * @since 4.1.0
+   */
+  layersCount = 0; // 
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #controls = [];
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Default layers added to map
+   * 
+   * @since 4.1.0
+   */
+  defaultsLayers = {
+    mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
+    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: MAP.colors.highlight, fill: true })] }),
+    selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector() }),
+  };
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #layers = {
+    base:     [],
+    g3w:      [],
+    external: [],
+    index:    {}, // store layers by multilayer id (performance)
+  };
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Store interactions added by plugin or external application
+   * 
+   * @since 4.1.0
+   */
+  #interactions = [];
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * draw shadow
+   * 
+   * @since 4.1.0
+   */
+  #shadow = {
+    type:     'coordinate',
+    outer:    [],
+    inner:    [],
+    scale:    null,
+    rotation: null,
+    listener: null,
+  };
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * how many are loading
+   * 
+   * @since 4.1.0
+   */
+  #loading = 0;
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  #marker = null;
+
+  /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * Reactive state
    */
   state = {
+    mapUnits:   'm',
+    bbox:       [],
+    hidemaps:   [],
+    resolution: null,
+    center:     null,
+    loading:    false,
+    hidden:     true,
+    scale:      0,
+    map_info:   { info: null, style: null },
+    mapunits:   ['metric'],
 
+    /**
+     * @FIXME add description
+     */
     logged: undefined !== window.initConfig.user.id,
 
     /**
@@ -370,6 +553,16 @@ export default new (class GUI extends Emitter {
       'openCloseFeatureResult',
       /** @since 4.1.0 */
       'removeFeatureLayerFromResult',
+      /** @since 4.1.0 */
+      'addHideMap',
+      /** @since 4.1.0 */
+      'setHidden',
+      /** @since 4.1.0 */
+      'controlClick',
+      /** @since 4.1.0 */
+      'loadExternalLayer',
+      /** @since 4.1.0 */
+      'unloadExternalLayer'
     ];
 
     // BACKOMP v3.x
@@ -433,7 +626,44 @@ export default new (class GUI extends Emitter {
   }
 
   initMapService() {
-    return new (require('services/map').default);
+
+    require('map/controls/addlayer');
+    require('map/controls/annotation');
+    require('map/controls/attribution');
+    require('map/controls/geocoding');
+    require('map/controls/geolocation');
+    require('map/controls/measure');
+    require('map/controls/mouseposition');
+    require('map/controls/overview');
+    require('map/controls/query');
+    require('map/controls/queryby');
+    require('map/controls/scale');
+    require('map/controls/scaleline');
+    require('map/controls/screenshot');
+    require('map/controls/streetview');
+    require('map/controls/zoom');
+    require('map/controls/zoombox');
+    require('map/controls/zoomhistory');
+    require('map/controls/zoomtoextent');
+
+    this.onLayerLoadStart    = this.onLayerLoadStart.bind(this);
+    this.onLayerLoadEnd      = this.onLayerLoadEnd.bind(this);
+    this.onLayerLoadError    = this.onLayerLoadError.bind(this);
+
+    // base layer
+    ApplicationState.project.onafter('setBaseLayer', () => {
+      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
+    });
+
+    this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
+
+    /** @since 3.8.0 */
+    this.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
+
+    /** @since 3.8.0 */
+    this.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
+
+    return this; //new (require('services/map').default);
   }
 
   addComponent(component, placeholder, options={}) {
@@ -524,6 +754,17 @@ export default new (class GUI extends Emitter {
   isReady() {
     return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
   };
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @returns promise ready
+   * 
+   * @since 4.1.0
+   */
+  isMapReady() {
+    return new Promise(resolve => this._map_ready ? resolve() : this.once('viewerset', resolve));
+  }
 
   /**
    * Passing a component application ui id return service that belongs to component
@@ -1012,7 +1253,7 @@ export default new (class GUI extends Emitter {
             thumbnail:   p.thumbnail,
             gid:         p.gid,
             cbk:         opts.cbk || ((o = {}) => async () => {
-              const url = await this.getService('map').addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
+              const url = await this.addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
               try { history.replaceState(null, null, url); }
               catch (e) { console.warn(e); } location.replace(url);
             }),
@@ -1212,7 +1453,7 @@ export default new (class GUI extends Emitter {
   }
 
   setModal(bool=false, message) {
-    const map = this.getService('map');
+    const map = this;
     if (bool) { map.startDrawGreyCover(message) }
     else { map.stopDrawGreyCover() }
   }
@@ -1304,7 +1545,7 @@ export default new (class GUI extends Emitter {
         url,
         data: {
           ...data,
-          initextent:      this.getService('map').getMapExtent(),            // current map extent
+          initextent:      this.getMapExtent(),            // current map extent
           lng:             ApplicationState.language,                        // current launguage
           initbaselayer:   ApplicationState.baseLayerId || undefined,        // current base layer
           toc_tab_default: ['baselayers', 'layers', 'legend'].find(tab => tab === this.getComponent('catalog').getInternalComponent().activeTab), // take in account change tab
@@ -1442,7 +1683,7 @@ export default new (class GUI extends Emitter {
     await Vue.nextTick();
 
     // resize "map"
-    this.getService('map').layout({
+    this.layout({
       width:  state.map.sizes.width,
       height: state.map.sizes.height
     });
@@ -1596,10 +1837,10 @@ export default new (class GUI extends Emitter {
       const feature = new ol.Feature(geom);
       feature.setId(undefined);
       this.#layer.getSource().clear();
-      this.getService('map').getMap().removeLayer(this.#layer);
+      this.getMap().removeLayer(this.#layer);
       this.#layer.getSource().addFeature(feature);
-      this.getService('map').getMap().addLayer(this.#layer);
-      this.#layer.setZIndex(this.getService('map').getMap().getLayers().getLength()); // ensure layer is on top of others
+      this.getMap().addLayer(this.#layer);
+      this.#layer.setZIndex(this.getMap().getLayers().getLength()); // ensure layer is on top of others
     }
 
     // Convert response from DataProvider into a QueryResult component data structure
@@ -1990,7 +2231,7 @@ export default new (class GUI extends Emitter {
 
     // highlight new feature
     if (1 === this.state.layers.length) {
-      this.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
+      this.highlightFeatures(this.state.layers[0].features, { duration: Infinity });
     }
 
     this.changeLayerResult(layer);
@@ -2029,7 +2270,7 @@ export default new (class GUI extends Emitter {
     }
 
     // reset array
-    this.#events = [];
+    this.#events.query = [];
 
     // loop results
     layers.forEach((layer, index) => {
@@ -2173,7 +2414,7 @@ export default new (class GUI extends Emitter {
       } else if (!layer.external && layer.toc && undefined !== layer.selection.active) {
         const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
         getCatalogLayerById(layer.id).on('unselectionall', handler);
-        this.#events.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
+        this.#events.query.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
       }
 
     });
@@ -2259,17 +2500,20 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * Clear all
    * 
    * @since 4.1.0
    */
   clear() {
+    // clear query results
+
     this.#asyncFnc.todo()
     // unlistener events actions
-    this.#events.forEach(obj => obj.layer.off(obj.event, obj.handler));
-    this.#events = [];
-    this.getService('map').clearHighlightGeometry();
+    this.#events.query.forEach(obj => obj.layer.off(obj.event, obj.handler));
+    this.#events.query = [];
+    this.clearHighlightGeometry();
     this.#layer.getSource().clear();
     this.removeAddFeaturesLayerResultInteraction(true);
     this.#asyncFnc = {
@@ -2282,7 +2526,12 @@ export default new (class GUI extends Emitter {
     this.clearState();
     this.closeComponent();
     this.#layer.getSource().clear();
-    this.getService('map').getMap().removeLayer(this.#layer);
+    this.getMap().removeLayer(this.#layer);
+
+    // clear map
+    this.#events.ol.forEach(key => ol.Observable.unByKey(key));
+    this.#events.ol.splice(0);
+    Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this))
   }
 
   /**
@@ -2307,12 +2556,12 @@ export default new (class GUI extends Emitter {
    */
   removeAddFeaturesLayerResultInteraction(toggle) {
     if (null !== this.#interaction.toggleeventhandler) {
-      this.getService('map').off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
+      this.off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
     }
 
     // remove current interaction to get features from layer
     if (null !== this.#interaction.interaction) {
-      this.getService('map').removeInteraction(this.#interaction.interaction);
+      this.removeInteraction(this.#interaction.interaction);
     }
 
     // check if query map control is toggled and registered
@@ -2350,7 +2599,7 @@ export default new (class GUI extends Emitter {
 
     // remove previous interaction
     if (not_current && this.#interaction.interaction) {
-      this.getService('map').removeInteraction(this.#interaction.interaction);
+      this.removeInteraction(this.#interaction.interaction);
     }
 
     // set new layer
@@ -2366,10 +2615,10 @@ export default new (class GUI extends Emitter {
 
       const external_layer = (this.state.layers.find(l => l.id === layer.id) || {}).external;
 
-      this.#interaction.mapcontrol  = this.#interaction.mapcontrol || this.getService('map').getCurrentToggledMapControl() || null;
+      this.#interaction.mapcontrol  = this.#interaction.mapcontrol || this.getCurrentToggledMapControl() || null;
       this.#interaction.interaction = new PickCoordinatesInteraction();
 
-      this.getService('map').addInteraction(this.#interaction.interaction, { close: false });
+      this.addInteraction(this.#interaction.interaction, { close: false });
 
       this.#interaction.interaction
         .on('picked', async ({ coordinate: coordinates }) => {
@@ -2406,7 +2655,7 @@ export default new (class GUI extends Emitter {
         }
       };
 
-      this.getService('map').once('mapcontrol:toggled', this.#interaction.toggleeventhandler);
+      this.once('mapcontrol:toggled', this.#interaction.toggleeventhandler);
 
     }
   }
@@ -2437,9 +2686,9 @@ export default new (class GUI extends Emitter {
     options.highlight = !this.isOneLayerResult();
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this.#asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this.#asyncFnc.todo = this.getService('map').zoomToFeatures.bind(this.getService('map'), features, options);
+      this.#asyncFnc.todo = this.zoomToFeatures.bind(this, features, options);
     } else {
-      this.getService('map').zoomToFeatures(features, options);
+      this.zoomToFeatures(features, options);
     }
   }
 
@@ -2465,9 +2714,9 @@ export default new (class GUI extends Emitter {
   highLightLayerFeatures(layer, options = {}) {
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this.#asyncFnc.highLightLayerFeatures.async) {
-      this.#asyncFnc.todo = this.getService('map').highlightFeatures.bind(this.getService('map'), features, options);
+      this.#asyncFnc.todo = this.highlightFeatures.bind(this, features, options);
     } else {
-      this.getService('map').highlightFeatures(features, options);
+      this.highlightFeatures(features, options);
     }
   }
 
@@ -2606,8 +2855,8 @@ export default new (class GUI extends Emitter {
 
     // case query coordinates
     if (has_coords) {
-      this.getService('map').viewer.map.forEachFeatureAtPixel(
-        this.getService('map').viewer.map.getPixelFromCoordinate(coordinates),
+      this.viewer.map.forEachFeatureAtPixel(
+        this.viewer.map.getPixelFromCoordinate(coordinates),
         f => { features.push(f); },
         { layerFilter: l => l === vectorLayer }
       );
@@ -2765,13 +3014,13 @@ export default new (class GUI extends Emitter {
       return;
     }
     if (this.#asyncFnc.goToGeometry.async) {
-      this.#asyncFnc.todo = this.getService('map')[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'].bind(
-        this.getService('map'),
+      this.#asyncFnc.todo = this[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'].bind(
+        this,
         this.isOneLayerResult() ? [feature] : feature.geometry,
         this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
       );
     } else {
-      setTimeout(() => this.getService('map')[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'](
+      setTimeout(() => this[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'](
         this.isOneLayerResult() ? [feature] : feature.geometry,
         this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
       ));
@@ -2780,30 +3029,89 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @param { ol.geom.Geometry | Object } geometryObj
+   * @param { string } geometryObj.id
+   * @param { Object } options
+   * @param { boolean } options.feature
+   * @param { boolean } options.zoom
+   * @param { boolean } options.highlight
+   * @param options.style
+   * @param options.color
    *
-   * @param layer
-   * @param feature
+   * @returns { Promise<any> }
    * 
    * @since 4.1.0
    */
-  highlightGeometry(layer, feature) {
-    if (feature.geometry) {
-      this.getService('map').highlightGeometry(
-        feature.geometry,
-        { layerId: layer.id, zoom: false, duration: Infinity }
-      );
+  async highlightGeometry(geometryObj, options = {}) {
+
+    if (options.geometry) {
+      return this.highlightGeometry(options.geometry, { layerId: geometryObj.id, zoom: false, duration: Infinity });
     }
+
+    const duration  = options.duration || 2000;
+    const hlayer    = this.defaultsLayers.highlightLayer;
+    const hide      = 'function' === typeof options.hide      ? options.hide      : null;
+    const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
+    const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
+    let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+
+    this.clearHighlightGeometry();
+    MAP.colors.highlight = options.color;
+
+    if (zoom) {
+      await this.zoomToExtent(geometry.getExtent());
+    }
+
+    if (!highlight) {
+      return;
+    }
+
+    if (options.style) {
+      hlayer.setStyle(options.style);
+    }
+
+    hlayer.getSource().addFeature(new ol.Feature({ geometry }));
+
+    return new Promise(async resolve => {
+
+      const cb = () => {
+        hlayer.getSource().clear();
+        // set default style
+        if (options.style) {
+          hlayer.setStyle(feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: options.color, fill: true })]);
+        }
+        if (!hide) {
+          this.#highlighting = false;
+        }
+        resolve();
+      }
+
+      if (hide) {
+        hide(cb);
+      }
+
+      if (duration && duration !== Infinity && !hide) {
+        this.#highlighting = true;
+        setTimeout(cb, duration);
+      }
+
+    });
   }
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param layer
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * @since 4.1.0
    */
-  clearHighlightGeometry(layer) {
-    this.getService('map').clearHighlightGeometry();
+  clearHighlightGeometry() {
+    if (!this.#highlighting) {
+      this.defaultsLayers.highlightLayer.getSource().clear();
+    }
+    // reset default layer style
+    MAP.colors.highlight = undefined;
   }
 
   /**
@@ -2919,7 +3227,7 @@ export default new (class GUI extends Emitter {
         // set current selection selected attribute
         feat.selection.selected = layer.selection.active;
         // add remove selection feature
-        this.getService('map').setSelectionFeatures(
+        this.setSelectionFeatures(
           layer.selection.active ? 'add' : 'remove',
           { feature: feat }
         );
@@ -2949,7 +3257,7 @@ export default new (class GUI extends Emitter {
       }
 
       // handle map selection layer adding or remove feature based on selection boolean value
-      this.getService('map').setSelectionFeatures(
+      this.setSelectionFeatures(
         feat.selection.selected ? 'add' : 'remove',
         { feature: feat }
       );
@@ -3011,13 +3319,36 @@ export default new (class GUI extends Emitter {
     catalog_layer.state.selection.active = Object.values(action.state.toggled).every(t => t);
 
     //remove Highlight geometry layer fetures
-    this.getService('map').clearHighlightGeometry();
+    this.clearHighlightGeometry();
     
     // PROJECT LAYER - In case of single layer and no features, remove layer
     if (1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
       query.getState().layers.splice(0);
     }
 
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  toggleMapSelection(visible = true, layerId) {
+    const selection = this.defaultsLayers.selectionLayer;
+    //take in account that of layer id is specified, need to set only
+    // features related to layer visible or not
+    if (layerId) {
+      selection.getSource()
+        .getFeatures()
+        .filter(f => layerId === f.__layerId)
+        .forEach(f => f.setStyle(visible ? createSelectedStyle({
+          geometryType: f.getGeometry().getType(),
+          color:        MAP.colors.selection,
+          fill:         true
+        }): new ol.style.Style(null)))
+    } else {
+      selection.setVisible(visible);
+    }
   }
 
   /**
@@ -3033,6 +3364,2224 @@ export default new (class GUI extends Emitter {
     } else if (node.name) {
       node.relation = true;
     }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * show spinner layers
+   *
+   * @since 4.1.0
+   */
+  onLayerLoadStart() {
+    if (0 === this.#loading) {
+      this.emit('loadstart');
+      this.showSpinner({ container: $('#map-spinner'), id: 'maploadspinner', style: 'transparent' });
+    }
+    this.#loading += 1;
+    }
+  
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  onLayerLoadEnd() {
+    this.#loading -= 1;
+    if (0 === this.#loading) {
+      this.emit('loadend');
+      this.hideSpinner('maploadspinner');
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  onLayerLoadError() {
+    /** @since 3.10.0 - fails silently */
+    if (!ApplicationState.project.state.show_load_layer_error) {
+      return;
+    }
+    if (!this.onLayerLoadError.shown) {
+      this.notify.warning('Some layers are not available');
+      this.onLayerLoadError.shown = true;
+    }
+    this.onLayerLoadEnd();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "cdu"
+   * 
+   * @since 4.1.0
+   */
+  removeHideMap(id) {
+    const i = (this.state.hidemaps || []).findIndex(m => id === m.id);
+    if (-1 !== i) {
+      this.state.hidemaps.splice(i, 1);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "cdu", "archiweb"
+   * 
+   * @since 4.1.0
+   */
+  createMapImage({ map } = {}) {
+    return new Promise((resolve, reject) => {
+      try {
+        const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
+        canvas.toBlob(blob => resolve(blob));
+      } catch(e) {
+        console.warn(e);
+        reject(e);
+      }
+    })
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getProject() {
+    return ApplicationState.project;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getMap() {
+    try {
+      return this.viewer.map;
+    } catch(e) {
+      console.warn(e);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getProjection() {
+    return ApplicationState.project.getProjection();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  isMapHidden() {
+    return this.state.hidden;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getCrs() {
+    return ApplicationState.project.getProjection().getCode();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getViewport() {
+    return this.viewer.map.getViewport();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getResolution() {
+    return this.viewer.map.getView().getResolution();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getEpsg() {
+    return this.viewer.map.getView().getProjection().getCode();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Show Marker on a map
+   * 
+   * @param coordinates
+   * @param duration
+   * 
+   * @since 4.1.0
+   */
+  showMarker(coordinates, duration = 1000) {
+    this.#marker.setPosition(coordinates);
+    setTimeout(() => this.#marker.setPosition(), duration);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @returns layer by name
+   * 
+   * @since 4.1.0
+   */
+  getLayerByName(name) {
+    return this.getMap().getLayers().getArray().find(l => name === l.get('name'));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @returns layer by id
+   * 
+   * @since 4.1.0
+   */
+  getLayerById(id) {
+    return this.getMap().getLayers().getArray().find(l => id === l.get('id'));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "strees"
+   * 
+   * get all features from vector layer based on coordinates
+   * 
+   * @since 4.1.0
+   */
+  getVectorLayerFeaturesFromCoordinates(layerId, coordinates) {
+    let intersectGeom;
+    let features      = [];
+    const map         = this.getMap();
+    const vectorLayer = this.getLayerById(layerId);
+    if (Array.isArray(coordinates)) {
+      if (2 === coordinates.length) {
+        const pixel = map.getPixelFromCoordinate(coordinates);
+        map.forEachFeatureAtPixel(pixel,
+          feature => features.push(feature),
+          { layerFilter(layer) { return layer === vectorLayer; }
+        });
+      } else if (4 === coordinates.length) {
+        intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
+        if ('vector' === vectorLayer?.getType?.()) {
+          features = vectorLayer.getIntersectedFeatures(intersectGeom);
+        } else if (ol.layer.Vector === vectorLayer.constructor) {
+          vectorLayer.getSource().getFeatures()
+            .forEach(f => intersectGeom.intersectsExtent(f.getGeometry().getExtent()) && features.push(f))
+        }
+      }
+    } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
+      intersectGeom = coordinates;
+      if ('vector' === vectorLayer?.getType?.()) {
+        features = vectorLayer.getIntersectedFeatures(intersectGeom);
+      } else if (ol.layer.Vector === vectorLayer.constructor) {
+        vectorLayer
+          .getSource()
+          .getFeatures()
+          .forEach(f => intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(f))
+      }
+    }
+    return features;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "cdu"
+   * 
+   * @since 4.1.0
+   */
+  getQueryLayerByCoordinates({ layer, coordinates } = {}) {
+    return new Promise((resolve, reject) => {
+      layer.query({
+        coordinates,
+        mapProjection: this.getProjection(),
+        resolution:    this.getResolution(),
+      })
+      .then((response) => resolve(response))
+      .catch(e => { console.warn(e); reject(e); })
+    })
+  }
+
+  //setup controls
+  /*
+    layout : {
+      lv: <options> h : horizontal (default), v vertical
+      lh: <options> h: horizontal: v vertical (default)
+    }
+  */
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  createMapControl(type, {
+    id,
+    add     = true,
+    options = {},
+  } = {}) {
+    // BACKCOMP v3.x
+    if ('string' !== typeof type) {
+      id           = type.id;
+      add          = type.add ?? true;
+      options      = type.options ?? {};
+      type         = id;
+    }
+    const control = new MapControl({ name: id, ...options });
+    this.addControl(id || type, control, add);
+    return control;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  showAddLayerModal() {
+    $('#modal-addlayer').modal('show');
+    this.emit('addexternallayer');
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getCenter() {
+    return this.getMap().getView().getCenter();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * Zoom to Feature ID 
+   * 
+   * @since 4.1.0
+   */
+  async zoomToFid(zoom_to_fid = '', separator = '|') {
+    const [layerId, fid] = zoom_to_fid.split(separator);
+
+    if (undefined === layerId && undefined === fid) {
+      return;
+    }
+
+    const layer = ApplicationState.project.getLayerById(layerId);
+
+    const { data = [] } = await DataRouterService.getData('search:fids', {
+      inputs: {
+        layer,
+        fids:  [fid]
+      },
+      outputs: {
+        show: {
+          loading: false,
+          async condition({ data = [] } = {}) {
+            if (layer.isEditable()) {
+              await waitFor(() => undefined !== layer.config.editing);
+            }
+            return !!(data[0] && data[0].features.length > 0);
+          }
+        }
+      }
+    });
+
+    const feature = data[0] && data[0].features[0];
+
+    if (feature) {
+      await this.zoomToFeatures([feature]);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * Handle ztf url parameter
+   * 
+   * @param zoom_to_features
+   * 
+   * @since 4.1.0
+   */
+  async zoomToFeaturesUrl(zoom_to_features = '') {
+    try {
+      const [id, filter] = zoom_to_features.split(':');
+
+      if (!id || !filter) {
+        return;
+      }
+
+      // find project layer
+      const pLayer = ApplicationState.project.getLayers().find(l =>
+        id === l.id ||
+        id === l.name ||
+        id === l.origname
+      );
+
+      const layer = pLayer && ApplicationState.project.getLayerById(pLayer.id);
+
+      const r = pLayer && await DataRouterService.getData('search:features', {
+        inputs: {
+          layer,
+          filter: createFilterFromString({ layer, filter }),
+        },
+        outputs: {
+          show: {
+            loading: false,
+            async condition({ data = [] } = {}) {
+              if (layer.isEditable()) {
+                await waitFor(() => undefined !== layer.config.editing);
+              }
+              return !!(data[0] && data[0].features.length > 0);
+            }
+          }
+        }
+      });
+
+      const features = r && r.data && r.data[0] && r.data[0].features;
+
+      if (features) {
+        this.zoomToFeatures(features);
+      }
+    } catch(e) {
+      console.warn(e);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  getMapExtent() {
+    return this.getMap().getView().calculateExtent(this.getMap().getSize());
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @param url
+   * @param epsg cordinate referece system (since 3.8.0)
+   *
+   * @returns {string}
+   * 
+   * @since 4.1.0
+   */
+  async addMapExtentUrlParameterToUrl(url, epsg) {
+    url = new URL(url);
+    const changed = undefined !== epsg && epsg !== this.getEpsg();
+    if (changed) {
+      await ApplicationState.projections.set(epsg);
+    }
+    url.searchParams.set(
+      'map_extent',
+      (
+        changed
+          ? ol.proj.transformExtent(this.getMapExtent(), this.getEpsg(), epsg)
+          : this.getMapExtent()
+      ).toString()
+    )
+    return url.toString()
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  getMapControlByType(type) {
+    // BACKOMP v3.x
+    if ("string" !== typeof type) {
+      type = type.type;
+    }
+    return (this.#controls.find(c => type === c.type) || {}).control;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @param id
+   * @param type
+   * @param control
+   * @param addToMapControls
+   * @param visible
+   * 
+   * @since 4.1.0
+   */
+  addControl(id, type, control, addToMapControls = true, visible = control?.isVisible?.() ?? true) {
+
+    // BACKCOMP v3.x
+    if ('string' !== typeof type ) {
+      [id, type, control, addToMapControls, visible] = [id, id, type, control ?? true, addToMapControls ?? true];
+    }
+
+    this.viewer.map.addControl(control);
+
+    control.on('toggled', e => this.emit('mapcontrol:toggled', e));
+
+    this.#controls.push({ id, type, control, visible, mapcontrol: addToMapControls && visible });
+
+    control.on('controlclick', ({ target: mapcontrol }) => {
+      const clickmap = !!(mapcontrol.isClickMap && mapcontrol.isClickMap());
+      if (clickmap) {
+        this.#interactions.forEach(int => int.setActive(false));
+      }
+      this.controlClick(mapcontrol, { clickmap })
+    });
+
+    $(control.element).find('button')[0]?.setAttribute('data-placement', 'left');
+
+    if (addToMapControls && !visible) {
+      control.element.style.display = "none";
+    }
+    if (addToMapControls) {
+      $('.g3w-map-controls').append(control.element);
+    }
+
+    MAP.controls[type] = control;
+
+    if (false === control.offline) {
+      MAP.offlineids.push({ id: type, enable: control.getEnable() });
+    }
+
+    if (false === control.offline && control.getEnable()) {
+      control.setEnable(ApplicationState.online);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  showControls(types) {
+    this.#controls.forEach(c => this.viewer.map.removeControl(c.control));
+    this.#controls.forEach(c => {
+      c.visible = !types || types.indexOf(c.type) > -1 ? true : c.visible;
+      if (c.visible) {
+        this.viewer.map.addControl(c.control);
+      }
+    });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  getMapControls() {
+    return this.#controls;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * Used by the following plugins: "archiweb"
+   * 
+   * @since 4.1.0
+   */
+  removeControlById(id) {
+    this.#controls.find((c, i) => {
+      if (id === c.id) {
+        this.#controls.splice(i, 1);
+        this.viewer.map.removeControl(c.control);
+        if (c.control.hideControl) {
+          c.control.hideControl();
+        }
+        return true;
+      }
+    })
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  removeControl(type) {
+    this.#controls.find((c, i) => {
+      if (type === c.type) {
+        this.#controls.splice(i, 1);
+        this.viewer.map.removeControl(c.control);
+        if (c.control.hideControl) {
+          c.control.hideControl();
+        }
+        return true;
+      }
+    })
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * @since 4.1.0
+   */
+  deactiveMapControls() {
+    this.#controls.forEach(c => c.control?.isToggled?.() && c.control.toggle(false));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Method to disable
+   *
+   * @since 4.1.0
+   */
+  disableClickMapControls(bool = true) {
+    this.#controls
+      .filter(c => c.control?.isClickMap?.())
+      .forEach(c => {
+        c.control.isToggled() && c.control.toggle();
+        c.control[bool ? 'disable' : 'enable']();
+    })
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  _setLegendParams(bool = true) {
+    if (bool) {
+      const map  = this.getMap();
+      const size = (map && map.getSize().filter(v => v > 0)) || null;
+      const bbox = size && 2 === size.length ? map.getView().calculateExtent(size) : ApplicationState.project.state.initextent;
+      this.#layers.g3w.forEach(l => {
+        if(!l.isXYZ()) {
+          l.setCustomParams({
+            crs: this.getEpsg(),
+            // in the case of axis orientation inverted if it needs to invert the axis
+            bbox: "neu" === map.getView().getProjection().getAxisOrientation()  ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox,
+          });
+        }
+      });
+      this.emit('change-map-legend-params');
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getMapUnits() {
+    return this.state.mapUnits;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "cdu"
+   * 
+   * @since 4.1.0
+   */
+  addHideMap({ layers=[] } = {}) {
+    const MAP = {
+      id: `hidemap_${Date.now()}`,
+      map: null,
+    };
+    this.state.hidemaps.push(MAP);
+    // create Map
+    Vue.nextTick().then(async () => {
+      MAP.map = new ol.Map({
+        controls:            ol.control.defaults({ attribution: false, zoom: false }),
+        interactions:        ol.interaction.defaults(),
+        ol3Logo:             false,
+        view:                new ol.View({
+          projection: this.getMap().getView().getProjection(),
+          center:     this.getMap().getView().getCenter(),
+          resolution: this.getMap().getView().getResolution()
+        }),
+        keyboardEventTarget: document,
+        target:              MAP.id,
+      });
+      layers.forEach(l => MAP.map.addLayer(l));
+    });
+    return MAP;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  setHidden(bool) {
+    this.state.hidden = bool;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  controlClick(mapcontrol, info = {}) {}
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * called when an external layer is loaded
+   * 
+   * @since 4.1.0
+   */
+  loadExternalLayer(layer) {} 
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  unloadExternalLayer(layer) {}
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * remove all events of layersStore
+   * 
+   * @since 4.1.0
+   */
+  #removeEventsKeysToLayersStore(store) {
+    const id = store.getId();
+    if (this.#events.stores[id]) {
+      this.#events.stores[id].forEach(evt => { Object.entries(evt).forEach(([event, key]) => store.un(event, key)); });
+      delete this.#events.stores[id];
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * register all events of layersStore and relative keys
+   * 
+   * @since 4.1.0
+   */
+  #setUpEventsKeysToLayersStore(store) {
+    const id = store.getId();
+    // check if already store a key of events
+    this.#events.stores[id] = [];
+
+    //In the case of store that has layers @since 3.10.0
+    store.getLayers().forEach(l => {
+      if ('vector' === l.getType()) {
+        const olLayer = this.#createVectorLayer(l).getOLLayer();
+        if (olLayer) {
+          this.getMap().addLayer(olLayer);
+        }
+      }
+    });
+
+    this.#events.stores[id].push({
+      addLayer: store.onafter('addLayer', l => {
+      if ('vector' === l.getType()) {
+        const olLayer = this.#createVectorLayer(l).getOLLayer();
+        if (olLayer) {
+          this.getMap().addLayer(olLayer);
+        }
+      }
+    }),
+    });
+    this.#events.stores[id].push({
+      removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.viewer.map.removeLayer(l.getOLLayer()) }),
+    });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  removeLayers() {
+    this.#layers.base.forEach(l => this.viewer.map.removeLayer(l.getOLLayer()))
+    this.#layers.g3w.forEach(l => {
+      l.un('loadstart', this.onLayerLoadStart);
+      l.un('loadend',   this.onLayerLoadEnd);
+      l.un('loaderror', this.onLayerLoadError);
+      this.viewer.map.removeLayer(l.getOLLayer());
+    });
+    this.#layers.g3w.splice(0);
+    this.#layers.external.forEach(layer => this.removeExternalLayer(layer.get('name')));
+    this.#layers.external.splice(0);
+    this.defaultsLayers.mapcenter     .getSource().clear();
+    this.defaultsLayers.highlightLayer.getSource().clear();
+    this.defaultsLayers.selectionLayer.getSource().clear();
+    this.getMap().removeLayer(this.defaultsLayers.mapcenter);
+    this.getMap().removeLayer(this.defaultsLayers.highlightLayer);
+    this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * set ad increase layerIndex
+   * 
+   * @since 4.1.0
+   */
+  setLayerZIndex({ layer, zindex = this.layersCount+=1 }) {
+    //@since 3.11.0 For editing purpose, need to be set on top (add 1000)
+    zindex = zindex + (layer.get('__g3w_editable') ? 1000 : 0)
+    layer.setZIndex(zindex);
+    this.emit('set-layer-zindex', { layer, zindex });
+    return zindex;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "cdu"
+   * 
+   * @since 4.1.0
+   */
+  createMapLayer(layer) {
+    let mapLayer;
+
+    // Raster Layer
+    if (layer.isRaster()) {
+      mapLayer = this.#createRasterLayer(layer);
+    }
+
+    // Vector Layer
+    if (layer.isVector()) {
+      mapLayer = this.#createVectorLayer(layer);
+    }
+
+    mapLayer.addLayer(layer);
+  return mapLayer;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "qtimeseries"
+   *
+   * Update MapLayer
+   *
+   * @param layer
+   * @param options
+   * @param options.force
+   * @param options.layerId in case of filtertoken change on a single layer of TOC
+   * @param { Boolean } showSpinner show or not spinner
+   * 
+   * @since 4.1.0
+   */
+  updateMapLayer(layer, options = { force: false }, { showSpinner = true } = {}) {
+
+    if (layer?.isVector?.()) {
+      return;
+    }
+
+    if (layer?.isBaseLayer?.()) {
+      layer.update(this.state);
+      return;
+    }
+
+    // if force to add g3w_time parameter to force request of map layer from server
+    if (options.force) {
+      options.g3w_time = Date.now();
+    }
+
+    if (showSpinner !== layer.showSpinner) {
+      layer.showSpinner = showSpinner;
+      if (showSpinner) {
+        layer.on('loadstart', this.onLayerLoadStart);
+        layer.on('loadend',   this.onLayerLoadEnd);
+        layer.on('loaderror', this.onLayerLoadError);
+      } else {
+        layer.off('loadstart', this.onLayerLoadStart);
+        layer.off('loadend',   this.onLayerLoadEnd);
+        layer.off('loaderror', this.onLayerLoadError);
+      }
+    }
+
+    layer.update(this.state, options);
+    return layer;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  setTarget(elId) {
+    this.target = elId;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getCurrentToggledMapControl() {
+    return (this.#controls.find(c => c.control && c.control.isToggled && c.control.isToggled()) || {}).control;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * close: param to close eventually right content open
+   * @param interaction
+   * @param options is an object contain: {
+   *   active: If set new interaction active or not
+   *   active: If set new interaction active or not
+   *   close: if eventually close GUI Content (es. result right content)
+   * }
+   * return object having current toggled control if there is a toggled mapcontrol
+   * 
+   * @since 4.1.0
+   */
+  addInteraction(interaction, options = { active:true, close:true }) {
+    const { active = true }   = options;
+    const control             = this.getCurrentToggledMapControl();
+    const toggled             = control && control.isToggled && control.isToggled() || false;
+    const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
+    if (untoggleMapControls && active) {
+      this.#controls.forEach(c => {
+        if (c.control?.isToggled?.()) {
+          c.control.toggle(false);
+          if (false !== options.close) {
+            this.closeContent();
+          }
+        }
+      });
+    }
+    this.getMap().addInteraction(interaction);
+    interaction.setActive(active);
+    this.#interactions.push(interaction);
+    return {
+      control,
+      toggled// return current toggled map control if toggled
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  removeInteraction(interaction) {
+    if (interaction) {
+      interaction.setActive(false);
+    }
+    this.viewer.map.removeInteraction(interaction);
+    this.#interactions = this.#interactions.filter(_interaction => interaction !== _interaction);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #watchInteraction(interaction) {
+    interaction.on('change:active', e => {
+      if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
+        this.emit('mapcontrol:active', e.target);
+      }
+    })
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "qtimeseries"
+   *
+   * Show map Info
+   * 
+   * @param info
+   * 
+   * @since 4.1.0
+   */
+  showMapInfo({ info, style } = {}) {
+    this.state.map_info.info = info;
+    this.state.map_info.style = style || this.state.map_info.style;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @param { Array } coordinate
+   * @param { Number } zoom
+   * 
+   * @since 4.1.0
+   */
+  zoomTo(coordinate, zoom = 6) {
+    const view = this.viewer.map.getView();
+    view.setCenter(coordinate);
+    view.setZoom(zoom);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  goTo(coordinates, zoom, animate = true) {
+    const view    = this.viewer.map.getView();
+    zoom = zoom || 6;
+
+    if (animate) {
+      view.animate(
+        { duration: 300, center: coordinates },
+        (zoom ? ({ zoom, duration: 300 }) : ({ duration: 300, resolution: view.getResolution() })
+      ));
+    } else {
+      view.setCenter(coordinates);
+    }
+
+    if (zoom && !animate) {
+      view.setZoom(zoom);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Set map center to coordinate at resolution
+   *
+   * @param { Array } coordinates
+   * @param resolution
+   * @param { boolean } animate
+   * 
+   * @since 4.1.0
+   */
+  async goToRes(coordinates, resolution, animate = true) {
+
+    resolution = resolution || this.viewer.map.getView().getResolution();
+
+    await (new Promise(res => {
+
+      this.viewer.map.getView().once('change:center', () => setTimeout(res, 500));
+
+      if (animate) {
+        this.viewer.map.getView().animate(
+          { duration: 200, center: coordinates },
+          { duration: 200, resolution }
+        );
+      } else {
+        this.viewer.map.getView().setCenter(coordinates);
+        this.viewer.map.getView().setResolution(resolution);
+      }
+    }));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #getGeometryAndExtentFromFeatures(features = []) {
+    let extent;
+    let gtype;
+    let geometry;
+    const coordinates = [];
+    features
+      .filter(f => f.getGeometry ? f.getGeometry() : f.geometry)
+      .forEach(f => {
+        const geom       = f.getGeometry ? f.getGeometry() : f.geometry;
+        const is_ol_geom = geom instanceof ol.geom.Geometry;
+        const f_ext      = is_ol_geom ?  [...geom.getExtent()] : f.bbox;
+        extent           = ol.extent.extend(undefined === extent ? f_ext : extent, f_ext);
+        gtype            = gtype ? gtype : is_ol_geom ? geom.getType() : geom.type;
+        const coords     = ( is_ol_geom ? geom.getCoordinates() : geom.coordinates );
+        coordinates.push(coords);
+      })
+
+    //check if features have geometry
+    if (coordinates.length > 0) {
+      const is_multi = gtype.includes('Multi');
+      try {
+        geometry = new ol.geom[is_multi ? gtype : `Multi${gtype}`](is_multi ? coordinates.flat(): coordinates);
+        extent   = undefined === extent ? geometry.getExtent(): extent
+      } catch(e) {
+        console.warn(e);
+      }
+    }
+
+    return {
+      extent,
+      geometry
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  highlightFeatures(features, options = {}) {
+    const { geometry } = this.#getGeometryAndExtentFromFeatures(features);
+    // force zoom false
+    options.zoom = false;
+    this.highlightGeometry(geometry, options);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  zoomToGeometry(geometry, options = { highlight: false }) {
+    const extent = geometry && geometry.getExtent();
+    if (options.highlight && extent) {
+      options.highLightGeometry = geometry;
+    }
+    return this.zoomToExtent(extent, options);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  zoomToFeatures(features, options = { highlight: false }) {
+    let { geometry, extent } = this.#getGeometryAndExtentFromFeatures(features);
+    if (options.highlight && extent) {
+      options.highLightGeometry = geometry;
+    }
+    return this.zoomToExtent(extent, options);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @param   { ol.extent }   extent
+   * @param   { Object }      options
+   * @param   { boolean }     options.force
+   * @param   { ol.geometry } options.highLightGeometry
+   *
+   * @returns { Promise<void> }
+   * 
+   * @since 4.1.0
+   */
+  async zoomToExtent(extent, options = {}) {
+
+    if (!extent) {
+      return Promise.resolve();
+    }
+
+    const map = this.getMap();
+
+    let resolution;
+
+    // if outside project extent, return max resolution
+    if (false === ol.extent.containsExtent(ApplicationState.project.state.extent, extent)) {
+      resolution = map.getView().getResolutionForExtent(ApplicationState.project.state.extent, map.getSize());
+    }
+
+    // retrieve resolution from given `extent`
+    else if (true === options.force) {
+      resolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
+    }
+
+    // calculate main resolutions from map
+    else {
+      const curr = map.getView().getResolution();
+      // max resolution of the map
+      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
+      resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
+    }
+
+
+    await this.goToRes(ol.extent.getCenter(extent), resolution);
+
+    if (options.highLightGeometry) {
+      await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
+    }
+
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  goToBBox(bbox, epsg = this.getEpsg()) {
+    bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
+    // compare bbox extent with a project max extent
+    this.viewer.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #fit(geometry, options = {}) {
+    const view    = this.viewer.map.getView();
+    const animate = 'boolean' === typeof options.animate ? options.animate : true;
+
+    if (animate) {
+      view.animate({ duration: 200, center: view.getCenter() });
+      view.animate({ duration: 200, resolution: view.getResolution() });
+    }
+
+    delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+
+    view.fit(geometry, {
+      ...options,
+      constrainResolution: (undefined !== options.constrainResolution ? options.constrainResolution : true),
+      size:  this.viewer.map.getSize()
+    });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * geometries = array of geometries
+   * action: add, clear, remove :
+   *   - add: feature/features to selectionLayer. If selectionLayer doesn't exist, create a new vector layer.
+   *   - clear: remove selectionLayer
+   *   - remove: remove feature from selection layer. If no more feature is in selectionLayer, it will be removed
+   * @since 4.1.0
+   */
+  setSelectionFeatures(action = 'add', opts = {}) {
+    if (opts.color) {
+      MAP.colors.selection = opts.color;
+    }
+    const source = this.defaultsLayers.selectionLayer.getSource();
+    switch (action) {
+      case 'add':
+        //In case of add need to set selection style
+        opts.feature.setStyle(createSelectedStyle({
+          geometryType: opts.feature.getGeometry().getType(),
+          color:        MAP.colors.selection,
+          fill:         true
+        }));
+        source.addFeature(opts.feature);
+        break;
+      case 'remove': source.removeFeature(opts.feature); break;
+      case 'update': source.getFeatureById(opts.feature.getId()).setGeometry(opts.feature.getGeometry()); break;
+      case 'clear':  source.clear(); break;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Force to referesh a map
+   * @param options
+   * 
+   * @since 4.1.0
+   */
+  refreshMap(options = { force: true }) {
+    this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, options));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * called when layout (window) resizes
+   * 
+   * @since 4.1.0
+   */
+  async layout({ width, height }) {
+    const el = document.getElementById(this.target);
+
+    if (el) {
+      el.style.height = height + 'px';
+      el.style.width  = width + 'px';
+    }
+
+    if (this.viewer && width > 0 && height > 0) {
+      this.getMap().updateSize();
+      this.state.hidemaps.forEach(h => h.map.updateSize());
+      this.state.bbox       = this.getMapBBOX();
+      this.state.resolution = this.viewer.getResolution();
+      this.state.center     = this.viewer.getCenter();
+      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
+    }
+
+    this.setHidden(width <= 0 || height <= 0);
+
+    if (this.viewer) {
+      return;
+    }
+
+    this.emit('before:setupViewer');
+
+    if (0 === width || 0 === height) {
+      console.warn('[G3W-CLIENT] map was hidden during bootstrap');
+      return;
+    }
+
+    const search = new URLSearchParams(location.search); // search params
+
+    const showmarker       = 1 * (search.get('showmarker') || 0); /** @since 3.10.0 - [0|1] whether to show marker on map center */
+    const iframetype       = search.get('iframetype');            /** @since 3.10.0 - [map] whether to hide map controls */
+    const zoom_to_fid      = search.get('zoom_to_fid');
+    const zoom_to_features = search.get('ztf');                   // zoom to features
+    const map_extent       = search.get('map_extent');            /** @since 3.10.0  - whether to use a custom initextent */
+    const coords           = {
+      lat: parseFloat(search.get('lat')),
+      lon: parseFloat(search.get('lon')),
+      x:   parseFloat(search.get('x')),
+      y:   parseFloat(search.get('y')),
+    };
+
+    // remove some params from URL
+    const url = new URL(window.location);
+    ['zoom_to_fid', 'ztf'].forEach(s => url.searchParams.delete(s));
+    window.history.replaceState(null, null, url);
+
+    if (this.viewer) {
+      this.viewer.destroy();
+    }
+
+    const initextent = map_extent ? map_extent.split(',').map(coord => 1 * coord) : ApplicationState.project.state.initextent;
+    const extent     = ApplicationState.project.state.extent;
+
+    const olMap = new ol.Map({
+      controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
+      interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
+      ol3Logo:             false,
+      keyboardEventTarget: document,
+      target:              this.target,
+      view:                new ol.View({
+        extent,
+        projection:    this.getProjection(),
+        center:        ol.extent.getCenter(initextent),
+        maxResolution: Math.max(ol.extent.getWidth(extent) / width,     ol.extent.getHeight(extent) / height),     // max(xRes, yRes)
+        resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
+      }),
+    });
+
+    this.viewer = {
+      map: olMap,
+      getMap:        () => this.viewer.map,
+      getView:       () => this.viewer.map.getView(),
+      getZoom:       () => this.viewer.map.getView().getZoom(),
+      getResolution: () => this.viewer.map.getView().getResolution(),
+      getCenter:     () => this.viewer.map.getView().getCenter(),
+      destroy:       () => { if (this.viewer.map) { this.viewer.map.dispose(); this.viewer.map = null } },
+      zoomTo:        this.zoomTo.bind(this),
+      goTo:          this.goTo.bind(this),
+      fit:           this.#fit.bind(this),
+      /** @TODO check if deprecated */
+      changeBaseLayer: name => this.map.getLayers().insertAt(0, this.map.getLayers().find(l => name === l.get('name'))),
+    };
+
+    const map = this.viewer.getMap();
+
+    //set application epsg and map unit
+    ApplicationState.map.epsg = this.getEpsg();
+    ApplicationState.map.unit = map.getView().getProjection().getUnits();
+
+    // disable douclickzoom
+    map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(false);
+
+    // visual click (sonar effect)
+    map.on('click', ({ coordinate }) => {
+      const circle = new ol.layer.Vector({
+        source: new ol.source.Vector({ features: [ new ol.Feature({ geometry: new ol.geom.Point(coordinate) }) ] }),
+        style:  new ol.style.Style()
+      });
+      const start    = +new Date();
+      const duration = 1700;
+      const interval = circle.on('postcompose', ({ frameState }) => {
+        const elapsed  = frameState.time - start;
+        const ratio   = ol.easing.easeOut(elapsed / duration);
+        circle.setStyle(
+          new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 40 * ratio, // start = 0, end = 40
+              fill:   new ol.style.Fill({ color: [225, 227, 228, .1] }),
+              stroke: new ol.style.Stroke({ color: [225, 227, 228, 1], width: 1.85 * (1 - ratio) }), // start = 1.85, end = 0
+            })
+          })
+        );
+        if (elapsed > duration) {
+          map.removeLayer(circle);
+          ol.Observable.unByKey(interval); // stop the effect
+        }
+      });
+      map.addLayer(circle);
+    });
+
+    let currentControl;
+    let can_drag = false;
+
+    // set mouse cursor (dragging)
+    Vue.watch(
+      () => [this.getCurrentToggledMapControl(), (this.getPlugin('editing') && this.getPlugin('editing').getActiveTool())],
+      ([control, activeTool]) => {
+        currentControl = control
+        can_drag = !control && !activeTool;
+        map.getViewport().classList.toggle('ol-grab', can_drag);
+        map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(can_drag);
+      }
+    );
+    map.on(['pointerdrag', 'pointerup'], (e) => {
+      /** @TODO disable default interaction "shift+zoom" ? */
+      map.getViewport().classList.toggle('ol-grabbing', e.type == 'pointerdrag' && (!currentControl || !(currentControl.getInteraction() instanceof ol.interaction.DragBox)));
+      map.getViewport().classList.toggle('ol-grab',     e.type == 'pointerup' && can_drag);
+    });
+
+    let geom;
+    if (zoom_to_fid) {
+      await this.zoomToFid(zoom_to_fid);
+    } else if (zoom_to_features) {
+      await this.zoomToFeaturesUrl(zoom_to_features);
+    } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
+      geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
+    } else if (!isNaN(coords.x) && !isNaN(coords.y)) {
+      geom = new ol.geom.Point([coords.x, coords.y]);
+    }
+
+    if (geom && geom.getExtent()) {
+      await this.zoomToGeometry(geom);
+    }
+
+    // show marker on map center
+    if (1 === showmarker) {
+      this.defaultsLayers.mapcenter.getSource().addFeature(new ol.Feature({ geometry: new ol.geom.Point(this.getCenter()) }))
+    }
+
+    // iframe → hide map controls (empty object)
+    if ('map' === iframetype) {
+      window.initConfig.mapcontrols = {};
+    }
+
+    // update max scale
+    this.#maxZoom = Math.min(
+      getScaleFromResolution(this.getMap().getView().getResolutionForExtent(ApplicationState.project.state.initextent, this.getMap().getSize()), this.getMapUnits()),
+      this.#maxZoom
+    );
+
+    this.state.size     = this.viewer.map.getSize();
+    this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
+
+    if (window.initConfig.background_color) {
+      $('#' + this.target).css('background-color', window.initConfig.background_color);
+    }
+
+    $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
+
+    this.viewer.map.getInteractions().forEach(int => this.#watchInteraction(int));
+    this.viewer.map.getInteractions().on('add', int => this.#watchInteraction(int.element));
+
+    this.#marker = new ol.Overlay({
+      position:    null,
+      positioning: 'center-center',
+      element:     document.getElementById('marker'),
+      stopEvent:   false,
+    });
+
+    this.viewer.map.addOverlay(this.#marker);
+
+    // keep default layers above others
+    this.viewer.map.getLayers().on('add', e => {
+      const zindex = this.setLayerZIndex({
+        layer:  e.element,
+        zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
+      });
+      //In case of add wms on bottom position, check current zindex of default layers that need to set on top of map layers
+      if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.getZIndex()      < zindex && this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
+      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.getZIndex() < zindex && this.defaultsLayers.highlightLayer.setZIndex(zindex + 1); }
+      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
+    });
+
+    this.viewer.map.getLayers().on('remove', e => {
+      if (e.element.getZIndex() === this.layersCount) {
+        this.layersCount--;
+      }
+    })
+
+    this.state.bbox       = this.getMapBBOX();
+    this.state.resolution = this.viewer.getResolution();
+    this.state.center     = this.viewer.getCenter();
+
+    // setup layers
+
+    // sort layers by type: [0=BASE, 1=RASTER, 2=VECTOR]
+    Object
+      .values(ApplicationState.layers)
+      .flatMap(s => s.isQueryable() ? s.getLayers() : [])
+      .filter(l => l.isGeoLayer())
+      .reduce((groups, l) => {
+
+        // base layers
+        if (l.isBaseLayer()) {
+          this.#layers.base.unshift(l);
+          groups[0].unshift(l);
+        }
+
+        // vector layers
+        if (l.isVector()) {
+          groups[2].unshift(this.#createVectorLayer(l));
+        }
+
+        // group raster layers by "multilayerid"
+        if (!l.isBaseLayer() && !l.isVector()) {
+          let id = l.getMultiLayerId();
+          if (l.isQtimeseries()) {
+            this.#layers.index[`qtimeseries_${id}`] = (this.#layers.index[`qtimeseries_${id}`] ?? -1) + 1;
+            id = `${id}_${this.#layers.index[`qtimeseries_${id}`]}`;
+          } else if (undefined !== this.#layers.index[`qtimeseries_${id}`]) {
+            id = `${id}_${this.#layers.index[`qtimeseries_${id}`] + 1}`;
+          }
+          const mapLayer = this.#layers.index[id] || this.#createRasterLayer(l);
+          mapLayer.addLayer(l, 'start');
+          if (!this.#layers.index[id]) {
+            this.#layers.index[id] = mapLayer;
+            mapLayer.on('loadstart', this.onLayerLoadStart);
+            mapLayer.on('loadend',   this.onLayerLoadEnd);
+            mapLayer.on('loaderror', this.onLayerLoadError);
+            // listen change filter token
+            mapLayer?.layers?.forEach?.(l => {
+              l.onbefore('change',      () => this.updateMapLayer(mapLayer, { force: true }));
+              l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(mapLayer, { force: true, layerId })  })
+            });
+            this.#layers.g3w.unshift(mapLayer);
+            groups[1].unshift(mapLayer);
+          }
+        }
+
+        return groups;
+      }, [
+        [],
+        [],
+        [
+          this.defaultsLayers.mapcenter,
+          this.defaultsLayers.selectionLayer,
+          this.defaultsLayers.highlightLayer,
+        ]
+      ])
+      .flatMap(g => g)
+      .forEach(l => {
+        if (l instanceof ol.layer.Layer) {
+          this.getMap().addLayer(l);
+          return;
+        }
+        const olLayer = l.getOLLayer();
+        if (olLayer) {
+          this.getMap().addLayer(olLayer);
+        }
+        this.updateMapLayer(l, {})
+      });
+
+    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
+    idb.getItem('externalLayers').then(externalLayers => {
+      Object.entries(externalLayers || {}).forEach(([id, layer]) => {
+        const olLayer = new ol.layer.Vector({
+          source: new ol.source.Vector({ features: new ol.format.GeoJSON().readFeatures(layer.features) })
+        });
+        olLayer.set('name', id);
+        this.addExternalLayer(olLayer, { ...layer.options, zoomToExtent: false });
+      });
+    });
+    
+    // setup ol events
+
+    // set change resolution
+    this.#events.ol.forEach(k => ol.Observable.unByKey(k));
+    this.#events.ol.push(
+      this.viewer.map.getView().on('change:resolution', debounce(() => {
+        this.state.bbox       = this.getMapBBOX();
+        this.state.resolution = this.viewer.getResolution();
+        this.state.center     = this.viewer.getCenter();
+        this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
+        if (ApplicationState.project.state.context_base_legend) {
+          this._setLegendParams();
+        }
+      }))
+    );
+
+    if (ApplicationState.project.state.context_base_legend) {
+      this.#events.ol.push(
+        this.viewer.map.on('moveend', () => this._setLegendParams())
+      );
+    } else {
+      //set always to show legend at the start
+      this._setLegendParams();
+    }
+
+    // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+    Object.values(ApplicationState.layers).forEach(this.#setUpEventsKeysToLayersStore.bind(this));
+    Vue.watch(
+      () => Object.keys(ApplicationState.layers),
+      (newVal, oldVal) => {
+        const added   = newVal.filter(key => !(key in oldVal));
+        const removed = oldVal.filter(key => !(key in newVal));
+        added.forEach(key => this.#setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
+        removed.forEach(key => this.#removeEventsKeysToLayersStore(ApplicationState.layers[key]));
+      }
+    );
+
+    this.emit('viewerset');
+
+    this._map_ready = true;
+
+    this.emit('before:setupControls');
+
+    for (const type of Object.keys(this?.config?.mapcontrols || {})) {
+      try {
+        await this.setupControl[type](); // TODO: make use dynamic of imports instead of firing a custom event 
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    this.emit('after:setupControls');
+
+    this.emit('ready');
+
+    this.emit('after:setupViewer');
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getMapBBOX() {
+    return this.viewer.map.getView().calculateExtent(this.viewer.map.getSize());
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  setInnerGreyCoverBBox(opts = {}) {
+    let lowerLeft;
+    let upperRight;
+
+    if (opts.inner) {
+      switch (opts.type) {
+        case 'pixel':
+          lowerLeft  = [opts.inner[0], opts.inner[1]];
+          upperRight = [opts.inner[2], opts.inner[3]];
+          break
+        case 'coordinate':
+        default:
+          lowerLeft  = this.getMap().getPixelFromCoordinate([opts.inner[0], opts.inner[1]]);
+          upperRight = this.getMap().getPixelFromCoordinate([opts.inner[2], opts.inner[3]]);
+          break;
+      }
+      this.#shadow.inner[0] = lowerLeft[0]  * ol.has.DEVICE_PIXEL_RATIO; // x_min
+      this.#shadow.inner[1] = lowerLeft[1]  * ol.has.DEVICE_PIXEL_RATIO; // y_min
+      this.#shadow.inner[2] = upperRight[0] * ol.has.DEVICE_PIXEL_RATIO; // x_max
+      this.#shadow.inner[3] = upperRight[1] * ol.has.DEVICE_PIXEL_RATIO; // y_max
+    }
+
+    this.#shadow.scale    = [null, undefined].includes(opts.scale) ? this.#shadow.scale || 1 : opts.scale;
+    this.#shadow.rotation = [null, undefined].includes(opts.rotation) ? this.#shadow.rotation || 0 : opts.rotation;
+
+    if (this.#shadow.outer) {
+      this.getMap().render();
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * grey map precompose mapcompose
+   * 
+   * @since 4.1.0
+   */
+  startDrawGreyCover(message) {
+    // after rendering the layer, restore the canvas context
+    let x_min, x_max, y_min, y_max, rotation, scale;
+    this.stopDrawGreyCover();
+    this.#shadow.listener = this.getMap().on('postcompose', e => {
+      const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
+      const size = this.getMap().getSize();
+      // Inner polygon must be counter-clockwise
+      const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+      const width  = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+      this.#shadow.outer = [0,0,width, height];
+      ctx.restore();
+      ctx.beginPath();
+      // Outside polygon must be clockwise
+      ctx.moveTo(0, 0);
+      ctx.lineTo(width, 0);
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.lineTo(0, 0);
+      ctx.closePath();
+      // end external bbox (map is cover)
+      if (this.#shadow.inner.length) {
+        ctx.save();
+        x_min    = this.#shadow.inner[0];
+        y_min    = this.#shadow.inner[3];
+        x_max    = this.#shadow.inner[2];
+        y_max    = this.#shadow.inner[1];
+        rotation = this.#shadow.rotation;
+        scale    = this.#shadow.scale;
+        // Inner polygon must be counter-clockwise antiorario
+        ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
+        ctx.rotate(rotation*Math.PI / 180);
+        ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+        ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
+        ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
+        ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
+        ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+        ctx.closePath();
+        // end inner bbox
+      }
+      ctx.fillStyle = 'rgba(0, 5, 25, 0.40)';
+      ctx.fill();
+      if (message) {
+        ctx.font = "bold 25px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        message.split('\n').forEach((m, i) => ctx.fillText(m, width / 2, (height / 2) + 30 * i));
+      }
+      ctx.restore();
+    });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  stopDrawGreyCover() {
+    if (this.#shadow.listener) {
+      ol.Observable.unByKey(this.#shadow.listener);
+      // reset inner draw shadow
+      if (this.#shadow.inner.length) {
+        this.#shadow = {
+          type:     'coordinate',
+          outer:    [],
+          inner:    [],
+          scale:    null,
+          rotation: null
+        };
+      }
+      this.#shadow.listener = null;
+    }
+    this.getMap().render();
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Return external layers added to map
+   * 
+   * @param {'vector' | 'wms'} type since 3.11.0
+   * 
+   * @since 4.1.0
+   */
+  getExternalLayers(type) {
+    if (undefined !== type && 'string' !== typeof type) {
+      type = type.type;
+    }
+    return this.#layers.external.filter(l => undefined !== type ? type === l._externalLayerType : true);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #createVectorLayer(layer) {
+    if (layer._mapLayer) {
+      return layer._mapLayer;
+    }
+
+    let mapLayer;
+
+    const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
+
+    mapLayer = Object.assign(new Emitter, {
+      _olLayer:      Object.assign(new ol.layer.Vector({
+        id:             layer.getId(),
+        __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+        source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
+        opacity:        !style && isPolygonGeometryType(layer.getGeometryType()) ? 0.6 : 1,
+        style:          new ol.style.Style(
+          (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
+            image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
+            stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
+            fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
+          }), {}))
+          || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
+          || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
+          || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
+        ),
+      }), {
+        /** @since 3.11.0 to have same compatibility with table layer */
+        getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
+      }),
+      mapService:    this,
+      geometryType:  layer.getGeometryType(),
+      geometrytype:  null,
+      type:          null,
+      crs:           null,
+      id:            layer.getId(),
+      name:          'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` && layer.getName() || '',
+      style,
+      color:         layer.getColor(),
+      projection:    'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.getProjection().getCode() : this.getProjection().getCode(),
+      url:           'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('source').url : undefined,
+      provider:      layer.getProvider('data'),
+      getProvider:   ()           => layer._mapLayer.provider,
+      getFeatures:   async (opts = {})  => layer._mapLayer.addFeatures(await layer._mapLayer.provider.getFeatures(opts)),
+      addFeatures:   (feats = []) => layer._mapLayer.getSource().addFeatures(feats),
+      addFeature:    feat         => feat && layer.getSource().addFeature(feat),
+      getOLLayer:    ()           => layer._mapLayer._olLayer,
+      getSource:     ()           => layer._mapLayer._olLayer.getSource(),
+      setSource:     source       => layer._mapLayer._olLayer.setSource(source),
+      setStyle:       style       => layer._mapLayer._olLayer.setStyle(style),
+      getFeatureById:    id       => id ? layer._mapLayer._olLayer.getSource().getFeatureById(id) : null,
+      isVisible:         ()       => layer._mapLayer._olLayer.getVisible(),
+      setVisible:      bool       => layer._mapLayer._olLayer.setVisible(bool),
+      clear:             ()       => layer._mapLayer.getSource().clear(),
+      addToMap:         map       => map.addLayer(layer._mapLayer._olLayer),
+    });
+
+    if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
+      XHR.get({ url: layer.get('source').url }).then(d => {
+        const feats = (new ol.format.GeoJSON()).readFeatures(d.results, {
+          featureProjection: this.getProjection().getCode(),
+          dataProjection:    'EPSG:4326',
+        });
+        layer._mapLayer._olLayer.getSource().addFeatures(feats);
+      });
+    }
+
+    return (layer._mapLayer = mapLayer);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  #createRasterLayer(layer) {
+    if (layer._mapLayer) {
+      return layer._mapLayer;
+    }
+
+    return (layer._mapLayer = new g3w.Layer(
+      {
+        id:              `layer_${layer.getMultiLayerId()}`,
+        projection:        this.getProjection(),
+        format:            layer.getFormat(),
+        ...(
+          layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type
+          ? layer.state.source                                                                       // ARCGIS Layer (external)
+          : {
+            type:
+              (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
+              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS') ||           // WMTS Layer  (cached)
+              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS') ||           // WMS-T Layer (external)
+              layer.state.type,
+            url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
+            http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
+            extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
+            cache_provider:    layer.state.cache_provider,
+            cache_layer:       layer.state.cache_layer,
+            cache_extent:      layer.state.cache_extent,
+            cache_grid:        layer.state.cache_grid,
+            cache_grid_extent: layer.state.cache_grid_extent,
+          }
+        ),
+      },
+      { TYPE: 'virtual' }
+    ));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Used by the following plugins: "qtimeseries"
+   * 
+   * @since 4.1.0
+   */
+  getMapLayerByLayerId(id) {
+    return this.#layers.g3w.find(l => l.layers.find(l => id === l.getId()));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getMapLayers() {
+    return this.#layers.g3w;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getBaseLayers() {
+    return this.#layers.base;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getProjectLayer(id) {
+    return Object.values(ApplicationState.layers).map(s => s.getLayerById(id)).find(l => l);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
+   *
+   * @param { ol.layer.Vector | ol.layer.Image | ol.layer.Tile | unknown } externalLayer
+   * @param { Object }  options
+   * @param { unknown } options.position
+   * @param { number }  options.opacity
+   * @param { boolean } options.visible
+   * @param { unknown } options.crs
+   * @param { unknown } options.type
+   * @param { unknown } options.download
+   * @param { string }  options.downloadUrl (since 3.8.3) an alternate external server url where to perfom download.
+   * @param { boolean }  options.persistent (since 3.11.0) whether to save layer into local storage (ie. web sessions).
+   *
+   * @returns { Promise<unknown> }
+   * 
+   * @since 4.1.0
+   */
+  async addExternalLayer(externalLayer, options = {}) {
+
+    let vectorLayer;
+
+    // vector layer
+    if (externalLayer instanceof ol.layer.Vector) {
+
+      externalLayer.set('id', externalLayer.get('id') || getUniqueDomId());
+
+      vectorLayer           = externalLayer;
+      vectorLayer.filter    = { // used by `selection` for query result purpose ?
+        active: false           // UNUSED - it means not yet implemented?
+      };
+      vectorLayer.selection = {
+        active: false,
+        features: []
+      };
+
+      if (options.color) {
+        vectorLayer.setStyle(Object.assign(
+          feat => {
+            options.color = options.color.rgba ? 'rgba(' + [options.color.rgba.r, options.color.rgba.g, options.color.rgba.b, options.color.rgba.a].join() + ')' : options.color;
+            const geometryType = feat.getGeometry().getType();
+            const { color } = options;
+            let style;
+            if (isPointGeometryType(geometryType)) {          // Point
+              style = new ol.style.Style({
+                image: new ol.style.Circle({
+                  fill: new ol.style.Fill({ color }),
+                  stroke: new ol.style.Stroke({ color, width: 1 }),
+                  radius: 5,
+                })
+              });
+            } else if (isLineGeometryType(geometryType)) {    // Line
+              style = new ol.style.Style({
+                stroke: new ol.style.Stroke({ color, width: 3 }),
+              });
+            } else if (isPolygonGeometryType(geometryType)) { // Polygon
+              style = new ol.style.Style({
+                fill:   new ol.style.Fill({ color: 'rgba(255,255,255,0.5)' }),
+                stroke: new ol.style.Stroke({ color, width: 3 }),
+              })
+            } else {
+              console.warn('invalid geometry type: ', geometryType);
+            }
+            if (options.field) {
+              style.setText(new ol.style.Text({
+                text: `${feat.get(options.field)}`,
+                font: 'bold',
+                scale: 2,
+                offsetY: 15,
+                fill: new ol.style.Fill({ color: options.color }),
+                stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
+              }));
+            }
+            return style;
+          }, { _g3w_options: options }
+        ));
+      }
+
+      let color;
+      try {
+        const style = externalLayer.getStyle();
+        color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
+      } catch(e) { console.warn(e); }
+
+      externalLayer = {
+        id:               externalLayer.get('id'),
+        name:             vectorLayer.get('name') || vectorLayer.get('id'),
+        projectLayer:     false,
+        title:            vectorLayer.get('name') || vectorLayer.get('id'),
+        removable:        true,
+        external:         true,
+        crs:              options.crs,
+        type:             options.type,
+        _type:            'vector',
+        visible:          false !== options.visible,
+        checked:          true,
+        position:         options.position ?? 'top',
+        opacity:          options.opacity  ??  1,
+        color:            color || 'blue',
+        filter:           vectorLayer.filter,
+        selection:        vectorLayer.selection,
+        /** @since 3.8.0 */
+        tochighlightable: false,
+        download:         options.download || false,
+        /**
+         * An alternate (external) server url where to perfom download.
+         *
+         * @example
+         *
+         * ```js
+         * GUI.getService('map').addExternalLayer(layer, {
+         *   type: 'geojson',
+         *   downloadUrl:  _<URL WHERE DOWNLOAD FILE>_
+         * });
+         * ```
+         *
+         * @since 3.8.3
+         */
+        downloadUrl: options.downloadUrl,
+      };
+    }
+
+    // image layer
+    if (externalLayer instanceof ol.layer.Image || externalLayer instanceof ol.layer.Tile) {
+      Object.assign(externalLayer, {
+        id:           externalLayer.get('id'),
+        name:         externalLayer.get('name'),
+        removable:    true,
+        projectLayer: false,
+        title:        externalLayer.get('name'),
+        _type:        'wms',
+        opacity:      options.opacity  ??  1,
+        position:     options.position ?? 'top',
+        external:     true,
+        checked:      false !== options.visible,
+      });
+
+      // register loading events (spinner)
+      const image = externalLayer instanceof ol.layer.Image ? 'image' : 'tile';
+      externalLayer.getSource().on(`${image}loadstart`, this.onLayerLoadStart);
+      externalLayer.getSource().on(`${image}loadend`,   this.onLayerLoadEnd);
+      externalLayer.getSource().on(`${image}loaderror`, this.onLayerLoadError);
+    }
+
+    // skip when another layer with the same name was already added
+    if (this.getLayerByName(externalLayer.name)) {
+      this.notify.warning('Layer with same name already added', false);
+    }
+
+    const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();
+
+    const layer    = 'vector' === type ? vectorLayer : externalLayer;
+    const features = 'vector' === type && layer.getSource().getFeatures() || [];
+    const extent   = 'vector' === type && layer.getSource().getExtent()   || [];
+
+    // prefix each feature with layer id
+    features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`));
+
+    if (features.length) {
+      externalLayer.geometryType = features[0].getGeometry().getType();
+      externalLayer.selected = false;
+    }
+
+    if (extent.length) {
+      externalLayer.bbox = { minx: extent[0], miny: extent[1], maxx: extent[2], maxy: extent[3] };
+    }
+
+    layer.set('position', options.position ?? 'top');
+    layer.setOpacity(options.opacity  ??  1);
+    layer.setVisible(false !== options.visible);
+
+    /** @TODO use a common parent class (project/external layers) */
+    externalLayer.set                 = externalLayer.set                 || ((a, d) => externalLayer[a] = d);
+    externalLayer.get                 = externalLayer.get                 || (a => externalLayer[a]);
+    externalLayer.getId               = externalLayer.getId               || (() => externalLayer.id);
+    externalLayer.getName             = externalLayer.getName             || (() => externalLayer.name);
+    externalLayer.getGeometryType     = externalLayer.getGeometryType     || (() => externalLayer.geometryType);
+    externalLayer.setTocHighlightable = externalLayer.setTocHighlightable || (h => externalLayer.tochighlightable = h);
+    externalLayer.getTocHighlightable = externalLayer.getTocHighlightable || (() => externalLayer.tochighlightable);
+    externalLayer.isSelected          = externalLayer.isSelected          || (() => externalLayer.selected);
+    externalLayer.setSelected         = externalLayer.setSelected         || (s => externalLayer.selected = s);
+    externalLayer.isQueryable         = externalLayer.isQueryable         || (() => !!vectorLayer);
+    externalLayer.isVisible           = externalLayer.isVisible           || (() => {
+      if (vectorLayer) { externalLayer.visible = vectorLayer.getVisible(); }
+      return externalLayer.visible;
+    });
+    externalLayer.setVisible          = externalLayer.setVisible          || (v => {
+      if (vectorLayer) { vectorLayer.setVisible(v); }
+      externalLayer.visible = v;
+    });
+
+    // keep a reference to original "externalLayer" object
+    layer._externalLayer     = externalLayer;
+    layer._externalLayerType = type;
+
+    this.viewer.map.addLayer(layer);
+
+    this.#layers.external.push(layer);
+
+    if (vectorLayer && false !== options.persistent) {
+      idb.getItem('externalLayers').then(externalLayers => {
+        idb.setItem('externalLayers', {
+          ...(externalLayers || {}),
+          [vectorLayer.get('name')]: {
+            features: new ol.format.GeoJSON().writeFeatures(vectorLayer.getSource().getFeatures()),
+            options
+          }
+        });
+      });
+    }
+
+    this.getService('catalog').addExternalLayer({ layer: externalLayer, type });
+
+    // invoke `onAddExternalLayer` on each map control + add vector layer "queryresults" 
+    if ('vector' === type) {
+      this.registerVectorLayer(layer);
+      this.#events.unwatches[externalLayer.name] = [];
+      Object.values(MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
+    }
+
+    if (extent && options.zoomToExtent) {
+      this.viewer.map.getView().fit(extent);
+    }
+
+    this.loadExternalLayer(layer);
+
+    return layer;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * Remove external layer
+   *
+   * @param name
+   * 
+   * @since 4.1.0
+   */
+  removeExternalLayer(name) {
+    const layer = this.getLayerByName(name);
+    const type = layer._type || 'vector';
+    
+
+    this.unregisterVectorLayer(layer);
+    this.getService('catalog').removeExternalLayer({ name, type });
+
+    this.viewer.map.removeLayer(layer);
+
+    if ('vector' === type) {
+      /** @since v4.0.0 remove selection feature belong to layer */
+      this.defaultsLayers.selectionLayer.getSource()
+        .getFeatures()
+        .filter(f => layer.get('id') === f.__layerId)
+        .forEach(f => this.defaultsLayers.selectionLayer.getSource().removeFeature(f));
+      this.#events.unwatches[name].forEach(unWatch => unWatch());
+      delete this.#events.unwatches[name];
+    }
+
+    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
+    if ('vector' === type) {
+      idb.getItem('externalLayers').then(externalLayers => {
+        externalLayers  = externalLayers || {}
+        if (name in externalLayers) {
+          delete externalLayers[name];
+        }
+        idb.setItem('externalLayers', externalLayers);
+      });
+    }
+
+    this.#layers.external = this.#layers.external.filter(l => {
+      // remove layer from selection
+      if (l._externalLayer === this.#selectedLayer) {
+        this.#selectedLayer = null;
+      }
+      // vector
+      if (type === l._externalLayerType && name === l._externalLayer.name) {
+        Object.values(MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
+        return false;
+      }
+      // wms
+      if (type === l._externalLayerType && layer.id === l._externalLayer.getId()) {
+        l._externalLayer.un('loadstart', this.onLayerLoadStart);
+        l._externalLayer.un('loadend',   this.onLayerLoadEnd);
+        l._externalLayer.un('loaderror', this.onLayerLoadError);
+        // try to remove layer filter token
+        if (layer.projectLayer) {
+          l._externalLayer?.layers?.forEach?.forEach(l => {
+            l.un('change');
+            l.removeEvent('filtertokenchange')
+          });
+        }
+        return false;
+      }
+      // other types ?
+      if (l.get('id') === layer.get('id')) {
+        return false;
+      }
+      return true;
+    });
+
+    this.unloadExternalLayer(layer);
+
+    this.emit('remove-external-layer', name);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getCookie(name) {
+    Vue.cookie.get(name)
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @param { unknown | string | null } layer
+   *
+   * @since 4.1.0
+   */
+  selectLayer(layer) {
+    let id = 'string'=== typeof layer ? layer : layer && layer.getId();
+
+    // toggle previous selection
+    if (this.#selectedLayer && id === this.#selectedLayer.getId()) {
+      id = null;
+    }
+
+    layer = getCatalogLayerById(id) || this.getExternalLayers('vector').map(l => l._externalLayer).find(l => id === l.getId());
+
+    // select layer by id
+    getCatalogLayers().concat(this.getExternalLayers('vector').map(l => l._externalLayer)).forEach(l => l.setSelected(l.getId() === id));
+
+    this.#selectedLayer = layer && layer.isSelected() ? layer : null;
+
+    Object.values(MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  getSelectedLayer() {
+    return this.#selectedLayer;
   }
 
 });

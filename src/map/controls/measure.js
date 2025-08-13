@@ -9,32 +9,31 @@ import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { gettext as _ }            from 'g3w-i18n';
 
 // wait for map ready
-GUI.once('ready', async () => {
-  const map = GUI.getService('map');
-  map.setupControl.length = map.setupControl.area = function() {
-    Object
-      .keys(window.initConfig.mapcontrols)
-      .filter(type => ['length', 'area'].includes(type))
-      .forEach(type => {
-        if (!isMobile.any && type in window.initConfig.mapcontrols) {
-          if (map.getMapControlByType('measure')) {
-            map.getMapControlByType('measure').addType(type)
-          } else {
-            map.addControl('measure', new MeasureControl({
-                name: "measure",
-                tipLabel: 'Measure',
-                types: [type],
-                interactionClassOptions: {
-                  projection: map.getProjection(),
-                  help:       `measure_descriptions.${type}`
-                }
-              })
-            );
-          }
+const map = GUI;
+
+map.setupControl.length = map.setupControl.area = function() {
+  Object
+    .keys(window.initConfig.mapcontrols)
+    .filter(type => ['length', 'area'].includes(type))
+    .forEach(type => {
+      if (!isMobile.any && type in window.initConfig.mapcontrols) {
+        if (map.getMapControlByType('measure')) {
+          map.getMapControlByType('measure').addType(type)
+        } else {
+          map.addControl('measure', new MeasureControl({
+              name: "measure",
+              tipLabel: 'Measure',
+              types: [type],
+              interactionClassOptions: {
+                projection: map.getProjection(),
+                help:       `measure_descriptions.${type}`
+              }
+            })
+          );
         }
-      });
-  };  
-});
+      }
+    });
+};
 
 export class MeasureInteraction extends ol.interaction.Draw {
 
