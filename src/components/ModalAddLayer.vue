@@ -583,7 +583,7 @@ export default {
         let i = 0;
         const styles = ` (${layers.map(l => l.title).join(' + ')})`;
         let suffix = styles;
-        while(GUI.getService('map').getLayerByName(config.title + suffix)) {
+        while(GUI.getLayerByName(config.title + suffix)) {
           suffix = ` ${styles} (${ ++i })`;
         }
         this.name = config.title + suffix;
@@ -645,7 +645,7 @@ export default {
       }
 
       // skip invalid names
-      if (GUI.getService('map').getLayerByName(input.files[0].name)) {
+      if (GUI.getLayerByName(input.files[0].name)) {
         this.error_message = 'Layer with same name already added';
         return;
       }
@@ -710,7 +710,7 @@ export default {
               const feat = new ol.Feature({
                 geometry: (new ol.format.WKT()).readGeometry(this.csv_wkt ? row[wkt] : `POINT (${X} ${Y})`, {
                   dataProjection:    this.layer_crs,
-                  featureProjection: GUI.getService('map').getEpsg()
+                  featureProjection: GUI.getEpsg()
                 }),
                 ...(row.reduce((props, value, i) => { props[this.fields[i]] = value; return props; }, {}))
               });
@@ -748,7 +748,7 @@ export default {
             // 'csv'    : new ol.format.WKT(),
           })[this.file_type].readFeatures(data, {
             dataProjection:    this.layer_crs,
-            featureProjection: GUI.getService('map').getEpsg() || this.layer_crs,
+            featureProjection: GUI.getEpsg() || this.layer_crs,
           });
         }
 
@@ -812,7 +812,7 @@ export default {
             await this._addExternalWMSLayer(config);
           } catch(e) {
             console.warn(e);
-            GUI.getService('map').removeExternalLayer(name);
+            GUI.removeExternalLayer(name);
             this.deleteWMS(name);
             setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'WMS Layer not added. Please check all wms parameter or url' }) });
           }
@@ -827,7 +827,7 @@ export default {
 
       if ('tms' === this.layer_type) {
         try {
-          GUI.getService('map').addExternalLayer(
+          GUI.addExternalLayer(
             new ol.layer.Tile({
               source:  new ol.source.XYZ({
                   url: this.tms_url,
@@ -861,7 +861,7 @@ export default {
 
       if ('file' === this.layer_type) {
         try {
-          await GUI.getService('map').addExternalLayer(this.olLayer, {
+          await GUI.addExternalLayer(this.olLayer, {
             crs:        this.layer_crs,
             position:   this.position,
             color:      this.layer_color,
@@ -885,7 +885,7 @@ export default {
       this.loading                 = false;
       this.layer_name              = null;
       this.file_type               = null;
-      this.layer_crs               = GUI.getService('map').getCrs();
+      this.layer_crs               = GUI.getCrs();
       this.layer_color             = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
       this.layer_data              = null;
       this.olLayer                 = null;
@@ -966,7 +966,7 @@ export default {
       url,
       layers,
       name,
-      epsg     = GUI.getService('map').getEpsg(),
+      epsg     = GUI.getEpsg(),
       position = 'top',
       opacity,
       visible  = true
@@ -996,7 +996,7 @@ export default {
         olLayer.getSource().once('imageloadend', res);
         olLayer.getSource().once('imageloaderror', rej);
 
-        GUI.getService('map').addExternalLayer(olLayer, { position, opacity, visible });
+        GUI.addExternalLayer(olLayer, { position, opacity, visible });
 
         // HOTFIX: for hidden wms layers
         if (!this.wms_visible || !this.wms_opacity) {
@@ -1042,7 +1042,7 @@ export default {
 
         let i = 0;
         let suffix = '';
-        while(GUI.getService('map').getLayerByName(config.title + suffix)) {
+        while(GUI.getLayerByName(config.title + suffix)) {
           suffix = ` (${ ++i })`;
         }
         this.name  = config.title + suffix;
@@ -1159,7 +1159,7 @@ export default {
 
     this.deleteWMS = this.deleteWMS.bind(this);
 
-    GUI.getService('map').on('remove-external-layer', this.deleteWMS);
+    GUI.on('remove-external-layer', this.deleteWMS);
 
     // Load WMS urls from local storage
 
@@ -1174,10 +1174,9 @@ export default {
     }
 
     setTimeout(() => {
-      const map = GUI.getService('map');
-      map.on('change-layer-position-map', ({ id: name, position } = {}) => this.changeLayerData(name, { key: 'position', value: position }));
-      map.on('change-layer-opacity',      ({ id: name, opacity } = {})  => this.changeLayerData(name, { key: 'opacity',  value: opacity }));
-      map.on('change-layer-visibility',   ({ id: name, visible } = {})  => this.changeLayerData(name, { key: 'visible',  value: visible }));
+      GUI.on('change-layer-position-map', ({ id: name, position } = {}) => this.changeLayerData(name, { key: 'position', value: position }));
+      GUI.on('change-layer-opacity',      ({ id: name, opacity } = {})  => this.changeLayerData(name, { key: 'opacity',  value: opacity }));
+      GUI.on('change-layer-visibility',   ({ id: name, visible } = {})  => this.changeLayerData(name, { key: 'visible',  value: visible }));
 
       // load eventually data
       Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
@@ -1192,7 +1191,7 @@ export default {
     $('#modal-addlayer').modal('hide')
     $('#modal-addlayer').remove();
 
-    GUI.getService('map').off('remove-external-layer', this.deleteWMS);
+    GUI.off('remove-external-layer', this.deleteWMS);
     this.$data = null;
   },
 

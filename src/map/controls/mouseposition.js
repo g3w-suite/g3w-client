@@ -6,26 +6,24 @@
 import GUI from 'services/gui';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.mouseposition = function() {
+GUI.setupControl.mouseposition = function() {
   if (isMobile.any) {
     return;
   }
-  const degrees = 'degrees' === map.getProjection().getUnits();
-  const mapEpsg = map.getEpsg();
+  const degrees = 'degrees' === GUI.getProjection().getUnits();
+  const mapEpsg = GUI.getEpsg();
   const coordinateFormat = (epsg, coords) => 'EPSG:4326' === epsg
     ? ol.coordinate.format(ol.proj.transform(coords, mapEpsg, 'EPSG:4326'), `\u00A0Lng: {x}, Lat: {y}\u00A0\u00A0 [EPSG:4326]\u00A0`, 4)
     : ol.coordinate.format(coords, `\u00A0${degrees ? 'Lng' : 'X'}: {x}, ${degrees ? 'Lat' : 'Y'}: {y}\u00A0\u00A0 [${epsg}]\u00A0`, degrees ? 4 : 2);
-  map.addControl('mouseposition', Object.assign((new ol.control.MousePosition({
+  GUI.addControl('mouseposition', Object.assign((new ol.control.MousePosition({
     coordinateFormat: coordinateFormat.bind(null, mapEpsg),
     undefinedHTML:    false,
-    projection:       map.getCrs(),
+    projection:       GUI.getCrs(),
     target:           'mouse-position-control'})
   ), { offline: true }), false);
   if ('EPSG:4326' !== mapEpsg) {
-    map.getMapControlByType('mouseposition').on('change:epsg',
-      e => map.getMapControlByType('mouseposition').setCoordinateFormat(coordinateFormat.bind(null, e.epsg))
+    GUI.getMapControlByType('mouseposition').on('change:epsg',
+      e => GUI.getMapControlByType('mouseposition').setCoordinateFormat(coordinateFormat.bind(null, e.epsg))
     );
   }
 };

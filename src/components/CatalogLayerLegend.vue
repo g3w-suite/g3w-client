@@ -346,7 +346,7 @@
         await this.setLayerCategories(true);
         if (this.dynamic) {
           await this.setLayerCategories(false);
-          GUI.getService('map').on('change-map-legend-params', this.onChangeMapLegendParams);
+          GUI.on('change-map-legend-params', this.onChangeMapLegendParams);
         }
         this.initialize = true;
       },

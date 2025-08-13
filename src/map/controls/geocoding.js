@@ -57,10 +57,8 @@ Object
   });
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.geocoding = function() {
-  map.addControl('geocoding', new GeocodingControl(), false);
+GUI.setupControl.geocoding = function() {
+  GUI.addControl('geocoding', new GeocodingControl(), false);
 };
 
 class GeocodingControl extends ol.control.Control {
@@ -119,9 +117,6 @@ class GeocodingControl extends ol.control.Control {
 
     _makeDraggable(this.element.querySelector('ul'));
 
-    const map          = GUI.getService('map');
-    const queryresults = GUI.getService('queryresults');
-
     GUI.on('i18n-ready', () => {
       this.element.querySelector('ul').innerHTML = '';
       this.element.querySelector('input[type="search"]').placeholder = _('Search');
@@ -131,13 +126,13 @@ class GeocodingControl extends ol.control.Control {
       this.element.querySelector('button[value="toggle-sidebar"] code').style.opacity = is_sidebar_open ? 0.5 : null;
     }, { immediate: true });
 
-    map.on('set-layer-zindex',                           this.#setLayerZindex.bind(this));
-    queryresults.onafter('removeFeatureLayerFromResult', this.#removeFeatureLayerFromResult.bind(this));
-    queryresults.onafter('addActionsForLayers',          this.#addLayerActions.bind(this));
+    GUI.on('set-layer-zindex',                           this.#setLayerZindex.bind(this));
+    GUI.onafter('removeFeatureLayerFromResult', this.#removeFeatureLayerFromResult.bind(this));
+    GUI.onafter('addActionsForLayers',          this.#addLayerActions.bind(this));
 
     // register vector layer
-    map.getMap().addLayer(this.LAYER);
-    queryresults.registerVectorLayer(this.LAYER);
+    GUI.getMap().addLayer(this.LAYER);
+    GUI.registerVectorLayer(this.LAYER);
 
     this.element.querySelector('form').addEventListener('submit',                this.#onFormSubmit.bind(this));
     this.element.querySelector('form').addEventListener('reset',                 this.#onFormSubmit.bind(this));
@@ -147,7 +142,7 @@ class GeocodingControl extends ol.control.Control {
     this.LAYER.getSource().on('addfeature',                                      this.#onLayerFeature.bind(this));
     this.LAYER.getSource().on('removefeature',                                   this.#onLayerFeature.bind(this));
 
-    map.getMap().getView().on('change' , debounce(() => {
+    GUI.getMap().getView().on('change' , debounce(() => {
       if (this.element?.querySelector?.('input[name="update_on_move"]')?.checked) {
         this.#query(this.element.querySelector('input[type="search"]').value);
       }
@@ -184,7 +179,7 @@ class GeocodingControl extends ol.control.Control {
 
     // zoom to feature
     if ('addfeature' === e.type) {
-      GUI.getService('map').zoomToFeatures([e.feature]);
+      GUI.zoomToFeatures([e.feature]);
     }
 
     // show remaining results or close panel
@@ -224,10 +219,10 @@ class GeocodingControl extends ol.control.Control {
       this.clearing = true;
       this.LAYER.getSource().clear(); // clear layer features marker
       this.RESULTS.forEach(i => i.__selected = false);
-      const layer = GUI.getService('queryresults').getState().layers.find(l => l.id === this.LAYER.get('id'));
+      const layer = GUI.getState().layers.find(l => l.id === this.LAYER.get('id'));
       // check if marker is in query results
       if (layer) {
-        layer.features.forEach(f => GUI.getService('queryresults').removeFeatureLayerFromResult(layer, f));
+        layer.features.forEach(f => GUI.removeFeatureLayerFromResult(layer, f));
       }
       this.clearing = false;
     }
@@ -276,8 +271,6 @@ class GeocodingControl extends ol.control.Control {
 
     q = q.trim();
 
-    const map = GUI.getService('map');
-
     const isNumber     = value => 'number' === typeof value && !Number.isNaN(value);
     let coordinates    = null;
     let transform      = false;
@@ -289,9 +282,9 @@ class GeocodingControl extends ol.control.Control {
     /** @TODO add a checkbox to let user choose whether include searches only from current map extent */
     const extent       = ol.proj.transformExtent(
       Object.keys(PROVIDERS).filter(p => 'nominatim' != p).length > 0
-        ? map.getMapExtent()
-        : (map.getProject().state.initextent || map.getProject().state.extent),
-      map.getProject().state.crs.epsg,
+        ? GUI.getMapExtent()
+        : (GUI.getProject().state.initextent || GUI.getProject().state.extent),
+      GUI.getProject().state.crs.epsg,
       'EPSG:4326'
     );
 
@@ -320,7 +313,7 @@ class GeocodingControl extends ol.control.Control {
     // request is for a single point (XCoord,YCoord)
     if (coordinates) {
       const feature = new ol.Feature({
-        geometry: new ol.geom.Point(transform ? ol.proj.transform(coordinates, 'EPSG:4326', map.getEpsg()) : coordinates),
+        geometry: new ol.geom.Point(transform ? ol.proj.transform(coordinates, 'EPSG:4326', GUI.getEpsg()) : coordinates),
         lon: coordinates[0],
         lat: coordinates[1],
       });
@@ -501,7 +494,7 @@ class GeocodingControl extends ol.control.Control {
       // lazy load item geometry
       if (PROVIDERS[item.provider]?.fetch_geom) {
         const geom = await PROVIDERS[item.provider].fetch_geom(item);
-        feature = geom && new ol.Feature({ geometry: (new ol.format.GeoJSON({ dataProjection: 'EPSG:4326', featureProjection: GUI.getService('map').getEpsg() })).readGeometry(geom) });
+        feature = geom && new ol.Feature({ geometry: (new ol.format.GeoJSON({ dataProjection: 'EPSG:4326', featureProjection: GUI.getEpsg() })).readGeometry(geom) });
       }
 
       // skip invalid items (ie. no geometry)
@@ -514,7 +507,7 @@ class GeocodingControl extends ol.control.Control {
 
       // fallback to point feature (lat, lon)
       feature = feature || new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getService('map').getEpsg())),
+        geometry: new ol.geom.Point(ol.proj.transform([parseFloat(item.lon), parseFloat(item.lat)], 'EPSG:4326', GUI.getEpsg())),
       });
     
       feature.setId(__uid);
@@ -600,8 +593,6 @@ class GeocodingControl extends ol.control.Control {
    * Allow user to choose a project layer where to save selected features
    */
   #addLayerActions(actions, layers) {
-    const queryresults = GUI.getService('queryresults');
-
     const layer = layers.find(l => this.LAYER.get('id') === l.id);
 
     // skip when no "g3w_marker" layer or features comes from an elastich search (project layers)
@@ -620,7 +611,7 @@ class GeocodingControl extends ol.control.Control {
     }
 
     // Add "choose_layer" action
-    queryresults.state.actiontools['choose_layer'] = {
+    GUI.state.actiontools['choose_layer'] = {
       [layer.id]: {
         layers:   editable_point_layers,
         icon:     'pencil',
@@ -646,8 +637,8 @@ class GeocodingControl extends ol.control.Control {
         // let user choose an editable layer
         action.state.toggled[index] = !action.state.toggled[index];
 
-        const tools   = queryresults.state.currentactiontools[layer.id];        // get current action tools
-        const feats   = queryresults.state.currentactionfeaturelayer[layer.id];
+        const tools   = GUI.state.currentactiontools[layer.id];        // get current action tools
+        const feats   = GUI.state.currentactionfeaturelayer[layer.id];
         feats[index]  = action.state.toggled[index] ? action : null;
         tools[index]  = action.state.toggled[index] ? ({
           name: 'choose_layer',

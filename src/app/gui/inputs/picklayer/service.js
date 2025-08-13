@@ -9,10 +9,9 @@ module.exports = class PickLayerService {
     this.ispicked    = false;
     this.fields      = opts.fields || [opts.value];
     this.layerId     = opts.layer_id;
-    this.mapService  = GUI.getService('map');
     //'map' referred to a v4.0.x where getEditingLayer was a method of Layer.  
     this.interaction = 'map' === this.pick_type  ? new PickFeatureInteraction({
-      layers: [this.mapService.getLayerById(this.layerId)]
+      layers: [GUI.getLayerById(this.layerId)]
     }) : new PickCoordinatesInteraction();
   }
 
@@ -61,19 +60,19 @@ module.exports = class PickLayerService {
         this.unpick();
       };
       GUI.setModal(false);
-      this.mapService.addInteraction(this.interaction);
+      GUI.addInteraction(this.interaction);
 
       this.interaction.once('picked', e => {
         if ('map' === this.pick_type) {
           const feature = e.feature;
           afterPick(feature);
         } else if ('wms' === this.pick_type) {
-          const layer = GUI.getService('map').getProjectLayer(this.layerId);
+          const layer = GUI.getProjectLayer(this.layerId);
           if (layer) {
             DataRouterService.getQueryLayersPromisesByCoordinates(
               [layer],
               {
-                map:           this.mapService.getMap(),
+                map:           GUI.getMap(),
                 feature_count: 1,
                 coordinates:   e.coordinate
               })
@@ -93,7 +92,7 @@ module.exports = class PickLayerService {
    *
    */
   unpick() {
-    this.mapService.removeInteraction(this.interaction);
+    GUI.removeInteraction(this.interaction);
     GUI.setModal(true);
     this.unbindEscKeyUp();
     this.ispicked = false;
@@ -104,6 +103,6 @@ module.exports = class PickLayerService {
    */
   clear() {
     if (this.isPicked()) { this.unpick() }
-    this.mapService = this.interaction = this.field = null;
+    this.interaction = this.field = null;
   };
 };

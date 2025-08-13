@@ -310,9 +310,7 @@
       */
       zoomToGeometry(geometry) {
         if (geometry) {
-          GUI
-            .getService('map')
-            .zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), { highlight: true });
+          GUI.zoomToGeometry(new ol.geom[geometry.type](geometry.coordinates), { highlight: true });
         }
       },
 
@@ -515,15 +513,13 @@
        * @param index
        */
       editFeature(index) {
-        GUI
-          .getService('queryresults')
-          .editFeature({
-            layer: {
-              id:         this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer,
-              attributes: this.table.columns,
-            },
-            feature: this.table.features[index],
-          });
+        GUI.editFeature({
+          layer: {
+            id:         this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer,
+            attributes: this.table.columns,
+          },
+          feature: this.table.features[index],
+        });
       },
 
       /**
@@ -588,9 +584,9 @@
         await this.$nextTick();
         this.chart.container = this.chart.container ||  $('#chart_content');
         if (this.chart.toggled) {
-          GUI.getService('queryresults').showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
+          GUI.showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.feature.attributes[G3W_FID] });
         } else {
-          GUI.getService('queryresults').hideChart(this.chart.container)
+          GUI.hideChart(this.chart.container)
         }
         this.resize();
       });
@@ -649,7 +645,7 @@
       }
       //In case of chart open, need to hide chart
       if (this.chart.toggled) {
-         GUI.getService('queryresults').hideChart(this.chart.container);
+         GUI.hideChart(this.chart.container);
       }
       if (this.chart.container) {
         this.$emit('hide-chart', this.chart.container);

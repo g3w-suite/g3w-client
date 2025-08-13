@@ -8,10 +8,9 @@ import MapControl   from 'g3w-control';
 import { throttle } from 'utils/throttle';
 
 // wait for map ready
-const map = GUI;
-map.setupControl.geolocation = function() {
-  map.addControl('geolocation', new GeolocationControl());
-  map.getMapControlByType('geolocation').on('click', throttle(e => map.showMarker(e.coordinates)));
+GUI.setupControl.geolocation = function() {
+  GUI.addControl('geolocation', new GeolocationControl());
+  GUI.getMapControlByType('geolocation').on('click', throttle(e => GUI.showMarker(e.coordinates)));
 };
 
 class GeolocationControl extends MapControl {

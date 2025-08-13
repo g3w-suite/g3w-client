@@ -373,14 +373,14 @@ export default {
      */
     changeRotation() {
       this.state.rotation = this.state.rotation >= 0 ? Math.min(this.state.rotation || 0, 360) : Math.max(this.state.rotation || 0, -360);
-      GUI.getService('map').setInnerGreyCoverBBox({ rotation: this.state.rotation });
+      GUI.setInnerGreyCoverBBox({ rotation: this.state.rotation });
     },
 
     /**
      * @since 3.11.0
      */
     isAxisOrientationInverted() {
-      return 'neu' === GUI.getService('map').getProjection().getAxisOrientation();
+      return 'neu' === GUI.getProjection().getAxisOrientation();
     },
 
     /**
@@ -397,7 +397,7 @@ export default {
      * @returns { string }
      */
     getPrintExtent() {
-      const map          = GUI.getService('map').viewer.map;
+      const map          = GUI.viewer.map;
       // Need to check in case di an open print page
       try {
         const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
@@ -542,7 +542,7 @@ export default {
           this._page.getInternalComponent().$on('hook:mounted', () => this.state.loading = false);
           // set print area after closing content
           this._page.unmount = () => {
-            GUI.getService('map').viewer.map.once('postrender', this._setPrintArea.bind(this));
+            GUI.viewer.map.once('postrender', this._setPrintArea.bind(this));
             const promise     = Component.prototype.unmount.call(this._page);
             this._page        = null;
             return promise;
@@ -590,21 +590,20 @@ export default {
       if (0 === this.state.print.length)   { return; }
       GUI
         .closeContent()
-        .then(component => {
+        .then(() => {
           setTimeout(() => {
-            const map      = component.getService();
-            map.getMap().once('postrender', () => {
+            GUI.getMap().once('postrender', () => {
               if (!show) {
                 return this._clearPrint();
               }
-              this._moveKey = map.viewer.map.on('moveend', this._setPrintArea.bind(this));
+              this._moveKey = GUI.viewer.map.on('moveend', this._setPrintArea.bind(this));
               this._initPrintConfig();
               // show print area if is not atlas template and have maps
               if (undefined === this.state.atlas && this._setPrintArea()) {
-                map.startDrawGreyCover();
+                GUI.startDrawGreyCover();
               }
             });
-            map.getMap().renderSync();
+            GUI.getMap().renderSync();
           })
         })
     },
@@ -619,16 +618,16 @@ export default {
         this._clearPrint();
         return false;
       }
-      const map        = GUI.getService('map').viewer.map;
+      const map        = GUI.viewer.map;
       const size       = map.getSize();
       const resolution = map.getView().getResolution();
       const { h, w }   = this.state.maps.find(m => !m.overview);
-      const res        = resolution * ('m' === GUI.getService('map').getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
+      const res        = resolution * ('m' === GUI.getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
       const w2         = (((w / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const h2         = (((h / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
       const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
       this.state.inner = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
-      GUI.getService('map').setInnerGreyCoverBBox({
+      GUI.setInnerGreyCoverBBox({
         type:     'pixel',
         inner:    this.state.inner,
         rotation: this.state.rotation
@@ -639,7 +638,7 @@ export default {
     _clearPrint() {
       ol.Observable.unByKey(this._moveKey);
       this._moveKey = null;
-      GUI.getService('map').stopDrawGreyCover();
+      GUI.stopDrawGreyCover();
     },
 
     /**
@@ -648,7 +647,7 @@ export default {
      * @param maxRes maximum resolution
      */
     _setScales(maxRes) {
-      const units       = GUI.getService('map').getMapUnits();
+      const units       = GUI.getMapUnits();
       const mapScale    = getScaleFromResolution(maxRes, units);
       const scales      = PRINT_SCALES.sort((a, b) => b.value - a.value);
       const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
@@ -658,7 +657,7 @@ export default {
     },
 
     _initPrintConfig() {
-      const view = GUI.getService('map').viewer.map.getView();
+      const view = GUI.viewer.map.getView();
       if (!this._initialized) {
         this._setScales(view.getMaxResolution());
         this._initialized = true;
@@ -687,10 +686,9 @@ export default {
       }
       if (visible) {
         this._initPrintConfig();
-        const map = GUI.getService('map');
-        map.on('changeviewaftercurrentproject', () => {
+        GUI.on('changeviewaftercurrentproject', () => {
           this.state.scales = PRINT_SCALES;
-          this._setScales(map.viewer.map.getView().getMaxResolution());
+          this._setScales(GUI.viewer.map.getView().getMaxResolution());
         });
       } else {
         this._clearPrint();

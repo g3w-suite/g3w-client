@@ -499,7 +499,7 @@
       onChangeColor(val) {
         this.layer.color         = val;
         this.$refs.layer_color.style.backgroundColor = val.hex;
-        const layer              = GUI.getService('map').getLayerByName(this.layer.name || '');
+        const layer              = GUI.getLayerByName(this.layer.name || '');
         const style              = layer.getStyle();
         style._g3w_options.color = val;
         layer.setStyle(style);
@@ -580,9 +580,8 @@
       setLayerPosition(position) {
         if (position !== this.layer.position) {
           this.layer.position = position;
-          const map           = GUI.getService('map');
-          map.getLayerById(this.layer.id).setZIndex(({ top: map.layersCount, bottom: 0 })[position]);
-          map.emit('change-layer-position-map', { id: this.layer.id, position });
+          GUI.getLayerById(this.layer.id).setZIndex(({ top: GUI.layersCount, bottom: 0 })[position]);
+          GUI.emit('change-layer-position-map', { id: this.layer.id, position });
           this.closeMenu();
         }
       },
@@ -596,13 +595,10 @@
        */
       zoomToLayer(layer) {
         try {
-          GUI
-            .getService('map')
-            .goToBBox(
-              [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-              layer.epsg
-            );
-
+          GUI.goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
         } catch(e) {
           console.warn(e);
           GUI.showUserMessage({
@@ -805,10 +801,10 @@
        */
        onLayerOpacity() {
         if (this.isExternalWMSLayer(this.layer)) {
-          const layer = GUI.getService('map').getLayerById(this.layer.id);
+          const layer = GUI.getLayerById(this.layer.id);
           if (layer) {
             layer.setOpacity(Number(this.layer.opacity));
-            GUI.getService('map').emit('change-layer-opacity', { id: this.layer.id, opacity: this.layer.opacity });
+            GUI.emit('change-layer-opacity', { id: this.layer.id, opacity: this.layer.opacity });
           }
         } else {
           const layer = getCatalogLayerById(this.layer.id);

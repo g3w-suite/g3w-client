@@ -17,9 +17,7 @@ import { throttle }               from 'utils/throttle';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.querybypolygon = map.setupControl.querybbox = map.setupControl.querybycircle = map.setupControl.querybydrawpolygon = map.setupControl.querybyfreehand = function() {
+GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.querybycircle = GUI.setupControl.querybydrawpolygon = GUI.setupControl.querybyfreehand = function() {
   if (isMobile.any) {
     return;
   }
@@ -27,10 +25,10 @@ map.setupControl.querybypolygon = map.setupControl.querybbox = map.setupControl.
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon', 'querybyfreehand'].includes(type))
     .forEach(type => {
-      if (map.getMapControlByType('queryby')) {
-        map.getMapControlByType('queryby').addType(type)
+      if (GUI.getMapControlByType('queryby')) {
+        GUI.getMapControlByType('queryby').addType(type)
       } else {
-        map.addControl('queryby', new QueryBy({ types: [type] }));
+        GUI.addControl('queryby', new QueryBy({ types: [type] }));
       }
     });
 };
@@ -116,7 +114,7 @@ export class QueryBy extends MapControl {
               methods:         SPATIAL_METHODS,
               method:          this.getSpatialMethod(),
               layers:          [],
-              selectedLayer:   (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getService('map').getSelectedLayer()?.getId() || '__ALL__'
+              selectedLayer:   (GUI.getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getSelectedLayer()?.getId() || '__ALL__'
               reloading:       true,
             }),
             template: /* html */ `
@@ -191,7 +189,7 @@ export class QueryBy extends MapControl {
                     return;
                   }
                   //need to convert degree in meter
-                  QUERY.radius = Math.floor(v * ('m' === GUI.getService('map').getMapUnits() ? 1 : ol.proj.Units.METERS_PER_UNIT.degrees));
+                  QUERY.radius = Math.floor(v * ('m' === GUI.getMapUnits() ? 1 : ol.proj.Units.METERS_PER_UNIT.degrees));
                   //already circle drawed but not clear (0) value
                   if (QUERY.dfeature && QUERY.radius > 0) {
                     QUERY.dfeature.getGeometry().setRadius(QUERY.radius);
@@ -213,29 +211,28 @@ export class QueryBy extends MapControl {
                   if (undefined === oldValue) {
                     return;
                   }
-                  const map = GUI.getService('map');
                   // auto selects added layer
                   if ('__NEW__' === value) {
-                    const listener = map.onafter('loadExternalLayer', l => {
-                      map.selectLayer(l.get('id'));
+                    const listener = GUI.onafter('loadExternalLayer', l => {
+                      GUI.selectLayer(l.get('id'));
                       this.reset();
                     });
                     const select = document.querySelector('#add-layer-type');
                     select.value = 'file';
                     select.dispatchEvent(new Event('change'));
-                    $('#modal-addlayer').one('hidden.bs.modal', () => map.un('loadExternalLayer', listener));
-                    map.showAddLayerModal();
+                    $('#modal-addlayer').one('hidden.bs.modal', () => GUI.un('loadExternalLayer', listener));
+                    GUI.showAddLayerModal();
                   }
 
-                  const selected = (GUI.getService('map').getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(); // TODO: use optional chaining instead: GUI.getService('map').getSelectedLayer()?.getId() || '__ALL__'
+                  const selected = (GUI.getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(); // TODO: use optional chaining instead: GUI.getSelectedLayer()?.getId() || '__ALL__'
 
                   if (!['__ALL__', '__NEW__'].includes(value) && value !== selected) {
-                    map.selectLayer(value);
+                    GUI.selectLayer(value);
                   }
 
                   // reset selection when done through TOC catalog
                   if (['__ALL__', '__NEW__'].includes(value) && '__ALL__' !== selected) {
-                    map.selectLayer();
+                    GUI.selectLayer();
                   }
 
                   // perform request again
@@ -292,7 +289,7 @@ export class QueryBy extends MapControl {
               },
               templateLayer(state) {
                 if (!state.id || '__NEW__' === state.id) { return state.text }
-                const externalLayers = GUI.getService('map').getExternalLayers('vector').map(l => l._externalLayer);
+                const externalLayers = GUI.getExternalLayers('vector').map(l => l._externalLayer);
                 const layer = getCatalogLayerById(state.id) || externalLayers.find(l => l.get('id') === state.id);
                 /** @FIXME layer is undefined when removing an external layer */
                 const icon = ('__ALL__' === state.id || !layer ? '' : /*html */ `<i class="${ GUI.getFontClass( layer.isVisible() ? 'eye' : 'eye-close') }"></i>&nbsp;&nbsp;`)
@@ -398,7 +395,7 @@ export class QueryBy extends MapControl {
             if ('querybycircle' === type) {
               const radius = e.feature.getGeometry().getRadius();
               //in the case of map unit degrees, convert it to meter
-              QUERY.radius = radius * ('m' === GUI.getService('map').getMapUnits() ? 1 : ol.proj.Units.METERS_PER_UNIT.degrees);
+              QUERY.radius = radius * ('m' === GUI.getMapUnits() ? 1 : ol.proj.Units.METERS_PER_UNIT.degrees);
             }
             QUERY.dfeature = e.feature;
             this.dispatchEvent({ type: 'drawend', feature: QUERY.dfeature });
@@ -465,7 +462,7 @@ export class QueryBy extends MapControl {
       clickmap: true,
     });
 
-    GUI.getService('map').addControl(type, control, false);
+    GUI.addControl(type, control, false);
 
     control._interaction.on('change:active', e => {
       //set current cursor class on map
@@ -591,8 +588,8 @@ export class QueryBy extends MapControl {
       }
 
       //Check if some layer is selected
-      const selected       = GUI.getService('map').getSelectedLayer();
-      const externalLayers = GUI.getService('map').getExternalLayers('vector').map(l => l._externalLayer);
+      const selected       = GUI.getSelectedLayer();
+      const externalLayers = GUI.getExternalLayers('vector').map(l => l._externalLayer);
       const project        = ApplicationState.project;
 
       if ('querybbox' === type) {
@@ -663,7 +660,7 @@ export class QueryBy extends MapControl {
  * @returns { boolean } whether control has a visible layer
  */
 function _hasVisible(control) {
-  const selected  = GUI.getService('map').getSelectedLayer();
+  const selected  = GUI.getSelectedLayer();
   return (control.layers || []).some(l => l.isVisible() && ('querybypolygon' === control.name ? l !== selected && selected && selected.isVisible() : true));
 }
 
@@ -678,7 +675,7 @@ function _getAvailableLayers(type) {
         .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }) : []),
 
     // POLYGONS
-    ...GUI.getService('map').getExternalLayers('vector')
+    ...GUI.getExternalLayers('vector')
         .map(l => l._externalLayer).filter(l => 'querybypolygon' === type ? POLYGON_TYPES.includes(l.getGeometryType()) : true),
 
     // SELECTED POLYGONS

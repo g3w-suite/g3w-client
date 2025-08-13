@@ -24,9 +24,7 @@ Object
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.overview = async function() {
+GUI.setupControl.overview = async function() {
   if (isMobile.any) {
     return;
   }
@@ -226,14 +224,14 @@ map.setupControl.overview = async function() {
       Object.defineProperty(PROJECT, 'state', { get() { return PROJECT; }, configurable: false, enumerable: true });
     }
 
-    map.createMapControl({
+    GUI.createMapControl({
       id: 'overview',
       add: false,
       options: {
         ol: new ol.control.OverviewMap({
           view:          new ol.View({
             extent:        PROJECT.state.extent,
-            projection:    map.getProjection(),
+            projection:    GUI.getProjection(),
             center:        ol.extent.getCenter(PROJECT.state.initextent),
             maxResolution: Math.max(ol.extent.getWidth(PROJECT.state.extent) / 200,     ol.extent.getHeight(PROJECT.state.extent) / 150),     // max(xRes, yRes)
             resolution:    Math.max(ol.extent.getWidth(PROJECT.state.initextent) / 200, ol.extent.getHeight(PROJECT.state.initextent) / 150), // max(xInitRes, yInitRes)

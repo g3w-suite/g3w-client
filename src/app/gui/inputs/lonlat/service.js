@@ -5,15 +5,14 @@ module.exports = class LonLatService extends Service {
   constructor(opts = {}) {
     super(opts);
     this.coordinatebutton;
-    this.mapService = GUI.getService('map');
-    this.mapEpsg = this.mapService.getCrs();
+    this.mapEpsg = GUI.getCrs();
 
     this.mapControlToggleEventHandler = evt => {
       if (evt.target.isToggled() && evt.target.isClickMap()) {
         this.coordinatebutton.active && this.toggleGetCoordinate();
       }
     };
-    this.map        = this.mapService.getMap();
+    this.map        = GUI.getMap();
     this.outputEpsg = this.state.epsg || this.mapEpsg;
     //Store event map key
     this.eventMapKey;
@@ -38,8 +37,8 @@ module.exports = class LonLatService extends Service {
   };
 
   startToGetCoordinates() {
-    this.mapService.deactiveMapControls();
-    this.mapService.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
+    GUI.deactiveMapControls();
+    GUI.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
     this.eventMapKey = this.map.on('click', evt =>{
       evt.originalEvent.stopPropagation();
       evt.preventDefault();
@@ -53,7 +52,7 @@ module.exports = class LonLatService extends Service {
 
   stopToGetCoordinates() {
     ol.Observable.unByKey(this.eventMapKey);
-    this.mapService.off('mapcontrol:toggled', this.mapControlToggleEventHandler)
+    GUI.off('mapcontrol:toggled', this.mapControlToggleEventHandler)
   };
 
   clear() {

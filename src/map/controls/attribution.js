@@ -6,11 +6,11 @@ import ApplicationState from 'g3w-state';
 import GUI              from 'services/gui';
 
 // wait for map ready
-GUI.once('ready', () => GUI.getService('map').once('ready', function () {
+GUI.isMapReady().then(() => {
   const {
     header_terms_of_use_text: text,
     header_terms_of_use_link: link
-  } = this.config;
+  } = GUI.config;
 
   // set layers attribution
   const attribution = text
@@ -19,7 +19,7 @@ GUI.once('ready', () => GUI.getService('map').once('ready', function () {
       : `<span class="skin-color" style="font-weight: bold">${text}</span>`
     : false;
 
-  this.getMapLayers().forEach(l => l.getSource().setAttributions(attribution));
+  GUI.getMapLayers().forEach(l => l.getSource().setAttributions(attribution));
 
   const has_baselayer = attribution || Object.values(ApplicationState.layers)
     .flatMap(s => s.isQueryable() ? s.getLayers() : [])
@@ -27,6 +27,6 @@ GUI.once('ready', () => GUI.getService('map').once('ready', function () {
 
   // check if a base layer is set. If true, add attribution control
   if (has_baselayer) {
-    this.getMap().addControl(new ol.control.Attribution({ collapsible: false, target: 'map_footer_left' }));
+    GUI.getMap().addControl(new ol.control.Attribution({ collapsible: false, target: 'map_footer_left' }));
   }
-}));
+});

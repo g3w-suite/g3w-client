@@ -21,56 +21,50 @@ import DownloadFormats         from 'components/QueryResultsActionDownloadFormat
 import shpwrite                from '@mapbox/shp-write';
 
 // set download action tool
-GUI.once('ready', () => {
-  GUI.getService('queryresults').onafter('addActionsForLayers', (actions, layers) => {
-    const QUERY = GUI.getService('queryresults');
-    layers
-      .filter(layer => layer.downloads.length > 0)
-      .forEach((layer) => {
-        actions[layer.id].push({
-          id:         'downloads',
-          download:   true,
-          class:      GUI.getFontClass('download'),
-          state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => Object.assign(a, { [i]: null }), {}) }),
-          toggleable: true,
-          hint:       'Downloads',
-          change({ features }) {
-            features.forEach((_, i) => undefined === this.state.toggled[i] ? Vue.set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
-          },
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            QUERY.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-          }
-        });
-        QUERY.state.actiontools.downloadformats = QUERY.state.actiontools.downloadformats || {};
-        QUERY.state.actiontools.downloadformats[layer.id] = {
-          downloads: layer.downloads.map(format => ({
-            id:       `download_${format}_feature`,
-            download: true,
-            format,
-            class:    GUI.getFontClass(format),
-            hint:     `download_types.${format}`,
-            cbk: (layer, feature, action, index, html, down_with_relations) => {
-              // un-toggle downloads action
-              downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
-              if ('polygon' !== QUERY.state.query.type) {
-                const downloadsaction = actions[layer.id].find(a => 'downloads' === a.id);
-                downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
-              }
-            }
-          }))
-        };
+GUI.onafter('addActionsForLayers', (actions, layers) => {
+  layers
+    .filter(layer => layer.downloads.length > 0)
+    .forEach((layer) => {
+      actions[layer.id].push({
+        id:         'downloads',
+        download:   true,
+        class:      GUI.getFontClass('download'),
+        state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => Object.assign(a, { [i]: null }), {}) }),
+        toggleable: true,
+        hint:       'Downloads',
+        change({ features }) {
+          features.forEach((_, i) => undefined === this.state.toggled[i] ? Vue.set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
+        },
+        cbk: (layer, feature, action, index) => {
+          action.state.toggled[index] = !action.state.toggled[index];
+          GUI.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
+        }
       });
-  });
+      GUI.state.actiontools.downloadformats = GUI.state.actiontools.downloadformats || {};
+      GUI.state.actiontools.downloadformats[layer.id] = {
+        downloads: layer.downloads.map(format => ({
+          id:       `download_${format}_feature`,
+          download: true,
+          format,
+          class:    GUI.getFontClass(format),
+          hint:     `download_types.${format}`,
+          cbk: (layer, feature, action, index, html, down_with_relations) => {
+            // un-toggle downloads action
+            downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
+            if ('polygon' !== GUI.state.query.type) {
+              const downloadsaction = actions[layer.id].find(a => 'downloads' === a.id);
+              downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
+            }
+          }
+        }))
+      };
+    });
 });
 
 /**
  * @TODO simplify, always make use of <dialog> element
  */
 export async function downloadFeatures(type, layer, features = [], action, index, html, down_with_relations = 0) {
-
-  const QUERY = GUI.getService('queryresults');
-
   const catalog_layer = getCatalogLayerById(layer.id);
 
   // download started from CONTEXT MENU
@@ -160,8 +154,8 @@ export async function downloadFeatures(type, layer, features = [], action, index
             blob         = await shpwrite.zip(
               // GeoJSONFile
               (new ol.format.GeoJSON()).writeFeaturesObject(
-                GUI.getService('map').getLayerByName(external_layer.name).getSource().getFeatures(),
-                { dataProjection: external_layer.crs, featureProjection: GUI.getService('map').getEpsg() || external_layer.crs }
+                GUI.getLayerByName(external_layer.name).getSource().getFeatures(),
+                { dataProjection: external_layer.crs, featureProjection: GUI.getEpsg() || external_layer.crs }
               ),
               {
                 outputType:     "blob",
@@ -183,7 +177,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
             const data = {
               down_with_relations,
               filtertoken: catalog_layer.getFilterToken(),
-              ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getService('map').getMapExtent().toString() } : {})
+              ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {})
             };
             url       = catalog_layer.getUrl(format.replace('-at-map-extent', '').toLowerCase());
             response  = url && await fetch(url, {
@@ -219,7 +213,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
       features = [features];
     }
 
-    const { query = {} } = QUERY.state;
+    const { query = {} } = GUI.state;
 
     // filter out undefined properties
     const data = Object.fromEntries(Object.entries({
@@ -250,7 +244,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
       if (features.length > 1) {
         layer.downloadformats.active = active;
-        QUERY.setLayerActionTool({ layer });
+        GUI.setLayerActionTool({ layer });
       }
 
       GUI.setLoadingContent(true);
@@ -292,12 +286,12 @@ export async function downloadFeatures(type, layer, features = [], action, index
   
       GUI.setLoadingContent(false);
 
-      const downloadsactions = QUERY.state.layersactions[layer.id].find(action => 'downloads' === action.id);
+      const downloadsactions = GUI.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
       /** @FIXME add description */
       if (features.length > 1 && undefined === downloadsactions) {
         layer[type].active = false;
-        QUERY.setLayerActionTool({ layer });
+        GUI.setLayerActionTool({ layer });
       }
 
       /** @FIXME add description */
@@ -317,7 +311,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
       /** @FIXME add description */
       if (features.length <= 1) {
-        QUERY.setCurrentActionLayerFeatureTool({ index, action, layer });
+        GUI.setCurrentActionLayerFeatureTool({ index, action, layer });
       }
     };
 
@@ -328,7 +322,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
     }
 
     // check if multi-download if present
-    const downloadsactions = QUERY.state.layersactions[layer.id].find(action => 'downloads' === action.id);
+    const downloadsactions = GUI.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
     const config = {
       choices: [
@@ -363,9 +357,9 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
     /** @FIXME add description */
     if (1 === features.length) {
-      QUERY.state.actiontools[CsvAttributes.name] = QUERY.state.actiontools[layer.id] || {};
-      QUERY.state.actiontools[CsvAttributes.name][layer.id] = config;
-      QUERY.setCurrentActionLayerFeatureTool({
+      GUI.state.actiontools[CsvAttributes.name] = GUI.state.actiontools[layer.id] || {};
+      GUI.state.actiontools[CsvAttributes.name][layer.id] = config;
+      GUI.setCurrentActionLayerFeatureTool({
         layer,
         index,
         action,
@@ -381,7 +375,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
     /** @FIXME add description */
     if (1 !== features.length) {
       const has_config = (downloadsactions || (layer[type].active && undefined === downloadsactions));
-      QUERY.setLayerActionTool({
+      GUI.setLayerActionTool({
         layer,
         component: has_config ? CsvAttributes : null,
         config:    has_config ? config : null,
@@ -397,17 +391,15 @@ export async function downloadFeatures(type, layer, features = [], action, index
  * @param layer
  */
 export function showDownloadFormats(layer) {
-  const QUERY = GUI.getService('queryresults');
-
   layer.downloadformats.active = !layer.downloadformats.active;
-  QUERY.setLayerActionTool({
+  GUI.setLayerActionTool({
     layer,
     component: layer.downloadformats.active ? DownloadFormats : null,
     config: layer.downloadformats.active
       ? {
-          ...QUERY.state.actiontools.downloadformats[layer.id],
+          ...GUI.state.actiontools.downloadformats[layer.id],
           //for download layer need to filter pdf format because it works only for a single feature
-          downloads: QUERY.state.actiontools.downloadformats[layer.id].downloads.filter(d => 'pdf' !== d.format)
+          downloads: GUI.state.actiontools.downloadformats[layer.id].downloads.filter(d => 'pdf' !== d.format)
         }
       : null
   })

@@ -264,9 +264,7 @@ export default {
      */
     editFeature(feature) {
       $('.tooltip').remove();
-      GUI
-        .getService('queryresults')
-        .editFeature({ layer: { id: this.layer.getId() }, feature })
+      GUI.editFeature({ layer: { id: this.layer.getId() }, feature })
     },
 
     /**
@@ -286,7 +284,7 @@ export default {
         });
         // zoom to feature
         if (feature.geometry) {
-          GUI.getService('map').zoomToGeometry(toOLGeom(feature.geometry));
+          GUI.zoomToGeometry(toOLGeom(feature.geometry));
         }
       } catch (e) {
        console.warn(e); 
@@ -294,21 +292,19 @@ export default {
     },
 
     async getDataFromBBOX() {
-      const map = GUI.getService('map');
-
       this.state.geolayer.active = !this.state.geolayer.active;
 
       const is_active = this.state.geolayer.active;
 
       if (is_active) {
         this.map_bbox.cb = () => {
-          this.state.geolayer.in_bbox = this.state.geolayer.active ? map.getMapBBOX().join(',') : undefined;
+          this.state.geolayer.in_bbox = this.state.geolayer.active ? GUI.getMapBBOX().join(',') : undefined;
           $(this.$refs.attribute_table).DataTable().ajax.reload();
         };
       }
 
       if (is_active) {
-        this.map_bbox.key = map.getMap().on('moveend', this.map_bbox.cb);
+        this.map_bbox.key = GUI.getMap().on('moveend', this.map_bbox.cb);
       }
 
       if (this.map_bbox.cb) {
@@ -405,16 +401,14 @@ export default {
      * @param {*} zoom    - whether zoom to feature
      */
     async highlight(feature, zoom = true) {
-      const map = GUI.getService('map');
-
       // no feature or no feature geometry → clear highlight
       if (!feature || !feature.geometry) {
-        return map.clearHighlightGeometry();
+        return GUI.clearHighlightGeometry();
       }
 
       this.async_highlight = () => {
-        map.clearHighlightGeometry();
-        map.highlightGeometry(feature.geometry, { zoom, duration: Infinity })
+        GUI.clearHighlightGeometry();
+        GUI.highlightGeometry(feature.geometry, { zoom, duration: Infinity })
       };
 
       // sync highlight
@@ -456,9 +450,9 @@ export default {
             features.push(...relation.features[k]);
           }
           if (zoom) {
-            map.zoomToFeatures(features, { highlight: true });
+            GUI.zoomToFeatures(features, { highlight: true });
           } else {
-            map.highlightFeatures(features);
+            GUI.highlightFeatures(features);
           }
         });
     },
@@ -679,7 +673,7 @@ export default {
   async mounted() {
   
     // un-toggle map controls
-    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
+    this.last_map_control = GUI.getMapControls().find(c => c.control.isToggled && c.control.isToggled());
     if (this.last_map_control) {
         this.last_map_control.control.toggle();
     }

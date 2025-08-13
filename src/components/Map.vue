@@ -177,7 +177,6 @@ export default {
     onDrop(e) {
       document.querySelector('.drop-area').toggleAttribute('hidden', 'dragenter' !== e.type);
       if (e.dataTransfer.files && 'drop' === e.type) {
-        const map = GUI.getService('map');
         const q = document.querySelector.bind(document);
         // set modal options
         const setOption = async (el, value) => {
@@ -189,10 +188,10 @@ export default {
         }
         const setFile = async (file) => {
           await waitFor(() => !q('#add-layer-type').value, 5000);
-          if (map.getLayerByName(file.name)) {
-            return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+          if (GUI.getLayerByName(file.name)) {
+            return console.assert(!GUI.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
           }
-          setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+          setTimeout(() => console.assert(GUI.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
           await setOption('#add-layer-type', 'file');
           await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
           const data = new DataTransfer();

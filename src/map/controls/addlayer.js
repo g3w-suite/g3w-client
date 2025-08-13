@@ -6,21 +6,19 @@
 import GUI from 'services/gui';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.addlayer = map.setupControl.addlayers = function () {
+GUI.setupControl.addlayer = GUI.setupControl.addlayers = function () {
   Object
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['addlayers', 'addlayer'].includes(type))
     .forEach(type => {
-      if (!isMobile.any && !map.getMapControlByType('addlayer')) {
-        map.createMapControl({
+      if (!isMobile.any && !GUI.getMapControlByType('addlayer')) {
+        GUI.createMapControl({
           id: 'addlayer',
           options: {
             tipLabel: 'Add Layer',
             onSetMap(e) {
               if ('after' === e.setter) {
-                $(this.element).on('click', () => GUI.getService('map').showAddLayerModal());
+                $(this.element).on('click', () => GUI.showAddLayerModal());
               }
             }
           },

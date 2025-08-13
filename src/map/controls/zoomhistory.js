@@ -7,10 +7,8 @@ import GUI          from 'services/gui';
 import { debounce } from 'utils/debounce';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.zoomhistory = function() {
-  map.createMapControl({
+GUI.setupControl.zoomhistory = function() {
+  GUI.createMapControl({
     id: 'zoomhistory',
     add: false,
     options: {
@@ -20,7 +18,7 @@ map.setupControl.zoomhistory = function() {
             element: Object.assign(document.createElement('div'), { className: 'ol-zoom-history ol-unselectable ol-control' }),
             target: document.querySelector('.g3w-map-controls-left-bottom'),
           });
-          const map     = GUI.getService('map').getMap();
+          const map     = GUI.getMap();
           const history = [];
           let curr      = 0;
           this.element.style.display = 'flex';
@@ -33,7 +31,7 @@ map.setupControl.zoomhistory = function() {
             btn.parentElement.setAttribute('data-placement', 'top');
             btn.addEventListener('click', e => {
               curr += 'last' === e.currentTarget.value ? -1 : +1;
-              GUI.getService('map').getMap().getView().fit(history.at(curr));
+              GUI.getMap().getView().fit(history.at(curr));
               this.element.querySelector('button[value=last]').classList.toggle('g3w-disabled', 0 === curr);
               this.element.querySelector('button[value=next]').classList.toggle('g3w-disabled', history.length - 1 === curr);
             })
@@ -48,7 +46,7 @@ map.setupControl.zoomhistory = function() {
             this.element.querySelector('button[value=last]').classList.toggle('g3w-disabled', 0 === curr);
             this.element.querySelector('button[value=next]').classList.toggle('g3w-disabled', history.length - 1 === curr);
           }, 600));
-          GUI.getService('map').getMap().addControl(this);
+          GUI.getMap().addControl(this);
         }
       })
     }

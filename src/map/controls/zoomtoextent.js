@@ -4,13 +4,11 @@
  */
 import GUI from 'services/gui';
 
-const map = GUI;
-
-map.setupControl.zoomtoextent = function() {
-  map.createMapControl({
+GUI.setupControl.zoomtoextent = function() {
+  GUI.createMapControl({
     id: 'zoomtoextent',
     options: {
-      ol: new ol.control.ZoomToExtent({ extent: map.project.state.extent, tipLabel: 'Fit map extent' })
+      ol: new ol.control.ZoomToExtent({ extent: GUI.project.state.extent, tipLabel: 'Fit map extent' })
     }
   });
 };

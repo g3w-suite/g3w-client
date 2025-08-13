@@ -223,9 +223,9 @@
         this.user.bookmarks.push({
           id:        getUniqueDomId(),
           name:      this.addbookmarkinput.value,
-          extent:    GUI.getService('map').getMapExtent(),
+          extent:    GUI.getMapExtent(),
           removable: true,
-          crs:       { epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1] }
+          crs:       { epsg: 1 * GUI.getCrs().split('EPSG:')[1] }
         });
 
         this.saveUserBookMarks();
@@ -254,12 +254,12 @@
         if (window.innerWidth < 767) {
           GUI.hideSidebar();
         }
-        if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
+        if (crs.epsg !== GUI.getEpsg().split('EPSG:')[1]) {
           const projection = await ApplicationState.projections.set(`EPSG:${crs.epsg}`);
-          extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
+          extent = ol.proj.transformExtent(extent, projection, GUI.getProjection())
         }
         // make use of `force: true` parameter to get resolution from computed `extent`
-        GUI.getService('map').zoomToExtent(extent, { force: true });
+        GUI.zoomToExtent(extent, { force: true });
       },
 
     },

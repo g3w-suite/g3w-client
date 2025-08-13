@@ -41,7 +41,7 @@ export function SearchPanel(opts = {}, show = false) {
      * The First one is a layer owner of the search set on admin. 
      * Need to ser layer TOC layer olorder on results.
      * */
-    search_layers: (GUI.getService('queryresults')._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
+    search_layers: (GUI._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:    ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -147,7 +147,7 @@ export function SearchPanel(opts = {}, show = false) {
     doSearch,
     setInputs,
     run: debounce((...args) => {
-      const [w, h] = GUI.getService('map').getMap().getSize();
+      const [w, h] = GUI.getMap().getSize();
       const hide   = GUI.isMobile() && (0 === w || 0 === h);
       setTimeout(() => {
         if (hide) {
@@ -238,7 +238,7 @@ async function doSearch({
 
     // auto zoom to query (response)
     if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
-      GUI.getService('map').zoomToFeatures(data.data[0].features);
+      GUI.zoomToFeatures(data.data[0].features);
     }
 
     const features  = search_1n       && (data.data[0] || {}).features || []

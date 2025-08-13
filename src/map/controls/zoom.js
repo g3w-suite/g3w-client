@@ -7,10 +7,8 @@ import { gettext as _ } from 'g3w-i18n';
 import GUI              from 'services/gui';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.zoom = function() {
-  map.createMapControl({
+GUI.setupControl.zoom = function() {
+  GUI.createMapControl({
     id: 'zoom',
     options: {
       ol: new ol.control.Zoom({

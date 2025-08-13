@@ -258,7 +258,7 @@ export default class Component extends Emitter {
 
     await this.internalComponent.$nextTick();
   
-    this.emit('ready');      
+    this.emit('ready');
     // emit mount event
     this.emit('mount');
     return true;

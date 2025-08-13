@@ -96,13 +96,10 @@ g3w.gui.once('initconfig', () => {
 });
 
 // dev layers (modal-addlayer)
-g3w.gui.once('ready', async () => {
-
-  await g3w.gui.isMapReady();
+g3w.gui.once('after:setupControls', async () => {
 
   // $('#modal-addlayer').modal('show');
 
-  const map = g3w.gui.getService('map');
   const q = document.querySelector.bind(document);
 
   // set modal options
@@ -117,10 +114,10 @@ g3w.gui.once('ready', async () => {
   // add file layer
   const setFile = async (file, epsg) => {
     await waitFor(() => !q('#add-layer-type').value, 5000);
-    if (map.getLayerByName(file.name)) {
-      return console.assert(!map.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+    if (g3w.gui.getLayerByName(file.name)) {
+      return console.assert(!g3w.gui.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
     }
-    setTimeout(() => console.assert(map.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+    setTimeout(() => console.assert(g3w.gui.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
     await setOption('#add-layer-type', 'file');
     await setOption('#projection-layer', epsg);
     await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
@@ -130,7 +127,7 @@ g3w.gui.once('ready', async () => {
     q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
     await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
     q('.modal-footer .btn.btn-success').click();
-    window.addEventListener("beforeunload", () => { map.getLayerByName(file.name) && map.removeExternalLayer(file.name); });
+    window.addEventListener("beforeunload", () => { g3w.gui.getLayerByName(file.name) && g3w.gui.removeExternalLayer(file.name); });
   }
 
   // add wms layer
@@ -151,7 +148,7 @@ g3w.gui.once('ready', async () => {
     const wms_name = q('#g3w-wms-layer-name').value;
     await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
     q('.modal-footer .btn.btn-success').click();
-    window.addEventListener("beforeunload", () => { map.getLayerByName(wms_name) && map.removeExternalLayer(wms_name); });
+    window.addEventListener("beforeunload", () => { g3w.gui.getLayerByName(wms_name) && g3w.gui.removeExternalLayer(wms_name); });
   };
 
   // export layer to zip
@@ -257,44 +254,42 @@ g3w.gui.onafter('showPanel', panel => {
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3w.gui.once('ready', () => {
-  g3w.gui.getService('queryresults').onafter('addActionsForLayers', (actions, layers) => {
-    Object.keys(actions)
-    .filter(id => layers.find(l => id === l.id).editable)
-    .forEach(id => {
-      //Check only if has primay key value to ge unique feature to edit
-      const pkField = g3w.gui.getPlugin('editing').getEditingFields(id).find(f => f.pk);
-      // in case that layer has not pk field, iframe editing action is not
-      if (!pkField) {
-        return;
-      }
-      actions[id].push({
-        id: 'update_feature_in_iframe',
-        class: 'fa fa-window-restore',
-        hint:  'Update feature in iframe',
-        style: { color: 'black !important' },
-        cbk:   (layer, feature) => {
-          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
-          w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
-          w.addEventListener('message', e => {
-            if ('app:ready' === e.data.action) {
-              w.document.querySelector('iframe').contentWindow.postMessage({
-                id:      null,
-                action: 'editing:update',
-                data: {
-                  qgs_layer_id: layer.id,
-                  feature: {
-                    field: pkField.name,
-                    value: feature.attributes[pkField.name]
-                  }
+g3w.gui.onafter('addActionsForLayers', (actions, layers) => {
+  Object.keys(actions)
+  .filter(id => layers.find(l => id === l.id).editable)
+  .forEach(id => {
+    //Check only if has primay key value to ge unique feature to edit
+    const pkField = g3w.gui.getPlugin('editing').getEditingFields(id).find(f => f.pk);
+    // in case that layer has not pk field, iframe editing action is not
+    if (!pkField) {
+      return;
+    }
+    actions[id].push({
+      id: 'update_feature_in_iframe',
+      class: 'fa fa-window-restore',
+      hint:  'Update feature in iframe',
+      style: { color: 'black !important' },
+      cbk:   (layer, feature) => {
+        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+        w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+        w.addEventListener('message', e => {
+          if ('app:ready' === e.data.action) {
+            w.document.querySelector('iframe').contentWindow.postMessage({
+              id:      null,
+              action: 'editing:update',
+              data: {
+                qgs_layer_id: layer.id,
+                feature: {
+                  field: pkField.name,
+                  value: feature.attributes[pkField.name]
                 }
-              }, '*');
-            }
-          }, false);
-          // prevent page refresh (eg. CTRL+R)
-          w.onbeforeunload = () => w.close();
-        }
-      })
+              }
+            }, '*');
+          }
+        }, false);
+        // prevent page refresh (eg. CTRL+R)
+        w.onbeforeunload = () => w.close();
+      }
     })
   })
 });
@@ -302,28 +297,26 @@ g3w.gui.once('ready', () => {
 /**
  * Custom map control: “Open in iframe”
  */
-g3w.gui.once('ready', () => {
-  g3w.gui.getService('map').once('ready', function() {
-    this.createMapControl({
-      id:            "OPENIFRAME",
-      options: {
-        add:         true,
-        clickmap:    false,
-        tipLabel:    'Open in iframe',
-        customClass: 'fa fa-window-restore',
-        onclick() {
-          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
-          w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
-          // send message to iframe every time ifrema send a message con contentWindow
-          w.addEventListener('message', e => {
-            //Emit iframe:message to handle the message in config.js file
-            setTimeout(() => g3w.gui.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
-          }, false);
-          // prevent page refresh (eg. CTRL+R)
-          w.onbeforeunload = () => w.close();
-        }
-      },
-    });
+g3w.gui.once('after:setupControls', () => {
+  g3w.gui.createMapControl({
+    id:            "OPENIFRAME",
+    options: {
+      add:         true,
+      clickmap:    false,
+      tipLabel:    'Open in iframe',
+      customClass: 'fa fa-window-restore',
+      onclick() {
+        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+        w.document.write(`<!doctype HTML><html><head><title>Test Iframe</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style></head><body><iframe src="${location.href}"></iframe></body></html>`);
+        // send message to iframe every time ifrema send a message con contentWindow
+        w.addEventListener('message', e => {
+          //Emit iframe:message to handle the message in config.js file
+          setTimeout(() => g3w.gui.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
+        }, false);
+        // prevent page refresh (eg. CTRL+R)
+        w.onbeforeunload = () => w.close();
+      }
+    },
   });
 });
 

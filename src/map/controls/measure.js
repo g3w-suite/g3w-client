@@ -9,23 +9,21 @@ import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { gettext as _ }            from 'g3w-i18n';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.length = map.setupControl.area = function() {
+GUI.setupControl.length = GUI.setupControl.area = function() {
   Object
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['length', 'area'].includes(type))
     .forEach(type => {
       if (!isMobile.any && type in window.initConfig.mapcontrols) {
-        if (map.getMapControlByType('measure')) {
-          map.getMapControlByType('measure').addType(type)
+        if (GUI.getMapControlByType('measure')) {
+          GUI.getMapControlByType('measure').addType(type)
         } else {
-          map.addControl('measure', new MeasureControl({
+          GUI.addControl('measure', new MeasureControl({
               name: "measure",
               tipLabel: 'Measure',
               types: [type],
               interactionClassOptions: {
-                projection: map.getProjection(),
+                projection: GUI.getProjection(),
                 help:       `measure_descriptions.${type}`
               }
             })

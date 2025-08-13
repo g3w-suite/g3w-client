@@ -6,10 +6,8 @@
 import GUI from 'services/gui';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.scaleline = function() {
-  map.createMapControl({
+GUI.setupControl.scaleline = function() {
+  GUI.createMapControl({
     id: 'scaleline',
     add: false,
     options: {

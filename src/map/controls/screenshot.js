@@ -10,9 +10,7 @@ import { sameOrigin }   from 'utils/sameOrigin';
 import MapControl       from 'g3w-control';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.screenshot = map.setupControl.geoscreenshot = function() {
+GUI.setupControl.screenshot = GUI.setupControl.geoscreenshot = function() {
   if (isMobile.any) {
     return;
   }
@@ -20,12 +18,12 @@ map.setupControl.screenshot = map.setupControl.geoscreenshot = function() {
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
     .forEach(type => {
-      if (map.getMapControlByType('screenshot')) {
-        map.getMapControlByType('screenshot').addType(type)
+      if (GUI.getMapControlByType('screenshot')) {
+        GUI.getMapControlByType('screenshot').addType(type)
       } else {
-        map.addControl('screenshot', new ScreenshotControl({
+        GUI.addControl('screenshot', new ScreenshotControl({
             types:   [type],
-            layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...map.getExternalLayers()],
+            layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...GUI.getExternalLayers()],
           })
         );
       }
@@ -72,8 +70,8 @@ class ScreenshotControl extends MapControl {
     //only if is visible (no CORS issue) need to listen to add/remove layer
     if (this.isVisible()) {
       //listen to add/remove External Layer event to check visibility of the control
-      GUI.getService('map').onafter('loadExternalLayer',   this._addLayer.bind(this));
-      GUI.getService('map').onafter('unloadExternalLayer', this._removeLayer.bind(this));
+      GUI.onafter('loadExternalLayer',   this._addLayer.bind(this));
+      GUI.onafter('unloadExternalLayer', this._removeLayer.bind(this));
     }
   }
 
@@ -106,18 +104,17 @@ class ScreenshotControl extends MapControl {
       },  
       methods: {
         download: async (type) => {
-          const map         = GUI.getService('map');
           // Start download
           ApplicationState.download = true;
           try {
             const blob = 'screenshot' === type
-              ? await map.createMapImage()                                                              // PNG
-              : await (await fetch(`/${map.project.getType()}/api/asgeotiff/${map.project.getId()}/`, { // GeoTIFF
+              ? await GUI.createMapImage()                                                              // PNG
+              : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
                   method: 'POST',
                   body: Object.entries({
-                    image:               await map.createMapImage(),
-                    csrfmiddlewaretoken: map.getCookie('csrftoken'),
-                    bbox:                map.getMapBBOX().toString(),
+                    image:               await GUI.createMapImage(),
+                    csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
+                    bbox:                GUI.getMapBBOX().toString(),
                   }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
                 })).blob();
             // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)

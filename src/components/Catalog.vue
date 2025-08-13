@@ -693,8 +693,7 @@ export default {
         return console.warn('undefined layer');;
       }
 
-      const service  = GUI.getService('queryresults');
-      const action   = layer.external && service.getActionLayerById({ layer, id: 'selection' });
+      const action   = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
 
       // PROJECT LAYER
       if (!layer.external && storeid) {
@@ -713,7 +712,7 @@ export default {
           if (action) {
             action.state.toggled[i] = false;
           }
-          GUI.getService('map').setSelectionFeatures('remove', { feature });
+          GUI.setSelectionFeatures('remove', { feature });
         });
       }
     },
@@ -735,7 +734,7 @@ export default {
      * @since 3.10.0
      */
     onTreeNodeVisible(layer) {
-      GUI.getService('map').emit('cataloglayervisible', layer);
+      GUI.emit('cataloglayervisible', layer);
     },
 
     /**
@@ -746,7 +745,7 @@ export default {
      * @since 3.10.0
      */
     onTreeNodeSelected(node) {
-      GUI.getService('map').selectLayer(node.id);
+      GUI.selectLayer(node.id);
     },
 
     /**
@@ -830,7 +829,7 @@ export default {
     await this.$nextTick();
     // in case of dynamic legend
     if (ApplicationState.project.state.context_base_legend) {
-      GUI.getService('map').on('change-map-legend-params', () => { this.getLegendSrc(); });
+      GUI.on('change-map-legend-params', () => { this.getLegendSrc(); });
     } else {
       this.getLegendSrc();
     }

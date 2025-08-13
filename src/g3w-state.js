@@ -91,6 +91,93 @@ const STATE = Vue.observable({
    */
   user: null,
 
+  /** @since 4.1.0 */
+  mapUnits:   'm',
+
+  /** @since 4.1.0 */
+  bbox:       [],
+
+  /** @since 4.1.0 */
+  hidemaps:   [],
+
+  /** @since 4.1.0 */
+  resolution: null,
+
+  /** @since 4.1.0 */
+  center:     null,
+
+  /** @since 4.1.0 */
+  loading:    false,
+
+  /** @since 4.1.0 */
+  hidden:     true,
+
+  /** @since 4.1.0 */
+  scale:      0,
+
+  /** @since 4.1.0 */
+  map_info:   { info: null, style: null },
+
+  /** @since 4.1.0 */
+  mapunits:   ['metric'],
+
+  /** @since 4.1.0 */
+  logged: undefined !== window.initConfig.user.id,
+
+  /** @since 4.1.0 */
+  components: [],
+
+  /** @since 4.1.0 */
+  queried_layers: [],
+
+  /** @since 4.1.0 */
+  changed: false,
+
+  /** @since 4.1.0 */
+  query: null,
+
+  /** @since 4.1.0 */
+  type: 'ows',
+
+  /**
+   * An action is an object that contains:
+   *
+   * ```
+   * {
+   *   "id":       (required) Unique action Id
+   *   "download": whether action is download or not
+   *   "class":    (required) fontawsome classname to show icon
+   *   "state":    need to be reactive. Used for example to toggled state of action icon
+   *   "hint":     Tooltip text
+   *   "init":     Method called when action is loaded
+   *   "clear":    Method called before clear the service. Used for example to clear unwatch
+   *   "change":   Method called when feature of layer is changed
+   *   "cbk":      (required) Method called when action is cliccked
+   * }
+   * ```
+   * 
+   * @since 4.1.0
+   */
+  layersactions: {},
+
+  /** @since 4.1.0 - action tools (for features) */
+  actiontools: {},
+
+  /** @since 4.1.0 - current action tools contain component of a specific action (eg. download) */
+  currentactiontools:{},
+
+  /** @since 4.1.0 - store current action that expose vue component (useful for comparing the id other action is triggered and exposing the component) */
+  currentactionfeaturelayer:{},
+
+  /** @since 4.1.0 */
+  layeractiontool: {},
+
+  /** @since 4.1.0 */
+  layersFeaturesBoxes:{},
+
+  /** @since 4.1.0 - store custom layer components */
+  layerscustomcomponents: {},
+
   /**
    * Store info of the application map
    */

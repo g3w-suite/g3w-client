@@ -10,12 +10,10 @@ import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { gettext as _ }           from 'g3w-i18n';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.scale = function() {
-  map.addControl('scale', new ScaleControl({
+GUI.setupControl.scale = function() {
+  GUI.addControl('scale', new ScaleControl({
     coordinateFormat: ol.coordinate.createStringXY(4),
-    projection:       map.getCrs(),
+    projection:       GUI.getCrs(),
     isMobile:         isMobile.any
   }), false);
 };

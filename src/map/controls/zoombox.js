@@ -5,13 +5,11 @@
 
 import GUI from 'services/gui';
 
-const map = GUI;
-
-map.setupControl.zoombox = function() {
+GUI.setupControl.zoombox = function() {
   if (isMobile.any){
     return;
   }
-  map.createMapControl({
+  GUI.createMapControl({
     id: 'zoombox',
     options: {
       tipLabel:         'Zoom to box',
@@ -30,5 +28,5 @@ map.setupControl.zoombox = function() {
       },
     }
   });
-  map.getMapControlByType('zoombox').on('zoomend', e => map.viewer.fit(e.extent) );
+  GUI.getMapControlByType('zoombox').on('zoomend', e => GUI.viewer.fit(e.extent) );
 };

@@ -128,7 +128,7 @@ export default {
             feature_count,
             filterConfig,
             multilayers,
-            projection: GUI.getService('map').getMap().getView().getProjection(),
+            projection: GUI.getMap().getView().getProjection(),
           }
         ) || []).flatMap(({ data = [] }) => data),
       };
@@ -440,7 +440,7 @@ export default {
       return layers;
     }
 
-    const map            = GUI.getService('map').getMap();
+    const map            = GUI.getMap();
     const size           = map.getSize();
     const mapProjection  = map.getView().getProjection();
     const resolution     = map.getView().getResolution();

@@ -418,13 +418,11 @@ export default {
      */
     handleLayerChecked(layer) {
 
-      const map = GUI.getService('map'); 
-
       // external layer (eg. temporary layer through `addlayerscontrol`)
       if (!layer.projectLayer) {
         layer.visible = layer.checked;
         layer.setVisible(layer.checked);
-        map.emit('change-layer-visibility', { id: layer.id, visible: layer.checked });
+        GUI.emit('change-layer-visibility', { id: layer.id, visible: layer.checked });
         return;  // NB exit early!
       }
 
@@ -501,12 +499,10 @@ export default {
      */
     maybeZoomToLayer(layer) {
       if (this.canZoom(this.layerstree)) {
-        GUI
-          .getService('map')
-          .goToBBox(
-            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-            layer.epsg
-          );
+        GUI.goToBBox(
+          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+          layer.epsg
+        );
       }
     },
 
@@ -539,7 +535,7 @@ export default {
     },
 
     removeExternalLayer(name) {
-      GUI.getService('map').removeExternalLayer(name);
+      GUI.removeExternalLayer(name);
     },
 
     /**

@@ -804,7 +804,7 @@ export class Layer extends Emitter {
   setFilter(bool = false) {
     this.state.filter.active     = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
-      GUI.getService('map').toggleMapSelection(false, this.state.id); // hide selection features (open layers)
+      GUI.toggleMapSelection(false, this.state.id); // hide selection features (open layers)
     }
     if (this.isGeoLayer() && !this.state.filter.active) {
       this.#updateOlSelection(); // update selection features (open layers)
@@ -902,7 +902,7 @@ export class Layer extends Emitter {
             .forEach(feat => {
               //remove selection feature
               if (feat.added) {
-                GUI.getService('map').setSelectionFeatures('remove', { feature: feat.feature });
+                GUI.setSelectionFeatures('remove', { feature: feat.feature });
               }
               feat.added    = false;
               feat.selected = false;
@@ -1099,13 +1099,12 @@ export class Layer extends Emitter {
 
     // invert selection (state)
     if (this.isGeoLayer()) {
-      const map = GUI.getService('map');
       Object
         .values(this.state.ol_selection)
         .forEach(f => {
           f.selected = !f.selected;
           if (f.selected !== f.added) {
-            map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+            GUI.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
             f.added = f.selected;
           }
         });
@@ -2490,18 +2489,17 @@ export class Layer extends Emitter {
    * @since 4.0.0
    */
   #updateOlSelection() {
-    const map = GUI.getService('map');
     // Loop `added` features (selected)
     Object
       .values(this.state.ol_selection)
       .forEach(f => {
         if (f.selected !== f.added) {
-          map.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+          GUI.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
           f.added = f.selected;
         }
       });
     // Ensures selection layer is always visible on map
-    map.toggleMapSelection(
+    GUI.toggleMapSelection(
       !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected),
       this.state.id
     );

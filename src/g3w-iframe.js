@@ -106,7 +106,7 @@ export class IframeApp extends Emitter {
    */
   async 'app:screenshot'(params = {}) {
     if (params.capture ?? true) {
-      GUI.getService('map').getMapControlByType('screenshot').overwriteOnClickEvent(blob => {
+      GUI.getMapControlByType('screenshot').overwriteOnClickEvent(blob => {
         try {
           window.parent?.postMessage?.({ id: null, action: 'app:screenshot', response: { result: true, data: blob } }, '*');
         } catch(e) {
@@ -115,7 +115,7 @@ export class IframeApp extends Emitter {
         }
       });
     } else {
-      GUI.getService('map').getMapControlByType('screenshot').resetOriginalOnClickEvent();
+      GUI.getMapControlByType('screenshot').resetOriginalOnClickEvent();
     }
   }
 
@@ -126,11 +126,11 @@ export class IframeApp extends Emitter {
    * @returns { Promise<void> }
    */
   async 'app:getcenter'(params = {}) {
-    const center = GUI.getService('map').getCenter();
+    const center = GUI.getCenter();
     if (undefined !== params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
-      return ol.proj.transform(center, GUI.getService('map').getEpsg(), params.epsg);
+      return ol.proj.transform(center, GUI.getEpsg(), params.epsg);
     }
     return center;
   }
@@ -153,9 +153,9 @@ export class IframeApp extends Emitter {
     if (undefined !== params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
-      coords = ol.proj.transform(coordinates, params.epsg, GUI.getService('map').getEpsg());
+      coords = ol.proj.transform(coordinates, params.epsg, GUI.getEpsg());
     }
-    GUI.getService('map').zoomTo(coords);
+    GUI.zoomTo(coords);
     return coords;
   }
 
@@ -166,11 +166,11 @@ export class IframeApp extends Emitter {
    * @returns { Promise<void> }
    */
   async 'app:getextent'(params = {}) {
-    const extent = GUI.getService('map').getMapExtent();
+    const extent = GUI.getMapExtent();
     if (undefined !== params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
-      return ol.proj.transformExtent(extent, GUI.getService('map').getEpsg(), params.epsg);
+      return ol.proj.transformExtent(extent, GUI.getEpsg(), params.epsg);
     }
     return extent;
   }
@@ -192,9 +192,9 @@ export class IframeApp extends Emitter {
     if (undefined !== params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
-      extent = ol.proj.transformExtent(extent, params.epsg, GUI.getService('map').getEpsg());
+      extent = ol.proj.transformExtent(extent, params.epsg, GUI.getEpsg());
     } else {
-      GUI.getService('map').goToBBox(extent);
+      GUI.goToBBox(extent);
     }
     return extent;
   };
@@ -236,7 +236,7 @@ export class IframeApp extends Emitter {
         }
         response.features     = features;
         response.qgs_layer_id = params.qgs_layer_id[i];
-        await GUI.getService('map').zoomToFeatures(features, { highlight: (params.highlight ?? false) });
+        await GUI.zoomToFeatures(features, { highlight: (params.highlight ?? false) });
       } catch(e) {
         i++;
         console.warn(e);
@@ -245,7 +245,7 @@ export class IframeApp extends Emitter {
 
     // feature not found → zoom to initial extent
     if (!found) {
-      GUI.getService('map').zoomToExtent(GUI.getService('map').project.state.initextent)
+      GUI.zoomToExtent(GUI.project.state.initextent)
     }
 
     return response.qgs_layer_id;

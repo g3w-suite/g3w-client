@@ -90,7 +90,6 @@ export default {
      * @TODO find me a better name
      */
     __parsedata(data) {
-      const queryService = GUI.getService('queryresults');
       this.layer.rawdata = null;
 
       data.features.forEach(feature => {
@@ -109,7 +108,7 @@ export default {
         if (0 === this.layer.attributes.length) {
           this.layer.hasgeometry = !!geometry;
           // need to setActionsForLayers to visualize eventual actions
-          queryService.setActionsForLayers([this.layer]);
+          GUI.setActionsForLayers([this.layer]);
           getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
             this.layer.attributes.push({
               name,

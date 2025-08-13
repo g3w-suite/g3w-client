@@ -10,9 +10,8 @@ import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteract
 import { throttle }               from 'utils/throttle';
 
 // wait for map ready
-const map = GUI;
-map.setupControl.query = function() {
-  map.createMapControl({
+GUI.setupControl.query = function() {
+  GUI.createMapControl({
     id: 'query',
     options: {
       toggled:          true,

@@ -17,7 +17,7 @@
       <span> {{ info.message }} </span>
     </div>
     <div class = "queryresults-container">
-      <template v-if = "state.layers.length">
+      <template v-if = "state.queried_layers.length">
         <ul
           v-if  = "hasLayers"
           class = "queryresults"
@@ -26,7 +26,7 @@
         >
           <li
             v-show = "showLayer(layer)"
-            v-for = "(layer, index) in state.layers"
+            v-for = "(layer, index) in state.queried_layers"
           >
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
@@ -600,7 +600,7 @@
       return {
         /** @since 4.0.0 */
         ApplicationState,
-        state:                       this.$options.service.state,
+        state:                       ApplicationState,
         headerExpandActionCellWidth: headerExpandActionCellWidth,
         headerActionsCellWidth:      headerActionsCellWidth,
       }
@@ -614,13 +614,13 @@
     },
     computed: {
       onelayerresult() {
-        return 1 === this.state.layers.length;
+        return 1 === this.state.queried_layers.length;
       },
       hasLayers() {
         return this.hasResults || !!this.state.components.length;
       },
       hasResults() {
-        return this.state.layers.length > 0;
+        return this.state.queried_layers.length > 0;
       },
 
       /**
@@ -638,7 +638,7 @@
           const query         = this.state.query;
           //@since 3.8.1 coordinates show only four decimal numbers
           //In case of map units degrees, show four decimal numbers otherwise, meter, show only two decimal numbers
-          const decimalNumber = 'degrees' === GUI.getService('map').getMapUnits() ? 4 : 2;
+          const decimalNumber = 'degrees' === GUI.getMapUnits() ? 4 : 2;
           switch (query.type) {
             case 'coordinates':
               return {
@@ -682,7 +682,7 @@
       },
 
       selectedLayer() {
-        return GUI.getService('map').getSelectedLayer();
+        return GUI.getSelectedLayer();
       },
 
     },
@@ -692,7 +692,7 @@
        * @returns { boolean } whether can paginate layer results
        */
       canPaginate(layer) {
-        return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[this.state.layers.findIndex(l => l == layer)]);
+        return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[this.state.queried_layers.findIndex(l => l == layer)]);
       },
 
       /**
@@ -700,7 +700,7 @@
        */
       canSelect(layer) {
         return (
-          GUI.getService('queryresults').getActionLayerById({ layer, id: 'selection' })
+          GUI.getActionLayerById({ layer, id: 'selection' })
           && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
           && layer.features.length > 1
         );
@@ -962,9 +962,9 @@
        * @param { number } size  features per page
        */
       async changePage(index, page, size) {
-        const { query, layers } = this.state;
+        const { query, queried_layers } = this.state;
 
-        layers[index].loading = true;
+        queried_layers[index].loading = true;
 
         try {
           // set current features count shown by selection 
@@ -1007,7 +1007,7 @@
           query.pagination.pages[index]    = Math.ceil(data.count / page_size);
 
           // set filter pagination in case of all features are get from pagination
-          layers[index].filter.pagination  = layers[index].filter.active && query.pagination.paginate[index];
+          queried_layers[index].filter.pagination  = queried_layers[index].filter.active && query.pagination.paginate[index];
 
           // set the current page
           query.pagination.current[index]  = page;
@@ -1017,9 +1017,9 @@
           // get selection action
           const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
 
-          layers[index].features.forEach((f, i) => {
+          queried_layers[index].features.forEach((f, i) => {
             if (page_size_change && !f.selection.selected && f.geometry && layer.isGeoLayer()) {
-              const fid = layers[index].external ? f.id : (f.attributes[G3W_FID] || f.id);
+              const fid = queried_layers[index].external ? f.id : (f.attributes[G3W_FID] || f.id);
               layer.addOlSelectionFeature({ id: fid, feature:f }).selected = true;
               layer.includeSelectionFid(fid, false);
             }
@@ -1031,20 +1031,20 @@
           layer.state.selection.active = page_size_change;
 
           // zoom to features when layer has geometry
-          if (layers[index].hasgeometry) {
-            this.$options.service.highLightLayerFeatures(layers[index]);
+          if (queried_layers[index].hasgeometry) {
+            this.$options.service.highLightLayerFeatures(queried_layers[index]);
           }
         } catch(e) {
           console.warn(e);
         }
 
-        layers[index].loading = false;
+        queried_layers[index].loading = false;
       },
     },
 
     watch: {
-      async 'state.layers'(layers = []) {
-        layers.forEach(layer => {
+      async 'state.queried_layers'(queried_layers = []) {
+        queried_layers.forEach(layer => {
           if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
           }
@@ -1061,8 +1061,8 @@
         });
 
         // check if is a single result layer and if it has one feature
-        if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
-          const layer   = layers[0];
+        if (this.onelayerresult && this.hasLayerOneFeature(queried_layers[0])) {
+          const layer   = queried_layers[0];
           const feature = layer.features[0];
           const boxid   = this.getBoxId(layer, feature);
           this.$options.service.onceafter('postRender', () => {
@@ -1073,8 +1073,8 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool && !this.state.query.pagination?.paginate?.at(0) && !this.state.layers[0].filter.active) {
-          GUI.getService('map').highlightFeatures(this.state.layers[0].features, { duration: Infinity });
+        if (bool && !this.state.query.pagination?.paginate?.at(0) && !this.state.queried_layers[0].filter.active) {
+          GUI.highlightFeatures(this.state.queried_layers[0].features, { duration: Infinity });
         }
       }
     },

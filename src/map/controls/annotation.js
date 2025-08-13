@@ -14,10 +14,8 @@ import { get_formatted_angle }    from 'utils/createMeasureTooltip';
 import { idb }                    from 'utils/idb';
 
 // wait for map ready
-const map = GUI;
-
-map.setupControl.annotation = async function() {
-  map.addControl('annotation', new AnnotationControl({
+GUI.setupControl.annotation = async function() {
+  GUI.addControl('annotation', new AnnotationControl({
     features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
   }));
 };
@@ -72,8 +70,8 @@ class AnnotationControl extends MapControl {
 
     // load saved annotations from: URL search params, local storage, or server config
     const features = (new ol.format.GeoJSON({
-      dataProjection:    GUI.getService('map').getEpsg(),
-      featureProjection: GUI.getService('map').getEpsg()
+      dataProjection:    GUI.getEpsg(),
+      featureProjection: GUI.getEpsg()
     })).readFeatures({
       type: "FeatureCollection",
       features: [
@@ -97,7 +95,7 @@ class AnnotationControl extends MapControl {
 
     // update local storage
     this._annotation.layer.on('change', async () => {
-      const epsg = GUI.getService('map').getEpsg();
+      const epsg = GUI.getEpsg();
       idb.setItem('annotations', Object.assign(await idb.getItem('annotations') || {},
         {
           [ApplicationState.project.state.id] : JSON.parse(JSON.stringify((new ol.format.GeoJSON()).writeFeaturesObject(
@@ -491,7 +489,7 @@ class AnnotationControl extends MapControl {
                     (new ol.format.GeoJSON()).writeFeaturesObject(
                       this.#proj(
                         this._annotation.feature ? [this._annotation.feature] : this._annotation.layer.getSource().getFeatures(),
-                        GUI.getService('map').getEpsg(),
+                        GUI.getEpsg(),
                         'EPSG:4326'
                       ),
                       { featureProjection: 'EPSG:4326' }
@@ -616,7 +614,7 @@ class AnnotationControl extends MapControl {
     });
 
     //Listen set-layer-zindex so annotation layer i set over all layers
-    GUI.getService('map').on('set-layer-zindex', ({ zindex }) => zindex > this._annotation.layer.getZIndex() && this._annotation.layer.setZIndex(zindex + 1))
+    GUI.on('set-layer-zindex', ({ zindex }) => zindex > this._annotation.layer.getZIndex() && this._annotation.layer.setZIndex(zindex + 1))
 
     //Listen getPermalink setter
     GUI.onbefore('getPermalink', (url, data) => {
@@ -697,7 +695,7 @@ class AnnotationControl extends MapControl {
             }
 
             if ('Circle' === f.get('type')) {
-              if ('degrees' === GUI.getService('map').getProjection().getUnits()) {
+              if ('degrees' === GUI.getProjection().getUnits()) {
                 //need to set radius in degrees
                 feat.set('radius', ol.sphere.getLength(new ol.geom.LineString([f.get('center'), f.get('endCoordinates')])));
               }
@@ -759,7 +757,7 @@ class AnnotationControl extends MapControl {
     feature.selected = true;
     feature.changed();
 
-    GUI.getService('map').getMap().getView().fit(feature.getGeometry().getExtent(), { padding: [100, 100, 100, 100] });
+    GUI.getMap().getView().fit(feature.getGeometry().getExtent(), { padding: [100, 100, 100, 100] });
   }
 
   /**
@@ -1420,7 +1418,7 @@ class AnnotationControl extends MapControl {
             this.#proj(
               (new ol.format.GeoJSON({ dataProjection: 'EPSG:4326' })).readFeatures(JSON.parse(preview.textContent)),
               'EPSG:4326',
-              GUI.getService('map').getEpsg()
+              GUI.getEpsg()
             )
           );
           
