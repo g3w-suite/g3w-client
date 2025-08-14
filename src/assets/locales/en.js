@@ -151,6 +151,7 @@ export default {
   'download_types.pdf': 'Download PDF',
   'sdk.search.all': 'ALL',
   'sdk.form.inputs.messages.errors.picklayer': 'No feature selected. Check if layer is on editing or visible at current scale',
+  'sdk.form.inputs.messages.warning.picklayer': 'Feature selected is not valid',
   'sdk.form.inputs.tooltips.picklayer': 'Get value from map layer',
   'sdk.form.inputs.tooltips.lonlat': 'Click on map to get coordinates',
   'sdk.form.inputs.input_validation_mutually_exclusive': 'Field mutually exclusive with ',
