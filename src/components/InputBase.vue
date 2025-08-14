@@ -11,7 +11,7 @@
     <!-- SLOT LABEL -->
     <!--- @since 4.0.1 If showlabel is defined by editor form structure by GlobalTabsNode.vue in getField method--> 
     <template v-if = "undefined === state.showlabel || state.showlabel">
-      <slot name="label">
+      <slot name = "label">
         <!-- @since 3.10.0 -->
         <label
           :for       = "state.name"
@@ -28,10 +28,10 @@
             style       = "margin-left: 3px; cursor: pointer"
             @click.stop = "showHideHelp">
           </i>
-          <slot name = "label-action"></slot>
         </label>
       </slot>
     </template>
+    <slot name = "label-action"></slot>
 
     <!-- @since 3.11.0 RELATION FIELD -->
     <div
