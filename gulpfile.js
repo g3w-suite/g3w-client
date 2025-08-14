@@ -10,7 +10,6 @@ const flatten     = require('gulp-flatten');
 const prompt      = require('gulp-prompt');
 
 // Node.js
-const exec        = require('child_process').exec;
 const execSync    = require('child_process').execSync;
 const del         = require('del');
 const fs          = require('fs');
@@ -46,20 +45,14 @@ function setNODE_ENV() {
 
 // moved into g3w-admin (4.x)
 const static_plugins = [
+  'editing',
   'openrouteservice',
   'qplotly',
   'qtimeseries',
 ];
 
-// Built-in client plugins
-const default_plugins = [
-  'editing',
-];
-
-// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
-const dev_plugins = Array.from(
-  new Set(default_plugins.concat(g3w.plugins instanceof Array ? g3w.plugins : Object.keys(g3w.plugins)))
-);
+// Locally developed client plugins = [ g3w.plugins ]
+const dev_plugins = Array.from(new Set(g3w.plugins instanceof Array ? g3w.plugins : Object.keys(g3w.plugins)));
 
 /**
  * @param { string } pluginName
@@ -369,16 +362,7 @@ gulp.task('locales', function () {
 /**
  * Symlink client plugins (admin, client, docker)
  */
-gulp.task('clone:plugins', function(done) {
-
-  console.log(H1__ + `Cloning default plugins` + __H1);
-
-  // eg. [submodule "src/plugins/editing"] <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
-  for (const pluginName of default_plugins) {
-    if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
-      execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, { stdio: 'inherit' });
-    }
-  }
+gulp.task('symlink:plugins', function(done) {
 
   // reset symlinks
   fs.readdirSync(g3w.pluginsFolder).forEach(pluginName => {
@@ -485,7 +469,7 @@ gulp.task('check:node_modules', function(done) {
 gulp.task('build', gulp.series(
   'production',
   'check:node_modules',
-  'clone:plugins',
+  'symlink:plugins',
   'select-plugins',
   'build:plugins',
   'build:client',
@@ -502,7 +486,7 @@ gulp.task('build', gulp.series(
 gulp.task('dev', gulp.series(
   'check:node_modules',
   'clean:overrides',
-  'clone:plugins',
+  'symlink:plugins',
   'geocoding-providers',
   'build:client',
   )
