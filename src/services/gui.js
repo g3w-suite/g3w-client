@@ -1209,4 +1209,29 @@ export default new (class GUI extends G3WObject {
     ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
   }
 
+  /**
+   * @since 3.11.0
+   * @TODO run this method on iframe
+   */
+  openChangeMapMenu() {
+    if (this.getComponent('contents').getComponentById('changemapmenu')) {
+      this.closeContent();
+      return;
+    }
+    if (this.isMobile()) {
+      this.hideSidebar();
+      $('#main-navbar.navbar-collapse').removeClass('in');
+    }
+    this.closeSideBar();
+
+    this.setContent({
+      content: new Component({
+        id:                 'changemapmenu',
+        vueComponentObject: require('components/ChangeMapMenu.vue'),
+      }),
+      title: '',
+      perc: 100
+    });
+  };
+
 });

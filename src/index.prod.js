@@ -260,7 +260,7 @@ $.ajaxSetup({
   } catch(e) {
     console.warn(e);
   }
-  
+
   /** @since 3.8.0 */
   try {
     initConfig.groups = await XHR.get({ url: `/${ApplicationState.user.i18n}/about/api/group/nomacrogroup/` })
