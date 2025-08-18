@@ -1,5 +1,5 @@
+import { QUERY_POINT_TOLERANCE }  from 'g3w-constants';
 import GUI                        from 'services/gui';
-import DataRouterService          from 'services/data';
 import PickFeatureInteraction     from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
 
@@ -62,27 +62,24 @@ module.exports = class PickLayerService {
       GUI.setModal(false);
       GUI.addInteraction(this.interaction);
 
-      this.interaction.once('picked', e => {
-        if ('map' === this.pick_type) {
-          const feature = e.feature;
-          afterPick(feature);
-        } else if ('wms' === this.pick_type) {
-          const layer = GUI.getProjectLayer(this.layerId);
+      this.interaction.once('picked', async e => {
+        try {
+          let feature = e.feature; 
+          const layer = 'wms' === this.pick_type && GUI.getProjectLayer(this.layerId);
           if (layer) {
-            DataRouterService.getQueryLayersPromisesByCoordinates(
-              [layer],
-              {
-                map:           GUI.getMap(),
-                feature_count: 1,
-                coordinates:   e.coordinate
-              })
-              .then(response => {
-               const { data = [] } = response[0];
-               const feature = data.length && data[0].features[0] || null;
-               afterPick(feature);
-             })
-              .catch(e => console.warn(e) )
+            const response = await layer.query({
+              feature_count:         1,
+              coordinates:           e.coordinate,
+              query_point_tolerance: QUERY_POINT_TOLERANCE,
+              mapProjection:         GUI.getMap().getView().getProjection(),
+              size:                  GUI.getMap().getSize(),
+              resolution:            GUI.getMap().getView().getResolution()
+            });
+            feature = response?.data?.at?.(0)?.features?.at(0) ?? null;
           }
+          afterPick(feature);
+        } catch (e) {
+          console.warn(e);
         }
       })
     })

@@ -85,7 +85,6 @@
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
   const PickLayerInputService           = require('gui/inputs/picklayer/service');
-  const { Layer }                       = require('g3w-layer');
   const InputMixin                      = require('gui/inputs/input');
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
