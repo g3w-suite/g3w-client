@@ -4885,7 +4885,7 @@ export default new (class GUI extends Emitter {
     this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
 
     if (window.initConfig.background_color) {
-      $('#' + this.target).css('background-color', window.initConfig.background_color);
+      $(`#${this.target}`).css('background-color', window.initConfig.background_color);
     }
 
     $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
