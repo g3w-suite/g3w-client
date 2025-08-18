@@ -1,6 +1,6 @@
 /**
- * @file ORIGINAL SOURCE: src/map/controls/geolocationcontrol.js@v3.11.10
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/geolocation.js@v4.0.0
+ * @since 4.1.0
  */
 
 import GUI          from 'g3w-app';

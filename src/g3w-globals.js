@@ -45,7 +45,7 @@ import G3wFormInputs                               from 'components/InputG3WForm
  * CORE modules
  */
 import GUI                                         from 'g3w-app';
-import { MeasureInteraction }                      from 'map/controls/measure';
+import { MeasureInteraction }                      from 'controls/measure';
 
 //MIXINS
 import Mixins                                      from 'mixins';
@@ -57,8 +57,8 @@ import { getScaleFromResolution }                     from 'utils/getScaleFromRe
 import Emitter                                     from 'g3w-emitter';
 import Panel                                       from 'g3w-panel';
 import Component                                   from 'g3w-component';
-import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
-import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
+import PickFeatureInteraction                      from 'interactions/pick-feature';
+import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
 import { Layer }                                   from 'g3w-layer';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';

@@ -1,7 +1,7 @@
 /**
  * @file
  * 
- * ORIGINAL SOURCE: src/map/controls/scalecontrol.js@v3.11.10
+ * ORIGINAL SOURCE: src/map/controls/overview.js@v4.0.0
  * ORIGINAL SOURCE: src/utils/getProject.js@v4.0.0
  * ORIGINAL SOURCE: src/map/layers/layersstore.js@v4.0.0
  * 

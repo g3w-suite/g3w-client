@@ -1,6 +1,6 @@
 /**
- * @file
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/query.js@v4.0.0
+ * @since 4.1.0
  */
 
 import {
@@ -11,7 +11,7 @@ import GUI                        from 'g3w-app';
 
 import ApplicationState           from 'g3w-state'
 import MapControl                 from 'g3w-control';
-import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
+import PickCoordinatesInteraction from 'interactions/pick-coordinates';
 import { throttle }               from 'utils/throttle';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 

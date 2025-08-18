@@ -1,6 +1,6 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/interactions/pickfeatureinteraction.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/interactions/pickfeatureinteraction.js@v4.0.0
+ * @since 4.1.0
  */
 
 export default class PickFeatureInteraction extends ol.interaction.Pointer {

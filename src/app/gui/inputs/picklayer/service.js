@@ -1,7 +1,7 @@
 import { QUERY_POINT_TOLERANCE }  from 'g3w-constants';
 import GUI                        from 'g3w-app';
-import PickFeatureInteraction     from 'map/interactions/pickfeatureinteraction';
-import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
+import PickFeatureInteraction     from 'interactions/pick-feature';
+import PickCoordinatesInteraction from 'interactions/pick-coordinates';
 
 module.exports = class PickLayerService {
   constructor(opts = {}) {

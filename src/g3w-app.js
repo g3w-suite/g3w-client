@@ -43,7 +43,7 @@ import { XHR }                                  from 'utils/XHR';
 import { noop }                                 from 'utils/noop';
 import { groupBy }                              from 'utils/groupBy';
 
-import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
+import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
 
 Object
   .entries({
@@ -759,24 +759,24 @@ export default new (class GUI extends Emitter {
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     });
 
-    require('map/controls/addlayer');
-    require('map/controls/annotation');
-    require('map/controls/attribution');
-    require('map/controls/geocoding');
-    require('map/controls/geolocation');
-    require('map/controls/measure');
-    require('map/controls/mouseposition');
-    require('map/controls/overview');
-    require('map/controls/query');
-    require('map/controls/queryby');
-    require('map/controls/scale');
-    require('map/controls/scaleline');
-    require('map/controls/screenshot');
-    require('map/controls/streetview');
-    require('map/controls/zoom');
-    require('map/controls/zoombox');
-    require('map/controls/zoomhistory');
-    require('map/controls/zoomtoextent');
+    require('controls/addlayer');
+    require('controls/annotation');
+    require('controls/attribution');
+    require('controls/geocoding');
+    require('controls/geolocation');
+    require('controls/measure');
+    require('controls/mouseposition');
+    require('controls/overview');
+    require('controls/query');
+    require('controls/queryby');
+    require('controls/scale');
+    require('controls/scaleline');
+    require('controls/screenshot');
+    require('controls/streetview');
+    require('controls/zoom');
+    require('controls/zoombox');
+    require('controls/zoomhistory');
+    require('controls/zoomtoextent');
 
     // base layer
     ApplicationState.project.onafter('setBaseLayer', () => {
