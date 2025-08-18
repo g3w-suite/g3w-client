@@ -4208,7 +4208,7 @@ export default new (class GUI extends Emitter {
     //In the case of store that has layers @since 3.10.0
     store.getLayers().forEach(l => {
       if ('vector' === l.getType()) {
-        const olLayer = this.#createVectorLayer(l).getOLLayer();
+        const olLayer = this.#createVectorLayer(l);
         if (olLayer) {
           this.getMap().addLayer(olLayer);
         }
@@ -4218,7 +4218,7 @@ export default new (class GUI extends Emitter {
     this.#events.stores[id].push({
       addLayer: store.onafter('addLayer', l => {
       if ('vector' === l.getType()) {
-        const olLayer = this.#createVectorLayer(l).getOLLayer();
+        const olLayer = this.#createVectorLayer(l);
         if (olLayer) {
           this.getMap().addLayer(olLayer);
         }
@@ -5217,61 +5217,34 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #createVectorLayer(layer) {
-    if (layer._mapLayer) {
-      return layer._mapLayer;
+    if (layer._olLayer) {
+      return layer._olLayer;
     }
 
-    let mapLayer;
+    let olLayer;
 
     const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
 
-    mapLayer = Object.assign(new Emitter, {
-      _olLayer:      Object.assign(new ol.layer.Vector({
-        id:             layer.getId(),
-        __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
-        source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
-        opacity:        !style && isPolygonGeometryType(layer.getGeometryType()) ? 0.6 : 1,
-        style:          new ol.style.Style(
-          (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
-            image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
-            stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
-            fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
-          }), {}))
-          || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
-          || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
-          || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
-        ),
-      }), {
-        /** @since 3.11.0 to have same compatibility with table layer */
-        getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
-      }),
-      mapService:    this,
-      geometryType:  layer.getGeometryType(),
-      geometrytype:  null,
-      type:          null,
-      crs:           null,
-      id:            layer.getId(),
-      name:          'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` && layer.getName() || '',
-      style,
-      color:         layer.getColor(),
-      projection:    'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.getProjection().getCode() : this.getProjection().getCode(),
-      url:           'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('source').url : undefined,
-      provider:      layer.getProvider('data'),
-      //Methods
-      getProvider()                { this.provider },
-      async getFeatures(opts = {}) { const features = await this.provider.getFeatures(opts); this.addFeatures(features); return features; },
-      addFeatures(feats = [])      { this.getSource().addFeatures(feats) },
-      addFeature(feat)             { feat && this.getSource().addFeature(feat) },
-      getOLLayer()                 { return this._olLayer},
-      getSource()                  { return this._olLayer.getSource() },
-      setSource(source)            { this._olLayer.setSource(source) },
-      setStyle(style)              { this._olLayer.setStyle(style) },
-      getFeatureById(id)           { return id ? this._olLayer.getSource().getFeatureById(id) : null },
-      isVisible()                  { return this._olLayer.getVisible() },
-      setVisible(bool)             { this._olLayer.setVisible(bool) },
-      clear()                      { this._olLayer.getSource()().clear() },
-      addToMap(map)                { map.addLayer(this._olLayer) },
-    });
+    olLayer = Object.assign(new ol.layer.Vector({
+      id:             layer.getId(),
+      __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+      source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
+      opacity:        !style && isPolygonGeometryType(layer.getGeometryType()) ? 0.6 : 1,
+      style:          new ol.style.Style(
+        (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
+          image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
+          stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
+          fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
+        }), {}))
+        || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
+        || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
+        || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
+      ),
+    }), {
+      /** @since 3.11.0 to have same compatibility with table layer */
+      getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
+    })
+    
 
     if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
       XHR.get({ url: layer.get('source').url }).then(d => {
@@ -5279,11 +5252,11 @@ export default new (class GUI extends Emitter {
           featureProjection: this.getProjection().getCode(),
           dataProjection:    'EPSG:4326',
         });
-        layer._mapLayer._olLayer.getSource().addFeatures(feats);
+        layer._olLayer.getSource().addFeatures(feats);
       });
     }
 
-    return (layer._mapLayer = mapLayer);
+    return (layer._olLayer = olLayer);
   }
 
   /**
