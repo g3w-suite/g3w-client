@@ -1,15 +1,15 @@
 /**
- * @file ORIGINAL SOURCE: src/components/MapControlGeocoding.vue@v3.11.10
+ * @file ORIGINAL SOURCE: src/map/controls/geocoding.js@v4.0.0
  * 
  * need some inspiration for other geocoding providers?
  * 
  * 👉 https://github.com/Dominique92/ol-geocoder
  * 👉 https://github.com/perliedman/leaflet-control-geocoder
  * 
- * @since 4.0.0
+ * @since 4.1.0
  */
 
-import GUI                            from 'services/gui';
+import GUI                            from 'g3w-app';
 import ApplicationState               from 'g3w-state';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { flattenObject }              from 'utils/flattenObject';

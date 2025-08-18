@@ -1,7 +1,7 @@
 /**
  * @file
  * 
- * ORIGINAL SOURCE: src/map/controls/scalecontrol.js@v3.11.10
+ * ORIGINAL SOURCE: src/map/controls/overview.js@v4.0.0
  * ORIGINAL SOURCE: src/utils/getProject.js@v4.0.0
  * ORIGINAL SOURCE: src/map/layers/layersstore.js@v4.0.0
  * 
@@ -9,7 +9,7 @@
  */
 
 import { DOTS_PER_INCH }         from 'g3w-constants';
-import GUI                       from 'services/gui';
+import GUI                       from 'g3w-app';
 import { Layer }                 from 'g3w-layer';
 
 import ApplicationState          from 'g3w-state';

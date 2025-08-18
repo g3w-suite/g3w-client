@@ -188,8 +188,7 @@
   import Component                                from 'g3w-component';
   import Field                                    from 'components/FieldG3W.vue';
   import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
-  import GUI                                      from 'services/gui';
-  import DataRouterService                        from 'services/data';
+  import GUI                                      from 'g3w-app';
   import { throttle }                             from 'utils/throttle';
   import { debounce }                             from 'utils/debounce';
   import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
@@ -352,7 +351,7 @@
 
           // handle NM relations
           if (this.nmRelation && features.length) {
-            features = (await DataRouterService.getData('search:features', {
+            features = (await GUI.getData('search:features', {
               inputs: {
                 layer:     getCatalogLayerById(this.nmRelation.referencedLayer),
                 filter:    features.map(f => `${this.nmRelation.fieldRef.referencedField}|eq|${encodeURIComponent(f.attributes[this.nmRelation.fieldRef.referencingField])}`).join(`|OR,`),

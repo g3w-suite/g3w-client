@@ -138,7 +138,7 @@
 
 <script>
   import ApplicationState   from 'g3w-state'
-  import GUI                from 'services/gui';
+  import GUI                from 'g3w-app';
   import InputText          from 'components/InputText.vue';
   import { getUniqueDomId } from 'utils/getUniqueDomId';
   import { gettext as _ }   from 'g3w-i18n';

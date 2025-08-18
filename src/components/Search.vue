@@ -60,8 +60,7 @@
 <script>
 import Panel                       from 'g3w-panel';
 import ApplicationState            from 'g3w-state'
-import DataRouterService           from 'services/data';
-import GUI                         from 'services/gui';
+import GUI                         from 'g3w-app';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
@@ -149,7 +148,7 @@ export default {
       search.qbloading = true;
       try {
         const layer = getCatalogLayerById(search.layerId);
-        await DataRouterService.getData('search:features', {
+        await GUI.getData('search:features', {
           inputs: {
             layer,
             filter: createFilterFromString({ layer, filter: search.filter }),

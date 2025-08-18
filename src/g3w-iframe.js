@@ -34,8 +34,7 @@
  */
 
 import Emitter            from 'g3w-emitter';
-import GUI                from 'services/gui';
-import DataRouterService  from 'services/data';
+import GUI                from 'g3w-app';
 import ApplicationState   from 'g3w-state'
 import { normalizeEpsg }  from 'utils/normalizeEpsg';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
@@ -222,7 +221,7 @@ export class IframeApp extends Emitter {
     while (!found && i < params.qgs_layer_id.length) {
       const layer = ApplicationState.project.getLayerById(params.qgs_layer_id[i]);
       try {
-        const data = layer && (await DataRouterService.getData('search:features', {
+        const data = layer && (await GUI.getData('search:features', {
           inputs: {
             layer,
             filter: [].concat(params.feature.value).map(v => `${params.feature.field}|eq|${encodeURIComponent(v)}`).join('|OR,')

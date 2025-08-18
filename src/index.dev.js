@@ -16,7 +16,7 @@ import 'g3w-globals';
 window.g3wsdk.info();
 
 // custom header links
-g3w.gui.once('initconfig', () => {
+g3w.app.once('initconfig', () => {
   initConfig.header_custom_links = [
     // modal button (icon + i18n)
     {
@@ -54,7 +54,7 @@ g3w.gui.once('initconfig', () => {
 });
 
 // dev layers (from local storage)
-g3w.gui.once('initconfig', () => {
+g3w.app.once('initconfig', () => {
 
   const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
 
@@ -96,7 +96,7 @@ g3w.gui.once('initconfig', () => {
 });
 
 // dev layers (modal-addlayer)
-g3w.gui.once('after:setupControls', async () => {
+g3w.app.once('after:setupControls', async () => {
 
   // $('#modal-addlayer').modal('show');
 
@@ -114,10 +114,10 @@ g3w.gui.once('after:setupControls', async () => {
   // add file layer
   const setFile = async (file, epsg) => {
     await waitFor(() => !q('#add-layer-type').value, 5000);
-    if (g3w.gui.getLayerByName(file.name)) {
-      return console.assert(!g3w.gui.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
+    if (g3w.app.getLayerByName(file.name)) {
+      return console.assert(!g3w.app.getLayerByName(file.name), `Unable to add layer: ${file.name}`);
     }
-    setTimeout(() => console.assert(g3w.gui.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
+    setTimeout(() => console.assert(g3w.app.getLayerByName(file.name), `Unable to add layer: ${file.name}`), 2500);
     await setOption('#add-layer-type', 'file');
     await setOption('#projection-layer', epsg);
     await waitFor(() => q('#addcustomlayer input[type="file"]'), 1000);
@@ -127,7 +127,7 @@ g3w.gui.once('after:setupControls', async () => {
     q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
     await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
     q('.modal-footer .btn.btn-success').click();
-    window.addEventListener("beforeunload", () => { g3w.gui.getLayerByName(file.name) && g3w.gui.removeExternalLayer(file.name); });
+    window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(file.name) && g3w.app.removeExternalLayer(file.name); });
   }
 
   // add wms layer
@@ -148,7 +148,7 @@ g3w.gui.once('after:setupControls', async () => {
     const wms_name = q('#g3w-wms-layer-name').value;
     await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
     q('.modal-footer .btn.btn-success').click();
-    window.addEventListener("beforeunload", () => { g3w.gui.getLayerByName(wms_name) && g3w.gui.removeExternalLayer(wms_name); });
+    window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(wms_name) && g3w.app.removeExternalLayer(wms_name); });
   };
 
   // export layer to zip
@@ -216,7 +216,7 @@ C,"POINT (11.2474811 43.7910709)"`],
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3w.gui.onafter('showPanel', panel => {
+g3w.app.onafter('showPanel', panel => {
   if ('editing-panel' !== panel.getId()) {
     return;
   }
@@ -254,12 +254,12 @@ g3w.gui.onafter('showPanel', panel => {
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/736
  */
-g3w.gui.onafter('addActionsForLayers', (actions, layers) => {
+g3w.app.onafter('addActionsForLayers', (actions, layers) => {
   Object.keys(actions)
   .filter(id => layers.find(l => id === l.id).editable)
   .forEach(id => {
     //Check only if has primay key value to ge unique feature to edit
-    const pkField = g3w.gui.getPlugin('editing').getEditingFields(id).find(f => f.pk);
+    const pkField = g3w.app.getPlugin('editing').getEditingFields(id).find(f => f.pk);
     // in case that layer has not pk field, iframe editing action is not
     if (!pkField) {
       return;
@@ -297,8 +297,8 @@ g3w.gui.onafter('addActionsForLayers', (actions, layers) => {
 /**
  * Custom map control: “Open in iframe”
  */
-g3w.gui.once('after:setupControls', () => {
-  g3w.gui.createMapControl({
+g3w.app.once('after:setupControls', () => {
+  g3w.app.createMapControl({
     id:            "OPENIFRAME",
     options: {
       add:         true,
@@ -311,7 +311,7 @@ g3w.gui.once('after:setupControls', () => {
         // send message to iframe every time ifrema send a message con contentWindow
         w.addEventListener('message', e => {
           //Emit iframe:message to handle the message in config.js file
-          setTimeout(() => g3w.gui.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
+          setTimeout(() => g3w.app.emit('iframe:message', w.document.querySelector('iframe').contentWindow, e), 2000)
         }, false);
         // prevent page refresh (eg. CTRL+R)
         w.onbeforeunload = () => w.close();
@@ -323,8 +323,8 @@ g3w.gui.once('after:setupControls', () => {
 /**
  * Custom search action: “Create from template”
  */
-g3w.gui.once('ready', async () => {
-  const SEARCH          = g3w.gui.getComponent('search');
+g3w.app.once('ready', async () => {
+  const SEARCH          = g3w.app.getComponent('search');
   const SAVED_SEARCHES  = SEARCH.getInternalComponent().state.searches;
   const CUSTOM_SEARCHES = JSON.parse(localStorage.getItem('custom-searches') || '[]');
 

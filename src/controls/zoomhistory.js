@@ -1,9 +1,9 @@
 /**
- * @fil ORIGINAL SOURCE: src/components/MapControlZoomHistory.vue@v3.11.10
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/zoomhistory.js@v4.0.0
+ * @since 4.1.0
  */
 
-import GUI          from 'services/gui';
+import GUI          from 'g3w-app';
 import { debounce } from 'utils/debounce';
 
 // wait for map ready

@@ -1,4 +1,4 @@
-import GUI                from 'services/gui';
+import GUI                from 'g3w-app';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 /**

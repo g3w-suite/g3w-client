@@ -1,12 +1,11 @@
 /**
- * @file ORIGINAL SOURCE: src/services/map.js@v3.11.10
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/query.js@v4.0.0
+ * @since 4.1.0
  */
 
 import ApplicationState           from 'g3w-state';
-import GUI                        from 'services/gui';
-import DataRouterService          from 'services/data';
-import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
+import GUI                        from 'g3w-app';
+import PickCoordinatesInteraction from 'interactions/pick-coordinates';
 import { throttle }               from 'utils/throttle';
 
 // wait for map ready
@@ -25,7 +24,7 @@ GUI.setupControl.query = function() {
           GUI.closeSideBar();
           try {
             const project = ApplicationState.project;
-            await DataRouterService.getData('query:coordinates', {
+            await GUI.getData('query:coordinates', {
               inputs: {
                 coordinates,
                 feature_count:         project.state.feature_count || 5,

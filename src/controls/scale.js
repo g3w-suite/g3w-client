@@ -1,9 +1,9 @@
 /**
- * @file ORIGINAL SOURCE: src/map/controls/scalecontrol.js@v3.11.10
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/scale.js@v4.0.0
+ * @since 4.1.0
  */
 
-import GUI                        from 'services/gui';
+import GUI                        from 'g3w-app';
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';

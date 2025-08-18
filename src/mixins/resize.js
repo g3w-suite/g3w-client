@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import GUI          from 'services/gui';
+import GUI          from 'g3w-app';
 import { throttle } from 'utils/throttle';
 import { debounce } from 'utils/debounce';
 

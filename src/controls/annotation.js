@@ -1,9 +1,10 @@
 /**
- * @file
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/annotation.js@v4.0.0
+ * @since 4.1.0
  */
+
 import ApplicationState           from 'g3w-state';
-import GUI                        from 'services/gui';
+import GUI                        from 'g3w-app';
 import MapControl                 from 'g3w-control';
 import { saveBlob }               from 'utils/saveBlob';
 import { createMeasureTooltip }   from 'utils/createMeasureTooltip';

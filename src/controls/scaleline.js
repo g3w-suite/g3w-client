@@ -1,9 +1,9 @@
 /**
- * @file ORIGINAL SOURCE: src/map/controls/scalecontrol.js@v3.11.10
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/scaleline.js@v4.0.0
+ * @since 4.1.0
  */
 
-import GUI from 'services/gui';
+import GUI from 'g3w-app';
 
 // wait for map ready
 GUI.setupControl.scaleline = function() {

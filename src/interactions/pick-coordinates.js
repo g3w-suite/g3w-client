@@ -1,6 +1,6 @@
 /**
- * @file ORIGINAL SOURCE: src/app/g3w-ol/interactions/pickcoordinatesinteraction.js@v3.10.2
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/interactions/pickcoordinatesinteraction.js@v4.0.0
+ * @since 4.1.0
  */
 
 export default class PickCoordinatesInteraction extends ol.interaction.Pointer {

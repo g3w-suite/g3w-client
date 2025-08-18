@@ -1,4 +1,15 @@
-import { G3W_FID }                              from 'g3w-constants';
+/**
+ * @file
+ * 
+ * ORIGINAL SOURCE: src/services/gui.js@v4.0.0
+ * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+ * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+ * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+ * 
+ * @since 4.1.0
+ */
+
+import { G3W_FID, QUERY_POINT_TOLERANCE }       from 'g3w-constants';
 import Emitter                                  from 'g3w-emitter';
 import Component                                from 'g3w-component';
 import Panel                                    from 'g3w-panel';
@@ -6,8 +17,6 @@ import { gettext as _ }                         from 'g3w-i18n';
 import ApplicationState                         from 'g3w-state';
 import { IframeApp }                            from 'g3w-iframe';
 import MapControl                               from 'g3w-control';
-
-import DataRouterService                        from 'services/data';
 
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { toRawType }                            from 'utils/toRawType';
@@ -32,8 +41,9 @@ import { waitFor }                              from 'utils/waitFor';
 import { debounce }                             from 'utils/debounce';
 import { XHR }                                  from 'utils/XHR';
 import { noop }                                 from 'utils/noop';
+import { groupBy }                              from 'utils/groupBy';
 
-import PickCoordinatesInteraction               from 'map/interactions/pickcoordinatesinteraction';
+import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
 
 Object
   .entries({
@@ -43,7 +53,6 @@ Object
     _,
     ApplicationState,
     IframeApp,
-    DataRouterService,
     PickCoordinatesInteraction,
     MapControl,
   })
@@ -52,7 +61,7 @@ Object
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
-const MAP = {
+const _MAP = {
   colors:     {
     highlight: undefined,
     selection: 'red',
@@ -193,7 +202,7 @@ export default new (class GUI extends Emitter {
    */
   defaultsLayers = {
     mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
-    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: MAP.colors.highlight, fill: true })] }),
+    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: _MAP.colors.highlight, fill: true })] }),
     selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector() }),
   };
 
@@ -531,7 +540,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(Object.assign(new Component({
       id:                'print',
       visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-      icon:              g3w.gui.getFontClass('print'),
+      icon:              g3w.app.getFontClass('print'),
       iconColor:         '#FF9B21',
       title:             'print',
       service:           {},
@@ -545,7 +554,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(new Component({
       id:         'search',
       visible:     true,
-      icon:        g3w.gui.getFontClass('search'),
+      icon:        g3w.app.getFontClass('search'),
       iconColor:   '#8dc3e3',
       title:       ApplicationState.project.state.search_title || 'search',
       service: Object.assign(new Emitter, {
@@ -571,11 +580,11 @@ export default new (class GUI extends Emitter {
       actions:     [
         {
           id:      "querybuilder",
-          class:   `${g3w.gui.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+          class:   `${g3w.app.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
           tooltip: _('Advanced search'),
           fnc:     () => {
-            g3w.gui.closeContent();
-            g3w.gui.closeSideBar();
+            g3w.app.closeContent();
+            g3w.app.closeSideBar();
             return new Panel({
               title: _('Advanced search'),
               show: true,
@@ -597,7 +606,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(new (function() {
       const state   = {
         id:          'tools',
-        icon:        g3w.gui.getFontClass('tools'),
+        icon:        g3w.app.getFontClass('tools'),
         iconColor:   '#FFE721',
         toolsGroups: [],
         visible: false,
@@ -644,7 +653,7 @@ export default new (class GUI extends Emitter {
     
       const comp = new Component({
         id:          'tools',
-        icon:        g3w.gui.getFontClass('tools'),
+        icon:        g3w.app.getFontClass('tools'),
         iconColor:   '#FFE721',
         title: "tools",
         service,
@@ -663,7 +672,7 @@ export default new (class GUI extends Emitter {
             async 'state.toolsGroups'(g) {
               comp.setVisible(g.length > 0);
               this.$emit('visible', g.length > 0);
-              await g3w.gui.isReady();
+              await g3w.app.isReady();
               document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
             }
           },
@@ -673,7 +682,7 @@ export default new (class GUI extends Emitter {
       comp._setOpen = (b = false) => {
         comp.internalComponent.state.open = b;
         if (b) {
-          g3w.gui.closeContent();
+          g3w.app.closeContent();
         }
       };
     
@@ -729,7 +738,7 @@ export default new (class GUI extends Emitter {
 
       const comp = new Component({
         id:                 'catalog',
-        icon:               g3w.gui.getFontClass('map'),
+        icon:               g3w.app.getFontClass('map'),
         iconColor:          '#019A4C',
         title:              'catalog',
         resizable:          true,
@@ -750,24 +759,24 @@ export default new (class GUI extends Emitter {
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     });
 
-    require('map/controls/addlayer');
-    require('map/controls/annotation');
-    require('map/controls/attribution');
-    require('map/controls/geocoding');
-    require('map/controls/geolocation');
-    require('map/controls/measure');
-    require('map/controls/mouseposition');
-    require('map/controls/overview');
-    require('map/controls/query');
-    require('map/controls/queryby');
-    require('map/controls/scale');
-    require('map/controls/scaleline');
-    require('map/controls/screenshot');
-    require('map/controls/streetview');
-    require('map/controls/zoom');
-    require('map/controls/zoombox');
-    require('map/controls/zoomhistory');
-    require('map/controls/zoomtoextent');
+    require('controls/addlayer');
+    require('controls/annotation');
+    require('controls/attribution');
+    require('controls/geocoding');
+    require('controls/geolocation');
+    require('controls/measure');
+    require('controls/mouseposition');
+    require('controls/overview');
+    require('controls/query');
+    require('controls/queryby');
+    require('controls/scale');
+    require('controls/scaleline');
+    require('controls/screenshot');
+    require('controls/streetview');
+    require('controls/zoom');
+    require('controls/zoombox');
+    require('controls/zoomhistory');
+    require('controls/zoomtoextent');
 
     // base layer
     ApplicationState.project.onafter('setBaseLayer', () => {
@@ -775,10 +784,10 @@ export default new (class GUI extends Emitter {
     });
 
     /** @since 3.8.0 */
-    this.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
+    this.onbefore('offline', () => _MAP.offlineids.forEach(c => { c.enable = _MAP.controls[c.id].getEnable(); _MAP.controls[c.id].setEnable(false); }));
 
     /** @since 3.8.0 */
-    this.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
+    this.onbefore('online', () => _MAP.offlineids.forEach(({ id, enable }) => _MAP.controls[id].setEnable(enable)));
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
@@ -918,7 +927,7 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * Function called from DataRouterservice for gui output
+   * Called by `getData` (output)
    * 
    * @param { Promise | Object } promise request data or promise
    * @param { Object } output
@@ -2753,7 +2762,7 @@ export default new (class GUI extends Emitter {
               { add: true }
             );
           } else {
-            await DataRouterService.getData(
+            await this.getData(
               'query:coordinates',
               {
                 inputs: {
@@ -3179,7 +3188,7 @@ export default new (class GUI extends Emitter {
     let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
     this.clearHighlightGeometry();
-    MAP.colors.highlight = options.color;
+    _MAP.colors.highlight = options.color;
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
@@ -3232,7 +3241,7 @@ export default new (class GUI extends Emitter {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
     // reset default layer style
-    MAP.colors.highlight = undefined;
+    _MAP.colors.highlight = undefined;
   }
 
   /**
@@ -3464,7 +3473,7 @@ export default new (class GUI extends Emitter {
         .filter(f => layerId === f.__layerId)
         .forEach(f => f.setStyle(visible ? createSelectedStyle({
           geometryType: f.getGeometry().getType(),
-          color:        MAP.colors.selection,
+          color:        _MAP.colors.selection,
           fill:         true
         }): new ol.style.Style(null)))
     } else {
@@ -3806,7 +3815,7 @@ export default new (class GUI extends Emitter {
 
     const layer = ApplicationState.project.getLayerById(layerId);
 
-    const { data = [] } = await DataRouterService.getData('search:fids', {
+    const { data = [] } = await this.getData('search:fids', {
       inputs: {
         layer,
         fids:  [fid]
@@ -3857,7 +3866,7 @@ export default new (class GUI extends Emitter {
 
       const layer = pLayer && ApplicationState.project.getLayerById(pLayer.id);
 
-      const r = pLayer && await DataRouterService.getData('search:features', {
+      const r = pLayer && await this.getData('search:features', {
         inputs: {
           layer,
           filter: createFilterFromString({ layer, filter }),
@@ -3975,10 +3984,10 @@ export default new (class GUI extends Emitter {
       $('.g3w-map-controls').append(control.element);
     }
 
-    MAP.controls[type] = control;
+    _MAP.controls[type] = control;
 
     if (false === control.offline) {
-      MAP.offlineids.push({ id: type, enable: control.getEnable() });
+      _MAP.offlineids.push({ id: type, enable: control.getEnable() });
     }
 
     if (false === control.offline && control.getEnable()) {
@@ -4670,7 +4679,7 @@ export default new (class GUI extends Emitter {
    */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
-      MAP.colors.selection = opts.color;
+      _MAP.colors.selection = opts.color;
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
@@ -4678,7 +4687,7 @@ export default new (class GUI extends Emitter {
         //In case of add need to set selection style
         opts.feature.setStyle(createSelectedStyle({
           geometryType: opts.feature.getGeometry().getType(),
-          color:        MAP.colors.selection,
+          color:        _MAP.colors.selection,
           fill:         true
         }));
         source.addFeature(opts.feature);
@@ -5573,7 +5582,7 @@ export default new (class GUI extends Emitter {
     if ('vector' === type) {
       this.registerVectorLayer(layer);
       this.#events.unwatches[externalLayer.name] = [];
-      Object.values(MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
+      Object.values(_MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
     }
 
     if (extent && options.zoomToExtent) {
@@ -5632,7 +5641,7 @@ export default new (class GUI extends Emitter {
       }
       // vector
       if (type === l._externalLayerType && name === l._externalLayer.name) {
-        Object.values(MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
+        Object.values(_MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
         return false;
       }
       // wms
@@ -5692,7 +5701,7 @@ export default new (class GUI extends Emitter {
 
     this.#selectedLayer = layer && layer.isSelected() ? layer : null;
 
-    Object.values(MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
+    Object.values(_MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
   }
 
   /**
@@ -5702,6 +5711,400 @@ export default new (class GUI extends Emitter {
    */
   getSelectedLayer() {
     return this.#selectedLayer;
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+   * 
+   * @param { 'query:coordinates' | 'query:bbox' | 'query:polygon' | 'search:features' | 'search:fids' } func function name
+   * @param options
+   * 
+   * @returns {Promise<void>}
+   */
+  async getData(func, options = {}) {
+    const { inputs = {}, outputs = {} } = options;
+    const promise = this['getData/' + func](inputs);
+    if (outputs) {
+      this.showData(promise, outputs);
+    }
+    return await (await promise);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+   * 
+   * @private invoked by `getData`
+   */
+  async 'getData/query:coordinates'({
+    coordinates,
+    layerIds              = [],                   // see: `QueryResultsService::addLayerFeaturesToResultsAction()`
+    multilayers           = false,
+    query_point_tolerance = QUERY_POINT_TOLERANCE,
+    /** @since 3.8.0 **/
+    addExternal = true,
+    feature_count = 10
+  } = {}) {
+    try {
+      let data       = [];
+      const external = this.getService('catalog').state.external.vector.some(l => l.selected);
+      const layers   = Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({
+          GEOLAYER:        true,
+          QUERYABLE:       true,
+          SELECTED_OR_ALL: (0 === layerIds.length),
+          VISIBLE:         true,
+          IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
+        }) : []);
+
+      if ((!external || layerIds.length > 0) && layers.length) {
+        const size           = this.getMap().getSize();
+        const mapProjection  = this.getMap().getView().getProjection();
+        const resolution     = this.getMap().getView().getResolution();
+        // group query by multilayerid
+        const responses = await Promise.allSettled(Object.values(
+          multilayers
+            ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
+            : layers
+        ).map(layers => 
+          [].concat(layers)[0].query(
+            multilayers
+              ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject: true, layers }
+              : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
+            )
+          )
+        );
+        // show all errors
+        if (responses.some(r => 'rejected' === r.status)) {
+          throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
+        }
+        // at least one response
+        data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+      }
+      return {
+        result: true,
+        type: 'ows',
+        query: {
+          coordinates,
+          type: 'coordinates',
+          external: {
+            add: (!external || layerIds.length > 0)
+              ? (1 === layers.length && layers[0].isSelected() ? false : addExternal) // avoid querying a temporary layer (external layer) when another layer is selected
+              : addExternal,                                                          // an external layer is selected
+            filter: {
+              SELECTED: external
+            }
+          }
+        },
+        data: data.flatMap(({ data = [] }) => data),
+        
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+   * 
+   * @param bbox
+   * @param feature_count
+   * @param multilayers
+   * @param condition
+   * @param filterConfig
+   * @param addExternal
+   * @param layersFilterObject
+   * 
+   * @private invoked by `getData`
+   */
+  async 'getData/query:bbox'({
+    bbox,
+    feature_count      = ApplicationState.project.state.feature_count || 5,
+    filterConfig       = {},
+    multilayers        = false,
+    /** @since 3.8.0 **/
+    excludeSelected    = null,
+    /** @since 3.8.0 **/
+    addExternal = true,
+    layersFilterObject = { SELECTED_OR_ALL: true, QUERYABLE: true, VISIBLE: true }
+  } = {}) {
+    try {
+      let data       = [];
+      const external = this.getService('catalog').state.external.vector.some(l => l.selected);
+      const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
+      const layers   = Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []);
+
+      if (!external && layers.length) {
+        const geometry   = ol.geom.Polygon.fromExtent(bbox);
+        const projection = this.getMap().getView().getProjection();
+
+        const responses = await Promise.allSettled(Object.values(
+          multilayers
+            ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+            : layers
+        ).map(layers => {
+          const layer = [].concat(layers)[0];
+          const crs   = layer.getProjection().getCode();
+          const filter = {
+            config: filterConfig,
+            type:   'geometry',
+            // Convert filter geometry from map to layer CRS
+            value:  projection.getCode() === crs ? geometry : geometry.clone().transform(projection.getCode(), crs),
+          };
+          return layer.query(
+            multilayers
+              ? { filter, feature_count, layers }
+              : { filter, feature_count, filterConfig }
+          )
+        }));
+        // show all errors
+        if (responses.some(r => 'rejected' === r.status)) {
+          throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
+        }
+        // at least one response
+        data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+      }
+      return {
+        result: true,
+        type: 'ows',
+        query: {
+          bbox,
+          type: 'bbox',
+          filterConfig,
+          external: {
+            add: addExternal,
+            filter: {
+              SELECTED: selected
+            }
+          },
+        },
+        data: data.flatMap(({ data = [] }) => data),
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+   * 
+   * @private invoked by `getData`
+   */
+  async 'getData/query:polygon'({
+    feature,
+    feature_count   = ApplicationState.project.state.feature_count || 5,
+    filterConfig    = {},
+    multilayers     = false,
+    /** @since 3.8.0 */
+    layerName       = '',
+    /** @since 3.8.0 */
+    excludeSelected = null,
+    /** @since 3.8.0 **/
+    external = {
+      add: true,
+      filter: {
+        SELECTED : false
+      }
+    },
+    /**@since 3.9.0**/
+    type = 'polygon'
+  } = {}) {
+    try {
+      let data       = [];
+      const geometry = feature.getGeometry();
+      const layers   = Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({
+          GEOLAYER: true,
+          ...( "boolean" === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true } ),
+          QUERYABLE: true,
+          VISIBLE: true
+        }) : []);
+
+        if (layers.length) {
+          const projection = ApplicationState.project.getProjection();
+
+          const responses = await Promise.allSettled(Object.values(
+            multilayers
+              ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+              : layers
+          ).map(layers => {
+            const layer = [].concat(layers)[0];
+            const crs   = layer.getProjection().getCode();
+            const filter = {
+              config: filterConfig,
+              type:   'geometry',
+              // Convert filter geometry from map to layer CRS
+              value:  projection.getCode() === crs ? geometry : geometry.clone().transform(projection.getCode(), crs),
+            };
+            return layer.query(
+              multilayers
+                ? { filter, feature_count, layers }
+                : { filter, feature_count, filterConfig }
+            )
+          }));
+          // show all errors
+          if (responses.some(r => 'fulfilled' === r.status)) {
+            throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
+          }
+          // at least one response
+          data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+        }
+
+      return {
+        result: true,
+        type: 'ows',
+        error: !geometry,
+        query: {
+          fid: this.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
+          geometry,
+          layerName,
+          type,
+          filterConfig,
+          external
+        },
+        usermessage: !geometry && {
+          type:        'warning',
+          message:     `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
+          messagetext: true,
+          autoclose:   false
+        },
+        data: data.flatMap(({ data = [] }) => data),
+      };
+    } catch (error) {
+      console.warn(error);
+      throw error;
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+   * 
+   * Method to search features
+   * 
+   * @param options.layer
+   * @param options.filter
+   * @param options.raw
+   * @param options.queryUrl
+   * @param options.feature_count
+   * @param options.formatter
+   * @param options.ordering
+   * @param options.autofilter since 3.11.0
+   * 
+   * @private invoked by `getData`
+   */
+  async 'getData/search:features'(options = {
+    layer,
+    filter,
+    raw: false,
+    queryUrl,
+    feature_count,
+    formatter: 1,
+    ordering,
+    autofilter: 0,
+    //@since 3.11.0 pagination
+    page,
+    page_sizes,
+  }) {
+    const { layer, ...params } = options;
+    params.filter              = [].concat(params.filter); // check if filter is an array
+    params.page_size           = (params.page_sizes || [])[0]; //get page size
+    //@since 3.11.0 count features returned by
+    const counts     = [];
+    const page_sizes = []; //set pages based on count feature returned by server
+    const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
+    return {
+      data: (await Promise.allSettled(
+        [].concat(layer).map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
+      ))
+        .filter(d => 'fulfilled' === d.status)
+        .map(({ value } = {}) => {
+          //@since 3.11.0 In case autofilter set
+          if (1 === params.autofilter) {
+            (value.data || [])
+              .forEach(({ layer, filtertoken }) => {
+                //in the case of filtertoken response attribute set, need to set it to layer
+                if (filtertoken) {
+                  layer.state.selection.active = layer.state.filter.active = true;
+                  layer.setFilterToken(filtertoken); }
+              })
+          }
+
+          if (params.page_sizes)  {
+            const features = (value.data || [])[0].features;
+            //get max number of elements per page
+            const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
+            //Check if count (total number of elements of search is more o less than max)
+            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
+            //add a count element on counts array
+            counts.push(value.count);
+            paginate.push(features && value.count > features.length);
+          }
+          if (params.raw)                                         { return { data: value }; }
+          if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
+        }),
+      query: {
+        type:       'search',
+        search:     params.filter, //filter search (array of filter)
+        autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
+        //@since 3.11.0 pagination
+        pagination: params.page_size && {
+          pages:         params.page && counts.map(count => Math.ceil(count / params.page_size)), //set number of pages
+          current:       params.page && counts.map(() => params.page), //current page
+          page_sizes,    //Array contains a number of features that want get with pagination
+          current_sizes: counts.map((_, i) => page_sizes[i][0]), // @since 3.11.8 current page size how many features are get
+          counts,
+          paginate,
+          //Object contains info for do another request by another part of code
+          getData: {
+            params: params.filter.map(filter => ({ ...params, filter })),
+            method: 'getFilterData',
+            layers: [].concat(layer)
+          }
+        },
+      },
+      type: 'api',
+    };
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+   * 
+   * Return feature from api
+   * 
+   * @param opts.layer
+   * @param opts.formatter
+   * @param opts.fids
+   * 
+   * @private invoked by `getData`
+   */
+  async 'getData/search:fids'({
+    layer,
+    formatter = 0,
+    fids      = [],
+  } = {}) {
+    let features = []; 
+    try {
+      // convert API response to Open Layer Features
+      features = ((layer && await layer.getFeatureByFids({ fids, formatter })) || []).map(f => {
+        const properties    = undefined !== f.properties ? f.properties : {}
+        properties[G3W_FID] = f.id;
+        const olFeat          = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
+        olFeat.setProperties(properties);
+        olFeat.setId(f.id);
+        return olFeat;
+      });
+    } catch(e) {
+      console.warn(e);
+    }
+    return {
+      data: [{
+        layer,
+        features
+      }],
+      query: { type: 'search', fids },
+    };
   }
 
 });

@@ -117,8 +117,7 @@
 <script>
 import { FILTER_OPERATORS }        from 'g3w-constants';
 import ApplicationState            from 'g3w-state';
-import DataRouterService           from 'services/data';
-import GUI                         from 'services/gui';
+import GUI                         from 'g3w-app';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
@@ -232,7 +231,7 @@ export default {
       try {
         this.loading.test = true;
         const layer       = getCatalogLayerById(this.currentlayer.id);
-        const { data }    = await DataRouterService.getData('search:features', {
+        const { data }    = await GUI.getData('search:features', {
           inputs: {
             layer,
             filter: createFilterFromString({ layer, filter: this.filter }),

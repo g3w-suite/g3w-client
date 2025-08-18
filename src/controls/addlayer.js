@@ -1,9 +1,9 @@
 /**
- * @file ORIGINAL SOURCE: src/services/map.js@v3.11.10
- * @since 4.0.0
+ * @file ORIGINAL SOURCE: src/map/controls/addlayer.js@v4.0.0
+ * @since 4.1.0
  */
 
-import GUI from 'services/gui';
+import GUI from 'g3w-app';
 
 // wait for map ready
 GUI.setupControl.addlayer = GUI.setupControl.addlayers = function () {

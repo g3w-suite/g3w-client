@@ -287,7 +287,7 @@
 <script>
 
 import ApplicationState        from 'g3w-state';
-import GUI                     from 'services/gui';
+import GUI                     from 'g3w-app';
 import { XHR }                 from 'utils/XHR';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 

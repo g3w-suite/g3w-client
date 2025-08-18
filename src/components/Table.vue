@@ -150,8 +150,7 @@ import {
 import Component                   from 'g3w-component';
 import ApplicationState            from 'g3w-state';
 import Field                       from 'components/FieldG3W.vue';
-import GUI                         from 'services/gui';
-import DataRouterService           from 'services/data';
+import GUI                         from 'g3w-app';
 import { debounce }                from 'utils/debounce';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { gettext as _ }            from 'g3w-i18n';
@@ -275,7 +274,7 @@ export default {
      async openForm(feature) {
       $('.tooltip').remove();
       try {
-        await DataRouterService.getData('search:fids', {
+        await GUI.getData('search:fids', {
           inputs: {
             layer:     this.layer,
             fids:      [feature.id],
@@ -429,7 +428,7 @@ export default {
         const values = fields.map(f => feature.attributes[f]);
         field_values.push(values);
         return zoom
-          ? DataRouterService.getData('search:features', {
+          ? GUI.getData('search:features', {
               inputs: {
                 layer,
                 formatter: 1,

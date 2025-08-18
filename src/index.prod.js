@@ -22,7 +22,7 @@ import Panel                       from 'g3w-panel';
 import Component                   from 'g3w-component';
 
 // services
-import GUI                         from 'services/gui';
+import GUI                         from 'g3w-app';
 
 // components
 import App                         from 'components/App.vue';

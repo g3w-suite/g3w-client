@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import GUI              from 'services/gui';
+import GUI              from 'g3w-app';
 import { gettext as _ } from 'g3w-i18n';
 
 export default {

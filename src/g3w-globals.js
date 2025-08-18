@@ -44,9 +44,8 @@ import G3wFormInputs                               from 'components/InputG3WForm
 /**
  * CORE modules
  */
-import DataRouterService                           from 'services/data';
-import GUI                                         from 'services/gui';
-import { MeasureInteraction }                      from 'map/controls/measure';
+import GUI                                         from 'g3w-app';
+import { MeasureInteraction }                      from 'controls/measure';
 
 //MIXINS
 import Mixins                                      from 'mixins';
@@ -58,8 +57,8 @@ import { getScaleFromResolution }                     from 'utils/getScaleFromRe
 import Emitter                                     from 'g3w-emitter';
 import Panel                                       from 'g3w-panel';
 import Component                                   from 'g3w-component';
-import PickFeatureInteraction                      from 'map/interactions/pickfeatureinteraction';
-import PickCoordinatesInteraction                  from 'map/interactions/pickcoordinatesinteraction';
+import PickFeatureInteraction                      from 'interactions/pick-feature';
+import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
 import { Layer }                                   from 'g3w-layer';
 
 import { getUniqueDomId }                          from 'utils/getUniqueDomId';
@@ -126,7 +125,7 @@ globalThis.g3w = {
   Panel,
   Plugin,
   Layer,
-  gui: GUI,
+  app: GUI,
   idb,
   state: ApplicationState,
   gettext: _,
@@ -187,7 +186,7 @@ globalThis.g3wsdk = {
     ApplicationState,
     i18n: { t: _ },
     data: {
-      DataRouterService
+      DataRouterService: GUI,
     },
     errors: {
       parsers: {

@@ -1,18 +1,17 @@
 /**
- * @file
- * @since 3.11.0
+ * @file ORIGINAL SOURCE: src/map/controls/query.js@v4.0.0
+ * @since 4.1.0
  */
 
 import {
   GEOMETRY_TYPES,
   SPATIAL_METHODS
 }                                 from 'g3w-constants';
-import GUI                        from 'services/gui';
-import DataRouterService          from 'services/data';
+import GUI                        from 'g3w-app';
 
 import ApplicationState           from 'g3w-state'
 import MapControl                 from 'g3w-control';
-import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
+import PickCoordinatesInteraction from 'interactions/pick-coordinates';
 import { throttle }               from 'utils/throttle';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 
@@ -429,7 +428,7 @@ export class QueryBy extends MapControl {
           
               // ask for coordinates
               try {
-                const { data = [] } = await DataRouterService.getData('query:coordinates', {
+                const { data = [] } = await GUI.getData('query:coordinates', {
                   inputs: {
                     feature_count: ApplicationState.project.state.feature_count || 5,
                     coordinates:   QUERY.coordinates
@@ -593,7 +592,7 @@ export class QueryBy extends MapControl {
       const project        = ApplicationState.project;
 
       if ('querybbox' === type) {
-        await DataRouterService.getData('query:bbox', {
+        await GUI.getData('query:bbox', {
           inputs: {
             bbox:          QUERY.bbox,
             feature_count: project.state.feature_count || 5,
@@ -611,7 +610,7 @@ export class QueryBy extends MapControl {
       }
 
       if (['querybypolygon','querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type)) {
-        await DataRouterService.getData('query:polygon', {
+        await GUI.getData('query:polygon', {
           inputs: {
             layerName:       'querybypolygon' === type ? (QUERY.layer.getName ? QUERY.layer.getName() : QUERY.layer.get('name')) : '',
             excludeSelected: 'querybypolygon' === type || !selected,

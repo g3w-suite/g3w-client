@@ -579,7 +579,7 @@
   import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
   import { downloadFeatures }     from 'utils/downloadFeatures';
   import { showDownloadFormats }  from 'utils/downloadFeatures';
-  import GUI                      from 'services/gui';
+  import GUI                      from 'g3w-app';
   
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth      = 10;

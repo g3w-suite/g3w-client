@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import GUI                from 'services/gui';
+import GUI                from 'g3w-app';
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent  from 'components/Relation.vue';
 

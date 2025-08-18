@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import GUI                                      from 'services/gui';
+import GUI                                      from 'g3w-app';
 import { Layer }                                from 'g3w-layer';
 import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';

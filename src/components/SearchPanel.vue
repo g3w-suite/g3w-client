@@ -189,7 +189,7 @@
     SEARCH_ALLVALUE,
   }                                            from 'g3w-constants';
   import ApplicationState                      from 'g3w-state';
-  import GUI                                   from 'services/gui';    
+  import GUI                                   from 'g3w-app';    
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';

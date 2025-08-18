@@ -106,7 +106,7 @@
 import ApplicationState        from 'g3w-state';
 import { XHR }                 from 'utils/XHR';
 import { getListableProjects } from 'utils/getListableProjects';
-import GUI                     from 'services/gui';
+import GUI                     from 'g3w-app';
 
 const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
 

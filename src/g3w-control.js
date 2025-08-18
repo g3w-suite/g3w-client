@@ -4,7 +4,7 @@
  */
 
 import { SPATIAL_METHODS } from 'g3w-constants';
-import GUI                 from 'services/gui';
+import GUI                 from 'g3w-app';
 
 /**
  * ORIGINAL SOURCE: src/map/controls/interactioncontrol.js@v4.0.0
