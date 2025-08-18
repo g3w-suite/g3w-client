@@ -6,7 +6,7 @@
 import Emitter        from 'g3w-emitter';
 import { noop }       from 'utils/noop';
 import { cloneDeep }  from 'utils/cloneDeep';
-import GUI            from 'services/gui';
+import GUI            from 'g3w-app';
 
 import deprecate      from 'util-deprecate';
 

@@ -1,4 +1,4 @@
-import GUI from 'services/gui';
+import GUI from 'g3w-app';
 
 const Service = require('gui/inputs/service');
 module.exports = class LonLatService extends Service {

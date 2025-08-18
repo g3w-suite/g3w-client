@@ -117,7 +117,7 @@
 <script>
 import { FILTER_OPERATORS }        from 'g3w-constants';
 import ApplicationState            from 'g3w-state';
-import GUI                         from 'services/gui';
+import GUI                         from 'g3w-app';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';

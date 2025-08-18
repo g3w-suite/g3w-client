@@ -9,7 +9,7 @@
  * @since 4.0.0
  */
 
-import GUI                            from 'services/gui';
+import GUI                            from 'g3w-app';
 import ApplicationState               from 'g3w-state';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { flattenObject }              from 'utils/flattenObject';

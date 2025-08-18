@@ -175,7 +175,7 @@ import {
 }                                   from 'g3w-constants';
 import Component                    from 'g3w-component';
 import ApplicationState             from 'g3w-state';
-import GUI                          from 'services/gui';
+import GUI                          from 'g3w-app';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
 import { saveBlob }                 from 'utils/saveBlob';

@@ -10,7 +10,7 @@ import {
 import Emitter                        from 'g3w-emitter';
 import Panel                          from 'g3w-panel';
 import ApplicationState               from 'g3w-state'
-import GUI                            from 'services/gui';
+import GUI                            from 'g3w-app';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { toRawType }                  from 'utils/toRawType';

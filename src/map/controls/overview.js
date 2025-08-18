@@ -9,7 +9,7 @@
  */
 
 import { DOTS_PER_INCH }         from 'g3w-constants';
-import GUI                       from 'services/gui';
+import GUI                       from 'g3w-app';
 import { Layer }                 from 'g3w-layer';
 
 import ApplicationState          from 'g3w-state';

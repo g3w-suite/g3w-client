@@ -71,7 +71,7 @@
 </template>
 
 <script>
-  import GUI                         from 'services/gui';
+  import GUI                         from 'g3w-app';
   import ApplicationState            from 'g3w-state';
   import ClickMixin                  from 'mixins/click';
   import { getCatalogLayerById }     from 'utils/getCatalogLayerById';

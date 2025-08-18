@@ -3,7 +3,7 @@
  * @since 3.11.0
  */
 
-import GUI     from 'services/gui';
+import GUI     from 'g3w-app';
 import Emitter from 'g3w-emitter';
 
 /**

@@ -3,7 +3,7 @@
  * @since 4.0.0
  */
 import ApplicationState from 'g3w-state';
-import GUI              from 'services/gui';
+import GUI              from 'g3w-app';
 
 // wait for map ready
 GUI.isMapReady().then(() => {

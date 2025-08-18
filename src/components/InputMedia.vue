@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import GUI                from 'services/gui';
+import GUI                from 'g3w-app';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 
 const InputMixins                 = require('gui/inputs/input');

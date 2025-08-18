@@ -6,7 +6,7 @@
 import ApplicationState         from 'g3w-state';
 import Emitter                  from 'g3w-emitter';
 import Component                from 'g3w-component';
-import GUI                      from 'services/gui';
+import GUI                      from 'g3w-app';
 
 import vueComp                  from 'components/Form.vue';
 import BodyFormComp             from 'components/FormBody.vue';

@@ -1,5 +1,5 @@
 import ApplicationState from 'g3w-state';
-import GUI              from 'services/gui';
+import GUI              from 'g3w-app';
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi

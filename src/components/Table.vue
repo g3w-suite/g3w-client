@@ -150,7 +150,7 @@ import {
 import Component                   from 'g3w-component';
 import ApplicationState            from 'g3w-state';
 import Field                       from 'components/FieldG3W.vue';
-import GUI                         from 'services/gui';
+import GUI                         from 'g3w-app';
 import { debounce }                from 'utils/debounce';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { gettext as _ }            from 'g3w-i18n';

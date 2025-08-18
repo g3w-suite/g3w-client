@@ -9,7 +9,7 @@ import {
 }                              from 'g3w-constants';
 import { gettext as _ }        from 'g3w-i18n';
 import ApplicationState        from 'g3w-state';
-import GUI                     from 'services/gui';
+import GUI                     from 'g3w-app';
 import { saveBlob }            from 'utils/saveBlob';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 import { getCatalogLayers }    from 'utils/getCatalogLayers';

@@ -1,5 +1,5 @@
 import { QUERY_POINT_TOLERANCE }  from 'g3w-constants';
-import GUI                        from 'services/gui';
+import GUI                        from 'g3w-app';
 import PickFeatureInteraction     from 'map/interactions/pickfeatureinteraction';
 import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
 

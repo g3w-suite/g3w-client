@@ -7,7 +7,7 @@ import {
   GEOMETRY_TYPES,
   SPATIAL_METHODS
 }                                 from 'g3w-constants';
-import GUI                        from 'services/gui';
+import GUI                        from 'g3w-app';
 
 import ApplicationState           from 'g3w-state'
 import MapControl                 from 'g3w-control';

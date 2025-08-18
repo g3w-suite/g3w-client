@@ -34,7 +34,7 @@
  */
 
 import Emitter            from 'g3w-emitter';
-import GUI                from 'services/gui';
+import GUI                from 'g3w-app';
 import ApplicationState   from 'g3w-state'
 import { normalizeEpsg }  from 'utils/normalizeEpsg';
 import { getUniqueDomId } from 'utils/getUniqueDomId';

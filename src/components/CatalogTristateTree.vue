@@ -224,7 +224,7 @@
 
 <script>
 import ApplicationState        from 'g3w-state';
-import GUI                     from 'services/gui';
+import GUI                     from 'g3w-app';
 import ClickMixin              from 'mixins/click';
 import CatalogLayerLegend      from 'components/CatalogLayerLegend.vue';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';

@@ -60,7 +60,7 @@
 <script>
 import Panel                       from 'g3w-panel';
 import ApplicationState            from 'g3w-state'
-import GUI                         from 'services/gui';
+import GUI                         from 'g3w-app';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 

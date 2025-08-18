@@ -3,7 +3,7 @@
  * @since 4.0.0
  */
 
-import GUI          from 'services/gui';
+import GUI          from 'g3w-app';
 import { debounce } from 'utils/debounce';
 
 // wait for map ready

@@ -3,7 +3,7 @@
  * @since 4.0.0
  */
 
-import GUI          from 'services/gui';
+import GUI          from 'g3w-app';
 import MapControl   from 'g3w-control';
 import { throttle } from 'utils/throttle';
 

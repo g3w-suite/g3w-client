@@ -628,7 +628,7 @@ import Teleport           from 'vue2-teleport';
 import ApplicationState   from 'g3w-state';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
-import GUI                from 'services/gui';
+import GUI                from 'g3w-app';
 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { sameOrigin }     from 'utils/sameOrigin';

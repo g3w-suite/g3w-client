@@ -44,7 +44,7 @@ import G3wFormInputs                               from 'components/InputG3WForm
 /**
  * CORE modules
  */
-import GUI                                         from 'services/gui';
+import GUI                                         from 'g3w-app';
 import { MeasureInteraction }                      from 'map/controls/measure';
 
 //MIXINS
@@ -125,7 +125,7 @@ globalThis.g3w = {
   Panel,
   Plugin,
   Layer,
-  gui: GUI,
+  app: GUI,
   idb,
   state: ApplicationState,
   gettext: _,

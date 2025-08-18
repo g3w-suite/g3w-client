@@ -4,7 +4,7 @@
  */
 
 import ApplicationState from 'g3w-state';
-import GUI              from 'services/gui';
+import GUI              from 'g3w-app';
 import { saveBlob }     from 'utils/saveBlob';
 import { sameOrigin }   from 'utils/sameOrigin';
 import MapControl       from 'g3w-control';

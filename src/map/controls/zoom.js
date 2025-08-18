@@ -4,7 +4,7 @@
  */
 
 import { gettext as _ } from 'g3w-i18n';
-import GUI              from 'services/gui';
+import GUI              from 'g3w-app';
 
 // wait for map ready
 GUI.setupControl.zoom = function() {

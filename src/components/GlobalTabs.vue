@@ -80,7 +80,7 @@
   import ApplicationState                            from 'g3w-state';
   import { G3W_FID }                                 from 'g3w-constants';
   import Node                                        from 'components/GlobalTabsNode.vue';
-  import GUI                                         from 'services/gui';
+  import GUI                                         from 'g3w-app';
   import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
   import { getUniqueDomId }                          from 'utils/getUniqueDomId';
   import { noop }                                    from 'utils/noop';

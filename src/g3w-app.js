@@ -1,3 +1,14 @@
+/**
+ * @file
+ * 
+ * ORIGINAL SOURCE: src/services/gui.js@v4.0.0
+ * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+ * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+ * ORIGINAL SOURCE: src/services/data.js@v4.0.0
+ * 
+ * @since 4.1.0
+ */
+
 import { G3W_FID, QUERY_POINT_TOLERANCE }       from 'g3w-constants';
 import Emitter                                  from 'g3w-emitter';
 import Component                                from 'g3w-component';
@@ -50,7 +61,7 @@ Object
 /**
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
-const MAP = {
+const _MAP = {
   colors:     {
     highlight: undefined,
     selection: 'red',
@@ -191,7 +202,7 @@ export default new (class GUI extends Emitter {
    */
   defaultsLayers = {
     mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
-    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: MAP.colors.highlight, fill: true })] }),
+    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: _MAP.colors.highlight, fill: true })] }),
     selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector() }),
   };
 
@@ -529,7 +540,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(Object.assign(new Component({
       id:                'print',
       visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-      icon:              g3w.gui.getFontClass('print'),
+      icon:              g3w.app.getFontClass('print'),
       iconColor:         '#FF9B21',
       title:             'print',
       service:           {},
@@ -543,7 +554,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(new Component({
       id:         'search',
       visible:     true,
-      icon:        g3w.gui.getFontClass('search'),
+      icon:        g3w.app.getFontClass('search'),
       iconColor:   '#8dc3e3',
       title:       ApplicationState.project.state.search_title || 'search',
       service: Object.assign(new Emitter, {
@@ -569,11 +580,11 @@ export default new (class GUI extends Emitter {
       actions:     [
         {
           id:      "querybuilder",
-          class:   `${g3w.gui.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+          class:   `${g3w.app.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
           tooltip: _('Advanced search'),
           fnc:     () => {
-            g3w.gui.closeContent();
-            g3w.gui.closeSideBar();
+            g3w.app.closeContent();
+            g3w.app.closeSideBar();
             return new Panel({
               title: _('Advanced search'),
               show: true,
@@ -595,7 +606,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(new (function() {
       const state   = {
         id:          'tools',
-        icon:        g3w.gui.getFontClass('tools'),
+        icon:        g3w.app.getFontClass('tools'),
         iconColor:   '#FFE721',
         toolsGroups: [],
         visible: false,
@@ -642,7 +653,7 @@ export default new (class GUI extends Emitter {
     
       const comp = new Component({
         id:          'tools',
-        icon:        g3w.gui.getFontClass('tools'),
+        icon:        g3w.app.getFontClass('tools'),
         iconColor:   '#FFE721',
         title: "tools",
         service,
@@ -661,7 +672,7 @@ export default new (class GUI extends Emitter {
             async 'state.toolsGroups'(g) {
               comp.setVisible(g.length > 0);
               this.$emit('visible', g.length > 0);
-              await g3w.gui.isReady();
+              await g3w.app.isReady();
               document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
             }
           },
@@ -671,7 +682,7 @@ export default new (class GUI extends Emitter {
       comp._setOpen = (b = false) => {
         comp.internalComponent.state.open = b;
         if (b) {
-          g3w.gui.closeContent();
+          g3w.app.closeContent();
         }
       };
     
@@ -727,7 +738,7 @@ export default new (class GUI extends Emitter {
 
       const comp = new Component({
         id:                 'catalog',
-        icon:               g3w.gui.getFontClass('map'),
+        icon:               g3w.app.getFontClass('map'),
         iconColor:          '#019A4C',
         title:              'catalog',
         resizable:          true,
@@ -773,10 +784,10 @@ export default new (class GUI extends Emitter {
     });
 
     /** @since 3.8.0 */
-    this.onbefore('offline', () => MAP.offlineids.forEach(c => { c.enable = MAP.controls[c.id].getEnable(); MAP.controls[c.id].setEnable(false); }));
+    this.onbefore('offline', () => _MAP.offlineids.forEach(c => { c.enable = _MAP.controls[c.id].getEnable(); _MAP.controls[c.id].setEnable(false); }));
 
     /** @since 3.8.0 */
-    this.onbefore('online', () => MAP.offlineids.forEach(({ id, enable }) => MAP.controls[id].setEnable(enable)));
+    this.onbefore('online', () => _MAP.offlineids.forEach(({ id, enable }) => _MAP.controls[id].setEnable(enable)));
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
@@ -3177,7 +3188,7 @@ export default new (class GUI extends Emitter {
     let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
     this.clearHighlightGeometry();
-    MAP.colors.highlight = options.color;
+    _MAP.colors.highlight = options.color;
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
@@ -3230,7 +3241,7 @@ export default new (class GUI extends Emitter {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
     // reset default layer style
-    MAP.colors.highlight = undefined;
+    _MAP.colors.highlight = undefined;
   }
 
   /**
@@ -3462,7 +3473,7 @@ export default new (class GUI extends Emitter {
         .filter(f => layerId === f.__layerId)
         .forEach(f => f.setStyle(visible ? createSelectedStyle({
           geometryType: f.getGeometry().getType(),
-          color:        MAP.colors.selection,
+          color:        _MAP.colors.selection,
           fill:         true
         }): new ol.style.Style(null)))
     } else {
@@ -3973,10 +3984,10 @@ export default new (class GUI extends Emitter {
       $('.g3w-map-controls').append(control.element);
     }
 
-    MAP.controls[type] = control;
+    _MAP.controls[type] = control;
 
     if (false === control.offline) {
-      MAP.offlineids.push({ id: type, enable: control.getEnable() });
+      _MAP.offlineids.push({ id: type, enable: control.getEnable() });
     }
 
     if (false === control.offline && control.getEnable()) {
@@ -4668,7 +4679,7 @@ export default new (class GUI extends Emitter {
    */
   setSelectionFeatures(action = 'add', opts = {}) {
     if (opts.color) {
-      MAP.colors.selection = opts.color;
+      _MAP.colors.selection = opts.color;
     }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
@@ -4676,7 +4687,7 @@ export default new (class GUI extends Emitter {
         //In case of add need to set selection style
         opts.feature.setStyle(createSelectedStyle({
           geometryType: opts.feature.getGeometry().getType(),
-          color:        MAP.colors.selection,
+          color:        _MAP.colors.selection,
           fill:         true
         }));
         source.addFeature(opts.feature);
@@ -5571,7 +5582,7 @@ export default new (class GUI extends Emitter {
     if ('vector' === type) {
       this.registerVectorLayer(layer);
       this.#events.unwatches[externalLayer.name] = [];
-      Object.values(MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
+      Object.values(_MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
     }
 
     if (extent && options.zoomToExtent) {
@@ -5630,7 +5641,7 @@ export default new (class GUI extends Emitter {
       }
       // vector
       if (type === l._externalLayerType && name === l._externalLayer.name) {
-        Object.values(MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
+        Object.values(_MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
         return false;
       }
       // wms
@@ -5690,7 +5701,7 @@ export default new (class GUI extends Emitter {
 
     this.#selectedLayer = layer && layer.isSelected() ? layer : null;
 
-    Object.values(MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
+    Object.values(_MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
   }
 
   /**

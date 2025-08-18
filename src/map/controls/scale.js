@@ -3,7 +3,7 @@
  * @since 4.0.0
  */
 
-import GUI                        from 'services/gui';
+import GUI                        from 'g3w-app';
 import { PRINT_SCALES }           from 'g3w-constants';
 import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
