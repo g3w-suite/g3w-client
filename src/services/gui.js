@@ -221,7 +221,7 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    *
-   * draw shadow
+   * draw shadow - Reactangle used on print
    * 
    * @since 4.1.0
    */
