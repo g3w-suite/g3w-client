@@ -259,7 +259,7 @@ export class Layer extends Emitter {
       ...(config.baselayer ? {} : { searchParams: { I: 0, J: 0 } }),
 
       map_crs:            project.getProjection()?.getCode(),
-      multilayerid:       config.multilayer,
+      multilayerid:       config.multilayer, //it used to check if a layer can be grouped with other layers (get map tiles, get feature info)
       projection:         config.projection && config?.projection?.getCode() === config?.crs?.epsg ? config.projection : (config.crs ? ApplicationState.projections.get(config.crs) : undefined),
       attributions:       config.attributions,
       selected:           config.selected || false,
