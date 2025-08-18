@@ -5,7 +5,6 @@
 
 import ApplicationState           from 'g3w-state';
 import GUI                        from 'services/gui';
-import DataRouterService          from 'services/data';
 import PickCoordinatesInteraction from 'map/interactions/pickcoordinatesinteraction';
 import { throttle }               from 'utils/throttle';
 
@@ -25,7 +24,7 @@ GUI.setupControl.query = function() {
           GUI.closeSideBar();
           try {
             const project = ApplicationState.project;
-            await DataRouterService.getData('query:coordinates', {
+            await GUI.getData('query:coordinates', {
               inputs: {
                 coordinates,
                 feature_count:         project.state.feature_count || 5,

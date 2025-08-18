@@ -44,7 +44,6 @@ import G3wFormInputs                               from 'components/InputG3WForm
 /**
  * CORE modules
  */
-import DataRouterService                           from 'services/data';
 import GUI                                         from 'services/gui';
 import { MeasureInteraction }                      from 'map/controls/measure';
 
@@ -187,7 +186,7 @@ globalThis.g3wsdk = {
     ApplicationState,
     i18n: { t: _ },
     data: {
-      DataRouterService
+      DataRouterService: GUI,
     },
     errors: {
       parsers: {

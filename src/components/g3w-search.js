@@ -11,7 +11,6 @@ import Emitter                        from 'g3w-emitter';
 import Panel                          from 'g3w-panel';
 import ApplicationState               from 'g3w-state'
 import GUI                            from 'services/gui';
-import DataRouterService              from 'services/data';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { toRawType }                  from 'utils/toRawType';
@@ -205,7 +204,7 @@ async function doSearch({
   const search_1n  = !show && ('search_1n' === state.type);
 
   try {
-    data = await DataRouterService.getData('search:features', {
+    data = await GUI.getData('search:features', {
       inputs: {
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
@@ -257,7 +256,7 @@ async function doSearch({
       //@since 3.11.0 Backport old relation with relation fields not array (no multiple field)
       referencedField  = [].concat(referencedField);
       referencingField = [].concat(referencingField);
-      parsed = await DataRouterService.getData('search:features', {
+      parsed = await GUI.getData('search:features', {
         inputs: {
           layer,
           filter: createFilterFormInputs({
