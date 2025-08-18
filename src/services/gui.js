@@ -203,9 +203,9 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #layers = {
-    base:     [],
-    g3w:      [],
-    external: [],
+    base:     [], //base layers
+    g3w:      [], //project layers
+    external: [], //extenral layers
     index:    {}, // store layers by multilayer id (performance)
   };
 
@@ -4061,7 +4061,7 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * Method to disable
-   *
+   *#layers
    * @since 4.1.0
    */
   disableClickMapControls(bool = true) {
