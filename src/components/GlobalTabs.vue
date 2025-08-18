@@ -77,13 +77,14 @@
 
 <script>
 
+  import ApplicationState                            from 'g3w-state';
   import { G3W_FID }                                 from 'g3w-constants';
-  import DataRouterService                           from 'services/data';
   import Node                                        from 'components/GlobalTabsNode.vue';
   import GUI                                         from 'services/gui';
   import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
   import { getUniqueDomId }                          from 'utils/getUniqueDomId';
   import { noop }                                    from 'utils/noop';
+  import { XHR }                                     from 'utils/XHR';
 
   /**
    * Convert feature to form Data for expression/expression_eval request
@@ -168,19 +169,21 @@
        * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
        */
       async setVisibility(tab) {
-        tab.visible = await DataRouterService
-          .getData(
-            'expression:expression_eval',
-              {
-              inputs: {
-                qgs_layer_id: this.layerid,
-                form_data:    getFormData(this.feature || {}, this.contenttype),
-                expression:   tab.visibility_expression.expression,
-                formatter:    ('query' === this.contenttype ? 1 : 0),
-              },
-              outputs: false,
-            }
-          );
+        const response = await XHR.post({
+          url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+          contentType: 'application/json',
+          data:        JSON.stringify({
+            qgs_layer_id: this.layerid,
+            form_data:    getFormData(this.feature || {}, this.contenttype),
+            expression:   tab.visibility_expression.expression,
+            formatter:    ('query' === this.contenttype ? 1 : 0),
+          }),
+        });
+        if (response.result) {
+          tab.visible = response.value;
+        } else {
+          throw JSON.stringify(response.error);
+        }
       },
       // method to set required tab for editing
       setEditingRequireTab(obj) {

@@ -1465,7 +1465,7 @@ export class Layer extends Emitter {
           formatter
         }
       });
-      if (response && response.result && response.vector && response.vector.data) {
+      if (response?.result && response?.vector?.data) {
         return response.vector.data.features;
       }
     } catch(e) {

@@ -163,7 +163,6 @@ globalThis.g3wsdk = {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       createSelectedStyle,
       getAlphanumericPropertiesFromFeature,
-      getQueryLayersPromisesByCoordinates: DataRouterService.getQueryLayersPromisesByCoordinates,
       getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
       areCoordinatesEqual,
       splitFeature,
@@ -490,4 +489,47 @@ g3wsdk.core.task.TaskService = {
     g3wsdk.core.task.TaskService.tasks.forEach(({ taskId }) => g3wsdk.core.task.TaskService.stopTask({ taskId }));
     g3wsdk.core.task.TaskService.tasks.splice(0);
   },
+};
+
+/** used by the following plugins: "iframe", "archiweb" */
+g3wsdk.core.geoutils.getQueryLayersPromisesByCoordinates = async function(layers, {
+  coordinates,
+  feature_count         = 10,
+  query_point_tolerance = G3W_CONSTANT.QUERY_POINT_TOLERANCE,
+  multilayers           = false,
+  reproject             = true,
+} = {}) {
+  // skip when no features
+  if (0 === layers.length) {
+    return layers;
+  }
+  const map            = GUI.getMap();
+  const size           = map.getSize();
+  const mapProjection  = map.getView().getProjection();
+  const resolution     = map.getView().getResolution();
+  const responses = await Promise.allSettled(Object.values(
+    multilayers
+      ? layers.reduce((result, item) => {
+        const key = `${item.getInfoFormat()}:${item.getInfoUrl()}:${item.getMultiLayerId()}`;
+        if (!result[key]) {
+          result[key] = [];
+        }
+        result[key].push(item);
+        return result;
+      }, {})
+      : layers
+  ).map(layers => 
+    [].concat(layers)[0].query(
+      multilayers
+        ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers }
+        : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
+      )
+    )
+  );
+  // at least one response
+  if (responses.some(r => 'fulfilled' === r.status)) {
+    return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+  }
+  // show all errors
+  return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
 };

@@ -3,6 +3,7 @@
  * @since 3.10.0
  */
 
+import ApplicationState         from 'g3w-state';
 import Emitter                  from 'g3w-emitter';
 import Component                from 'g3w-component';
 import GUI                      from 'services/gui';
@@ -10,7 +11,7 @@ import GUI                      from 'services/gui';
 import vueComp                  from 'components/Form.vue';
 import BodyFormComp             from 'components/FormBody.vue';
 
-import DataRouterService from 'services/data';
+import { XHR }                  from 'utils/XHR';
 
 /**
  * ORIGINAL SOURCE: src/utils/getDefaultExpression.js@4.0.0
@@ -45,10 +46,11 @@ async function getDefaultExpression({
 
   // Call `expression:expression_eval` to get value from expression and set it to field
   try {
-
-    const value = await DataRouterService.getData('expression:expression_eval', {
-      inputs: {
-        field_name: field.name,
+    const response = await XHR.post({
+      url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+      contentType: 'application/json',
+      data:        JSON.stringify({
+        field_name: field.name, // since 3.8.0
         layer_id, //
         qgs_layer_id, //layer id owner of the data
         form_data:  (new ol.format.GeoJSON()).writeFeatureObject(feature),
@@ -59,14 +61,14 @@ async function getDefaultExpression({
           qgs_layer_id: parentData.qgs_layer_id,
           formatter:    0
         }
-      },
-      outputs: false
+      }),
     });
-
-    field.value = value;
-
-    return value;
-
+    if (response.result) {
+      field.value = response.value;
+    } else {
+      throw JSON.stringify(response.error);
+    }
+    return response.value;
   } catch(e) {
     if (undefined !== default_value) {
       field.value = default_value
@@ -113,23 +115,31 @@ async function getFilterExpression({
 
   try {
 
-    const features = await DataRouterService.getData('expression:expression', {
-      inputs: {
-        field_name: field.name,
-        layer_id,
-        qgs_layer_id,
-        form_data: (new ol.format.GeoJSON()).writeFeatureObject(feature),
-        parent: parentData && ({
-          form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
-          qgs_layer_id: parentData.qgs_layer_id,
-          formatter:    0,
-        }),
-        formatter:  0,
-        expression: filter_expression.expression,
-        ordering:   [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
-      },
-      outputs: false,
+    let features;
+
+    const response = await XHR.post({
+      url:         `${ApplicationState.project.getUrl('vector_data')}${layer_id}/`,
+      contentType: 'application/json',
+      data:        JSON.stringify({
+      field_name: field.name,
+      layer_id,
+      qgs_layer_id,
+      form_data: (new ol.format.GeoJSON()).writeFeatureObject(feature),
+      parent: parentData && ({
+        form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
+        qgs_layer_id: parentData.qgs_layer_id,
+        formatter:    0,
+      }),
+      formatter:  0,
+      expression: filter_expression.expression,
+      ordering:   [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
+    }),
     });
+    if (response.result) {
+      features = response.vector.data.features || [];
+    } else {
+      throw JSON.stringify(response.error);
+    }
 
     if ('select_autocomplete' === field.input.type) {
       field.input.options.values = [];

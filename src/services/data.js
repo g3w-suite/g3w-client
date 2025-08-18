@@ -7,7 +7,6 @@ import ApplicationState                   from 'g3w-state'
 import GUI                                from 'services/gui';
 
 import { groupBy }                        from 'utils/groupBy';
-import { XHR }                            from 'utils/XHR';
 import { gettext as _ }                   from 'g3w-i18n';
 
 export default {
@@ -37,19 +36,44 @@ export default {
     query_point_tolerance = QUERY_POINT_TOLERANCE,
     /** @since 3.8.0 **/
     addExternal = true,
-    feature_count
+    feature_count = 10
   } = {}) {
-
-    const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
-    const layers  = Object.values(ApplicationState.layers)
-      .flatMap(s => s.isQueryable() ? s.getLayers({
-        GEOLAYER:        true,
-        QUERYABLE:       true,
-        SELECTED_OR_ALL: (0 === layerIds.length),
-        VISIBLE:         true,
-        IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
-      }) : []);
     try {
+      let data       = [];
+      const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+      const layers   = Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({
+          GEOLAYER:        true,
+          QUERYABLE:       true,
+          SELECTED_OR_ALL: (0 === layerIds.length),
+          VISIBLE:         true,
+          IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
+        }) : []);
+
+      if ((!external || layerIds.length > 0) && layers.length) {
+        const size           = GUI.getMap().getSize();
+        const mapProjection  = GUI.getMap().getView().getProjection();
+        const resolution     = GUI.getMap().getView().getResolution();
+        // group query by multilayerid
+        const responses = await Promise.allSettled(Object.values(
+          multilayers
+            ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
+            : layers
+        ).map(layers => 
+          [].concat(layers)[0].query(
+            multilayers
+              ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject: true, layers }
+              : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
+            )
+          )
+        );
+        // show all errors
+        if (responses.some(r => 'rejected' === r.status)) {
+          throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
+        }
+        // at least one response
+        data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+      }
       return {
         result: true,
         type: 'ows',
@@ -65,19 +89,13 @@ export default {
             }
           }
         },
-        data: ((!external || layerIds.length > 0) && await this.getQueryLayersPromisesByCoordinates(layers, {
-          multilayers,
-          feature_count,
-          query_point_tolerance,
-          coordinates
-        }) || []).flatMap(({ data = [] }) => data),
+        data: data.flatMap(({ data = [] }) => data),
         
       };
     } catch (error) {
       console.warn(error);
       throw error;
     }
-
   },
 
   /**
@@ -100,10 +118,43 @@ export default {
     addExternal = true,
     layersFilterObject = { SELECTED_OR_ALL: true, QUERYABLE: true, VISIBLE: true }
   } = {}) {
-
-    const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
-    const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
     try {
+      let data       = [];
+      const external = GUI.getService('catalog').state.external.vector.some(l => l.selected);
+      const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
+      const layers   = Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []);
+
+      if (!external && layers.length) {
+        const geometry   = ol.geom.Polygon.fromExtent(bbox);
+        const projection = GUI.getMap().getView().getProjection();
+
+        const responses = await Promise.allSettled(Object.values(
+          multilayers
+            ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+            : layers
+        ).map(layers => {
+          const layer = [].concat(layers)[0];
+          const crs   = layer.getProjection().getCode();
+          const filter = {
+            config: filterConfig,
+            type:   'geometry',
+            // Convert filter geometry from map to layer CRS
+            value:  projection.getCode() === crs ? geometry : geometry.clone().transform(projection.getCode(), crs),
+          };
+          return layer.query(
+            multilayers
+              ? { filter, feature_count, layers }
+              : { filter, feature_count, filterConfig }
+          )
+        }));
+        // show all errors
+        if (responses.some(r => 'rejected' === r.status)) {
+          throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
+        }
+        // at least one response
+        data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+      }
       return {
         result: true,
         type: 'ows',
@@ -118,25 +169,12 @@ export default {
             }
           },
         },
-        data: (!external && await this.getQueryLayersPromisesByGeometry(
-          // layers
-          Object.values(ApplicationState.layers)
-            .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []),
-          // options
-          {
-            geometry: ol.geom.Polygon.fromExtent(bbox),
-            feature_count,
-            filterConfig,
-            multilayers,
-            projection: GUI.getMap().getView().getProjection(),
-          }
-        ) || []).flatMap(({ data = [] }) => data),
+        data: data.flatMap(({ data = [] }) => data),
       };
     } catch (error) {
       console.warn(error);
       throw error;
     }
-
   },
 
   /**
@@ -161,9 +199,47 @@ export default {
     /**@since 3.9.0**/
     type = 'polygon'
   } = {}) {
-    const geometry = feature.getGeometry();
-
     try {
+      let data       = [];
+      const geometry = feature.getGeometry();
+      const layers   = Object.values(ApplicationState.layers)
+        .flatMap(s => s.isQueryable() ? s.getLayers({
+          GEOLAYER: true,
+          ...( "boolean" === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true } ),
+          QUERYABLE: true,
+          VISIBLE: true
+        }) : []);
+
+        if (layers.length) {
+          const projection = ApplicationState.project.getProjection();
+
+          const responses = await Promise.allSettled(Object.values(
+            multilayers
+              ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
+              : layers
+          ).map(layers => {
+            const layer = [].concat(layers)[0];
+            const crs   = layer.getProjection().getCode();
+            const filter = {
+              config: filterConfig,
+              type:   'geometry',
+              // Convert filter geometry from map to layer CRS
+              value:  projection.getCode() === crs ? geometry : geometry.clone().transform(projection.getCode(), crs),
+            };
+            return layer.query(
+              multilayers
+                ? { filter, feature_count, layers }
+                : { filter, feature_count, filterConfig }
+            )
+          }));
+          // show all errors
+          if (responses.some(r => 'fulfilled' === r.status)) {
+            throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
+          }
+          // at least one response
+          data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
+        }
+
       return {
         result: true,
         type: 'ows',
@@ -182,24 +258,7 @@ export default {
           messagetext: true,
           autoclose:   false
         },
-        data: (await this.getQueryLayersPromisesByGeometry(
-          // layers
-          Object.values(ApplicationState.layers)
-            .flatMap(s => s.isQueryable() ? s.getLayers({
-              GEOLAYER: true,
-              ...( "boolean" === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true } ),
-              QUERYABLE: true,
-              VISIBLE: true
-            }) : []),
-          // options
-          {
-            geometry,
-            multilayers,
-            feature_count,
-            filterConfig,
-            projection: ApplicationState.project.getProjection()
-          }
-        ) || []).flatMap(({ data = [] }) => data),
+        data: data.flatMap(({ data = [] }) => data),
       };
     } catch (error) {
       console.warn(error);
@@ -328,197 +387,6 @@ export default {
       }],
       query: { type: 'search', fids },
     };
-  },
-
-  /**
-   * Search service function to load many layers with each one with its fids
-   * 
-   * @param options.layers    - Array of layers that we want serach fids features
-   * @param options.fids      - Array of array of fids
-   * @param options.formatter - how we want visualize
-   */
-  async 'search:layersfids'({
-    layers    = [],
-    fids      = [],
-    formatter = 0,
-  } = {}) {
-    let data = [];
-    try {
-      data = (await Promise.all(
-        layers.map((layer, i) => this['search:fids']({ layer, fids: fids[i], formatter }))
-      )).map(response => response.data);
-    } catch(e) {
-      console.warn(e);
-    }
-    return {
-      data,
-      query: { type: 'search' }
-    };
-  },
-
-  /**
-   * POST only: accepts
-   * 
-   * Mandatory JSON body: expression
-   * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
-   * 
-   * @param params.qgis_layer_id layer id owner of the form data
-   * @param params.layer_id      layer owner of the data
-   * @param params.form_data
-   * @param params.field_name    since 3.8.0
-   * @param params.expression
-   * @param params.formatter
-   * @param params.parent
-   */
-  async 'expression:expression'(params = {}) {
-    try {
-      const response = await XHR.post({
-        url:         `${ApplicationState.project.getUrl('vector_data')}${params.layer_id}/`,
-        contentType: 'application/json',
-        data:        JSON.stringify(params),
-      });
-
-      return response.result ? (response.vector.data.features || []) : Promise.reject(JSON.stringify(response.error));
-    } catch(e) {
-      console.warn(e);
-      return Promise.reject(e);
-    }
-  },
-
-  /**
-   * POST only method to return QGIS Expressions evaluated in Project an optional Layer/Form context
-   *
-   * Mandatory JSON body: expression
-   * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
-   * 
-   * @param params.layer_id
-   * @param params.qgis_layer_id
-   * @param params.form_data
-   * @param params.field_name    since 3.8.0
-   * @param params.expression
-   * @param params.formatter
-   * @param params.parent
-   */
-  async 'expression:expression_eval'(params = {}) {
-    try {
-      const {result, value, error } = await XHR.post({
-        url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
-        contentType: 'application/json',
-        data:        JSON.stringify(params),
-      });
-      return result ? value : Promise.reject(JSON.stringify(error));
-    } catch(e) {
-      console.warn(e);
-      return Promise.reject(e);
-    }
-  },
-
-  /**
-   * used by the following plugins: "archiweb"
-   * 
-   * @param layers 
-   * @param { Object } opts
-   * @param opts.coordinates
-   * @param opts.feature_count
-   * @param opts.query_point_tolerance
-   * @param { boolean } opts.multilayers Group query by layers instead single layer request
-   * @param opts.reproject
-   *  
-   * @returns { JQuery.Promise }
-   * 
-   * @since 3.11.0
-   */
-  async getQueryLayersPromisesByCoordinates(layers, {
-    coordinates,
-    feature_count         = 10,
-    query_point_tolerance = QUERY_POINT_TOLERANCE,
-    multilayers           = false,
-    reproject             = true,
-  } = {}) {
-    // skip when no features
-    if (0 === layers.length) {
-      return layers;
-    }
-
-    const map            = GUI.getMap();
-    const size           = map.getSize();
-    const mapProjection  = map.getView().getProjection();
-    const resolution     = map.getView().getResolution();
-
-    const responses = await Promise.allSettled(Object.values(
-      multilayers
-        ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
-        : layers
-    ).map(layers => 
-      [].concat(layers)[0].query(
-        multilayers
-          ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject, layers }
-          : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
-        )
-      )
-    );
-    // at least one response
-    if (responses.some(r => 'fulfilled' === r.status)) {
-      return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
-    }
-    // show all errors
-    return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
-  },
-
-  /**
-   * @param layers
-   * @param { Object } opts
-   * @param { boolean } opts.multilayers Group query by layers instead single layer request
-   * @param opts.bbox
-   * @param opts.geometry
-   * @param opts.projection
-   * @param opts.feature_count
-   * 
-   * @returns { JQuery.Promise<any, any, any> }
-   * 
-   * @since 3.11.0
-   */
-  async getQueryLayersPromisesByGeometry(layers,
-    {
-      geometry,
-      projection,
-      filterConfig  = {},
-      multilayers   = false,
-      feature_count = 10
-    } = {}
-  ) {
-    // skip when no features
-    if (0 === layers.length) {
-      return [];
-    }
-
-    const mapCrs = projection.getCode();
-
-    const responses = await Promise.allSettled(Object.values(
-      multilayers
-        ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
-        : layers
-    ).map(layers => {
-      const layer = [].concat(layers)[0];
-      const crs   = layer.getProjection().getCode();
-      const filter = {
-        config: filterConfig,
-        type:   'geometry',
-        // Convert filter geometry from map to layer CRS
-        value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
-      };
-      return layer.query(
-        multilayers
-          ? { filter, feature_count, layers }
-          : { filter, feature_count, filterConfig }
-      )
-    }));
-    // at least one response
-    if (responses.some(r => 'fulfilled' === r.status)) {
-      return responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
-    }
-    // show all errors
-    return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
   },
 
 };
