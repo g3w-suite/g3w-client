@@ -98,7 +98,7 @@ export class Layer extends Emitter {
    * @param config.title
    * @param config.name
    * @param config.origname
-   * @param config.multilayerid
+   * @param config.multilayer
    * @param config.servertype
    * @param config.source
    * @param config.crs
