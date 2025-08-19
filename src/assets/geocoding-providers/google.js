@@ -18,7 +18,7 @@
   geocoding.providers[provider].fetch = async function(opts) {
 
     const { XHR }        = g3wsdk.core.utils;
-    const { vendorkeys } = g3wsdk.core.ApplicationState.keys;
+    const { vendorkeys } = g3wsdk.core.ApplicationState;
 
     // fallback to generic google vendor key
     vendorkeys[provider] = vendorkeys[provider] || vendorkeys.google;

@@ -180,7 +180,7 @@ initConfig.baselayers.forEach(l => {
     vendorkeys[l.servertype ? l.servertype.toLowerCase() : null] = l.apikey
   }
 });
-Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendorkeys[k])
+Object.keys(vendorkeys).forEach(k => ApplicationState.vendorkeys[k] = vendorkeys[k])
 
 /**
  * create application configuration
@@ -335,7 +335,7 @@ $.ajaxSetup({
     crs:                    normalizeEpsg(PROJECT.crs, false),
     baselayers:             PROJECT.baselayers
       // Remove bing base layer when no vendor API Key is provided
-      .filter(l => ('Bing' === l.servertype ? ApplicationState.keys.vendorkeys.bing : true))
+      .filter(l => ('Bing' === l.servertype ? ApplicationState.vendorkeys.bing : true))
       .map(l => Object.assign(l, {
         visible:   l.id && (l.id === (null !== ApplicationState.baseLayerId ? ApplicationState.baseLayerId : PROJECT.initbaselayer)) || !!l.fixed,
         baselayer: true,

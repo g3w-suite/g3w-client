@@ -121,10 +121,19 @@ const STATE = Vue.observable({
   scale:      0,
 
   /** @since 4.1.0 */
-  map_info:   { info: null, style: null },
+  map_info: null,
+
+  /** @since 4.1.0 */
+  map_style: null,
 
   /** @since 4.1.0 */
   mapunits:   ['metric'],
+
+  /** @since 4.1.0 */
+  map_epsg: '',
+
+  /** @since 4.1.0 */
+  map_unit: 'metric',
 
   /** @since 4.1.0 */
   logged: undefined !== window.initConfig.user.id,
@@ -184,36 +193,21 @@ const STATE = Vue.observable({
   layerscustomcomponents: {},
 
   /**
-   * Store info of the application map
-   */
-  map: {
-    epsg: '',
-    unit: 'metric'
-  },
-
-  /**
    * @since 4.1.0 - Store info of the elements of GUI of the application
    */
   layout: {
-    /**
-     * store the current layout owner ("app" = default)
-     */
+    /** Current layout owner ("app" = default) */
     __current: 'app',
-
-    /**
-     * Store application layout info (rightpanel)
-     */
-    app:       {}
+    /** Store application layout info (rightpanel) */
+    app: {}
   },
 
   /**
-   * Sore vendor keys need it by application third part script
+   * @since 4.1.0 - Store vendor keys need it by application third part script
    */
-  keys: {
-    vendorkeys: {
-      google: undefined,
-      bing:   undefined
-    }
+  vendorkeys: {
+    google: undefined,
+    bing:   undefined
   },
 
   /**
@@ -254,69 +248,59 @@ const STATE = Vue.observable({
     disabled: false,
     /** @since 4.1.0 - true open, false hide - icons only */
     open: true,
+    /** @since 4.1.0 */
+    width: 0,
   },
 
   contentsdata: [],
 
-  /**
-   * @since 3.11.0
-   */
-  viewport: {
-    // splitting orientation (h = horizontal, v = vertical)
-    split: 'h',
-    //map
-    map: {
-      sizes: {
-        width:  0,
-        height: 0
-      },
-    },
-    //content
-    content: {
-      loading:  false,
-      disabled: false,
-      sizes: {
-        width:  0,
-        height: 0
-      },
-      // store the resize vertical or horizontal
-      resize: {
-        'h': { perc: 0 },
-        'v': { perc: 0 }
-      },
-      showgoback:   true,
-      stack:        [], // array elements of stack contents
-      closable:     true, // (x) is closable
-      backonclose:  false, // back on prevoius content
-      contentsdata: [], // content data array
-    },
-    usermessage: {
-      id:          null, // unique identify
-      show:        false,
-      title:       null,
-      message:     null,
-      position:    null,
-      type:        null,
-      draggable:   null,
-      cloasable:   null,
-      autoclose:   null,
-      textMessage: false,
-      hooks: {
-        header: null,
-        body:   null,
-        footer: null
-      }
-    },
-    // content of viewport (map and content)
-    components: {
-      map:     null,
-      content: null
+  /** @since 4.1.0 - splitting orientation (h = horizontal, v = vertical) */
+  split: 'h',
+
+  /** @since 4.1.0 */
+  map: {
+    sizes: {
+      width:  0,
+      height: 0
     },
   },
 
-  sizes: {
-    sidebar: {
-      width:0
+  /** @since 4.1.0 */
+  content: {
+    loading:  false,
+    disabled: false,
+    sizes: {
+      width:  0,
+      height: 0
+    },
+    // store the resize vertical or horizontal
+    resize: {
+      'h': { perc: 0 },
+      'v': { perc: 0 }
+    },
+    showgoback:   true,
+    stack:        [], // array elements of stack contents
+    closable:     true, // (x) is closable
+    backonclose:  false, // back on prevoius content
+    contentsdata: [], // content data array
+  },
+
+  /** @since 4.1.0 */
+  usermessage: {
+    id:          null, // unique identify
+    show:        false,
+    title:       null,
+    message:     null,
+    position:    null,
+    type:        null,
+    draggable:   null,
+    cloasable:   null,
+    autoclose:   null,
+    textMessage: false,
+    hooks: {
+      header: null,
+      body:   null,
+      footer: null
     }
   },
 

@@ -144,7 +144,7 @@
         style: {
           top:        'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : null,
           left:       'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : null,
-          width:      'small' === this.size ? '325px' : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px'),
+          width:      'small' === this.size ? '325px' : (g3wsdk.core.ApplicationState.map.sizes.width + 'px'),
           marginLeft: 'small' === this.size ? (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px') : null,
         }
       }
@@ -170,7 +170,7 @@
       }
       if (this.size === 'fullpage') {
         this.uw = this.$watch(
-          ()    => g3wsdk.core.ApplicationState.viewport.map.sizes.width, 
+          ()    => g3wsdk.core.ApplicationState.map.sizes.width, 
           width => this.style.width = 'fullpage' === this.size ? `${width}px`: this.style.width
         );
       }

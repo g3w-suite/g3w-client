@@ -790,7 +790,7 @@ export default new (class GUI extends Emitter {
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
-    ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
+    ApplicationState.sidebar.width = $('.main-sidebar').width();
 
     // resize della window
     $(window).resize(() => { requestAnimationFrame(() => { this._layout(); }); });
@@ -1062,7 +1062,7 @@ export default new (class GUI extends Emitter {
   closeForm({ pop = false } = {}) {
     this.emit('closeform', false);
 
-    const backonclose = !pop && ApplicationState.viewport.content.backonclose && ApplicationState.viewport.content.contentsdata.length > 1;
+    const backonclose = !pop && ApplicationState.content.backonclose && ApplicationState.content.contentsdata.length > 1;
 
     // remove just last component
     if (pop || backonclose) {
@@ -1081,7 +1081,7 @@ export default new (class GUI extends Emitter {
   }
 
   disableContent(disable) {
-    ApplicationState.viewport.content.disabled = disable;
+    ApplicationState.content.disabled = disable;
   }
 
   disablePanel(disable=false) {
@@ -1244,7 +1244,7 @@ export default new (class GUI extends Emitter {
     this.closeUserMessage();
 
     setTimeout(() => {
-      Object.assign(ApplicationState.viewport.usermessage, {
+      Object.assign(ApplicationState.usermessage, {
         id: getUniqueDomId(),
         show: true,
         message,
@@ -1263,11 +1263,11 @@ export default new (class GUI extends Emitter {
       });
     });
 
-    return ApplicationState.viewport.usermessage;
+    return ApplicationState.usermessage;
   }
 
   closeUserMessage() {
-    Object.assign(ApplicationState.viewport.usermessage, {
+    Object.assign(ApplicationState.usermessage, {
       id:          null,
       show:        false,
       textMessage: false,
@@ -1339,7 +1339,7 @@ export default new (class GUI extends Emitter {
 
   //return number of a component of stack
   getContentLength() {
-    return ApplicationState.viewport.content.contentsdata.length;
+    return ApplicationState.content.contentsdata.length;
   }
 
   /**
@@ -1347,7 +1347,7 @@ export default new (class GUI extends Emitter {
    * @param opts: { title, crumb, text }
    */
   setCurrentContentOptions(opts = {}) {
-    const content = ApplicationState.viewport.content.contentsdata.at(-1) || null;
+    const content = ApplicationState.content.contentsdata.at(-1) || null;
     if (content && opts.title) {
       content.options.title = opts.title;
     }
@@ -1357,7 +1357,7 @@ export default new (class GUI extends Emitter {
   }
 
   getCurrentContent() {
-    return ApplicationState.viewport.content.contentsdata.at(-1) || null;
+    return ApplicationState.content.contentsdata.at(-1) || null;
   }
 
   /**
@@ -1399,7 +1399,7 @@ export default new (class GUI extends Emitter {
   }
 
   setLoadingContent(loading = false) {
-    ApplicationState.viewport.content.loading = loading;
+    ApplicationState.content.loading = loading;
     return loading && new Promise((resolve) => setTimeout(resolve, 200))
   }
 
@@ -1414,7 +1414,6 @@ export default new (class GUI extends Emitter {
       this.closeUserMessage();
     }
 
-    const state    = ApplicationState.viewport;
     const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
     Object.assign(opts, {
@@ -1422,7 +1421,7 @@ export default new (class GUI extends Emitter {
       title:       opts.title || "",
       push:        !!opts.push,
       split:       opts.split || 'h',
-      perc:        opts.perc ?? (isMobile.any ? 100 : ('h' === state.split ? panel.width: panel.height)),
+      perc:        opts.perc ?? (isMobile.any ? 100 : ('h' === ApplicationState.split ? panel.width: panel.height)),
       backonclose: !!opts.backonclose,
       showtitle:   opts.showtitle ?? true,
     });
@@ -1431,7 +1430,7 @@ export default new (class GUI extends Emitter {
     const content  = opts.content;
 
     // set all content parameters
-    Object.assign(state.content, {
+    Object.assign(ApplicationState.content, {
       title:        opts.title,
       split:        undefined === opts.split       ? null : opts.split,
       closable:     undefined === opts.closable    || opts.closable,
@@ -1442,7 +1441,7 @@ export default new (class GUI extends Emitter {
       contentsdata: ApplicationState.contentsdata,
     });
 
-    state.split = opts.split;
+    ApplicationState.split = opts.split;
 
     if (!opts.perc || !opts.push)  {
       await this.#clearContents();
@@ -1500,7 +1499,7 @@ export default new (class GUI extends Emitter {
 
   // hide content
   hideContent(bool) {
-    const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
+    const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
     this._layout(!bool);
     // return previous percentage
     return content_perc;
@@ -1509,8 +1508,7 @@ export default new (class GUI extends Emitter {
   async closeContent() {
     this.emit('closecontent', false);
 
-    const state         = ApplicationState.viewport;
-    const open          = state.content.contentsdata.length > 0;
+    const open = ApplicationState.content.contentsdata.length > 0;
 
     // content is open → remove content
     if (open) {
@@ -1524,15 +1522,14 @@ export default new (class GUI extends Emitter {
   // remove last content from stack
   async popContent() {
     // skip when no content data
-    if (0 === ApplicationState.viewport.content.contentsdata.length) {
+    if (0 === ApplicationState.content.contentsdata.length) {
       return Promise.reject();
     }
 
     const data  = ApplicationState.contentsdata.at(-2);
     const opts  = data.options;
-    const state = ApplicationState.viewport;
 
-    Object.assign(state.content, {
+    Object.assign(ApplicationState.content, {
       title:        opts.title,
       split:        undefined !== opts.split       ? opts.split       : null,
       closable:     undefined !== opts.closable    ? opts.closable    : true,
@@ -1543,7 +1540,7 @@ export default new (class GUI extends Emitter {
       showgoback:   undefined !== opts.showgoback  ? opts.showgoback  : true,
     });
 
-    state.split = opts.split ?? state.split;
+    ApplicationState.split = opts.split ?? ApplicationState.split;
 
     if (!opts.perc)  {
       await this.#clearContents();
@@ -1760,7 +1757,6 @@ export default new (class GUI extends Emitter {
 
     const sec =  this._layout.secondary;
 
-    const state  = ApplicationState.viewport;
     const layout = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
@@ -1770,7 +1766,7 @@ export default new (class GUI extends Emitter {
     const panel           = layout[layout.__current].rightpanel;
 
     const opts = {
-      split: state.split,
+      split: ApplicationState.split,
       ...(ApplicationState.contentsdata.at(-1)?.options || {}),
     };
 
@@ -1789,20 +1785,20 @@ export default new (class GUI extends Emitter {
     
 
     // size "content"
-    Object.assign(state.content.sizes, {
+    Object.assign(ApplicationState.content.sizes, {
       width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
       height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : (sec ? viewH : 0),
     });
 
     // size "map"
-    Object.assign(state.map.sizes, {
-      width:  viewW - (h_split ? state.content.sizes.width : 0),
-      height: viewH - (v_split ? state.content.sizes.height : 0),
+    Object.assign(ApplicationState.map.sizes, {
+      width:  viewW - (h_split ? ApplicationState.content.sizes.width : 0),
+      height: viewH - (v_split ? ApplicationState.content.sizes.height : 0),
     });
 
     // size full (when mobile menu is open) 
     if (document.body.classList.contains('sidebar-open') && window.innerWidth < 767) {
-      Object.assign(state.map.sizes, {
+      Object.assign(ApplicationState.map.sizes, {
         width:  window.innerWidth,
         height: window.innerHeight,
       });
@@ -1813,14 +1809,14 @@ export default new (class GUI extends Emitter {
 
     // resize "map"
     this.layout({
-      width:  state.map.sizes.width,
-      height: state.map.sizes.height
+      width:  ApplicationState.map.sizes.width,
+      height: ApplicationState.map.sizes.height
     });
 
     ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
       try {
         if ('function' == typeof d.content.layout) {
-          d.content.layout(state.content.sizes.width, contents.style.height.replace('px',''));
+          d.content.layout(ApplicationState.content.sizes.width, contents.style.height.replace('px',''));
         }
       } catch(e) {
         this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
@@ -4429,8 +4425,8 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   showMapInfo({ info, style } = {}) {
-    this.state.map_info.info = info;
-    this.state.map_info.style = style || this.state.map_info.style;
+    this.state.map_info = info;
+    this.state.map_style = style || this.state.map_style;
   }
 
   /**
@@ -4800,8 +4796,8 @@ export default new (class GUI extends Emitter {
     const map = this.viewer.getMap();
 
     //set application epsg and map unit
-    ApplicationState.map.epsg = this.getEpsg();
-    ApplicationState.map.unit = map.getView().getProjection().getUnits();
+    ApplicationState.map_epsg = this.getEpsg();
+    ApplicationState.map_unit = map.getView().getProjection().getUnits();
 
     // disable douclickzoom
     map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(false);

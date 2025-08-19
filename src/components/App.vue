@@ -7,7 +7,7 @@
   <div
     id         = "app"
     class      = "wrapper"
-    v-disabled = "app.disabled"
+    v-disabled = "ApplicationState.disabled"
   >
 
     <!-- NAVBAR TOP (MAIN MENU) -->
@@ -203,7 +203,7 @@
           <div id="g3w-sidebarpanel-header-placeholder">
             <div
               style  = "display: flex; margin-bottom: 5px;"
-              :style = "{ justifyContent: app.sidebar.title ? 'space-between' : 'flex-end' }"
+              :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
             >
 
               <h4
@@ -223,13 +223,13 @@
                   <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
                 </span>
                 <span
-                  @click.stop       = "app.sidebar.btn_close && closeAllPanels()"
-                  :data-i18n-title  = "app.sidebar.tooltip_close || 'close'"
+                  @click.stop       = "ApplicationState.sidebar.btn_close && closeAllPanels()"
+                  :data-i18n-title  = "ApplicationState.sidebar.tooltip_close || 'close'"
                   data-placement    = "right"
                   class             = "g3w-span-button close-pane-button"
                 >
                   <i
-                    :style = "{ opacity: app.sidebar.btn_close ? '1' : '0.7', cursor: app.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+                    :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
                     :class = "$fa('close')"
                     class  = "panel-icon">
                   </i>
@@ -327,18 +327,18 @@
 
         <div id="application-notifications">
           <!-- OFFLINE -->
-          <div :class = "{ 'g3w-hide': app.online }" style = "color: #999">
+          <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
             <i :class = "$fa('wifi')"></i>
             <b style = "font-size: 0.4em">offline</b>
           </div>
           <!-- DOWNLOAD -->
-          <div :class = "{ 'skin-color': true, 'g3w-hide': !app.download }">
+          <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
             <bar-loader :loading = "true" />
             <i style = "padding:3px" :class = "$fa('download')"></i>
             <b style = "font-size: 0.35em">download</b>
           </div>
           <!-- PLUGINS -->
-          <div :class = "{ 'g3w-hide': 0 === app.plugins.length }" style = "color: #994b10">
+          <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
             <bar-loader :loading = "true" />
             <i :class = "$fa('tools')"></i>
             <b style = "font-size: 0.4em">plugins</b>
@@ -349,13 +349,13 @@
         <div id = "g3w-maps">
 
           <div
-            v-for = "hidemap in hidemaps"
+            v-for = "hidemap in ApplicationState.hidemaps"
             :key  = "hidemap.id"
             :id   = "hidemap.id"
             class = "g3w-map hidemap"
           ></div>
 
-          <div :id = "target" class = "g3w-map" @drop.prevent="onDrop" @dragenter.prevent="onDrop" @dragleave.prevent="onDrop" @dragover.prevent>
+          <div :id = "GUI.target" class = "g3w-map" @drop.prevent="onDrop" @dragenter.prevent="onDrop" @dragleave.prevent="onDrop" @dragover.prevent>
 
             <div class="drop-area" hidden>
               Upload Files
@@ -370,12 +370,12 @@
 
             <!-- FIXME: add description -->
             <div
-              v-if   = "map_info.info"
+              v-if   = "ApplicationState.map_info"
               ref    = "g3w-map-info"
               id     = "g3w-map-info"
-              :style = "map_info.style"
+              :style = "ApplicationState.map_style"
             >
-              {{map_info.info}}
+              {{ApplicationState.map_info}}
             </div>
 
             <!-- DIV that will contain marker on map -->
@@ -453,13 +453,13 @@
                 <select
                   style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
                   class   = "skin-color-dark"
-                  v-model = "mapunit"
+                  v-model = "ApplicationState.map_unit"
                 >
                   <option
                     v-for     = "unit in state.mapunits"
                     :value    = "unit"
                     v-t       = "`scaleline_units.${unit}`"
-                    :selected = "mapunit === unit"
+                    :selected = "ApplicationState.map_unit === unit"
                     style     = "font-weight: bold">
                   </option>
                 </select>
@@ -649,20 +649,15 @@ export default {
 
   data() {
     return {
+      state:                 ApplicationState,
       GUI,
+      ApplicationState,
       iframe:                false,
       language:              null,
       cookie_law_buttonText: _('Got It!'),
-      app:                   ApplicationState,
-      state:                 ApplicationState.viewport,
       updatePreviousTitle:   false,
       header:                _('main navigation'),
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
-      target:                GUI.target,
-      hidemaps:              GUI.state.hidemaps,
-      map_info:              GUI.state.map_info,
-      urlCopied:            false,
-      mapunit:              ApplicationState.map.unit,
       mouse: {
         visible:     true,
         switch_icon: false,
@@ -965,9 +960,8 @@ export default {
     },
 
     resizeFull() {
-      const state = ApplicationState.viewport;
       const panel = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
-      if ('h' === state.split) {
+      if ('h' === ApplicationState.split) {
         panel.width_100 = !panel.width_100;
       } else {
         panel.height_100 = !panel.height_100;
@@ -979,8 +973,8 @@ export default {
      * @sine 4.0.0
      */
     splitContent(e) {
-      const split = GUI.getCurrentContent().options.split;
-      ApplicationState.viewport.split = GUI.getCurrentContent().options.split = 'v' === split ? 'h' : 'v';
+      const split            = GUI.getCurrentContent().options.split;
+      ApplicationState.split = GUI.getCurrentContent().options.split = 'v' === split ? 'h' : 'v';
       e.target.setAttribute('data-original-title', `Dock ${'h' === split ? 'right' : 'bottom'}`);
       GUI._layout();
     },
@@ -1156,16 +1150,6 @@ export default {
       },
     },
 
-    /**
-     * ORIGINAL SOURCE: src/components/Map.vue@4.0.0
-     * 
-     * @since 4.1.0
-     */
-    'mapunit'(unit) {
-      ApplicationState.map.unit = unit;
-      GUI.changeScaleLineUnit(unit);
-    }
-
   },
 
   created() {
@@ -1191,7 +1175,7 @@ export default {
 
     await this.$nextTick();
 
-    GUI.once('ready', () => {
+    GUI.once('after:setupControls', () => {
       if (GUI.getMapControlByType('mouseposition')) {
         this.mouse.switch_icon = (
           GUI.getMapControlByType('mouseposition')

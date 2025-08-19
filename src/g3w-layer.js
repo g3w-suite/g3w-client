@@ -1988,7 +1988,7 @@ export class Layer extends Emitter {
         QUERY_LAYERS:  layers,
         INFO_FORMAT:   this.getInfoFormat() || 'application/vnd.ogc.gml',
         FEATURE_COUNT: opts.feature_count || 10,
-        CRS:           (is_table ? ApplicationState.map.epsg : projections.map.getCode()),
+        CRS:           (is_table ? ApplicationState.map_epsg : projections.map.getCode()),
         I:             opts.I,
         J:             opts.J,
         FILTER:        filter.length ? filter.map(f => f.value).join(';') : undefined,
@@ -2044,7 +2044,7 @@ export class Layer extends Emitter {
       case 'bbox':
       case 'geometry':
         params.geo_filter_mode = 'within' === opts.filter.config.spatialMethod ? 'contains' : (opts.filter.config.spatialMethod || 'intersects');
-        params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map.epsg, featureProjection: ApplicationState.map.epsg })).writeFeature(new ol.Feature({ geometry: opts.filter.value }));
+        params.geo_filter_wkt  = (new ol.format.WKT({ dataProjection: ApplicationState.map_epsg, featureProjection: ApplicationState.map_epsg })).writeFeature(new ol.Feature({ geometry: opts.filter.value }));
         params.formatter       = 1;
         params.filtertoken     = ApplicationState.tokens.filtertoken; // add filtertoken
         break;
@@ -3209,7 +3209,7 @@ export class Layer extends Emitter {
         aerialwithlabels: 'AerialWithLabels'
       })[this.state?.source?.subtype] || 'Aerial';
       olLayer = new ol.layer.Tile({
-        source: new ol.source.BingMaps({ imagerySet: name, key: ApplicationState.keys.vendorkeys.bing }),
+        source: new ol.source.BingMaps({ imagerySet: name, key: ApplicationState.vendorkeys.bing }),
         name,
         visible: false,
         preload: Infinity,

@@ -33,7 +33,7 @@ class StreetViewControl extends MapControl {
     /**
      * Check Google Key
      */
-    this.key = ApplicationState.keys.vendorkeys.google;
+    this.key = ApplicationState.vendorkeys.google;
 
     if (this.key) {
       XHR.get({
