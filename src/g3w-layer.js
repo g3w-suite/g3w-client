@@ -82,17 +82,6 @@ export class Layer extends Emitter {
 
   #color;
   
-  // BACKOMP v3.x
-  #LAYERTYPE;
-  get LAYERTYPE() {
-    console.warn('[G3W-LAYER] layer.LAYERTYPE is deprecated');
-    console.trace();
-    if ('virtual' === this.getType() && !this.isXYZ()) {
-      this.#LAYERTYPE = this.#LAYERTYPE || { LAYER: 'layer', MULTILAYER: 'multilayer' };
-    }
-    return this.#LAYERTYPE;
-  }
-
   /**
    * @param config.id
    * @param config.title
