@@ -31,11 +31,12 @@ GUI.setupControl.overview = async function() {
   try {
     const gid    = window.initConfig.overviewproject;
     const CONFIG = window.initConfig.projects.find(p => gid === p.gid);
-    let PROJECT  = gid === g3wsdk.core.ApplicationState.project.getGid() ? g3wsdk.core.ApplicationState.project : null;
 
     if (!CONFIG) {
       throw `Project doesn't exist ${gid}`;
     }
+
+    let PROJECT  = gid === g3wsdk.core.ApplicationState.project.getGid() ? g3wsdk.core.ApplicationState.project : null;
 
     // fetch project configuration from remote server
     if (!PROJECT) {
@@ -43,7 +44,6 @@ GUI.setupControl.overview = async function() {
         `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
       }), {
         _layers: {},
-        _layerstree: [],
         get crs()      { return normalizeEpsg(CONFIG.crs, false) },
         getType:       () => CONFIG.type,
         getId:         () => CONFIG.id,
