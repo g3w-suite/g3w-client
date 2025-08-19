@@ -3282,7 +3282,7 @@ export class Layer extends Emitter {
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
-    if ('ARCGISMAPSERVER' === this.config.servertype && 'image' === this.getType()) {
+    if ('ARCGISMAPSERVER' === this.config.servertype && ['image', 'virtual'].includes(this.getType())) {
       olLayer = new ol.layer.Tile({
         extent:  this.state.extent,
         visible: this.state.visible ?? true,
@@ -3295,17 +3295,6 @@ export class Layer extends Emitter {
       });
     }
 
-    // ARCGIS LAYER
-    if ('ARCGISMAPSERVER' === this.state.type && 'virtual' === this.getType()) {
-      olLayer = new ol.layer.Tile({
-        visible: true,
-        source:  new ol.source.TileArcGISRest({
-          url:          this.state.url,
-          projection:   this.state.projection,
-        }),
-      });
-    }
-
     /** @since 3.10.0 - MapProxy WMTS layer **/
     const resolutions = 'mapproxy' === this.state.cache_provider && ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
 
@@ -3314,7 +3303,7 @@ export class Layer extends Emitter {
       image = 'tile';
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
-          url:         ('mapproxy' === this.state.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.state.url : this.layers[0].getWmsUrl(),
+          url:         ('mapproxy' === this.state.cache_provider || !this.layers[0]?.getWmsUrl) ? this.state.url : this.layers[0].getWmsUrl(),
           layer:       this.state.cache_layer,
           matrixSet:   this.state.cache_grid,
           format:      'png',
@@ -3365,64 +3354,49 @@ export class Layer extends Emitter {
 
     }
 
-    let layerObj;
+    let layerURL;
 
     /**
      * ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2
      */
     if ('WMS' === this.config.servertype && 'image' === this.getType()) {
-      layerObj = {
-        url:          this.state.url,
-        projection:   this.#getProjectionFromCrs(this.state.crs),
-        layers:       this.state.layers,
-        tiled:        undefined === this.state.singleTile ? false : this.state.singleTile,
-        opacity:      undefined === this.state.opacity ? 1 : this.state.opacity,
-      };
+      layerURL = this.state.url;
     }
 
     if ('virtual' === this.getType() && 'WMTS' === this.state.type && !resolutions) {
       image = 'tile';
-      layerObj = {
-        url:               ('mapproxy' === this.state.cache_provider) || !(this.layers[0] && this.layers[0].getWmsUrl) ? this.state.url : this.layers[0].getWmsUrl(),
-        id:                this.state.id,
-        projection:        this.state.projection,
-        layers:            (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers),
-      };
+      layerURL = ('mapproxy' === this.state.cache_provider || !this.layers[0]?.getWmsUrl) ? this.state.url : this.layers[0].getWmsUrl();
     }
 
     // WMS LAYER
     if ('virtual' === this.getType() && !olLayer) {
-      layerObj = {
-        url:             (this.layers[0] && this.layers[0].getWmsUrl) ? this.layers[0].getWmsUrl() : this.state.url,
-        id:              this.state.id,
-        projection:      this.state.projection,
-        layers:          (withLayers) ? this.layers.map(l => l.getWMSLayerName()) : this.layers,
-        /** @since 3.9.1 */
-        format:          this.state.format,
-      };
+      layerURL = this.layers[0]?.getWmsUrl ? this.layers[0].getWmsUrl() : this.state.url;
     }
 
-    if (layerObj) {
+    if (layerURL) {
+      const projection = 'WMS' === this.config.servertype && 'image' === this.getType()
+        ? this.#getProjectionFromCrs(this.state.crs)
+        : this.state.projection;
       olLayer = new ('tile' === image ? ol.layer.Tile : ol.layer.Image)({
-        id:            layerObj.id,
-        name:          layerObj.name,
-        opacity:       undefined !== layerObj.opacity ? layerObj.opacity : 1.0,
-        visible:       layerObj.visible,
-        extent:        layerObj.extent,
-        maxResolution: layerObj.maxResolution,
+        id:            ('WMS' === this.config.servertype && 'image' === this.getType()) ? undefined : this.state.id,
+        name:          undefined,
+        opacity:       this.state.opacity ?? 1.0,
+        // visible:       undefined,
+        // extent:        undefined,
+        // maxResolution: undefined,
         source:        new ('tile' === image ? ol.source.TileWMS : ol.source.ImageWMS)({
           ratio:      1,
-          url:        layerObj.url,
-          projection: (layerObj.projection) ? layerObj.projection.getCode() : null,
+          url:        layerURL,
+          projection: projection ? projection.getCode() : null,
           params:     {
             ...Object.fromEntries(
               Object.entries({
                 DPI:         DOTS_PER_INCH,
                 TRANSPARENT: true,
-                FORMAT:      layerObj.format,
-                LAYERS:      undefined !== layerObj.layers      ? layerObj.layers : '',
-                VERSION:     undefined !== layerObj.version     ? layerObj.version : '1.3.0',
-                SLD_VERSION: undefined !== layerObj.sld_version ? layerObj.sld_version : '1.1.0',
+                FORMAT:      !(('WMS' === this.config.servertype && 'image' === this.getType()) || ('virtual' === this.getType() && 'WMTS' === this.state.type && !resolutions)) ? this.state.format : undefined,
+                LAYERS:       (('WMS' === this.config.servertype && 'image' === this.getType()) ? this.state.layers : (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers)) ?? '',
+                VERSION:     '1.3.0',
+                SLD_VERSION: '1.1.0',
               })
               // prevents sending "FORMAT" parameter when undefined
               .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
