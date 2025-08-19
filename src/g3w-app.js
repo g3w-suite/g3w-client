@@ -1315,7 +1315,7 @@ export default new (class GUI extends Emitter {
   }
 
   disableSideBar(bool = true) {
-    ApplicationState.gui.sidebar.disabled = bool;
+    ApplicationState.sidebar.disabled = bool;
   }
 
   //  (100%) content
@@ -1415,7 +1415,7 @@ export default new (class GUI extends Emitter {
     }
 
     const state    = ApplicationState.viewport;
-    const panel    = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
     Object.assign(opts, {
       content:     opts.content || null,
@@ -1500,7 +1500,7 @@ export default new (class GUI extends Emitter {
 
   // hide content
   hideContent(bool) {
-    const content_perc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
+    const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.viewport.split ? 'width': 'height'];
     this._layout(!bool);
     // return previous percentage
     return content_perc;
@@ -1590,13 +1590,13 @@ export default new (class GUI extends Emitter {
   showSidebar() {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapse');
-    ApplicationState.gui.sidebar.open = true;
+    ApplicationState.sidebar.open = true;
   }
 
   hideSidebar() {
     document.body.classList.remove('sidebar-open');
     document.body.classList.add('sidebar-collapse');
-    ApplicationState.gui.sidebar.open = false;
+    ApplicationState.sidebar.open = false;
   }
 
   getSize({ element, what }) {
@@ -1761,7 +1761,7 @@ export default new (class GUI extends Emitter {
     const sec =  this._layout.secondary;
 
     const state  = ApplicationState.viewport;
-    const layout = ApplicationState.gui.layout;
+    const layout = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
     const content_wrapper = document.querySelector('.content-wrapper');

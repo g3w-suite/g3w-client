@@ -392,9 +392,9 @@ g3wsdk.core.ApplicationService.getApplicationUser   = () => ApplicationState.use
 /** used by the following plugins: "archiweb", "iframe" */
 g3wsdk.core.ApplicationService.changeProject        = async ({ gid } = {}) => { const url = await GUI.addMapExtentUrlParameterToUrl(getProjectUrl(gid), crs); try { history.replaceState(null, null, url); } catch (e) { console.warn(e); } location.replace(url); };
 /** used by the following plugins: "editing" */
-g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.gui.layout.__current = who;
+g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => ApplicationState.layout.__current = who;
 /** used by the following plugins: "editing" */
-g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.gui.layout.__current;
+g3wsdk.core.ApplicationService.getCurrentLayoutName = () => ApplicationState.layout.__current;
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
 

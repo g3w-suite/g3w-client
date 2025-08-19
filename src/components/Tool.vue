@@ -72,7 +72,7 @@ export default {
       return (!this.tool.offline && !ApplicationState.online) || (this.tool.loading || this.tool.disabled);
     },
     sidebarOpen() {
-      return ApplicationState.gui.sidebar.open;
+      return ApplicationState.sidebar.open;
     }
   }
 };

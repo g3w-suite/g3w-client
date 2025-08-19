@@ -236,7 +236,7 @@ export default {
     },
 
     current_layout() {
-      return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+      return ApplicationState.layout[ApplicationState.layout.__current];
     }
 
   },

@@ -262,7 +262,7 @@ $.ajaxSetup({
     }
   );
 
-  ApplicationState.gui.layout.app = initConfig.layout;
+  ApplicationState.layout.app = initConfig.layout;
 
   // setup projects
   initConfig.projects.forEach(project => Object.assign(project, {

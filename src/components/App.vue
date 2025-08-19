@@ -7,7 +7,7 @@
   <div
     id         = "app"
     class      = "wrapper"
-    v-disabled = "app.gui.app.disabled"
+    v-disabled = "app.disabled"
   >
 
     <!-- NAVBAR TOP (MAIN MENU) -->
@@ -751,7 +751,7 @@ export default {
     },
 
     has_panel() {
-      const panel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      const panel = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       return (panel.width_100 || panel.height_100) ? false : ('h' === this.state.split ? panel.width : panel.height) > 0;
     },
 
@@ -809,7 +809,7 @@ export default {
     },
 
     disabled() {
-      return ApplicationState.gui.sidebar.disabled;
+      return ApplicationState.sidebar.disabled;
     },
 
     panels() {
@@ -913,7 +913,7 @@ export default {
 
     async onResize(e) {
       const sidebar = document.getElementById('g3w-view-content');
-      const panel   = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       let rect, dx, dy;
 
       this.state.content.disabled = true;
@@ -966,7 +966,7 @@ export default {
 
     resizeFull() {
       const state = ApplicationState.viewport;
-      const panel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+      const panel = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       if ('h' === state.split) {
         panel.width_100 = !panel.width_100;
       } else {

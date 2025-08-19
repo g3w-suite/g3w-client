@@ -54,7 +54,7 @@ export class Plugin extends Emitter {
       ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
       // remove layout
       if (this.name) {
-        delete ApplicationState.gui.layout[this.name]
+        delete ApplicationState.layout[this.name]
       }
     }, TIMEOUT);
 
@@ -178,10 +178,10 @@ export class Plugin extends Emitter {
   /**
    * Override plugin's content default layout (eg. default panel width, height, ...)
    * 
-   * @see g3wsdk.core.ApplicationState.gui.layout
+   * @see g3wsdk.core.ApplicationState.layout
    */
   setLayout(config) {
-    config = undefined !== config ? config : cloneDeep(ApplicationState.gui.layout.app);
+    config = undefined !== config ? config : cloneDeep(ApplicationState.layout.app);
 
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%
@@ -200,17 +200,17 @@ export class Plugin extends Emitter {
       }
     );
 
-    ApplicationState.gui.layout[this.name] = config;
+    ApplicationState.layout[this.name] = config;
 
   }
 
   /**
    * @FIXME add description
    * 
-   * @see g3wsdk.core.ApplicationState.gui.layout.__current
+   * @see g3wsdk.core.ApplicationState.layout.__current
    */
   setCurrentLayout() {
-    ApplicationState.gui.layout.__current = this.name;
+    ApplicationState.layout.__current = this.name;
   }
 
   /**
@@ -457,10 +457,10 @@ export class PluginService extends Emitter {
     };
     this._pluginEvents = {};
     this._appEvents    = [];
-    this.currentLayout = ApplicationState.gui.layout.__current;
+    this.currentLayout = ApplicationState.layout.__current;
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
-      () => ApplicationState.gui.layout.__current,
+      () => ApplicationState.layout.__current,
       layoutName => this.currentLayout = layoutName === this.name ? this.currentLayout : layoutName
     )
   }
@@ -475,7 +475,7 @@ export class PluginService extends Emitter {
   }
 
   resetCurrentLayout() {
-    ApplicationState.gui.layout.__current = this.currentLayout;
+    ApplicationState.layout.__current = this.currentLayout;
   }
 
   // set owner plugin of the service

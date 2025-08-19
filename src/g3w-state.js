@@ -24,6 +24,11 @@ const observe = obj => new Proxy(obj, {
 const STATE = Vue.observable({
 
   /**
+   * @since 4.1.0 - true = application is disabled and unclickable (waiting)
+   */
+  disabled: false,
+
+  /**
    * true = application is ready
    */
   ready: false,
@@ -187,42 +192,18 @@ const STATE = Vue.observable({
   },
 
   /**
-   * Store info of the elements of GUI of the application
+   * @since 4.1.0 - Store info of the elements of GUI of the application
    */
-  gui: {
+  layout: {
+    /**
+     * store the current layout owner ("app" = default)
+     */
+    __current: 'app',
 
-    app: {
-      /**
-       * true = application is disabled and unclickable (waiting)
-       */
-      disabled: false
-    },
-
-    sidebar: {
-      /**
-       * true = sidebar is disabled (not responsive)
-       */
-      disabled: false,
-      /**
-       * @since v3.11.0
-       * true open, false hide - icons only
-       */
-      open    : true,
-    },
-
-    layout: {
-      /**
-       * store the current layout owner ("app" = default)
-       */
-      __current: 'app',
-
-      /**
-       * Store application layout info (rightpanel)
-       */
-      app:       {}
-
-    }
-
+    /**
+     * Store application layout info (rightpanel)
+     */
+    app:       {}
   },
 
   /**
@@ -269,6 +250,10 @@ const STATE = Vue.observable({
     btn_close: true,
     /** @since 3.11.3 - custom tooltip for close button */
     tooltip_close: 'close',
+    /** @since 4.1.0 - true = sidebar is disabled (not responsive) */
+    disabled: false,
+    /** @since 4.1.0 - true open, false hide - icons only */
+    open: true,
   },
 
   contentsdata: [],
@@ -277,12 +262,6 @@ const STATE = Vue.observable({
    * @since 3.11.0
    */
   viewport: {
-    // used to store if content vertical or horizontal is  changed by resised
-    resized: {
-      start: false,
-      'h':   false,
-      'v':   false
-    },
     // splitting orientation (h = horizontal, v = vertical)
     split: 'h',
     //map

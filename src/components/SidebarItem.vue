@@ -76,7 +76,7 @@
         iconColor:   component.iconColor,
         collapsible: false !== component.collapsible,
         actions:     component.actions,
-        sidebar :    ApplicationState.gui.sidebar
+        sidebar :    ApplicationState.sidebar
       };
     },
     methods: {
