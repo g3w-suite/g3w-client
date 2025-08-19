@@ -36,6 +36,9 @@ import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { reverseGeometry }        from 'utils/reverseGeometry';
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
+import { isPointGeometryType }    from 'utils/isPointGeometryType';
+import { isLineGeometryType }     from 'utils/isLineGeometryType';
+import { isPolygonGeometryType }  from 'utils/isPolygonGeometryType';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -3455,21 +3458,61 @@ export class Layer extends Emitter {
 
     }
 
+    /**
+     * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
+     * 
+     * @since 4.1.0
+     */
+    if ('vector' === this.getType()) {
+      image = null;
+
+      const style = 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}` ? this.state.style : (this.state?.editing?.style ?? this.getCustomStyle());
+
+      olLayer = new ol.layer.Vector({
+        id:             this.getId(),
+        __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+        source:         new ol.source.Vector({ features: (this?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
+        opacity:        !style && isPolygonGeometryType(this.getGeometryType()) ? 0.6 : 1,
+        style:          new ol.style.Style(
+          (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
+            image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
+            stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
+            fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
+          }), {}))
+          || (isPointGeometryType(this.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: this.getColor() }), radius: 5, })})
+          || (isLineGeometryType(this.getGeometryType())    && { stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 }) })
+          || (isPolygonGeometryType(this.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: this.getColor() }) })
+        ),
+      });
+    }
+
+    /** @TODO check if deprecated */
+    if ('vector' === this.getType() && 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
+      XHR.get({ url: this.get('source').url }).then(d => {
+        olLayer.getSource().addFeatures((new ol.format.GeoJSON()).readFeatures(d.results, {
+          featureProjection: this.getProjection().getCode(),
+          dataProjection:    'EPSG:4326',
+        }));
+      });
+    }
+
     if (!olLayer) {
       console.warn('[G3W-LAYER] invalid OL layer');
       return;
     }
 
     // register loading event
-    olLayer.getSource().on(`${image}loadstart`, () => this.emit('loadstart'));
-    olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
-    olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
+    if (image) {
+      olLayer.getSource().on(`${image}loadstart`, () => this.emit('loadstart'));
+      olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
+      olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
+    }
 
     if (!withLayers && this.config?.attributions) {
       olLayer.getSource().setAttributions(this.config.attributions);
     }
 
-    if (!withLayers && this.state) {
+    if (!withLayers && undefined !== this.state.visible) {
       olLayer.setVisible(this.state.visible);
     }
 

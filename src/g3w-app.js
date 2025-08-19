@@ -39,7 +39,6 @@ import { getCatalogLayers }                     from 'utils/getCatalogLayers';
 import { idb }                                  from 'utils/idb';
 import { waitFor }                              from 'utils/waitFor';
 import { debounce }                             from 'utils/debounce';
-import { XHR }                                  from 'utils/XHR';
 import { noop }                                 from 'utils/noop';
 import { groupBy }                              from 'utils/groupBy';
 
@@ -4208,7 +4207,7 @@ export default new (class GUI extends Emitter {
     //In the case of store that has layers @since 3.10.0
     store.getLayers().forEach(l => {
       if ('vector' === l.getType()) {
-        const olLayer = this.#createVectorLayer(l);
+        const olLayer = l.getOLLayer();
         if (olLayer) {
           this.getMap().addLayer(olLayer);
         }
@@ -4218,7 +4217,7 @@ export default new (class GUI extends Emitter {
     this.#events.stores[id].push({
       addLayer: store.onafter('addLayer', l => {
       if ('vector' === l.getType()) {
-        const olLayer = this.#createVectorLayer(l);
+        const olLayer = l.getOLLayer();
         if (olLayer) {
           this.getMap().addLayer(olLayer);
         }
@@ -4286,7 +4285,7 @@ export default new (class GUI extends Emitter {
 
     // Vector Layer
     if (layer.isVector()) {
-      mapLayer = this.#createVectorLayer(layer);
+      mapLayer = layer.getOLLayer();
     }
 
     mapLayer.addLayer(layer);
@@ -4950,7 +4949,7 @@ export default new (class GUI extends Emitter {
 
         // vector layers
         if (l.isVector()) {
-          groups[2].unshift(this.#createVectorLayer(l));
+          groups[2].unshift(l.getOLLayer());
         }
 
         // group raster layers by "multilayerid"
@@ -5209,54 +5208,6 @@ export default new (class GUI extends Emitter {
       type = type.type;
     }
     return this.#layers.external.filter(l => undefined !== type ? type === l._externalLayerType : true);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  #createVectorLayer(layer) {
-    if (layer._olLayer) {
-      return layer._olLayer;
-    }
-
-    let olLayer;
-
-    const style = 'G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}` ? layer.get('style') : (layer.state?.editing?.style ?? layer.getCustomStyle());
-
-    olLayer = Object.assign(new ol.layer.Vector({
-      id:             layer.getId(),
-      __g3w_editable: layer.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
-      source:         new ol.source.Vector({ features: (layer?.getEditor?.()?.getEditingSource?.().getFeaturesCollection?.() || []) || new ol.Collection() }),
-      opacity:        !style && isPolygonGeometryType(layer.getGeometryType()) ? 0.6 : 1,
-      style:          new ol.style.Style(
-        (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
-          image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
-          stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
-          fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
-        }), {}))
-        || (isPointGeometryType(layer.getGeometryType())   && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: layer.getColor() }), radius: 5, })})
-        || (isLineGeometryType(layer.getGeometryType())    && { stroke: new ol.style.Stroke({ color: layer.getColor(), width: 3 }) })
-        || (isPolygonGeometryType(layer.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: layer.getColor() }) })
-      ),
-    }), {
-      /** @since 3.11.0 to have same compatibility with table layer */
-      getEditingSource: () => layer?.getEditor?.()?.getEditingSource?.(),
-    })
-    
-
-    if ('G3WSUITE geojson' === `${layer.state.servertype} ${layer.state.source?.type}`) {
-      XHR.get({ url: layer.get('source').url }).then(d => {
-        const feats = (new ol.format.GeoJSON()).readFeatures(d.results, {
-          featureProjection: this.getProjection().getCode(),
-          dataProjection:    'EPSG:4326',
-        });
-        layer._olLayer.getSource().addFeatures(feats);
-      });
-    }
-
-    return (layer._olLayer = olLayer);
   }
 
   /**
