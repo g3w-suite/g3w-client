@@ -4276,16 +4276,11 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   createMapLayer(layer) {
-    let mapLayer;
+    let mapLayer = layer;
 
     // Raster Layer
     if (layer.isRaster()) {
       mapLayer = this.#createRasterLayer(layer);
-    }
-
-    // Vector Layer
-    if (layer.isVector()) {
-      mapLayer = layer.getOLLayer();
     }
 
     mapLayer.addLayer(layer);
