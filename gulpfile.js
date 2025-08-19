@@ -6,7 +6,6 @@ const esbuild     = require('esbuild');
 
 // Gulp
 const gulp        = require('gulp');
-const flatten     = require('gulp-flatten');
 const prompt      = require('gulp-prompt');
 
 // Node.js
@@ -114,6 +113,25 @@ function get_branch(pluginName) {
  */
 function is_prod_branch(branchName) {
   return ['dev', 'main', 'master'].includes(branchName) || /^v\d+\.\d+\.x$/.test(branchName);
+}
+
+/**
+ * @param { string } src  folder
+ * @param { string } dest folder
+ * 
+ * @since 4.1.0
+ */
+function copyDir(src, dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      copyDir(path.join(src, entry.name), path.join(dest, entry.name));
+    } else {
+      fs.copyFileSync(path.join(src, entry.name), path.join(dest, entry.name));
+    }
+  }
 }
 
 setNODE_ENV();
@@ -282,12 +300,46 @@ gulp.task('build:app', async function() {
               /*path.join(args.resolveDir, 'public', args.path)*/
             }
           });
-          build.onEnd(result => {
+          build.onEnd(async result => {
             console.log(GREEN__ + '[client]' + __RESET + ' → ' + Math.round((fs.statSync(`${outputFolder}/static/client/app.min.js`).size + fs.statSync(`${outputFolder}/static/client/vendor.min.js`).size) / 1024)+ 'KB');
+
+            // copy assets (fonts and images)
+            copyDir(path.resolve('src/assets'), path.resolve(outputFolder, 'static/client'));
+            copyDir(path.resolve('node_modules/@fortawesome/fontawesome-free/webfonts'), path.resolve(outputFolder, 'static/client/fonts'));
+
+            // compile app.css
+            await esbuild.build({
+              entryPoints: [path.resolve('src/assets/app.css')],
+              outfile: path.resolve(outputFolder, 'static/client/app.min.css'),
+              minify: true,
+              bundle: true,
+              loader: {
+              '.css': 'css',
+              '.svg': 'file',
+              '.woff': 'file',
+              '.woff2': 'file',
+              '.eot': 'file',
+              '.ttf': 'file',
+              },
+              plugins: [
+              {
+                name: 'g3w-assets',
+                setup(build) {
+                build.onResolve({ filter: /\.(png|woff|woff2|eot|ttf|svg)(\?.*|#.*)?$/ }, args => {
+                  args.path = args.path.replace(/\w+fonts/g, 'fonts').replace('../fonts', './fonts'); // eg. "../webfonts/fa-regular-400.woff2" --> "./fonts/fa-regular-400.woff2"
+                  console.log(args.path);
+                  // If the asset is inside node_modules, do not mark as external
+                  return { path: args.path, external: !args.path.includes('node_modules') };
+                });
+                }
+              }
+              ]
+            });
+
             resolve();
           })
         },
-      }
+      },
     ]
   });
   if (production) {
@@ -297,66 +349,6 @@ gulp.task('build:app', async function() {
     ctx.watch();
   }
   return promise;
-});
-
-/**
- * Deploy client and vendor images
- */
-gulp.task('images', async function () {
-  return gulp.src([
-    `./src/assets/images/**/*.{png,jpg,gif,svg}`,
-    `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
-    `!${g3w.pluginsFolder}/g3w-admin-*/**`, //exclude admin plugins
-    `!${g3w.pluginsFolder}/**/node_modules/**`,
-    '!./src/**/node_modules/**'
-  ])
-  .pipe(flatten())
-  .pipe(gulp.dest(`${outputFolder}/static/client/images/`))
-});
-
-/**
- * Deploy client cursors
- */
-gulp.task('cursors', function () {
-  return gulp.src([
-    `./src/assets/cursors/**/*`,
-  ])
-  .pipe(flatten())
-  .pipe(gulp.dest(`${outputFolder}/static/client/cursors/`))
-});
-
-/**
- * Deploy client and vendor fonts
- */
- gulp.task('fonts', function () {
-  return gulp.src([
-    `./src/assets/fonts/**/*.{eot,ttf,woff,woff2}`,
-    `./node_modules/@fortawesome/fontawesome-free/webfonts//**/*.{eot,ttf,woff,woff2}`,
-    `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
-    `!${g3w.pluginsFolder}/g3w-admin-*/**`, //exclude admin plugins
-    `!${g3w.pluginsFolder}/**/node_modules/**`,
-    '!./src/**/node_modules/**'
-  ])
-  .pipe(flatten())
-  .pipe(gulp.dest(`${outputFolder}/static/client/fonts/`))
-});
-
-/**
- * Deploy geocoding providers (src/assets/geocoding-providers)
- */
-gulp.task('geocoding-providers', function () {
-  return gulp.src(`./src/assets/geocoding-providers/*`)
-    .pipe(flatten())
-    .pipe(gulp.dest(`${outputFolder}/static/client/geocoding-providers/`));
-});
-
-/**
- * Deploy i18n folder (src/assets/locales)
- */
-gulp.task('locales', function () {
-  return gulp.src(`./src/assets/locales/*`)
-    .pipe(flatten())
-    .pipe(gulp.dest(`${outputFolder}/static/client/locales/`));
 });
 
 /**
@@ -442,7 +434,7 @@ gulp.task('build:plugins', async function() {
  */
 gulp.task('build:client', function(done) {
   return undefined === process.env.G3W_PLUGINS || process.env.G3W_PLUGINS.includes('client')
-   ? gulp.series('build:app', gulp.parallel('fonts', 'cursors', 'images', 'locales'))(done)
+   ? gulp.series('build:app')(done)
    : done();
 });
 
@@ -487,7 +479,6 @@ gulp.task('dev', gulp.series(
   'check:node_modules',
   'clean:overrides',
   'symlink:plugins',
-  'geocoding-providers',
   'build:client',
   )
 )
