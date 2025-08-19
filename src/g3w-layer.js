@@ -57,9 +57,6 @@ function __(name, value) {
  */
 export class Layer extends Emitter {
 
-  /** group layers with same "multilayer" id */
-  static groups = { };
-
   get config() {
     return this.state;
   }
@@ -3092,6 +3089,7 @@ export class Layer extends Emitter {
   update(mapState = {}, params = {}) {
     // check which layers have to be disabled
     this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
+    //get vsisible layers
     const layers = this.layers.filter(l => l.isVisible()) || [];
 
     /** @FIXME add description */
