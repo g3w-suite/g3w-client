@@ -4290,7 +4290,7 @@ export default new (class GUI extends Emitter {
     }
 
     mapLayer.addLayer(layer);
-  return mapLayer;
+    return mapLayer;
   }
 
   /**
@@ -5265,11 +5265,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #createRasterLayer(layer) {
-    if (layer._mapLayer) {
-      return layer._mapLayer;
-    }
-
-    return (layer._mapLayer = new g3w.Layer(
+    return this.#layers.g3w.find(l => layer.id === l.id) || new g3w.Layer(
       {
         id:              `layer_${layer.getMultiLayerId()}`,
         projection:        this.getProjection(),
@@ -5295,7 +5291,7 @@ export default new (class GUI extends Emitter {
         ),
       },
       { TYPE: 'virtual' }
-    ));
+    );
   }
 
   /**

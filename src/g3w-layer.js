@@ -3136,7 +3136,7 @@ export class Layer extends Emitter {
     }
     
     if (this.isRaster() && this.isWMS()) {
-      this._mapLayer.update(mapState, params)
+      this.update(mapState, params)
     }
   }
 
@@ -3452,12 +3452,12 @@ export class Layer extends Emitter {
     olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
     olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
 
-    if (!withLayers && this._mapLayer?.config?.attributions) {
-      olLayer.getSource().setAttributions(this._mapLayer.config.attributions);
+    if (!withLayers && this.config?.attributions) {
+      olLayer.getSource().setAttributions(this.config.attributions);
     }
 
-    if (!withLayers && this._mapLayer?.state) {
-      olLayer.setVisible(this._mapLayer.state.visible);
+    if (!withLayers && this.state) {
+      olLayer.setVisible(this.state.visible);
     }
 
     return (this._olLayer = olLayer);
