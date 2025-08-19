@@ -51,6 +51,23 @@ GUI.setupControl.overview = async function() {
         getRelations() { return []; }
       });
 
+       // loop layerstree and inject additional layer properties from server config (eg. visibile: true/false)
+      const traverse = nodes => {
+        nodes.forEach((node, i) => {
+          if (undefined !== node.id) {
+            PROJECT.layers.forEach(l => {
+              if (node.id === l.id) {
+                node[i] = Object.assign(l, node);
+              }
+            });
+          }
+          if (Array.isArray(node.nodes)) {
+            traverse(node.nodes);
+          }
+        });
+      };
+      traverse(PROJECT.layerstree);
+
       // Layer factory: instance each layer and add to layersstore
       PROJECT.layers.flatMap(l => {
 
@@ -103,7 +120,7 @@ GUI.setupControl.overview = async function() {
               // group layer by multilayerId
               Object
                 .values(PROJECT._layers)
-                .filter(l => l.isGeoLayer() && !l.isBaseLayer())
+                .filter(l => l.isGeoLayer() && !l.isBaseLayer() && l.isVisible())
                 .reduce((group, l) => {
                   const id = l.getMultiLayerId();
                   group[id] = group[id] || [];
