@@ -57,7 +57,7 @@ GUI.setupControl.overview = async function() {
           if (undefined !== node.id) {
             PROJECT.layers.forEach(l => {
               if (node.id === l.id) {
-                node[i] = Object.assign(l, node);
+                l.visible = node.visible ?? true; // @since v4.1.0 - add visible property to layer
               }
             });
           }
