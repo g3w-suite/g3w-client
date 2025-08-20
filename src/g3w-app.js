@@ -17,25 +17,7 @@ import { gettext as _ }                         from 'g3w-i18n';
 import ApplicationState                         from 'g3w-state';
 import { IframeApp }                            from 'g3w-iframe';
 import MapControl                               from 'g3w-control';
-
-//@since 4.1.0 Map controls
-import addlayer                                 from 'controls/addlayer';
-import annotation                               from 'controls/annotation';
-import geocoding                                from 'controls/geocoding';
-import geolocation                              from 'controls/geolocation';
-import measure                                  from 'controls/measure';
-import mouseposition                            from 'controls/mouseposition';
-import overview                                 from 'controls/overview';
-import query                                    from 'controls/query';
-import queryby                                  from 'controls/queryby';
-import scale                                    from 'controls/scale';
-import scaleline                                from 'controls/scaleline';
-import screenshot                               from 'controls/screenshot';
-import streetview                               from 'controls/streetview';
-import zoom                                     from 'controls/zoom';
-import zoombox                                  from 'controls/zoombox';
-import zoomhistory                              from 'controls/zoomhistory';
-import zoomtoextent                             from 'controls/zoomtoextent';
+import setupControl                             from 'controls';
 
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { toRawType }                            from 'utils/toRawType';
@@ -163,31 +145,6 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #highlighting = false;
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  setupControl = {
-    ...addlayer,
-    ...annotation,
-    ...geocoding,
-    ...geolocation,
-    ...measure,
-    ...mouseposition,
-    ...overview,
-    ...query,
-    ...queryby,
-    ...scale,
-    ...scaleline,
-    ...screenshot,
-    ...streetview,
-    ...zoom,
-    ...zoombox,
-    ...zoomhistory,
-    ...zoomtoextent
-  };
 
   /** @since 4.1.0 */
   get config() {
@@ -5064,7 +5021,7 @@ export default new (class GUI extends Emitter {
 
     for (const type of Object.keys(this?.config?.mapcontrols || {})) {
       try {
-        await this.setupControl[type](); // TODO: make use dynamic of imports instead of firing a custom event 
+        await setupControl(type); // TODO: make use dynamic of imports instead of firing a custom event 
       } catch (e) {
         console.warn(e);
       }
