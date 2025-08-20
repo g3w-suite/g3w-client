@@ -4294,7 +4294,7 @@ export default new (class GUI extends Emitter {
 
     // Raster Layer
     if (layer.isRaster()) {
-      mapLayer = this.#createRasterLayer(layer);
+      mapLayer = this.#layers.g3w.find(l => layer.id === l.id) || new g3w.Layer(layer);
     }
 
     mapLayer.addLayer(layer);
@@ -4962,7 +4962,7 @@ export default new (class GUI extends Emitter {
         }
 
         // group raster layers by "multilayerid"
-        if (!l.isBaseLayer() && !l.isVector()) {
+        if (l.isRaster() && !l.isBaseLayer()) {
           let id = l.getMultiLayerId();
           if (l.isQtimeseries()) {
             this.#layers.index[`qtimeseries_${id}`] = (this.#layers.index[`qtimeseries_${id}`] ?? -1) + 1;
@@ -4970,7 +4970,7 @@ export default new (class GUI extends Emitter {
           } else if (undefined !== this.#layers.index[`qtimeseries_${id}`]) {
             id = `${id}_${this.#layers.index[`qtimeseries_${id}`] + 1}`;
           }
-          const mapLayer = this.#layers.index[id] || this.#createRasterLayer(l);
+          const mapLayer = this.#layers.index[id] || new g3w.Layer(l);
           mapLayer.addLayer(l, 'start');
           if (!this.#layers.index[id]) {
             this.#layers.index[id] = mapLayer;
@@ -5089,7 +5089,7 @@ export default new (class GUI extends Emitter {
         : `<span class="skin-color" style="font-weight: bold">${text}</span>`
       : false;
 
-    this.getMapLayers().forEach(l => l.getSource().setAttributions(attribution));
+    this.getMapLayers().forEach(l => l.getOLLayer().getSource().setAttributions(attribution));
 
     const has_baselayer = attribution || Object.values(ApplicationState.layers)
       .flatMap(s => s.isQueryable() ? s.getLayers() : [])
@@ -5243,41 +5243,6 @@ export default new (class GUI extends Emitter {
       type = type.type;
     }
     return this.#layers.external.filter(l => undefined !== type ? type === l._externalLayerType : true);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  #createRasterLayer(layer) {
-    return this.#layers.g3w.find(l => layer.id === l.id) || new g3w.Layer(
-      {
-        id:              `layer_${layer.getMultiLayerId()}`,
-        projection:        this.getProjection(),
-        format:            layer.getFormat(),
-        ...(
-          layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type
-          ? layer.state.source                                                                       // ARCGIS Layer (external)
-          : {
-            type:
-              (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
-              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS') ||           // WMTS Layer  (cached)
-              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS') ||           // WMS-T Layer (external)
-              layer.state.type,
-            url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
-            http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
-            extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
-            cache_provider:    layer.state.cache_provider,
-            cache_layer:       layer.state.cache_layer,
-            cache_extent:      layer.state.cache_extent,
-            cache_grid:        layer.state.cache_grid,
-            cache_grid_extent: layer.state.cache_grid_extent,
-          }
-        ),
-      },
-      { TYPE: 'virtual' }
-    );
   }
 
   /**

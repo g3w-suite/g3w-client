@@ -80,6 +80,7 @@ export class Layer extends Emitter {
   #color;
   
   /**
+   * @param { Object | Layer } config
    * @param config.id
    * @param config.title
    * @param config.name
@@ -122,6 +123,35 @@ export class Layer extends Emitter {
       'setFeatures',
       'change',
     ];
+
+    // lazy init parent layer group (multilayer)
+    if (config instanceof Layer) {
+      const layer = config;
+      config = {
+        id:         `layer_${layer.getMultiLayerId()}`,
+        projection: ApplicationState.project.getProjection(),
+        format:     layer.getFormat(),
+        ...(
+          layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type
+          ? layer.state.source                                                                       // ARCGIS Layer (external)
+          : {
+            type:
+              (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
+              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS') ||           // WMTS Layer  (cached)
+              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS') ||           // WMS-T Layer (external)
+              layer.state.type || null,
+            url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
+            http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
+            extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
+            cache_provider:    layer.state.cache_provider,
+            cache_layer:       layer.state.cache_layer,
+            cache_extent:      layer.state.cache_extent,
+            cache_grid:        layer.state.cache_grid,
+            cache_grid_extent: layer.state.cache_grid_extent,
+          }
+        )
+      };
+    }
 
     const layerType = `${config.servertype} ${config?.source?.type}`;
 
@@ -507,7 +537,7 @@ export class Layer extends Emitter {
     this.#layersstore = config.layersstore || null;
 
     // sanitize source url (ie. discard any reserved WMS params)
-    if (this.state?.source?.url && 'virtual' !== this.getType()) {
+    if (this.state?.source?.url && !this.isMulti()) {
       const url = new URL(this.state.source.url);
       ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS' ].forEach(p => {
         this.state.source.url = this.state.source.url
@@ -1639,7 +1669,8 @@ export class Layer extends Emitter {
    * @returns {*} layer source (ex. ogr, spatialite, etc..)
    */
   getSource() {
-    if ('virtual' === this.getType()) {
+    if (this.isMulti()) {
+      console.trace('[G3W-LAYER] please use layer.getOLLayer().getSource() instead')
       return this.getOLLayer().getSource();
     }
     return this.state.source;
@@ -1702,7 +1733,7 @@ export class Layer extends Emitter {
    * @returns { string } Server type
    */
   getServerType() {
-    return this.state.servertype || "QGIS";
+    return this.state.servertype || 'QGIS';
   }
 
   /**
@@ -1831,17 +1862,17 @@ export class Layer extends Emitter {
     }
 
     /** @FIXME add description */
-    if ('virtual' === this.getType() && !this.isXYZ()) {
+    if (this.isMulti() && !this.isXYZ()) {
       return this.state.url;
     }
 
     /** @FIXME add description */
-    if ("QGIS" === this.getServerType() && this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs && this.getInfoFormats()) {
+    if ('QGIS' === this.getServerType() && this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs && this.getInfoFormats()) {
       return this.getSource().url;
     }
 
     /** @FIXME add description */
-    if ("QGIS" === this.getServerType() && this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs) {
+    if ('QGIS' === this.getServerType() && this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs) {
       return `${this.state.urls.query}SOURCE=${this.state.source.type}`;
     }
 
@@ -1859,7 +1890,7 @@ export class Layer extends Emitter {
    * @returns { default.watch.infoformat | * | string }
    */
   getInfoFormat(ogcService) {
-    if ('virtual' === this.getType() && !this.isXYZ()) {
+    if (this.isMulti() && !this.isXYZ()) {
       return 'application/vnd.ogc.gml';
     }
     // In the case of NETCDF (qtime series)
@@ -2643,6 +2674,14 @@ export class Layer extends Emitter {
   }
 
   /**
+   * @returns { boolean } whether current layer is a parent layer (ie. a special layer used to group `getMap` requests)
+   * @since 4.1.0
+   */
+  isMulti() {
+    return undefined !== this.config.type;
+  }
+
+  /**
    * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
    *
    * @since 4.0.0
@@ -2781,22 +2820,6 @@ export class Layer extends Emitter {
     console.trace('[G3W-LAYER] setFeatures is deprecated?');
     this.#features = features;
   }
-
-  /**
-   * get data from every sources (server, wms, etc..)
-   * through provider related to featuresstore
-   *
-   * @param {*} opts
-   * 
-   * @since 4.1.0
-   */
-  // async getFeatures(opts = {}) {
-  //   console.trace('[G3W-LAYER] getFeatures is deprecated?');
-  //   const features = await this._featuresstore.getFeatures(opts);
-  //   this.emit('getFeatures', features);
-  //   return features;
-  // }
-
   /**
    * @since 4.1.0
    */
@@ -2839,14 +2862,14 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   isWMS() {
-    return this.isRaster() && ["QGIS", "Mapserver", "Geoserver", "OGC"].includes(this.state.servertype);
+    return this.isRaster() && ['QGIS', 'Mapserver', 'Geoserver', 'OGC'].includes(this.state.servertype);
   }
 
   /**
    * @since 4.1.0
    */
   isXYZ() {
-    return 'XYZ' === this.state.type;
+    return 'XYZ' === this.config.type;
   }
 
   /**
@@ -3072,24 +3095,23 @@ export class Layer extends Emitter {
   update(mapState = {}, params = {}) {
     // check which layers have to be disabled
     this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
-    //get vsisible layers
-    const layers = this.layers.filter(l => l.isVisible()) || [];
+    // get visible layers
+    const layers = this.layers.filter(l => l.isVisible());
 
     /** @FIXME add description */
-    if ('virtual' === this.getType() && this.isXYZ()) {
+    if (this.isXYZ()) {
       this.getOLLayer().setVisible(this.layer.isVisible());
       return;
     }
 
-    /** @FIXME add description */
     // skip when ..
-    if ('virtual' === this.getType() && layers.length <= 0) {
+    if (this.isMulti() && layers.length <= 0) {
       this.getOLLayer().setVisible(false);
       return;
     }
 
     /** @FIXME add description */
-    if ('virtual' === this.getType() && this.getOLLayer()) {
+    if (this.isMulti() && this.getOLLayer()) {
       let { force, ..._params } = params;
 
       const STYLES     = [];
@@ -3182,7 +3204,7 @@ export class Layer extends Emitter {
     }
 
     // ARCGIS LAYER
-    if ('ARCGISMAPSERVER' === this.config.servertype && ['image', 'virtual'].includes(this.getType())) {
+    if ('ARCGISMAPSERVER' === this.config.servertype && ('image' === this.getType() || this.isMulti())) {
       olLayer = new ol.layer.Tile({
         extent:  this.state.extent,
         visible: this.state.visible ?? true,
@@ -3195,22 +3217,30 @@ export class Layer extends Emitter {
       });
     }
 
-    // TMS LAYER
-    if ('TMS' === this.config.servertype && 'image' === this.getType() && this.state.url) {
-      this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
-      const projection = ApplicationState.projections.get(this.state.crs.epsg);
+    // TMS LAYER (XYZ)
+    if (this.isXYZ() || ('TMS' === this.config.servertype && 'image' === this.getType())) {
+      let projection;
+      
+      if (this.isXYZ()) {
+        projection = this.state.url && this.projection ? this.projection : this.layer.getProjection();
+      } else {
+        this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
+        projection = ApplicationState.projections.get(this.state.crs.epsg);
+      }
+
       olLayer = new ol.layer.Tile({
         visible:    false,
         projection,
         source:     new ol.source.XYZ({
-          url:         this.state.url ?? null,
-          maxZoom:     this.state.maxZoom,
-          minZoom:     this.state.minZoom,
+          url:              this.state.url ?? null,
+          maxZoom:          'image' === this.getType() ? this.state.maxZoom : 20,
+          minZoom:          'image' === this.getType() ? this.state.minZoom : undefined,
           projection,
-          crossOrigin: 'anonymous',
-          tileGrid:    'degrees' === projection.getUnits() ? new ol.tilegrid.TileGrid({
+          crossOrigin:      'image' === this.getType() ? 'anonymous'        : undefined,
+          tileLoadFunction: this.isXYZ() && ApplicationState.iframe && !this.isExternalWMS() ? this.#fetchTile.bind(this) : undefined,
+          tileGrid:         ('degrees' === projection.getUnits() || ('mapproxy' === this.state.cache_provider && this.isXYZ())) ? new ol.tilegrid.TileGrid({
             /** @TODO use `maxResolution` option instead of `.slice(1)` ? */
-            resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: this.state.maxZoom }).getResolutions().slice(1),
+            resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: 'image' === this.getType() ? this.state.maxZoom : 20 }).getResolutions().slice(1),
             extent:      projection.getExtent(),
           }) : undefined,
         })
@@ -3256,7 +3286,7 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER (with mapproxy)
-    if ('virtual' === this.getType() && 'WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
+    if ('WMTS' === this.config.type && 'mapproxy' === this.state.cache_provider) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
@@ -3273,7 +3303,7 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER
-    if ('virtual' === this.getType() && 'WMTS' === this.state.type) {
+    if ('WMTS' === this.config.type) {
       olLayer = new ol.layer.Tile({
         id:            this.state.id,
         name:          undefined,
@@ -3302,30 +3332,6 @@ export class Layer extends Emitter {
       });
     }
 
-    // XYZ LAYER
-    if ('virtual' === this.getType() && this.isXYZ()) {
-      const projection = this.state.url && this.projection ? this.projection : this.layer.getProjection();
-      olLayer = new ol.layer.Tile({
-        visible:    true,
-        projection,
-        source:     new ol.source.XYZ({
-          url:              this.state.url,
-          maxZoom:          20,
-          minZoom:          undefined,
-          projection,
-          crossOrigin:      undefined,
-          tileLoadFunction: ApplicationState.iframe && !this.isExternalWMS() ? this.#fetchTile.bind(this) : undefined,
-          /** @since 3.10.0 - Map Proxy cache_provider **/
-          tileGrid: ('degrees' === projection.getUnits() || 'mapproxy' === this.state.cache_provider) ? new ol.tilegrid.TileGrid({
-            /** @TODO use `maxResolution` option instead of `.slice(1)` ? */
-            resolutions: ol.tilegrid.createXYZ({ extent: projection.getExtent(), maxZoom: 20 }).getResolutions().slice(1),
-            extent:      projection.getExtent(),
-          }) : undefined,
-        })
-      });
-
-    }
-
     // WMS LAYER
     if ('WMS' === this.config.servertype && 'image' === this.getType()) {
       this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
@@ -3346,7 +3352,7 @@ export class Layer extends Emitter {
                 FORMAT:      undefined /*!(
                   ('WMS' === this.config.servertype && 'image' === this.getType())
                   ||
-                  ('virtual' === this.getType() && 'WMTS' === this.state.type && 'mapproxy' !== this.state.cache_provider)
+                  ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider)
                 ) ? this.state.format : undefined*/,
                 LAYERS:       this.state.layers ?? '',
                 VERSION:     '1.3.0',
@@ -3363,7 +3369,7 @@ export class Layer extends Emitter {
     }
 
     // WMS LAYER
-    if ('virtual' === this.getType() && !olLayer) {
+    if (this.isMulti() && !olLayer) {
       olLayer = new ol.layer.Image({
         id:            this.state.id,
         name:          undefined,
@@ -3377,7 +3383,7 @@ export class Layer extends Emitter {
               Object.entries({
                 DPI:         DOTS_PER_INCH,
                 TRANSPARENT: true,
-                FORMAT:      !(('WMS' === this.config.servertype && 'image' === this.getType()) || ('virtual' === this.getType() && 'WMTS' === this.state.type && 'mapproxy' !== this.state.cache_provider)) ? this.state.format : undefined,
+                FORMAT:      !(('WMS' === this.config.servertype && 'image' === this.getType()) || ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider)) ? this.state.format : undefined,
                 LAYERS:       (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers) ?? '',
                 VERSION:     '1.3.0',
                 SLD_VERSION: '1.1.0',
