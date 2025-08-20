@@ -5,11 +5,13 @@
 
 import GUI from 'g3w-app';
 
-GUI.setupControl.zoomtoextent = function() {
-  GUI.createMapControl({
-    id: 'zoomtoextent',
-    options: {
-      ol: new ol.control.ZoomToExtent({ extent: GUI.project.state.extent, tipLabel: 'Fit map extent' })
-    }
-  });
+export default {
+  zoomtoextent() {
+    GUI.createMapControl({
+      id: 'zoomtoextent',
+      options: {
+        ol: new ol.control.ZoomToExtent({ extent: GUI.project.state.extent, tipLabel: 'Fit map extent' })
+      }
+    });
+  }
 };

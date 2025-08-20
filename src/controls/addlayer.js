@@ -5,12 +5,11 @@
 
 import GUI from 'g3w-app';
 
-// wait for map ready
-GUI.setupControl.addlayer = GUI.setupControl.addlayers = function () {
+function addlayer () {
   Object
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['addlayers', 'addlayer'].includes(type))
-    .forEach(type => {
+    .forEach(() => {
       if (!isMobile.any && !GUI.getMapControlByType('addlayer')) {
         GUI.createMapControl({
           id: 'addlayer',
@@ -26,3 +25,8 @@ GUI.setupControl.addlayer = GUI.setupControl.addlayers = function () {
       }
     });
 };
+
+export default {
+  addlayer,
+  addlayers: addlayer
+}

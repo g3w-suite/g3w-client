@@ -15,10 +15,12 @@ import { get_formatted_angle }    from 'utils/createMeasureTooltip';
 import { idb }                    from 'utils/idb';
 
 // wait for map ready
-GUI.setupControl.annotation = async function() {
-  GUI.addControl('annotation', new AnnotationControl({
-    features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
-  }));
+export default { 
+  async annotation() {
+    GUI.addControl('annotation', new AnnotationControl({
+      features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
+    }));
+  }
 };
 
 class AnnotationControl extends MapControl {

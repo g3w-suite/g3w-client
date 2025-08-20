@@ -9,13 +9,14 @@ import { getResolutionFromScale } from 'utils/getResolutionFromScale';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { gettext as _ }           from 'g3w-i18n';
 
-// wait for map ready
-GUI.setupControl.scale = function() {
-  GUI.addControl('scale', new ScaleControl({
-    coordinateFormat: ol.coordinate.createStringXY(4),
-    projection:       GUI.getCrs(),
-    isMobile:         isMobile.any
-  }), false);
+export default {
+  scale() {
+    GUI.addControl('scale', new ScaleControl({
+      coordinateFormat: ol.coordinate.createStringXY(4),
+      projection:       GUI.getCrs(),
+      isMobile:         isMobile.any
+    }), false);
+  }
 };
 
 class ScaleControl extends ol.control.Control {

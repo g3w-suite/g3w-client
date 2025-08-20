@@ -11,8 +11,10 @@ import MapControl                 from 'g3w-control';
 import PickCoordinatesInteraction from 'interactions/pick-coordinates';
 
 // wait for map ready
-GUI.setupControl.streetview = function() {
-  GUI.addControl('streetview', new StreetViewControl());
+export default {
+  streetview() {
+    GUI.addControl('streetview', new StreetViewControl());
+  }
 };
 
 class StreetViewControl extends MapControl {

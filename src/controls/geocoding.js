@@ -57,8 +57,10 @@ Object
   });
 
 // wait for map ready
-GUI.setupControl.geocoding = function() {
-  GUI.addControl('geocoding', new GeocodingControl(), false);
+export default {
+  geocoding() {
+    GUI.addControl('geocoding', new GeocodingControl(), false);
+  }
 };
 
 class GeocodingControl extends ol.control.Control {
