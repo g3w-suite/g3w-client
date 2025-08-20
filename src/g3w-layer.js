@@ -51,6 +51,11 @@ function __(name, value) {
 
 /**
  * Base class for all layers
+ * 
+ * @example ```js
+ * new g3w.Layer(layer)       // create a layer group
+ * new g3w.Layer(layer.state) // clone an existing layer
+ * ```
  */
 export class Layer extends Emitter {
 
