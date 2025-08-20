@@ -77,7 +77,6 @@ GUI.setupControl.overview = async function() {
           projection:        l.crs ? ApplicationState.projections.get(l.crs) : PROJECT.getProjection(),
           ows_method:        PROJECT.ows_method || 'GET',
           wms_use_layer_ids: PROJECT.wms_use_layer_ids,
-          //@since v4.0.0 - original config to maintain
           styles:            l.styles && l.styles.map(s => ({...s})), // v4.0.0 pass a copy of styles
         });
 
