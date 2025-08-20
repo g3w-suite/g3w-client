@@ -8,8 +8,7 @@ import MapControl                  from 'g3w-control';
 import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
 import { gettext as _ }            from 'g3w-i18n';
 
-// wait for map ready
-GUI.setupControl.length = GUI.setupControl.area = function() {
+function measure() {
   Object
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['length', 'area'].includes(type))
@@ -31,6 +30,11 @@ GUI.setupControl.length = GUI.setupControl.area = function() {
         }
       }
     });
+};
+// wait for map ready
+export default {
+  length: measure,
+  area:   measure,
 };
 
 export class MeasureInteraction extends ol.interaction.Draw {

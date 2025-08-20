@@ -7,14 +7,16 @@ import { gettext as _ } from 'g3w-i18n';
 import GUI              from 'g3w-app';
 
 // wait for map ready
-GUI.setupControl.zoom = function() {
-  GUI.createMapControl({
-    id: 'zoom',
-    options: {
-      ol: new ol.control.Zoom({
-        zoomInTipLabel: _('Zoom in'),
-        zoomOutLabel: _('Zoom out'),
-      }),
-    }
-  });
+export default {
+  zoom() {
+    GUI.createMapControl({
+      id: 'zoom',
+      options: {
+        ol: new ol.control.Zoom({
+          zoomInTipLabel: _('Zoom in'),
+          zoomOutLabel: _('Zoom out'),
+        }),
+      }
+    });
+  }
 };

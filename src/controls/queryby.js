@@ -15,8 +15,7 @@ import PickCoordinatesInteraction from 'interactions/pick-coordinates';
 import { throttle }               from 'utils/throttle';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 
-// wait for map ready
-GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.querybycircle = GUI.setupControl.querybydrawpolygon = GUI.setupControl.querybyfreehand = function() {
+function _q() {
   if (isMobile.any) {
     return;
   }
@@ -30,6 +29,14 @@ GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.
         GUI.addControl('queryby', new QueryBy({ types: [type] }));
       }
     });
+};
+
+export default {
+  querybypolygon: _q, 
+  querybbox: _q, 
+  querybycircle: _q, 
+  querybydrawpolygon: _q, 
+  querybyfreehand: _q, 
 };
 
 const POLYGON_TYPES = [

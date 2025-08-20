@@ -18,6 +18,25 @@ import ApplicationState                         from 'g3w-state';
 import { IframeApp }                            from 'g3w-iframe';
 import MapControl                               from 'g3w-control';
 
+//@since 4.1.0 Map controls
+import addlayer                                 from 'controls/addlayer';
+import annotation                               from 'controls/annotation';
+import geocoding                                from 'controls/geocoding';
+import geolocation                              from 'controls/geolocation';
+import measure                                  from 'controls/measure';
+import mouseposition                            from 'controls/mouseposition';
+import overview                                 from 'controls/overview';
+import query                                    from 'controls/query';
+import queryby                                  from 'controls/queryby';
+import scale                                    from 'controls/scale';
+import scaleline                                from 'controls/scaleline';
+import screenshot                               from 'controls/screenshot';
+import streetview                               from 'controls/streetview';
+import zoom                                     from 'controls/zoom';
+import zoombox                                  from 'controls/zoombox';
+import zoomhistory                              from 'controls/zoomhistory';
+import zoomtoextent                             from 'controls/zoomtoextent';
+
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { toRawType }                            from 'utils/toRawType';
 import { getListableProjects }                  from 'utils/getListableProjects';
@@ -150,7 +169,25 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  setupControl = {};
+  setupControl = {
+    ...addlayer,
+    ...annotation,
+    ...geocoding,
+    ...geolocation,
+    ...measure,
+    ...mouseposition,
+    ...overview,
+    ...query,
+    ...queryby,
+    ...scale,
+    ...scaleline,
+    ...screenshot,
+    ...streetview,
+    ...zoom,
+    ...zoombox,
+    ...zoomhistory,
+    ...zoomtoextent
+  };
 
   /** @since 4.1.0 */
   get config() {
@@ -757,25 +794,6 @@ export default new (class GUI extends Emitter {
       contentsdata:           ApplicationState.contentsdata,
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     });
-
-    require('controls/addlayer');
-    require('controls/annotation');
-    require('controls/attribution');
-    require('controls/geocoding');
-    require('controls/geolocation');
-    require('controls/measure');
-    require('controls/mouseposition');
-    require('controls/overview');
-    require('controls/query');
-    require('controls/queryby');
-    require('controls/scale');
-    require('controls/scaleline');
-    require('controls/screenshot');
-    require('controls/streetview');
-    require('controls/zoom');
-    require('controls/zoombox');
-    require('controls/zoomhistory');
-    require('controls/zoomtoextent');
 
     // base layer
     ApplicationState.project.onafter('setBaseLayer', () => {
@@ -5054,7 +5072,33 @@ export default new (class GUI extends Emitter {
 
     this.emit('after:setupControls');
 
-    // this.emit('ready');
+    /** 
+     * ORIGINAL SOURCE: src/controls/attribution.js@v4.0.0
+     * @since 4.1.0 - set map attribution 
+     * **/
+
+    const {
+      header_terms_of_use_text: text,
+      header_terms_of_use_link: link
+    } = this.config;
+
+    // set layers attribution
+    const attribution = text
+      ? link
+        ? `<a href="${link}">${text}</a>`
+        : `<span class="skin-color" style="font-weight: bold">${text}</span>`
+      : false;
+
+    this.getMapLayers().forEach(l => l.getSource().setAttributions(attribution));
+
+    const has_baselayer = attribution || Object.values(ApplicationState.layers)
+      .flatMap(s => s.isQueryable() ? s.getLayers() : [])
+      .filter(l => l.isGeoLayer() && l.isBaseLayer()).length;
+
+    // check if a base layer is set. If true, add attribution control
+    if (has_baselayer) {
+      this.viewer.map.addControl(new ol.control.Attribution({ collapsible: false, target: 'map_footer_left' }));
+    }
 
     this.emit('after:setupViewer');
   }

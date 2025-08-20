@@ -9,8 +9,7 @@ import { saveBlob }     from 'utils/saveBlob';
 import { sameOrigin }   from 'utils/sameOrigin';
 import MapControl       from 'g3w-control';
 
-// wait for map ready
-GUI.setupControl.screenshot = GUI.setupControl.geoscreenshot = function() {
+function s() {
   if (isMobile.any) {
     return;
   }
@@ -29,6 +28,11 @@ GUI.setupControl.screenshot = GUI.setupControl.geoscreenshot = function() {
       }
     });
 };
+// wait for map ready
+export default {
+  screenshot: s,
+  geoscreenshot: s
+}; 
 
 /**
  * @FIXME prevent tainted canvas error
