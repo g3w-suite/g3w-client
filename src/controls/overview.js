@@ -15,7 +15,6 @@ import { Layer }                 from 'g3w-layer';
 import ApplicationState          from 'g3w-state';
 import { normalizeEpsg }         from 'utils/normalizeEpsg';
 import { XHR }                   from 'utils/XHR';
-import { getUniqueDomId }        from 'utils/getUniqueDomId';
 
 Object
   .entries({
