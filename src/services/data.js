@@ -252,11 +252,12 @@ export default {
     const counts     = [];
     const page_sizes = []; //set pages based on count feature returned by server
     const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
+    const layers     = []; //@since 4.0.1 need to add layers that has at least one feature to show on query result
     return {
       data: (await Promise.allSettled(
         [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status)
+        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features?.length > 0) //@since 4.0.1 check length features
         .map(({ value } = {}) => {
           //@since 3.11.0 In case autofilter set
           if (1 === params.autofilter) {
@@ -271,13 +272,16 @@ export default {
 
           if (params.page_sizes)  {
             const features = (value.data || [])[0].features;
+            //@since 4.0.1 get project layer
+            const layer    = (value.data || [])[0].layer;
             //get max number of elements per page
-            const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
+            const max      = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
             //Check if count (total number of elements of search is more o less than max)
             page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             //add a count element on counts array
             counts.push(value.count);
             paginate.push(features && value.count > features.length);
+            layers.push(layer);
           }
           if (params.raw)                                         { return { data: value }; }
           if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
@@ -296,9 +300,10 @@ export default {
           paginate,
           //Object contains info for do another request by another part of code
           getData: {
-            params: params.filter.map(filter => ({ ...params, filter })),
+            //@since 4.0.1 need
+            params: params.filter.slice(0, layers.length).map(filter => ({ ...params, filter })),
             method: 'searchFeatures',
-            layers: [].concat(layer)
+            layers: [].concat(layers)
           }
         },
       },
