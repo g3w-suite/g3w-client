@@ -2557,7 +2557,6 @@ export class Layer extends Emitter {
    * @since 4.0.0
    */
   setVisible(bool) {
-    this.getOLLayer()?.setVisible?.(bool);
     const visible  = this.state.visible;
     this.state.visible = bool && this.isChecked();
     // emit 'change' event

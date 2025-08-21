@@ -4932,14 +4932,6 @@ export default new (class GUI extends Emitter {
           mapLayer.addLayer(l, 'start');
           if (!this.#layers.index[id]) {
             this.#layers.index[id] = mapLayer;
-            mapLayer.on('loadstart', this.onLayerLoadStart);
-            mapLayer.on('loadend',   this.onLayerLoadEnd);
-            mapLayer.on('loaderror', this.onLayerLoadError);
-            // listen change filter token
-            mapLayer?.layers?.forEach?.(l => {
-              l.onbefore('change',      () => this.updateMapLayer(mapLayer, { force: true }));
-              l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(mapLayer, { force: true, layerId })  })
-            });
             this.#layers.g3w.unshift(mapLayer);
             groups[1].unshift(mapLayer);
           }
@@ -4957,6 +4949,14 @@ export default new (class GUI extends Emitter {
       ])
       .flatMap(g => g)
       .forEach(l => {
+        l.on('loadstart', this.onLayerLoadStart);
+        l.on('loadend',   this.onLayerLoadEnd);
+        l.on('loaderror', this.onLayerLoadError);
+        // listen change filter token
+        l?.allLayers?.forEach?.(_l => {
+          _l.onbefore('change',      () => this.updateMapLayer(l, { force: true }));
+          _l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(l, { force: true, layerId })  })
+        });
         if (l instanceof ol.layer.Layer) {
           this.getMap().addLayer(l);
           return;
