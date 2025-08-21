@@ -5583,7 +5583,7 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/data.js@v4.0.0
    * 
-   * @private invoked by `getData`
+   * @private invoked by `getData('query:coordinates')`
    */
   async 'getData/query:coordinates'({
     coordinates,
@@ -5665,7 +5665,7 @@ export default new (class GUI extends Emitter {
    * @param addExternal
    * @param layersFilterObject
    * 
-   * @private invoked by `getData`
+   * @private invoked by `getData('query:bbox')`
    */
   async 'getData/query:bbox'({
     bbox,
@@ -5740,7 +5740,7 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/data.js@v4.0.0
    * 
-   * @private invoked by `getData`
+   * @private invoked by `getData('query:polygon')`
    */
   async 'getData/query:polygon'({
     feature,
@@ -5842,7 +5842,7 @@ export default new (class GUI extends Emitter {
    * @param options.ordering
    * @param options.autofilter since 3.11.0
    * 
-   * @private invoked by `getData`
+   * @private invoked by `getData('search:features')`
    */
   async 'getData/search:features'(options = {
     layer,
@@ -5927,7 +5927,7 @@ export default new (class GUI extends Emitter {
    * @param opts.formatter
    * @param opts.fids
    * 
-   * @private invoked by `getData`
+   * @private invoked by `getData('search:fids')`
    */
   async 'getData/search:fids'({
     layer,
