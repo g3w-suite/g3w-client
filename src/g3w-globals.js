@@ -118,6 +118,8 @@ const Fields                      = require('gui/fields/fields');
  * 
  * @see https://github.com/g3w-suite/g3w-client/issues/71
  * @see https://github.com/g3w-suite/g3w-client/issues/46
+ * 
+ * @global g3w
  */
 globalThis.g3w = {
   Emitter,
@@ -135,6 +137,8 @@ globalThis.g3w = {
  * Legacy API (v3.x)
  * 
  * @deprecated since 4.0.0 - whenever applicable, please prefer the `g3w` variable instead (ie. within your plugins).
+ * 
+ * @global g3wsdk
  */
 globalThis.g3wsdk = {
 
