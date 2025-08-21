@@ -3,19 +3,18 @@
  * @since 4.1.0
  */
 
-import {
-  GEOMETRY_TYPES,
-  SPATIAL_METHODS
-}                                 from 'g3w-constants';
-import GUI                        from 'g3w-app';
+const { GEOMETRY_TYPES, SPATIAL_METHODS } = g3w.constants;
+const ApplicationState                    = g3w.state;
+const GUI                                 = g3w.app;
+const MapControl                          = g3w.Control;
+const {
+  getCatalogLayerById,
+  PickCoordinatesInteraction,
+  throttle,
+} = g3w.utils;
 
-import ApplicationState           from 'g3w-state'
-import MapControl                 from 'g3w-control';
-import PickCoordinatesInteraction from 'interactions/pick-coordinates';
-import { throttle }               from 'utils/throttle';
-import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
-
-function _q() {
+// wait for map ready
+GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.querybycircle = GUI.setupControl.querybydrawpolygon = GUI.setupControl.querybyfreehand = function() {
   if (isMobile.any) {
     return;
   }
@@ -29,14 +28,6 @@ function _q() {
         GUI.addControl('queryby', new QueryBy({ types: [type] }));
       }
     });
-};
-
-export default {
-  querybypolygon: _q, 
-  querybbox: _q, 
-  querybycircle: _q, 
-  querybydrawpolygon: _q, 
-  querybyfreehand: _q, 
 };
 
 const POLYGON_TYPES = [

@@ -3,24 +3,24 @@
  * @since 4.1.0
  */
 
-import ApplicationState           from 'g3w-state';
-import GUI                        from 'g3w-app';
-import MapControl                 from 'g3w-control';
-import { saveBlob }               from 'utils/saveBlob';
-import { createMeasureTooltip }   from 'utils/createMeasureTooltip';
-import { get_formatted_area }     from 'utils/createMeasureTooltip';
-import { get_formatted_length }   from 'utils/createMeasureTooltip';
-import { get_formatted_radius }   from 'utils/createMeasureTooltip';
-import { get_formatted_angle }    from 'utils/createMeasureTooltip';
-import { idb }                    from 'utils/idb';
+const ApplicationState = g3w.state;
+const GUI              = g3w.app;
+const idb              = g3w.idb;
+const MapControl       = g3w.Control;
+const {
+  createMeasureTooltip,
+  get_formatted_area,
+  get_formatted_length,
+  get_formatted_radius,
+  get_formatted_angle,
+  saveBlob,
+} = g3w.utils;
 
 // wait for map ready
-export default { 
-  async annotation() {
-    GUI.addControl('annotation', new AnnotationControl({
-      features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
-    }));
-  }
+GUI.setupControl.annotation = async function() {
+  GUI.addControl('annotation', new AnnotationControl({
+    features: (await idb.getItem('annotations'))?.[ApplicationState.project.state.id]?.features || []
+  }));
 };
 
 class AnnotationControl extends MapControl {

@@ -3,13 +3,16 @@
  * @since 4.1.0
  */
 
-import ApplicationState from 'g3w-state';
-import GUI              from 'g3w-app';
-import { saveBlob }     from 'utils/saveBlob';
-import { sameOrigin }   from 'utils/sameOrigin';
-import MapControl       from 'g3w-control';
+const ApplicationState = g3w.state;
+const GUI              = g3w.app;
+const MapControl       = g3w.Control;
+const {
+  saveBlob,
+  sameOrigin,
+} = g3w.utils;
 
-function s() {
+// wait for map ready
+GUI.setupControl.screenshot = GUI.setupControl.geoscreenshot = function() {
   if (isMobile.any) {
     return;
   }
@@ -28,11 +31,6 @@ function s() {
       }
     });
 };
-// wait for map ready
-export default {
-  screenshot: s,
-  geoscreenshot: s
-}; 
 
 /**
  * @FIXME prevent tainted canvas error

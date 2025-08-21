@@ -3,20 +3,22 @@
  * @since 4.1.0
  */
 
-import GUI                        from 'g3w-app';
-import { PRINT_SCALES }           from 'g3w-constants';
-import { getResolutionFromScale } from 'utils/getResolutionFromScale';
-import { getScaleFromResolution } from 'utils/getScaleFromResolution';
-import { gettext as _ }           from 'g3w-i18n';
+const { PRINT_SCALES } = g3w.constants;
+const GUI              = g3w.app;
+const _                = g3w.gettext;
+const {
+  getResolutionFromScale,
+  getScaleFromResolution,
+} = g3w.utils;
 
-export default {
-  scale() {
-    GUI.addControl('scale', new ScaleControl({
-      coordinateFormat: ol.coordinate.createStringXY(4),
-      projection:       GUI.getCrs(),
-      isMobile:         isMobile.any
-    }), false);
-  }
+
+// wait for map ready
+GUI.setupControl.scale = function() {
+  GUI.addControl('scale', new ScaleControl({
+    coordinateFormat: ol.coordinate.createStringXY(4),
+    projection:       GUI.getCrs(),
+    isMobile:         isMobile.any
+  }), false);
 };
 
 class ScaleControl extends ol.control.Control {

@@ -9,15 +9,18 @@
  * @since 4.1.0
  */
 
-import GUI                            from 'g3w-app';
-import ApplicationState               from 'g3w-state';
-import { getUniqueDomId }             from 'utils/getUniqueDomId';
-import { flattenObject }              from 'utils/flattenObject';
-import { addZValue }                  from 'utils/addZValue';
-import { convertSingleMultiGeometry } from 'utils/convertSingleMultiGeometry';
-import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
-import { debounce }                   from 'utils/debounce';
-import { gettext as _ }               from 'g3w-i18n';
+const ApplicationState = g3w.state;
+const GUI              = g3w.app;
+const _                = g3w.gettext;
+const {
+  getUniqueDomId,
+  flattenObject,
+  addZValue,
+  convertSingleMultiGeometry,
+  getCatalogLayerById,
+  debounce,
+} = g3w.utils;
+
 
 /**
  * Provider definitions.
@@ -57,10 +60,8 @@ Object
   });
 
 // wait for map ready
-export default {
-  geocoding() {
-    GUI.addControl('geocoding', new GeocodingControl(), false);
-  }
+GUI.setupControl.geocoding = function() {
+  GUI.addControl('geocoding', new GeocodingControl(), false);
 };
 
 class GeocodingControl extends ol.control.Control {

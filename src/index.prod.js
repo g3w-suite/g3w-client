@@ -693,6 +693,27 @@ $.ajaxSetup({
 
   await new Promise(resolve => new Vue({ el: '#app', mounted: resolve }));
 
+  await Promise.all([
+    'addlayer',
+    'annotation',
+    'attribution',
+    'geocoding',
+    'geolocation',
+    'measure',
+    'mouseposition',
+    'overview',
+    'query',
+    'queryby',
+    'scale',
+    'scaleline',
+    'screenshot',
+    'streetview',
+    'zoom',
+    'zoombox',
+    'zoomhistory',
+    'zoomtoextent',
+  ].map(type => import(`${initConfig.staticurl}${initConfig.client}map-controls/${type}.js`)));
+
   GUI.ready();
 
   // init plugins

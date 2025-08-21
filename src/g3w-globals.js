@@ -45,12 +45,15 @@ import G3wFormInputs                               from 'components/InputG3WForm
  * CORE modules
  */
 import GUI                                         from 'g3w-app';
-import { MeasureInteraction }                      from 'controls/measure';
 
 //MIXINS
 import Mixins                                      from 'mixins';
 
 import { createMeasureTooltip, removeMeasureTooltip } from 'utils/createMeasureTooltip';
+import { get_formatted_area }                         from 'utils/createMeasureTooltip';
+import { get_formatted_length }                       from 'utils/createMeasureTooltip';
+import { get_formatted_radius }                       from 'utils/createMeasureTooltip';
+import { get_formatted_angle }                        from 'utils/createMeasureTooltip';
 import { getResolutionFromScale }                     from 'utils/getResolutionFromScale';
 import { getScaleFromResolution }                     from 'utils/getScaleFromResolution';
 
@@ -73,9 +76,14 @@ import { createFilterFormInputs }                  from 'utils/createFilterFormI
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 import { cloneDeep }                               from 'utils/cloneDeep';
+import { saveBlob }                                from 'utils/saveBlob';
+import { flattenObject }                           from 'utils/flattenObject';
+import { normalizeEpsg }                           from 'utils/normalizeEpsg';
+import { sameOrigin }                              from 'utils/sameOrigin';
 
 import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
+import MapControl                                  from 'g3w-control';
 import { SearchPanel }                             from 'components/g3w-search';
 import { FormComponent, FormService }              from 'components/g3w-form';
 
@@ -127,10 +135,33 @@ globalThis.g3w = {
   Panel,
   Plugin,
   Layer,
+  Control: MapControl,
   app: GUI,
   idb,
   state: ApplicationState,
   gettext: _,
+  constants: G3W_CONSTANT,
+  utils: {
+    createMeasureTooltip,
+    get_formatted_area,
+    get_formatted_length,
+    get_formatted_radius,
+    get_formatted_angle,
+    saveBlob,
+    getUniqueDomId,
+    flattenObject,
+    addZValue,
+    convertSingleMultiGeometry,
+    getCatalogLayerById,
+    debounce,
+    throttle,
+    XHR,
+    normalizeEpsg,
+    PickCoordinatesInteraction,
+    getResolutionFromScale,
+    getScaleFromResolution,
+    sameOrigin
+  },
 };
 
 /**
@@ -378,9 +409,6 @@ ${Object.entries(ApplicationState.pluginsConfigs).map((p) => (`    - ${p[0]}: __
 
 // BACKCOMP v3.x
 g3wsdk.core.geometry                             = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };
-g3wsdk.ol.interactions.measure                   = {};
-g3wsdk.ol.interactions.measure.AreaInteraction   = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "Polygon"; super(opts); } },
-g3wsdk.ol.interactions.measure.LengthInteraction = class extends MeasureInteraction { constructor(opts = {}) { opts.geometryType = "LineString"; super(opts); } },
 
 /** used by the following plugins: "qprocessing" */
 g3wsdk.core.geoutils.isSameBaseGeometryType         = (a, b) => a.replace('Multi','') === b.replace('Multi','');

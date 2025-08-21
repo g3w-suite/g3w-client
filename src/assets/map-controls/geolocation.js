@@ -3,16 +3,14 @@
  * @since 4.1.0
  */
 
-import GUI          from 'g3w-app';
-import MapControl   from 'g3w-control';
-import { throttle } from 'utils/throttle';
+const GUI          = g3w.app;
+const MapControl   = g3w.Control;
+const { throttle } = g3w.utils;
 
 // wait for map ready
-export default {
-  geolocation() {
-    GUI.addControl('geolocation', new GeolocationControl());
-    GUI.getMapControlByType('geolocation').on('click', throttle(e => GUI.showMarker(e.coordinates)));
-  }
+GUI.setupControl.geolocation = function() {
+  GUI.addControl('geolocation', new GeolocationControl());
+  GUI.getMapControlByType('geolocation').on('click', throttle(e => GUI.showMarker(e.coordinates)));
 };
 
 class GeolocationControl extends MapControl {

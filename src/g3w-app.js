@@ -17,7 +17,6 @@ import { gettext as _ }                         from 'g3w-i18n';
 import ApplicationState                         from 'g3w-state';
 import { IframeApp }                            from 'g3w-iframe';
 import MapControl                               from 'g3w-control';
-import setupControl                             from 'controls';
 
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { toRawType }                            from 'utils/toRawType';
@@ -74,6 +73,8 @@ const _MAP = {
 const ACTIONS = {};
 
 export default new (class GUI extends Emitter {
+
+  setupControl = {};
 
   /** store sidebar components (left menu) */
   #COMPONENTS = {};
@@ -751,6 +752,25 @@ export default new (class GUI extends Emitter {
       contentsdata:           ApplicationState.contentsdata,
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     });
+
+    // require('assets/controls/addlayer');
+    // require('assets/controls/annotation');
+    // require('assets/controls/attribution');
+    // require('assets/controls/geocoding');
+    // require('assets/controls/geolocation');
+    // require('assets/controls/measure');
+    // require('assets/controls/mouseposition');
+    // require('assets/controls/overview');
+    // require('assets/controls/query');
+    // require('assets/controls/queryby');
+    // require('assets/controls/scale');
+    // require('assets/controls/scaleline');
+    // require('assets/controls/screenshot');
+    // require('assets/controls/streetview');
+    // require('assets/controls/zoom');
+    // require('assets/controls/zoombox');
+    // require('assets/controls/zoomhistory');
+    // require('assets/controls/zoomtoextent');
 
     // base layer
     ApplicationState.project.onafter('setBaseLayer', () => {
@@ -5021,7 +5041,7 @@ export default new (class GUI extends Emitter {
 
     for (const type of Object.keys(this?.config?.mapcontrols || {})) {
       try {
-        await setupControl(type); // TODO: make use dynamic of imports instead of firing a custom event 
+        await this.setupControl[type](); // TODO: make use dynamic of imports instead of firing a custom event 
       } catch (e) {
         console.warn(e);
       }
@@ -5029,33 +5049,7 @@ export default new (class GUI extends Emitter {
 
     this.emit('after:setupControls');
 
-    /** 
-     * ORIGINAL SOURCE: src/controls/attribution.js@v4.0.0
-     * @since 4.1.0 - set map attribution 
-     * **/
-
-    const {
-      header_terms_of_use_text: text,
-      header_terms_of_use_link: link
-    } = this.config;
-
-    // set layers attribution
-    const attribution = text
-      ? link
-        ? `<a href="${link}">${text}</a>`
-        : `<span class="skin-color" style="font-weight: bold">${text}</span>`
-      : false;
-
-    this.getMapLayers().forEach(l => l.getOLLayer().getSource().setAttributions(attribution));
-
-    const has_baselayer = attribution || Object.values(ApplicationState.layers)
-      .flatMap(s => s.isQueryable() ? s.getLayers() : [])
-      .filter(l => l.isGeoLayer() && l.isBaseLayer()).length;
-
-    // check if a base layer is set. If true, add attribution control
-    if (has_baselayer) {
-      this.viewer.map.addControl(new ol.control.Attribution({ collapsible: false, target: 'map_footer_left' }));
-    }
+    // this.emit('ready');
 
     this.emit('after:setupViewer');
   }

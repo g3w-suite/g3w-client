@@ -3,12 +3,13 @@
  * @since 4.1.0
  */
 
-import GUI                         from 'g3w-app';
-import MapControl                  from 'g3w-control';
-import { createMeasureTooltip }    from 'utils/createMeasureTooltip';
-import { gettext as _ }            from 'g3w-i18n';
+const GUI                      = g3w.app;
+const _                        = g3w.gettext;
+const MapControl               = g3w.Control;
+const { createMeasureTooltip } = g3w.utils;
 
-function measure() {
+// wait for map ready
+GUI.setupControl.length = GUI.setupControl.area = function() {
   Object
     .keys(window.initConfig.mapcontrols)
     .filter(type => ['length', 'area'].includes(type))
@@ -31,13 +32,8 @@ function measure() {
       }
     });
 };
-// wait for map ready
-export default {
-  length: measure,
-  area:   measure,
-};
 
-export class MeasureInteraction extends ol.interaction.Draw {
+class MeasureInteraction extends ol.interaction.Draw {
 
   constructor(opts) {
     const measureStyle     = new ol.style.Style({

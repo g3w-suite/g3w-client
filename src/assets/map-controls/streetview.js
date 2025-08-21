@@ -3,18 +3,18 @@
  * @since 4.1.0
  */
 
-import { gettext as _ }           from 'g3w-i18n';
-import ApplicationState           from 'g3w-state';
-import GUI                        from 'g3w-app';
-import { XHR }                    from 'utils/XHR';
-import MapControl                 from 'g3w-control';
-import PickCoordinatesInteraction from 'interactions/pick-coordinates';
+const ApplicationState = g3w.state;
+const GUI              = g3w.app;
+const _                = g3w.gettext;
+const MapControl       = g3w.Control;
+const {
+  XHR,
+  PickCoordinatesInteraction,
+} = g3w.utils;
 
 // wait for map ready
-export default {
-  streetview() {
-    GUI.addControl('streetview', new StreetViewControl());
-  }
+GUI.setupControl.streetview = function() {
+  GUI.addControl('streetview', new StreetViewControl());
 };
 
 class StreetViewControl extends MapControl {
