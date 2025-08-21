@@ -3229,7 +3229,7 @@ export class Layer extends Emitter {
         projection = this.state.url && this.projection ? this.projection : this.layer.getProjection();
       } else {
         this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
-        projection = ApplicationState.projections.get(this.state.crs.epsg);
+        projection = ApplicationState.projections.get(this.state.crs);
       }
 
       olLayer = new ol.layer.Tile({
