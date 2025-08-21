@@ -3096,16 +3096,23 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   update(mapState = {}, params = {}) {
-    // check which layers have to be disabled
-    this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
-    // get visible layers
-    const layers = this.layers.filter(l => l.isVisible());
+    
+    /** @FIXME add description */
+    if (this.isBaseLayer()) {
+      this.getOLLayer().setVisible(this.state.visible);
+      return;
+    }
 
     /** @FIXME add description */
     if (this.isXYZ()) {
       this.getOLLayer().setVisible(this.layer.isVisible());
       return;
     }
+
+    // check which layers have to be disabled
+    this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
+    // get visible layers
+    const layers = this.layers.filter(l => l.isVisible());
 
     // skip when ..
     if (this.isMulti() && layers.length <= 0) {

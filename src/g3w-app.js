@@ -753,11 +753,6 @@ export default new (class GUI extends Emitter {
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     });
 
-    // base layer
-    ApplicationState.project.onafter('setBaseLayer', () => {
-      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
-    });
-
     /** @since 3.8.0 */
     this.onbefore('offline', () => _MAP.offlineids.forEach(c => { c.enable = _MAP.controls[c.id].getEnable(); _MAP.controls[c.id].setEnable(false); }));
 
@@ -4931,6 +4926,9 @@ export default new (class GUI extends Emitter {
           const mapLayer = this.#layers.index[id] || new g3w.Layer(l);
           mapLayer.addLayer(l, 'start');
           if (!this.#layers.index[id]) {
+            mapLayer.on('loadstart', this.onLayerLoadStart);
+            mapLayer.on('loadend',   this.onLayerLoadEnd);
+            mapLayer.on('loaderror', this.onLayerLoadError);
             this.#layers.index[id] = mapLayer;
             this.#layers.g3w.unshift(mapLayer);
             groups[1].unshift(mapLayer);
@@ -4949,18 +4947,18 @@ export default new (class GUI extends Emitter {
       ])
       .flatMap(g => g)
       .forEach(l => {
-        l.on('loadstart', this.onLayerLoadStart);
-        l.on('loadend',   this.onLayerLoadEnd);
-        l.on('loaderror', this.onLayerLoadError);
-        // listen change filter token
-        l?.allLayers?.forEach?.(_l => {
-          _l.onbefore('change',      () => this.updateMapLayer(l, { force: true }));
-          _l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(l, { force: true, layerId })  })
-        });
         if (l instanceof ol.layer.Layer) {
           this.getMap().addLayer(l);
           return;
         }
+        if (l.isBaseLayer()) {
+          l.onbefore('change', () => this.updateMapLayer(l, {}));
+        }
+         // listen change filter token
+        l?.allLayers?.forEach?.(_l => {
+          _l.onbefore('change',      () => this.updateMapLayer(l, { force: true }));
+          _l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(l, { force: true, layerId })  })
+        });
         const olLayer = l.getOLLayer();
         if (olLayer) {
           this.getMap().addLayer(olLayer);
