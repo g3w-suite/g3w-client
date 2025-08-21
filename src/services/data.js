@@ -253,9 +253,13 @@ export default {
     const page_sizes = []; //set pages based on count feature returned by server
     const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
     const layers     = []; //@since 4.0.1 need to add layers that has at least one feature to show on query result
+    //@since 4.0.1 need to get project layers id order as on TOC. results thake in aoccount this order
+    const layersId   = [];
+    const traverse = tree => (tree.nodes || [tree]).forEach(n => { if (n.id) { layersId.push(n.id) } else { traverse(n) } });
+    ApplicationState.project.state.layerstree.forEach(traverse);
     return {
       data: (await Promise.allSettled(
-        [].concat(layer).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
+        [].concat(layer).sort((a,b) => (layersId.indexOf(a.id) > layersId.indexOf(b.id) ? 1 : -1)).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features?.length > 0) //@since 4.0.1 check length features
         .map(({ value } = {}) => {
