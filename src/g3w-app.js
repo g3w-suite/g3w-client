@@ -23,7 +23,7 @@ import { toRawType }                            from 'utils/toRawType';
 import { getListableProjects }                  from 'utils/getListableProjects';
 import { getProjectUrl }                        from 'utils/getProjectUrl';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
-import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
+import { getAlphanumericProps }                 from 'utils/getAlphanumericProps';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { saveBlob }                             from 'utils/saveBlob';
@@ -2024,7 +2024,7 @@ export default new (class GUI extends Emitter {
     
         // Parse attributes to show on a result based on field
     
-        let attrs = !attributes && getAlphanumericPropertiesFromFeature(
+        let attrs = !attributes && getAlphanumericProps(
           Object.keys(features[0] instanceof ol.Feature ? features[0].getProperties() : features[0].properties)
         );
     

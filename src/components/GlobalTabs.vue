@@ -77,14 +77,14 @@
 
 <script>
 
-  import ApplicationState                            from 'g3w-state';
-  import { G3W_FID }                                 from 'g3w-constants';
-  import Node                                        from 'components/GlobalTabsNode.vue';
-  import GUI                                         from 'g3w-app';
-  import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
-  import { getUniqueDomId }                          from 'utils/getUniqueDomId';
-  import { noop }                                    from 'utils/noop';
-  import { XHR }                                     from 'utils/XHR';
+  import ApplicationState         from 'g3w-state';
+  import { G3W_FID }              from 'g3w-constants';
+  import Node                     from 'components/GlobalTabsNode.vue';
+  import GUI                      from 'g3w-app';
+  import { getAlphanumericProps } from 'utils/getAlphanumericProps';
+  import { getUniqueDomId }       from 'utils/getUniqueDomId';
+  import { noop }                 from 'utils/noop';
+  import { XHR }                  from 'utils/XHR';
 
   /**
    * Convert feature to form Data for expression/expression_eval request
@@ -98,7 +98,7 @@
       _feature   = new ol.Feature(feature.geometry);
       const properties = {};
 
-      getAlphanumericPropertiesFromFeature(feature.attributes)
+      getAlphanumericProps(feature.attributes)
         .filter(p => G3W_FID !== p)
         .forEach(p => properties[p] = feature.attributes[p]);
       _feature.setProperties(properties);

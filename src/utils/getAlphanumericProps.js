@@ -5,6 +5,6 @@ import { GEOMETRY_FIELDS } from 'g3w-constants';
  * 
  * @returns { Array }
  */
-export function getAlphanumericPropertiesFromFeature(properties = []) {
+export function getAlphanumericProps(properties = []) {
   return (Array.isArray(properties) ? properties : Object.keys(properties)).filter(p => !GEOMETRY_FIELDS.includes(p));
 }

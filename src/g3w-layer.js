@@ -34,7 +34,6 @@ import { groupBy }                from 'utils/groupBy';
 import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
-import { reverseGeometry }        from 'utils/reverseGeometry';
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
 
 /**
@@ -3738,7 +3737,11 @@ Layer._parse = function(type, params, opts) {
           // inverted axis --> reverse features coordinates
           if ('ne' === (projections.layer || projections.map).getAxisOrientation().substr(0, 2)) {
             //filter feature with geometry
-            feats.filter(f => f.getGeometry()).forEach(f => f.setGeometry(reverseGeometry(f.getGeometry())));
+            feats.filter(f => f.getGeometry()).forEach(f => {
+              const geom = f.getGeometry();
+              geom.setCoordinates(_reverseCoords(geom.getCoordinates()))
+              f.setGeometry(geom);
+            });
           }
 
           // remove Z values added by "ol.format.WMSGetFeatureInfo" readFeatures
@@ -3775,3 +3778,14 @@ Layer._parse = function(type, params, opts) {
 
   return (params?.layers || []).map(layer => ({ layer, rawdata: _('Not supported format') }));
 };
+
+function _reverseCoords(coords) {
+  coords.find(c => {
+    if (!Array.isArray(c)) {
+      const [y, x] = coords; coords[0] = x; coords[1] = y;
+      return true;
+    }
+    _reverseCoords(c);
+  });
+  return coords;
+}

@@ -22,10 +22,10 @@
 </template>
 
 <script>
-import GUI                                      from 'g3w-app';
-import { Layer }                                from 'g3w-layer';
-import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
-import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
+import GUI                      from 'g3w-app';
+import { Layer }                from 'g3w-layer';
+import { getAlphanumericProps } from 'utils/getAlphanumericProps';
+import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
 
 export default {
   name: 'Infoformats',
@@ -109,7 +109,7 @@ export default {
           this.layer.hasgeometry = !!geometry;
           // need to setActionsForLayers to visualize eventual actions
           GUI.setActionsForLayers([this.layer]);
-          getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
+          getAlphanumericProps(attributes).forEach(name =>{
             this.layer.attributes.push({
               name,
               label:name,

@@ -12,14 +12,13 @@ import ApplicationState                            from 'g3w-state';
 import { addZValue }                               from 'utils/addZValue';
 import { is3DGeometry }                            from 'utils/is3DGeometry';
 import { removeZValue }                            from 'utils/removeZValue';
-import { getOLGeometry }                           from 'utils/getOLGeometry';
 import { isMultiGeometry }                         from 'utils/isMultiGeometry';
 import { isPointGeometryType }                     from 'utils/isPointGeometryType';
 import { isLineGeometryType }                      from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }                   from 'utils/isPolygonGeometryType';
 import { createVectorLayerFromFile }               from 'utils/createVectorLayerFromFile';
 import { createSelectedStyle }                     from 'utils/createSelectedStyle';
-import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
+import { getAlphanumericProps }                    from 'utils/getAlphanumericProps';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
@@ -196,7 +195,7 @@ globalThis.g3wsdk = {
     geoutils: {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       createSelectedStyle,
-      getAlphanumericPropertiesFromFeature,
+      getAlphanumericPropertiesFromFeature: getAlphanumericProps,
       getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
       areCoordinatesEqual,
       splitFeature,
@@ -209,7 +208,17 @@ globalThis.g3wsdk = {
         GeometryTypes:                   G3W_CONSTANT.GEOMETRY_TYPES,
         removeZValueToOLFeatureGeometry: removeZValue,
         addZValueToOLFeatureGeometry:    addZValue,
-        getOLGeometry,
+        /** used by the following plugins: "archiweb" */
+        getOLGeometry(geom) {
+          if (geom.startsWith('Line'))         { return 'LineString'; }
+          if (geom.startsWith('MultiLine'))    { return 'MultiLineString'; }
+          if (geom.startsWith('Point'))        { return 'Point'; }
+          if (geom.startsWith('MultiPoint'))   { return 'MultiPoint'; }
+          if (geom.startsWith('Polygon'))      { return 'Polygon'; }
+          if (geom.startsWith('MultiPolygon')) { return 'MultiPolygon'; }
+          console.warn('invalid geometry type: ', geom);
+          return geom;
+        },
         isMultiGeometry,
         isPointGeometryType,
         isLineGeometryType,

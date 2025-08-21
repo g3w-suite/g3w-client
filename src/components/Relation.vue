@@ -183,18 +183,18 @@
 
 <script>
 
-  import { G3W_FID, PAGELENGTHS, TIMEOUT }        from 'g3w-constants';
-  import ApplicationState                         from 'g3w-state';
-  import Component                                from 'g3w-component';
-  import Field                                    from 'components/FieldG3W.vue';
-  import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
-  import GUI                                      from 'g3w-app';
-  import { throttle }                             from 'utils/throttle';
-  import { debounce }                             from 'utils/debounce';
-  import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
-  import { createRelationsUrl }                   from 'utils/createRelationsUrl';
-  import { getAlphanumericPropertiesFromFeature } from 'utils/getAlphanumericPropertiesFromFeature';
-  import { saveBlob }                             from 'utils/saveBlob';
+  import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
+  import ApplicationState                  from 'g3w-state';
+  import Component                         from 'g3w-component';
+  import Field                             from 'components/FieldG3W.vue';
+  import DownloadFormats                   from 'components/QueryResultsActionDownloadFormats.vue';
+  import GUI                               from 'g3w-app';
+  import { throttle }                      from 'utils/throttle';
+  import { debounce }                      from 'utils/debounce';
+  import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
+  import { createRelationsUrl }            from 'utils/createRelationsUrl';
+  import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
+  import { saveBlob }                      from 'utils/saveBlob';
 
   export default {
 
@@ -361,7 +361,7 @@
             })?.data?.[0]?.features || []).map(f => ({
               id:         f.getId(),
               geometry:   f.getGeometry(),
-              attributes: getAlphanumericPropertiesFromFeature(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
+              attributes: getAlphanumericProps(f.getProperties()).reduce((props, p) => Object.assign(props, { [p]: f.get(p)}), {}),
             }));
           }
 
