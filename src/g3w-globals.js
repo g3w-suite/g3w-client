@@ -49,13 +49,13 @@ import GUI                                         from 'g3w-app';
 //MIXINS
 import Mixins                                      from 'mixins';
 
-import { createMeasureTooltip, removeMeasureTooltip } from 'utils/createMeasureTooltip';
-import { get_formatted_area }                         from 'utils/createMeasureTooltip';
-import { get_formatted_length }                       from 'utils/createMeasureTooltip';
-import { get_formatted_radius }                       from 'utils/createMeasureTooltip';
-import { get_formatted_angle }                        from 'utils/createMeasureTooltip';
-import { getResolutionFromScale }                     from 'utils/getResolutionFromScale';
-import { getScaleFromResolution }                     from 'utils/getScaleFromResolution';
+import { createMeasureTooltip }                    from 'utils/createMeasureTooltip';
+import { get_formatted_area }                      from 'utils/createMeasureTooltip';
+import { get_formatted_length }                    from 'utils/createMeasureTooltip';
+import { get_formatted_radius }                    from 'utils/createMeasureTooltip';
+import { get_formatted_angle }                     from 'utils/createMeasureTooltip';
+import { getResolutionFromScale }                  from 'utils/getResolutionFromScale';
+import { getScaleFromResolution }                  from 'utils/getScaleFromResolution';
 
 import Emitter                                     from 'g3w-emitter';
 import Panel                                       from 'g3w-panel';
@@ -257,12 +257,6 @@ globalThis.g3wsdk = {
         getCurrentProject:     () => ApplicationState.project,
       })
     },
-    map: {
-      MapLayersStoreRegistry: Object.assign(new Emitter({ setters: {
-        addLayersStore:          store  => { ApplicationState.layers[store.getId()] = store; },
-        removeLayersStore:       store  => { if (store) { delete ApplicationState.layers[store.getId()]; } },
-      }})),
-    },
     catalog: {
       CatalogLayersStoresRegistry: {
         getLayerById: getCatalogLayerById,
@@ -324,9 +318,11 @@ globalThis.g3wsdk = {
   gui: {
     GUI,
     Panel,
+    /** used by the following plugins: "simplereporting", "arpalombardia-charts", "ws-trento" */
     ComponentsFactory: {
       build: ({ vueComponentObject, service, propsData }, options={}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
     },
+    /** used by the following plugins: "br-service" */
     FieldsService,
     vue: {
       Component,
@@ -377,7 +373,6 @@ globalThis.g3wsdk = {
       getScaleFromResolution,
       getResolutionFromScale,
       createMeasureTooltip,
-      removeMeasureTooltip,
     },
   },
 

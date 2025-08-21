@@ -68,25 +68,6 @@ export function createMeasureTooltip({ map, feature } = {}) {
   };
 }
 
-/**
- * @deprecated use `remove` from `createMeasureTooltip` instead
- * 
- * Remove mesure tootltip
- * 
- * @param { Object } opts
- * @param opts.map
- * @param opts.tooltip
- * @param opts.unByKey 
- */
-export function removeMeasureTooltip({
-  map,
-  tooltip,
-  unbyKey,
-}) {
-  map.removeOverlay(tooltip);
-  ol.Observable.unByKey(unbyKey);
-}
-
 export function get_formatted_area(geom, epsg = ApplicationState.map_epsg, unit = ApplicationState.map_unit) {
   if (!/^Polygon|^MultiPolygon/.test(geom.getType())) {
     return;

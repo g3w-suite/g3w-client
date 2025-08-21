@@ -753,25 +753,6 @@ export default new (class GUI extends Emitter {
       getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
     });
 
-    // require('assets/controls/addlayer');
-    // require('assets/controls/annotation');
-    // require('assets/controls/attribution');
-    // require('assets/controls/geocoding');
-    // require('assets/controls/geolocation');
-    // require('assets/controls/measure');
-    // require('assets/controls/mouseposition');
-    // require('assets/controls/overview');
-    // require('assets/controls/query');
-    // require('assets/controls/queryby');
-    // require('assets/controls/scale');
-    // require('assets/controls/scaleline');
-    // require('assets/controls/screenshot');
-    // require('assets/controls/streetview');
-    // require('assets/controls/zoom');
-    // require('assets/controls/zoombox');
-    // require('assets/controls/zoomhistory');
-    // require('assets/controls/zoomtoextent');
-
     // base layer
     ApplicationState.project.onafter('setBaseLayer', () => {
       this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
@@ -5048,8 +5029,6 @@ export default new (class GUI extends Emitter {
     }
 
     this.emit('after:setupControls');
-
-    // this.emit('ready');
 
     this.emit('after:setupViewer');
   }
