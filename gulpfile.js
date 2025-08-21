@@ -304,12 +304,12 @@ gulp.task('build:app', async function() {
             console.log(GREEN__ + '[client]' + __RESET + ' → ' + Math.round((fs.statSync(`${outputFolder}/static/client/app.min.js`).size + fs.statSync(`${outputFolder}/static/client/vendor.min.js`).size) / 1024)+ 'KB');
 
             // copy assets (fonts and images)
-            copyDir(path.resolve('src/assets'), path.resolve(outputFolder, 'static/client'));
+            copyDir(path.resolve('src/static'), path.resolve(outputFolder, 'static/client'));
             copyDir(path.resolve('node_modules/@fortawesome/fontawesome-free/webfonts'), path.resolve(outputFolder, 'static/client/fonts'));
 
             // compile app.css
             await esbuild.build({
-              entryPoints: [path.resolve('src/assets/app.css')],
+              entryPoints: [path.resolve('src/static/app.css')],
               outfile: path.resolve(outputFolder, 'static/client/app.min.css'),
               minify: true,
               bundle: true,
