@@ -13,43 +13,35 @@ import {
   FONT_AWESOME_ICONS,
   TIMEOUT,
   QUERY_POINT_TOLERANCE,
-}                                  from 'g3w-constants';
+}                         from 'g3w-constants';
 
 // core
-import ApplicationState            from 'g3w-state';
-import Emitter                     from 'g3w-emitter';
-import Panel                       from 'g3w-panel';
-import Component                   from 'g3w-component';
-
-// services
-import GUI                         from 'g3w-app';
+import ApplicationState   from 'g3w-state';
+import Emitter            from 'g3w-emitter';
+import Panel              from 'g3w-panel';
+import Component          from 'g3w-component';
+import GUI                from 'g3w-app';
 
 // components
-import App                         from 'components/App.vue';
-import BarLoader                   from 'components/GlobalBarLoader.vue';
-import Progressbar                 from 'components/GlobalProgressBar.vue';
-import HelpDiv                     from 'components/GlobalHelpDiv.vue';
-import DateTime                    from 'components/GlobalDateTime.vue';
-import Range                       from 'components/GlobalRange.vue';
-import Tabs                        from 'components/GlobalTabs.vue';
-import Divider                     from 'components/GlobalDivider.vue';
+import App                from 'components/App.vue';
+import Tabs               from 'components/GlobalTabs.vue';
 
 // directives
-import vDisabled                   from 'directives/v-disabled';
-import vSelect2                    from 'directives/v-select2';
-import vTToltip                    from 'directives/v-t-tooltip';
-import vT                          from 'directives/v-t';
+import vDisabled          from 'directives/v-disabled';
+import vSelect2           from 'directives/v-select2';
+import vTToltip           from 'directives/v-t-tooltip';
+import vT                 from 'directives/v-t';
 
 // utils
-import { XHR }                     from 'utils/XHR';
-import { normalizeEpsg }           from 'utils/normalizeEpsg';
-import { getUniqueDomId }          from 'utils/getUniqueDomId';
+import { XHR }            from 'utils/XHR';
+import { normalizeEpsg }  from 'utils/normalizeEpsg';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { debounce }       from 'utils/debounce';
 
-import { Layer }                   from 'g3w-layer';
-
+import { Layer }          from 'g3w-layer';
 
 // Internationalization
-import { gettext as _ } from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
@@ -61,29 +53,179 @@ Object
     Component,
     GUI,
     App,
-    BarLoader,
-    Progressbar,
-    HelpDiv,
-    DateTime,
-    Range,
     Tabs,
-    Divider,
     Layer
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 /**
- * Install global components
- *
- * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
+ * @deprecated global `<divider>` component
  */
-Vue.component(BarLoader.name, BarLoader);
-Vue.component(Progressbar.name, Progressbar);
-Vue.component(HelpDiv.name, HelpDiv);
-Vue.component(DateTime.name, DateTime);
-Vue.component(Range.name, Range);
+Vue.component('divider', { template: /* html */`<span class = "divider"></span>` });
+
+/**
+ * @deprecated global `<bar-loader>` component
+ */
+Vue.component('bar-loader', {
+  template: /* html */`
+    <div
+      v-if   = "loading"
+      class  = "bar-loader"
+      style  = "border: 0"
+      :class = "{ color: color ? 'skin-background-color' : null }"
+      :style = "{ backgroundColor: color }">
+    </div>
+  `,
+  props: {
+    loading: { type: Boolean | String, default: false },
+    color:   { type: String, default: null }
+  },
+});
+
+/**
+ * @deprecated global `<progressbar>` component
+ */
+Vue.component('progressbar', {
+  template: /* html */`
+    <div
+      v-if  = "(null !== progress && undefined !== progress)"
+      style = "margin: 5px 0 5px 0; width: 100%; background-color: #FFF; border: 0; border-radius: 3px;"
+    >
+      <div
+        class  = "skin-background-color"
+        style  = "display: flex; justify-content: center; font-weight: bold;"
+        :style = "{ width: (progress < 10 ? 10 : progress) }"
+      >
+        <span>{{ progress }}</span>
+      </div>
+    </div>
+  `,
+  props: ['progress'],
+});
+
+/**
+ * @deprecated global `<datetime>` component
+ */
+Vue.component('datetime', {
+  template: /* html */`
+    <div ref = "datimecontainer">
+      <label :for = "id" style = "display: block" v-t = "label"></label>
+      <div class = "form-group">
+        <div class = 'input-group date' ref = "iddatetimepicker">
+          <input :id = "id" ref = "idinputdatetimepiker" type = 'text' @change = "changeInput" class = "form-control" />
+          <span class = "input-group-addon caret">
+            <span class  = "datetimeinput" :class = "g3wtemplate.getFontClass('time' === type ? 'time': 'calendar')"></span>
+          </span>
+        </div>
+      </div>
+    </div>`,
+  props: {
+    type:         { type: String, default: 'date' }, // time
+    format:       { type: String, default: 'YYYY-MM-DD' },
+    minDate:      { default: false },
+    maxDate:      { default: false },
+    enabledDates: { default: false },
+    value:        {},
+    label:        { default:'Date' }
+  },
+  data() {
+    return { datetimevalue: this.value }
+  },
+  methods: {
+    changeInput(e) {},
+    change(value) { this.$emit('change', moment(value).format(this.format)) }
+  },
+  async mounted() {
+    await this.$nextTick();
+    this.datetimeinputelement = $(this.$refs.iddatetimepicker);
+    this.datetimeinputelement.datetimepicker({
+      minDate:           this.minDate,
+      maxDate:           this.maxDate,
+      defaultDate:       this.datetimevalue,
+      useCurrent:        false,
+      allowInputToggle:  true,
+      enabledDates:      this.enabledDates,
+      showClose:         true,
+      format:            this.format,
+      locale:            ApplicationState.language,
+      toolbarPlacement:  'top',
+      widgetPositioning: { horizontal: 'right' },
+    });
+    this.datetimeinputelement.on("dp.change", ({date}) => { this.change(date); });
+    if (ApplicationState.ismobile) { setTimeout(() => datetimeinputelement.blur()) }
+  },
+  watch: {
+    value(datetime)            { this.datetimevalue = datetime; this.datetimeinputelement.data("DateTimePicker").date(datetime) },
+    async minDate(mindatetime) { this.datetimeinputelement.data("DateTimePicker").minDate(mindatetime); },
+    async maxDate(maxdatetime) { this.datetimeinputelement.data("DateTimePicker").maxDate(maxdatetime); },
+    enabledDates(dates)        { this.datetimeinputelement.data("DateTimePicker").enabledDates(dates); }
+  },
+  created() { this.id = getUniqueDomId(); }
+});
+
+/**
+ * @deprecated global `<range>` component
+ */
+Vue.component('range', {
+  template: /* html */`<template>
+    <div>
+      <section style = "display: flex; justify-content: space-between; font-weight: bold;">
+        <section style = "align-self: flex-end">
+          <span class = "min-max-label">{{min}}</span>
+          <span style = "font-weight: bold;">{{unit}}</span>
+        </section>
+        <div style = "display: flex; flex-direction: column; margin: 0 3px">
+          <label :for = "id" style = "display: block" class = "skin-color" v-t = "label"></label>
+          <input type = "range" ref = "range-input" @change = "change" v-model = "state.value" :id = "id" :min = "min" :max = "max" :step = "step" >
+        </div>
+        <section style = "align-self: flex-end">
+          <span style = " align-self: end; font-weight: bold;">{{max}}</span>
+          <span style = "font-weight: bold;">{{unit}}</span>
+        </section>
+      </section>
+      <template v-if="showValue">
+        <span>{{state.value}}</span>
+        <span style = "font-weight: bold;">{{unit}}</span>
+      </template>
+    </div>`,
+  props: {
+    id:        { default: undefined },            // ID value for label.
+    label:     { type: String, default: '' },     // @TODO find out what changes from the `unit` props
+    min:       { type: Number, default: 0 },      // Min range slider value.
+    max:       { type: Number, default: 10 },     // Max range slider value.
+    step:      { type: Number, default: 1 },      // Range slider step.
+    value:     { default: 0 },                    // Current range value.
+    sync:      { type: Boolean, default: false }, // Whether to emit the `changed` event.
+    showValue: { type: Boolean, default: false }, // Whether display current range value.
+    unit:      { type: String, default: '' }      // Range unit.
+  },
+  data() {
+    return { state: { value: this.value } };
+  },
+  methods: {
+    changeBackGround(value) { this.$refs['range-input'].style.backgroundSize = `${value ? (value - this.min) * 100 / (this.max - this.min): 0}% 100%`; },
+    setValue(value)         { this.changedValue(value); },
+    change(e)               { this.changedValue(1*e.target.value); },
+    emitChangeValue(value)  { this.state.value = value; this.$emit('change-range', { id: this.id, value }); }
+  },
+  watch: {
+    /**@since 3.8.0 need to watch changes of prop value and reflect it to state.value*/
+    'value'(value)       { this.state.value = value; },
+    'state.value'(value) { this.changeBackGround(value); if (this.sync) { this.emitChangeValue(value) } }
+  },
+  created() {
+    this.changedValue = this.sync ? () => this.$emit('changed') : debounce(value => { this.emitChangeValue(value) });
+  },
+  async mounted() {
+    await this.$nextTick();
+    this.changeBackGround(this.value);
+  },
+});
+
+/**
+ * @deprecated global `<tabs>` component
+ */
 Vue.component(Tabs.name, Tabs);
-Vue.component(Divider.name, Divider);
 
 /**
  * Install global directives
