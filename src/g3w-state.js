@@ -16,12 +16,7 @@ const observe = obj => new Proxy(obj, {
   },
 });
 
-/**
- * Global state of application (reactive)
- * 
- * @type {object}
- */
-const STATE = Vue.observable({
+const STATE = {
 
   /**
    * @since 4.1.0 - true = application is disabled and unclickable (waiting)
@@ -492,6 +487,13 @@ const STATE = Vue.observable({
     }
   },
 
-});
+};
 
-export default STATE;
+/**
+ * Global state of application (reactive)
+ * 
+ * @type { typeof STATE }
+ */
+const _STATE = Vue.observable(STATE);
+
+export default _STATE; // NB: do not change this line! (vscode typings)
