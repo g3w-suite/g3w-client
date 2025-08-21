@@ -259,7 +259,7 @@ export default {
     ApplicationState.project.state.layerstree.forEach(traverse);
     return {
       data: (await Promise.allSettled(
-        [].concat(layer).sort((a,b) => (layersId.indexOf(a.id) > layersId.indexOf(b.id) ? 1 : -1)).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
+        ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1))).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features?.length > 0) //@since 4.0.1 check length features
         .map(({ value } = {}) => {
