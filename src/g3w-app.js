@@ -5019,7 +5019,7 @@ export default new (class GUI extends Emitter {
 
     for (const type of Object.keys(this?.config?.mapcontrols || {})) {
       try {
-        await this.setupControl[type](); // TODO: make use dynamic of imports instead of firing a custom event 
+        await this.setupControl[type](type); // TODO: make use dynamic of imports instead of firing a custom event 
       } catch (e) {
         console.warn(e);
       }

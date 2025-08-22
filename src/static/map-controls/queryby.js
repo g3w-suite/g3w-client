@@ -14,20 +14,19 @@ const {
 } = g3w.utils;
 
 // wait for map ready
-GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.querybycircle = GUI.setupControl.querybydrawpolygon = GUI.setupControl.querybyfreehand = function() {
+GUI.setupControl.querybypolygon = 
+GUI.setupControl.querybbox = 
+GUI.setupControl.querybycircle = 
+GUI.setupControl.querybydrawpolygon = 
+GUI.setupControl.querybyfreehand = function(type) {
   if (isMobile.any) {
     return;
   }
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon', 'querybyfreehand'].includes(type))
-    .forEach(type => {
-      if (GUI.getMapControlByType('queryby')) {
-        GUI.getMapControlByType('queryby').addType(type)
-      } else {
-        GUI.addControl('queryby', new QueryBy({ types: [type] }));
-      }
-    });
+  if (GUI.getMapControlByType('queryby')) {
+    GUI.getMapControlByType('queryby').addType(type)
+  } else {
+    GUI.addControl('queryby', new QueryBy({ types: [type] }));
+  }
 };
 
 const POLYGON_TYPES = [
@@ -476,7 +475,7 @@ export class QueryBy extends MapControl {
       ...this.types.flatMap(t => {
         const control = CONTROLS[t];
         return (control.layers || []).map(layer => Vue.watch(
-          () => layer.state.visible,
+          () => layer.state ? layer.state.visible : layer.visible,
           () => {
             // toggle "eye" / "eye-close" icon
             if (this.usermessage) {
