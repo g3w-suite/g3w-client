@@ -20,7 +20,7 @@ GUI.isMapReady().then(() => {
       : `<span class="skin-color" style="font-weight: bold">${text}</span>`
     : false;
 
-  GUI.getMapLayers().forEach(l => l.getSource().setAttributions(attribution));
+  GUI.getMapLayers().forEach(l => l.getOLLayer().getSource().setAttributions(attribution));
 
   const has_baselayer = attribution || Object.values(ApplicationState.layers)
     .flatMap(s => s.isQueryable() ? s.getLayers() : [])
