@@ -4692,7 +4692,6 @@ export default new (class GUI extends Emitter {
       this.state.bbox       = this.getMapBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center     = this.viewer.getCenter();
-      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
     }
 
     this.setHidden(width <= 0 || height <= 0);
