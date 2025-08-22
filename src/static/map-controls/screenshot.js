@@ -16,20 +16,17 @@ GUI.setupControl.screenshot = GUI.setupControl.geoscreenshot = function() {
   if (isMobile.any) {
     return;
   }
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['screenshot', 'geoscreenshot'].includes(type))
-    .forEach(type => {
-      if (GUI.getMapControlByType('screenshot')) {
-        GUI.getMapControlByType('screenshot').addType(type)
-      } else {
-        GUI.addControl('screenshot', new ScreenshotControl({
-            types:   [type],
-            layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...GUI.getExternalLayers()],
-          })
-        );
-      }
-    });
+
+  if (GUI.getMapControlByType('screenshot')) {
+    GUI.getMapControlByType('screenshot').addType(type)
+  } else {
+    GUI.addControl('screenshot', new ScreenshotControl({
+        types:   [type],
+        layers:  [...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...GUI.getExternalLayers()],
+      })
+    );
+  }
+    
 };
 
 /**
