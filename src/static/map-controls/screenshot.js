@@ -12,7 +12,8 @@ const {
 } = g3w.utils;
 
 // wait for map ready
-GUI.setupControl.screenshot = GUI.setupControl.geoscreenshot = function() {
+GUI.setupControl.screenshot = 
+GUI.setupControl.geoscreenshot = function(type) {
   if (isMobile.any) {
     return;
   }

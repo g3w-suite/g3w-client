@@ -14,7 +14,11 @@ const {
 } = g3w.utils;
 
 // wait for map ready
-GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.querybycircle = GUI.setupControl.querybydrawpolygon = GUI.setupControl.querybyfreehand = function() {
+GUI.setupControl.querybypolygon = 
+GUI.setupControl.querybbox = 
+GUI.setupControl.querybycircle = 
+GUI.setupControl.querybydrawpolygon = 
+GUI.setupControl.querybyfreehand = function(type) {
   if (isMobile.any) {
     return;
   }
@@ -471,7 +475,7 @@ export class QueryBy extends MapControl {
       ...this.types.flatMap(t => {
         const control = CONTROLS[t];
         return (control.layers || []).map(layer => Vue.watch(
-          () => layer.state.visible,
+          () => layer.state ? layer.state.visible : layer.visible,
           () => {
             // toggle "eye" / "eye-close" icon
             if (this.usermessage) {
