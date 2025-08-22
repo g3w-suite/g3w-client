@@ -4906,6 +4906,7 @@ export default new (class GUI extends Emitter {
         if (l.isBaseLayer()) {
           this.#layers.base.unshift(l);
           groups[0].unshift(l);
+          l.onbefore('change', () => this.updateMapLayer(l, {}));
         }
 
         // vector layers
@@ -4924,6 +4925,9 @@ export default new (class GUI extends Emitter {
           }
           const mapLayer = this.#layers.index[id] || new g3w.Layer(l);
           mapLayer.addLayer(l, 'start');
+          // listen change filter token
+          l.onbefore('change',      () => this.updateMapLayer(mapLayer, { force: true }));
+          l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(mapLayer, { force: true, layerId })  })
           if (!this.#layers.index[id]) {
             mapLayer.on('loadstart', this.onLayerLoadStart);
             mapLayer.on('loadend',   this.onLayerLoadEnd);
@@ -4950,14 +4954,6 @@ export default new (class GUI extends Emitter {
           this.getMap().addLayer(l);
           return;
         }
-        if (l.isBaseLayer()) {
-          l.onbefore('change', () => this.updateMapLayer(l, {}));
-        }
-         // listen change filter token
-        l?.layers?.forEach?.(_l => {
-          _l.onbefore('change',      () => this.updateMapLayer(l, { force: true }));
-          _l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(l, { force: true, layerId })  })
-        });
         const olLayer = l.getOLLayer();
         if (olLayer) {
           this.getMap().addLayer(olLayer);
