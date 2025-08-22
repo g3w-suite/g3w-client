@@ -239,11 +239,6 @@ Vue.directive("t", vT);
 Vue.directive("t-plugin", vT);
 
 /**
- * Install global plugins
- */
-Vue.use(require('vue-cookie'));
-
-/**
  * Vue 2 Plugin used to add global-level functionality to Vue
  *
  * @link https://v2.vuejs.org/v2/guide/plugins.html
@@ -252,6 +247,9 @@ Vue.use(require('vue-cookie'));
  */
 Vue.use({
   install(Vue) {
+    // based on vue-cookie v1.1.4
+    Vue.prototype.$cookie = { get: GUI.getCookie };
+
     /** @since 3.11.0 */
     Vue.prototype.$t = _;
     // hold a list of registered fontawsome classes for current project

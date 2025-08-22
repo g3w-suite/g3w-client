@@ -76,7 +76,7 @@ export default {
     },
     async onChangeFile(event) {
       const body = new FormData();
-      body.append('csrfmiddlewaretoken', this.$cookie.get('csrftoken'));
+      body.append('csrfmiddlewaretoken', GUI.getCookie('csrftoken'));
       body.append(this.state.name, event.target.files[0]);
 
       this.loading = true;

@@ -350,9 +350,6 @@ export class Layer extends Emitter {
       /** @type { boolean } since 4.0.0 */
       exclude_from_legend: config.exclude_from_legend ?? true,
 
-      /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
-      categories: config.categories ?? false,
-
       /** @since 4.0.0 */
       external: config?.source?.external,
 

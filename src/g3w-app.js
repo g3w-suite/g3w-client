@@ -5507,7 +5507,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getCookie(name) {
-    Vue.cookie.get(name)
+    return ('; '+document.cookie).split(`; ${name}=`).pop().split(';')[0];
   }
 
   /**
