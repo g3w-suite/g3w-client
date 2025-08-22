@@ -2558,7 +2558,7 @@ export class Layer extends Emitter {
    */
   setVisible(bool) {
     const visible  = this.state.visible;
-    this.state.visible = bool && this.isChecked();
+    this.state.visible = bool && (this.isBaseLayer() || this.isChecked());
     // emit 'change' event
     if (visible !== this.state.visible) {
       this.change();
