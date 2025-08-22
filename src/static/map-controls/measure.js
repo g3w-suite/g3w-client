@@ -8,6 +8,22 @@ const _                        = g3w.gettext;
 const MapControl               = g3w.Control;
 const { createMeasureTooltip } = g3w.utils;
 
+const LAYER = new ol.layer.Vector({
+  source: new ol.source.Vector(),
+  style: () => [
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({ lineDash: [10, 10], width: 3 }),
+      fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
+    })
+  ],
+});
+
+const HELP = new ol.Overlay({
+  element: Object.assign(document.createElement('div'), { className: 'mtooltip' }),
+  offset: [15, 0],
+  positioning: 'center-left'
+});
+
 // wait for map ready
 GUI.setupControl.length = GUI.setupControl.area = function() {
   Object
@@ -22,10 +38,6 @@ GUI.setupControl.length = GUI.setupControl.area = function() {
               name: "measure",
               tipLabel: 'Measure',
               types: [type],
-              interactionClassOptions: {
-                projection: GUI.getProjection(),
-                help:       `measure_descriptions.${type}`
-              }
             })
           );
         }
@@ -33,140 +45,11 @@ GUI.setupControl.length = GUI.setupControl.area = function() {
     });
 };
 
-class MeasureInteraction extends ol.interaction.Draw {
-
-  constructor(opts) {
-    const measureStyle     = new ol.style.Style({
-      fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' }),
-      stroke: new ol.style.Stroke({ color: opts.drawColor || 'rgba(0, 0, 0, 0.5)', lineDash: [10, 10], width: 3 }),
-      image:  new ol.style.Circle({
-        radius: 5,
-        stroke: new ol.style.Stroke({ color: 'rgba(0, 0, 0, 0.7)' }),
-        fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
-      }),
-    });
-    const source       = new ol.source.Vector();
-
-    super({
-      source,
-      type:  opts.geometryType || 'LineString',
-      style: measureStyle
-    });
-
-    this._helpTooltip;
-    this._featureGeometryChangelistener;
-    this._poinOnMapMoveListener;
-    this._helpTooltipElement;
-
-    this._helpMsg      = opts.help;
-    this._projection   = opts.projection;
-    this.feature       = opts.feature;
-    this._map          = null;
-    this._feature      = null;
-    this._layer        = new ol.layer.Vector({
-      source,
-      style() {
-        return [
-          new ol.style.Style({
-            stroke: new ol.style.Stroke({ lineDash: [10, 10], width: 3 }),
-            fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
-          })
-        ];
-      }
-    });
-
-    this.set('beforeRemove', this.clear);
-    this.set('layer',        this._layer);
-    // register event on two action
-    this.on('drawstart',     this._drawStart);
-    this.on('drawend',       this._drawEnd);
-  }
-
-  clear() {
-    this._layer.getSource().clear();
-    this._clearMessagesAndListeners();
-    if (this.measureTooltip) {
-      this.measureTooltip.remove();
-      this.measureTooltip = null;
-    }
-    if (this._map) {
-      this._map.removeLayer(this._layer);
-    }
-  }
-
-  _clearMessagesAndListeners() {
-    this._feature = null;
-    // unset tooltip so that a new one can be created
-    if (this._map) {
-      this._helpTooltipElement.innerHTML = '';
-
-      this._helpTooltipElement.classList.add('hidden');
-
-      ol.Observable.unByKey(this._featureGeometryChangelistener);
-      ol.Observable.unByKey(this._poinOnMapMoveListener);
-
-      $(document).off('keydown', this._keyDownEventHandler);
-    }
-  }
-
-  //drawStart function
-  _drawStart(e) {
-    this._map = this.getMap();
-    this._map.removeLayer(this._layer);
-    this._feature = e.feature;
-    if (this.feature) { this._feature.setGeometry(this.feature.getGeometry()) }
-    // removed last point
-    this._keyDownEventHandler = e => {
-      const geom = this._feature.getGeometry();
-      if (46 === e.keyCode) {
-        if ( geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) {
-          this.removeLastPoint();
-        } else if (geom instanceof ol.geom.LineString && geom.getCoordinates().length > 1) {
-          this.removeLastPoint();
-        }
-      }
-    };
-    $(document).on('keydown', this._keyDownEventHandler);
-    this._layer.getSource().clear();
-    this._poinOnMapMoveListener = this._map.on('pointermove', e => {
-      if (e.dragging) { return }
-      if (this._feature && this._helpMsg) {
-        this._helpTooltipElement.innerHTML = _(this._helpMsg);
-        this._helpTooltip.setPosition(e.coordinate);
-        this._helpTooltipElement.classList.remove('hidden');
-      }
-    });
-    // create help tooltip
-    if (this._helpTooltipElement) { this._helpTooltipElement.parentNode.removeChild(this._helpTooltipElement) }
-    if (this._helpTooltip) { this._map.removeOverlay(this._helpTooltip) }
-    this._helpTooltipElement           = document.createElement('div');
-    this._helpTooltipElement.className = 'mtooltip hidden';
-    this._helpTooltip                  = new ol.Overlay({
-      element:     this._helpTooltipElement,
-      offset:      [15, 0],
-      positioning: 'center-left'
-    });
-
-    this._map.addOverlay(this._helpTooltip);
-
-    // create measure tooltip
-    if (this.measureTooltip) {
-      this.measureTooltip.remove();
-    }
-
-    this.measureTooltip = createMeasureTooltip({ map: this._map, feature: this._feature });
-  }
-
-  _drawEnd() {
-    this.measureTooltip.tooltip.getElement().className = 'mtooltip mtooltip-static';
-    this.measureTooltip.tooltip.setOffset([0, -7]);
-    this._clearMessagesAndListeners();
-    this._map.addLayer(this._layer);
-  }
-}
-
-
 class MeasureControl extends MapControl {
+
+  types = [];
+
+  interactions = {};
 
   constructor(opts = {}) {
     super({
@@ -174,24 +57,18 @@ class MeasureControl extends MapControl {
       clickmap: true,
       enabled:  true,
       onToggled(toggled) {
-        // toggle current interaction
-        this._interaction.setActive(this.isToggled());
-        // when not toggled
-        if (!toggled) { this._interaction.clear() }
-        // check if first interaction is current interaction
-        if (!toggled && this.interactions[this.types[0]] !== this._interaction) {
-          //remove current interaction from the map
-          this.getMap().removeInteraction(this._interaction);
-          this._interaction = this.interactions[this.types[0]];
-          //add first interaction
-          this.getMap().addInteraction(this._interaction);
+        this._interaction.setActive(this.isToggled());         // toggle interaction
+        if(!toggled) {
+          this._interaction.clear();
         }
-      }
+        // when current interaction is the first one 
+        if (!toggled && this.interactions[this.types[0]] !== this._interaction) {
+          this.getMap().removeInteraction(this._interaction);   // remove current interaction from the map
+          this._interaction = this.interactions[this.types[0]];
+          this.getMap().addInteraction(this._interaction);      // add first interaction
+        }
+      },
     });
-
-    this.types        = [];
-
-    this.interactions = {};
 
     (opts.types || []).forEach(t => this.addType(t));
 
@@ -216,9 +93,84 @@ class MeasureControl extends MapControl {
 
     this.types.push(type);
 
-    this._interactionClassOptions.geometryType = ({ area: 'Polygon', length: 'LineString' })[type];
+    let MEASURE;
 
-    this.interactions[type]                    = new MeasureInteraction(this._interactionClassOptions);
+    const interaction = new ol.interaction.Draw({
+      source: LAYER.getSource(),
+      type:  ({ area: 'Polygon', length: 'LineString' })[type] || 'LineString',
+      style: new ol.style.Style({
+        fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' }),
+        stroke: new ol.style.Stroke({ color: 'rgba(0, 0, 0, 0.5)', lineDash: [10, 10], width: 3 }),
+        image:  new ol.style.Circle({
+          radius: 5,
+          stroke: new ol.style.Stroke({ color: 'rgba(0, 0, 0, 0.7)' }),
+          fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.2)' })
+        }),
+      }),
+      condition(e) {
+        // right click
+        if (2 === e.activePointers[0].buttons) {
+          interaction.removeLastPoint();
+          return false;
+        }
+        // left click
+        return true;
+      },
+    });
+
+    const EVENTS = {
+      // remove last point
+      keydown: e => {
+        const geom = interaction.get('feature').getGeometry();
+        if (46 !== e.keyCode) {
+          return;
+        }
+        if ((geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) || (geom instanceof ol.geom.LineString && geom.getCoordinates().length > 1)) {
+          interaction.removeLastPoint();
+        }
+      },
+      pointermove: e => {
+        if (!e.dragging && interaction.get('feature')) {
+          HELP.setMap(interaction.getMap());
+          HELP.getElement().innerHTML = _(`measure_descriptions.${type}`);
+          HELP.setPosition(e.coordinate);
+          HELP.getElement().classList.remove('hidden');
+        }
+      },
+    };
+
+    interaction.on('drawstart', e => {
+      interaction.getMap().removeLayer(LAYER);
+      interaction.set('feature', e.feature);
+      $(document).on('keydown', EVENTS.keydown);
+      LAYER.getSource().clear();
+      interaction.getMap().on('pointermove', EVENTS.pointermove);
+      // create measure tooltip
+      MEASURE?.remove?.();
+      MEASURE = createMeasureTooltip({ map: interaction.getMap(), feature: interaction.get('feature') });
+    });
+
+    interaction.on('drawend', () => {
+      interaction.set('feature', null);
+      HELP.setMap(null);
+      MEASURE.tooltip.getElement().className = 'mtooltip mtooltip-static';
+      MEASURE.tooltip.setOffset([0, -7]);
+      interaction.getMap().un('pointermove', EVENTS.pointermove);
+      $(document).off('keydown', EVENTS.keydown);
+      interaction.getMap().addLayer(LAYER);
+    });
+
+    interaction.clear = () => {
+      LAYER.getSource().clear();
+      interaction.set('feature', null);
+      HELP.setMap(null);
+      interaction.getMap().un('pointermove', EVENTS.pointermove);
+      $(document).off('keydown', EVENTS.keydown);
+      MEASURE?.remove?.();
+      interaction.getMap()?.removeLayer?.(LAYER);
+    };
+
+    this.interactions[type] = interaction;
 
     this.interactions[type].setActive(false);
 
