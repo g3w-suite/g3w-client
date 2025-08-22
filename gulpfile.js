@@ -347,6 +347,13 @@ gulp.task('build:app', async function() {
     ctx.dispose();
   } else {
     ctx.watch();
+    // watch for static files
+    fs.watch(path.resolve('src/static'), { recursive: true }, (_, filename) => {
+      if (filename && !filename.endsWith('.css')) { // Exclude CSS files from watch
+        console.log(YELLOW__ + `File changed: ${filename}, rebuilding...` + __RESET);
+        ctx.rebuild();
+      }
+    });
   }
   return promise;
 });
