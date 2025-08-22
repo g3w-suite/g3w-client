@@ -238,6 +238,7 @@ export class Layer extends Emitter {
      * @TODO simplify further, some propertiy names seems to be duplicated
      */
     this.state = Object.assign(config, {
+    this.state = Object.assign(config, {
       id:        config.id || getUniqueDomId(),
       title:     config.title || config.name,
       download:  !!config.download,
@@ -344,6 +345,9 @@ export class Layer extends Emitter {
         categories: {},
       },
 
+      /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
+      categories: config.categories ?? false,
+
       /** @type { boolean } since 4.0.0 */
       exclude_from_legend: config.exclude_from_legend ?? true,
 
@@ -391,6 +395,7 @@ export class Layer extends Emitter {
 
       /** @since 4.1.0 */
       http_params: config.http_params ?? {},
+    });
     });
 
     this.layers          = (this.state.layers || []); // store enabled layers (wms)

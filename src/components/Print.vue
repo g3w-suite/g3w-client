@@ -600,7 +600,7 @@ export default {
               this._initPrintConfig();
               // show print area if is not atlas template and have maps
               if (undefined === this.state.atlas && this._setPrintArea()) {
-                GUI.startDrawGreyCover();
+                GUI.setModal(true);
               }
             });
             GUI.getMap().renderSync();
@@ -638,7 +638,7 @@ export default {
     _clearPrint() {
       ol.Observable.unByKey(this._moveKey);
       this._moveKey = null;
-      GUI.stopDrawGreyCover();
+      GUI.setModal(false);
     },
 
     /**

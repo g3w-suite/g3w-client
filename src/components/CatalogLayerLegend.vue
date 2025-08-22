@@ -174,15 +174,11 @@
       },
   
       getWmsSourceLayerLegendUrl() {
-        return this.getProjectLayer().getLegendUrl({
+        return getCatalogLayerById(this.layer.id).getLegendUrl({
           ...(window.initConfig.layout || {}).legend,
           width:  16,
           height: 16,
         });
-      },
-
-      getProjectLayer() {
-        return getCatalogLayerById(this.layer.id);
       },
 
       isDisabled(index) {
@@ -192,7 +188,7 @@
       showHideLayerCategory(index) {
         this.categories[index].checked = !this.categories[index].checked;
         //emit chang layer on map to refresh tiles
-        this.getProjectLayer().change();
+        getCatalogLayerById(this.layer.id).change();
         
         if ('tab' === this.legendplace) {
           this.layer.legend.change = true;
@@ -242,7 +238,7 @@
        */
       async setLayerCategories(all = false) {
         try {
-          const projectLayer = this.getProjectLayer();
+          const projectLayer = getCatalogLayerById(this.layer.id);
           const categories   = projectLayer.getCategories();
 
           if (all && categories) { // check if exist current layer categories
@@ -274,7 +270,7 @@
        * @since 3.8.0
        */
       _setAllLayerCategories(nodes) {
-        const projectLayer = this.getProjectLayer();
+        const projectLayer = getCatalogLayerById(this.layer.id);
 
         const categories = [];
         nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
@@ -398,7 +394,7 @@
       this.mapReady = false;
 
       // listen to layer change style event
-      this.getProjectLayer().onafter('change', this.onChangeLayerLegendStyle);
+      getCatalogLayerById(this.layer.id).onafter('change', this.onChangeLayerLegendStyle);
 
       // Get all legend graphics of a layer when start
       // need to exclude wms source
@@ -410,7 +406,7 @@
 
     beforeDestroy() {
       //remove change event on legend
-      this.getProjectLayer().un('change', this.onChangeLayerLegendStyle);
+      getCatalogLayerById(this.layer.id).un('change', this.onChangeLayerLegendStyle);
     },
 
   }
