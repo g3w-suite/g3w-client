@@ -1549,10 +1549,80 @@ export default new (class GUI extends Emitter {
     return !document.body.classList.contains('sidebar-collapse');
   }
 
-  setModal(bool=false, message) {
-    const map = this;
-    if (bool) { map.startDrawGreyCover(message) }
-    else { map.stopDrawGreyCover() }
+  /**
+   * Draw grey/text overaly (eg. show a text on map)
+   * 
+   * @param {*} bool 
+   * @param {*} message 
+   */
+  setModal(bool, message) {
+    if (bool) {
+      // after rendering the layer, restore the canvas context
+      let x_min, x_max, y_min, y_max, rotation, scale;
+      this.setModal(false);
+      this.#shadow.listener = this.getMap().on('postcompose', e => {
+        const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
+        const size = this.getMap().getSize();
+        // Inner polygon must be counter-clockwise
+        const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+        const width  = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+        this.#shadow.outer = [0,0,width, height];
+        ctx.restore();
+        ctx.beginPath();
+        // Outside polygon must be clockwise
+        ctx.moveTo(0, 0);
+        ctx.lineTo(width, 0);
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.lineTo(0, 0);
+        ctx.closePath();
+        // end external bbox (map is cover)
+        if (this.#shadow.inner.length) {
+          ctx.save();
+          x_min    = this.#shadow.inner[0];
+          y_min    = this.#shadow.inner[3];
+          x_max    = this.#shadow.inner[2];
+          y_max    = this.#shadow.inner[1];
+          rotation = this.#shadow.rotation;
+          scale    = this.#shadow.scale;
+          // Inner polygon must be counter-clockwise antiorario
+          ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
+          ctx.rotate(rotation*Math.PI / 180);
+          ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+          ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
+          ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
+          ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
+          ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+          ctx.closePath();
+          // end inner bbox
+        }
+        ctx.fillStyle = 'rgba(0, 5, 25, 0.40)';
+        ctx.fill();
+        if (message) {
+          ctx.font = "bold 25px Arial";
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          message.split('\n').forEach((m, i) => ctx.fillText(m, width / 2, (height / 2) + 30 * i));
+        }
+        ctx.restore();
+      });
+    } else {
+      if (this.#shadow.listener) {
+        ol.Observable.unByKey(this.#shadow.listener);
+        // reset inner draw shadow
+        if (this.#shadow.inner.length) {
+          this.#shadow = {
+            type:     'coordinate',
+            outer:    [],
+            inner:    [],
+            scale:    null,
+            rotation: null
+          };
+        }
+        this.#shadow.listener = null;
+      }
+      this.getMap().render();
+    }
   }
 
   showSidebar() {
@@ -5068,88 +5138,6 @@ export default new (class GUI extends Emitter {
     if (this.#shadow.outer) {
       this.getMap().render();
     }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * grey map precompose mapcompose
-   * 
-   * @since 4.1.0
-   */
-  startDrawGreyCover(message) {
-    // after rendering the layer, restore the canvas context
-    let x_min, x_max, y_min, y_max, rotation, scale;
-    this.stopDrawGreyCover();
-    this.#shadow.listener = this.getMap().on('postcompose', e => {
-      const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
-      const size = this.getMap().getSize();
-      // Inner polygon must be counter-clockwise
-      const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
-      const width  = size[0] * ol.has.DEVICE_PIXEL_RATIO;
-      this.#shadow.outer = [0,0,width, height];
-      ctx.restore();
-      ctx.beginPath();
-      // Outside polygon must be clockwise
-      ctx.moveTo(0, 0);
-      ctx.lineTo(width, 0);
-      ctx.lineTo(width, height);
-      ctx.lineTo(0, height);
-      ctx.lineTo(0, 0);
-      ctx.closePath();
-      // end external bbox (map is cover)
-      if (this.#shadow.inner.length) {
-        ctx.save();
-        x_min    = this.#shadow.inner[0];
-        y_min    = this.#shadow.inner[3];
-        x_max    = this.#shadow.inner[2];
-        y_max    = this.#shadow.inner[1];
-        rotation = this.#shadow.rotation;
-        scale    = this.#shadow.scale;
-        // Inner polygon must be counter-clockwise antiorario
-        ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
-        ctx.rotate(rotation*Math.PI / 180);
-        ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
-        ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
-        ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
-        ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
-        ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
-        ctx.closePath();
-        // end inner bbox
-      }
-      ctx.fillStyle = 'rgba(0, 5, 25, 0.40)';
-      ctx.fill();
-      if (message) {
-        ctx.font = "bold 25px Arial";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "center";
-        message.split('\n').forEach((m, i) => ctx.fillText(m, width / 2, (height / 2) + 30 * i));
-      }
-      ctx.restore();
-    });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  stopDrawGreyCover() {
-    if (this.#shadow.listener) {
-      ol.Observable.unByKey(this.#shadow.listener);
-      // reset inner draw shadow
-      if (this.#shadow.inner.length) {
-        this.#shadow = {
-          type:     'coordinate',
-          outer:    [],
-          inner:    [],
-          scale:    null,
-          rotation: null
-        };
-      }
-      this.#shadow.listener = null;
-    }
-    this.getMap().render();
   }
 
   /**
