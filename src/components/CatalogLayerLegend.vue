@@ -261,7 +261,7 @@
             if (all) { // case of all categories
               this._setAllLayerCategories(nodes);
             } else {
-              this._updateLayerCategories(nodes, categories);
+              this._updateLayerCategories(nodes);
             }
           }
         } catch(e) {
@@ -297,10 +297,7 @@
       /**
        * @since 3.8.0
        */
-      _updateLayerCategories(nodes = [], categories = []) {
-        this.getProjectLayer().setCategories(categories);
-
-        this.categories = categories;
+      _updateLayerCategories(nodes = []) {
 
         // case to update current categories
         if (nodes.length > 0) {
@@ -308,7 +305,7 @@
             if (icon) {
               symbols = [{ icon, title }];
             }
-            categories.forEach(c  => {
+            this.categories.forEach(c  => {
               const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
               const disabled    = undefined === c.checked  || c.checked;
               c.disabled        = disabled && undefined === findSymbol;
@@ -317,7 +314,7 @@
             });
           })
         } else {
-          categories.forEach(c => c.disabled = (undefined === c.checked) || c.checked);
+          this.categories.forEach(c => c.disabled = (undefined === c.checked) || c.checked);
         }
       },
 
@@ -331,7 +328,7 @@
           false === this.externallegend &&
           ('toc' === this.legendplace || this.layer.categories)
         ) {
-          this.setLayerCategories(false);
+          await this.setLayerCategories(false);
         }
       },
 
