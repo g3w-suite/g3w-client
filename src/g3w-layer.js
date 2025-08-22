@@ -237,7 +237,7 @@ export class Layer extends Emitter {
      * 
      * @TODO simplify further, some propertiy names seems to be duplicated
      */
-    this.state = Object.assign({
+    this.state = Object.assign(config, {
       id:        config.id || getUniqueDomId(),
       title:     config.title || config.name,
       download:  !!config.download,
@@ -333,7 +333,7 @@ export class Layer extends Emitter {
       toc:                config.toc ?? true,
 
       /** @since 4.0.0 */
-      legend: {
+      legend: config.legend ?? {
         url:     null,
         loading: false,
         error:   false,
@@ -348,7 +348,7 @@ export class Layer extends Emitter {
       exclude_from_legend: config.exclude_from_legend ?? true,
 
       /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
-      categories: false,
+      categories: config.categories ?? false,
 
       /** @since 4.0.0 */
       external: config?.source?.external,
@@ -391,7 +391,7 @@ export class Layer extends Emitter {
 
       /** @since 4.1.0 */
       http_params: config.http_params ?? {},
-    }, config);
+    });
 
     this.layers          = (this.state.layers || []); // store enabled layers (wms)
     this.showSpinner     = !!this.state.visible;
