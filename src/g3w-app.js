@@ -4954,7 +4954,7 @@ export default new (class GUI extends Emitter {
           l.onbefore('change', () => this.updateMapLayer(l, {}));
         }
          // listen change filter token
-        l?.allLayers?.forEach?.(_l => {
+        l?.layers?.forEach?.(_l => {
           _l.onbefore('change',      () => this.updateMapLayer(l, { force: true }));
           _l.on('filtertokenchange', ({ layerId }) => { this.updateMapLayer(l, { force: true, layerId })  })
         });

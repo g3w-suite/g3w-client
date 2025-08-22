@@ -393,7 +393,6 @@ export class Layer extends Emitter {
       http_params: config.http_params ?? {},
     });
 
-    this.allLayers       = [];                        // store all layers
     this.layers          = (this.state.layers || []); // store enabled layers (wms)
     this.showSpinner     = !!this.state.visible;
     this.extent          = this.state.extent;
@@ -3097,7 +3096,7 @@ export class Layer extends Emitter {
    */
   update(mapState = {}, params = {}) {
     
-    /** @FIXME add description */
+    /** Hanlde BaseLayer */
     if (this.isBaseLayer()) {
       this.getOLLayer().setVisible(this.state.visible);
       return;
@@ -3110,7 +3109,7 @@ export class Layer extends Emitter {
     }
 
     // check which layers have to be disabled
-    this.allLayers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
+    this.layers.forEach(l => l.setDisabled(mapState.resolution, mapState.mapUnits));
     // get visible layers
     const layers = this.layers.filter(l => l.isVisible());
 
@@ -3480,7 +3479,6 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   addLayer(layer, position = 'end') {
-    if (!this.allLayers.find(l => layer === l)) { this.allLayers.splice('end' === position ? this.allLayers.length : 0, 0, layer); }
     if (!this.layers.find(l => layer === l))    { this.layers.splice('end' === position ? this.layers.length : 0, 0, layer); }
     if (this.isXYZ())                           { this.layer = layer; }
   }
