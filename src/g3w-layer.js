@@ -237,7 +237,7 @@ export class Layer extends Emitter {
      * 
      * @TODO simplify further, some propertiy names seems to be duplicated
      */
-    this.state = Object.assign(config, {
+    this.state = Object.assign({
       id:        config.id || getUniqueDomId(),
       title:     config.title || config.name,
       download:  !!config.download,
@@ -391,7 +391,7 @@ export class Layer extends Emitter {
 
       /** @since 4.1.0 */
       http_params: config.http_params ?? {},
-    });
+    }, config);
 
     this.layers          = (this.state.layers || []); // store enabled layers (wms)
     this.showSpinner     = !!this.state.visible;
