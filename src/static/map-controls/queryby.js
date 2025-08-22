@@ -18,16 +18,11 @@ GUI.setupControl.querybypolygon = GUI.setupControl.querybbox = GUI.setupControl.
   if (isMobile.any) {
     return;
   }
-  Object
-    .keys(window.initConfig.mapcontrols)
-    .filter(type => ['querybypolygon', 'querybbox', 'querybycircle', 'querybydrawpolygon', 'querybyfreehand'].includes(type))
-    .forEach(type => {
-      if (GUI.getMapControlByType('queryby')) {
-        GUI.getMapControlByType('queryby').addType(type)
-      } else {
-        GUI.addControl('queryby', new QueryBy({ types: [type] }));
-      }
-    });
+  if (GUI.getMapControlByType('queryby')) {
+    GUI.getMapControlByType('queryby').addType(type)
+  } else {
+    GUI.addControl('queryby', new QueryBy({ types: [type] }));
+  }
 };
 
 const POLYGON_TYPES = [
