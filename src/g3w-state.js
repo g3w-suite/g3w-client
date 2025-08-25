@@ -134,6 +134,9 @@ const STATE = {
   logged: undefined !== window.initConfig.user.id,
 
   /** @since 4.1.0 */
+  cookie_accepted: !!window.localStorage.getItem('cookie:accepted'),
+
+  /** @since 4.1.0 */
   components: [],
 
   /** @since 4.1.0 */

@@ -594,9 +594,10 @@
     <catalog-context-menu />
 
     <!-- COOKIE BANNER -->
-    <cookie-law theme = "dark-lime" :buttonText = "cookie_law_buttonText">
-      <div slot="message" v-t="'This website uses cookies to ensure you get the best experience on our website.'"></div>
-    </cookie-law>
+    <div class="cookie-banner" v-if="!state.cookie_accepted">
+      <div v-t="'This website uses cookies to ensure you get the best experience on our website.'"></div>
+      <button class="cookie-button" v-t="'Got It!'" @click="acceptCookie"></button>
+    </div>
 
     <Teleport to="body">
       <!-- MODAL (FULL SCREEN) -->
@@ -622,7 +623,6 @@
 </template>
 
 <script>
-import CookieLaw          from 'vue-cookie-law';
 import Teleport           from 'vue2-teleport';
 
 import ApplicationState   from 'g3w-state';
@@ -654,7 +654,6 @@ export default {
       ApplicationState,
       iframe:                false,
       language:              null,
-      cookie_law_buttonText: _('Got It!'),
       updatePreviousTitle:   false,
       header:                _('main navigation'),
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
@@ -668,7 +667,6 @@ export default {
   },
 
   components: {
-    CookieLaw,
     userMessage,
     CatalogContextMenu,
     ModalLogin,
@@ -829,7 +827,7 @@ export default {
 
     showmapunits() {
       return GUI.state.mapunits.length > 1;
-    },
+    }
 
   },
 
@@ -1086,6 +1084,14 @@ export default {
       })
     },
 
+    /**
+     * @since 4.1.0
+     */
+    acceptCookie() {
+      window.localStorage.setItem('cookie:accepted', true);
+      this.state.cookie_accepted = true;
+    },
+
   },
 
   watch: {
@@ -1128,7 +1134,7 @@ export default {
 
         /** @since 4.0.0 */
         GUI.emit('i18n-ready', lang);
-        this.cookie_law_buttonText = _('Got It!');
+
         //set form control class to filter
         $.extend($.fn.dataTableExt.oStdClasses, {
           "sFilterInput": "form-control search"

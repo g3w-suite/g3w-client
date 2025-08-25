@@ -219,6 +219,10 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .wrapper         { height: 100%; width: 100%; overflow: hidden; }
 .content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); background-color: #ecf0f5; position: relative; overflow: hidden; }
 
+.cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
+.cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
+.cookie-button:hover { background:#7ebf36 }
+
 /* When opening the sidebar on small screens */
 @media (max-width: 767px) {
   .content-wrapper               { margin-left: 0; }

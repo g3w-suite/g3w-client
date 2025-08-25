@@ -208,6 +208,8 @@ export default class Emitter {
   }
 
   /**
+   * Used by the following plugins: "processing" 
+   * 
    * @deprecated
    */
   removeAllListeners() {
