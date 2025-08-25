@@ -251,7 +251,7 @@ export default {
     //@since 3.11.0 count features returned by
     const counts     = [];
     const page_sizes = []; //set pages based on count feature returned by server
-    const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
+    const paginate   = []; //@since v4.0.0 Boolean Array. Store if layer has pagination, mean response count is more that features length returned by server request
     const layers     = []; //@since 4.0.1 need to add layers that has at least one feature to show on query result
     //@since 4.0.1 need to get project layers id order as on TOC. results thake in aoccount this order
     const layersId   = [];
