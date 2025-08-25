@@ -206,9 +206,9 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #layers = {
-    base:     [], //base layers
-    g3w:      [], //project layers
-    external: [], //extenral layers
+    base:     [], // base layers
+    g3w:      [], // project layers
+    external: [], // external layers
     index:    {}, // store layers by multilayer id (performance)
   };
 
@@ -5939,13 +5939,13 @@ export default new (class GUI extends Emitter {
     let features = []; 
     try {
       // convert API response to Open Layer Features
-      features = ((layer && await layer.getFeatureByFids({ fids, formatter })) || []).map(f => {
-        const properties    = undefined !== f.properties ? f.properties : {}
-        properties[G3W_FID] = f.id;
-        const olFeat          = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
-        olFeat.setProperties(properties);
-        olFeat.setId(f.id);
-        return olFeat;
+      features = await layer?.getFeatureByFids?.({ fids, formatter })?.map(f => {
+        const props    = undefined !== f.properties ? f.properties : {}
+        props[G3W_FID] = f.id;
+        const feat     = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
+        feat.setProperties(props);
+        feat.setId(f.id);
+        return feat;
       });
     } catch(e) {
       console.warn(e);
