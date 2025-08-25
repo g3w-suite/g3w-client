@@ -5862,7 +5862,7 @@ export default new (class GUI extends Emitter {
     return {
       data: (await Promise.allSettled(
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1)))
-          .map((l, i) => l.getFilterData({ ...params, filter: params.filter[i] }))
+          .map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
       ))
         .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features?.length)
         .map(({ value } = {}) => {
