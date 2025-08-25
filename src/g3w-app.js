@@ -5821,7 +5821,10 @@ export default new (class GUI extends Emitter {
    * @param options.feature_count
    * @param options.formatter
    * @param options.ordering
-   * @param options.autofilter since 3.11.0
+   * @param { 0|1 } options.autofilter - since 3.11.0
+   * @param options.page               - since 3.11.0
+   * @param options.page_sizes         - since 3.11.0
+   * @param { boolean } options.raw    - whether it should return raw data
    * 
    * @private invoked by `getData('search:features')`
    */
@@ -5834,64 +5837,82 @@ export default new (class GUI extends Emitter {
     formatter: 1,
     ordering,
     autofilter: 0,
-    //@since 3.11.0 pagination
     page,
     page_sizes,
   }) {
     const { layer, ...params } = options;
-    params.filter              = [].concat(params.filter); // check if filter is an array
-    params.page_size           = (params.page_sizes || [])[0]; //get page size
-    //@since 3.11.0 count features returned by
-    const counts     = [];
-    const page_sizes = []; //set pages based on count feature returned by server
-    const paginate   = []; //@since v4.0.0 set if is paginate, mean ctat data i more tna count
+    params.filter              = [].concat(params.filter);
+    params.page_size           = (params.page_sizes || [])[0];
+
+    const counts     = []; // number of features returned by server
+    const page_sizes = []; // page sizes based on features returned by server
+    const paginate   = []; // whether each layer has pagination (boolean array)
+    const layers     = []; // layers that has at least one feature (to be shown in query result)
+    const layersId   = []; // id of project layers (sorted by TOC).
+
+    const traverse = tree => (tree.nodes || [tree]).forEach(n => {
+      if (n.id) {
+        layersId.push(n.id)
+      } else {
+        traverse(n);
+      }
+    });
+    ApplicationState.project.state.layerstree.forEach(traverse);
+
     return {
       data: (await Promise.allSettled(
-        [].concat(layer).map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
+        ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1)))
+          .map((l, i) => l.getFilterData({ ...params, filter: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status)
+        .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features?.length)
         .map(({ value } = {}) => {
-          //@since 3.11.0 In case autofilter set
+          // autofilter → automatically set filtertoken
           if (1 === params.autofilter) {
-            (value.data || [])
-              .forEach(({ layer, filtertoken }) => {
-                //in the case of filtertoken response attribute set, need to set it to layer
+            (value.data || []).forEach(({ layer, filtertoken }) => {
                 if (filtertoken) {
                   layer.state.selection.active = layer.state.filter.active = true;
                   layer.setFilterToken(filtertoken); }
               })
           }
-
+          // pagination (total elements > page size)
           if (params.page_sizes)  {
-            const features = (value.data || [])[0].features;
-            //get max number of elements per page
-            const max = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes]));
-            //Check if count (total number of elements of search is more o less than max)
-            page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
-            //add a count element on counts array
+            const page_size = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes])); // page size = max elements per page
+            page_sizes.push(page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             counts.push(value.count);
-            paginate.push(features && value.count > features.length);
+            paginate.push(value.data?.at?.(0)?.features && value.count > value.data?.at?.(0)?.features?.length);
+            layers.push(value.data?.at?.(0)?.layer);
           }
-          if (params.raw)                                         { return { data: value }; }
-          if (Array.isArray(value.data) && value.data.length > 0) { return value.data[0]; }
+          // raw data
+          if (params.raw) {
+            return { data: value };
+          }
+          if (Array.isArray(value.data) && value.data.length > 0) {
+            return value.data[0];
+          }
         }),
       query: {
-        type:       'search',
-        search:     params.filter, //filter search (array of filter)
-        autofilter: !!params.autofilter, //@since 3.11.0 set Boolean
-        //@since 3.11.0 pagination
+        type: 'search',
+        /** @type { Array } filter search (array of filter) */
+        search: params.filter,
+        /** whether it was an autofilter request */
+        autofilter: !!params.autofilter,
+        /** @since 3.11.0 - pagination info (in case of paginated request) */
         pagination: params.page_size && {
-          pages:         params.page && counts.map(count => Math.ceil(count / params.page_size)), //set number of pages
-          current:       params.page && counts.map(() => params.page), //current page
-          page_sizes,    //Array contains a number of features that want get with pagination
-          current_sizes: counts.map((_, i) => page_sizes[i][0]), // @since 3.11.8 current page size how many features are get
+          /** number of pages */
+          pages:         params.page && counts.map(count => Math.ceil(count / params.page_size)),
+          /** current page */
+          current:       params.page && counts.map(() => params.page),
+          /** @type { Array } number of features that want get with pagination */
+          page_sizes,
+          /** @since 3.11.8 - current page size (how many features are get) */
+          current_sizes: counts.map((_, i) => page_sizes[i][0]),
           counts,
           paginate,
-          //Object contains info for do another request by another part of code
+          /** data object used to perform subsequent pagination request */
           getData: {
-            params: params.filter.map(filter => ({ ...params, filter })),
+            layers,
+            params: params.filter.slice(0, layers.length).map(filter => ({ ...params, filter })),
             method: 'getFilterData',
-            layers: [].concat(layer)
           }
         },
       },

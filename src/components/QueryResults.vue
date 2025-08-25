@@ -25,8 +25,7 @@
           style = "position: relative"
         >
           <li
-            v-show = "showLayer(layer)"
-            v-for = "(layer, index) in state.queried_layers"
+            v-for = "(layer, index) in state.queried_layers.filter(l => showLayer(l))"
           >
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
@@ -986,7 +985,7 @@
           }
 
           // get config from getData object
-          const layer = (query.pagination.getData.layers || [])[index];
+          const layer = (query.pagination.getData.layers || []).find(l => queried_layers[index].id === l.getId());
 
           // whehter layer has filter
           const has_filtertoken = !!layer.getFilterToken();
