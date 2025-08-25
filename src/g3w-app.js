@@ -5550,7 +5550,7 @@ export default new (class GUI extends Emitter {
    * @param { 'query:coordinates' | 'query:bbox' | 'query:polygon' | 'search:features' | 'search:fids' } func function name
    * @param options
    * 
-   * @returns {Promise<void>}
+   * @returns {ReturnType<GUI['getData/query:coordinates' | 'getData/query:bbox' | 'getData/query:polygon' | 'getData/search:features' | 'getData/search:fids']>}
    */
   async getData(func, options = {}) {
     const { inputs = {}, outputs = {} } = options;
