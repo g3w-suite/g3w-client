@@ -27,8 +27,8 @@
 </template>
 
 <script>
-  const Input   = require('gui/inputs/input');
-  const Service = require('gui/inputs/picklayer/service');
+  import Input                from 'gui/inputs/input';
+  import { PickLayerService } from 'gui/inputs/services';
 
   export default {
 
@@ -46,7 +46,7 @@
       }
     },
     created() {
-      this.pickservice = new Service(this.state.input.options)
+      this.pickservice = new PickLayerService(this.state.input.options)
     },
     beforeDestroy() {
       this.pickservice.clear();

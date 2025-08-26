@@ -2,7 +2,7 @@ import ApplicationState                     from 'g3w-state';
 import BaseInputComponent                   from 'components/InputBase.vue'
 import { baseInputMixin as BaseInputMixin } from 'mixins';
 
-const InputServices = require('./services');
+import InputServices from './services';
 
 const Input = {
   props:      ['state'],
@@ -69,4 +69,4 @@ const Input = {
   }
 };
 
-module.exports = Input;
+export default Input;

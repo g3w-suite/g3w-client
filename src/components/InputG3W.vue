@@ -41,25 +41,42 @@
 </template>
 
 <script>
+  import InputCheckbox                               from 'components/InputCheckbox.vue';
+  import InputColor                                  from 'components/InputColor.vue';
+  import InputDateTimePicker                         from 'components/InputDateTimePicker.vue';
+  import InputFloat                                  from 'components/InputFloat.vue';
+  import InputInteger                                from 'components/InputInteger.vue';
+  import InputLonLat                                 from 'components/InputLonLat.vue';
+  import InputMedia                                  from 'components/InputMedia.vue';
+  import InputPickLayer                              from 'components/InputPickLayer.vue';
+  import InputRadio                                  from 'components/InputRadio.vue';
+  import InputSelect                                 from 'components/InputSelect.vue';
+  import InputRange                                  from 'components/InputRange.vue';
+  import InputSliderRange                            from 'components/InputSliderRange.vue';
+  import InputText                                   from 'components/InputText.vue';
+  import InputTextArea                               from 'components/InputTextArea.vue';
+  import InputTextHtml                               from 'components/InputTextHtml.vue';
+  import InputUnique                                 from 'components/InputUnique.vue';
+
   const Inputs = {
-    'text_input':                require('gui/inputs/text/vue/text'),
-    'texthtml_input':            require('gui/inputs/texthtml/vue/texthtml'),
-    'textarea_input':            require('gui/inputs/textarea/vue/textarea'),
-    'integer_input':             require('gui/inputs/integer/vue/integer'),
-    'string_input':              require('gui/inputs/text/vue/text'), //temporary
-    'float_input':               require('gui/inputs/float/vue/float'),
-    'radio_input':               require('gui/inputs/radio/vue/radio'),
-    'check_input':               require('gui/inputs/checkbox/vue/checkbox'),
-    'range_input':               require('gui/inputs/range/vue/range'),
-    'datetimepicker_input':      require('gui/inputs/datetimepicker/vue/datetimepicker'),
-    'unique_input':              require('gui/inputs/unique/vue/unique'),
-    'select_input':              require('gui/inputs/select/vue/select'),
-    'media_input':               require('gui/inputs/media/vue/media'),
-    'select_autocomplete_input': require('gui/inputs/select/vue/select'),
-    'picklayer_input':           require('gui/inputs/picklayer/vue/picklayer'),
-    'color_input':               require('gui/inputs/color/vue/color'),
-    'slider_input':              require('gui/inputs/sliderrange/vue/sliderrange'),
-    'lonlat_input':              require('gui/inputs/lonlat/vue/lonlat'),
+    'text_input':                Vue.extend(InputText),
+    'texthtml_input':            Vue.extend(InputTextHtml),
+    'textarea_input':            Vue.extend(InputTextArea),
+    'integer_input':             Vue.extend(InputInteger),
+    'string_input':              Vue.extend(InputText), //temporary
+    'float_input':               Vue.extend(InputFloat),
+    'radio_input':               Vue.extend(InputRadio),
+    'check_input':               Vue.extend(InputCheckbox),
+    'range_input':               Vue.extend(InputRange),
+    'datetimepicker_input':      Vue.extend(InputDateTimePicker),
+    'unique_input':              Vue.extend(InputUnique),
+    'select_input':              Vue.extend(InputSelect),
+    'media_input':               Vue.extend(InputMedia),
+    'select_autocomplete_input': Vue.extend(InputSelect),
+    'picklayer_input':           Vue.extend(InputPickLayer),
+    'color_input':               Vue.extend(InputColor),
+    'slider_input':              Vue.extend(InputSliderRange),
+    'lonlat_input':              Vue.extend(InputLonLat),
   };
 
   export default {
