@@ -29,7 +29,7 @@ const fs = require('fs');
   });
 
   // wait 10 sec
-  await page.waitFor(10000);
+  await page.waitForTimeout(10000);
 
   if (errors.length > 0) {
     console.error(errors);
