@@ -18,12 +18,20 @@
 </template>
 
 <script>
-import { mediaMixin } from 'mixins';
+import mediaMixin from 'mixins/media';
 
 export default {
   name: "g3w-media",
-  mixins: [mediaMixin],
-  props: ['state'],
+  mixins: [ mediaMixin ],
+  props: {
+    state: {
+      type: Object,
+      default: {
+        value:     null,
+        mime_type: null,
+      }
+    }
+  },
   computed: {
     type() {
       return this.getMediaType(this.state.mime_type).type;
