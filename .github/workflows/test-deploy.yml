@@ -28,7 +28,7 @@ jobs:
         run: npm i
 
       - name: Build app
-        run: npm run build
+        run: npx gulp build:app
 
       - name: Run tests
         run: node test/dev.g3wsuite.it.js
