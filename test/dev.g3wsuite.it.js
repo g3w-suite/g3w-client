@@ -8,7 +8,7 @@ const packageJSON  = require('../package.json');
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  // replace remote static files with loca ones 
+  // replace remote static files with local ones
   await page.route('**/static/client/(.*)', async (route, request) => {
     const localPath = path.join(process.cwd(), 'dist', request.url().split('/static/client/')[1]);
     if (fs.existsSync(localPath)) {
@@ -33,7 +33,7 @@ const packageJSON  = require('../package.json');
   await page.waitForTimeout(10000);
 
   // ASSERT: process.env.g3w_client_rev === g3w.version
-  const VERSION_OK = await page.evaluate(() =>  globalThis.g3w.version.split('-')[0] === packageJSON.version);
+  const VERSION_OK = await page.evaluate(rev => globalThis.g3w.version.split('-')[0] === rev, packageJSON.version);
 
   if (!VERSION_OK) {
     errors.push('invalid version');
