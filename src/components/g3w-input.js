@@ -1,10 +1,16 @@
+/**
+ * @file
+ * 
+ * ORIGINAL SOURCE: src/gui/inputs/input.js@v4.0.0
+ * 
+ */
 import ApplicationState                     from 'g3w-state';
 import BaseInputComponent                   from 'components/InputBase.vue'
 import { baseInputMixin as BaseInputMixin } from 'mixins';
 
-import InputServices from './services';
+import InputServices from 'gui/inputs/services';
 
-const Input = {
+export default {
   props:      ['state'],
   mixins:     [BaseInputMixin],
   components: {
@@ -68,5 +74,3 @@ const Input = {
     this.$emit('removeinput', this.state);
   }
 };
-
-export default Input;
