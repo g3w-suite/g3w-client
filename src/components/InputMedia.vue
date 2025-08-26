@@ -47,7 +47,7 @@ export default {
 
   mixins: [InputMixins],
   components: {
-      'g3w-media': MediaField
+    'g3w-media': MediaField
   },
   data() {
     return {
@@ -86,7 +86,6 @@ export default {
           headers: { Accept: 'application/json' },
           body
         })).json())[this.state.name];
-        console.log(response)
         if (response) {
           this.state.value = response;
         }
