@@ -1,6 +1,7 @@
 const { chromium } = require('playwright');
-const path = require('path');
-const fs = require('fs');
+const path         = require('path');
+const fs           = require('fs');
+const packageJSON  = require('./package.json');
 
 (async () => {
   const browser = await chromium.launch();
@@ -30,6 +31,13 @@ const fs = require('fs');
 
   // wait 10 sec
   await page.waitForTimeout(10000);
+
+  // ASSERT: process.env.g3w_client_rev === g3w.version
+  const VERSION_OK = await page.evaluate(() =>  globalThis.version.split('-')[0] === packageJSON.version);
+
+  if (!VERSION_OK) {
+    errors.push('invalid version');
+  }
 
   if (errors.length > 0) {
     console.error(errors);

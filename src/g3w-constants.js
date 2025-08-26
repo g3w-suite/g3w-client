@@ -6,11 +6,6 @@
 //@ts-check
 
 /**
- * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
- */
-export { version as APP_VERSION } from '../package.json';
-
-/**
  * fid name field referred to fid feature
  * 
  * @type {string}

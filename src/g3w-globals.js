@@ -3,6 +3,8 @@
  * @since 3.11.0
  */
 
+import { version as APP_VERSION }                  from '../package.json';
+
 import G3W_CONSTANT                                from 'g3w-constants';
 import ApplicationState                            from 'g3w-state';
 
@@ -145,6 +147,7 @@ function babelify(Class) {
  * @global g3w
  */
 globalThis.g3w = {
+  version: `${process.env.g3w_client_rev}`,
   Emitter,
   Component,
   Panel,
@@ -424,7 +427,7 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
   },
 
   // G3W-CLIENT version
-  version: G3W_CONSTANT.APP_VERSION
+  version: APP_VERSION
 };
 
 // BACKCOMP v3.x
