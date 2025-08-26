@@ -31,4 +31,4 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: node .test/dev.g3wsuite.it.js
+        run: node test/dev.g3wsuite.it.js
