@@ -858,39 +858,32 @@ $.ajaxSetup({
 
   // init plugins
   try {
-    const gid = ApplicationState.project.getGid(); // current project
-
-    // set plugin config filtered by gid
-    const enabledPlugins = {};
-    Object.entries(window.initConfig.plugins).filter(([,p]) => p.gid === gid).forEach(([name, config]) => enabledPlugins[name] = config);
-    Object.assign(ApplicationState.pluginsConfigs, enabledPlugins);
-
-    Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
-    Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.plugins.push(p));
+    Object.keys(window.initConfig.plugins).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
+    Object.keys(window.initConfig.plugins).forEach(p => ApplicationState.plugins.push(p));
 
     // set plugins that aren't within server configuration  but in project (law for example)
     const otherPluginsConfig = ApplicationState.project.getState() || {};
     if (otherPluginsConfig && otherPluginsConfig.law && otherPluginsConfig.law.length) {
       // law plugin
-      ApplicationState.pluginsConfigs.law     = otherPluginsConfig.law;
-      ApplicationState.pluginsConfigs.law.gid = otherPluginsConfig.gid;
+      window.initConfig.plugins.law     = otherPluginsConfig.law;
+      window.initConfig.plugins.law.gid = otherPluginsConfig.gid;
     } else {
-      delete ApplicationState.pluginsConfigs.law;
+      delete window.initConfig.plugins.law;
     }
 
     /** @TODO check if deprecated */
-    for (const p in ApplicationState.pluginsConfigs) {
+    for (const p in window.initConfig.plugins) {
       Object
-        .entries(ApplicationState.pluginsConfigs[p].plugins || {})
-        .forEach(([name, config]) => ApplicationState.pluginsConfigs[name] = {
-          ...ApplicationState.pluginsConfigs[name],
+        .entries(window.initConfig.plugins[p].plugins || {})
+        .forEach(([name, config]) => window.initConfig.plugins[name] = {
+          ...window.initConfig.plugins[name],
           ...config
         });
     }
 
     // load plugins
     await Promise
-      .allSettled(Object.entries(ApplicationState.pluginsConfigs)
+      .allSettled(Object.entries(window.initConfig.plugins)
       .map(async ([name, config]) => {
         if (!config) {
           return;

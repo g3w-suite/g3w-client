@@ -9,6 +9,7 @@ import ApplicationState from 'g3w-state';
 import GUI              from 'g3w-app';
 import { toRawType }    from 'utils/toRawType';
 import { cloneDeep }    from 'utils/cloneDeep';
+import { waitFor }      from 'utils/waitFor';
 import { gettext as _ } from 'g3w-i18n';
 
 const TIMEOUT = 10000;
@@ -20,7 +21,7 @@ export class Plugin extends Emitter {
   
   constructor({
     name         = null,
-    config       = ApplicationState.pluginsConfigs[name],
+    config       = window.initConfig.plugins[name],
     service      = null,
     dependencies = [],
     i18n         = null,
@@ -90,7 +91,7 @@ export class Plugin extends Emitter {
    * @param { String } name
    */
   getConfig(name) {
-    return this.config || ApplicationState.pluginsConfigs[name || this.name];
+    return this.config || window.initConfig.plugins[name || this.name];
   }
 
   /**
@@ -287,20 +288,11 @@ export class Plugin extends Emitter {
    * 
    * Get plugin dependency
    */
-  getDependencyPlugin(pluginName) {
+  async getDependencyPlugin(pluginName) {
     // is there a plugin
-    if (ApplicationState.pluginsConfigs[pluginName]) {
-      return new Promise((resolve) => {
-        const plugin = GUI.getPlugin(pluginName);
-        /**
-         * @TODO refactor weird shortcircuiting logic
-         */
-        plugin
-        && plugin.isReady().then(() => resolve(plugin.getApi()))
-        || GUI.onafter('registerPlugin', plugin => {
-          (pluginName === plugin.name) && plugin.isReady().then(() => resolve(plugin.getApi()))
-        });
-      })
+    if (window.initConfig.plugins[pluginName]) {
+      await waitFor(() => GUI.getPlugin(pluginName)?.isReady?.());
+      return GUI.getPlugin(pluginName).getApi();
     }
     return Promise.reject({ error: 'no plugin' });
   }

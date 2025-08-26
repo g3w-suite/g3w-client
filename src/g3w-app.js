@@ -321,11 +321,13 @@ export default new (class GUI extends Emitter {
    */
   #layer_ids = [];
 
-  /*
-  * Based on bootbox.js v4.4.0
-  * Copyright 2011-2020 Nick Payne
-  * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
-  */
+  /**
+   * Based on bootbox.js v4.4.0
+   * Copyright 2011-2020 Nick Payne
+   * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
+   * 
+   * @deprecated use native `<dialog>` element instead
+   */
   dialog = {
   
     dialog(options, callback) {

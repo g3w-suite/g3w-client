@@ -80,8 +80,8 @@ const STATE = {
   /** @since 4.1.0 store g3w-plugin instances */
   plugins_registry: {},
 
-  /** @since 3.11.0 - plugin configs filtered by gid */
-  pluginsConfigs: {},
+  /** @since 4.1.0 - original server config (also stored in here for vue reactivity) */
+  initConfig: window.initConfig,
 
   /** @since 3.11.0 - array of initConfig.plugins names */
   configurationPlugins: [],
