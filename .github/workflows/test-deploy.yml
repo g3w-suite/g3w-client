@@ -20,7 +20,7 @@ jobs:
         run: |
           cp config.template.js config.js
           sed -i "s|\.\./g3w-admin/g3w-admin|./build|g" config.js
-          sed -i "s|\.\./g3w-suite-docker/config/g3w-suite/overrides|./build/overrides|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/config/g3w-suite/overrides|./build|g" config.js
           sed -i "s|\.\./g3w-suite-docker/shared-volume/plugins||g" config.js
 
       - name: Setup Node.js
