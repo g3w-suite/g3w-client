@@ -8,7 +8,10 @@ const SERVER_URL = 'https://dev.g3wsuite.it/';
 
 console.log(conf);
 
-console.log(fs.readdirSync(path.join('..', conf.admin_overrides_folder), { recursive: true,  }));
+console.log(
+  fs.readdirSync(conf.admin_overrides_folder, { recursive: true, withFileTypes: false })
+  .map(file => path.join(conf.admin_overrides_folder, file))
+);
 
 (async () => {
   const browser = await chromium.launch();
