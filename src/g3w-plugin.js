@@ -433,6 +433,32 @@ export class Plugin extends Emitter {
 
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/pluginservice.js@v3.10.2
+ * 
+ * Used by the following plugins:
+ * - "bforest",
+ * - "fsimulator",
+ * - "gsk",
+ * - "ws-trento",
+ * - "br-service",
+ * - "cdu",
+ * - "iternet",
+ * - "geonotes",
+ * - "billboards",
+ * - "politowps",
+ * - "law",
+ * - "cadastre",
+ * - "simplereporting"
+ * - "sispi-worksite",
+ * - "stress",
+ * - "archiweb",
+ * - "datasinc",
+ * - "arpalombardia-charts",
+ * - "innovapuglia",
+ * - "iframe",
+ * - "openrouteservice",
+ * - "qtimeseries",
+ * 
+ * @deprecated use `new (class extends Plugin {})` instead
  */
 export class PluginService extends Emitter {
 
