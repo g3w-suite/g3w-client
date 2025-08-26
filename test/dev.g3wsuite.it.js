@@ -6,6 +6,8 @@ const conf         = require('../config');
 
 const SERVER_URL = 'https://dev.g3wsuite.it/';
 
+console.log(conf);
+
 (async () => {
   const browser = await chromium.launch();
   const context = await browser.newContext();
