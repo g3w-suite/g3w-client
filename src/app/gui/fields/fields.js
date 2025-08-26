@@ -5,7 +5,7 @@ import Geo      from 'components/FieldGeo.vue';
 import Media    from 'components/FieldMedia.vue';
 import VueField from 'components/FieldVue.vue';
 
-module.exports = {
+export default  {
   simple_field: Text,
   text_field:   Text,
   link_field:   Link,

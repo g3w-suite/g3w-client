@@ -84,8 +84,8 @@
   }                                     from 'mixins';
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
-  const PickLayerInputService           = require('gui/inputs/picklayer/service');
-  const InputMixin                      = require('gui/inputs/input');
+  import { PickLayerService }           from 'gui/inputs/services';
+  import InputMixin                     from 'gui/inputs/input';
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 
@@ -541,7 +541,7 @@
               } = this.state.input.options;
               
               //create pick layer service
-              this.pickLayerInputService = new PickLayerInputService({
+              this.pickLayerInputService = new PickLayerService({
                 layer_id,
                 fields :    [value, key], //fields are key, and values
                 // so we can pick vector map layer, otherwise wms request is done
