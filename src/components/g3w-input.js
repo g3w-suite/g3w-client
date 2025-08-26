@@ -1,7 +1,7 @@
 /**
  * @file
  * 
- * ORIGINAL SOURCE: src/gui/inputs/inpus.js@v4.0.0
+ * ORIGINAL SOURCE: src/gui/inputs/input.js@v4.0.0
  * 
  */
 import ApplicationState                     from 'g3w-state';
