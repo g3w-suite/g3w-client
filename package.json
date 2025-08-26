@@ -6,6 +6,7 @@
   "scripts": {
     "preinstall": "",
     "build": "node build.js build",
+    "build:ci": "node build.js build:ci",
     "dev": "node build.js dev",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
@@ -51,11 +52,8 @@
     "vue2-teleport": "^1.1.4"
   },
   "devDependencies": {
-    "del": "^2.2.2",
     "esbuild": "^0.24.0",
     "esbuild-vue": "^1.2.2",
-    "jshint": "^2.9.1",
-    "jshint-stylish": "^2.1.0",
     "playwright": "^1.55.0",
     "vue-template-compiler": "2.7.16"
   },

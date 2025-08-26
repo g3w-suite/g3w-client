@@ -35,7 +35,7 @@ jobs:
         run: npx playwright install chromium
 
       - name: Build app
-        run: npm run build
+        run: npm run build:ci
 
       - name: Run tests
         run: node test/dev.g3wsuite.it.js

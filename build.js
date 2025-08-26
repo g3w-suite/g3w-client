@@ -13,7 +13,6 @@ const esbuild     = require('esbuild');
 // Node.js
 const fs          = require('fs');
 const path        = require('path');
-const del         = require('del');
 const readline    = require('readline');
 const execSync    = require('child_process').execSync;
 
@@ -46,9 +45,10 @@ const task = args[0];
   switch (task) {
     case 'dev':
     case 'build':
+    case 'build:ci':
 
       // set NODE_ENV 
-      production           = 'build' === task;
+      production           = 'dev' !== task;
       process.env.NODE_ENV = production ? 'production' : 'development';
       outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
 
@@ -92,10 +92,8 @@ const task = args[0];
       }
 
       // clean overrides
-      del.sync([
-        `${g3w.admin_overrides_folder}/static/*`,
-        `${g3w.admin_overrides_folder}/templates/*`
-      ], { force: true });
+      fs.rmSync(`${g3w.admin_overrides_folder}/static/`,    { recursive: true, force: true });
+      fs.rmSync(`${g3w.admin_overrides_folder}/templates/`, { recursive: true, force: true });
 
       // update versions
       await Promise.all([''].concat(dev_plugins).map(pluginName => new Promise(done => {
@@ -150,7 +148,7 @@ async function build_app() {
    */
   if (!production) {
     dev_plugins.forEach(p => build_plugin(p)); // build all plugins (async)
-  } else {
+  } else if('build:ci' !== task) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     await new Promise(done => {
       plugins.forEach((p, i) => { console.log(`  [${i}] ${p}`); });
