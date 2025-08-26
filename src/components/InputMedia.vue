@@ -37,7 +37,7 @@
 <script>
 import GUI                from 'g3w-app';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-import InputMixins        from 'gui/inputs/input';
+import Input        from 'components/g3w-input';
 import MediaField         from 'components/FieldMedia.vue';
 
 export default {
@@ -45,7 +45,7 @@ export default {
   /** @since 3.8.6 */
   name: 'input-media',
 
-  mixins: [InputMixins],
+  mixins: [ Input ],
   components: {
     'g3w-media': MediaField
   },

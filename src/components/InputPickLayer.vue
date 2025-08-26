@@ -27,7 +27,7 @@
 </template>
 
 <script>
-  import Input                from 'gui/inputs/input';
+  import Input                from 'components/g3w-input';
   import { PickLayerService } from 'gui/inputs/services';
 
   export default {
@@ -35,7 +35,7 @@
     /** @since 3.8.6 */
     name: 'input-picklayer',
 
-    mixins: [Input],
+    mixins: [ Input ],
     methods: {
       pickLayer() {
         this.pickservice.pick()

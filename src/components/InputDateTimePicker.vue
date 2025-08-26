@@ -39,8 +39,7 @@
 import ApplicationState   from 'g3w-state';
 import { resizeMixin }    from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-
-const Input = require('gui/inputs/input');
+import Input              from 'components/g3w-input';
 
 export default {
 

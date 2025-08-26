@@ -85,7 +85,7 @@
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
   import { PickLayerService }           from 'gui/inputs/services';
-  import InputMixin                     from 'gui/inputs/input';
+  import Input                          from 'components/g3w-input';
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 
@@ -98,7 +98,7 @@
     /** @since 3.8.6 */
     name: 'input-select',
 
-    mixins: [InputMixin, selectMixin, select2Mixin],
+    mixins: [ Input, selectMixin, select2Mixin ],
     data() {
       return {
         showPickLayer :       false,
