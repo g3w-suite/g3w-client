@@ -262,7 +262,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME explain better what it does
+   * Used by the following plugins: "archiweb"
    * 
    * Get plugin dependencies
    */
@@ -272,9 +272,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME explain better what it does
-   * 
-   * Create to not replace above plugin method used by non changed old plugin
+   * Used by the following plugins: "iframe", "sispi-worksite", "simplereporting"
    */
   async getDependencyPluginsObject(pluginsName) {
     const api      = {};
@@ -284,9 +282,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME explain better what it does
-   * 
-   * Get plugin dependency
+   * @deprecated plugin APIs are deprecated, use `GUI.getPlugin(name)` instead.
    */
   async getDependencyPlugin(pluginName) {
     // is there a plugin
