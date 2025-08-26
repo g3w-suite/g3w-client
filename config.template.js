@@ -1,15 +1,10 @@
-const { version }      = require('./package.json');
+const { version } = require('./package.json');
 
 const G3W_PLUGINS = [                 // override "initConfig->group->plugins" attribute for custom plugin development
   // "your-plugin-folder-name-1",
   // "your-plugin-folder-name-2",
   // "your-plugin-folder-name-3",
 ];
-
-const G3W_KEYS = {
-  // google: '<INSERT HERE YOUR GOOGLE API KEY>',
-  // bing: '<INSERT HERE YOUR BING API KEY>'
-};
 
 let conf = {
   pluginsFolder:          './src/plugins',                                  // path to G3W-CLIENT plugins folder
@@ -20,8 +15,7 @@ let conf = {
   devConfig() {
     g3wsdk.core.ApplicationService.once('ready', () => { });
     g3wsdk.core.ApplicationService.once('initconfig', () => {
-      initConfig.group.vendorkeys = Object.assign(initConfig.group.vendorkeys || {}, G3W_KEYS);
-      initConfig.group.plugins    = Object.assign(initConfig.group.plugins || {}, G3W_PLUGINS.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
+      initConfig.group.plugins = Object.assign(initConfig.group.plugins || {}, G3W_PLUGINS.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
     });
     //Every time a new iframe is created, listen for messages
     g3wsdk.gui.GUI.on('iframe:message', (w, e) => { 
