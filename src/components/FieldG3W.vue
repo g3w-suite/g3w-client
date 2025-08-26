@@ -12,8 +12,8 @@
 </template>
 
 <script>
-const fieldsService = require('gui/fields/fieldsservice');
-const Fields        = require('gui/fields/fields');
+import FieldsService from 'gui/fields/fieldsservice';
+import Fields        from 'gui/fields/fields';
 
 export default {
   name: "g3w-field",
@@ -29,7 +29,7 @@ export default {
     ...Fields
   },
   created() {
-    this.type = fieldsService.getType(this.state)
+    this.type = FieldsService.getType(this.state)
   }
 };
 </script>

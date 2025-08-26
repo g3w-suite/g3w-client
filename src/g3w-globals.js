@@ -104,6 +104,10 @@ import InputTextArea                               from 'components/InputTextAre
 import InputTextHtml                               from 'components/InputTextHtml.vue';
 import InputUnique                                 from 'components/InputUnique.vue';
 
+//Fields
+import FieldsService                               from 'gui/fields/fieldsservice';
+import Fields                                      from 'gui/fields/fields';
+
 const deprecate                   = require('util-deprecate');
 
 /**
@@ -129,12 +133,6 @@ function babelify(Class) {
       }
   });
 }
-
-/**
- * GUI modules
- */
-const FieldsService               = require('gui/fields/fieldsservice');
-const Fields                      = require('gui/fields/fields');
 
 /**
  * Next gen API (v4.x)

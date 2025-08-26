@@ -1,7 +1,7 @@
 import { toRawType } from 'utils/toRawType';
-const Fields        = require('./fields');
+import Fields        from './fields';
 
-module.exports  = {
+export default {
   /**
    * Get Type field from field value
    * field: Object contains the value of the field
