@@ -12,8 +12,7 @@
 </template>
 
 <script>
-import FieldsService from 'gui/fields/fieldsservice';
-import Fields        from 'gui/fields/fields';
+import Fields, { FieldsService } from 'components/g3w-fields';
 
 export default {
   name: "g3w-field",

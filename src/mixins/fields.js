@@ -2,7 +2,7 @@
  * @file
  * @since v3.7
  */
-import FieldsService from 'gui/fields/fieldsservice';
+import { FieldsService } from 'components/g3w-fields';
 
 export default {
   methods: {

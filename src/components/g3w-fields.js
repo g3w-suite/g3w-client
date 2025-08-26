@@ -1,7 +1,32 @@
-import { toRawType } from 'utils/toRawType';
-import Fields        from './fields';
+import Text          from 'components/FieldText.vue';
+import Link          from 'components/FieldLink.vue';
+import Image         from 'components/FieldImage.vue'
+import Geo           from 'components/FieldGeo.vue';
+import Media         from 'components/FieldMedia.vue';
+import VueField      from 'components/FieldVue.vue';
 
-export default {
+import { toRawType } from 'utils/toRawType';
+
+/**
+* ORIGINAL SOURCE: src/app/gui/fields/fields.js@v4.0.0 
+*/
+const Fields = {
+  simple_field: Text,
+  text_field:   Text,
+  link_field:   Link,
+  image_field:  Image,
+  geo_field:    Geo,
+  photo_field:  Image,
+  media_field:  Media,
+  vue_field:    VueField
+};
+
+export default Fields;
+
+/**
+* ORIGINAL SOURCE: src/app/gui/fields/fieldsservices.js@v4.0.0 
+*/
+export const FieldsService = {
   /**
    * Get Type field from field value
    * field: Object contains the value of the field

@@ -188,6 +188,7 @@
   import Component                         from 'g3w-component';
   import Field                             from 'components/FieldG3W.vue';
   import DownloadFormats                   from 'components/QueryResultsActionDownloadFormats.vue';
+  import { FieldsService }               from 'components/g3w-fields';
   import GUI                               from 'g3w-app';
   import { throttle }                      from 'utils/throttle';
   import { debounce }                      from 'utils/debounce';
@@ -195,7 +196,6 @@
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
   import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
   import { saveBlob }                      from 'utils/saveBlob';
-  import FieldsService                     from 'gui/fields/fieldsservice';
 
   export default {
 

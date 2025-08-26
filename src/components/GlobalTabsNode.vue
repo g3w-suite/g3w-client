@@ -68,7 +68,7 @@
 <script>
   import ApplicationState from 'g3w-state'
   import G3wInput         from 'components/InputG3W.vue';
-  import Fields           from 'gui/fields/fields';
+  import Fields           from 'components/g3w-fields';
 
   export default {
     name: "node",

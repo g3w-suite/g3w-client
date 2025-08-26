@@ -107,8 +107,7 @@ import InputTextHtml                               from 'components/InputTextHtm
 import InputUnique                                 from 'components/InputUnique.vue';
 
 //Fields
-import FieldsService                               from 'gui/fields/fieldsservice';
-import Fields                                      from 'gui/fields/fields';
+import Fields, { FieldsService }                   from 'components/g3w-fields';
 
 const deprecate                   = require('util-deprecate');
 
@@ -190,6 +189,7 @@ globalThis.g3w = {
  * @global g3wsdk
  */
 globalThis.g3wsdk = {
+  poppo: 10,
 
   // APP CONSTANTS
   constant: G3W_CONSTANT, // TODO: rename to "constants" which is more appropriate (in version 4.0)
