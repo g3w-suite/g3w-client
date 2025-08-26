@@ -33,7 +33,7 @@ const packageJSON  = require('../package.json');
   await page.waitForTimeout(10000);
 
   // ASSERT: process.env.g3w_client_rev === g3w.version
-  const VERSION_OK = await page.evaluate(() =>  globalThis.version.split('-')[0] === packageJSON.version);
+  const VERSION_OK = await page.evaluate(() =>  globalThis.g3w.version.split('-')[0] === packageJSON.version);
 
   if (!VERSION_OK) {
     errors.push('invalid version');
