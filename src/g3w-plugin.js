@@ -24,6 +24,7 @@ export class Plugin extends Emitter {
     config       = window.initConfig.plugins[name],
     service      = null,
     dependencies = [],
+    /** @type { Object | string } a i18n object or a path to i18n folder (lazy loading) */
     i18n         = null,
     fontClasses  = [],
     api          = {},
@@ -35,7 +36,19 @@ export class Plugin extends Emitter {
 
     this.setName(name);
     this.setConfig(config);
-    this.setLocale(i18n);
+
+    // i18n object
+    if ('object' === typeof i18n) {
+      this.setLocale(i18n);
+    }
+
+    // lazy load i18n
+    if ('string' === typeof i18n) {
+      Vue.watch(() => ApplicationState.language, async lang => {
+        this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
+      }, { immediate: true });
+    }
+
     this.setService(service);
     this.setDependencies(dependencies);
     this.addFontClasses(fontClasses);
