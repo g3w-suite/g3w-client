@@ -15,8 +15,6 @@ import 'g3w-globals';
 // print some debug info
 window.g3wsdk.info();
 
-alert('ciao');
-
 // custom header links
 g3w.app.once('initconfig', () => {
   initConfig.header_custom_links = [
