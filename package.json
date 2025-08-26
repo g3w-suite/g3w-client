@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "",
-    "build": "gulp version && gulp build",
-    "dev": "gulp dev",
+    "build": "node build.js build",
+    "dev": "node build.js dev",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
     "docker:up": "npm run docker up -- -d",
@@ -15,7 +15,7 @@
     "docker:logs": "npm run docker logs",
     "test": "",
     "preversion": "npm run test",
-    "version": "npm run build && git add -A",
+    "version": "node build.js version && git add -A",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -54,9 +54,6 @@
     "del": "^2.2.2",
     "esbuild": "^0.24.0",
     "esbuild-vue": "^1.2.2",
-    "gulp": "^4.0.2",
-    "gulp-prompt": "^1.2.0",
-    "gulp-rename": "^1.2.2",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "playwright": "^1.55.0",

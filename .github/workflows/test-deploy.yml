@@ -32,7 +32,7 @@ jobs:
         run: npm i
 
       - name: Build app
-        run: npx gulp build:client
+        run: np run build
 
       - name: Run tests
         run: node test/dev.g3wsuite.it.js
