@@ -195,6 +195,7 @@
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
   import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
   import { saveBlob }                      from 'utils/saveBlob';
+  import FieldsService                     from 'gui/fields/fieldsservice';
 
   export default {
 
@@ -472,7 +473,7 @@
               data: () => ({
                 layerid:       this.table.layerId,
                 feature:       this.table.features[index],
-                fields:        this.table.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${require('gui/fields/fieldsservice').getType(c)}` } })),
+                fields:        this.table.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${FieldsService.getType(c)}` } })),
                 formStructure: this.table.formStructure,
               }),
               template: /* html */`
