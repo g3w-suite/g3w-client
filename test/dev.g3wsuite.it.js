@@ -2,6 +2,9 @@ const { chromium } = require('playwright');
 const path         = require('path');
 const fs           = require('fs');
 const packageJSON  = require('../package.json');
+const conf         = require('../config');
+
+const SERVER_URL = 'https://dev.g3wsuite.it/';
 
 (async () => {
   const browser = await chromium.launch();
@@ -9,18 +12,17 @@ const packageJSON  = require('../package.json');
   const page    = await context.newPage();
 
   // replace remote static files with local ones
-  await page.route('**/static/client/(.*)', async (route, request) => {
-    const localPath = path.join(process.cwd(), 'dist', request.url().split('/static/client/')[1]);
+  await page.route('**/static/client/*', async (route, request) => {
+    const localPath = path.join(conf.admin_overrides_folder, request.url().split(SERVER_URL)[1]);
+    console.log(fs.existsSync(localPath), localPath);
     if (fs.existsSync(localPath)) {
-      await route.fulfill({
-        path: localPath,
-      });
+      await route.fulfill({ path: localPath });
     } else {
       await route.continue();
     }
   });
 
-  await page.goto('https://dev.g3wsuite.it/it/map/demo-310/', { waitUntil: 'networkidle' });
+  await page.goto(SERVER_URL + '/it/map/demo-310/');
 
   // check for JS erros
   const errors = [];
@@ -29,16 +31,16 @@ const packageJSON  = require('../package.json');
     if (msg.type() === 'error') errors.push(msg.text());
   });
 
-  // wait 10 sec
-  await page.waitForTimeout(10000);
+  // wait for `window.g3w`
+  await page.waitForFunction(() => window.g3w, 15000);
+  const g3w = await page.evaluate(() => window.g3w);
 
-  // ASSERT: process.env.g3w_client_rev === g3w.version
-  const VERSION_OK = await page.evaluate(rev => window.g3w.version.split('-')[0] === rev, packageJSON.version);
-
-  if (!VERSION_OK) {
-    errors.push('invalid version');
+  // ASSERT: g3w.version === process.env.g3w_client_rev
+  if (g3w.version.split('-')[0] !== packageJSON.version.split('-')[0]) {
+    errors.push('invalid version', g3w.version, packageJSON.version);
   }
 
+  // dump errors
   if (errors.length > 0) {
     console.error(errors);
     process.exit(1);
