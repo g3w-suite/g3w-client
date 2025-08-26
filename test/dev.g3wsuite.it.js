@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 const path         = require('path');
 const fs           = require('fs');
-const packageJSON  = require('./package.json');
+const packageJSON  = require('../package.json');
 
 (async () => {
   const browser = await chromium.launch();
