@@ -84,8 +84,7 @@
   }                                     from 'mixins';
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
-  import { PickLayerService }           from 'gui/inputs/services';
-  import Input                          from 'components/g3w-input';
+  import Input, { PickLayerService }    from 'components/g3w-input';
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 

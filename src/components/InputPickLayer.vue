@@ -27,8 +27,7 @@
 </template>
 
 <script>
-  import Input                from 'components/g3w-input';
-  import { PickLayerService } from 'gui/inputs/services';
+  import Input, { PickLayerService } from 'components/g3w-input';
 
   export default {
 
