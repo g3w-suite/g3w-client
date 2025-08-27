@@ -121,7 +121,7 @@
                 :class          = "'action-button ' + $fa('alert')"
               ></i>
               <i
-                v-if            = "layer.isEditable() && layer.config.editing?.visible"
+                v-if            = "layer.isEditable() && (layer.config.editing || {}).visible"
                 @click.stop     = "editFeature(feature)"
                 v-t-tooltip:top = "'Editing'"
                 :class          = "'action-button skin-color ' + $fa('pencil')"
