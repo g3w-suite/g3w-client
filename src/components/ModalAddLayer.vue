@@ -238,8 +238,8 @@
             <div class = "form-group">
               <label for = "g3w-tms-projections" v-t = "'Projection'"></label>
               <select id = "g3w-tms-projections" class = "form-control" v-model = "tms_projection">
-                <option>EPSG:3857</option>
-                <option>EPSG:4326</option>
+                <option :value = "'EPSG:3857'">EPSG:3857</option>
+                <option :value = "'EPSG:4326'">EPSG:4326</option>
               </select>
             </div>
             <!-- LAYER POSITION -->
@@ -252,8 +252,8 @@
             </div>
             <!-- LAYER VISIBILITY -->
             <select id = "g3w-tms-visible" v-model = "tms_visible" hidden>
-              <option :value="false"></option>
-              <option :value="true"></option>
+              <option :value = "false"></option>
+              <option :value = "true"></option>
             </select>
             <!-- LAYER OPACITY -->
             <div class = "form-group">
