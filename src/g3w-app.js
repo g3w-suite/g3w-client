@@ -3568,14 +3568,12 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   onLayerLoadError() {
-    /** @since 3.10.0 - fails silently */
-    if (!ApplicationState.project.state.show_load_layer_error) {
-      return;
-    }
-    if (!this.onLayerLoadError.shown) {
+    /** @since 4.1.0 - notify warning */
+    if (ApplicationState.project.state.show_load_layer_error && !this.onLayerLoadError.shown) {
       this.notify.warning('Some layers are not available');
       this.onLayerLoadError.shown = true;
     }
+    //Need to set layer in load end state
     this.onLayerLoadEnd();
   }
 
