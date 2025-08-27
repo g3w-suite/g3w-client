@@ -151,6 +151,21 @@ g3w.app.once('after:setupControls', async () => {
     window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(wms_name) && g3w.app.removeExternalLayer(wms_name); });
   };
 
+  // add tms layer
+  const setTMS = async (tms) => {
+    await waitFor(() => !q('#add-layer-type').value, 5000);
+    await setOption('#add-layer-type', 'tms');
+    await setOption('#add_tms_url', tms.url);
+    await setOption('#add_tms_name', tms.name);
+    await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
+    await setOption('#position-layer-tms', 'bottom');
+    await setOption('#g3w-tms-visible', false);
+    await setOption('#g3w-tms-opacity', 0.85);
+    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    q('.modal-footer .btn.btn-success').click();
+    window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(tms.name) && g3w.app.removeExternalLayer(tms.name); });
+  };
+
   // export layer to zip
   const zipFile = async name => {
     await waitFor(async () => name in (await idb.getItem('externalLayers')), 1000);
@@ -202,6 +217,12 @@ C,"POINT (11.2474811 43.7910709)"`],
     await zipFile('piazza-leopoldo.kml'),
     'EPSG:3857'
   );
+
+  // OpenTopoMap
+  await setTMS({
+    name: 'OpenTopoMap',
+    url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png '
+  });
 
   // ORTOFOTO
   await setWms({
