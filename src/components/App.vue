@@ -1168,6 +1168,8 @@ export default {
 
     await this.$nextTick();
 
+    $('#startingspinner').remove();
+
     document.body.classList.toggle('is-mobile', this.isMobile());
     document.body.classList.toggle('is-iframe', ApplicationState.iframe);
 
