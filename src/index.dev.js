@@ -221,7 +221,7 @@ C,"POINT (11.2474811 43.7910709)"`],
   // OpenTopoMap
   await setTMS({
     name: 'OpenTopoMap',
-    url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png '
+    url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
   });
 
   // ORTOFOTO
