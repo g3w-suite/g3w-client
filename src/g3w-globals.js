@@ -278,11 +278,10 @@ globalThis.g3wsdk = {
     },
     project: {
       ProjectsRegistry: Object.assign(new Emitter, {
-        setters: { setCurrentProject(project) {} },
         getProjectUrl,
         getProjectConfigByGid,
         getListableProjects,
-        getCurrentProject:     () => ApplicationState.project,
+        getCurrentProject: () => ApplicationState.project,
       })
     },
     catalog: {

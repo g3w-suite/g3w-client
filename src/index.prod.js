@@ -816,9 +816,6 @@ $.ajaxSetup({
   // set in first position
   ApplicationState.layers[project.getGid()] = project.getLayersStore();
 
-  // BACKCOMP v3.x
-  g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
-
   window.addEventListener('online', () => { GUI.online(); } );
   window.addEventListener('offline', () => { GUI.offline(); });
 
