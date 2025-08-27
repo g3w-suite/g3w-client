@@ -133,7 +133,7 @@ async function build_app() {
   let plugins = ['client', ...dev_plugins];
   let choices = [0]; // 0 = client
 
-  /**
+  /**plugins
    * Make sure that all g3w.plugins bundles are there
    *
    * CORE PLUGINS:
@@ -154,8 +154,10 @@ async function build_app() {
       plugins.forEach((p, i) => { console.log(`  [${i}] ${p}`); });
       rl.question('Choose plugins (comma separated, default=0): ', async (answer) => {
         rl.close();
-        choices = answer.trim().split(',').map(n => parseInt(n.trim(), 10));
-        for (const idx of choices) {
+        //filter no response (Press ENTER only)
+        choices = answer.trim().split(',').map(n => parseInt(n.trim(), 10)).filter(idx => !Number.isNaN(idx));
+        //Filter only plugin (idx more than 0)
+        for (const idx of choices.filter(idx => idx !== 0)) {
           if (plugins[idx]) {
             await build_plugin(plugins[idx]);
           }
