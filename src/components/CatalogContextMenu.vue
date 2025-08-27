@@ -615,7 +615,7 @@
        * @since 3.11.0
        */
        canEdit(layer) {
-        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing.visible: GUI.getPlugin('editing');
+        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing?.visible: GUI.getPlugin('editing');
       },
 
       /**
