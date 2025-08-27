@@ -858,15 +858,12 @@ $.ajaxSetup({
 
   // init plugins
   try {
-    Object.keys(window.initConfig.plugins).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
     Object.keys(window.initConfig.plugins).forEach(p => ApplicationState.plugins.push(p));
 
-    // set plugins that aren't within server configuration  but in project (law for example)
-    const otherPluginsConfig = ApplicationState.project.getState() || {};
-    if (otherPluginsConfig && otherPluginsConfig.law && otherPluginsConfig.law.length) {
-      // law plugin
-      window.initConfig.plugins.law     = otherPluginsConfig.law;
-      window.initConfig.plugins.law.gid = otherPluginsConfig.gid;
+    /** @TODO move this stuff within the "law" plugin */
+    if (ApplicationState.project?.getState()?.law?.length) {
+      window.initConfig.plugins.law     = ApplicationState.project.getState().law;
+      window.initConfig.plugins.law.gid = ApplicationState.project.getState().gid;
     } else {
       delete window.initConfig.plugins.law;
     }
