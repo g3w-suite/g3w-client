@@ -83,9 +83,6 @@ const STATE = {
   /** @since 4.1.0 - original server config (also stored in here for vue reactivity) */
   initConfig: window.initConfig,
 
-  /** @since 3.11.0 - array of initConfig.plugins names */
-  configurationPlugins: [],
-
   /**
    * Store application current user
    */
