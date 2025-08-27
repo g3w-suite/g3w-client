@@ -854,6 +854,8 @@ $.ajaxSetup({
     'zoomtoextent',
   ].map(type => import(`${initConfig.staticurl}${initConfig.client}map-controls/${type}.js`)));
 
+  $('#startingspinner').remove();
+
   GUI.ready();
 
   // init plugins
