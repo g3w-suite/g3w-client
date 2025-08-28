@@ -567,18 +567,17 @@
 </template>
 
 <script>
-  import ApplicationState         from 'g3w-state';
-  import { fieldsMixin }          from 'mixins';
-  import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats              from 'components/QueryResultsActionInfoFormats.vue';
-  import HeaderFeatureBody        from 'components/QueryResultsHeaderFeatureBody.vue';
-  import HeaderFeatureActionsBody from 'components/QueryResultsHeaderFeatureActionsBody.vue';
-  import { toRawType }            from 'utils/toRawType';
-  import { throttle }             from 'utils/throttle';
-  import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
-  import { downloadFeatures }     from 'utils/downloadFeatures';
-  import { showDownloadFormats }  from 'utils/downloadFeatures';
-  import GUI                      from 'g3w-app';
+  import ApplicationState                          from 'g3w-state';
+  import { fieldsMixin }                           from 'mixins';
+  import TableAttributeFieldValue                  from 'components/QueryResultsTableAttributeFieldValue.vue';
+  import InfoFormats                               from 'components/QueryResultsActionInfoFormats.vue';
+  import HeaderFeatureBody                         from 'components/QueryResultsHeaderFeatureBody.vue';
+  import HeaderFeatureActionsBody                  from 'components/QueryResultsHeaderFeatureActionsBody.vue';
+  import { toRawType }                             from 'utils/toRawType';
+  import { throttle }                              from 'utils/throttle';
+  import { getCatalogLayerById }                   from 'utils/getCatalogLayerById';
+  import { downloadFeatures, showDownloadFormats } from 'utils/downloadFeatures';
+  import GUI                                       from 'g3w-app';
   
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth      = 10;
