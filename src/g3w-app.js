@@ -561,17 +561,24 @@ export default new (class GUI extends Emitter {
       }))();
 
       // set component click handler
+      //opens: Boolean. If true, component <ul> need to show its <li> element. false hide <li>
       component.click = ({ open = false } = {}) => {
         if (open) {
           ApplicationState.sidebar.components.forEach(comp => {
             if (comp !== component && comp.getOpen()) {
+              //other sidebar elements need to be close if open
               comp.click({ open: false });
             }
           });
         }
+        //<ul> elements
         const node = component.getInternalComponent().$el;
+        //Toggle class menu open to show or hide <li> childs
         node?.classList?.toggle?.('menu-open', open);
+        //parent node is a <li> that contain <ul> node
+        //ex. <li id="metadata" class="treeview sidebaritem">
         node.parentNode.classList.toggle('active', open);
+        //set open attribute
         component.setOpen(open);
       };
 
