@@ -496,7 +496,11 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/components/SidebarItem.vue@v4.0.0
    * 
-   * Add component to the sidebar and set position inside the sidebar
+   * Add component to the sidebar
+   * 
+   * @param { Component } component sidebar item
+   * @param { Object } options
+   * @param { number } options.position index where to add (inside sidebar)
    */
   addComponent(component, options={}) {
     if (!isMobile.any || false !== component.mobile) {
@@ -507,20 +511,20 @@ export default new (class GUI extends Emitter {
             :id        = "component.id"
             v-show     = "component.state.visible"
             class      = "treeview sidebaritem"
-            :class     = "{'active': open }"
+            :class     = "{'active': !!component.state.open }"
             v-disabled = "component.state.disabled"
           >
             <bar-loader :loading = "component.state.loading"/>
             <a
               href             = "#"
               style            = "display: flex; justify-content: space-between; align-items: center"
-              :data-i18n-title = "sidebar.open ? '' : title"
+              :data-i18n-title = "sidebar.open ? '' : (component.title || '')"
               data-placement   = "right"
             >
               <div>
-                <span v-if = "!sidebar.open"><i :class = "icon" :style = "{ color: iconColor }"></i></span>
-                <i v-else :class = "icon" :style = "{ color: iconColor }"></i>
-                <span class = "treeview-label" v-t = "title"></span>
+                <span v-if = "!sidebar.open"><i :class = "component.icon" :style = "{ color: component.iconColor }"></i></span>
+                <i v-else :class = "component.icon" :style = "{ color: component.iconColor }"></i>
+                <span class = "treeview-label" v-t = "(component.title || '')"></span>
               </div>
               <div>
                 <span
@@ -541,52 +545,38 @@ export default new (class GUI extends Emitter {
                   :style           = "action.style"
                 ></span>
               </div>
-              <i v-if = "collapsible" :class = "$fa('angle-left')" class = "pull-right"></i>
+              <i v-if = "false !== component.collapsible" :class = "$fa('angle-left')" class = "pull-right"></i>
             </a>
             <div ref="component-placeholder" ></div>
           </li>`,
         data: () => ({
           component,
-          info:        component.info || { state: null, style: null, class: null },
-          main:        true,
-          active:      false,
-          title:       component.title || '',
-          open:        !!component.state.open,
-          icon:        component.icon,
-          iconColor:   component.iconColor,
-          collapsible: false !== component.collapsible,
-          actions:     component.actions,
-          sidebar:    ApplicationState.sidebar
+          info:    component.info || { state: null, style: null, class: null },
+          actions: component.actions,
+          sidebar: ApplicationState.sidebar
         }),
       }))();
 
-      // set component click handler
-      //opens: Boolean. If true, component <ul> need to show its <li> element. false hide <li>
+      // handle click on sidebar item (<li> element)
       component.click = ({ open = false } = {}) => {
         if (open) {
           ApplicationState.sidebar.components.forEach(comp => {
             if (comp !== component && comp.getOpen()) {
-              //other sidebar elements need to be close if open
-              comp.click({ open: false });
+              comp.click({ open: false });                 // close other sidebar items
             }
           });
         }
-        //<ul> elements
-        const node = component.getInternalComponent().$el;
-        //Toggle class menu open to show or hide <li> childs
-        node?.classList?.toggle?.('menu-open', open);
-        //parent node is a <li> that contain <ul> node
-        //ex. <li id="metadata" class="treeview sidebaritem">
-        node.parentNode.classList.toggle('active', open);
-        //set open attribute
-        component.setOpen(open);
+        const node = component.getInternalComponent().$el; // <ul> elements
+        node?.classList?.toggle?.('menu-open', open);      // toggle "menu-open" class
+        node.parentNode.classList.toggle('active', open);  // parent node is a <li> that contain <ul> node (eg. <li id="metadata" class="treeview sidebaritem">)
+        component.setOpen(open);                           // set open (attribute)
       };
 
       // append to `g3w-sidebarcomponents`
       sidebarItem.$on('hook:mounted', () => {
         const sidebar = document.getElementById('g3w-sidebarcomponents');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
-          $(sidebar).append(sidebarItem.$el);
+          sidebar.insertAdjacentElement('beforeend', sidebarItem.$el);
         } else {
           Array.from(sidebar.children).forEach((child, i) => {
             if (i === options?.position || child.id === options?.position) {
