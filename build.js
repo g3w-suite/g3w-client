@@ -107,6 +107,11 @@ const task = args[0];
       })));
 
       await build_app();
+
+      if (!production) {
+        start_proxy_server();
+      }
+
     break;
 
     case 'help':
@@ -418,3 +423,35 @@ function copyDir(src, dest) {
     }
   }
 }
+
+
+/**
+ * Proxy demo server for Local Development
+ * 
+ * @since 4.1.0
+ */
+function start_proxy_server() {
+  const http      = require('http');
+  const httpProxy = require('http-proxy');
+
+  const SERVER_URL = 'https://dev.g3wsuite.it/';
+
+  const proxy      = httpProxy.createProxyServer({
+    secure: false // This will ignore certificate errors
+  });
+
+  const server = http.createServer((req, res) => {
+    const localPath = path.join(g3w.admin_overrides_folder, req.url);
+    console.log(fs.existsSync(localPath), localPath);
+    if (req.url.startsWith('/static/client') && fs.existsSync(localPath)) {
+      res.end(require('fs').readFileSync(localPath));
+    } else {
+      proxy.web(req, res, { target: SERVER_URL });
+    }
+  });
+
+  server.listen(3000, () => {
+      console.log('Proxy server is running on http://localhost:3000');
+  });
+}
+
