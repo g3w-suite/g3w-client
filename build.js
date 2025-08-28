@@ -439,6 +439,38 @@ function start_proxy_server() {
     external:       false,
     open:           false,
     online:         false,
+    rewriteRules: [
+      {
+        match: new RegExp('</head>'),
+        fn: () =>`<style>/* Custom G3W-CLIENT theme (v4.0.0) */
+
+:root {
+  --skin-color: red;
+}
+
+.main-sidebar {
+  --bgcolor: #eee;
+  border-right: 1px solid #d6d6d6;
+}
+
+.main-sidebar *:not(legend) {
+  color: initial !important;
+}
+
+.sidebar-aside-toggle {
+  --bgcolor: #555;
+}
+
+.main-sidebar .panel-button.fa-circle {
+  display: none;
+}
+
+.ol-scale-line-inner {
+  color: #fff;
+  border-color: hsl(from currentColor h s l / 80%);
+}</style></head>`
+      }
+    ]
   });
 }
 
