@@ -6048,7 +6048,7 @@ export default new (class GUI extends Emitter {
     let features = []; 
     try {
       // convert API response to Open Layer Features
-      features = await layer?.getFeatureByFids?.({ fids, formatter })?.map(f => {
+      features = (await layer?.getFeatureByFids?.({ fids, formatter }))?.map?.(f => {
         const props    = undefined !== f.properties ? f.properties : {}
         props[G3W_FID] = f.id;
         const feat     = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
