@@ -54,8 +54,8 @@
   "devDependencies": {
     "esbuild": "^0.24.0",
     "esbuild-vue": "^1.2.2",
-    "http": "^0.0.1-security",
     "http-proxy": "^1.18.1",
+    "mime-types": "^3.0.1",
     "playwright": "^1.55.0",
     "vue-template-compiler": "2.7.16"
   },
