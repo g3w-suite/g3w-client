@@ -514,7 +514,7 @@ export default new (class GUI extends Emitter {
             :class     = "{'active': !!component.state.open }"
             v-disabled = "component.state.disabled"
           >
-            <bar-loader :loading = "component.state.loading"/>
+            <div v-show = "component.state.loading" class = "bar-loader"></div>
             <a
               href             = "#"
               style            = "display: flex; justify-content: space-between; align-items: center"
@@ -744,7 +744,7 @@ export default new (class GUI extends Emitter {
         internalComponent: new (Vue.extend({
           template: /* html */ `
             <ul class="g3w-tools treeview-menu">
-              <bar-loader :loading="state.loading"/>
+              <div v-show = "state.loading" class = "bar-loader"></div>
               <li v-for="g in state.toolsGroups" :key="g.name">
                 <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
                 <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
