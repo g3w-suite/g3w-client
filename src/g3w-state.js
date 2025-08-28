@@ -230,7 +230,7 @@ const STATE = {
    */
   sidebar: {
     title: '',
-    components:   [],
+    components: [],
     /** DOM element where insert the component/panel  */
     parent:     null,
     /** barstack state. It stores the panel array */

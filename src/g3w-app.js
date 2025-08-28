@@ -74,10 +74,9 @@ const ACTIONS = {};
 
 export default new (class GUI extends Emitter {
 
-  setupControl = {};
+  #CONTENTS;
 
-  /** store sidebar components (left menu) */
-  #COMPONENTS = {};
+  setupControl = {};
 
   isready = false;
 
@@ -495,14 +494,103 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * Add component to the sidebar and set position inside the sidebar 
+   * ORIGINAL SOURCE: src/components/SidebarItem.vue@v4.0.0
+   * 
+   * Add component to the sidebar and set position inside the sidebar
    */
   addComponent(component, options={}) {
     if (!isMobile.any || false !== component.mobile) {
+
+      const sidebarItem = new (Vue.extend({
+        template: /* html */`
+          <li
+            :id        = "component.id"
+            v-show     = "component.state.visible"
+            class      = "treeview sidebaritem"
+            :class     = "{'active': open }"
+            v-disabled = "component.state.disabled"
+          >
+            <bar-loader :loading = "component.state.loading"/>
+            <a
+              href             = "#"
+              style            = "display: flex; justify-content: space-between; align-items: center"
+              :data-i18n-title = "sidebar.open ? '' : title"
+              data-placement   = "right"
+            >
+              <div>
+                <span v-if = "!sidebar.open"><i :class = "icon" :style = "{ color: iconColor }"></i></span>
+                <i v-else :class = "icon" :style = "{ color: iconColor }"></i>
+                <span class = "treeview-label" v-t = "title"></span>
+              </div>
+              <div>
+                <span
+                  v-if   = "info.state"
+                  style  = "position: absolute; right: 5px; font-weight: bold"
+                  :class = "info.class"
+                  :style = "info.style"
+                  :title = "info.tooltip"
+                >{{ info.state }}</span>
+                <span
+                  v-for            = "action in actions"
+                  :key             = "action.id"
+                  @click.stop      = "action.fnc(component.internalComponent)"
+                  v-t-tooltip:left = "action.tooltip"
+                  style            = "font-weight: bold; padding:3px;"
+                  :class           = "action.class"
+                  class            = "action"
+                  :style           = "action.style"
+                ></span>
+              </div>
+              <i v-if = "collapsible" :class = "$fa('angle-left')" class = "pull-right"></i>
+            </a>
+            <div ref="component-placeholder" ></div>
+          </li>`,
+        data: () => ({
+          component,
+          info:        component.info || { state: null, style: null, class: null },
+          main:        true,
+          active:      false,
+          title:       component.title || '',
+          open:        !!component.state.open,
+          icon:        component.icon,
+          iconColor:   component.iconColor,
+          collapsible: false !== component.collapsible,
+          actions:     component.actions,
+          sidebar:    ApplicationState.sidebar
+        }),
+      }))();
+
+      // set component click handler
+      component.click = ({ open = false } = {}) => {
+        if (open) {
+          ApplicationState.sidebar.components.forEach(comp => {
+            if (comp !== component && comp.getOpen()) {
+              comp.click({ open: false });
+            }
+          });
+        }
+        const node = component.getInternalComponent().$el;
+        node?.classList?.toggle?.('menu-open', open);
+        node.parentNode.classList.toggle('active', open);
+        component.setOpen(open);
+      };
+
+      // append to `g3w-sidebarcomponents`
+      sidebarItem.$on('hook:mounted', () => {
+        const sidebar = document.getElementById('g3w-sidebarcomponents');
+        if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
+          $(sidebar).append(sidebarItem.$el);
+        } else {
+          Array.from(sidebar.children).forEach((child, i) => {
+            if (i === options?.position || child.id === options?.position) {
+              child.insertAdjacentElement((!!options?.before || undefined === options?.before) ? 'beforebegin' : 'afterend', sidebarItem.$el);
+            }
+          });
+        }
+        component.mount(sidebarItem.$refs['component-placeholder']);
+      }).$mount();
+
       ApplicationState.sidebar.components.push(component);
-      (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
-      const id = component?.getId?.();
-      this.#COMPONENTS[id] = this.#COMPONENTS[id] ?? component;
     }
   }
 
@@ -514,7 +602,10 @@ export default new (class GUI extends Emitter {
   }
 
   getComponent(id) {
-    return this.#COMPONENTS[id];
+    if ('contents' === id) {
+      return this.#CONTENTS;
+    }
+    return ApplicationState.sidebar.components.find(c => id === c.getId());
   }
 
   /**
@@ -745,7 +836,7 @@ export default new (class GUI extends Emitter {
       return comp;
     }));
 
-    this.#COMPONENTS['contents'] = Object.assign(new Component({
+    this.#CONTENTS = Object.assign(new Component({
       id:                 'contents',
       vueComponentObject: { template: `<div id="contents" class="contents"></div>` },
     }), {
