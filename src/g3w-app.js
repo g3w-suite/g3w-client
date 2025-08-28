@@ -39,17 +39,8 @@ import { getCatalogLayers }                     from 'utils/getCatalogLayers';
 import { idb }                                  from 'utils/idb';
 import { waitFor }                              from 'utils/waitFor';
 import { debounce }                             from 'utils/debounce';
+import { noop }                                 from 'utils/noop';
 import { groupBy }                              from 'utils/groupBy';
-import { downloadFeatures }                     from 'utils/downloadFeatures';
-import { printAtlas }                           from 'utils/printAtlas';
-
-import { FormComponent }                        from 'components/g3w-form';
-import ProjectsMenu                             from 'components/ProjectsMenu.vue';
-import QueryResults                             from 'components/QueryResults.vue';
-import DownloadFormats                          from 'components/QueryResultsActionDownloadFormats.vue';
-import SidebarItem                              from 'components/SidebarItem.vue';
-import RelationsPage                            from 'components/RelationsPage.vue';
-import Relation                                 from 'components/Relation.vue';
 
 import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
 
@@ -77,6 +68,9 @@ const _MAP = {
   controls:   {},
   offlineids: [],
 };
+
+/** @TODO check if deprecated */
+const ACTIONS = {};
 
 export default new (class GUI extends Emitter {
 
@@ -503,10 +497,10 @@ export default new (class GUI extends Emitter {
   /**
    * Add component to the sidebar and set position inside the sidebar 
    */
-  addComponent(component, options = {}) {
+  addComponent(component, options={}) {
     if (!isMobile.any || false !== component.mobile) {
       ApplicationState.sidebar.components.push(component);
-      (new (Vue.extend(SidebarItem))({ component, opts: options })).$mount();
+      (new (Vue.extend(require('components/SidebarItem.vue').default))({ component, opts: options })).$mount();
       const id = component?.getId?.();
       this.#COMPONENTS[id] = this.#COMPONENTS[id] ?? component;
     }
@@ -528,6 +522,228 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/gui.js@v4.0.0
    */
   ready() {
+
+    // G3W-SPATIALBOOKMARKS
+    this.addComponent(new Component({
+      id:                 'spatialbookmarks',
+      icon:               'far fa-bookmark',
+      iconColor:          '#00bcd4',
+      title:              'Bookmarks',
+      vueComponentObject: require('components/SpatialBookMarks.vue').default,
+    }));
+
+    // G3W-PRINT
+    this.addComponent(Object.assign(new Component({
+      id:                'print',
+      visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+      icon:              g3w.app.getFontClass('print'),
+      iconColor:         '#FF9B21',
+      title:             'print',
+      service:           {},
+      internalComponent: new (Vue.extend(require('components/Print.vue').default)),
+    }), {
+      //@since 3.11.0 use internal methods called by component setters if declared
+      _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
+    }));
+
+    // G3W-SEARCH
+    this.addComponent(new Component({
+      id:         'search',
+      visible:     true,
+      icon:        g3w.app.getFontClass('search'),
+      iconColor:   '#8dc3e3',
+      title:       ApplicationState.project.state.search_title || 'search',
+      service: Object.assign(new Emitter, {
+        state: {
+          searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
+          tools: [],
+          /** Retrieve saved searches from local storage */
+          get querybuildersearches() {
+            const id = ApplicationState.project.getId();
+            ApplicationState.querybuilder.searches[id] = ApplicationState.querybuilder.searches[id] || [];
+            return ApplicationState.querybuilder.searches[id];
+          }
+        },
+        title:                    ApplicationState.project.state.search_title || "search",
+        addTool(t)                { this.state.tools.push(t); },
+        addTools(tt)              { for (const t of tt) this.addTool(t); },
+        showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
+        getTitle()                { return this.title },
+        removeTools()             { this.state.tools.splice(0) },
+        async stop(d)             { return d },
+        removeTool()              {},
+      }),
+      actions:     [
+        {
+          id:      "querybuilder",
+          class:   `${g3w.app.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+          tooltip: _('Advanced search'),
+          fnc:     () => {
+            g3w.app.closeContent();
+            g3w.app.closeSideBar();
+            return new Panel({
+              title: _('Advanced search'),
+              show: true,
+              vueComponentObject: require('components/QueryBuilder.vue').default
+            });
+          },
+          style: {
+            color:        '#8DC3E3',
+            padding:      '6px',
+            fontSize:     '1.2em',
+            borderRadius: '3px',
+            marginRight:  '5px'
+          }
+      }],
+      vueComponentObject: require('components/Search.vue').default,
+    }));
+
+    // G3W-TOOLS
+    this.addComponent(new (function() {
+      const state   = {
+        id:          'tools',
+        icon:        g3w.app.getFontClass('tools'),
+        iconColor:   '#FFE721',
+        toolsGroups: [],
+        visible: false,
+        loading: false
+      };
+    
+      const service = new Emitter({ setters: {
+        addTool(tool, { title, position }) {
+          let group = state.toolsGroups.find(g => g.name === title);
+          if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+          return group.tools.push(Object.assign(tool, {
+            state:  tool.state || ({ type: null, message: null }),
+            action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
+          }));
+        },
+        addToolGroup(position, name) {
+          let group = state.toolsGroups.find(g => g.name === name);
+          if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+          return group;  
+        },
+        addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
+        removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
+        removeTools()                { state.toolsGroups.splice(0); },
+      }});
+    
+      service.state            = state;
+      service.config           = null;
+      service.getState         = () => state;
+      service.reload           = () => { service.removeTools(); };
+      service.setLoading       = (bool = false) => { state.loading = bool; }
+    
+      // static class field
+      service.ACTIONS = ACTIONS;
+    
+      const tools = ApplicationState.project.getState().tools || {};
+    
+      for (let t in tools) {
+        service.addToolGroup(0, t.toUpperCase());
+        service.addTools(
+          tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
+          { position: 0, title: t.toUpperCase() }
+        );
+      }
+    
+      const comp = new Component({
+        id:          'tools',
+        icon:        g3w.app.getFontClass('tools'),
+        iconColor:   '#FFE721',
+        title: "tools",
+        service,
+        internalComponent: new (Vue.extend({
+          template: /* html */ `
+            <ul class="g3w-tools treeview-menu">
+              <bar-loader :loading="state.loading"/>
+              <li v-for="g in state.toolsGroups" :key="g.name">
+                <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
+                <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
+              </li>
+            </ul>`,
+          components: { G3wTool: require('components/Tool.vue').default },
+          data: () => ({ state: null }),
+          watch: {
+            async 'state.toolsGroups'(g) {
+              comp.setVisible(g.length > 0);
+              this.$emit('visible', g.length > 0);
+              await g3w.app.isReady();
+              document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
+            }
+          },
+        }))(),
+      });
+    
+      comp._setOpen = (b = false) => {
+        comp.internalComponent.state.open = b;
+        if (b) {
+          g3w.app.closeContent();
+        }
+      };
+    
+      return comp;
+    }));
+
+    // G3W-CATALOG
+    this.addComponent(new (function() {
+      const state = {
+        external: {   // external layers
+          wms:    [], // added by wms sidebar component
+          vector: []  // added to map controls for the moment
+        },
+        layerstrees:  Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : []),
+        layersgroups: [],
+      };
+    
+      const service = new Emitter({
+        setters: {
+          /**
+           * @param {{ layer: unknown, type: 'vector' }}
+           *
+           * @fires CatalogService~addExternalLayer
+           *
+           * @since 3.8.0
+           */
+          addExternalLayer({ layer, type='vector' } = {}) {
+            layer.removable = true;
+            state.external[type].push(layer);
+          },
+          /**
+           * @param {{ name: string, type: 'vector' }}
+           *
+           * @fires CatalogService~removeExternalLayer
+           *
+           * @since 3.8.0
+           */
+          removeExternalLayer({ name, type='vector' } = {}) {
+            state.external[type].filter((l, i) => {
+              if (name === l.name) {
+                state.external[type].splice(i, 1);
+                return true;
+              }
+            });
+          },
+        }
+      });
+    
+      service.state             = state;
+
+      /** used by the following plugins: "processing" */
+      service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
+
+      const comp = new Component({
+        id:                 'catalog',
+        icon:               g3w.app.getFontClass('map'),
+        iconColor:          '#019A4C',
+        title:              'catalog',
+        resizable:          true,
+        vueComponentObject: require('components/Catalog.vue').default,
+        service,
+      });
+    
+      return comp;
+    }));
 
     this.#COMPONENTS['contents'] = Object.assign(new Component({
       id:                 'contents',
@@ -796,6 +1012,7 @@ export default new (class GUI extends Emitter {
   }
 
   showForm(options = {}) {
+    const { FormComponent } = require('components/g3w-form');
     // new instance every time
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     this.setContent({
@@ -903,7 +1120,7 @@ export default new (class GUI extends Emitter {
       content:    new Component({
         id:                 'queryresults',
         service:            this,
-        vueComponentObject: QueryResults,
+        vueComponentObject: require('components/QueryResults.vue').default,
       }),
       title:      "info.title",
       crumb:      { title: "info.title", trigger: null },
@@ -1131,7 +1348,7 @@ export default new (class GUI extends Emitter {
       ...opts,
       id: 'projectsmenu',
       title: opts.title || 'menu',
-      internalComponent: new (Vue.extend(ProjectsMenu))({
+      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue').default))({
         host: opts.host,
         state: {
           menuitems: (opts.projects || getListableProjects()).map(p => ({
@@ -2251,7 +2468,7 @@ export default new (class GUI extends Emitter {
             this.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
             this.pushContent({
               content: new Component({
-                internalComponent: new (Vue.extend(RelationsPage))({
+                internalComponent: new (Vue.extend(require('components/RelationsPage.vue').default))({
                   relations:        action.relations,
                   chartRelationIds: action.relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
                   feature,
@@ -2370,45 +2587,8 @@ export default new (class GUI extends Emitter {
 
     });
 
+    this.addActionsForLayers(this.state.layersactions, this.state.queried_layers);
 
-    // set download action tool
-    this.state.queried_layers
-      .filter(layer => layer.downloads.length > 0)
-      .forEach((layer) => {
-        this.state.layersactions[layer.id].push({
-          id:         'downloads',
-          download:   true,
-          class:      this.getFontClass('download'),
-          state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => Object.assign(a, { [i]: null }), {}) }),
-          toggleable: true,
-          hint:       'Downloads',
-          change({ features }) {
-            features.forEach((_, i) => undefined === this.state.toggled[i] ? Vue.set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
-          },
-          cbk: (layer, feature, action, index) => {
-            action.state.toggled[index] = !action.state.toggled[index];
-            this.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-          }
-        });
-        this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
-        this.state.actiontools.downloadformats[layer.id] = {
-          downloads: layer.downloads.map(format => ({
-            id:       `download_${format}_feature`,
-            download: true,
-            format,
-            class:    this.getFontClass(format),
-            hint:     `download_types.${format}`,
-            cbk: (layer, feature, action, index, html, down_with_relations) => {
-              // un-toggle downloads action
-              downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
-              if ('polygon' !== this.state.query.type) {
-                const downloadsaction = actions[layer.id].find(a => 'downloads' === a.id);
-                downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
-              }
-            }
-          }))
-        };
-      });
   }
 
   /**
@@ -2898,7 +3078,7 @@ export default new (class GUI extends Emitter {
     this.setLoadingContent(true);
 
     try {
-      const { url } = await printAtlas({
+      const { url } = await require('utils/printAtlas').printAtlas({
         field,
         values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
         template: atlas.name,
@@ -3122,7 +3302,7 @@ export default new (class GUI extends Emitter {
     const projectRelation = ApplicationState.project.getRelationById(relation.name);
     this.pushContent({
       content: new Component({
-        vueComponentObject: Relation,
+        vueComponentObject: require('components/Relation.vue').default,
         propsData: {
           relation:         projectRelation,
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
