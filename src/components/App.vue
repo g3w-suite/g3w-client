@@ -629,10 +629,14 @@ import ApplicationState   from 'g3w-state';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
 import GUI                from 'g3w-app';
+import Emitter            from 'g3w-emitter';
+
 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { sameOrigin }     from 'utils/sameOrigin';
 import { waitFor }        from 'utils/waitFor';
+import { noop }           from 'utils/noop';
+
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
@@ -640,7 +644,16 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
+import SpatialBookMarks   from 'components/SpatialBookMarks.vue';
+import Print              from 'components/Print.vue';
+import { SearchPanel }    from 'components/g3w-search';
+import Tool               from 'components/Tool.vue';
+import Catalog            from 'components/Catalog.vue';
+
 import { gettext as _ }   from 'g3w-i18n';
+
+/** @TODO check if deprecated */
+const ACTIONS = {};
 
 export default {
 
@@ -1165,6 +1178,234 @@ export default {
   async mounted() {
 
     this.language = this.appconfig.user.i18n;
+
+    /**  
+    * ORIGINAL SOURCE: src/services/gui.js@v4.0.0 
+    *  Add base sidebar components
+    */
+
+    // G3W-SPATIALBOOKMARKS
+    GUI.addComponent(new Component({
+      id:                 'spatialbookmarks',
+      icon:               'far fa-bookmark',
+      iconColor:          '#00bcd4',
+      title:              'Bookmarks',
+      vueComponentObject: SpatialBookMarks,
+    }));
+
+    // G3W-PRINT
+    GUI.addComponent(Object.assign(new Component({
+      id:                'print',
+      visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+      icon:              g3w.app.getFontClass('print'),
+      iconColor:         '#FF9B21',
+      title:             'print',
+      service:           {},
+      internalComponent: new (Vue.extend(Print)),
+    }), {
+      //@since 3.11.0 use internal methods called by component setters if declared
+      _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
+    }));
+        
+    // G3W-SEARCH
+    GUI.addComponent(new Component({
+      id:         'search',
+      visible:     true,
+      icon:        g3w.app.getFontClass('search'),
+      iconColor:   '#8dc3e3',
+      title:       ApplicationState.project.state.search_title || 'search',
+      service: Object.assign(new Emitter, {
+        state: {
+          searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
+          tools: [],
+          /** Retrieve saved searches from local storage */
+          get querybuildersearches() {
+            const id = ApplicationState.project.getId();
+            ApplicationState.querybuilder.searches[id] = ApplicationState.querybuilder.searches[id] || [];
+            return ApplicationState.querybuilder.searches[id];
+          }
+        },
+        title:                    ApplicationState.project.state.search_title || "search",
+        addTool(t)                { this.state.tools.push(t); },
+        addTools(tt)              { for (const t of tt) this.addTool(t); },
+        showPanel(o)              { return new SearchPanel(o, true) },
+        getTitle()                { return this.title },
+        removeTools()             { this.state.tools.splice(0) },
+        async stop(d)             { return d },
+        removeTool()              {},
+      }),
+      actions:     [
+        {
+          id:      "querybuilder",
+          class:   `${g3w.app.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+          tooltip: _('Advanced search'),
+          fnc:     () => {
+            g3w.app.closeContent();
+            g3w.app.closeSideBar();
+            return new Panel({
+              title: _('Advanced search'),
+              show: true,
+              vueComponentObject: require('components/QueryBuilder.vue').default
+            });
+          },
+          style: {
+            color:        '#8DC3E3',
+            padding:      '6px',
+            fontSize:     '1.2em',
+            borderRadius: '3px',
+            marginRight:  '5px'
+          }
+      }],
+      vueComponentObject: require('components/Search.vue').default,
+    }));
+        
+    // G3W-TOOLS
+    GUI.addComponent(new (function() {
+      const state   = {
+        id:          'tools',
+        icon:        g3w.app.getFontClass('tools'),
+        iconColor:   '#FFE721',
+        toolsGroups: [],
+        visible: false,
+        loading: false
+      };
+    
+      const service = new Emitter({ setters: {
+        addTool(tool, { title, position }) {
+          let group = state.toolsGroups.find(g => g.name === title);
+          if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+          return group.tools.push(Object.assign(tool, {
+            state:  tool.state || ({ type: null, message: null }),
+            action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
+          }));
+        },
+        addToolGroup(position, name) {
+          let group = state.toolsGroups.find(g => g.name === name);
+          if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
+          return group;  
+        },
+        addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
+        removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
+        removeTools()                { state.toolsGroups.splice(0); },
+      }});
+    
+      service.state            = state;
+      service.config           = null;
+      service.getState         = () => state;
+      service.reload           = () => { service.removeTools(); };
+      service.setLoading       = (bool = false) => { state.loading = bool; }
+    
+      // static class field
+      service.ACTIONS = ACTIONS;
+    
+      const tools = ApplicationState.project.getState().tools || {};
+    
+      for (let t in tools) {
+        service.addToolGroup(0, t.toUpperCase());
+        service.addTools(
+          tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
+          { position: 0, title: t.toUpperCase() }
+        );
+      }
+    
+      const comp = new Component({
+        id:          'tools',
+        icon:        g3w.app.getFontClass('tools'),
+        iconColor:   '#FFE721',
+        title: "tools",
+        service,
+        internalComponent: new (Vue.extend({
+          template: /* html */ `
+            <ul class="g3w-tools treeview-menu">
+              <bar-loader :loading="state.loading"/>
+              <li v-for="g in state.toolsGroups" :key="g.name">
+                <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
+                <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
+              </li>
+            </ul>`,
+          components: { G3wTool: Tool },
+          data: () => ({ state: null }),
+          watch: {
+            async 'state.toolsGroups'(g) {
+              comp.setVisible(g.length > 0);
+              this.$emit('visible', g.length > 0);
+              await g3w.app.isReady();
+              document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
+            }
+          },
+        }))(),
+      });
+    
+      comp._setOpen = (b = false) => {
+        comp.internalComponent.state.open = b;
+        if (b) {
+          g3w.app.closeContent();
+        }
+      };
+    
+      return comp;
+    }));
+
+    // G3W-CATALOG
+    GUI.addComponent(new (function() {
+      const state = {
+        external: {   // external layers
+          wms:    [], // added by wms sidebar component
+          vector: []  // added to map controls for the moment
+        },
+        layerstrees:  Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : []),
+        layersgroups: [],
+      };
+    
+      const service = new Emitter({
+        setters: {
+          /**
+           * @param {{ layer: unknown, type: 'vector' }}
+           *
+           * @fires CatalogService~addExternalLayer
+           *
+           * @since 3.8.0
+           */
+          addExternalLayer({ layer, type='vector' } = {}) {
+            layer.removable = true;
+            state.external[type].push(layer);
+          },
+          /**
+           * @param {{ name: string, type: 'vector' }}
+           *
+           * @fires CatalogService~removeExternalLayer
+           *
+           * @since 3.8.0
+           */
+          removeExternalLayer({ name, type='vector' } = {}) {
+            state.external[type].filter((l, i) => {
+              if (name === l.name) {
+                state.external[type].splice(i, 1);
+                return true;
+              }
+            });
+          },
+        }
+      });
+    
+      service.state             = state;
+
+      /** used by the following plugins: "processing" */
+      service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
+
+      const comp = new Component({
+        id:                 'catalog',
+        icon:               g3w.app.getFontClass('map'),
+        iconColor:          '#019A4C',
+        title:              'catalog',
+        resizable:          true,
+        vueComponentObject: Catalog,
+        service,
+      });
+    
+      return comp;
+    }));
+
 
     await this.$nextTick();
 

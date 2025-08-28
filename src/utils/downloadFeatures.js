@@ -20,47 +20,6 @@ import DownloadFormats         from 'components/QueryResultsActionDownloadFormat
 
 import shpwrite                from '@mapbox/shp-write';
 
-// set download action tool
-GUI.onafter('addActionsForLayers', (actions, layers) => {
-  layers
-    .filter(layer => layer.downloads.length > 0)
-    .forEach((layer) => {
-      actions[layer.id].push({
-        id:         'downloads',
-        download:   true,
-        class:      GUI.getFontClass('download'),
-        state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => Object.assign(a, { [i]: null }), {}) }),
-        toggleable: true,
-        hint:       'Downloads',
-        change({ features }) {
-          features.forEach((_, i) => undefined === this.state.toggled[i] ? Vue.set(this.state.toggled, i, false) : (this.state.toggled[i] = false))
-        },
-        cbk: (layer, feature, action, index) => {
-          action.state.toggled[index] = !action.state.toggled[index];
-          GUI.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
-        }
-      });
-      GUI.state.actiontools.downloadformats = GUI.state.actiontools.downloadformats || {};
-      GUI.state.actiontools.downloadformats[layer.id] = {
-        downloads: layer.downloads.map(format => ({
-          id:       `download_${format}_feature`,
-          download: true,
-          format,
-          class:    GUI.getFontClass(format),
-          hint:     `download_types.${format}`,
-          cbk: (layer, feature, action, index, html, down_with_relations) => {
-            // un-toggle downloads action
-            downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
-            if ('polygon' !== GUI.state.query.type) {
-              const downloadsaction = actions[layer.id].find(a => 'downloads' === a.id);
-              downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
-            }
-          }
-        }))
-      };
-    });
-});
-
 /**
  * @TODO simplify, always make use of <dialog> element
  */
