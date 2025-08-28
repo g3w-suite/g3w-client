@@ -451,7 +451,7 @@ function start_proxy_server() {
   });
 
   server.listen(3000, () => {
-      console.log('Proxy server is running on http://localhost:3000');
+      console.log( '\n'+ GREEN__  + 'Proxy server running at: http://localhost:3000' + __RESET);
   });
 }
 
