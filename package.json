@@ -56,6 +56,7 @@
     "esbuild-vue": "^1.2.2",
     "http-proxy": "^1.18.1",
     "http-proxy-response-rewrite": "^0.0.1",
+    "mime-types": "^3.0.1",
     "playwright": "^1.55.0",
     "vue-template-compiler": "2.7.16"
   },
