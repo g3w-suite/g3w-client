@@ -430,47 +430,48 @@ function copyDir(src, dest) {
  * 
  * @since 4.1.0
  */
-function start_proxy_server() {
-  const browserSync = require('browser-sync');
-  browserSync({
-    proxy:          'https://dev.g3wsuite.it/',
-    files:          [g3w.admin_overrides_folder + '/**'],
-    serveStatic:    [g3w.admin_overrides_folder],
-    external:       false,
-    open:           false,
-    online:         false,
-    rewriteRules: [
-      {
-        match: new RegExp('</head>'),
-        fn: () =>`<style>/* Custom G3W-CLIENT theme (v4.0.0) */
+async function start_proxy_server() {
+  const http      = require('http');
+  const httpProxy = require('http-proxy');
+  const mime      = require('mime-types');
+  const modifyResponse = require('http-proxy-response-rewrite');
 
-:root {
-  --skin-color: red;
-}
+  const SERVER_URL = 'https://dev.g3wsuite.it/';
 
-.main-sidebar {
-  --bgcolor: #eee;
-  border-right: 1px solid #d6d6d6;
-}
+  const proxy      = httpProxy.createProxyServer({
+    secure: false,
+    changeOrigin: true,
+  });
 
-.main-sidebar *:not(legend) {
-  color: initial !important;
-}
+  const server = http.createServer((req, res) => {
+    const localPath = path.join(g3w.admin_overrides_folder, req.url);
+    console.log(fs.existsSync(localPath), localPath);
+    if (req.url.startsWith('/static/client') && fs.existsSync(localPath)) {
+      const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
+      res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
+      res.end(require('fs').readFileSync(localPath));
+    } else {
+      proxy.web(req, res, { target: SERVER_URL });
+    }
+  });
 
-.sidebar-aside-toggle {
-  --bgcolor: #555;
-}
-
-.main-sidebar .panel-button.fa-circle {
-  display: none;
-}
-
-.ol-scale-line-inner {
-  color: #fff;
-  border-color: hsl(from currentColor h s l / 80%);
-}</style></head>`
+  // replace `https://dev.g3wsuite.it` → `http://localhost:3000` within text/html responses
+  proxy.on('proxyRes', function (proxyRes, req, res) {
+    if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('text') || req.url.startsWith('/media')) {
+      return;
+    }
+    modifyResponse(res, proxyRes.headers['content-encoding'], function (body) {
+      if (body) {
+          const modifiedBody  = body.replace(/https:\/\/dev\.g3wsuite\.it/g, 'http://localhost:3000');
+          res.setHeader('Content-Length', Buffer.byteLength(modifiedBody));
+          return modifiedBody;
       }
-    ]
+      return body;
+  });
+});
+
+  server.listen(3000, () => {
+    console.log( '\n'+ GREEN__  + 'Proxy server running at: http://localhost:3000' + __RESET);
   });
 }
 

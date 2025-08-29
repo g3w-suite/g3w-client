@@ -52,9 +52,10 @@
     "vue2-teleport": "^1.1.4"
   },
   "devDependencies": {
-    "browser-sync": "^3.0.4",
     "esbuild": "^0.24.0",
     "esbuild-vue": "^1.2.2",
+    "http-proxy": "^1.18.1",
+    "http-proxy-response-rewrite": "^0.0.1",
     "playwright": "^1.55.0",
     "vue-template-compiler": "2.7.16"
   },
