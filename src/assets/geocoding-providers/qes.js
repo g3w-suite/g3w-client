@@ -25,7 +25,7 @@
         layer_id:   result.layer_id,
         feature_id: result.feature_id,
         //@since 4.0.1 check if layer_id has a specific fields to show, otherwise get name attribute of the feature
-        name:       ((config.toshow ?? {})[result.layer_id] ?? ['name']).map(f => result.attributes[f]).join('<br/>'),
+        name:       ((config.toshow ?? {})[result.layer_id] ?? ['name']).map(f => result.attributes[f] ?? '').join('<br/>'),
         type:       result.layer_name,
       })),
     }),
