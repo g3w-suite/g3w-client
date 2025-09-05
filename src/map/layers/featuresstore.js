@@ -121,12 +121,12 @@ export class FeaturesStore extends G3WObject {
     return $promisify(async () => {
       if (commitItems && this._provider) {
         commitItems.lockids = this._lockIds;
-        //get editing config style related to layer
-        const style = this._provider._layer.config?.editing?.layer_style;
         return await XHR.post({
           //@since 4.0.1 need to add style parameter to commit url in case of layer has a specific editing style
-          url:         `${this._provider._layer.getUrl('commit')}${ style ? `?style=${style}` : ''}`,
-          data:        JSON.stringify(commitItems),
+          url:         this._provider._layer.getUrl('commit'),
+          //layer_style, if not set on admin, it set as empty string as default. So in this case need to se undefine to avoid to set style parameter
+          //on POST body
+          data:        JSON.stringify(Object.assign(commitItems, { style: this._provider._layer.config?.editing?.layer_style || undefined })),
           contentType: 'application/json',
         });
       }
