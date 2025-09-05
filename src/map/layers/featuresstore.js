@@ -122,7 +122,7 @@ export class FeaturesStore extends G3WObject {
       if (commitItems && this._provider) {
         commitItems.lockids = this._lockIds;
         return await XHR.post({
-          url:         this._provider._layer.getUrl('commit'),
+          url:         `${this._provider._layer.getUrl('commit')}${this._provider._layer.config?.editing?.layer_style ? `?style=${this._provider._layer.config.editing.layer_style}` : ''}`,
           data:        JSON.stringify(commitItems),
           contentType: 'application/json',
         });
