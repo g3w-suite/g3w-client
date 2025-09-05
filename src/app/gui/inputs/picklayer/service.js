@@ -13,8 +13,6 @@ module.exports = class PickLayerService {
     this.interaction = 'map' === this.pick_type  ? new PickFeatureInteraction({
       layers: [this.mapService.getLayerById(this.layerId)]
     }) : new PickCoordinatesInteraction();
-    //@since 4.0.1 set id. It used on editing plugin
-    this.interaction.set('id', 'picklayer');
   }
 
   /**
