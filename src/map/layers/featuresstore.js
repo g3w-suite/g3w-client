@@ -121,9 +121,11 @@ export class FeaturesStore extends G3WObject {
     return $promisify(async () => {
       if (commitItems && this._provider) {
         commitItems.lockids = this._lockIds;
+        //get editing config style related to layer
+        const style = this._provider._layer.config?.editing?.layer_style;
         return await XHR.post({
           //@since 4.0.1 need to add style parameter to commit url in case of layer has a specific editing style
-          url:         `${this._provider._layer.getUrl('commit')}${this._provider._layer.config?.editing?.layer_style ? `?style=${this._provider._layer.config.editing.layer_style}` : ''}`,
+          url:         `${this._provider._layer.getUrl('commit')}${ style ? `?style=${style}` : ''}`,
           data:        JSON.stringify(commitItems),
           contentType: 'application/json',
         });
