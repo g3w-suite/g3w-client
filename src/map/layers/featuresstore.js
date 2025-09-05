@@ -180,12 +180,15 @@ export class FeaturesStore extends G3WObject {
      *
      * @type {*[]}
      */
-    const { count, features = [], featurelocks = [] } = options;
+    const { features = [], featurelocks = [] } = options;
 
-    //@since 4.0.1 if no features are locked, but features returned by server (count) is more than 0
-    if (count > 0 && 0 === features.length) { 
-      //It means that another user locks these features
-      this.featuresLockedByOtherUser(features);
+    //if no features locks mean another user locks all feature requests
+    if (0 === featurelocks.length) {
+      //if there are features on response
+      if (features.length > 0) {
+        //It means that another user locks these features
+        this.featuresLockedByOtherUser(features);
+      }
       return [];
     }
 
@@ -218,8 +221,9 @@ export class FeaturesStore extends G3WObject {
       }
     });
 
-    //@since 4.0.1 if count (number of feature get from server) is more than features (features not locked)
-    if (count > features.length) {
+    //if features locks are less than features get from server,
+    // it means that another user locks some features
+    if (featurelocks.length < features.length) {
       this.featuresLockedByOtherUser(lockFeatures);
     }
 
