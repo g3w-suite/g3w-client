@@ -58,11 +58,8 @@
           :value = "select2NullValue">
         </option>
 
-        <option
-          v-for  = "({ key, value }) in state.input.options.values"
-          :key   = "getValue(value)"
-          :value = "getValue(value)">
-            {{ key }}
+        <option v-for  = "({ key, value }) in state.input.options.values"
+          :value = "getValue(value)">{{ key }}
         </option>
       </select>
     </div>
