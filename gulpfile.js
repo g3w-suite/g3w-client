@@ -488,6 +488,7 @@ gulp.task('build', gulp.series(
   'clone:plugins',
   'select-plugins',
   'build:plugins',
+  'geocoding-providers',
   'build:client',
   'clean:overrides',
   )
