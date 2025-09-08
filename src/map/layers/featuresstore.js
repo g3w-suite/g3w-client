@@ -122,8 +122,11 @@ export class FeaturesStore extends G3WObject {
       if (commitItems && this._provider) {
         commitItems.lockids = this._lockIds;
         return await XHR.post({
+          //@since 4.0.1 need to add style parameter to commit url in case of layer has a specific editing style
           url:         this._provider._layer.getUrl('commit'),
-          data:        JSON.stringify(commitItems),
+          //layer_style, if not set on admin, it set as empty string as default. So in this case need to se undefine to avoid to set style parameter
+          //on POST body
+          data:        JSON.stringify(Object.assign(commitItems, { style: this._provider._layer.config?.editing?.layer_style || undefined })),
           contentType: 'application/json',
         });
       }
@@ -180,15 +183,12 @@ export class FeaturesStore extends G3WObject {
      *
      * @type {*[]}
      */
-    const { features = [], featurelocks = [] } = options;
+    const { count, features = [], featurelocks = [] } = options;
 
-    //if no features locks mean another user locks all feature requests
-    if (0 === featurelocks.length) {
-      //if there are features on response
-      if (features.length > 0) {
-        //It means that another user locks these features
-        this.featuresLockedByOtherUser(features);
-      }
+    //@since 4.0.1 if no features are locked, but features returned by server (count) is more than 0
+    if (count > 0 && 0 === features.length) { 
+      //It means that another user locks these features
+      this.featuresLockedByOtherUser(features);
       return [];
     }
 
@@ -221,9 +221,8 @@ export class FeaturesStore extends G3WObject {
       }
     });
 
-    //if features locks are less than features get from server,
-    // it means that another user locks some features
-    if (featurelocks.length < features.length) {
+    //@since 4.0.1 if count (number of feature get from server) is more than features (features not locked)
+    if (count > features.length) {
       this.featuresLockedByOtherUser(lockFeatures);
     }
 
