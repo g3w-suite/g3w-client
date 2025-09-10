@@ -502,7 +502,7 @@ export default new (class GUI extends Emitter {
    * @param { Object } options
    * @param { number } options.position index where to add (inside sidebar)
    */
-  addComponent(component, options={}) {
+  addComponent(component, options = {}) {
     if (!isMobile.any || false !== component.mobile) {
 
       const sidebarItem = new (Vue.extend({
