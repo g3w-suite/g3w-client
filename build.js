@@ -91,9 +91,17 @@ const task = args[0];
         })
       }
 
-      // clean overrides
-      fs.rmSync(`${g3w.admin_overrides_folder}/static/`,    { recursive: true, force: true });
-      fs.rmSync(`${g3w.admin_overrides_folder}/templates/`, { recursive: true, force: true });
+      if (production) {
+        /**
+         * Need to remove stati and template folders only when prodcution is true
+         * otherwise if we run dev and docker admin is running, /code/static and /code/templates are deleted 
+         * and static and templates link to admin code and no more to overrides
+        */
+        // clean overrides
+        fs.rmSync(`${g3w.admin_overrides_folder}/static/`,    { recursive: true, force: true });
+        fs.rmSync(`${g3w.admin_overrides_folder}/templates/`, { recursive: true, force: true });
+      }
+      
 
       // update versions
       await Promise.all([''].concat(dev_plugins).map(pluginName => new Promise(done => {
