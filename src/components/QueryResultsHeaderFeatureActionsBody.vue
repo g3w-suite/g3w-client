@@ -5,10 +5,10 @@
 
 <template>
   <tr
-    @mouseover.stop = "trigger({ id: 'highlightgeometry'}, layer, feature, index)"
-    @mouseout.stop  = "trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
-    class      = "featurebox-header"
-  >
+    @mouseover.stop = "feature.geometry && trigger({ id: 'highlightgeometry'}, layer, feature, index)"
+    @mouseout.stop  = "feature.geometry && trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
+    class           = "featurebox-header"
+  > 
     <actions
       :colspan      = "colspan"
       :layer        = "layer"
@@ -63,7 +63,7 @@
     },
     components: {
       actions:Actions
-    }
+    },
   }
 </script>
 
