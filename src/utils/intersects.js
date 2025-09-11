@@ -19,5 +19,11 @@ export function intersects(geometry, geometryToCheck) {
     ol.geom.MultiLineString,
     ol.geom.MultiPolygon,
   );
-  return parser.read(geometry).intersects(parser.read(geometryToCheck));
+  try {
+    return parser.read(geometry).intersects(parser.read(geometryToCheck));
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
+  
 }
