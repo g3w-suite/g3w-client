@@ -1620,7 +1620,7 @@ export default new (class QueryResultsService extends G3WObject {
       );
 
       // set selection property (external layer)
-      catalog_layer.selection.active = Object.values(action.state.toggled).every(t => t);;
+      catalog_layer.selection.active = Object.values(action.state.toggled).some(t => t);;
       
       return;
     }
@@ -1673,7 +1673,7 @@ export default new (class QueryResultsService extends G3WObject {
       });
     }
 
-    catalog_layer.state.selection.active = Object.values(action.state.toggled).every(t => t);
+    catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
 
     //remove Highlight geometry layer fetures
     GUI.getService('map').clearHighlightGeometry();
