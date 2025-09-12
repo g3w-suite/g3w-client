@@ -226,7 +226,7 @@ class RasterLayer extends G3WObject {
     if ('mapproxy' === this.config.cache_provider) {
       //Use a set to store unique url tiles loading
       const loadTile = new Set();
-      olLayer.getSource().on(`${image}loadstart`, e => { if (!loadTile.has(e.tile.src_)) { loadTile.add(e.tile.src_);    this.emit('loadstart') }});
+      olLayer.getSource().on(`${image}loadstart`, e => { if (!loadTile.has(e.tile.src_)) { loadTile.add(e.tile.src_); this.emit('loadstart') }});
       olLayer.getSource().on([`${image}loadend`, `${image}loaderror`], e => { if (loadTile.has(e.tile.src_) ) { loadTile.delete(e.tile.src_); this.emit(e.type.split(image)[1]) }} );
     } else {
       olLayer.getSource().on([`${image}loadstart`, `${image}loadend`, `${image}loaderror`] , e => this.emit(e.type.split(image)[1]) );
