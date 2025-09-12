@@ -229,6 +229,8 @@ class MapService extends G3WObject {
    * @since 3.11.0
    */
   onLayerLoadError() {
+    //need to reduce layer loading counter
+    this.onLayerLoadEnd();
     /** @since 3.10.0 - fails silently */
     if (!this.project.state.show_load_layer_error) {
       return;
@@ -237,8 +239,7 @@ class MapService extends G3WObject {
       GUI.notify.warning('Some layers are not available');
       this.onLayerLoadError.shown = true;
     }
-    this.onLayerLoadEnd();
-  }
+    }
 
   /**
    * @returns promise ready
