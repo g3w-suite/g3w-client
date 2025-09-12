@@ -3519,7 +3519,7 @@ export default new (class GUI extends Emitter {
       );
 
       // set selection property (external layer)
-      catalog_layer.selection.active = Object.values(action.state.toggled).every(t => t);;
+      catalog_layer.selection.active = Object.values(action.state.toggled).some(t => t);;
       
       return;
     }
@@ -3572,7 +3572,7 @@ export default new (class GUI extends Emitter {
       });
     }
 
-    catalog_layer.state.selection.active = Object.values(action.state.toggled).every(t => t);
+    catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
 
     //remove Highlight geometry layer fetures
     this.clearHighlightGeometry();

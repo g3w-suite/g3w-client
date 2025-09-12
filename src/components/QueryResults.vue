@@ -125,7 +125,7 @@
                     @click.stop      = "toggleSelection(layer)"
                     class            = "action-button"
                     v-t-tooltip:left = "'Add/Remove Selection'"
-                    :class           = "{'toggled': layer.selection.active}"
+                    :class           = "{'toggled': layer.selection.active && layer.features.every(f => f.selection.selected)}"
                   >
                     <span
                       class  = "action-button-icon"
