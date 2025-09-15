@@ -32,8 +32,8 @@
               <div
                 class            = "box-header with-border"
                 :class           = "{'mobile': isMobile()}"
-                @mouseover.stop  = "highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout.stop   = "highLightLayerFeatures(layer, { highlight: false })"
+                @mouseover.stop  = "!isMobile() && highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
+                @mouseout.stop   = "!isMobile() && highLightLayerFeatures(layer, { highlight: false })"
                 @click.stop      = "collapseSidebar"
               >
                 <div
@@ -70,7 +70,7 @@
                       v-if             = "layer.hasgeometry"
                       @click.stop      = "zoomToLayerFeaturesExtent(layer)"
                        class           = "action-button"
-                      v-t-tooltip:left = "'Zoom to features extent'"
+                      v-t-tooltip:top = "'Zoom to features extent'"
                     >
                       <span
                         class  = "action-button-icon"
