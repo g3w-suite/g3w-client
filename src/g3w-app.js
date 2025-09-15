@@ -1197,11 +1197,11 @@ export default new (class GUI extends Emitter {
      */
     this.#atlas = ApplicationState.project.getPrint().filter(p => p.atlas) || [];
 
-    if (isMobile.any && this.isMobile()) {
-      this.#asyncFnc.zoomToLayerFeaturesExtent.async = true;
-      this.#asyncFnc.highLightLayerFeatures.async    = true;
-      this.#asyncFnc.goToGeometry.async              = true;
-    }
+    
+    this.#asyncFnc.zoomToLayerFeaturesExtent.async = isMobile.any && this.isMobile();
+    this.#asyncFnc.highLightLayerFeatures.async    = isMobile.any && this.isMobile();
+    this.#asyncFnc.goToGeometry.async              = isMobile.any && this.isMobile();
+  
 
     // show contextual content
     this.setContent({
@@ -2763,21 +2763,12 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   clear() {
-    // clear query results
-
-    this.#asyncFnc.todo()
     // unlistener events actions
     this.#events.query.forEach(obj => obj.layer.off(obj.event, obj.handler));
     this.#events.query = [];
     this.clearHighlightGeometry();
     this.#layer.getSource().clear();
     this.removeAddFeaturesLayerResultInteraction(true);
-    this.#asyncFnc = {
-      todo:                      () => {},
-      zoomToLayerFeaturesExtent: { async: false },
-      highLightLayerFeatures:    { async: false },
-      goToGeometry:              { async: false },
-    };
     //reset pagination
     this.clearState();
     this.closeComponent();
@@ -2787,7 +2778,11 @@ export default new (class GUI extends Emitter {
     // clear map
     this.#events.ol.forEach(key => ol.Observable.unByKey(key));
     this.#events.ol.splice(0);
-    Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this))
+    Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this));
+    setTimeout(() => {
+      this.#asyncFnc.todo();
+      this.#asyncFnc.todo = () => {};
+    })
   }
 
   /**
@@ -2940,8 +2935,10 @@ export default new (class GUI extends Emitter {
    */
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
+  
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this.#asyncFnc.zoomToLayerFeaturesExtent.async) {
+      console.log(features, options)
       this.#asyncFnc.todo = this.zoomToFeatures.bind(this, features, options);
     } else {
       this.zoomToFeatures(features, options);
