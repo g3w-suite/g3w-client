@@ -2926,7 +2926,9 @@ export default new (class GUI extends Emitter {
     const async       = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
     const features    = (layer.features || []).filter(f => this.showFeature(layer, f));
     this.once('asyncFnc.todo', () => { this.zoomToFeatures(features, options); });
-    if (!async) {
+    if (async) {
+      this.closeContent();
+    } else {
       this.emit('asyncFnc.todo');
     }
   }
@@ -3260,7 +3262,9 @@ export default new (class GUI extends Emitter {
         this.highlightGeometry(feature.geometry, { layerId: layer.id, duration: 1500 });
       }
     });
-    if (!async) {
+    if (async) {
+      this.closeContent();
+    } else {
       setTimeout(() => this.emit('asyncFnc.todo'));
     }
   }
