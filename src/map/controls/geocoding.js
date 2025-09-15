@@ -338,7 +338,6 @@ class GeocodingControl extends ol.control.Control {
 
       // clear previous result
       const RESULTS = this.RESULTS.filter(item => update_on_move && item.__selected).map(item => Object.assign(item, { ___update_on_move: true }));
-
       // request data and update search results
       (await Promise.allSettled(
         Object
@@ -354,7 +353,6 @@ class GeocodingControl extends ol.control.Control {
       ))
         .filter(p => 'fulfilled' === p.status)
         .forEach((p) => {
-
           // heading
           RESULTS.push({
             __heading: true,
@@ -370,6 +368,8 @@ class GeocodingControl extends ol.control.Control {
 
           // results
           p.value.results.forEach(item => {
+            //@since 4.0.1 get values find and replace it with bold value of original
+            (new Set((item.name ?? '').match(new RegExp(q, 'gi')) || [])).forEach(v => item.name = (item.name).replaceAll(v, `<b>${v}</b>`))
             const obj = flattenObject({
               ...item,
               provider:   p.value.provider,
