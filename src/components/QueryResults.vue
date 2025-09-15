@@ -32,8 +32,8 @@
               <div
                 class            = "box-header with-border"
                 :class           = "{'mobile': isMobile()}"
-                @mouseover.stop  = "!isMobile() && highLightLayerFeatures(layer, { highlight: true, duration: Infinity })"
-                @mouseout.stop   = "!isMobile() && highLightLayerFeatures(layer, { highlight: false })"
+                @mouseover.stop  = "!isMobile() && highlightLayer(layer, { highlight: true, duration: Infinity })"
+                @mouseout.stop   = "!isMobile() && highlightLayer(layer, { highlight: false })"
                 @click.stop      = "collapseSidebar"
               >
                 <div
@@ -68,7 +68,7 @@
                   <template v-if = "layer.features.length > 1">
                     <span
                       v-if             = "layer.hasgeometry"
-                      @click.stop      = "zoomToLayerFeaturesExtent(layer)"
+                      @click.stop      = "zoomToLayer(layer)"
                       class           = "action-button"
                       v-t-tooltip:top  = "'Zoom to features extent'"
                     >
@@ -935,11 +935,11 @@
        * @param layer
        * @param opts
        *
-       * @since 3.11.0
+       * @since 4.1.0
        */
-      highLightLayerFeatures(layer, opts = { highlight: true }) {
+      highlightLayer(layer, opts = { highlight: true }) {
         if (layer.hasgeometry) {
-          GUI.highLightLayerFeatures(layer, opts);
+          GUI.highlightLayer(layer, opts);
         }
       },
 
@@ -1030,7 +1030,7 @@
 
           // zoom to features when layer has geometry
           if (queried_layers[index].hasgeometry) {
-            GUI.highLightLayerFeatures(queried_layers[index]);
+            GUI.highlightLayer(queried_layers[index]);
           }
         } catch(e) {
           console.warn(e);
@@ -1078,7 +1078,7 @@
     },
     created() {
       // THROTTLED FUNCTION
-      this.zoomToLayerFeaturesExtent = throttle(layer => { GUI.zoomToLayerFeaturesExtent(layer); });
+      this.zoomToLayer = throttle(layer => { GUI.zoomToLayer(layer); });
     },
     destroyed() {
       GUI.clear();

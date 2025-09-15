@@ -289,16 +289,6 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   */
-  #asyncFnc = {
-    todo:                      () => {},
-    zoomToLayerFeaturesExtent: { async: false },
-    highLightLayerFeatures:    { async: false },
-    goToGeometry:              { async: false },
-  };
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * Vector layer used by query result to show query
    * request as coordinates, bbox, polygon, etc ..
@@ -474,7 +464,9 @@ export default new (class GUI extends Emitter {
     ];
 
     // BACKOMP v3.x
-    this.outputDataPlace = this.showData.bind(this);
+    this.outputDataPlace           = this.showData.bind(this);
+    this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
+    this.highLightLayerFeatures    = this.highlightLayer.bind(this);
 
     // BACKCOMP: v3.x
     this.dialog.confirm = this.dialog.dialog;
@@ -1196,12 +1188,6 @@ export default new (class GUI extends Emitter {
      * @FIXME add description
      */
     this.#atlas = ApplicationState.project.getPrint().filter(p => p.atlas) || [];
-
-    
-    this.#asyncFnc.zoomToLayerFeaturesExtent.async = isMobile.any && this.isMobile();
-    this.#asyncFnc.highLightLayerFeatures.async    = isMobile.any && this.isMobile();
-    this.#asyncFnc.goToGeometry.async              = isMobile.any && this.isMobile();
-  
 
     // show contextual content
     this.setContent({
@@ -2779,9 +2765,11 @@ export default new (class GUI extends Emitter {
     this.#events.ol.forEach(key => ol.Observable.unByKey(key));
     this.#events.ol.splice(0);
     Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this));
+
+    // exec lazy functions 
     setTimeout(() => {
-      this.#asyncFnc.todo();
-      this.#asyncFnc.todo = () => {};
+      this.emit('asyncFnc.todo');
+      this.off('asyncFnc.todo');
     })
   }
 
@@ -2933,13 +2921,13 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  zoomToLayerFeaturesExtent(layer, options = {}) {
+  zoomToLayer(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
-    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
-    if (this.#asyncFnc.zoomToLayerFeaturesExtent.async) {
-      this.#asyncFnc.todo = this.zoomToFeatures.bind(this, features, options);
-    } else {
-      this.zoomToFeatures(features, options);
+    const async       = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    const features    = (layer.features || []).filter(f => this.showFeature(layer, f));
+    this.once('asyncFnc.todo', () => { this.zoomToFeatures(features, options); });
+    if (!async) {
+      this.emit('asyncFnc.todo');
     }
   }
 
@@ -2962,12 +2950,12 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  highLightLayerFeatures(layer, options = {}) {
+  highlightLayer(layer, options = {}) {
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
-    if (this.#asyncFnc.highLightLayerFeatures.async) {
-      this.#asyncFnc.todo = this.highlightFeatures.bind(this, features, options);
-    } else {
-      this.highlightFeatures(features, options);
+    const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    this.once('asyncFnc.todo', () => { this.highlightFeatures(features, options); });
+    if (!async) {
+      this.emit('asyncFnc.todo');
     }
   }
 
@@ -3264,17 +3252,16 @@ export default new (class GUI extends Emitter {
     if (!feature.geometry) {
       return;
     }
-    if (this.#asyncFnc.goToGeometry.async) {
-      this.#asyncFnc.todo = this[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'].bind(
-        this,
-        this.isOneLayerResult() ? [feature] : feature.geometry,
-        this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
-      );
-    } else {
-      setTimeout(() => this[this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry'](
-        this.isOneLayerResult() ? [feature] : feature.geometry,
-        this.isOneLayerResult() ? {} : { layerId: layer.id, duration: 1500 }
-      ));
+    const async = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    this.once('asyncFnc.todo', () => {
+      if (this.isOneLayerResult()) {
+        this.zoomToFeatures([feature], {});
+      } else {
+        this.highlightGeometry(feature.geometry, { layerId: layer.id, duration: 1500 });
+      }
+    });
+    if (!async) {
+      setTimeout(() => this.emit('asyncFnc.todo'));
     }
   }
 
