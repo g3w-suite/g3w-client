@@ -567,7 +567,7 @@
                 :class             = "$fa(`resize-${state.split}`)"
                 v-t-tooltip:bottom = "'Enlarge / Reduce'"
                 style              = "margin-right: 3px;"
-                class              = "action-button skin-color-dark"
+                class              = "action-button action-button-resize skin-color-dark"
                 @click             = "resizeFull"
               ></i>
             </div>
@@ -575,7 +575,7 @@
               style              = "cursor: pointer; scale:.9;"
               :style             = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
               v-t-tooltip:bottom = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
-              class              = "action-button skin-color-dark fa fa-external-link-alt"
+              class              = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
               @click             = "splitContent"
             ></i>
             <i
@@ -583,7 +583,7 @@
               @click             = "closeContent"
               v-t-tooltip:bottom = "'close'"
               :class             = "{'mobile': isMobile()}"
-              class              = "action-button skin-color-dark fas fa-times"
+              class              = "action-button action-button-close skin-color-dark fas fa-times"
             ></i>
           </div>
         </div>

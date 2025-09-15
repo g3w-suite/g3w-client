@@ -937,7 +937,7 @@
        *
        * @since 4.1.0
        */
-      highlightLayer(layer, opts = { highlight: true }) {
+      highlightLayer(layer, opts) {
         if (layer.hasgeometry) {
           GUI.highlightLayer(layer, opts);
         }
