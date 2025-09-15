@@ -70,7 +70,7 @@
                       v-if             = "layer.hasgeometry"
                       @click.stop      = "zoomToLayerFeaturesExtent(layer)"
                        class           = "action-button"
-                      v-t-tooltip:left = "'Zoom to features extent'"
+                      v-t-tooltip:top = "'Zoom to features extent'"
                     >
                       <span
                         class  = "action-button-icon"
