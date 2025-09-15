@@ -2935,10 +2935,8 @@ export default new (class GUI extends Emitter {
    */
   zoomToLayerFeaturesExtent(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
-  
     const features = (layer.features || []).filter(f => this.showFeature(layer, f));
     if (this.#asyncFnc.zoomToLayerFeaturesExtent.async) {
-      console.log(features, options)
       this.#asyncFnc.todo = this.zoomToFeatures.bind(this, features, options);
     } else {
       this.zoomToFeatures(features, options);
