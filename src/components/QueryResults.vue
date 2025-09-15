@@ -771,10 +771,10 @@
         return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
       },
       addLayerFeaturesToResults(layer) {
-        this.$options.service.addLayerFeaturesToResultsAction(layer);
+        GUI.addLayerFeaturesToResultsAction(layer);
       },
       printAtlas(layer) {
-        this.$options.service.printAtlas(layer);
+        GUI.printAtlas(layer);
       },
       showLayerDownloadFormats(layer) {
         showDownloadFormats(layer);
@@ -810,7 +810,7 @@
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
       toggleSelection(layer) {
-        this.$options.service.toggleSelection(layer);
+        GUI.toggleSelection(layer);
       },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
@@ -862,7 +862,7 @@
             collapsed => {
               const index     = layer.features.findIndex(_feature => feature.id === _feature.id);
               const container = this.getContainerFromFeatureLayer({ layer, index });
-              this.$options.service.openCloseFeatureResult({ open:!collapsed, layer, feature, container })
+              GUI.openCloseFeatureResult({ open:!collapsed, layer, feature, container })
             }
           );
           this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
@@ -878,7 +878,7 @@
 
       showFeatureInfo(layer, boxid) {
         const box = this.state.layersFeaturesBoxes[boxid];
-        this.$options.service.emit('show-query-feature-info', {
+        GUI.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
           show: box ? !box.collapsed : false,
@@ -890,10 +890,10 @@
        * Show only features that have show true and in case of active filter, only selected 
        */
       showFeature(layer, feature) {
-        return this.$options.service.showFeature(layer, feature);
+        return GUI.showFeature(layer, feature);
       },
       getBoxId(layer, feature, relation_index) {
-        return this.$options.service.getBoxId(layer, feature, relation_index);
+        return GUI.getBoxId(layer, feature, relation_index);
       },
       async toggleFeatureBox(layer, feature, relation_index) {
         const boxid = this.getBoxId(layer, feature, relation_index);
@@ -909,7 +909,7 @@
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        await this.$options.service.triggerAction(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
+        await GUI.triggerAction(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
@@ -939,7 +939,7 @@
        */
       highLightLayerFeatures(layer, opts = { highlight: true }) {
         if (layer.hasgeometry) {
-          this.$options.service.highLightLayerFeatures(layer, opts);
+          GUI.highLightLayerFeatures(layer, opts);
         }
       },
 
@@ -993,7 +993,7 @@
           const data = await layer[query.pagination.getData.method]({ ...query.pagination.getData.params[index], page });
           
           // set response data
-          this.$options.service.setQueryResponse(
+          GUI.setQueryResponse(
             { ...data, query },
             { add: false, update: true }
           );
@@ -1030,7 +1030,7 @@
 
           // zoom to features when layer has geometry
           if (queried_layers[index].hasgeometry) {
-            this.$options.service.highLightLayerFeatures(queried_layers[index]);
+            GUI.highLightLayerFeatures(queried_layers[index]);
           }
         } catch(e) {
           console.warn(e);
@@ -1063,11 +1063,11 @@
           const layer   = queried_layers[0];
           const feature = layer.features[0];
           const boxid   = this.getBoxId(layer, feature);
-          this.$options.service.onceafter('postRender', () => {
+          GUI.onceafter('postRender', () => {
             this.showFeatureInfo(layer, boxid);
           });
         }
-        requestAnimationFrame(() => this.$options.service.postRender(this.$el));
+        requestAnimationFrame(() => GUI.postRender(this.$el));
         await this.$nextTick();
       },
       onelayerresult(bool) {
@@ -1077,13 +1077,11 @@
       }
     },
     created() {
-      //PUT HERE THROTTLED FUNCTION
-      this.zoomToLayerFeaturesExtent = throttle(layer => {
-        this.$options.service.zoomToLayerFeaturesExtent(layer);
-      })
+      // THROTTLED FUNCTION
+      this.zoomToLayerFeaturesExtent = throttle(layer => { GUI.zoomToLayerFeaturesExtent(layer); });
     },
     destroyed() {
-      this.$options.service.clear();
+      GUI.clear();
     }
   };
 </script>
