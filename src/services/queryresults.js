@@ -971,24 +971,27 @@ export default new (class QueryResultsService extends G3WObject {
    * Clear all
    */
   clear() {
-    this._asyncFnc.todo()
     // unlistener events actions
     this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
     this.unlistenerlayeractionevents = [];
     GUI.getService('map').clearHighlightGeometry();
     this.resultsQueryLayer.getSource().clear();
     this.removeAddFeaturesLayerResultInteraction(true);
-    this._asyncFnc = {
-      todo:                      () => {},
-      zoomToLayerFeaturesExtent: { async: false },
-      highLightLayerFeatures:    { async: false },
-      goToGeometry:              { async: false },
-    };
+    
     //reset pagination
     this.clearState();
     this.closeComponent();
     this.resultsQueryLayer.getSource().clear();
     GUI.getService('map').getMap().removeLayer(this.resultsQueryLayer);
+    setTimeout(() => {
+      this._asyncFnc.todo();
+      this._asyncFnc = {
+        todo:                      () => {},
+        zoomToLayerFeaturesExtent: { async: false },
+        highLightLayerFeatures:    { async: false },
+        goToGeometry:              { async: false },
+      };
+    })
   }
 
   /**
