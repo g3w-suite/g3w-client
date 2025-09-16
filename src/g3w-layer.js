@@ -3464,7 +3464,7 @@ export class Layer extends Emitter {
       this.emit('loadend');
     });
 
-    olLayer.getSource().on([`tileloaderror`, `imageloaderror`], () => {
+    olLayer.getSource().on(['tileloaderror', 'imageloaderror'], () => {
       this.emit('loaderror');
     });
 
