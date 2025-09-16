@@ -3297,11 +3297,11 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER (with mapproxy)
-    if ('WMTS' === this.config.type && 'mapproxy' === this.state.cache_provider) {
+    if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
-          url:         this.layers[0]?.getWmsUrl ? this.layers[0].getWmsUrl() : this.state.url,
+          url:         this.state.url,
           layer:       this.state.cache_layer,
           matrixSet:   this.state.cache_grid,
           format:      'png',
@@ -3314,7 +3314,7 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER
-    if ('WMTS' === this.config.type) {
+    if ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider) {
       olLayer = new ol.layer.Tile({
         id:            this.state.id,
         name:          undefined,
@@ -3446,13 +3446,15 @@ export class Layer extends Emitter {
       return;
     }
 
+     
+    //@since 4.0.2 in case of 'mapproxy' there are load start events tiles different in number from loadend or loaderror
+    //FIX asking to server and check only unique url tiles 
+    //Use a set to store unique url tiles loading
+    const uniqueRequests = new Set();
     // loading events (eg. start/stop spinner)
-    olLayer.getSource().on(`tileloadstart`, () => this.emit('loadstart'));
-    olLayer.getSource().on(`tileloadend`,   () => this.emit('loadend'));
-    olLayer.getSource().on(`tileloaderror`, () => this.emit('loaderror'));
-    olLayer.getSource().on(`imageloadstart`, () => this.emit('loadstart'));
-    olLayer.getSource().on(`imageloadend`,   () => this.emit('loadend'));
-    olLayer.getSource().on(`imageloaderror`, () => this.emit('loaderror'));
+    olLayer.getSource().on([`tileloadstart`, `imageloadstart`], e => { if (e.image) { this.emit('loadstart'); return; } if (!uniqueRequests.has(e.tile.src_)) { uniqueRequests.add(e.tile.src_); this.emit('loadstart') }});;
+    olLayer.getSource().on([`tileloadend`,`imageloadend`] ,     e => { if (e.image) { this.emit('loadend'); return; } if (uniqueRequests.has(e.tile.src_) ) { uniqueRequests.delete(e.tile.src_); this.emit(e.type.split('tile')[1]) }} );;
+    olLayer.getSource().on([`tileloaderror`, `imageloaderror`], () => this.emit('loaderror'));
 
     // lazy set "attributions"
     if (!withLayers && this.config?.attributions) {
