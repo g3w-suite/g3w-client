@@ -221,10 +221,17 @@ class RasterLayer extends G3WObject {
         extraParams: this.extraParams,
       }, this._method);
     }
-
-    olLayer.getSource().on(`${image}loadstart`, () => this.emit('loadstart'));
-    olLayer.getSource().on(`${image}loadend`,   () => this.emit('loadend'));
-    olLayer.getSource().on(`${image}loaderror`, () => this.emit('loaderror'));
+    
+    //@since 4.0.2 in case of 'mapproxy' there are load start events tiles different in number from loadend or loaderror
+    //FIX asking to server ancd check only unique url tiles 
+    if ('mapproxy' === this.config.cache_provider) {
+      //Use a set to store unique url tiles loading
+      const loadTile = new Set();
+      olLayer.getSource().on(`${image}loadstart`, e => { if (!loadTile.has(e.tile.src_)) { loadTile.add(e.tile.src_); this.emit('loadstart') }});
+      olLayer.getSource().on([`${image}loadend`, `${image}loaderror`], e => { if (loadTile.has(e.tile.src_) ) { loadTile.delete(e.tile.src_); this.emit(e.type.split(image)[1]) }} );
+    } else {
+      olLayer.getSource().on([`${image}loadstart`, `${image}loadend`, `${image}loaderror`] , e => this.emit(e.type.split(image)[1]) );
+    }
 
     return olLayer
   }
