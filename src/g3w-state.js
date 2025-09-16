@@ -442,7 +442,6 @@ const STATE = {
       // crs not yet registered
       if (!p) {
         p = new ol.proj.Projection(proj);
-        p.getAxisOrientation = () => proj.axisOrientation;
         ol.proj.addProjection(p);
       }
 
