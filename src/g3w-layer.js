@@ -3446,7 +3446,7 @@ export class Layer extends Emitter {
       return;
     }
 
-    // store unique url tiles and emit unique start/stop events (loading spinner)
+    // store unique url tiles and emit unique start/stop events (loading spinner), ref: https://github.com/g3w-suite/g3w-client/pull/851
     const tiles = new Set();
 
     olLayer.getSource().on(['tileloadstart', 'imageloadstart'], e => {
