@@ -45,7 +45,11 @@ export class Plugin extends Emitter {
     // lazy load i18n
     if ('string' === typeof i18n) {
       Vue.watch(() => ApplicationState.language, async lang => {
-        this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
+        try {
+          this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
+        } catch (e) {
+          console.warn(e);
+        }
       }, { immediate: true });
     }
 
