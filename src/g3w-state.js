@@ -452,7 +452,7 @@ const STATE = {
       }
 
       // crs has no extent
-      if (crs.extent && !p.getExtent()){
+      if (crs.extent && !p.getExtent()) {
         p.setExtent(crs.extent);
       }
 

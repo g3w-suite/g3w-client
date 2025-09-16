@@ -177,7 +177,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  layersCount = 0; // 
+  layersCount = 0;
 
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
