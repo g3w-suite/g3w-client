@@ -35,6 +35,7 @@ import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
+import { tile } from 'ol/loadingstrategy';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -3450,10 +3451,14 @@ export class Layer extends Emitter {
     const tiles = new Set();
 
     olLayer.getSource().on(['tileloadstart', 'imageloadstart'], e => {
+      //In case of tile layer and not yet loaded
       if (!e.image && tiles.has(e?.tile?.src_)) {
         return;
       }
-      tiles.add(e?.tile?.src_);
+      //In case of tile and has a src tile
+      if (!e.image && e?.tile?.src_) {
+        tiles.add(e?.tile?.src_);
+      }
       this.emit('loadstart');
     });
 
