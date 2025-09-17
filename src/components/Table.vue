@@ -331,8 +331,11 @@ export default {
       if (!this.getAll) {
         await this.getFeatures()
       }
+      //invert select attribute from current loaded features
       this.state.features.forEach(f => f.selected = !f.selected);
+      //Invert selection
       this.layer.invertSelectionFids();
+      //set state of all features on table
       this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
     },
 
