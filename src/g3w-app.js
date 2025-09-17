@@ -2609,7 +2609,8 @@ export default new (class GUI extends Emitter {
             const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selection.selected;
             if (_layer && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
-              _layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
+              _layer.makeOLSelectable(fid, feature);
+              _layer.getOlSelectionFeature(fid).selected = true;
               _layer.includeSelectionFid(fid, false);
             }
           },
@@ -3515,7 +3516,7 @@ export default new (class GUI extends Emitter {
       const is_selected = catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid);
       // update OL selection layer (on map)
       if (!is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
-        catalog_layer.addOlSelectionFeature({ id: fid, feature: features[i] });
+        catalog_layer.makeOLSelectable(fid, features[i]);
       }
       // exclude / remove
       if ((feature && is_selected) || (!feature && toggled)) {

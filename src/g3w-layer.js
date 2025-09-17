@@ -2483,21 +2483,22 @@ export class Layer extends Emitter {
   }
 
   /**
+   * Create a new OL feature and store into current `ol_selection` state
+   * 
    * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
    *
    * @since 4.0.0
    */
-  addOlSelectionFeature({ id, feature: feat } = {}) {
-    //create a new ol feature
-    const feature = new ol.Feature(feat.geometry);
-    feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
-    Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
+  makeOLSelectable(id, feature) {
+    const f = new ol.Feature(feature.geometry);
+    f.setId(`${this.getId()}_${id}`);     // see: #777, prevent ID collision when selecting features from multiple layers
+    f.set(G3W_FID, f.get(G3W_FID) ?? id); // ensure `G3W_FID` is always set
+    Object.entries(feature.attributes).forEach(([a, v]) => f.set(a, v));
     this.state.ol_selection[id] = this.state.ol_selection[id] || {
-      feature,
+      feature:  f,
       added:    false,
       selected: false, /** @since 3.9.9 */
     };
-    return this.state.ol_selection[id];
   }
 
   /**

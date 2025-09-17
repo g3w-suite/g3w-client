@@ -167,16 +167,6 @@ function toOLGeom(geom) {
   }).find(o => geom.type.startsWith(o[0])))[1](geom.coordinates);
 }
 
-function _createFeatureForSelection(f) {
-  return {
-    id: f.id,
-    feature: {
-      attributes: f.attributes || f.properties,
-      geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-    },
-  }
-}
-
 export default {
 
   name: "G3WTable",
@@ -361,7 +351,10 @@ export default {
             const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
             f.selected = this.state.selectAll;
             if (geometry) {
-              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+              this.layer.makeOLSelectable(f.id, {
+                attributes: f.attributes || f.properties,
+                geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
+              });
             }
             this.layer.includeSelectionFid(f.id);
             this.state.features.push({
@@ -492,7 +485,10 @@ export default {
           const loaded_features = this.state.features.map(f => f.id);
           data.features
             .filter(f => f.geometry && !loaded_features.includes(f.id))
-            .forEach(f => this.layer.addOlSelectionFeature(_createFeatureForSelection(f)));
+            .forEach(f => this.layer.makeOLSelectable(f.id, {
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
+            }));
           this.getAll = true;
         }
 
@@ -573,7 +569,10 @@ export default {
             
             if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
               f.selected = this.state.selectAll;
-              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
+              this.layer.makeOLSelectable(f.id, {
+                attributes: f.attributes || f.properties,
+                geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
+              });
               if (f.selected) {
                 this.layer.includeSelectionFid(f.id)
               };

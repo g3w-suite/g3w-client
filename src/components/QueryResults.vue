@@ -1018,7 +1018,8 @@
           queried_layers[index].features.forEach((f, i) => {
             if (page_size_change && !f.selection.selected && f.geometry && layer.isGeoLayer()) {
               const fid = queried_layers[index].external ? f.id : (f.attributes[G3W_FID] || f.id);
-              layer.addOlSelectionFeature({ id: fid, feature:f }).selected = true;
+              layer.makeOLSelectable(fid, f);
+              layer.getOlSelectionFeature(fid).selected = true;
               layer.includeSelectionFid(fid, false);
             }
             f.selection.selected    = page_size_change;
