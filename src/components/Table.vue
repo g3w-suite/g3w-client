@@ -474,8 +474,8 @@ export default {
      */
     select(feature) {
       feature.selected      = !feature.selected;                                                // inverse selected feature
-      this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
-      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
+      this.state.selectAll  = this.state.features.every(f => f.selected); 
+      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](`${feature.id}`); //string
       this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
     },
 
