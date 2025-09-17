@@ -3513,32 +3513,18 @@ export default new (class GUI extends Emitter {
 
     fids.forEach((fid, i) => {
       const is_selected = catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid);
-
-      // if not already selected and feature is not added to OL selection layer on map --> add as feature of selected layer
+      // update OL selection layer (on map)
       if (!is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
         catalog_layer.addOlSelectionFeature({ id: fid, feature: features[i] });
       }
-    
-      // exclude
-      if (feature && is_selected) {
-        catalog_layer.excludeSelectionFid(fid);
+      // exclude / remove
+      if ((feature && is_selected) || (!feature && toggled)) {
+        catalog_layer.excludeSelectionFid(fid, !!feature);
       }
-
-      // include
-      if (feature && !is_selected) {
-        catalog_layer.includeSelectionFid(fid);
+      // include / add
+      if ((feature && !is_selected) || (!feature && !toggled && !is_selected)) {
+        catalog_layer.includeSelectionFid(fid, !!feature);
       }
-  
-      // add
-      if (!feature && !toggled && !is_selected) {
-        catalog_layer.includeSelectionFid(fid, false);
-      }
-  
-      // remove
-      if (!feature && toggled) {
-        catalog_layer.excludeSelectionFid(fid, false);
-      }
-
     });
 
     // set layer selection state
