@@ -149,7 +149,7 @@
           data-placement               = "left"
           :class                       = "g3wtemplate.getFontClass('clear')"
           @click.caputure.prevent.stop = "clearSelection"
-          v-t-tooltip                  = "'Invert Selection'"
+          v-t-tooltip                  = "'Clear Selection'"
         ></span>
 
         <!-- TOGGLE FILTER  -->
