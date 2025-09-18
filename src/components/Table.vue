@@ -329,7 +329,7 @@ export default {
     async inverseSelection() {
       // get all features
       if (!this.getAll) {
-        await this.getFeatures()
+        await this.getFeatures({ formatter: 1 })
       }
       //invert select attribute from current loaded features
       this.state.features.forEach(f => f.selected = !f.selected);
@@ -352,7 +352,7 @@ export default {
 
       // get all features when any kind of filter is unset
       if (!filter && this.state.selectAll && !this.getAll) {
-        await this.getFeatures(); 
+        await this.getFeatures({ formatter: 1 }); 
       }
 
       // no filter
