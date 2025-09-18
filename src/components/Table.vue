@@ -329,7 +329,11 @@ export default {
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
           }
-          this.layer.includeSelectionFid(f.id);
+          if (this.state.selectAll) {
+            this.layer.includeSelectionFid(f.id);
+          } else {
+            this.layer.excludeSelectionFid(f.id);
+          }
           return {
             id:         f.id,
             selected:   this.state.selectAll,
