@@ -345,11 +345,10 @@ export default {
       }
 
       // column filter (paginated results)
-      if (filter /*&& this.state.selectAll && this.state.allfeatures > this.state.featurescount*/) {
-        // await this.layer.clearSelectionFids();                                                   // clear selection ids
+      if (filter) {
         this.state.features.splice(0);                                                           // reset features
         await this.$nextTick();                                                                  // wait for DOM changes
-        (await this.getFeatures({ field: this.search.field }) || []).forEach(f => {
+        (await this.getFeatures({ field: this.search.field, formatter: 1 }) || []).forEach(f => {
           const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
           f.selected = true;
           if (geometry && !this.layer.getOlSelectionFeature(f.id)) {
@@ -369,17 +368,6 @@ export default {
       }
 
       this.state.features.forEach(f => f.selected = this.state.selectAll);
-
-      // column filter (without pagination)
-      // if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
-      //   this.state.features
-      //     .filter(f => this.filter.includes(f.id))
-      //     .forEach(f => {
-      //       f.selected = true;
-      //       this.layer.includeSelectionFid(f.id);
-      //     });
-      // }
-
       this.state.show_tools = this.state.features.some(f => f.selected);
     },
 
