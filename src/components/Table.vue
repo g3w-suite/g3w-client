@@ -321,28 +321,27 @@ export default {
         const filter         = this.filter.length > 0;      // check if has columns filter
         this.state.selectAll = !this.state.selectAll;       // inverse selection (all)
 
-        if (filter) {
-          this.state.features.splice(0);                      // reset features
-        }
-
         // fetch features from server
-        (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.forEach(f => {
+        const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
           if (f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
             this.layer.makeOLSelectable(f.id, {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
           }
-          if (!this.layer.getOlSelectionFeature(f.id)) {
-            this.layer.includeSelectionFid(f.id);
-            this.state.features.push({
-              id:         f.id,
-              selected:   this.state.selectAll,
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry
-            });
-          }
-        });
+          this.layer.includeSelectionFid(f.id);
+          return {
+            id:         f.id,
+            selected:   this.state.selectAll,
+            attributes: f.attributes || f.properties,
+            geometry:   f.geometry
+          };
+        }) || [];
+
+        // reset features
+        this.state.features.splice(0);
+        this.state.features.push(...features);
+
 
         // select all (no filter)
         if (this.state.selectAll && !filter) {
