@@ -70,7 +70,7 @@
         </tr>
         <tr>
           <th v-disabled = "disableSelectAll">
-            <label @click = "selectAllRows">
+            <label @click.stop = "selectAllRows">
               <input type = "checkbox" :checked = "state.selectAll && state.features.length > 0" />
             </label>
           </th>
@@ -104,8 +104,8 @@
           <td>
             <div style = "display: flex">
               <label
-                v-if   = "show_on_active_filter"
-                @click = "select(feature)"
+                v-if        = "show_on_active_filter"
+                @click.stop = "select(feature)"
               >
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
