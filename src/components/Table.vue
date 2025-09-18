@@ -234,7 +234,7 @@ export default {
      * @since 4.0.0
      */
     show_on_active_filter() {
-      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
+      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__')));
     },
 
     current_layout() {
@@ -608,7 +608,7 @@ export default {
         );
 
         this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
+        this.state.selectAll  = this.layer.state.filter.active || this.layer.state.selectionFids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
 
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
