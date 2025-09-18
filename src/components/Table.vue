@@ -336,19 +336,17 @@ export default {
 
       // select all (no filter)
       if (this.state.selectAll && !filter) {
-        this.state.features.forEach(f => f.selected = true);
         await this.layer.setSelectionFidsAll();
       }
 
       // unselect all
       if (!this.state.selectAll) {
-        this.state.features.forEach(f => f.selected = false);
         await this.layer.clearSelectionFids();
       }
 
       // column filter (paginated results)
-      if (filter && this.state.selectAll /*&& this.state.allfeatures > this.state.featurescount*/) {
-        await this.layer.clearSelectionFids();                                                   // clear selection ids
+      if (filter /*&& this.state.selectAll && this.state.allfeatures > this.state.featurescount*/) {
+        // await this.layer.clearSelectionFids();                                                   // clear selection ids
         this.state.features.splice(0);                                                           // reset features
         await this.$nextTick();                                                                  // wait for DOM changes
         (await this.getFeatures({ field: this.search.field }) || []).forEach(f => {
@@ -369,6 +367,8 @@ export default {
           });
         });
       }
+
+      this.state.features.forEach(f => f.selected = this.state.selectAll);
 
       // column filter (without pagination)
       // if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
