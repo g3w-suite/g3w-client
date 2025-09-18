@@ -584,23 +584,16 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
+            f.selected = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id)
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
-            
             if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = this.state.selectAll;
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-              if (f.selected) {
-                this.layer.includeSelectionFid(f.id)
-              };
+              if (f.selected) { this.layer.includeSelectionFid(f.id) };
             }
-
-            if (has_geometry && this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = true;
-            }
-
+            
             return {
               id:         f.id,
-              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id),
+              selected:   f.selected,
               attributes: f.attributes || f.properties,
               geometry:   this.layer.isGeoLayer() && f.geometry || undefined
             };
