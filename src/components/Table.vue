@@ -314,60 +314,54 @@ export default {
     },
 
     async selectAllRows() {
+      GUI.disableContent(true);
+      GUI.setLoadingContent(true);
 
-      // inverse selection (all)
-      this.state.selectAll = !this.state.selectAll;
-
-      // wait for DOM changes
-      await this.$nextTick();
-
-      // check if has columns filter
-      const filter = this.filter.length > 0;
-
-      // column filter
-      if (filter) {
-        this.state.features.splice(0);                                                           // reset features
-        await this.$nextTick();                                                                  // wait for DOM changes
-      }
-
-      // fetch features from server
       try {
-        GUI.disableContent(true);
-        GUI.setLoadingContent(true);
+        const filter         = this.filter.length > 0;      // check if has columns filter
+        this.state.selectAll = !this.state.selectAll;       // inverse selection (all)
+
+        if (filter) {
+          this.state.features.splice(0);                      // reset features
+        }
+
+        // fetch features from server
         (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.forEach(f => {
           if (f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
             this.layer.makeOLSelectable(f.id, {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
-            this.layer.includeSelectionFid(f.id);
           }
-          this.state.features.push({
-            id:         f.id,
-            selected:   this.state.selectAll,
-            attributes: f.attributes || f.properties,
-            geometry:   f.geometry
-          });
+          if (!this.layer.getOlSelectionFeature(f.id)) {
+            this.layer.includeSelectionFid(f.id);
+            this.state.features.push({
+              id:         f.id,
+              selected:   this.state.selectAll,
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry
+            });
+          }
         });
+
+        // select all (no filter)
+        if (this.state.selectAll && !filter) {
+          await this.layer.setSelectionFidsAll();
+        }
+
+        // unselect all
+        if (!this.state.selectAll) {
+          await this.layer.clearSelectionFids();
+        }
+
+        this.state.features.forEach(f => f.selected = this.state.selectAll);
+        this.state.show_tools = this.state.features.some(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
         GUI.setLoadingContent(false);
         GUI.disableContent(false);
       }
-
-      // select all (no filter)
-      if (this.state.selectAll && !filter) {
-        await this.layer.setSelectionFidsAll();
-      }
-
-      // unselect all
-      if (!this.state.selectAll) {
-        await this.layer.clearSelectionFids();
-      }
-
-      this.state.features.forEach(f => f.selected = this.state.selectAll);
-      this.state.show_tools = this.state.features.some(f => f.selected);
     },
 
     /**
