@@ -340,8 +340,8 @@ export default {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
+            this.layer.includeSelectionFid(f.id);
           }
-          this.layer.includeSelectionFid(f.id);
           this.state.features.push({
             id:         f.id,
             selected:   this.state.selectAll,
