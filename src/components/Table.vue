@@ -334,54 +334,51 @@ export default {
         await this.getFeatures(); 
       }
 
-      // no filter
-      if (!filter) {
-        this.state.features.forEach(f => f.selected = this.state.selectAll)                      // select each feature
-        await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids'](); // toggle selection (filter token)
+      // select all (no filter)
+      if (this.state.selectAll && !filter) {
+        this.state.features.forEach(f => f.selected = true);
+        await this.layer.setSelectionFidsAll();
       }
 
-      // column filter (paginated results)
-      if (filter && this.state.selectAll && this.state.allfeatures > this.state.featurescount) {
-        await this.layer.clearSelectionFids();                                                   // clear selection ids
-        this.state.selectAll = true;                                                             // force selectAll
-        this.state.features.splice(0);                                                           // reset features
-        await this.$nextTick();                                                                  // wait for DOM changes
-        (await this.getFeatures({ field: this.search.field }) || [])
-          .forEach(f => {
-            const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
-            f.selected = this.state.selectAll;
-            if (geometry) {
-              this.layer.makeOLSelectable(f.id, {
-                attributes: f.attributes || f.properties,
-                geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-              });
-            }
-            this.layer.includeSelectionFid(f.id);
-            this.state.features.push({
-              id:         f.id,
-              selected:   f.selected,                                                            // whether filter token comes from a pagination
-              attributes: f.attributes || f.properties,
-              geometry
-          });
-        })
-      }
-
-      // column filter (without pagination)
-      if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
-        this.state
-          .features
-          .filter(f => this.filter.includes(f.id))
-          .forEach(f => {
-            f.selected = true;
-            this.layer.includeSelectionFid(f.id);
-          });
-      }
-
-      /** @FIXME add description */
-      if (filter && !this.state.selectAll) {
+      // unselect all
+      if (!this.state.selectAll) {
         this.state.features.forEach(f => f.selected = false);
         await this.layer.clearSelectionFids();
       }
+
+      // column filter (paginated results)
+      if (filter && this.state.selectAll /*&& this.state.allfeatures > this.state.featurescount*/) {
+        await this.layer.clearSelectionFids();                                                   // clear selection ids
+        this.state.features.splice(0);                                                           // reset features
+        await this.$nextTick();                                                                  // wait for DOM changes
+        (await this.getFeatures({ field: this.search.field }) || []).forEach(f => {
+          const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
+          f.selected = true;
+          if (geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            this.layer.makeOLSelectable(f.id, {
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
+            });
+          }
+          this.layer.includeSelectionFid(f.id);
+          this.state.features.push({
+            id:         f.id,
+            selected:   f.selected,                                                            // whether filter token comes from a pagination
+            attributes: f.attributes || f.properties,
+            geometry
+          });
+        });
+      }
+
+      // column filter (without pagination)
+      // if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
+      //   this.state.features
+      //     .filter(f => this.filter.includes(f.id))
+      //     .forEach(f => {
+      //       f.selected = true;
+      //       this.layer.includeSelectionFid(f.id);
+      //     });
+      // }
 
       this.state.show_tools = this.state.features.some(f => f.selected);
     },
