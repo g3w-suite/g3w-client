@@ -369,9 +369,8 @@ export default {
         await this.$nextTick();                                                                  // wait for DOM changes
         (await this.getFeatures({ field: this.search.field, formatter: 1 }) || [])
           .forEach(f => {
-            const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
             f.selected = this.state.selectAll;
-            if (geometry) {
+            if (f.geometry) {
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
             }
             this.layer.includeSelectionFid(f.id);
@@ -379,7 +378,7 @@ export default {
               id:         f.id,
               selected:   f.selected,                                                            // whether filter token comes from a pagination
               attributes: f.attributes || f.properties,
-              geometry
+              geometry  : f.geometry
           });
         })
       }
