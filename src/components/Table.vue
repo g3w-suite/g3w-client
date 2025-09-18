@@ -222,7 +222,7 @@ export default {
      * @since 4.0.0
      */
     show_on_active_filter() {
-      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
+      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__')));
     },
 
     current_layout() {
@@ -565,10 +565,10 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
+            f.selected         = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id)
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
             if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = this.state.selectAll;
               this.layer.makeOLSelectable(f.id, {
                 attributes: f.attributes || f.properties,
                 geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
@@ -578,13 +578,9 @@ export default {
               };
             }
 
-            if (has_geometry && this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = true;
-            }
-
             return {
               id:         f.id,
-              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id),
+              selected:   f.selected,
               attributes: f.attributes || f.properties,
               geometry:   this.layer.isGeoLayer() && f.geometry || undefined
             };
@@ -592,7 +588,7 @@ export default {
         );
 
         this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
+        this.state.selectAll  = this.layer.state.filter.active || this.layer.state.selectionFids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
 
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
