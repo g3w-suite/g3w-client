@@ -367,7 +367,7 @@ export default {
         this.state.selectAll = true;                                                             // force selectAll
         this.state.features.splice(0);                                                           // reset features
         await this.$nextTick();                                                                  // wait for DOM changes
-        (await this.getFeatures({ field: this.search.field }) || [])
+        (await this.getFeatures({ field: this.search.field, formatter: 1 }) || [])
           .forEach(f => {
             const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
             f.selected = this.state.selectAll;
