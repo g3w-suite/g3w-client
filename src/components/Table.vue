@@ -206,7 +206,6 @@ export default {
       filter:              [],
       has_map:             true,
       async_highlight:     () => {},
-      getAll:              false,
       search:              {},
       firstCall:           true,
       map_bbox:            { key: null, cb: null },
@@ -309,10 +308,6 @@ export default {
     },
 
     async inverseSelection() {
-      // get all features
-      if (!this.getAll) {
-        await this.getFeatures();
-      }
       this.state.features.forEach(f => f.selected = !f.selected);
       this.layer.invertSelectionFids();
       this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
@@ -329,9 +324,36 @@ export default {
       // check if has columns filter
       const filter = this.filter.length > 0;
 
-      // get all features when any kind of filter is unset
-      if (!filter && this.state.selectAll && !this.getAll) {
-        await this.getFeatures(); 
+      // column filter
+      if (filter) {
+        this.state.features.splice(0);                                                           // reset features
+        await this.$nextTick();                                                                  // wait for DOM changes
+      }
+
+      // fetch features from server
+      try {
+        GUI.disableContent(true);
+        GUI.setLoadingContent(true);
+        (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.forEach(f => {
+          if (f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            this.layer.makeOLSelectable(f.id, {
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
+            });
+          }
+          this.layer.includeSelectionFid(f.id);
+          this.state.features.push({
+            id:         f.id,
+            selected:   this.state.selectAll,
+            attributes: f.attributes || f.properties,
+            geometry:   f.geometry
+          });
+        });
+      } catch(e) {
+        console.warn(e);
+      } finally {
+        GUI.setLoadingContent(false);
+        GUI.disableContent(false);
       }
 
       // select all (no filter)
@@ -342,29 +364,6 @@ export default {
       // unselect all
       if (!this.state.selectAll) {
         await this.layer.clearSelectionFids();
-      }
-
-      // column filter
-      if (filter) {
-        this.state.features.splice(0);                                                           // reset features
-        await this.$nextTick();                                                                  // wait for DOM changes
-        (await this.getFeatures({ field: this.search.field, formatter: 1 }) || []).forEach(f => {
-          const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
-          f.selected = true;
-          if (geometry && !this.layer.getOlSelectionFeature(f.id)) {
-            this.layer.makeOLSelectable(f.id, {
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-            });
-          }
-          this.layer.includeSelectionFid(f.id);
-          this.state.features.push({
-            id:         f.id,
-            selected:   f.selected,
-            attributes: f.attributes || f.properties,
-            geometry
-          });
-        });
       }
 
       this.state.features.forEach(f => f.selected = this.state.selectAll);
@@ -456,37 +455,6 @@ export default {
       }
       // adjust columns when resize
       $(this.$refs.attribute_table).DataTable().columns.adjust();
-    },
-
-    async getFeatures(params) {
-      try {
-        GUI.disableContent(true);
-        GUI.setLoadingContent(true);
-
-        const data     = await this.layer.getDataTable(params || {});
-        const is_valid = this.layer.isGeoLayer() && data.features;
-
-        if (is_valid && !params) {
-          const loaded_features = this.state.features.map(f => f.id);
-          data.features
-            .filter(f => f.geometry && !loaded_features.includes(f.id))
-            .forEach(f => this.layer.makeOLSelectable(f.id, {
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-            }));
-          this.getAll = true;
-        }
-
-        if (is_valid) {
-          return data.features;
-        }
-      } catch(e) {
-        console.warn(e);
-        return Promise.reject();
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
-      }
     },
 
     /**
