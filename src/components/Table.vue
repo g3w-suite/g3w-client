@@ -590,12 +590,12 @@ export default {
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
               if (f.selected) { this.layer.includeSelectionFid(f.id) };
             }
-            
+
             return {
               id:         f.id,
               selected:   f.selected,
               attributes: f.attributes || f.properties,
-              geometry:   this.layer.isGeoLayer() && f.geometry || undefined
+              geometry:   has_geometry && f.geometry || undefined
             };
           })
         );
