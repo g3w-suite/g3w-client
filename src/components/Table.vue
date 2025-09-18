@@ -342,7 +342,6 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
 
-
         // select all (no filter)
         if (this.state.selectAll && !filter) {
           await this.layer.setSelectionFidsAll();
