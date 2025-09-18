@@ -2733,8 +2733,8 @@ class Layer extends G3WObject {
     //create a new ol feature
     const feature = new ol.Feature(feat.geometry);
     //@since 4.0.2 In case of no G3W_FID attribute, need to add it to selection features to sync with content result
-    if (undefined === feature.get(G3W_FID)) {
-      feature.set(G3W_FID, `${id}`); //set as string
+    if (undefined === feat.attributes[G3W_FID]) {
+      feat.attributes[G3W_FID] = id; //add as string
     }
     feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
     Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
