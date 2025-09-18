@@ -340,7 +340,7 @@ export default {
         await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids'](); // toggle selection (filter token)
       }
 
-      // column filter
+      // column filter (paginated results)
       if (filter && this.state.selectAll && this.state.allfeatures > this.state.featurescount) {
         await this.layer.clearSelectionFids();                                                   // clear selection ids
         this.state.selectAll = true;                                                             // force selectAll
@@ -366,7 +366,7 @@ export default {
         })
       }
 
-      /** @FIXME add description */
+      // column filter (without pagination)
       if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
         this.state
           .features
