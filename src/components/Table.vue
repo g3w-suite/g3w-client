@@ -311,7 +311,7 @@ export default {
     async inverseSelection() {
       // get all features
       if (!this.getAll) {
-        await this.getFeatures()
+        await this.getFeatures();
       }
       this.state.features.forEach(f => f.selected = !f.selected);
       this.layer.invertSelectionFids();
@@ -344,7 +344,7 @@ export default {
         await this.layer.clearSelectionFids();
       }
 
-      // column filter (paginated results)
+      // column filter
       if (filter) {
         this.state.features.splice(0);                                                           // reset features
         await this.$nextTick();                                                                  // wait for DOM changes
@@ -360,7 +360,7 @@ export default {
           this.layer.includeSelectionFid(f.id);
           this.state.features.push({
             id:         f.id,
-            selected:   f.selected,                                                            // whether filter token comes from a pagination
+            selected:   f.selected,
             attributes: f.attributes || f.properties,
             geometry
           });
