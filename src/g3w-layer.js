@@ -2491,8 +2491,8 @@ export class Layer extends Emitter {
    */
   makeOLSelectable(id, feature) {
     const f = new ol.Feature(feature.geometry);
-    f.setId(`${this.getId()}_${id}`);     // see: #777, prevent ID collision when selecting features from multiple layers
-    f.set(G3W_FID, f.get(G3W_FID) ?? id); // ensure `G3W_FID` is always set
+    f.setId(`${this.getId()}_${id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
+    f.set(G3W_FID, f.get(G3W_FID) ?? `${id}`); // ensure `G3W_FID` is always set
     Object.entries(feature.attributes).forEach(([a, v]) => f.set(a, v));
     this.state.ol_selection[id] = this.state.ol_selection[id] || {
       feature:  f,
