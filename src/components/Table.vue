@@ -308,9 +308,37 @@ export default {
     },
 
     async inverseSelection() {
-      this.state.features.forEach(f => f.selected = !f.selected);
-      this.layer.invertSelectionFids();
-      this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
+      GUI.disableContent(true);
+      GUI.setLoadingContent(true);
+      try {
+        // fetch features from server
+        const features = (await this.layer.getDataTable({}))?.features?.map(f => {
+          if (f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            this.layer.makeOLSelectable(f.id, {
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
+            });
+          }
+          if (this.layer.getOlSelectionFeature(f.id)) {
+            return {
+              id:         f.id,
+              selected:   !this.layer.getOlSelectionFeature(f.id).selected,
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry
+            };
+          }
+        }).filter(Boolean);
+        // reset features
+        this.state.features.splice(0);
+        this.state.features.push(...features);
+        this.layer.invertSelectionFids();
+        this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
+      } catch(e) {
+        console.warn(e);
+      } finally {
+        GUI.setLoadingContent(false);
+        GUI.disableContent(false);
+      }
     },
 
     async selectAllRows() {
