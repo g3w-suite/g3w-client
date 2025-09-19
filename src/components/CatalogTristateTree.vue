@@ -358,7 +358,7 @@ export default {
      * @since 3.9.0
      */
     removeCurrentFilter() {
-      return getCatalogLayerById(this.layerstree.id).deleteFilterToken();
+      return getCatalogLayerById(this.layerstree.id).deleteToken();
     },
 
     /**

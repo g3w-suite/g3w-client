@@ -5925,7 +5925,7 @@ export default new (class GUI extends Emitter {
             (value.data || []).forEach(({ layer, filtertoken }) => {
                 if (filtertoken) {
                   layer.state.selection.active = layer.state.filter.active = true;
-                  layer.setFilterToken(filtertoken); }
+                  layer.setToken(filtertoken); }
               })
           }
           // pagination (total elements > page size)

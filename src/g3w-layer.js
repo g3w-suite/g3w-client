@@ -12,7 +12,6 @@
 
 import {
   GEOMETRY_FIELDS,
-  SELECTION,
   DOTS_PER_INCH,
   QUERY_POINT_TOLERANCE,
   TIMEOUT,
@@ -556,6 +555,9 @@ export class Layer extends Emitter {
      */
     this.layerId = config.id;
 
+    // BACKOMP v3.x
+    this.toggleFilterToken = this.toggleToken.bind(this);
+    this.getFilterToken    = this.getToken.bind(this);
   }
 
   /******************************************************************************************
@@ -566,7 +568,7 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   async downloadAsFile(type, { data = {} }) {
-    data.filtertoken = this.getFilterToken();
+    data.filtertoken = this.getToken();
 
     let url, response;
     switch(type) {
@@ -780,12 +782,12 @@ export class Layer extends Emitter {
 
     /** @TODO add description */
     if (has_current && is_active) {
-      await this.#applyFilterToken(this.state.filter.current)
+      await this.#applyToken(this.state.filter.current)
     }
 
     /** @TODO add description */
     if (!has_current && is_active) {
-      await this.deleteFilterToken();
+      await this.deleteToken();
     }
 
     this.emit('unselectionall', this.getId());
@@ -854,15 +856,13 @@ export class Layer extends Emitter {
       GUI.closeContent();
     }
 
-    await this.#applyFilterToken(filter);
+    await this.#applyToken(filter);
   }
 
   /**
    * @returns {Promise<void>}
-   * 
-   * @private
    */
-  async #applyFilterToken(filter) {
+  async #applyToken(filter) {
     try {
       /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
       const response = await XHR.get({
@@ -874,7 +874,7 @@ export class Layer extends Emitter {
       }
       this.setFilter(false);
       this.state.filter.current = filter;
-      this.setFilterToken(response.data.filtertoken);
+      this.setToken(response.data.filtertoken);
     } catch(e) {
       console.warn(e);
     }
@@ -941,7 +941,7 @@ export class Layer extends Emitter {
   /**
    * Toggle filter token on layer
    */
-  async toggleFilterToken() {
+  async toggleToken() {
 
     //set to handle select or hide ol
     this.setFilter(!this.state.filter.active);
@@ -951,7 +951,7 @@ export class Layer extends Emitter {
 
     // there is an active filter --> create a new filter
     if (is_active) {
-      await this.createFilterToken();
+      await this.#createToken();
     }
 
     // there is a current saved filter --> apply filter
@@ -961,7 +961,7 @@ export class Layer extends Emitter {
 
     // there is no current saved filter --> delete it
     if (!has_current && !is_active) {
-      await this.deleteFilterToken();
+      await this.deleteToken();
     }
 
     return this.state.filter.active;
@@ -972,7 +972,7 @@ export class Layer extends Emitter {
    * 
    * @param fid  unique id of filter saved to delete
    */
-  async deleteFilterToken(fid) {
+  async deleteToken(fid) {
     try {
       // skip when no filtertoken provider is set
       if (!this.getProvider('filtertoken')) {
@@ -1004,7 +1004,7 @@ export class Layer extends Emitter {
       }
       this.state.filter.pagination = false; //set pagination to false
       this.state.filter.current    = null  // set current filter set to null
-      this.setFilterToken(filtertoken); //set filtertoken 
+      this.setToken(filtertoken); //set filtertoken 
       // set active filter to false
       if (this.state.filter.active) { this.setFilter(false) }
     } catch(e) {
@@ -1019,18 +1019,18 @@ export class Layer extends Emitter {
    *
    * @fires filtertokenchange when filtertoken is changed
    * 
-   * @since 3.9.0
+   * @since 4.1.0
    */
-  setFilterToken(filtertoken = undefined) {
+  setToken(filtertoken = undefined) {
     ApplicationState.tokens.filtertoken = filtertoken;
     this.setFilter(!!filtertoken);
     this.emit('filtertokenchange', { layerId: this.getId() });
   }
 
   /**
-   * Create filter token
+   * Retrieve filter token from server
    */
-  async createFilterToken() {
+  async #createToken() {
     try {
 
       const selection = this.state.selectionFids;
@@ -1041,7 +1041,7 @@ export class Layer extends Emitter {
       }
 
       // select all features
-      if (selection.has(SELECTION.ALL)) {
+      if (selection.has('__ALL__')) {
         try {
           // Delete current filter --> `/vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=delete`
           await XHR.get({
@@ -1051,8 +1051,7 @@ export class Layer extends Emitter {
         } catch(e) {
           console.warn(e)
         }
-        this.setFilterToken(null);
-
+        this.setToken(null);
         return;
       }
 
@@ -1061,12 +1060,12 @@ export class Layer extends Emitter {
       const { data = {} } = await XHR.post({
         url:    this.getUrl('filtertoken'),
         contentType: 'application/json',
-        data: JSON.stringify(selection.has(SELECTION.EXCLUDE)
-          ? { fidsout: fids.filter(id => id !== SELECTION.EXCLUDE).join(',') } // exclude features from selection
+        data: JSON.stringify(selection.has('__EXCLUDE__')
+          ? { fidsout: fids.filter(id => id !== '__EXCLUDE__').join(',') } // exclude features from selection
           : { fidsin: fids.join(',') })                                   // include features in selection
       });
 
-      this.setFilterToken(data.filtertoken);
+      this.setToken(data.filtertoken);
 
     } catch(e) {
       console.warn(e);
@@ -1078,16 +1077,16 @@ export class Layer extends Emitter {
    * 
    * @returns {*}
    */
-  getFilterToken() {
+  getToken() {
     return this.state.filter.active ? ApplicationState.tokens.filtertoken : undefined;
   }
 
   /**
    * @TODO add description
    */
-  setSelectionFidsAll() {
+  selectAllFids() {
     this.state.selectionFids.clear();
-    this.state.selectionFids.add(SELECTION.ALL);
+    this.state.selectionFids.add('__ALL__');
 
     // select all features (open layers)
     if (this.isGeoLayer()) {
@@ -1107,7 +1106,7 @@ export class Layer extends Emitter {
     /** @TODO add description */
     this.setSelection(true);
     if (this.state.filter.active) {
-      this.createFilterToken();
+      this.#createToken();
     }
   }
 
@@ -1125,9 +1124,9 @@ export class Layer extends Emitter {
     const selection = this.state.selectionFids;
 
     /** @TODO add description */
-    if (selection.has(SELECTION.EXCLUDE))  { selection.delete(SELECTION.EXCLUDE); }
-    else if (selection.has(SELECTION.ALL)) { selection.delete(SELECTION.ALL); }
-    else if (selection.size > 0)           { selection.add(SELECTION.EXCLUDE); }
+    if (selection.has('__EXCLUDE__'))  { selection.delete('__EXCLUDE__'); }
+    else if (selection.has('__ALL__')) { selection.delete('__ALL__'); }
+    else if (selection.size > 0)       { selection.add('__EXCLUDE__'); }
 
     // invert selection (state)
     if (this.isGeoLayer()) {
@@ -1149,7 +1148,7 @@ export class Layer extends Emitter {
     }
 
     /** In the case of tocken filter active create */
-    if (this.state.filter.active) { this.createFilterToken() }
+    if (this.state.filter.active) { this.#createToken() }
 
     this.setSelection(selection.size > 0);
   }
@@ -1165,10 +1164,10 @@ export class Layer extends Emitter {
     const selection = this.state.selectionFids;
 
     /** In case contain selection ALL, mean all features selected */
-    if (selection.has(SELECTION.ALL)) { return true }
+    if (selection.has('__ALL__')) { return true }
 
     /**In case selection contains exclude value, check if id is not in excluded feature id */
-    if (selection.has(SELECTION.EXCLUDE)) { return !selection.has(fid) }
+    if (selection.has('__EXCLUDE__')) { return !selection.has(fid) }
 
     /** Check if id is on selection set */
     return selection.has(fid);
@@ -1188,7 +1187,7 @@ export class Layer extends Emitter {
     const selection = this.state.selectionFids;
 
     // whether fid is excluded from selection
-    const is_excluded = selection.has(SELECTION.EXCLUDE) && selection.has(fid);
+    const is_excluded = selection.has('__EXCLUDE__') && selection.has(fid);
 
     // remove fid from exclude
     if (is_excluded) { selection.delete(fid) }
@@ -1197,7 +1196,7 @@ export class Layer extends Emitter {
     if (!is_excluded) { selection.add(fid) }
 
     // if the only one exclude Set all selected
-    if (is_excluded && 1 === selection.size) { this.setSelectionFidsAll() }
+    if (is_excluded && 1 === selection.size) { this.selectAllFids() }
 
     /** @TODO add description */
     if (!is_excluded && !this.isSelectionActive()) { this.setSelection(true) }
@@ -1215,7 +1214,7 @@ export class Layer extends Emitter {
 
     /** @TODO add description */
     if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
+      await this.#createToken();
     }
 
   }
@@ -1233,16 +1232,16 @@ export class Layer extends Emitter {
     const selection = this.state.selectionFids;
 
     /**In case all features are selected or no features are selected */
-    if (selection.has(SELECTION.ALL) || 0 === selection.size) {
+    if (selection.has('__ALL__') || 0 === selection.size) {
       //set an empty selection set
       selection.clear();
       //add exclude item
-      selection.add(SELECTION.EXCLUDE);
+      selection.add('__EXCLUDE__');
     }
 
 
     /** If has exclude item, mean add fid to exclude */
-    if (selection.has(SELECTION.EXCLUDE)) {
+    if (selection.has('__EXCLUDE__')) {
       //add to exclude
       selection.add(fid);
     } else {
@@ -1254,13 +1253,13 @@ export class Layer extends Emitter {
     if (0 === selection.size) { this.clearSelectionFids() }
 
     /** If contain only exclude fid */
-    if (1 === selection.size && selection.has(SELECTION.EXCLUDE)) {
+    if (1 === selection.size && selection.has('__EXCLUDE__')) {
       //celar selection set
       selection.clear();
       this.setselectionFidsAll();
     }
 
-    const is_excluded = selection.has(SELECTION.EXCLUDE) ? selection.has(fid) : !selection.has(fid);
+    const is_excluded = selection.has('__EXCLUDE__') ? selection.has(fid) : !selection.has(fid);
 
     // update selection (state)
     if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
@@ -1275,7 +1274,7 @@ export class Layer extends Emitter {
 
     /** If there is a filterActive */
     if (createToken && this.state.filter.active) {
-      await this.createFilterToken();
+      await this.#createToken();
     }
 
   }
@@ -1474,7 +1473,7 @@ export class Layer extends Emitter {
         formatter,
         suggest,
         in_bbox,
-        filtertoken: this.getFilterToken()
+        filtertoken: this.getToken()
       });
     }
 

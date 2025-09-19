@@ -722,8 +722,8 @@ export default {
      *
      * @since 3.10.0
      */
-    async onActiveFilterTokenLayer(storeid, layerstree) {
-      layerstree.filter.active = await ApplicationState.layers[storeid].getLayerById(layerstree.id).toggleFilterToken();
+    async onActiveToken(storeid, layerstree) {
+      layerstree.filter.active = await ApplicationState.layers[storeid].getLayerById(layerstree.id).toggleToken();
     },
 
     /**
@@ -815,7 +815,7 @@ export default {
    */
   created() {
     GUI.on('unselectionlayer',       this.onUnSelectionLayer);
-    GUI.on('activefiltertokenlayer', this.onActiveFilterTokenLayer);
+    GUI.on('activefiltertokenlayer', this.onActiveToken);
     GUI.on('treenodevisible',        this.onTreeNodeVisible);
     GUI.on('treenodeselected',       this.onTreeNodeSelected);
     GUI.on('layer-change-style',     this.getLegendSrc);

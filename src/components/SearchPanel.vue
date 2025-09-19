@@ -239,7 +239,7 @@
       },
 
       filterlayers() {
-        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getFilterToken()) || [];
+        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getToken()) || [];
       },
 
     },
@@ -249,7 +249,7 @@
       * @since 3.11.0
       */
       clearFilters() {
-        this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
+        this.filterlayers.forEach(l => l.getToken() && l.clearSelectionFids());
         //@since v4.0 reset all form values after clear
         this.state.forminputs.forEach(i => {
           if (['selectfield','autocompletefield'].includes(i.type)) {

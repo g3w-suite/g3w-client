@@ -795,7 +795,7 @@
         getCatalogLayerById(layer.id).saveFilter();
       },
       async addRemoveFilter(layer) {
-        await getCatalogLayerById(layer.id).toggleFilterToken();
+        await getCatalogLayerById(layer.id).toggleToken();
       },
       getContainerFromFeatureLayer({ layer, index } = {}) {
         return $(`#${layer.id}_${index} > td`);
@@ -987,7 +987,7 @@
           const layer = (query.pagination.getData.layers || []).find(l => queried_layers[index].id === l.getId());
 
           // whehter layer has filter
-          const has_filtertoken = !!layer.getFilterToken();
+          const has_filtertoken = !!layer.getToken();
 
           // get layer pagination data
           const data = await layer[query.pagination.getData.method]({ ...query.pagination.getData.params[index], page });

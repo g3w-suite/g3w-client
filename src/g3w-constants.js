@@ -351,16 +351,6 @@ export const INCHES_PER_UNIT = {
 };
 
 /**
- * Selection state 
- * 
- * @since 3.11.0
- */
-export const SELECTION = {
-  ALL:     '__ALL__',
-  EXCLUDE: '__EXCLUDE__'
-};
-
-/**
  * @since 3.11.0
  * Page length for pagination
  * @type {number[]}

@@ -689,7 +689,7 @@
         if (changed) {
           await layer.applyFilter(filter);
         } else {
-          await layer.deleteFilterToken();
+          await layer.deleteToken();
         }
         layer.change();
         this.closeMenu();
@@ -709,7 +709,7 @@
         // No found catalog layer
         if (!layer) { return }
         const change = fid === this.layer.fid;
-        await layer.deleteFilterToken(fid);
+        await layer.deleteToken(fid);
         if (change) { layer.change() }
         this.closeMenu();
       },

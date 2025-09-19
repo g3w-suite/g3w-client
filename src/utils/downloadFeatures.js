@@ -176,7 +176,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
           else {
             const data = {
               down_with_relations,
-              filtertoken: catalog_layer.getFilterToken(),
+              filtertoken: catalog_layer.getToken(),
               ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {})
             };
             url       = catalog_layer.getUrl(format.replace('-at-map-extent', '').toLowerCase());
@@ -250,7 +250,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
       GUI.setLoadingContent(true);
   
       try {
-        data.filtertoken = catalog_layer.getFilterToken();
+        data.filtertoken = catalog_layer.getToken();
 
         let url, response;
 

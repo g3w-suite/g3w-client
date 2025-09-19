@@ -51,7 +51,7 @@
         :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip    = "'Enable/Disable filter'"
         data-placement = "right"
-        @click.stop    = "toggleFilterToken(layer)"
+        @click.stop    = "toggleToken(layer)"
       ></div>
 
     </div>
@@ -143,10 +143,7 @@
 </template>
 
 <script>
-import {
-  SELECTION,
-  PAGELENGTHS
-}                                  from 'g3w-constants';
+import { PAGELENGTHS }             from 'g3w-constants';
 import Component                   from 'g3w-component';
 import ApplicationState            from 'g3w-state';
 import Field                       from 'components/FieldG3W.vue';
@@ -237,12 +234,12 @@ export default {
      * 
      * @since 3.11.0
      */
-    toggleFilterToken(layer) {
+    toggleToken(layer) {
       // get selection features in case of autofilter + pagination
       if (layer.state.filter.active && !layer.state.selectionFids.has('__ALL__')) {
         this.state.selectAll = false;
       }
-      layer.toggleFilterToken();
+      layer.toggleToken();
     },
 
     /**
@@ -332,7 +329,7 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         this.layer.invertSelectionFids();
-        this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
+        this.state.selectAll = this.layer.getSelectionFids().has('__ALL__') || this.state.features.every(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
@@ -376,7 +373,7 @@ export default {
 
         // select all (no filter)
         if (this.state.selectAll && !filter) {
-          await this.layer.setSelectionFidsAll();
+          await this.layer.selectAllFids();
         }
 
         // unselect all
