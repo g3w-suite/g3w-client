@@ -818,7 +818,7 @@ export class Layer extends Emitter {
    * @param {boolean} bool
    */
   setFilter(bool = false) {
-    this.state.filter.active     = bool;
+    this.state.filter.active = bool;
     // hide selection features (open layers)
     if (this.isGeoLayer() && this.state.filter.active) {
       GUI.defaultsLayers.selectionLayer
@@ -827,8 +827,22 @@ export class Layer extends Emitter {
         .filter(f => this.state.id === f.__layerId)
         .forEach(f => f.setStyle(new ol.style.Style(null)))
     }
+    // update selection features (open layers)
     if (this.isGeoLayer() && !this.state.filter.active) {
-      this.#updateOlSelection(); // update selection features (open layers)
+      Object
+        .values(this.state.ol_selection)
+        .forEach(f => {
+          try {
+            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
+            if (f.selected) {
+              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+            } else {
+              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+            }          
+          } catch (e) {
+            console.warn(e);
+          }
+        });
     }
   }
 
@@ -920,13 +934,9 @@ export class Layer extends Emitter {
         if (this.isGeoLayer()) {
           Object
             .values(this.state.ol_selection)
-            .forEach(feat => {
-              //remove selection feature
-              if (feat.added) {
-                GUI.defaultsLayers.selectionLayer.getSource().removeFeature(feat.feature);
-              }
-              feat.added    = false;
-              feat.selected = false;
+            .forEach(f => {
+              f.selected = false;
+              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
             });
         }
 
@@ -1089,8 +1099,17 @@ export class Layer extends Emitter {
 
     // select all features (open layers)
     if (this.isGeoLayer()) {
-      Object.values(this.state.ol_selection).forEach(feat => feat.selected = true);
-      this.#updateOlSelection();
+      Object
+        .values(this.state.ol_selection)
+        .forEach(f => {
+          try {
+            f.selected          = true
+            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
+            GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+          } catch (e) {
+            console.warn(e);
+          }
+        });
     }
 
     /** @TODO add description */
@@ -1123,19 +1142,16 @@ export class Layer extends Emitter {
       Object
         .values(this.state.ol_selection)
         .forEach(f => {
-          f.selected           = !f.selected;
-          f.feature.__layerId  = this.getId(); //@since 4.0.1 need to add __layerId
-          const GIVE_ME_A_NAME = f.selected !== f.added;
-          // add to selection
-          if (GIVE_ME_A_NAME && f.selected) {
-            GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
-          }
-          // remove from selection
-          if (GIVE_ME_A_NAME && !f.selected) {
-            GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-          }
-          if (GIVE_ME_A_NAME) {
-            f.added = f.selected;
+          try {
+            f.selected = !f.selected;
+            f.feature.__layerId  = this.getId(); //@since 4.0.1 need to add __layerId
+            if (f.selected) {
+              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+            } else {
+              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+            }
+          } catch (e) {
+            console.warn(e);
           }
         });
     }
@@ -1197,8 +1213,21 @@ export class Layer extends Emitter {
     // update selection (state)
     if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
       this.state.ol_selection[fid].selected          = !is_excluded;
-      this.state.ol_selection[fid].feature.__layerId = (!is_excluded && !this.state.ol_selection[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
-      this.#updateOlSelection();
+      this.state.ol_selection[fid].feature.__layerId = this.getId();
+      Object
+        .values(this.state.ol_selection)
+        .forEach(f => {
+          try {
+            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
+            if (f.selected) {
+              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+            } else {
+              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+            }          
+          } catch (e) {
+            console.warn(e);
+          }
+        });
     }
 
     /** @TODO add description */
@@ -1253,8 +1282,21 @@ export class Layer extends Emitter {
     // update selection (state)
     if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
       this.state.ol_selection[fid].selected          = !is_excluded;
-      this.state.ol_selection[fid].feature.__layerId = (!is_excluded && !this.state.ol_selection[fid].added) ? this.getId() : undefined; // <-- used when working with selected Layer features
-      this.#updateOlSelection();
+      this.state.ol_selection[fid].feature.__layerId = this.getId();
+      Object
+        .values(this.state.ol_selection)
+        .forEach(f => {
+          try {
+            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
+            if (f.selected) {
+              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+            } else {
+              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+            }          
+          } catch (e) {
+            console.warn(e);
+          }
+        });
     }
 
     /** If there is a filterActive */
@@ -1272,10 +1314,17 @@ export class Layer extends Emitter {
     this.state.selectionFids.clear();
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
-      //set false selection
-      Object.values(this.state.ol_selection).forEach(feat => feat.selected = false);
-      //update selection
-      this.#updateOlSelection();
+      Object
+        .values(this.state.ol_selection)
+        .forEach(f => {
+          try {
+            f.selected          = false
+            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
+            GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+          } catch (e) {
+            console.warn(e);
+          }
+        });
     }
     // set selection false
     await this.setSelection(false);
@@ -2508,37 +2557,8 @@ export class Layer extends Emitter {
     Object.entries(feature.attributes).forEach(([a, v]) => f.set(a, v));
     this.state.ol_selection[id] = this.state.ol_selection[id] || {
       feature:  f,
-      added:    false,
       selected: false, /** @since 3.9.9 */
     };
-  }
-
-  /**
-   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * Show all selection features
-   *
-   * @since 4.0.0
-   */
-  #updateOlSelection() {
-    // Loop `added` features (selected)
-    Object
-      .values(this.state.ol_selection)
-      .forEach(f => {
-        const GIVE_ME_A_NAME = f.selected !== f.added;
-        f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
-        // add to selection
-        if (GIVE_ME_A_NAME && f.selected) {
-          GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
-        }
-        // remove from selection
-        if (GIVE_ME_A_NAME && !f.selected) {
-          GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-        }
-        if (GIVE_ME_A_NAME) {
-          f.added = f.selected;
-        }
-      });
   }
 
   /**
