@@ -328,7 +328,7 @@ export default {
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
-        this.layer.invertSelectionFids();
+        this.layer.inverseSelection();
         this.state.selectAll = this.layer.getSelectionFids().has('__ALL__') || this.state.features.every(f => f.selected);
       } catch(e) {
         console.warn(e);
@@ -539,7 +539,7 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
-            f.selected         = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id)
+            f.selected         = this.state.selectAll || this.layer.state.filter.active || this.layer.isSelected(f.id)
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
             if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {

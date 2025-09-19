@@ -2214,7 +2214,7 @@ export default new (class GUI extends Emitter {
             id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
             attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
             geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.hasSelectionFid((f instanceof ol.Feature ? f.getId() : f.id)))},
+            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.isSelected((f instanceof ol.Feature ? f.getId() : f.id)))},
             show:       true,
           })),
           hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -2625,7 +2625,7 @@ export default new (class GUI extends Emitter {
             const _layer                = getCatalogLayerById(layer.id);
             const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selection.selected;
-            if (_layer && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
+            if (_layer && feature.selection.selected && !_layer.isSelected(fid)) {
               _layer.makeOLSelectable(fid, feature);
               _layer.getOlSelectionFeature(fid).selected = true;
               _layer.includeSelectionFid(fid, false);
@@ -3541,7 +3541,7 @@ export default new (class GUI extends Emitter {
     const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
 
     fids.forEach((fid, i) => {
-      const is_selected = catalog_layer.state.filter.active || catalog_layer.hasSelectionFid(fid);
+      const is_selected = catalog_layer.state.filter.active || catalog_layer.isSelected(fid);
       // update OL selection layer (on map)
       if (!is_selected && features[i]?.geometry && !catalog_layer.getOlSelectionFeature(fid)) {
         catalog_layer.makeOLSelectable(fid, features[i]);

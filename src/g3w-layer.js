@@ -555,7 +555,7 @@ export class Layer extends Emitter {
      */
     this.layerId = config.id;
 
-    // BACKOMP v3.x
+    // BACKCOMP v3.x
     this.toggleFilterToken = this.toggleToken.bind(this);
     this.getFilterToken    = this.getToken.bind(this);
   }
@@ -748,9 +748,16 @@ export class Layer extends Emitter {
    *****************************************************************************************/
 
   /**
-   * @returns { boolean } whether is selected
+   * @param fid feature id
+   * 
+   * @returns { boolean } whether current layer (or fid) is selected
    */
-  isSelected() {
+  isSelected(fid) {
+    if (undefined !== fid) {
+      if (this.state.selection.fids.has('__ALL__'))     { return true }
+      if (this.state.selection.fids.has('__EXCLUDE__')) { return !this.state.selection.fids.has(fid); }
+      return this.state.selection.fids.has(fid);
+    }
     return this.state.selected;
   }
 
@@ -782,7 +789,21 @@ export class Layer extends Emitter {
 
     /** @TODO add description */
     if (has_current && is_active) {
-      await this.#applyToken(this.state.filter.current)
+      const filter = this.state.filter.current;
+      try {
+        /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
+        const response = await XHR.get({
+          url:    this.getUrl('filtertoken'),
+          params: { mode: 'apply', fid: filter.fid }
+        });
+        if (response?.data) {
+          this.setFilter(false);
+          this.state.filter.current = filter;
+          this.setToken(response.data.filtertoken);
+        }
+      } catch(e) {
+        console.warn(e);
+      }
     }
 
     /** @TODO add description */
@@ -856,25 +877,17 @@ export class Layer extends Emitter {
       GUI.closeContent();
     }
 
-    await this.#applyToken(filter);
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  async #applyToken(filter) {
     try {
       /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
       const response = await XHR.get({
         url:    this.getUrl('filtertoken'),
         params: { mode: 'apply', fid: filter.fid }
       });
-      if (!response || !response.result || !response.data) {
-        return;
+      if (response?.data) {
+        this.setFilter(false);
+        this.state.filter.current = filter;
+        this.setToken(response.data.filtertoken);
       }
-      this.setFilter(false);
-      this.state.filter.current = filter;
-      this.setToken(response.data.filtertoken);
     } catch(e) {
       console.warn(e);
     }
@@ -1013,6 +1026,15 @@ export class Layer extends Emitter {
   }
 
   /**
+   * Get Application filter token
+   * 
+   * @returns {*}
+   */
+  getToken() {
+    return this.state.filter.active ? ApplicationState.tokens.filtertoken : undefined;
+  }
+
+  /**
    * Set applicaton filter token
    * 
    * @param {string} filtertoken a string passed by server and used as parameter in XHR request
@@ -1073,15 +1095,6 @@ export class Layer extends Emitter {
   }
 
   /**
-   * Get Application filter token
-   * 
-   * @returns {*}
-   */
-  getToken() {
-    return this.state.filter.active ? ApplicationState.tokens.filtertoken : undefined;
-  }
-
-  /**
    * @TODO add description
    */
   selectAllFids() {
@@ -1120,7 +1133,7 @@ export class Layer extends Emitter {
   /**
    * Invert current selection fids
    */
-  invertSelectionFids() {
+  inverseSelection() {
     const selection = this.state.selection.fids;
 
     /** @TODO add description */
@@ -1152,27 +1165,6 @@ export class Layer extends Emitter {
 
     this.setSelection(selection.size > 0);
   }
-
-  /**
-   * Check if feature id is present
-   * 
-   * @param fid feature id
-   * 
-   * @returns {boolean}
-   */
-  hasSelectionFid(fid) {
-    const selection = this.state.selection.fids;
-
-    /** In case contain selection ALL, mean all features selected */
-    if (selection.has('__ALL__')) { return true }
-
-    /**In case selection contains exclude value, check if id is not in excluded feature id */
-    if (selection.has('__EXCLUDE__')) { return !selection.has(fid) }
-
-    /** Check if id is on selection set */
-    return selection.has(fid);
-  }
-
 
   /**
    * Include fid feature id to selection
