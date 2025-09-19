@@ -669,7 +669,7 @@
       setLayerStyle(index) {
         this.layer_style = this.layer.styles[index].name;
         //change layer style
-        getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style);
+        getCatalogLayerById(this.layer.id).changeStyle(this.layer_style);
         this.closeMenu();
       },
 

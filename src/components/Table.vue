@@ -310,16 +310,16 @@ export default {
       try {
         // fetch features from server
         const features = (await this.layer.getDataTable({}))?.features?.map(f => {
-          if (f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
+          if (f.geometry && !this.layer.getSelection().features[f.id]) {
             this.layer.makeOLSelectable(f.id, {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
           }
-          if (this.layer.getOlSelectionFeature(f.id)) {
+          if (this.layer.getSelection().features[f.id]) {
             return {
               id:         f.id,
-              selected:   !this.layer.getOlSelectionFeature(f.id).selected,
+              selected:   !this.layer.getSelection().features[f.id].selected,
               attributes: f.attributes || f.properties,
               geometry:   f.geometry
             };
@@ -348,7 +348,7 @@ export default {
 
         // fetch features from server
         const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
-          if (f.geometry && !this.layer.getOlSelectionFeature(f.id)) {
+          if (f.geometry && !this.layer.getSelection().features[f.id]) {
             this.layer.makeOLSelectable(f.id, {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
@@ -542,7 +542,7 @@ export default {
             f.selected         = this.state.selectAll || this.layer.state.filter.active || this.layer.isSelected(f.id)
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
-            if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            if (has_geometry && !this.layer.getSelection().features[f.id]) {
               this.layer.makeOLSelectable(f.id, {
                 attributes: f.attributes || f.properties,
                 geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,

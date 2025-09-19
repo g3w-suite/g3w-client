@@ -554,9 +554,10 @@ export class Layer extends Emitter {
     this.layerId = config.id;
 
     // BACKCOMP v3.x
-    this.toggleFilterToken = this.toggleToken.bind(this);
-    this.getFilterToken    = this.getToken.bind(this);
-    this.hasSelectionFid   = this.isSelected.bind(this);
+    this.toggleFilterToken  = this.toggleToken.bind(this);
+    this.getFilterToken     = this.getToken.bind(this);
+    this.hasSelectionFid    = this.isSelected.bind(this);
+    this.changeCurrentStyle = this.changeStyle.bind(this);
   }
 
   /******************************************************************************************
@@ -2359,15 +2360,15 @@ export class Layer extends Emitter {
   }
 
   /**
+   * Change featurecount and editor form structure for a specific style
+   * 
    * @param style
    * 
    * @returns { Promise<Object | void>}
    * 
-   * Change featurecount and editor form structure for a specific style
-   * 
-   * @since 4.0.0
+   * @since 4.1.0
    */
-  async changeCurrentStyle(style) {
+  async changeStyle(style) {
     try {
       // skip if style is currently set on layer
       if ((this.state.styles.find(s => style === s.name) || {}).current) {
@@ -2472,19 +2473,6 @@ export class Layer extends Emitter {
   clearCategories() {
     this.state.legend.categories = {};
     this.state.categories = false;
-  }
-
-  /**
-   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   * 
-   * Get OpenLayer selection feature by feature id
-   * 
-   * @param id
-   * 
-   * @since 4.0.0
-   */
-  getOlSelectionFeature(id) {
-    return this.state.selection.features[id];
   }
 
   /**
