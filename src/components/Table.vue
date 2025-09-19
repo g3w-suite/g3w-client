@@ -311,7 +311,7 @@ export default {
         // fetch features from server
         const features = (await this.layer.getDataTable({}))?.features?.map(f => {
           if (f.geometry && !this.layer.getSelection().features[f.id]) {
-            this.layer.makeOLSelectable(f.id, {
+            this.layer.makeSelectable(f.id, {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
@@ -349,15 +349,15 @@ export default {
         // fetch features from server
         const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
           if (f.geometry && !this.layer.getSelection().features[f.id]) {
-            this.layer.makeOLSelectable(f.id, {
+            this.layer.makeSelectable(f.id, {
               attributes: f.attributes || f.properties,
               geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
             });
           }
           if (this.state.selectAll) {
-            this.layer.includeSelectionFid(f.id);
+            this.layer.fidsIn(f.id);
           } else {
-            this.layer.excludeSelectionFid(f.id);
+            this.layer.fidsOut(f.id);
           }
           return {
             id:         f.id,
@@ -373,7 +373,7 @@ export default {
 
         // select all (no filter)
         if (this.state.selectAll && !filter) {
-          await this.layer.selectAllFids();
+          await this.layer.selectAll();
         }
 
         // unselect all
@@ -460,7 +460,7 @@ export default {
     select(feature) {
       feature.selected      = !feature.selected;                                                // inverse selected feature
       this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
-      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](`${feature.id}`);
+      this.layer[feature.selected ? 'fidsIn' : 'fidsOut'](`${feature.id}`);
       this.state.show_tools = this.layer.getSelection().fids.size > 0;                           // show tools based on selected state
     },
 
@@ -543,12 +543,12 @@ export default {
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
             if (has_geometry && !this.layer.getSelection().features[f.id]) {
-              this.layer.makeOLSelectable(f.id, {
+              this.layer.makeSelectable(f.id, {
                 attributes: f.attributes || f.properties,
                 geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
               });
               if (f.selected) {
-                this.layer.includeSelectionFid(f.id)
+                this.layer.fidsIn(f.id)
               };
             }
 

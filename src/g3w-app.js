@@ -2454,7 +2454,7 @@ export default new (class GUI extends Emitter {
         if (features_ids.some(id => id === feature_id)) {
           //@since 3.11.0
           if (action && feat.selection.selected) {
-            (external ? layer : getCatalogLayerById(layer.id)).excludeSelectionFid(feature_id, layer.filter.active);
+            (external ? layer : getCatalogLayerById(layer.id)).fidsOut(feature_id, layer.filter.active);
           }
           //filter feature
           layer.features = layer.features.filter(f => feature_id !== this._getFeatureId(f, external));
@@ -2626,9 +2626,8 @@ export default new (class GUI extends Emitter {
             const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selection.selected;
             if (_layer && feature.selection.selected && !_layer.isSelected(fid)) {
-              _layer.makeOLSelectable(fid, feature);
-              _layer.getSelection().features[fid].selected = true;
-              _layer.includeSelectionFid(fid, false);
+              _layer.makeSelectable(fid, feature, true);
+              _layer.fidsIn(fid, false);
             }
           },
           change({ features }) {
@@ -3544,15 +3543,15 @@ export default new (class GUI extends Emitter {
       const is_selected = catalog_layer.state.filter.active || catalog_layer.isSelected(fid);
       // update OL selection layer (on map)
       if (!is_selected && features[i]?.geometry && !catalog_layer.getSelection().features[fid]) {
-        catalog_layer.makeOLSelectable(fid, features[i]);
+        catalog_layer.makeSelectable(fid, features[i]);
       }
       // exclude / remove
       if ((feature && is_selected) || (!feature && toggled)) {
-        catalog_layer.excludeSelectionFid(fid, !!feature);
+        catalog_layer.fidsOut(fid, !!feature);
       }
       // include / add
       if ((feature && !is_selected) || (!feature && !toggled && !is_selected)) {
-        catalog_layer.includeSelectionFid(fid, !!feature);
+        catalog_layer.fidsIn(fid, !!feature);
       }
     });
 
@@ -5716,7 +5715,7 @@ export default new (class GUI extends Emitter {
     try {
       let data       = [];
       const external = this.getService('catalog').state.external.vector.some(l => l.selected);
-      const selected = external || (('boolean' == typeof excludeSelected) ? excludeSelected : false);
+      const selected = external || !!excludeSelected;
       const layers   = Object.values(ApplicationState.layers)
         .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []);
 
