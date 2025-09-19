@@ -63,7 +63,6 @@ Object
 const _MAP = {
   colors:     {
     highlight: undefined,
-    selection: 'red',
   },
   controls:   {},
   offlineids: [],
@@ -3556,29 +3555,6 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  toggleMapSelection(visible = true, layerId) {
-    const selection = this.defaultsLayers.selectionLayer;
-    //take in account that of layer id is specified, need to set only
-    // features related to layer visible or not
-    if (layerId) {
-      selection.getSource()
-        .getFeatures()
-        .filter(f => layerId === f.__layerId)
-        .forEach(f => f.setStyle(visible ? createSelectedStyle({
-          geometryType: f.getGeometry().getType(),
-          color:        _MAP.colors.selection,
-          fill:         true
-        }): new ol.style.Style(null)))
-    } else {
-      selection.setVisible(visible);
-    }
-  }
-
-  /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * @since 4.1.0 
@@ -4768,16 +4744,13 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   setSelectionFeatures(action = 'add', opts = {}) {
-    if (opts.color) {
-      _MAP.colors.selection = opts.color;
-    }
     const source = this.defaultsLayers.selectionLayer.getSource();
     switch (action) {
       case 'add':
         //In case of add need to set selection style
         opts.feature.setStyle(createSelectedStyle({
           geometryType: opts.feature.getGeometry().getType(),
-          color:        _MAP.colors.selection,
+          color:        'red',
           fill:         true
         }));
         source.addFeature(opts.feature);

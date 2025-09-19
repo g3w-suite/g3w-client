@@ -35,7 +35,7 @@ import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
-import { tile } from 'ol/loadingstrategy';
+import { createSelectedStyle }    from 'utils/createSelectedStyle';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -820,8 +820,13 @@ export class Layer extends Emitter {
    */
   setFilter(bool = false) {
     this.state.filter.active     = bool;
+    // hide selection features (open layers)
     if (this.isGeoLayer() && this.state.filter.active) {
-      GUI.toggleMapSelection(false, this.state.id); // hide selection features (open layers)
+      GUI.defaultsLayers.selectionLayer
+        .getSource()
+        .getFeatures()
+        .filter(f => this.state.id === f.__layerId)
+        .forEach(f => f.setStyle(new ol.style.Style(null)))
     }
     if (this.isGeoLayer() && !this.state.filter.active) {
       this.#updateOlSelection(); // update selection features (open layers)
@@ -2520,10 +2525,16 @@ export class Layer extends Emitter {
         }
       });
     // Ensures selection layer is always visible on map
-    GUI.toggleMapSelection(
-      !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected),
-      this.state.id
-    );
+    const visible = !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected);
+    GUI.defaultsLayers.selectionLayer
+      .getSource()
+      .getFeatures()
+      .filter(f => this.state.id === f.__layerId)
+      .forEach(f => f.setStyle(visible ? createSelectedStyle({
+        geometryType: f.getGeometry().getType(),
+        color:        'red',
+        fill:         true
+      }): new ol.style.Style(null)))
   }
 
   /**
