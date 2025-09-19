@@ -296,13 +296,13 @@ export class Layer extends Emitter {
       inediting:          false,
 
       /** Reactive selection attribute */
-      selection:          { active: false },
+      selection:          {
+        active: false,
+        fids:   new Set()
+      },
 
       /** Open layer features (key = fid, value = feature object) */
       ol_selection: {},
-
-      /** selections feature `fids` */
-      selectionFids: new Set(),
 
       /** Reactive filter attribute */
       filter: {
@@ -886,7 +886,7 @@ export class Layer extends Emitter {
   saveFilter() {
 
     // skip when ..
-    if (!this.getProvider('filtertoken') || !this.state.selectionFids.size > 0) {
+    if (!this.getProvider('filtertoken') || !this.state.selection.fids.size > 0) {
       return;
     }
 
@@ -920,7 +920,7 @@ export class Layer extends Emitter {
         this.state.filter.current = filter; // set current filter
         this.setFilter(false);              // set to false
         this.getSelection().active = false; // reset selection to false
-        this.state.selectionFids.clear();   // clear current fids
+        this.state.selection.fids.clear();   // clear current fids
 
         // remove selection feature from map
         if (this.isGeoLayer()) {
@@ -1033,9 +1033,9 @@ export class Layer extends Emitter {
   async #createToken() {
     try {
 
-      const selection = this.state.selectionFids;
+      const selection = this.state.selection.fids;
 
-      // skip when no filter token provider is set or selectionFids is empty
+      // skip when no filter token provider is set or "selection.fids" is empty
       if (!this.getProvider('filtertoken') || !selection.size > 0) {
         return;
       }
@@ -1085,8 +1085,8 @@ export class Layer extends Emitter {
    * @TODO add description
    */
   selectAllFids() {
-    this.state.selectionFids.clear();
-    this.state.selectionFids.add('__ALL__');
+    this.state.selection.fids.clear();
+    this.state.selection.fids.add('__ALL__');
 
     // select all features (open layers)
     if (this.isGeoLayer()) {
@@ -1114,14 +1114,14 @@ export class Layer extends Emitter {
    * @returns {Set<any>} stored selection `fids` 
    */
   getSelectionFids() {
-    return this.state.selectionFids;
+    return this.state.selection.fids;
   }
 
   /**
    * Invert current selection fids
    */
   invertSelectionFids() {
-    const selection = this.state.selectionFids;
+    const selection = this.state.selection.fids;
 
     /** @TODO add description */
     if (selection.has('__EXCLUDE__'))  { selection.delete('__EXCLUDE__'); }
@@ -1161,7 +1161,7 @@ export class Layer extends Emitter {
    * @returns {boolean}
    */
   hasSelectionFid(fid) {
-    const selection = this.state.selectionFids;
+    const selection = this.state.selection.fids;
 
     /** In case contain selection ALL, mean all features selected */
     if (selection.has('__ALL__')) { return true }
@@ -1184,7 +1184,7 @@ export class Layer extends Emitter {
    */
   async includeSelectionFid(fid, createToken = true) {
 
-    const selection = this.state.selectionFids;
+    const selection = this.state.selection.fids;
 
     // whether fid is excluded from selection
     const is_excluded = selection.has('__EXCLUDE__') && selection.has(fid);
@@ -1228,35 +1228,30 @@ export class Layer extends Emitter {
    * @returns {Promise<void>}
    */
   async excludeSelectionFid(fid, createToken = true) {
+    const selection = this.state.selection.fids;
 
-    const selection = this.state.selectionFids;
-
-    /**In case all features are selected or no features are selected */
+    // all/none features selected
     if (selection.has('__ALL__') || 0 === selection.size) {
-      //set an empty selection set
       selection.clear();
-      //add exclude item
       selection.add('__EXCLUDE__');
     }
 
-
-    /** If has exclude item, mean add fid to exclude */
+    // add/remove from fids list
     if (selection.has('__EXCLUDE__')) {
-      //add to exclude
       selection.add(fid);
     } else {
-      //remote to exclude
       selection.delete(fid);
     }
 
-    /** If no selection */
-    if (0 === selection.size) { this.clearSelectionFids() }
+    // no elements selected
+    if (0 === selection.size) {
+      this.clearSelectionFids();
+    }
 
-    /** If contain only exclude fid */
+    // exclude all → select all ?
     if (1 === selection.size && selection.has('__EXCLUDE__')) {
-      //celar selection set
       selection.clear();
-      this.setselectionFidsAll();
+      this.selectAllFids();
     }
 
     const is_excluded = selection.has('__EXCLUDE__') ? selection.has(fid) : !selection.has(fid);
@@ -1272,7 +1267,7 @@ export class Layer extends Emitter {
       }
     }
 
-    /** If there is a filterActive */
+    // create filter token
     if (createToken && this.state.filter.active) {
       await this.#createToken();
     }
@@ -1284,7 +1279,7 @@ export class Layer extends Emitter {
    */
   async clearSelectionFids() {
     //clear all selection fids from set
-    this.state.selectionFids.clear();
+    this.state.selection.fids.clear();
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
       Object
