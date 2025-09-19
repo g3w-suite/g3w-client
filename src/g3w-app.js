@@ -191,29 +191,27 @@ export default new (class GUI extends Emitter {
   defaultsLayers = {
     mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
     highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => {
-      const color = 'rgb(255,255,0)';
       const type  = feat.getGeometry().getType();
       if (['Point', 'MultiPoint'].includes(type)) {
-        return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
+        return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color:'rgb(255,255,0)' }) }), zIndex: Infinity });
       }
       if (['LineString', 'MultiLineString'].includes(type)) {
-        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color: 'rgb(255,255,0)', width: 4 }) });
       }
       if (['Polygon', 'MultiPolygon'].includes(type)) {
-        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color: 'rgb(255,255,0)', width: 4 }), fill: new ol.style.Fill({ color: 'rgba(255,255,0,0.25)' }) });
       }
     }}),
     selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => {
-      const color = 'red';
       const type  = feat.getGeometry().getType();
       if (['Point', 'MultiPoint'].includes(type)) {
-        return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
+        return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color: 'rgb(255,0,0)' }) }), zIndex: Infinity });
       }
       if (['LineString', 'MultiLineString'].includes(type)) {
-        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color: 'rgb(255,0,0)', width: 4 }) });
       }
       if (['Polygon', 'MultiPolygon'].includes(type)) {
-        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color: 'rgb(255,0,0)', width: 4 }), fill: new ol.style.Fill({ color: 'rgba(255,0,0,0.25)' }) });
       }
     }}),
   };
