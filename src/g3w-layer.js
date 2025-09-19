@@ -609,7 +609,7 @@ export class Layer extends Emitter {
   /**
    * @returns { string[] } download formats
    */
-  getDownloadableFormats()  {
+  getDownloadFormats()  {
     return Object.entries({
       download:        'shapefile',
       download_gpkg:   'gpkg',
@@ -627,7 +627,7 @@ export class Layer extends Emitter {
    * @since 3.11.7  
    */
   hasDowloadableRelations() { 
-    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
+    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadFormats().filter(f => 'pdf' !== f).length > 0); }
 
   /**
    * @param download url
@@ -641,7 +641,7 @@ export class Layer extends Emitter {
   /**
    * @returns { boolean } whether it has a format to download
    */
-  isDownloadable()        { return !!(this.getDownloadableFormats().length); }
+  isDownloadable()        { return !!(this.getDownloadFormats().length); }
   isGeoTIFFDownloadable() { return !this.isBaseLayer() && this.state.download && 'gdal' === this.state.source.type ; }
   isShpDownloadable()     { return !this.isBaseLayer() && this.state.download && 'gdal' !== this.state.source.type; }
   isXlsDownloadable()     { return !this.isBaseLayer() && !!this.state.download_xls; }
@@ -776,7 +776,7 @@ export class Layer extends Emitter {
    * 
    * @fires unselectionall
    */
-  async #setSelection(bool = false) {
+  async #select(bool = false) {
     this.state.selection.active = bool;
 
     // skip when selection is active
@@ -811,13 +811,6 @@ export class Layer extends Emitter {
     }
 
     this.emit('unselectionall', this.getId());
-  }
-
-  /**
-   * @returns { boolean } whether selection si active
-   */
-  isSelectionActive() {
-    return this.state.selection.active;
   }
 
   /**
@@ -1115,18 +1108,11 @@ export class Layer extends Emitter {
         });
     }
 
-    this.#setSelection(true);
+    this.#select(true);
 
     if (this.state.filter.active) {
       this.#createToken();
     }
-  }
-
-  /**
-   * @returns {Set<any>} stored selection `fids` 
-   */
-  getSelectionFids() {
-    return this.state.selection.fids;
   }
 
   /**
@@ -1162,7 +1148,7 @@ export class Layer extends Emitter {
     /** In the case of tocken filter active create */
     if (this.state.filter.active) { this.#createToken() }
 
-    this.#setSelection(selection.size > 0);
+    this.#select(selection.size > 0);
   }
 
   /**
@@ -1190,7 +1176,7 @@ export class Layer extends Emitter {
     if (is_excluded && 1 === selection.size) { this.selectAllFids() }
 
     /** @TODO add description */
-    if (!is_excluded && !this.isSelectionActive()) { this.#setSelection(true) }
+    if (!is_excluded && !this.state.selection.active) { this.#select(true) }
 
     // update selection (state)
     if (this.isGeoLayer() && this.state.selection.features[fid]?.feature) {
@@ -1285,7 +1271,7 @@ export class Layer extends Emitter {
           }
         });
     }
-    await this.#setSelection(false);
+    await this.#select(false);
   }
 
   /******************************************************************************************

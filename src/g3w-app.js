@@ -2229,7 +2229,7 @@ export default new (class GUI extends Emitter {
           source:                 is_layer   ? layer.getSource()                                   : undefined,
           infoformat:             is_layer   ? layer.getInfoFormat()                               : undefined,
           infoformats:            is_layer   ? layer.getInfoFormats()                              : [],
-          downloads:              is_layer   ? layer.getDownloadableFormats()                      : [],
+          downloads:              is_layer   ? layer.getDownloadFormats()                          : [],
           formStructure:          structure  ? {
             structure,
             // get field show

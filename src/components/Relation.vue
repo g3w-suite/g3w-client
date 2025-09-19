@@ -236,7 +236,7 @@
          * @since 4.0.0 download state (action button)
          */
         download: {
-          formats: layer.getDownloadableFormats().filter(f => 'pdf' !== f), // filter out pdf because already includes all features
+          formats: layer.getDownloadFormats().filter(f => 'pdf' !== f), // filter out pdf because already includes all features
           layer:   null,
           toggled: false,
           config:  { downloads: [] }

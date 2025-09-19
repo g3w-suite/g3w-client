@@ -527,7 +527,7 @@
       canDownload(format, layerId) {
         const layer = getCatalogLayerById(layerId);
         //exclude pdf format. It is used only for single feature download
-        return layer && layer.getDownloadableFormats().filter(f => 'pdf' !== f).length && layer['is' + format + 'Downloadable']();
+        return layer && layer.getDownloadFormats().filter(f => 'pdf' !== f).length && layer['is' + format + 'Downloadable']();
       },
 
       getWmsUrl(layerId) {

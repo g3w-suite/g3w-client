@@ -218,7 +218,7 @@ export default {
      * @since 4.0.0
      */
     show_on_active_filter() {
-      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.getSelectionFids().has('__ALL__')));
+      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.getSelection().fids.has('__ALL__')));
     },
 
     current_layout() {
@@ -236,7 +236,7 @@ export default {
      */
     toggleToken(layer) {
       // get selection features in case of autofilter + pagination
-      if (layer.state.filter.active && !layer.getSelectionFids().has('__ALL__')) {
+      if (layer.state.filter.active && !layer.getSelection().fids.has('__ALL__')) {
         this.state.selectAll = false;
       }
       layer.toggleToken();
@@ -329,7 +329,7 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         this.layer.inverseSelection();
-        this.state.selectAll = this.layer.getSelectionFids().has('__ALL__') || this.state.features.every(f => f.selected);
+        this.state.selectAll = this.layer.getSelection().fids.has('__ALL__') || this.state.features.every(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
@@ -461,7 +461,7 @@ export default {
       feature.selected      = !feature.selected;                                                // inverse selected feature
       this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](`${feature.id}`);
-      this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
+      this.state.show_tools = this.layer.getSelection().fids.size > 0;                           // show tools based on selected state
     },
 
     async resize() {
@@ -561,8 +561,8 @@ export default {
           })
         );
 
-        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.layer.getSelectionFids().has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
+        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelection().fids.size > 0;
+        this.state.selectAll  = this.layer.state.filter.active || this.layer.getSelection().fids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
 
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
