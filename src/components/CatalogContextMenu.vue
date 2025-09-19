@@ -687,7 +687,7 @@
         );
         const layer = getCatalogLayerById(this.layer.id);
         if (changed) {
-          await layer.applyFilter(filter);
+          await layer.applyToken(filter);
         } else {
           await layer.deleteToken();
         }

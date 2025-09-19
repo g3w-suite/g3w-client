@@ -298,11 +298,9 @@ export class Layer extends Emitter {
       /** Reactive selection attribute */
       selection:          {
         active: false,
-        fids:   new Set()
+        fids:   new Set(),
+        features: {},      // ol features
       },
-
-      /** Open layer features (key = fid, value = feature object) */
-      ol_selection: {},
 
       /** Reactive filter attribute */
       filter: {
@@ -778,7 +776,7 @@ export class Layer extends Emitter {
    * 
    * @fires unselectionall
    */
-  async setSelection(bool = false) {
+  async #setSelection(bool = false) {
     this.state.selection.active = bool;
 
     // skip when selection is active
@@ -846,7 +844,7 @@ export class Layer extends Emitter {
     // update selection features (open layers)
     if (this.isGeoLayer()) {
       Object
-        .values(this.state.ol_selection)
+        .values(this.state.selection.features)
         .forEach(f => {
           try {
             f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
@@ -867,7 +865,7 @@ export class Layer extends Emitter {
    * 
    * @param filter
    */
-  async applyFilter(filter) {
+  async applyToken(filter) {
     if (!this.getProvider('filtertoken')) {
       return;
     }
@@ -939,7 +937,7 @@ export class Layer extends Emitter {
         // remove selection feature from map
         if (this.isGeoLayer()) {
           Object
-            .values(this.state.ol_selection)
+            .values(this.state.selection.features)
             .forEach(f => {
               f.selected = false;
               GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
@@ -970,7 +968,7 @@ export class Layer extends Emitter {
 
     // there is a current saved filter --> apply filter
     if (has_current && !is_active) {
-      await this.applyFilter(this.state.filter.current);
+      await this.applyToken(this.state.filter.current);
     }
 
     // there is no current saved filter --> delete it
@@ -1105,7 +1103,7 @@ export class Layer extends Emitter {
     // select all features (open layers)
     if (this.isGeoLayer()) {
       Object
-        .values(this.state.ol_selection)
+        .values(this.state.selection.features)
         .forEach(f => {
           try {
             f.selected          = true
@@ -1117,8 +1115,8 @@ export class Layer extends Emitter {
         });
     }
 
-    /** @TODO add description */
-    this.setSelection(true);
+    this.#setSelection(true);
+
     if (this.state.filter.active) {
       this.#createToken();
     }
@@ -1145,7 +1143,7 @@ export class Layer extends Emitter {
     // invert selection (state)
     if (this.isGeoLayer()) {
       Object
-        .values(this.state.ol_selection)
+        .values(this.state.selection.features)
         .forEach(f => {
           try {
             f.selected = !f.selected;
@@ -1164,7 +1162,7 @@ export class Layer extends Emitter {
     /** In the case of tocken filter active create */
     if (this.state.filter.active) { this.#createToken() }
 
-    this.setSelection(selection.size > 0);
+    this.#setSelection(selection.size > 0);
   }
 
   /**
@@ -1192,16 +1190,16 @@ export class Layer extends Emitter {
     if (is_excluded && 1 === selection.size) { this.selectAllFids() }
 
     /** @TODO add description */
-    if (!is_excluded && !this.isSelectionActive()) { this.setSelection(true) }
+    if (!is_excluded && !this.isSelectionActive()) { this.#setSelection(true) }
 
     // update selection (state)
-    if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
-      this.state.ol_selection[fid].selected          = !is_excluded;
-      this.state.ol_selection[fid].feature.__layerId = this.getId();
+    if (this.isGeoLayer() && this.state.selection.features[fid]?.feature) {
+      this.state.selection.features[fid].selected          = !is_excluded;
+      this.state.selection.features[fid].feature.__layerId = this.getId();
       if (is_excluded) {
-        GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.ol_selection[fid].feature);
+        GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.selection.features[fid].feature);
       } else {
-        GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.ol_selection[fid].feature);
+        GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.selection.features[fid].feature);
       }
     }
 
@@ -1250,13 +1248,13 @@ export class Layer extends Emitter {
     const is_excluded = selection.has('__EXCLUDE__') ? selection.has(fid) : !selection.has(fid);
 
     // update selection (state)
-    if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
-      this.state.ol_selection[fid].selected          = !is_excluded;
-      this.state.ol_selection[fid].feature.__layerId = this.getId();
+    if (this.isGeoLayer() && this.state.selection.features[fid]?.feature) {
+      this.state.selection.features[fid].selected          = !is_excluded;
+      this.state.selection.features[fid].feature.__layerId = this.getId();
       if (is_excluded) {
-        GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.ol_selection[fid].feature);
+        GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.selection.features[fid].feature);
       } else {
-        GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.ol_selection[fid].feature);
+        GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.selection.features[fid].feature);
       }
     }
 
@@ -1276,7 +1274,7 @@ export class Layer extends Emitter {
     // unselect all features (open layers)
     if (this.isGeoLayer()) {
       Object
-        .values(this.state.ol_selection)
+        .values(this.state.selection.features)
         .forEach(f => {
           try {
             f.selected          = false
@@ -1287,8 +1285,7 @@ export class Layer extends Emitter {
           }
         });
     }
-    // set selection false
-    await this.setSelection(false);
+    await this.#setSelection(false);
   }
 
   /******************************************************************************************
@@ -2501,11 +2498,11 @@ export class Layer extends Emitter {
    * @since 4.0.0
    */
   getOlSelectionFeature(id) {
-    return this.state.ol_selection[id];
+    return this.state.selection.features[id];
   }
 
   /**
-   * Create a new OL feature and store into current `ol_selection` state
+   * Create a new OL feature and store into current `state.selection.features`
    * 
    * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
    *
@@ -2516,7 +2513,7 @@ export class Layer extends Emitter {
     f.setId(`${this.getId()}_${id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
     f.set(G3W_FID, f.get(G3W_FID) ?? `${id}`); // ensure `G3W_FID` is always set
     Object.entries(feature.attributes).forEach(([a, v]) => f.set(a, v));
-    this.state.ol_selection[id] = this.state.ol_selection[id] || {
+    this.state.selection.features[id] = this.state.selection.features[id] || {
       feature:  f,
       selected: false, /** @since 3.9.9 */
     };
