@@ -195,7 +195,7 @@ export default new (class GUI extends Emitter {
   defaultsLayers = {
     mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
     highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: _MAP.colors.highlight, fill: true })] }),
-    selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector() }),
+    selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat =>  createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: 'red',                 fill: true }) }),
   };
 
   /**
@@ -3468,11 +3468,6 @@ export default new (class GUI extends Emitter {
         feat.selection.selected = layer.selection.active;
         // add/remove to selection
         if (layer.selection.active) {
-          feat.setStyle(createSelectedStyle({
-            geometryType: feat.getGeometry().getType(),
-            color:        'red',
-            fill:         true
-          }));
           this.defaultsLayers.selectionLayer.getSource().addFeature(feat);
         } else {
           this.defaultsLayers.selectionLayer.getSource().removeFeature(feat);
@@ -3504,11 +3499,6 @@ export default new (class GUI extends Emitter {
 
       // add/remove to selection
       if (feat.selection.selected) {
-        feat.setStyle(createSelectedStyle({
-          geometryType: feat.getGeometry().getType(),
-          color:        'red',
-          fill:         true
-        }));
         this.defaultsLayers.selectionLayer.getSource().addFeature(feat);
       } else {
         this.defaultsLayers.selectionLayer.getSource().removeFeature(feat);
