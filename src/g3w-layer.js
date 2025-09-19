@@ -819,22 +819,14 @@ export class Layer extends Emitter {
    */
   setFilter(bool = false) {
     this.state.filter.active = bool;
-    // hide selection features (open layers)
-    if (this.isGeoLayer() && this.state.filter.active) {
-      GUI.defaultsLayers.selectionLayer
-        .getSource()
-        .getFeatures()
-        .filter(f => this.state.id === f.__layerId)
-        .forEach(f => f.setStyle(new ol.style.Style(null)))
-    }
     // update selection features (open layers)
-    if (this.isGeoLayer() && !this.state.filter.active) {
+    if (this.isGeoLayer()) {
       Object
         .values(this.state.ol_selection)
         .forEach(f => {
           try {
             f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
-            if (f.selected) {
+            if (!this.state.filter.active && f.selected) {
               GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
             } else {
               GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
@@ -1214,20 +1206,11 @@ export class Layer extends Emitter {
     if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
       this.state.ol_selection[fid].selected          = !is_excluded;
       this.state.ol_selection[fid].feature.__layerId = this.getId();
-      Object
-        .values(this.state.ol_selection)
-        .forEach(f => {
-          try {
-            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
-            if (f.selected) {
-              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
-            } else {
-              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-            }          
-          } catch (e) {
-            console.warn(e);
-          }
-        });
+      if (is_excluded) {
+        GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.ol_selection[fid].feature);
+      } else {
+        GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.ol_selection[fid].feature);
+      }
     }
 
     /** @TODO add description */
@@ -1283,20 +1266,11 @@ export class Layer extends Emitter {
     if (this.isGeoLayer() && this.state.ol_selection[fid]?.feature) {
       this.state.ol_selection[fid].selected          = !is_excluded;
       this.state.ol_selection[fid].feature.__layerId = this.getId();
-      Object
-        .values(this.state.ol_selection)
-        .forEach(f => {
-          try {
-            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
-            if (f.selected) {
-              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
-            } else {
-              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-            }          
-          } catch (e) {
-            console.warn(e);
-          }
-        });
+      if (is_excluded) {
+        GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.ol_selection[fid].feature);
+      } else {
+        GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.ol_selection[fid].feature);
+      }
     }
 
     /** If there is a filterActive */
