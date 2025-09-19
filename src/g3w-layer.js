@@ -35,7 +35,6 @@ import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
-import { createSelectedStyle }    from 'utils/createSelectedStyle';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -2540,17 +2539,6 @@ export class Layer extends Emitter {
           f.added = f.selected;
         }
       });
-    // Ensures selection layer is always visible on map
-    const visible = !this.state.filter.active && Object.values(this.state.ol_selection).some(f => f.selected);
-    GUI.defaultsLayers.selectionLayer
-      .getSource()
-      .getFeatures()
-      .filter(f => this.state.id === f.__layerId)
-      .forEach(f => f.setStyle(visible ? createSelectedStyle({
-        geometryType: f.getGeometry().getType(),
-        color:        'red',
-        fill:         true
-      }): new ol.style.Style(null)))
   }
 
   /**

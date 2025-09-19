@@ -31,7 +31,6 @@ import { throttle }                             from 'utils/throttle';
 import { isPointGeometryType }                  from 'utils/isPointGeometryType';
 import { isLineGeometryType }                   from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }                from 'utils/isPolygonGeometryType';
-import { createSelectedStyle }                  from 'utils/createSelectedStyle';
 import { getScaleFromResolution }               from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }               from 'utils/getResolutionFromScale';
 import { createFilterFromString }               from 'utils/createFilterFromString';
@@ -61,9 +60,6 @@ Object
  * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
  */
 const _MAP = {
-  colors:     {
-    highlight: undefined,
-  },
   controls:   {},
   offlineids: [],
 };
@@ -194,8 +190,32 @@ export default new (class GUI extends Emitter {
    */
   defaultsLayers = {
     mapcenter:      new ol.layer.Vector({ source: new ol.source.Vector(), style: new ol.style.Style({ image: new ol.style.Icon({ opacity: 1, src: '/static/client/images/mapcentermarker.svg', scale: 0.8 }) }) }),
-    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: _MAP.colors.highlight, fill: true })] }),
-    selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat =>  createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: 'red',                 fill: true }) }),
+    highlightLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => {
+      const color = 'rgb(255,255,0)';
+      const type  = feat.getGeometry().getType();
+      if (['Point', 'MultiPoint'].includes(type)) {
+        return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
+      }
+      if (['LineString', 'MultiLineString'].includes(type)) {
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
+      }
+      if (['Polygon', 'MultiPolygon'].includes(type)) {
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
+      }
+    }}),
+    selectionLayer: new ol.layer.Vector({ source: new ol.source.Vector(), style: feat => {
+      const color = 'red';
+      const type  = feat.getGeometry().getType();
+      if (['Point', 'MultiPoint'].includes(type)) {
+        return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
+      }
+      if (['LineString', 'MultiLineString'].includes(type)) {
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
+      }
+      if (['Polygon', 'MultiPolygon'].includes(type)) {
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
+      }
+    }}),
   };
 
   /**
@@ -3298,7 +3318,6 @@ export default new (class GUI extends Emitter {
     let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
 
     this.clearHighlightGeometry();
-    _MAP.colors.highlight = options.color;
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
@@ -3320,7 +3339,19 @@ export default new (class GUI extends Emitter {
         hlayer.getSource().clear();
         // set default style
         if (options.style) {
-          hlayer.setStyle(feat => [createSelectedStyle({ geometryType: feat.getGeometry().getType(), color: options.color, fill: true })]);
+          hlayer.setStyle(feat => {
+            const color = options.color;
+            const type = feat.getGeometry().getType();
+            if (['Point', 'MultiPoint'].includes(type)) {
+              return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
+            }
+            if (['LineString', 'MultiLineString'].includes(type)) {
+              return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
+            }
+            if (['Polygon', 'MultiPolygon'].includes(type)) {
+              return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
+            }
+          });
         }
         if (!hide) {
           this.#highlighting = false;
@@ -3350,8 +3381,6 @@ export default new (class GUI extends Emitter {
     if (!this.#highlighting) {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
-    // reset default layer style
-    _MAP.colors.highlight = undefined;
   }
 
   /**

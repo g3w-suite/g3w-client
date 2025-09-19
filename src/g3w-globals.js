@@ -19,7 +19,6 @@ import { isPointGeometryType }                     from 'utils/isPointGeometryTy
 import { isLineGeometryType }                      from 'utils/isLineGeometryType';
 import { isPolygonGeometryType }                   from 'utils/isPolygonGeometryType';
 import { createVectorLayerFromFile }               from 'utils/createVectorLayerFromFile';
-import { createSelectedStyle }                     from 'utils/createSelectedStyle';
 import { getAlphanumericProps }                    from 'utils/getAlphanumericProps';
 import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { splitFeature }                            from 'utils/splitFeature';
@@ -213,7 +212,6 @@ globalThis.g3wsdk = {
     },
     geoutils: {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
-      createSelectedStyle,
       getAlphanumericPropertiesFromFeature: getAlphanumericProps,
       getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
       areCoordinatesEqual,
