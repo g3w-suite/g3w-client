@@ -1129,11 +1129,6 @@ export class Layer extends Emitter {
           const GIVE_ME_A_NAME = f.selected !== f.added;
           // add to selection
           if (GIVE_ME_A_NAME && f.selected) {
-            f.feature.setStyle(createSelectedStyle({
-              geometryType: f.feature.getGeometry().getType(),
-              color:        'red',
-              fill:         true
-            }));
             GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
           }
           // remove from selection
@@ -2535,11 +2530,6 @@ export class Layer extends Emitter {
         f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
         // add to selection
         if (GIVE_ME_A_NAME && f.selected) {
-          f.feature.setStyle(createSelectedStyle({
-            geometryType: f.feature.getGeometry().getType(),
-            color:        'red',
-            fill:         true
-          }));
           GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
         }
         // remove from selection
