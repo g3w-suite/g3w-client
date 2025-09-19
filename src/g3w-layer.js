@@ -1184,7 +1184,7 @@ export class Layer extends Emitter {
       this.state.selection.features[fid].feature.__layerId = this.getId();
       if (is_excluded) {
         GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.selection.features[fid].feature);
-      } else {
+      } else if (!this.state.filter.active) { //in case of no filter is active
         GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.selection.features[fid].feature);
       }
     }
