@@ -712,7 +712,7 @@ export default {
           if (action) {
             action.state.toggled[i] = false;
           }
-          GUI.setSelectionFeatures('remove', { feature });
+          GUI.defaultsLayers.selectionLayer.getSource().removeFeature(feature);
         });
       }
     },

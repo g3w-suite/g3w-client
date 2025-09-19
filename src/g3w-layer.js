@@ -924,7 +924,7 @@ export class Layer extends Emitter {
             .forEach(feat => {
               //remove selection feature
               if (feat.added) {
-                GUI.setSelectionFeatures('remove', { feature: feat.feature });
+                GUI.defaultsLayers.selectionLayer.getSource().removeFeature(feat.feature);
               }
               feat.added    = false;
               feat.selected = false;
@@ -1124,10 +1124,23 @@ export class Layer extends Emitter {
       Object
         .values(this.state.ol_selection)
         .forEach(f => {
-          f.selected = !f.selected;
-          f.feature.__layerId = this.getId(); //@since 4.0.1 need to add __layerId
-          if (f.selected !== f.added) {
-            GUI.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+          f.selected           = !f.selected;
+          f.feature.__layerId  = this.getId(); //@since 4.0.1 need to add __layerId
+          const GIVE_ME_A_NAME = f.selected !== f.added;
+          // add to selection
+          if (GIVE_ME_A_NAME && f.selected) {
+            f.feature.setStyle(createSelectedStyle({
+              geometryType: f.feature.getGeometry().getType(),
+              color:        'red',
+              fill:         true
+            }));
+            GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+          }
+          // remove from selection
+          if (GIVE_ME_A_NAME && !f.selected) {
+            GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+          }
+          if (GIVE_ME_A_NAME) {
             f.added = f.selected;
           }
         });
@@ -2518,9 +2531,22 @@ export class Layer extends Emitter {
     Object
       .values(this.state.ol_selection)
       .forEach(f => {
-        if (f.selected !== f.added) {
-          f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
-          GUI.setSelectionFeatures(f.selected ? 'add' : 'remove', { feature: f.feature });
+        const GIVE_ME_A_NAME = f.selected !== f.added;
+        f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
+        // add to selection
+        if (GIVE_ME_A_NAME && f.selected) {
+          f.feature.setStyle(createSelectedStyle({
+            geometryType: f.feature.getGeometry().getType(),
+            color:        'red',
+            fill:         true
+          }));
+          GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
+        }
+        // remove from selection
+        if (GIVE_ME_A_NAME && !f.selected) {
+          GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+        }
+        if (GIVE_ME_A_NAME) {
           f.added = f.selected;
         }
       });

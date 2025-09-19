@@ -3466,11 +3466,17 @@ export default new (class GUI extends Emitter {
         }
         // set current selection selected attribute
         feat.selection.selected = layer.selection.active;
-        // add remove selection feature
-        this.setSelectionFeatures(
-          layer.selection.active ? 'add' : 'remove',
-          { feature: feat }
-        );
+        // add/remove to selection
+        if (layer.selection.active) {
+          feat.setStyle(createSelectedStyle({
+            geometryType: feat.getGeometry().getType(),
+            color:        'red',
+            fill:         true
+          }));
+          this.defaultsLayers.selectionLayer.getSource().addFeature(feat);
+        } else {
+          this.defaultsLayers.selectionLayer.getSource().removeFeature(feat);
+        }
       });
     
       return;
@@ -3496,11 +3502,17 @@ export default new (class GUI extends Emitter {
         );
       }
 
-      // handle map selection layer adding or remove feature based on selection boolean value
-      this.setSelectionFeatures(
-        feat.selection.selected ? 'add' : 'remove',
-        { feature: feat }
-      );
+      // add/remove to selection
+      if (feat.selection.selected) {
+        feat.setStyle(createSelectedStyle({
+          geometryType: feat.getGeometry().getType(),
+          color:        'red',
+          fill:         true
+        }));
+        this.defaultsLayers.selectionLayer.getSource().addFeature(feat);
+      } else {
+        this.defaultsLayers.selectionLayer.getSource().removeFeature(feat);
+      }
 
       // set selection property (external layer)
       catalog_layer.selection.active = Object.values(action.state.toggled).some(t => t);;
@@ -4731,34 +4743,6 @@ export default new (class GUI extends Emitter {
       constrainResolution: (undefined !== options.constrainResolution ? options.constrainResolution : true),
       size:  this.viewer.map.getSize()
     });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * geometries = array of geometries
-   * action: add, clear, remove :
-   *   - add: feature/features to selectionLayer. If selectionLayer doesn't exist, create a new vector layer.
-   *   - clear: remove selectionLayer
-   *   - remove: remove feature from selection layer. If no more feature is in selectionLayer, it will be removed
-   * @since 4.1.0
-   */
-  setSelectionFeatures(action = 'add', opts = {}) {
-    const source = this.defaultsLayers.selectionLayer.getSource();
-    switch (action) {
-      case 'add':
-        //In case of add need to set selection style
-        opts.feature.setStyle(createSelectedStyle({
-          geometryType: opts.feature.getGeometry().getType(),
-          color:        'red',
-          fill:         true
-        }));
-        source.addFeature(opts.feature);
-        break;
-      case 'remove': source.removeFeature(opts.feature); break;
-      case 'update': source.getFeatureById(opts.feature.getId()).setGeometry(opts.feature.getGeometry()); break;
-      case 'clear':  source.clear(); break;
-    }
   }
 
   /**
