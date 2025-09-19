@@ -558,6 +558,7 @@ export class Layer extends Emitter {
     // BACKCOMP v3.x
     this.toggleFilterToken = this.toggleToken.bind(this);
     this.getFilterToken    = this.getToken.bind(this);
+    this.hasSelectionFid   = this.isSelected.bind(this);
   }
 
   /******************************************************************************************
