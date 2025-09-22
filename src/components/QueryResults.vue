@@ -862,7 +862,6 @@
             collapsed => {
               const index     = layer.features.findIndex(_feature => feature.id === _feature.id);
               const container = this.getContainerFromFeatureLayer({ layer, index });
-              GUI.openCloseFeatureResult({ open:!collapsed, layer, feature, container })
             }
           );
           this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;

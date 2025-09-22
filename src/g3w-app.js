@@ -457,15 +457,7 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'postRender',
       /** @since 4.1.0 */
-      'closeComponent',
-      /** @since 4.1.0 */
-      'changeLayerResult',
-      /** @since 4.1.0 */
-      'activeMapInteraction',
-      /** @since 4.1.0 */
       'editFeature',
-      /** @since 4.1.0 */
-      'openCloseFeatureResult',
       /** @since 4.1.0 */
       'removeFeatureFromResult',
       /** @since 4.1.0 */
@@ -2305,65 +2297,11 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
-   * @since 4.1.0
-   */
-  closeComponent() {}
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Called when layer result features is changed
-   *
-   * @param layer
-   * 
-   * @since 4.1.0
-   */
-  changeLayerResult(layer) {
-    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
-    // reset layer current actions tools
-    (layer.features || []).forEach((_, idx) => {
-        const tool = this.state.currentactiontools[layer.id];
-        if (undefined === tool) {
-          return;
-        }
-        if (undefined === tool[idx]) {
-          Vue.set(tool, idx, null);
-        }
-        tool[idx] = null;
-      });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Used by the following plugins: "bforest"
-   * 
-   * @since 4.1.0
-   */
-  activeMapInteraction() {}
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
    * Setter method related to relation table
    * 
    * @since 4.1.0
    */
   editFeature({ layer, feature } = {}) {}
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Setter method called when opening/closing feature info data content.
-   *
-   * @param opts.open
-   * @param opts.layer
-   * @param opts.feature
-   * @param opts.container
-   * 
-   * @since 4.1.0
-   */
-  openCloseFeatureResult({ open, layer, feature, container } = {}) {}
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
@@ -2493,7 +2431,22 @@ export default new (class GUI extends Emitter {
       this.highlightFeatures(this.state.queried_layers[0].features, { duration: Infinity });
     }
 
-    this.changeLayerResult(layer);
+    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
+    // reset layer current actions tools
+    (layer.features || []).forEach((_, idx) => {
+        const tool = this.state.currentactiontools[layer.id];
+        if (undefined === tool) {
+          return;
+        }
+        if (undefined === tool[idx]) {
+          Vue.set(tool, idx, null);
+        }
+        tool[idx] = null;
+      });
+
+    // Used by the following plugins: "bforest"
+    this.emit('after:changeLayerResult', layer);
+
   }
 
   /**
@@ -2772,7 +2725,10 @@ export default new (class GUI extends Emitter {
     this.removeAddFeaturesLayerResultInteraction(true);
     //reset pagination
     this.#clearState();
-    this.closeComponent();
+    // used by the following plugins: "stress"
+    this.emit('before:closeComponent');
+    // used by the following plugins: "bforest"
+    this.emit('after:closeComponent');
     this.#layer.getSource().clear();
     this.getMap().removeLayer(this.#layer);
 
@@ -2865,7 +2821,8 @@ export default new (class GUI extends Emitter {
       this.removeAddFeaturesLayerResultInteraction(true);
     } else {
 
-      this.activeMapInteraction(); // useful to send an event
+      // used by the following plugins: "bforest"
+      this.emit('before:activeMapInteraction');
 
       const external_layer = (this.state.queried_layers.find(l => l.id === layer.id) || {}).external;
 
