@@ -2242,7 +2242,7 @@ export default new (class GUI extends Emitter {
       }
     });
 
-    this.setActions(layers, { add: options.add, update: options.update });
+    this.setActionsForLayers(layers, { add: options.add, update: options.update });
     this.state.changed = true;
 
     // used by the following plugins: "bforest"
@@ -2354,12 +2354,12 @@ export default new (class GUI extends Emitter {
 
     if (layer?.features?.length > 0) {
       const features_ids = replace ? [] : layer.features.map(f => this.#getFid(f, layer?.external)) // get features id from current layer on a result
-      const action       = this.getAction(layer, 'selection');
+      const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);            // get action selection;
       if (replace) {
         layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
         layer.features.splice(0);
       }
-      responseLayer?.features?.forEach((feat, index) => {
+      (responseLayer.features || []).forEach((feat, index) => {
         const feature_id = this.#getFid(feat, layer?.external);
         // If true, remove the feature because is already loaded
         if (features_ids.some(id => id === feature_id)) {
@@ -2379,19 +2379,19 @@ export default new (class GUI extends Emitter {
           layer.features.push(feat);
         }
       });
+      // toggle layer feature box
+      (layer.features || []).forEach(f => {
+        const collapsed = (layer.features || []).length > 1;
+        const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, f)];
+        if (box) {
+          setTimeout(() => box.collapsed = collapsed); // due to vue reactivity, wait a little bit before update layers
+        }
+      });
     }
 
-    // toggle layer feature box
-    layer?.features?.forEach(f => {
-      const collapsed = layer?.features?.length > 1;
-      const box       = this.state.layersFeaturesBoxes[this.getBoxId(layer, f)];
-      if (box) {
-        setTimeout(() => box.collapsed = collapsed);
-      }
-    });
-
     // no more features on layer → remove interaction pickcoordinate to get a result from a map
-    if (layer && 0 === layer?.features?.length) {
+    if (layer && 0 === (layer.features || []).length) {
+      // due to vue reactivity, wait a little bit before update layers
       setTimeout(() => {
         this.state.queried_layers = this.state.queried_layers.filter(l => l.id !== layer.id);
         this.clearHighlightGeometry(layer);
@@ -2450,7 +2450,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  setActions(layers, options = { add: false, update: false }) {
+  setActionsForLayers(layers, options = { add: false, update: false }) {
     if (options.add || options.update) {
       return;
     }
@@ -2596,7 +2596,7 @@ export default new (class GUI extends Emitter {
         layer.selection.features = layer.selection.features || [];
         layer.features.forEach(f => f.selection = (layer.selection.features.find(s => f.id === s.getId()) || ({ selection: { selected: false }})).selection);
       } else if (!layer.external && layer.toc && undefined !== layer.selection.active) {
-        const handler = () => layer.features.forEach((_, i) => this.getAction(layer, 'selection').state.toggled[i] = false);
+        const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
         getCatalogLayerById(layer.id).on('unselectionall', handler);
         this.#events.query.push({ layer: getCatalogLayerById(layer.id), event: 'unselectionall', handler });
       }
@@ -2604,6 +2604,7 @@ export default new (class GUI extends Emitter {
     });
 
     this.addActionsForLayers(this.state.layersactions, this.state.queried_layers);
+
   }
 
   /**
@@ -2611,14 +2612,17 @@ export default new (class GUI extends Emitter {
    * 
    * Get action referred to layer getting the action id
    *
-   * @param layer layer linked to action
-   * @param id    action id
+   * @param opts.layer layer linked to action
+   * @param opts.id    action id
    * 
    * @returns undefined when no action is found
    * 
    * @since 4.1.0
    */
-  getAction(layer, id) {
+  getActionLayerById({
+    layer,
+    id,
+  } = {}) {
     if (this.state.layersactions[layer.id]) {
       return this.state.layersactions[layer.id].find(action => action.id === id);
     }
@@ -2637,7 +2641,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  setTool({
+  setCurrentActionLayerFeatureTool({
     layer,
     action,
     index,
@@ -2656,6 +2660,7 @@ export default new (class GUI extends Emitter {
     ) {
       feats[index].state.toggled[index] = false;
     }
+
   }
 
   /**
@@ -2940,6 +2945,38 @@ export default new (class GUI extends Emitter {
    */
   setTitle(querytitle) {
     this.state.querytitle = querytitle || "";
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   *
+   * @param actionId
+   * @param layer
+   * @param feature
+   * @param index
+   * @param container
+   * 
+   * @since 4.1.0
+   */
+  async triggerAction(actionId, layer, feature, index, container) {
+    if ('highlightgeometry' === actionId) {
+      this.highlightGeometry(layer, feature, index);
+    }
+    if ('clearHighlightGeometry' === actionId) {
+      this.clearHighlightGeometry(layer, feature, index);
+    }
+    if (layer && this.state.layersactions[layer.id]) {
+      const action = this.state.layersactions[layer.id].find(layerAction => layerAction.id === actionId);
+      if (action && action.cbk) {
+        await action.cbk(layer, feature, action, index, container);
+      }
+      if (action &&  action.route) {
+        let url = action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
+        if (url && '' !== url) {
+          this.goto(url);
+        }
+      }
+    }
   }
 
   /**
@@ -3323,11 +3360,11 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async toggleSelection(layer, feature, force) {
+  async toggleSelection(layer, feature) {
     
-    const action        = this.getAction(layer, 'selection');                  // get selction action
+    const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selction action
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
-    const toggled       = undefined !== force ? !force : layer.selection.active; 
+    const toggled       = layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
@@ -3416,8 +3453,6 @@ export default new (class GUI extends Emitter {
       return;
     }
 
-    // PROJECT LAYER
-
     // get fids (unique id) of features
     const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
 
@@ -3438,6 +3473,8 @@ export default new (class GUI extends Emitter {
     });
 
     // set layer selection state
+
+    // PROJECT LAYER
     if (catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
         // index of feature to remove
@@ -3452,9 +3489,10 @@ export default new (class GUI extends Emitter {
 
     catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
 
+    //remove Highlight geometry layer fetures
     this.clearHighlightGeometry();
     
-    // remove queried layer when no features (single layer)
+    // PROJECT LAYER - In case of single layer and no features, remove layer
     if (1 === this.state.queried_layers.length && !this.state.queried_layers[0].features.length) {
       this.state.queried_layers.splice(0);
     }

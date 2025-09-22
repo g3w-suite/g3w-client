@@ -37,7 +37,7 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
         },
         cbk: (layer, feature, action, index) => {
           action.state.toggled[index] = !action.state.toggled[index];
-          GUI.setTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
+          GUI.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
         }
       });
       GUI.state.actiontools.downloadformats = GUI.state.actiontools.downloadformats || {};
@@ -286,7 +286,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
   
       GUI.setLoadingContent(false);
 
-      const downloadsactions = GUI.getAction(layer, 'downloads');
+      const downloadsactions = GUI.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
       /** @FIXME add description */
       if (features.length > 1 && undefined === downloadsactions) {
@@ -311,7 +311,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
       /** @FIXME add description */
       if (features.length <= 1) {
-        GUI.setTool({ index, action, layer });
+        GUI.setCurrentActionLayerFeatureTool({ index, action, layer });
       }
     };
 
@@ -322,7 +322,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
     }
 
     // check if multi-download if present
-    const downloadsactions = GUI.getAction(layer, 'downloads');
+    const downloadsactions = GUI.state.layersactions[layer.id].find(action => 'downloads' === action.id);
 
     const config = {
       choices: [
@@ -359,7 +359,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
     if (1 === features.length) {
       GUI.state.actiontools[CsvAttributes.name] = GUI.state.actiontools[layer.id] || {};
       GUI.state.actiontools[CsvAttributes.name][layer.id] = config;
-      GUI.setTool({
+      GUI.setCurrentActionLayerFeatureTool({
         layer,
         index,
         action,

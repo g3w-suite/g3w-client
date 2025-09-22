@@ -698,7 +698,7 @@
        */
       canSelect(layer) {
         return (
-          GUI.getAction(layer, 'selection')
+          GUI.getActionLayerById({ layer, id: 'selection' })
           && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
           && layer.features.length > 1
         );
@@ -797,6 +797,9 @@
       async addRemoveFilter(layer) {
         await getCatalogLayerById(layer.id).toggleToken();
       },
+      getContainerFromFeatureLayer({ layer, index } = {}) {
+        return $(`#${layer.id}_${index} > td`);
+      },
       hasOneLayerAndOneFeature(layer) {
         return this.hasLayerOneFeature(layer);
       },
@@ -851,7 +854,16 @@
       getLayerFeatureBox(layer, feature, relation_index) {
         const boxid = GUI.getBoxId(layer, feature, relation_index);
         if (undefined === this.state.layersFeaturesBoxes[boxid] ) {
-          this.state.layersFeaturesBoxes[boxid]           = Vue.observable({ collapsed: true });
+          this.state.layersFeaturesBoxes[boxid] = Vue.observable({
+            collapsed: true
+          });
+          this.$watch(
+            () => this.state.layersFeaturesBoxes[boxid].collapsed,
+            collapsed => {
+              const index     = layer.features.findIndex(_feature => feature.id === _feature.id);
+              const container = this.getContainerFromFeatureLayer({ layer, index });
+            }
+          );
           this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
         }
         return this.state.layersFeaturesBoxes[boxid];
@@ -893,24 +905,7 @@
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        if ('highlightgeometry' === action.id) {
-          GUI.highlightGeometry(layer, feature, index);
-        }
-        if ('clearHighlightGeometry' === action.id) {
-          GUI.clearHighlightGeometry(layer, feature, index);
-        }
-        if (layer && this.state.layersactions[layer.id]) {
-          const _action = GUI.getAction(layer, action.id);
-          if (_action?.cbk) {
-            await _action.cbk(layer, feature, _action, index, $(`#${layer.id}_${index} > td`));
-          }
-          if (_action?.route) {
-            let url = _action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
-            if (url && '' !== url) {
-              GUI.goto(url);
-            }
-          }
-        }
+        await GUI.triggerAction(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
