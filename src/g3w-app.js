@@ -3562,8 +3562,8 @@ export default new (class GUI extends Emitter {
     this.clearHighlightGeometry();
     
     // PROJECT LAYER - In case of single layer and no features, remove layer
-    if (1 === this.state.layers.length && !this.state.layers[0].features.length) {
-      this.state.layers.splice(0);
+    if (1 === this.state.queried_layers.length && !this.state.queried_layers[0].features.length) {
+      this.state.queried_layers.splice(0);
     }
 
   }
