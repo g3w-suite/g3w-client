@@ -56,14 +56,6 @@ Object
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
-/**
- * Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
- */
-const _MAP = {
-  controls:   {},
-  offlineids: [],
-};
-
 /** @TODO check if deprecated */
 const ACTIONS = {};
 
@@ -72,6 +64,8 @@ export default new (class GUI extends Emitter {
   #CONTENTS;
 
   setupControl = {};
+
+  #offlineids = [];
 
   isready = false;
 
@@ -180,6 +174,8 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #controls = [];
+
+  #controls_ = {};
 
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
@@ -843,10 +839,10 @@ export default new (class GUI extends Emitter {
     });
 
     /** @since 3.8.0 */
-    this.onbefore('offline', () => _MAP.offlineids.forEach(c => { c.enable = _MAP.controls[c.id].getEnable(); _MAP.controls[c.id].setEnable(false); }));
+    this.onbefore('offline', () => this.#offlineids.forEach(c => { c.enable = this.#controls_[c.id].getEnable(); this.#controls_[c.id].setEnable(false); }));
 
     /** @since 3.8.0 */
-    this.onbefore('online', () => _MAP.offlineids.forEach(({ id, enable }) => _MAP.controls[id].setEnable(enable)));
+    this.onbefore('online', () => this.#offlineids.forEach(({ id, enable }) => this.#controls_[id].setEnable(enable)));
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
@@ -2568,7 +2564,7 @@ export default new (class GUI extends Emitter {
               features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
           },
-          cbk: throttle(() => { this.toggleSelection(layer, feature); })
+          cbk: throttle((layer, feature) => { this.toggleSelection(layer, feature); })
         },
 
         // permalink (click to copy)
@@ -2576,7 +2572,7 @@ export default new (class GUI extends Emitter {
           id:          'link_zoom_to_fid',
           class:       this.getFontClass('share-alt'),
           hint:        'Share via link',
-          cbk: (layer, feature, action) => {
+          cbk: (layer, feature) => {
             const url = new URL(location.href);
             url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
             this.getPermalink(url, {});
@@ -3331,7 +3327,7 @@ export default new (class GUI extends Emitter {
     
     const action        = this.getAction(layer, 'selection');                  // get selction action
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
-    const toggled       = force ?? layer.selection.active; 
+    const toggled       = undefined !== force ? !force : layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
@@ -3966,10 +3962,10 @@ export default new (class GUI extends Emitter {
       $('.g3w-map-controls').append(control.element);
     }
 
-    _MAP.controls[type] = control;
+    this.#controls_[type] = control;
 
     if (false === control.offline) {
-      _MAP.offlineids.push({ id: type, enable: control.getEnable() });
+      this.#offlineids.push({ id: type, enable: control.getEnable() });
     }
 
     if (false === control.offline && control.getEnable()) {
@@ -5349,7 +5345,7 @@ export default new (class GUI extends Emitter {
     if ('vector' === type) {
       this.registerVectorLayer(layer);
       this.#events.unwatches[externalLayer.name] = [];
-      Object.values(_MAP.controls).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
+      Object.values(this.#controls_).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
     }
 
     if (extent && options.zoomToExtent) {
@@ -5408,7 +5404,7 @@ export default new (class GUI extends Emitter {
       }
       // vector
       if (type === l._externalLayerType && name === l._externalLayer.name) {
-        Object.values(_MAP.controls).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
+        Object.values(this.#controls_).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
         return false;
       }
       // wms
@@ -5468,7 +5464,7 @@ export default new (class GUI extends Emitter {
 
     this.#selectedLayer = layer && layer.isSelected() ? layer : null;
 
-    Object.values(_MAP.controls).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
+    Object.values(this.#controls_).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
   }
 
   /**

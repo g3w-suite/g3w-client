@@ -900,12 +900,12 @@
           GUI.clearHighlightGeometry(layer, feature, index);
         }
         if (layer && this.state.layersactions[layer.id]) {
-          const action = GUI.getAction(layer, action.id);
-          if (action?.cbk) {
-            await action.cbk(layer, feature, action, index, $(`#${layer.id}_${index} > td`));
+          const _action = GUI.getAction(layer, action.id);
+          if (_action?.cbk) {
+            await _action.cbk(layer, feature, _action, index, $(`#${layer.id}_${index} > td`));
           }
-          if (action?.route) {
-            let url = action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
+          if (_action?.route) {
+            let url = _action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
             if (url && '' !== url) {
               GUI.goto(url);
             }
