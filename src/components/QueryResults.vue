@@ -852,7 +852,7 @@
         return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n)));
       },
       getLayerFeatureBox(layer, feature, relation_index) {
-        const boxid = this.getBoxId(layer, feature, relation_index);
+        const boxid = GUI.getBoxId(layer, feature, relation_index);
         if (undefined === this.state.layersFeaturesBoxes[boxid] ) {
           this.state.layersFeaturesBoxes[boxid] = Vue.observable({
             collapsed: true
@@ -872,7 +872,7 @@
 
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
-        const box = this.state.layersFeaturesBoxes[this.getBoxId(layer, feature, relation_index)];
+        const box = this.state.layersFeaturesBoxes[GUI.getBoxId(layer, feature, relation_index)];
         return box ? box.collapsed : true;
       },
 
@@ -892,11 +892,8 @@
       showFeature(layer, feature) {
         return GUI.showFeature(layer, feature);
       },
-      getBoxId(layer, feature, relation_index) {
-        return GUI.getBoxId(layer, feature, relation_index);
-      },
       async toggleFeatureBox(layer, feature, relation_index) {
-        const boxid = this.getBoxId(layer, feature, relation_index);
+        const boxid = GUI.getBoxId(layer, feature, relation_index);
         this.state.layersFeaturesBoxes[boxid].collapsed = !this.state.layersFeaturesBoxes[boxid].collapsed;
         await this.$nextTick();
         this.showFeatureInfo(layer, boxid);
@@ -1062,7 +1059,7 @@
         if (this.onelayerresult && this.hasLayerOneFeature(queried_layers[0])) {
           const layer   = queried_layers[0];
           const feature = layer.features[0];
-          const boxid   = this.getBoxId(layer, feature);
+          const boxid   = GUI.getBoxId(layer, feature);
           GUI.onceafter('postRender', () => {
             this.showFeatureInfo(layer, boxid);
           });

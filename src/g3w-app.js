@@ -467,7 +467,7 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'openCloseFeatureResult',
       /** @since 4.1.0 */
-      'removeFeatureLayerFromResult',
+      'removeFeatureFromResult',
       /** @since 4.1.0 */
       'addHideMap',
       /** @since 4.1.0 */
@@ -1184,7 +1184,7 @@ export default new (class GUI extends Emitter {
 
   // show results info/search
   showQueryResults(title, results) {
-    this.clearState();
+    this.#clearState();
 
     if (results) {
       this.setQueryResponse(results);
@@ -2055,7 +2055,7 @@ export default new (class GUI extends Emitter {
     // whether add response to current results using addLayerFeaturesToResultsAction
     if (false === options.add && !options.update) {
       // in case of new request results reset the query otherwise maintain the previous request
-      this.clearState();
+      this.#clearState();
       this.state.query      = queryResponse.query;
       this.state.type       = queryResponse.type;
     }
@@ -2375,7 +2375,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  removeFeatureLayerFromResult(layer, feature) {
+  removeFeatureFromResult(layer, feature) {
     this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
   }
 
@@ -2441,7 +2441,7 @@ export default new (class GUI extends Emitter {
     const external         = (layer || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
     const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
     if (has_features) {
-      const features_ids = replace ? [] : layer.features.map(f => this._getFeatureId(f, external)) // get features id from current layer on a result
+      const features_ids = replace ? [] : layer.features.map(f => this.#getFid(f, external)) // get features id from current layer on a result
       //get action selection;
       const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
       if (replace) {
@@ -2449,7 +2449,7 @@ export default new (class GUI extends Emitter {
         layer.features.splice(0);
       }
       responseFeatures.forEach((feat, index) => {
-        const feature_id = this._getFeatureId(feat, external);
+        const feature_id = this.#getFid(feat, external);
         // If true, remove the feature because is already loaded
         if (features_ids.some(id => id === feature_id)) {
           //@since 3.11.0
@@ -2457,7 +2457,7 @@ export default new (class GUI extends Emitter {
             (external ? layer : getCatalogLayerById(layer.id)).fidsOut(feature_id, layer.filter.active);
           }
           //filter feature
-          layer.features = layer.features.filter(f => feature_id !== this._getFeatureId(f, external));
+          layer.features = layer.features.filter(f => feature_id !== this.#getFid(f, external));
           delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
           if (action) {
             delete action.state.toggled[index];
@@ -2597,7 +2597,7 @@ export default new (class GUI extends Emitter {
           /** @since 3.11.0 hide element in case of pagination (show = false) */
           state:     Vue.observable({ show: !layer.filter.pagination }),
           hint:      'Remove feature from results',
-          cbk:       this.removeFeatureLayerFromResult.bind(this),
+          cbk:       this.removeFeatureFromResult.bind(this),
           init() {
             this.unwatch = Vue.watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
           },
@@ -2771,7 +2771,7 @@ export default new (class GUI extends Emitter {
     this.#layer.getSource().clear();
     this.removeAddFeaturesLayerResultInteraction(true);
     //reset pagination
-    this.clearState();
+    this.#clearState();
     this.closeComponent();
     this.#layer.getSource().clear();
     this.getMap().removeLayer(this.#layer);
@@ -2983,7 +2983,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  clearState() {
+  #clearState() {
     this.state.queried_layers.splice(0);
     this.state.query               = null;
     this.state.querytitle          = "";
@@ -3003,17 +3003,6 @@ export default new (class GUI extends Emitter {
    */
   getState() {
     return this.state;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param state
-   * 
-   * @since 4.1.0
-   */
-  setState(state) {
-    this.state = state;
   }
 
   /**
@@ -3155,7 +3144,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async _printSingleAtlas({
+  async #printSingleAtlas({
     atlas    = {},
     features = [],
   } = {}) {
@@ -3226,7 +3215,7 @@ export default new (class GUI extends Emitter {
 
     /** @FIXME add description */
     if (atlasLayer.length <= 1) {
-      this._printSingleAtlas({ features, atlas: atlasLayer[0] });
+      this.#printSingleAtlas({ features, atlas: atlasLayer[0] });
       return;
     }
 
@@ -3249,7 +3238,7 @@ export default new (class GUI extends Emitter {
             if (undefined === index) {
               return false; // prevent default
             }
-            this._printSingleAtlas({ features, atlas: atlasLayer[index] });
+            this.#printSingleAtlas({ features, atlas: atlasLayer[index] });
           }
         }
       }
@@ -3307,8 +3296,6 @@ export default new (class GUI extends Emitter {
       return this.highlightGeometry(options.geometry, { layerId: geometryObj.id, zoom: false, duration: Infinity });
     }
 
-    const duration  = options.duration || 2000;
-    const hlayer    = this.defaultsLayers.highlightLayer;
     const hide      = 'function' === typeof options.hide      ? options.hide      : null;
     const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
     const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
@@ -3325,18 +3312,18 @@ export default new (class GUI extends Emitter {
     }
 
     if (options.style) {
-      hlayer.setStyle(options.style);
+      this.defaultsLayers.highlightLayer.setStyle(options.style);
     }
 
-    hlayer.getSource().addFeature(new ol.Feature({ geometry }));
+    this.defaultsLayers.highlightLayer.getSource().addFeature(new ol.Feature({ geometry }));
 
     return new Promise(async resolve => {
 
       const cb = () => {
-        hlayer.getSource().clear();
+        this.defaultsLayers.highlightLayer.getSource().clear();
         // set default style
         if (options.style) {
-          hlayer.setStyle(feat => {
+          this.defaultsLayers.highlightLayer.setStyle(feat => {
             const color = options.color;
             const type = feat.getGeometry().getType();
             if (['Point', 'MultiPoint'].includes(type)) {
@@ -3360,9 +3347,9 @@ export default new (class GUI extends Emitter {
         hide(cb);
       }
 
-      if (duration && duration !== Infinity && !hide) {
+      if (options.duration && options.duration !== Infinity && !hide) {
         this.#highlighting = true;
-        setTimeout(cb, duration);
+        setTimeout(cb, options.duration || 2000);
       }
 
     });
@@ -3426,7 +3413,7 @@ export default new (class GUI extends Emitter {
    *
    * @since 4.1.0
    */
-  _getFeatureId(feature, external) {
+  #getFid(feature, external) {
     return external ? feature.id : (feature.attributes[G3W_FID] || feature.id); // in case of query by geometry, features are returned without G3W_FID. They have id 
   }
 
@@ -3444,8 +3431,7 @@ export default new (class GUI extends Emitter {
    */
   async toggleSelection(layer, feature) {
     
-    const query         = this; //get query service
-    const action        = query.getActionLayerById({ layer, id: 'selection' }); //get selction action
+    const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selction action
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
@@ -3576,8 +3562,8 @@ export default new (class GUI extends Emitter {
     this.clearHighlightGeometry();
     
     // PROJECT LAYER - In case of single layer and no features, remove layer
-    if (1 === query.getState().layers.length && !query.getState().layers[0].features.length) {
-      query.getState().layers.splice(0);
+    if (1 === this.state.layers.length && !this.state.layers[0].features.length) {
+      this.state.layers.splice(0);
     }
 
   }
