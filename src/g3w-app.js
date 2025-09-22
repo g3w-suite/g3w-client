@@ -451,8 +451,6 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'setQueryResponse',
       /** @since 4.1.0 */
-      'setLayersData',
-      /** @since 4.1.0 */
       'addActionsForLayers',
       /** @since 4.1.0 */
       'postRender',
@@ -2039,35 +2037,25 @@ export default new (class GUI extends Emitter {
     if (!queryResponse.query.external) queryResponse.query.external = { add: false, filter: { SELECTED: false }};
 
 
-    if (false === options.add && !!options.update) {
-      // in case of new request results reset the query otherwise maintain the previous request
-      this.state.query      = queryResponse.query;
-      this.state.type       = queryResponse.type;
-    }
-    // whether add response to current results using addLayerFeaturesToResultsAction
+    // overwrite any previous request
     if (false === options.add && !options.update) {
-      // in case of new request results reset the query otherwise maintain the previous request
       this.#clearState();
+    }
+
+    // the request
+    if (false === options.add) {
       this.state.query      = queryResponse.query;
       this.state.type       = queryResponse.type;
     }
+
     // whether add external layers to response
     if (true === queryResponse.query.external.add && false === options.add) {
-      const catalog = this.getService('catalog');
-
-      /** @type { boolean | undefined } */
-      const FILTER_SELECTED = queryResponse.query.external.filter.SELECTED;
-  
       // add visible layers to query response (vector layers)
       this.#vectorLayers.forEach(layer => {
-        const id = layer.get('id');
         // TODO: extract this into `layer.isSomething()` ?
-        if (
-          layer.getVisible()
-          && [undefined, !!(catalog.state.external.vector.find(l => l.id === id) || {}).selected].includes(FILTER_SELECTED)
-        ) {
+        if (layer.getVisible() && [undefined, !!(this.getService('catalog').state.external.vector.find(l => l.id === layer.get('id')) || {}).selected].includes(queryResponse.query.external.filter.SELECTED)) {
           queryResponse.data[
-            '__g3w_marker' === id // keep geocoding control "marker" layer at the top
+            '__g3w_marker' === layer.get('id') // keep geocoding control "marker" layer at the top
             ? 'unshift'
             : 'push'
           ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
@@ -2085,11 +2073,11 @@ export default new (class GUI extends Emitter {
 
     // show a query result on map
     if (geom) {
-      const feature = new ol.Feature(geom);
-      feature.setId(undefined);
+      const feat = new ol.Feature(geom);
+      feat.setId(undefined);
       this.#layer.getSource().clear();
       this.getMap().removeLayer(this.#layer);
-      this.#layer.getSource().addFeature(feature);
+      this.#layer.getSource().addFeature(feat);
       this.getMap().addLayer(this.#layer);
       this.#layer.setZIndex(this.getMap().getLayers().getLength()); // ensure layer is on top of others
     }
@@ -2241,24 +2229,12 @@ export default new (class GUI extends Emitter {
           max_preview_fields:        layer.state?.max_preview_fields || 3, //@since 4.0.0 
         };
       });
-    this.setLayersData(layers, options);
-  }
 
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Setter method called when adding layer and feature for response
-   *
-   * @param layers
-   * @param options
-   * 
-   * @since 4.1.0
-   */
-  setLayersData(layers = [], options = { add: false, update: false }) {
     // sort layers as Catalog project layers (external layer always on bottom)
     if (false === options.add) {
       layers.sort((a, b) => a.external ? 0 : (this.#layer_ids.indexOf(a.id) > this.#layer_ids.indexOf(b.id) ? 1 : -1));
     }
+
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
       // whether result comes from pagination
@@ -2269,8 +2245,12 @@ export default new (class GUI extends Emitter {
         this.state.queried_layers.push(l);
       }
     });
+
     this.setActionsForLayers(layers, { add: options.add, update: options.update });
     this.state.changed = true;
+
+    // used by the following plugins: "bforest"
+    this.emit('onafter:setLayersData', layers, options);
   }
 
   /**
@@ -2374,28 +2354,25 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   updateLayerResultFeatures(responseLayer, replace = false) {
-    const layer            = this.state.queried_layers.find(l => l.id === responseLayer.id);                // get layer from current `state.queried_layers` showed on a result
-    const responseFeatures = responseLayer.features || [];                                            // extract features from responseLayer object
-    const external         = (layer || {}).external; // get id of external layer or not (`external` is a layer added by mapcontrol addexternlayer)
-    const has_features     = layer && (layer.features || []).length > 0;                              // check if the current layer has features on response
-    if (has_features) {
-      const features_ids = replace ? [] : layer.features.map(f => this.#getFid(f, external)) // get features id from current layer on a result
-      //get action selection;
-      const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);
+    const layer = this.state.queried_layers.find(l => l.id === responseLayer.id);
+
+    if (layer?.features?.length > 0) {
+      const features_ids = replace ? [] : layer.features.map(f => this.#getFid(f, layer?.external)) // get features id from current layer on a result
+      const action = this.state.layersactions[layer.id].find(a => 'selection' === a.id);            // get action selection;
       if (replace) {
         layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
         layer.features.splice(0);
       }
-      responseFeatures.forEach((feat, index) => {
-        const feature_id = this.#getFid(feat, external);
+      (responseLayer.features || []).forEach((feat, index) => {
+        const feature_id = this.#getFid(feat, layer?.external);
         // If true, remove the feature because is already loaded
         if (features_ids.some(id => id === feature_id)) {
           //@since 3.11.0
           if (action && feat.selection.selected) {
-            (external ? layer : getCatalogLayerById(layer.id)).fidsOut(feature_id, layer.filter.active);
+            (layer?.external ? layer : getCatalogLayerById(layer.id)).fidsOut(feature_id, layer.filter.active);
           }
           //filter feature
-          layer.features = layer.features.filter(f => feature_id !== this.#getFid(f, external));
+          layer.features = layer.features.filter(f => feature_id !== this.#getFid(f, layer?.external));
           delete this.state.layersFeaturesBoxes[this.getBoxId(layer, feat)]
           if (action) {
             delete action.state.toggled[index];
@@ -2431,22 +2408,23 @@ export default new (class GUI extends Emitter {
       this.highlightFeatures(this.state.queried_layers[0].features, { duration: Infinity });
     }
 
-    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));  // call if present change method to action
-    // reset layer current actions tools
+    // call "action.change"
+    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));
+
+    // reset actions tools
     (layer.features || []).forEach((_, idx) => {
-        const tool = this.state.currentactiontools[layer.id];
-        if (undefined === tool) {
-          return;
-        }
-        if (undefined === tool[idx]) {
-          Vue.set(tool, idx, null);
-        }
-        tool[idx] = null;
-      });
+      const tool = this.state.currentactiontools[layer.id];
+      if (undefined === tool) {
+        return;
+      }
+      if (undefined === tool[idx]) {
+        Vue.set(tool, idx, null);
+      }
+      tool[idx] = null;
+    });
 
-    // Used by the following plugins: "bforest"
-    this.emit('after:changeLayerResult', layer);
-
+    // used by the following plugins: "bforest"
+    this.emit('onafter:changeLayerResult', layer);
   }
 
   /**
@@ -2590,7 +2568,7 @@ export default new (class GUI extends Emitter {
               features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
           },
-          cbk: throttle(this.toggleSelection.bind(this))
+          cbk: throttle(() => { this.toggleSelection(layer, feature); })
         },
 
         // permalink (click to copy)
@@ -2726,9 +2704,9 @@ export default new (class GUI extends Emitter {
     //reset pagination
     this.#clearState();
     // used by the following plugins: "stress"
-    this.emit('before:closeComponent');
+    this.emit('onbefore:closeComponent');
     // used by the following plugins: "bforest"
-    this.emit('after:closeComponent');
+    this.emit('onafter:closeComponent');
     this.#layer.getSource().clear();
     this.getMap().removeLayer(this.#layer);
 
@@ -2822,7 +2800,7 @@ export default new (class GUI extends Emitter {
     } else {
 
       // used by the following plugins: "bforest"
-      this.emit('before:activeMapInteraction');
+      this.emit('onbefore:activeMapInteraction');
 
       const external_layer = (this.state.queried_layers.find(l => l.id === layer.id) || {}).external;
 
