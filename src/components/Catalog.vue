@@ -693,7 +693,7 @@ export default {
         return console.warn('undefined layer');;
       }
 
-      const action   = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
+      const action   = layer.external && GUI.getAction(layer, 'selection');
 
       // PROJECT LAYER
       if (!layer.external && storeid) {

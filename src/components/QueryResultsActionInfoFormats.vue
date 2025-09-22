@@ -107,8 +107,7 @@ export default {
         // in the case of starting raw data (html) need to sett attributes to visualize on a result
         if (0 === this.layer.attributes.length) {
           this.layer.hasgeometry = !!geometry;
-          // need to setActionsForLayers to visualize eventual actions
-          GUI.setActionsForLayers([this.layer]);
+          GUI.setActions([this.layer]);
           getAlphanumericProps(attributes).forEach(name =>{
             this.layer.attributes.push({
               name,
