@@ -329,7 +329,7 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         this.layer.inverseSelection();
-        this.state.selection.active = this.layer.getSelection().fids.has('__ALL__') || this.state.features.every(f => f.selected);
+        this.state.selection.active = this.layer.getSelection().fids.has('__ALL__') || this.state.features.some(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
