@@ -321,7 +321,7 @@ export default {
           this.state.features.push(...features.map(f => {
             return {
               id:         f.id,
-              selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
+              selected:   this.layer.state.filter.active || (this.state.features.find(({id}) => id === f.id)?.selected ?? false),
               attributes: f.attributes || f.properties,
               geometry:   f.geometry 
             };
@@ -482,6 +482,7 @@ export default {
 
         this.state.allfeatures   = data.count;
         this.state.featurescount = (data.features || []).length;
+        console.log(this.layer.state.filter.active)
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => ({
