@@ -269,7 +269,7 @@ export default {
         });
         // zoom to feature
         if (feature.geometry) {
-          GUI.zoomToGeometry(toOLGeom(feature.geometry));
+          GUI.zoomToExtent(toOLGeom(feature.geometry)?.getExtent());
         }
       } catch (e) {
        console.warn(e); 

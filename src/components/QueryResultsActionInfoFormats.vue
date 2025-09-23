@@ -12,11 +12,11 @@
     :search        = "false"
   >
     <option
-      v-for  = "infoformat in infoformats"
-      :key   = "infoformat"
-      :value = "infoformat"
+      v-for  = "format in infoformats"
+      :key   = "format"
+      :value = "format"
     >
-      {{infoformat}}
+      {{ format }}
     </option>
   </select>
 </template>
@@ -59,95 +59,56 @@ export default {
 
   },
 
-  methods: {
-
-    async reloadLayerDataWithChangedContentType(contenttype) {
+  watch: {
+    async 'infoformat'(contenttype) {
       this.layer.loading = true;
-      // disable select during get data from server
-      this.$el.disabled = true;
+      this.$el.disabled = true; // disable select while getting data from server
       try {
-        const response = await this.projectLayer.fetchProxyData('wms', { changes: {
+        const catalog_layer = getCatalogLayerById(this.layer.id);
+        const response      = await catalog_layer.fetchProxyData('wms', { changes: {
           headers: { 'Content-Type': contenttype },
           params:  { INFO_FORMAT: contenttype }
         }});
         this.layer.infoformat = contenttype;
-        this.projectLayer.setInfoFormat(this.layer.infoformat);
-        const [data] = Layer._parse(contenttype, { layers: [this.projectLayer], response });
+        catalog_layer.setInfoFormat(this.layer.infoformat);
+        const [data] = Layer._parse(contenttype, { layers: [catalog_layer], response });
+
+        // parse as raw data
+        if (!data.features) {
+          this.layer.features.splice(0);
+          await this.$nextTick();
+          this.layer.rawdata = data.rawdata;
+        }
+
+        // parse data
         if (data.features) {
-          this.__parsedata(data);
-        } else {
-          this.__parserawdata(data);
+          this.layer.rawdata = null;
+          data.features.forEach(f => {
+            const feature = {
+              id:         f instanceof ol.Feature ? f.getId()         : f.id,
+              attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
+              geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
+              show:       true,
+            };
+            // raw data (html) → set attributes to visualize it on result
+            if (0 === this.layer.attributes.length) {
+              this.layer.hasgeometry = !!feature.geometry;
+              GUI.setActionsForLayers([this.layer]);
+              getAlphanumericProps(feature.attributes).forEach(name => this.layer.attributes.push({ name, label: name, show: true }));
+            }
+            this.layer.features.push(feature);
+          });
         }
       } catch (e) {
         console.warn(e);
       }
       this.layer.loading = false;
-      // enable select during get data from server
       this.$el.disabled = false;
-    },
-
-    /**
-     * @TODO find me a better name
-     */
-    __parsedata(data) {
-      this.layer.rawdata = null;
-
-      data.features.forEach(feature => {
-
-        const {
-          id: fid,
-          geometry,
-          properties:attributes
-        } = {
-          properties: feature instanceof ol.Feature ? feature.getProperties() : feature.properties,
-          geometry:   feature instanceof ol.Feature ? feature.getGeometry()   : feature.geometry,
-          id:         feature instanceof ol.Feature ? feature.getId()         : feature.id
-        };
-
-        // in the case of starting raw data (html) need to sett attributes to visualize on a result
-        if (0 === this.layer.attributes.length) {
-          this.layer.hasgeometry = !!geometry;
-          // need to setActionsForLayers to visualize eventual actions
-          GUI.setActionsForLayers([this.layer]);
-          getAlphanumericProps(attributes).forEach(name =>{
-            this.layer.attributes.push({
-              name,
-              label:name,
-              show: true
-            })
-          })
-        }
-
-        this.layer.features.push({ id: fid, attributes, geometry, show: true });
-      });
-    },
-
-    /**
-     * @TODO find me a better name 
-     */
-    async __parserawdata(data) {
-      this.layer.features.splice(0);
-      await this.$nextTick();
-      this.layer.rawdata = data.rawdata;
-    },
-
-  },
-
-  watch: {
-    'infoformat'(value) {
-      this.reloadLayerDataWithChangedContentType(value);
     }
-  },
-
-  created() {
-    this.projectLayer = getCatalogLayerById(this.layer.id);
   },
 
   beforeDestroy() {
-    if (this.projectLayer) {
-      this.projectLayer.clearProxyData('wms');
-    }
-    this.projectLayer = null;
+    getCatalogLayerById(this.layer.id)?.clearProxyData?.('wms');
   },
 
 };

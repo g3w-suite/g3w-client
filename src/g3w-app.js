@@ -2474,7 +2474,24 @@ export default new (class GUI extends Emitter {
           mouseover: true,
           class:     this.getFontClass('marker'),
           hint:      'Zoom to feature',
-          cbk:       throttle(this.goToGeometry.bind(this))
+          cbk:       throttle((layer, feature) => {
+            if (!feature.geometry) {
+              return;
+            }
+            const async = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+            this.once('asyncFnc.todo', () => {
+              if (this.isOneLayerResult()) {
+                this.zoomToFeatures([feature], {});
+              } else {
+                this.highlightGeometry(feature.geometry, { layerId: layer.id, duration: 1500 });
+              }
+            });
+            if (async) {
+              this.closeContent();
+            } else {
+              setTimeout(() => this.emit('asyncFnc.todo'));
+            }
+          })
         },
 
         // show relations (query)
@@ -2604,7 +2621,6 @@ export default new (class GUI extends Emitter {
     });
 
     this.addActionsForLayers(this.state.layersactions, this.state.queried_layers);
-
   }
 
   /**
@@ -3175,33 +3191,6 @@ export default new (class GUI extends Emitter {
       }
     });
 
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param layer
-   * @param feature
-   * 
-   * @since 4.1.0
-   */
-  goToGeometry(layer, feature) {
-    if (!feature.geometry) {
-      return;
-    }
-    const async = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
-    this.once('asyncFnc.todo', () => {
-      if (this.isOneLayerResult()) {
-        this.zoomToFeatures([feature], {});
-      } else {
-        this.highlightGeometry(feature.geometry, { layerId: layer.id, duration: 1500 });
-      }
-    });
-    if (async) {
-      this.closeContent();
-    } else {
-      setTimeout(() => this.emit('asyncFnc.todo'));
-    }
   }
 
   /**
@@ -4574,19 +4563,6 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  zoomToGeometry(geometry, options = { highlight: false }) {
-    const extent = geometry && geometry.getExtent();
-    if (options.highlight && extent) {
-      options.highLightGeometry = geometry;
-    }
-    return this.zoomToExtent(extent, options);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
   zoomToFeatures(features, options = { highlight: false }) {
     let { geometry, extent } = this.#getGeometryAndExtentFromFeatures(features);
     if (options.highlight && extent) {
@@ -4850,7 +4826,7 @@ export default new (class GUI extends Emitter {
     }
 
     if (geom && geom.getExtent()) {
-      await this.zoomToGeometry(geom);
+      this.zoomToExtent(geom.getExtent());
     }
 
     // show marker on map center
