@@ -3458,7 +3458,7 @@ export default new (class GUI extends Emitter {
     // set layer selection state
 
     // PROJECT LAYER Only on result content
-    if (catalog_layer.state.filter.active) {
+    if (catalog_layer.state.filter.active && action) {
       fids.forEach((_, idx) => {
         // index of feature to remove
         const i = feature ? index : idx;
