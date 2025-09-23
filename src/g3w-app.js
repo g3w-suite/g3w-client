@@ -2562,13 +2562,7 @@ export default new (class GUI extends Emitter {
             if (!feature) {
               return console.trace('Invalid feature');
             }
-            const _layer                = getCatalogLayerById(layer.id);
-            const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selected;
-            if (_layer && feature.selected && !_layer.isSelected(fid)) {
-              _layer.makeSelectable(fid, feature, true);
-              _layer.fidsIn(fid, false);
-            }
           },
           change({ features }) {
             // wait for pagination change request
@@ -3348,7 +3342,7 @@ export default new (class GUI extends Emitter {
   async toggleSelection(layer, feature) {    
     const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
-    const toggled       = layer.selection.active; 
+    const toggled       = layer.selection.active && layer.features.every(f => f.selected); //check also if all features are selected
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
@@ -3463,7 +3457,7 @@ export default new (class GUI extends Emitter {
 
     // set layer selection state
 
-    // PROJECT LAYER
+    // PROJECT LAYER Only on result content
     if (catalog_layer.state.filter.active) {
       fids.forEach((_, idx) => {
         // index of feature to remove

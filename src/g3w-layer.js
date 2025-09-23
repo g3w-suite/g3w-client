@@ -755,10 +755,11 @@ export class Layer extends Emitter {
    * @returns { boolean } whether current layer (or fid) is selected
    */
   isSelected(fid) {
+    const selection = this.state.selection.fids;
     if (undefined !== fid) {
-      if (this.state.selection.fids.has('__ALL__'))     { return true }
-      if (this.state.selection.fids.has('__EXCLUDE__')) { return !this.state.selection.fids.has(fid); }
-      return this.state.selection.fids.has(fid);
+      if (selection.has('__ALL__'))     { return true }
+      if (selection.has('__EXCLUDE__')) { return !selection.has(fid); }
+      return selection.has(fid);
     }
     return this.state.selected;
   }
@@ -1074,69 +1075,10 @@ export class Layer extends Emitter {
    */
   async inverseSelection() {
     const selection = this.state.selection.fids;
-
     /** @TODO add description */
     if (selection.has('__EXCLUDE__'))  { selection.delete('__EXCLUDE__'); }
     else if (selection.has('__ALL__')) { selection.delete('__ALL__'); }
     else if (selection.size > 0)       { selection.add('__EXCLUDE__'); }
-
-    // invert selection (state)
-    if (this.isGeoLayer()) {
-      Object
-        .values(this.state.selection.features)
-        .forEach(f => {
-          try {
-            f.selected = !f.selected;
-            f.feature.__layerId  = this.getId(); //@since 4.0.1 need to add __layerId
-            if (f.selected) {
-              GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
-            } else {
-              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-            }
-          } catch (e) {
-            console.warn(e);
-          }
-        });
-    }
-
-    /** In the case of tocken filter active create */
-    if (this.state.filter.active) { this.#createToken() }
-
-    this.state.selection.active = selection.size > 0;
-
-    // skipped when selection is active
-    if (!this.state.selection.active) {
-      //check if filter is active
-      const is_active   = this.state.filter.active;
-      const has_current = null !== this.state.filter.current;
-
-      /** @TODO add description */
-      if (has_current && is_active) {
-        const filter = this.state.filter.current;
-        try {
-          /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
-          const response = await XHR.get({
-            url:    this.getUrl('filtertoken'),
-            params: { mode: 'apply', fid: filter.fid }
-          });
-          if (response?.data) {
-            this.setFilter(false);
-            this.state.filter.current = filter;
-            this.setToken(response.data.filtertoken);
-          }
-        } catch(e) {
-          console.warn(e);
-        }
-      }
-
-      /** @TODO add description */
-      if (!has_current && is_active) {
-        await this.deleteToken();
-      }
-
-      this.emit('unselectionall', this.getId());
-    }
-
   }
 
   /**
@@ -2480,7 +2422,7 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   makeSelectable(id, feature, selected = false) {
-    const f = new ol.Feature(feature.geometry);
+    const f = new ol.Feature(feature.geometry instanceof ol.geom.Geometry ? feature.geometry : (new ol.format.GeoJSON()).readGeometry(feature.geometry));
     f.setId(`${this.getId()}_${id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
     f.set(G3W_FID, f.get(G3W_FID) ?? `${id}`); // ensure `G3W_FID` is always set
     Object.entries(feature.attributes).forEach(([a, v]) => f.set(a, v));

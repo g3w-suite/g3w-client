@@ -71,7 +71,7 @@
         <tr>
           <th v-disabled       = "disableSelectAll">
             <label @click.stop = "selectAllRows">
-              <input type = "checkbox" :checked = "state.selection.active && state.features.every(f => f.selected)" />
+              <input type = "checkbox" :checked = "state.selection.active && state.features.length > 0 && state.features.every(f => f.selected)" />
             </label>
           </th>
           <th v-for = "(header, i) in state.headers" v-if = "i > 0">
@@ -309,27 +309,18 @@ export default {
       GUI.setLoadingContent(true);
       try {
         // fetch features from server
-        const features = (await this.layer.getDataTable({}))?.features?.map(f => {
-          if (f.geometry && !this.layer.getSelection().features[f.id]) {
-            this.layer.makeSelectable(f.id, {
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-            });
-          }
-          if (this.layer.getSelection().features[f.id]) {
-            return {
-              id:         f.id,
-              selected:   !this.layer.getSelection().features[f.id].selected,
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry
-            };
-          }
-        }).filter(Boolean);
+        const features = (await this.layer.getDataTable({ formatter: 1 }))?.features?.map(f => {
+          return {
+            id:         f.id,
+            selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
+            attributes: f.attributes || f.properties,
+            geometry:   f.geometry 
+          };
+        })
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
-        this.layer.inverseSelection();
-        this.state.selection.active = this.layer.getSelection().fids.has('__ALL__') || this.state.features.some(f => f.selected);
+        this.state.features.forEach(feature => GUI.toggleSelection(this.state, feature));
       } catch(e) {
         console.warn(e);
       } finally {
@@ -345,15 +336,14 @@ export default {
       try {
         const filter                = this.filter.length > 0;      // check if has columns filter
         // fetch features from server i no all selected features
-        const features = this.state.features.every(f => f.selected) ? [...this.state.features] : (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
+        const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
           return {
             id:         f.id,
-            selected:   false,
+            selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
             attributes: f.attributes || f.properties,
             geometry:   f.geometry
           };
         }) || [];
-
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
@@ -507,32 +497,16 @@ export default {
 
         this.state.allfeatures   = data.count;
         this.state.featurescount = (data.features || []).length;
-
         // add features
         this.state.features.push(
-          ...(data.features || []).map(f => {
-            f.selected         = this.state.selection.active || this.layer.state.filter.active || this.layer.isSelected(f.id)
-            const has_geometry = this.layer.isGeoLayer() && f.geometry;
-            
-            if (has_geometry && !this.layer.getSelection().features[f.id]) {
-              this.layer.makeSelectable(f.id, {
-                attributes: f.attributes || f.properties,
-                geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-              });
-              if (f.selected) {
-                this.layer.fidsIn(f.id)
-              };
-            }
-
-            return {
-              id:         f.id,
-              selected:   f.selected,
-              attributes: f.attributes || f.properties,
-              geometry:   has_geometry && f.geometry || undefined
-            };
-          })
-        );
-
+          ...(data.features || []).map(f => ({
+            id:         f.id,
+            selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
+            attributes: f.attributes || f.properties,
+            geometry:   f.geometry
+          }))
+        )
+        
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
           recordsFiltered: data.count,
