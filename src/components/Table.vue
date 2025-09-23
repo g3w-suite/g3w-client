@@ -69,9 +69,9 @@
           <th v-for = "(header, i) in state.headers" v-if = "i > 0">{{ header.label }}</th>
         </tr>
         <tr>
-          <th v-disabled = "disableSelectAll">
-            <label @click = "selectAllRows">
-              <input type = "checkbox" :checked = "state.selectAll && state.features.length > 0" />
+          <th v-disabled       = "disableSelectAll">
+            <label @click.stop = "selectAllRows">
+              <input type = "checkbox" :checked = "state.selection.active && state.features.every(f => f.selected)" />
             </label>
           </th>
           <th v-for = "(header, i) in state.headers" v-if = "i > 0">
@@ -174,15 +174,16 @@ export default {
 
   data() {
     const layer = getCatalogLayerById(this.$options.layerId);
-
     return {
       layer,
       state: {
+        id:            layer.getId(), //@since 4.1.0 aligned with query state layer
+        external:      false,         //@since 4.1.0 aligned with query state layer
+        selection:     layer.state.selection,//@since 4.1.0 aligned with query state layer
         features:      [],
         headers:       [null, ...layer.getTableHeaders()], // first value is `null` for DataTable purpose (used to add a custom input selector)
         geometry:      true,
         allfeatures:   0,
-        selectAll:     false,
         nofilteredrow: false,
         show_tools:    false,
         geolayer: {
@@ -237,7 +238,7 @@ export default {
     toggleToken(layer) {
       // get selection features in case of autofilter + pagination
       if (layer.state.filter.active && !layer.getSelection().fids.has('__ALL__')) {
-        this.state.selectAll = false;
+        this.state.selection.active = false;
       }
       layer.toggleToken();
     },
@@ -329,7 +330,7 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         this.layer.inverseSelection();
-        this.state.selectAll = this.layer.getSelection().fids.has('__ALL__') || this.state.features.every(f => f.selected);
+        this.state.selection.active = this.layer.getSelection().fids.has('__ALL__') || this.state.features.every(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
@@ -343,25 +344,12 @@ export default {
       GUI.setLoadingContent(true);
 
       try {
-        const filter         = this.filter.length > 0;      // check if has columns filter
-        this.state.selectAll = !this.state.selectAll;       // inverse selection (all)
-
+        const filter                = this.filter.length > 0;      // check if has columns filter
         // fetch features from server
         const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
-          if (f.geometry && !this.layer.getSelection().features[f.id]) {
-            this.layer.makeSelectable(f.id, {
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-            });
-          }
-          if (this.state.selectAll) {
-            this.layer.fidsIn(f.id);
-          } else {
-            this.layer.fidsOut(f.id);
-          }
           return {
             id:         f.id,
-            selected:   this.state.selectAll,
+            selected:   false,
             attributes: f.attributes || f.properties,
             geometry:   f.geometry
           };
@@ -370,18 +358,7 @@ export default {
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
-
-        // select all (no filter)
-        if (this.state.selectAll && !filter) {
-          await this.layer.selectAll();
-        }
-
-        // unselect all
-        if (!this.state.selectAll) {
-          await this.layer.clearSelectionFids();
-        }
-
-        this.state.features.forEach(f => f.selected = this.state.selectAll);
+        GUI.toggleSelection(this.state);
         this.state.show_tools = this.state.features.some(f => f.selected);
       } catch(e) {
         console.warn(e);
@@ -458,9 +435,7 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
-      feature.selected      = !feature.selected;                                                // inverse selected feature
-      this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
-      this.layer[feature.selected ? 'fidsIn' : 'fidsOut'](`${feature.id}`);
+      GUI.toggleSelection(this.state, feature);
       this.state.show_tools = this.layer.getSelection().fids.size > 0;                           // show tools based on selected state
     },
 
@@ -539,7 +514,7 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
-            f.selected         = this.state.selectAll || this.layer.state.filter.active || this.layer.isSelected(f.id)
+            f.selected         = this.state.selection.active || this.layer.state.filter.active || this.layer.isSelected(f.id)
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             
             if (has_geometry && !this.layer.getSelection().features[f.id]) {
@@ -561,8 +536,8 @@ export default {
           })
         );
 
-        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelection().fids.size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.layer.getSelection().fids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
+        this.state.show_tools        = this.layer.state.filter.active || this.layer.getSelection().fids.size > 0;
+        this.state.selection.active  = this.layer.state.filter.active || this.layer.getSelection().fids.has('__ALL__') || (this.state.selection.active && this.state.features.every(f => f.selected));
 
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
@@ -583,7 +558,7 @@ export default {
     unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
       this.state.show_tools = false;
-      this.state.selectAll  = false;
+      this.state.selection.active  = false;
     },
 
     onGUIContent(opts = {}) {

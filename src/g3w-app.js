@@ -3345,26 +3345,30 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async toggleSelection(layer, feature) {
-    
+  async toggleSelection(layer, feature) {    
     const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
-    if (!features.length) {
+    if (0 === features.length) {
       return console.warn('no features');
     }
 
     // toggle selection
     layer.features.forEach((f, i) => {
       if (!feature) {
-        action.state.toggled[i] = !toggled;
+        f.selected = !toggled;
+        if (action) {
+          action.state.toggled[i] = !toggled;
+        }
       } else if (i === index) {
-        action.state.toggled[i] = !action.state.toggled[i];
+        f.selected = !f.selected;
+        if (action) {
+          action.state.toggled[i] = f.selected;
+        }
       }
-      f.selected = action.state.toggled[i];
     });
 
     // handle pagination
@@ -3433,7 +3437,7 @@ export default new (class GUI extends Emitter {
       }
 
       // set selection property (external layer)
-      catalog_layer.selection.active = Object.values(action.state.toggled).some(t => t);;
+      catalog_layer.selection.active = layer.features.some(f => f.selected);;
       
       return;
     }
@@ -3473,7 +3477,8 @@ export default new (class GUI extends Emitter {
     }
 
     //set selection state of layer true if some feature is selected
-    catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
+    catalog_layer.state.selection.active = layer.features.some(f => f.selected);;
+
     
     //remove Highlight geometry layer fetures
     this.clearHighlightGeometry();
