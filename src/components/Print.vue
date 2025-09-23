@@ -397,7 +397,7 @@ export default {
      * @returns { string }
      */
     getPrintExtent() {
-      const map          = GUI.viewer.map;
+      const map          = GUI.getMap();
       // Need to check in case di an open print page
       try {
         const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
@@ -543,7 +543,7 @@ export default {
           this._page.getInternalComponent().$on('hook:mounted', () => this.state.loading = false);
           // set print area after closing content
           this._page.unmount = () => {
-            GUI.viewer.map.once('postrender', this._setPrintArea.bind(this));
+            GUI.getMap().once('postrender', this._setPrintArea.bind(this));
             const promise     = Component.prototype.unmount.call(this._page);
             this._page        = null;
             return promise;
@@ -597,7 +597,7 @@ export default {
               if (!show) {
                 return this._clearPrint();
               }
-              this._moveKey = GUI.viewer.map.on('moveend', this._setPrintArea.bind(this));
+              this._moveKey = GUI.getMap().on('moveend', this._setPrintArea.bind(this));
               this._initPrintConfig();
               // show print area if is not atlas template and have maps
               if (undefined === this.state.atlas && this._setPrintArea()) {
@@ -619,7 +619,7 @@ export default {
         this._clearPrint();
         return false;
       }
-      const map        = GUI.viewer.map;
+      const map        = GUI.getMap();
       const size       = map.getSize();
       const resolution = map.getView().getResolution();
       const { h, w }   = this.state.maps.find(m => !m.overview);
@@ -658,7 +658,7 @@ export default {
     },
 
     _initPrintConfig() {
-      const view = GUI.viewer.map.getView();
+      const view = GUI.getMap().getView();
       if (!this._initialized) {
         this._setScales(view.getMaxResolution());
         this._initialized = true;
@@ -689,7 +689,7 @@ export default {
         this._initPrintConfig();
         GUI.on('changeviewaftercurrentproject', () => {
           this.state.scales = PRINT_SCALES;
-          this._setScales(GUI.viewer.map.getView().getMaxResolution());
+          this._setScales(GUI.getMap().getView().getMaxResolution());
         });
       } else {
         this._clearPrint();

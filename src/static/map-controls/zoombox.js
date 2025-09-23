@@ -28,5 +28,5 @@ GUI.setupControl.zoombox = function() {
       },
     }
   });
-  GUI.getMapControlByType('zoombox').on('zoomend', e => GUI.viewer.fit(e.extent) );
+  GUI.getMapControlByType('zoombox').on('zoomend', e => GUI.fit(e.extent) );
 };

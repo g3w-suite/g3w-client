@@ -150,14 +150,10 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  viewer = null;
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
   target = 'map';
+
+  /** @type { null | ol.Map } */
+  #map = null;
 
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
@@ -3047,8 +3043,8 @@ export default new (class GUI extends Emitter {
 
     // case query coordinates
     if (has_coords) {
-      this.viewer.map.forEachFeatureAtPixel(
-        this.viewer.map.getPixelFromCoordinate(coordinates),
+      this.#map.forEachFeatureAtPixel(
+        this.#map.getPixelFromCoordinate(coordinates),
         f => { features.push(f); },
         { layerFilter: l => l === vectorLayer }
       );
@@ -3595,7 +3591,7 @@ export default new (class GUI extends Emitter {
    */
   getMap() {
     try {
-      return this.viewer.map;
+      return this.#map;
     } catch(e) {
       console.warn(e);
     }
@@ -3634,7 +3630,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getViewport() {
-    return this.viewer.map.getViewport();
+    return this.#map.getViewport();
   }
 
   /**
@@ -3643,7 +3639,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getResolution() {
-    return this.viewer.map.getView().getResolution();
+    return this.#map.getView().getResolution();
   }
 
   /**
@@ -3652,7 +3648,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getEpsg() {
-    return this.viewer.map.getView().getProjection().getCode();
+    return this.#map.getView().getProjection().getCode();
   }
 
   /**
@@ -3966,7 +3962,7 @@ export default new (class GUI extends Emitter {
       [id, type, control, addToMapControls, visible] = [id, id, type, control ?? true, addToMapControls ?? true];
     }
 
-    this.viewer.map.addControl(control);
+    this.#map.addControl(control);
 
     control.on('toggled', e => this.emit('mapcontrol:toggled', e));
 
@@ -4006,11 +4002,11 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   showControls(types) {
-    this.#controls.forEach(c => this.viewer.map.removeControl(c.control));
+    this.#controls.forEach(c => this.#map.removeControl(c.control));
     this.#controls.forEach(c => {
       c.visible = !types || types.indexOf(c.type) > -1 ? true : c.visible;
       if (c.visible) {
-        this.viewer.map.addControl(c.control);
+        this.#map.addControl(c.control);
       }
     });
   }
@@ -4035,7 +4031,7 @@ export default new (class GUI extends Emitter {
     this.#controls.find((c, i) => {
       if (id === c.id) {
         this.#controls.splice(i, 1);
-        this.viewer.map.removeControl(c.control);
+        this.#map.removeControl(c.control);
         if (c.control.hideControl) {
           c.control.hideControl();
         }
@@ -4053,7 +4049,7 @@ export default new (class GUI extends Emitter {
     this.#controls.find((c, i) => {
       if (type === c.type) {
         this.#controls.splice(i, 1);
-        this.viewer.map.removeControl(c.control);
+        this.#map.removeControl(c.control);
         if (c.control.hideControl) {
           c.control.hideControl();
         }
@@ -4231,7 +4227,7 @@ export default new (class GUI extends Emitter {
     }),
     });
     this.#events.stores[id].push({
-      removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.viewer.map.removeLayer(l.getOLLayer()) }),
+      removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
     });
   }
 
@@ -4241,12 +4237,12 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   removeLayers() {
-    this.#layers.base.forEach(l => this.viewer.map.removeLayer(l.getOLLayer()))
+    this.#layers.base.forEach(l => this.#map.removeLayer(l.getOLLayer()))
     this.#layers.g3w.forEach(l => {
       l.un('loadstart', this.onLayerLoadStart);
       l.un('loadend',   this.onLayerLoadEnd);
       l.un('loaderror', this.onLayerLoadError);
-      this.viewer.map.removeLayer(l.getOLLayer());
+      this.#map.removeLayer(l.getOLLayer());
     });
     this.#layers.g3w.splice(0);
     this.#layers.external.forEach(layer => this.removeExternalLayer(layer.get('name')));
@@ -4406,7 +4402,7 @@ export default new (class GUI extends Emitter {
     if (interaction) {
       interaction.setActive(false);
     }
-    this.viewer.map.removeInteraction(interaction);
+    this.#map.removeInteraction(interaction);
     this.#interactions = this.#interactions.filter(_interaction => interaction !== _interaction);
   }
 
@@ -4448,7 +4444,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   zoomTo(coordinate, zoom = 6) {
-    const view = this.viewer.map.getView();
+    const view = this.#map.getView();
     view.setCenter(coordinate);
     view.setZoom(zoom);
   }
@@ -4459,7 +4455,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   goTo(coordinates, zoom, animate = true) {
-    const view    = this.viewer.map.getView();
+    const view    = this.#map.getView();
     zoom = zoom || 6;
 
     if (animate) {
@@ -4489,20 +4485,20 @@ export default new (class GUI extends Emitter {
    */
   async goToRes(coordinates, resolution, animate = true) {
 
-    resolution = resolution || this.viewer.map.getView().getResolution();
+    resolution = resolution || this.#map.getView().getResolution();
 
     await (new Promise(res => {
 
-      this.viewer.map.getView().once('change:center', () => setTimeout(res, 500));
+      this.#map.getView().once('change:center', () => setTimeout(res, 500));
 
       if (animate) {
-        this.viewer.map.getView().animate(
+        this.#map.getView().animate(
           { duration: 200, center: coordinates },
           { duration: 200, resolution }
         );
       } else {
-        this.viewer.map.getView().setCenter(coordinates);
-        this.viewer.map.getView().setResolution(resolution);
+        this.#map.getView().setCenter(coordinates);
+        this.#map.getView().setResolution(resolution);
       }
     }));
   }
@@ -4628,7 +4624,7 @@ export default new (class GUI extends Emitter {
   goToBBox(bbox, epsg = this.getEpsg()) {
     bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
     // compare bbox extent with a project max extent
-    this.viewer.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
+    this.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
   }
 
   /**
@@ -4636,8 +4632,8 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  #fit(geometry, options = {}) {
-    const view    = this.viewer.map.getView();
+  fit(geometry, options = {}) {
+    const view    = this.#map.getView();
     const animate = 'boolean' === typeof options.animate ? options.animate : true;
 
     if (animate) {
@@ -4650,7 +4646,7 @@ export default new (class GUI extends Emitter {
     view.fit(geometry, {
       ...options,
       constrainResolution: (undefined !== options.constrainResolution ? options.constrainResolution : true),
-      size:  this.viewer.map.getSize()
+      size:  this.#map.getSize()
     });
   }
 
@@ -4681,17 +4677,17 @@ export default new (class GUI extends Emitter {
       el.style.width  = width + 'px';
     }
 
-    if (this.viewer && width > 0 && height > 0) {
+    if (this.#map && width > 0 && height > 0) {
       this.getMap().updateSize();
       this.state.hidemaps.forEach(h => h.map.updateSize());
       this.state.bbox       = this.getMapBBOX();
-      this.state.resolution = this.viewer.getResolution();
-      this.state.center     = this.viewer.getCenter();
+      this.state.resolution = this.#map.getResolution();
+      this.state.center     = this.#map.getCenter();
     }
 
     this.setHidden(width <= 0 || height <= 0);
 
-    if (this.viewer) {
+    if (this.#map) {
       return;
     }
 
@@ -4721,14 +4717,16 @@ export default new (class GUI extends Emitter {
     ['zoom_to_fid', 'ztf'].forEach(s => url.searchParams.delete(s));
     window.history.replaceState(null, null, url);
 
-    if (this.viewer) {
-      this.viewer.destroy();
+    // destroy previous map
+    if (this.#map) {
+      this.#map.dispose();
+      this.#map = null
     }
 
     const initextent = map_extent ? map_extent.split(',').map(coord => 1 * coord) : ApplicationState.project.state.initextent;
     const extent     = ApplicationState.project.state.extent;
 
-    const olMap = new ol.Map({
+    this.#map = new ol.Map({
       controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
       interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
       ol3Logo:             false,
@@ -4743,32 +4741,15 @@ export default new (class GUI extends Emitter {
       }),
     });
 
-    this.viewer = {
-      map: olMap,
-      getMap:        () => this.viewer.map,
-      getView:       () => this.viewer.map.getView(),
-      getZoom:       () => this.viewer.map.getView().getZoom(),
-      getResolution: () => this.viewer.map.getView().getResolution(),
-      getCenter:     () => this.viewer.map.getView().getCenter(),
-      destroy:       () => { if (this.viewer.map) { this.viewer.map.dispose(); this.viewer.map = null } },
-      zoomTo:        this.zoomTo.bind(this),
-      goTo:          this.goTo.bind(this),
-      fit:           this.#fit.bind(this),
-      /** @TODO check if deprecated */
-      changeBaseLayer: name => this.map.getLayers().insertAt(0, this.map.getLayers().find(l => name === l.get('name'))),
-    };
-
-    const map = this.viewer.getMap();
-
     //set application epsg and map unit
     ApplicationState.map_epsg = this.getEpsg();
-    ApplicationState.map_unit = map.getView().getProjection().getUnits();
+    ApplicationState.map_unit = this.#map.getView().getProjection().getUnits();
 
     // disable douclickzoom
-    map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(false);
+    this.#map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(false);
 
     // visual click (sonar effect)
-    map.on('click', ({ coordinate }) => {
+    this.#map.on('click', ({ coordinate }) => {
       const circle = new ol.layer.Vector({
         source: new ol.source.Vector({ features: [ new ol.Feature({ geometry: new ol.geom.Point(coordinate) }) ] }),
         style:  new ol.style.Style()
@@ -4788,11 +4769,11 @@ export default new (class GUI extends Emitter {
           })
         );
         if (elapsed > duration) {
-          map.removeLayer(circle);
+          this.#map.removeLayer(circle);
           ol.Observable.unByKey(interval); // stop the effect
         }
       });
-      map.addLayer(circle);
+      this.#map.addLayer(circle);
     });
 
     let currentControl;
@@ -4804,14 +4785,14 @@ export default new (class GUI extends Emitter {
       ([control, activeTool]) => {
         currentControl = control
         can_drag = !control && !activeTool;
-        map.getViewport().classList.toggle('ol-grab', can_drag);
-        map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(can_drag);
+        this.#map.getViewport().classList.toggle('ol-grab', can_drag);
+        this.#map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(can_drag);
       }
     );
-    map.on(['pointerdrag', 'pointerup'], (e) => {
+    this.#map.on(['pointerdrag', 'pointerup'], (e) => {
       /** @TODO disable default interaction "shift+zoom" ? */
-      map.getViewport().classList.toggle('ol-grabbing', e.type == 'pointerdrag' && (!currentControl || !(currentControl.getInteraction() instanceof ol.interaction.DragBox)));
-      map.getViewport().classList.toggle('ol-grab',     e.type == 'pointerup' && can_drag);
+      this.#map.getViewport().classList.toggle('ol-grabbing', e.type == 'pointerdrag' && (!currentControl || !(currentControl.getInteraction() instanceof ol.interaction.DragBox)));
+      this.#map.getViewport().classList.toggle('ol-grab',     e.type == 'pointerup' && can_drag);
     });
 
     let geom;
@@ -4845,17 +4826,17 @@ export default new (class GUI extends Emitter {
       this.#maxZoom
     );
 
-    this.state.size     = this.viewer.map.getSize();
-    this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
+    this.state.size     = this.#map.getSize();
+    this.state.mapUnits = this.#map.getView().getProjection().getUnits();
 
     if (window.initConfig.background_color) {
       $(`#${this.target}`).css('background-color', window.initConfig.background_color);
     }
 
-    $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
+    $(this.#map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
 
-    this.viewer.map.getInteractions().forEach(int => this.#watchInteraction(int));
-    this.viewer.map.getInteractions().on('add', int => this.#watchInteraction(int.element));
+    this.#map.getInteractions().forEach(int => this.#watchInteraction(int));
+    this.#map.getInteractions().on('add', int => this.#watchInteraction(int.element));
 
     this.#marker = new ol.Overlay({
       position:    null,
@@ -4864,10 +4845,10 @@ export default new (class GUI extends Emitter {
       stopEvent:   false,
     });
 
-    this.viewer.map.addOverlay(this.#marker);
+    this.#map.addOverlay(this.#marker);
 
     // keep default layers above others
-    this.viewer.map.getLayers().on('add', e => {
+    this.#map.getLayers().on('add', e => {
       const zindex = this.setLayerZIndex({
         layer:  e.element,
         zindex: e.element.get('basemap') || 'bottom' === e.element.get('position') ? 0 : undefined,
@@ -4878,15 +4859,15 @@ export default new (class GUI extends Emitter {
       if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
     });
 
-    this.viewer.map.getLayers().on('remove', e => {
+    this.#map.getLayers().on('remove', e => {
       if (e.element.getZIndex() === this.layersCount) {
         this.layersCount--;
       }
     })
 
     this.state.bbox       = this.getMapBBOX();
-    this.state.resolution = this.viewer.getResolution();
-    this.state.center     = this.viewer.getCenter();
+    this.state.resolution = this.#map.getView().getResolution();
+    this.state.center     = this.#map.getView().getCenter();
 
     // setup layers
 
@@ -4972,10 +4953,10 @@ export default new (class GUI extends Emitter {
     // set change resolution
     this.#events.ol.forEach(k => ol.Observable.unByKey(k));
     this.#events.ol.push(
-      this.viewer.map.getView().on('change:resolution', debounce(() => {
+      this.#map.getView().on('change:resolution', debounce(() => {
         this.state.bbox       = this.getMapBBOX();
-        this.state.resolution = this.viewer.getResolution();
-        this.state.center     = this.viewer.getCenter();
+        this.state.resolution = this.#map.getView().getResolution();
+        this.state.center     = this.#map.getView().getCenter();
         this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
         if (ApplicationState.project.state.context_base_legend) {
           this._setLegendParams();
@@ -4985,7 +4966,7 @@ export default new (class GUI extends Emitter {
 
     if (ApplicationState.project.state.context_base_legend) {
       this.#events.ol.push(
-        this.viewer.map.on('moveend', () => this._setLegendParams())
+        this.#map.on('moveend', () => this._setLegendParams())
       );
     } else {
       //set always to show legend at the start
@@ -5048,7 +5029,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getMapBBOX() {
-    return this.viewer.map.getView().calculateExtent(this.viewer.map.getSize());
+    return this.#map.getView().calculateExtent(this.#map.getSize());
   }
 
   /**
@@ -5337,7 +5318,7 @@ export default new (class GUI extends Emitter {
     layer._externalLayer     = externalLayer;
     layer._externalLayerType = type;
 
-    this.viewer.map.addLayer(layer);
+    this.#map.addLayer(layer);
 
     this.#layers.external.push(layer);
 
@@ -5363,7 +5344,7 @@ export default new (class GUI extends Emitter {
     }
 
     if (extent && options.zoomToExtent) {
-      this.viewer.map.getView().fit(extent);
+      this.#map.getView().fit(extent);
     }
 
     this.loadExternalLayer(layer);
@@ -5388,7 +5369,7 @@ export default new (class GUI extends Emitter {
     this.unregisterVectorLayer(layer);
     this.getService('catalog').removeExternalLayer({ name, type });
 
-    this.viewer.map.removeLayer(layer);
+    this.#map.removeLayer(layer);
 
     if ('vector' === type) {
       /** @since v4.0.0 remove selection feature belong to layer */
