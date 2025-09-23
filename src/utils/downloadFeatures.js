@@ -227,7 +227,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
       // other query types ('point', 'polygon', 'bbox' ..)
       fids: 'search' !== query.type || !query.search
-        ? query.fids || features.filter(f => !layer.filter?.active || f.selection.selected).map(f => f.attributes[G3W_FID]).join(',')
+        ? query.fids || features.filter(f => !layer.filter?.active || f.selected).map(f => f.attributes[G3W_FID]).join(',')
         : undefined,
 
       // html element (pdf)

@@ -705,10 +705,10 @@ export default {
         layer.selection.active = false;
         layer.selection.features.forEach((feature, i) => {
           // skip when ..
-          if (!feature.selection.selected) {
+          if (!feature.selected) {
             return;
           }
-          feature.selection.selected = false;
+          feature.selected = false;
           if (action) {
             action.state.toggled[i] = false;
           }
