@@ -26,7 +26,7 @@
 
       <!-- CLEAR SELECTION -->
       <div
-        v-show         = "state.show_tools"
+        v-show         = "state.selection.active"
         class          = "skin-color action-button"
         :class         = "$fa('clear')"
         v-t-tooltip    = "'Clear Selection'"
@@ -36,7 +36,7 @@
 
       <!-- INVERSE SELECTION -->
       <div
-        v-show         = "state.show_tools"
+        v-show         = "state.selection.active"
         class          = "skin-color action-button"
         :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip    = "'Invert Selection'"
@@ -46,7 +46,7 @@
 
       <!-- TOGGLE FILTER -->
       <div
-        v-show         = "state.show_tools && show_on_active_filter"
+        v-show         = "state.selection.active && show_on_active_filter"
         class          = "skin-color action-button"
         :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip    = "'Enable/Disable filter'"
@@ -185,7 +185,6 @@ export default {
         geometry:      true,
         allfeatures:   0,
         nofilteredrow: false,
-        show_tools:    false,
         geolayer: {
           active:    false,
           in_bbox:   undefined,
@@ -359,7 +358,6 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         GUI.toggleSelection(this.state);
-        this.state.show_tools = this.state.features.some(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
@@ -436,7 +434,6 @@ export default {
      */
     select(feature) {
       GUI.toggleSelection(this.state, feature);
-      this.state.show_tools = this.layer.getSelection().fids.size > 0;                           // show tools based on selected state
     },
 
     async resize() {
@@ -536,9 +533,6 @@ export default {
           })
         );
 
-        this.state.show_tools        = this.layer.state.filter.active || this.layer.getSelection().fids.size > 0;
-        this.state.selection.active  = this.layer.state.filter.active || this.layer.getSelection().fids.has('__ALL__') || (this.state.selection.active && this.state.features.every(f => f.selected));
-
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
           recordsFiltered: data.count,
@@ -557,7 +551,6 @@ export default {
 
     unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
-      this.state.show_tools = false;
       this.state.selection.active  = false;
     },
 
