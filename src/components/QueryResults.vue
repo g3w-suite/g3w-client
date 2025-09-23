@@ -125,7 +125,7 @@
                     @click.stop      = "toggleSelection(layer)"
                     class            = "action-button"
                     v-t-tooltip:left = "'Add/Remove Selection'"
-                    :class           = "{'toggled': layer.selection.active && layer.features.every(f => f.selection.selected)}"
+                    :class           = "{ 'toggled': layer.selection.active && Object.values(state.layersactions[layer.id].find(({ id }) => 'selection' === id).state.toggled).every(b => b) }"
                   >
                     <span
                       class  = "action-button-icon"
@@ -1012,12 +1012,12 @@
           const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
 
           queried_layers[index].features.forEach((f, i) => {
-            if (page_size_change && !f.selection.selected && f.geometry && layer.isGeoLayer()) {
+            if (page_size_change && !f.selected && f.geometry && layer.isGeoLayer()) {
               const fid = queried_layers[index].external ? f.id : (f.attributes[G3W_FID] || f.id);
               layer.makeSelectable(fid, f, true);
               layer.fidsIn(fid, false);
             }
-            f.selection.selected    = page_size_change;
+            f.selected    = page_size_change;
             action.state.toggled[i] = page_size_change;
           });
 

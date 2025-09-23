@@ -2186,7 +2186,7 @@ export default new (class GUI extends Emitter {
             id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
             attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
             geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.isSelected((f instanceof ol.Feature ? f.getId() : f.id)))},
+            selected:   !external && (!!queryResponse.query.autofilter || layer.isSelected((f instanceof ol.Feature ? f.getId() : f.id))),
             show:       true,
           })),
           hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -2360,7 +2360,7 @@ export default new (class GUI extends Emitter {
         // If true, remove the feature because is already loaded
         if (features_ids.some(id => id === feature_id)) {
           //@since 3.11.0
-          if (action && feat.selection.selected) {
+          if (action && feat.selected) {
             (layer?.external ? layer : getCatalogLayerById(layer.id)).fidsOut(feature_id, layer.filter.active);
           }
           //filter feature
@@ -2369,7 +2369,7 @@ export default new (class GUI extends Emitter {
           if (action) {
             delete action.state.toggled[index];
             //need to reset toggled state in reactive mode
-            action.state.toggled = Vue.observable(layer.features.reduce((a,f,i) => { a[i] = f.selection.selected; return a }, {}));
+            action.state.toggled = Vue.observable(layer.features.reduce((a,f,i) => { a[i] = f.selected; return a }, {}));
           }
         } else {                                                              // add feature
           layer.features.push(feat);
@@ -2564,8 +2564,8 @@ export default new (class GUI extends Emitter {
             }
             const _layer                = getCatalogLayerById(layer.id);
             const fid                   = feature.attributes[G3W_FID] || feature.id;
-            action.state.toggled[index] = feature.selection.selected;
-            if (_layer && feature.selection.selected && !_layer.isSelected(fid)) {
+            action.state.toggled[index] = feature.selected;
+            if (_layer && feature.selected && !_layer.isSelected(fid)) {
               _layer.makeSelectable(fid, feature, true);
               _layer.fidsIn(fid, false);
             }
@@ -2603,11 +2603,11 @@ export default new (class GUI extends Emitter {
       ]).filter(Boolean));
 
 
-      // In case of external layer don't listen to `selection` event
+      // In case of external layer doesn't listen to `selection` event
       if (layer.external && layer.toc && undefined !== layer.selection.active) {
         //in case 
         layer.selection.features = layer.selection.features || [];
-        layer.features.forEach(f => f.selection = (layer.selection.features.find(s => f.id === s.getId()) || ({ selection: { selected: false }})).selection);
+        layer.features.forEach(f => f.selected = (layer.selection.features.find(s => f.id === s.getId()) || ({ selected: false })).selected);
       } else if (!layer.external && layer.toc && undefined !== layer.selection.active) {
         const handler = () => layer.features.forEach((_, i) => this.state.layersactions[layer.id].find(a => a.id === 'selection').state.toggled[i] = false);
         getCatalogLayerById(layer.id).on('unselectionall', handler);
@@ -2899,7 +2899,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   showFeature(layer, feature) {
-    return feature.show && ((layer.filter || {}).active ? feature.selection.selected : true);
+    return feature.show && ((layer.filter || {}).active ? feature.selected : true);
   }
 
   /**
@@ -3347,7 +3347,7 @@ export default new (class GUI extends Emitter {
    */
   async toggleSelection(layer, feature) {
     
-    const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selction action
+    const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.selection.active; 
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
@@ -3364,7 +3364,7 @@ export default new (class GUI extends Emitter {
       } else if (i === index) {
         action.state.toggled[i] = !action.state.toggled[i];
       }
-      f.selection.selected = action.state.toggled[i];
+      f.selected = action.state.toggled[i];
     });
 
     // handle pagination
@@ -3393,7 +3393,7 @@ export default new (class GUI extends Emitter {
           }));
         }
         // set current selection selected attribute
-        feat.selection.selected = layer.selection.active;
+        feat.selected = layer.selection.active;
         // add/remove to selection
         if (layer.selection.active) {
           this.defaultsLayers.selectionLayer.getSource().addFeature(feat);
@@ -3409,7 +3409,7 @@ export default new (class GUI extends Emitter {
     if (layer.external && feature) {
       let feat = catalog_layer.selection.features.find(f => feature.id === f.getId()); // check feature if has been already added to selection
       if (feat) {
-        feat.selection.selected = action.state.toggled[index];
+        feat.selected = action.state.toggled[index];
       }
       // create selection feature for external if not yet added
       if (!feat) {
@@ -3420,13 +3420,13 @@ export default new (class GUI extends Emitter {
         catalog_layer.selection.features.push(
             Object.assign(feat, {
             __layerId: catalog_layer.id,
-            selection: { selected: true }, // NB: default true because otherwise it means that is clicked on selection
+            selected:  true , // NB: default true because otherwise it means that is clicked on selection
           })
         );
       }
 
       // add/remove to selection
-      if (feat.selection.selected) {
+      if (feat.selected) {
         this.defaultsLayers.selectionLayer.getSource().addFeature(feat);
       } else {
         this.defaultsLayers.selectionLayer.getSource().removeFeature(feat);
@@ -3472,8 +3472,9 @@ export default new (class GUI extends Emitter {
       });
     }
 
+    //set selection state of layer true if some feature is selected
     catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
-
+    
     //remove Highlight geometry layer fetures
     this.clearHighlightGeometry();
     
