@@ -41,7 +41,7 @@
         :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip    = "'Invert Selection'"
         data-placement = "right"
-        @click.stop    = "inverseSelection"
+        @click.stop    = "setSelection({ inverse :true })"
       ></div>
 
       <!-- TOGGLE FILTER -->
@@ -70,7 +70,7 @@
         </tr>
         <tr>
           <th v-disabled       = "disableSelectAll">
-            <label @click.stop = "selectAllRows">
+            <label @click.stop = "setSelection({ inversion: false })">
               <input type = "checkbox" :checked = "state.selection.active && state.features.length > 0 && state.features.every(f => f.selected)" />
             </label>
           </th>
@@ -300,7 +300,12 @@ export default {
       }
     },
 
-    async inverseSelection() {
+    /**
+     * 
+     * @param opts @since 4.1.0
+     * 
+     */
+    async setSelection(opts = { inverse : false }) {
       GUI.disableContent(true);
       GUI.setLoadingContent(true);
       try {
@@ -317,34 +322,12 @@ export default {
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
-        this.state.features.forEach(feature => GUI.toggleSelection(this.state, feature));
-      } catch(e) {
-        console.warn(e);
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
-      }
-    },
-
-    async selectAllRows() {
-      GUI.disableContent(true);
-      GUI.setLoadingContent(true);
-
-      try {
-        const filter                = this.filter.length > 0;      // check if has columns filter
-        // fetch features from server i no all selected features
-        const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
-          return {
-            id:         f.id,
-            selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
-            attributes: f.attributes || f.properties,
-            geometry:   f.geometry
-          };
-        }) || [];
-        // reset features
-        this.state.features.splice(0);
-        this.state.features.push(...features);
-        GUI.toggleSelection(this.state);
+        if (opts.inverse) {
+          this.state.features.forEach(feature => GUI.toggleSelection(this.state, feature));
+        } else {
+          GUI.toggleSelection(this.state);
+        }
+        
       } catch(e) {
         console.warn(e);
       } finally {
