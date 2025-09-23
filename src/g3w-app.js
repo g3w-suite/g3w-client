@@ -4681,8 +4681,8 @@ export default new (class GUI extends Emitter {
       this.getMap().updateSize();
       this.state.hidemaps.forEach(h => h.map.updateSize());
       this.state.bbox       = this.getMapBBOX();
-      this.state.resolution = this.#map.getResolution();
-      this.state.center     = this.#map.getCenter();
+      this.state.resolution = this.#map.getView().getResolution();
+      this.state.center     = this.#map.getView().getCenter();
     }
 
     this.setHidden(width <= 0 || height <= 0);
