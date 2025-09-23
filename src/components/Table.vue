@@ -309,25 +309,30 @@ export default {
       GUI.disableContent(true);
       GUI.setLoadingContent(true);
       try {
-        const filter                = this.filter.length > 0;      // check if has columns filter
-        // fetch features from server
-        const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
-          return {
-            id:         f.id,
-            selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
-            attributes: f.attributes || f.properties,
-            geometry:   f.geometry 
-          };
-        })
-        // reset features
-        this.state.features.splice(0);
-        this.state.features.push(...features);
+        
+        // fetch features from server in case not all feature are loaded
+        if (this.state.allfeatures > this.state.featurescount) {
+          const { count, features = [] } = (await this.layer.getDataTable({ formatter: 1, ...(this.filter.length > 0 ? { field: this.search.field } : {} ) }));
+          this.state.allfeatures   = count; //all count features 
+          this.state.featurescount = features.length; //all returned feature
+          // reset features
+          this.state.features.splice(0);
+          //fill with new values
+          this.state.features.push(...features.map(f => {
+            return {
+              id:         f.id,
+              selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry 
+            };
+          }));
+        }
+        //In case of inverse selection
         if (opts.inverse) {
           this.state.features.forEach(feature => GUI.toggleSelection(this.state, feature));
         } else {
           GUI.toggleSelection(this.state);
         }
-        
       } catch(e) {
         console.warn(e);
       } finally {
