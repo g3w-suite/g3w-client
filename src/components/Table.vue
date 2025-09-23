@@ -345,8 +345,8 @@ export default {
 
       try {
         const filter                = this.filter.length > 0;      // check if has columns filter
-        // fetch features from server
-        const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
+        // fetch features from server i no all selected features
+        const features = this.state.features.every(f => f.selected) ? [...this.state.features] : (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
           return {
             id:         f.id,
             selected:   false,
