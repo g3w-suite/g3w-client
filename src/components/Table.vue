@@ -304,8 +304,9 @@ export default {
       GUI.disableContent(true);
       GUI.setLoadingContent(true);
       try {
+        const filter                = this.filter.length > 0;      // check if has columns filter
         // fetch features from server
-        const features = (await this.layer.getDataTable({ formatter: 1 }))?.features?.map(f => {
+        const features = (await this.layer.getDataTable(filter ? { field: this.search.field, formatter: 1 } : {}))?.features?.map(f => {
           return {
             id:         f.id,
             selected:   this.state.features.find(({id}) => id === f.id)?.selected ?? false,
