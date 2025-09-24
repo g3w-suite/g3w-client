@@ -4510,7 +4510,7 @@ export default new (class GUI extends Emitter {
     //check if features have geometry
     if (coordinates.length > 0) {
       try {
-        geometry = new ol.geom[type.includes('Multi') ? type : `Multi${gtype}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+        geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
       } catch(e) {
         console.warn(e);
       }
