@@ -937,32 +937,6 @@ export default new (class GUI extends Emitter {
     ApplicationState.plugins_registry[plugin.name] = ApplicationState.plugins_registry[plugin.name] || plugin;
   }
 
-  /* end spinner */
-
-  /**
-   * Wrapper for download
-   *
-   * @param { Function } downloadFnc function to call
-   * @param { Object }   options     Object parameters
-   *
-   * @since 3.9.0
-   */
-  async downloadWrapper(downloadFnc, options = {}) {
-    this.setLoadingContent(true);
-
-    ApplicationState.download = true;
-
-    try {
-      await downloadFnc(options);
-    } catch(e) {
-      this.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
-    }
-    
-    ApplicationState.download = false;
-
-    this.setLoadingContent(false);
-  }
-
   /** @since 3.10.0 remove _setUpTemplateDependencies method**/
   isMobile() {
     return isMobile.any;
@@ -3022,7 +2996,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  getVectorFeatures(vectorLayer, query = {}) {
+  getVectorFeatures(layer, query = {}) {
     let {
       coordinates,
       bbox,
@@ -3040,7 +3014,7 @@ export default new (class GUI extends Emitter {
       this.#map.forEachFeatureAtPixel(
         this.#map.getPixelFromCoordinate(coordinates),
         f => { features.push(f); },
-        { layerFilter: l => l === vectorLayer }
+        { layerFilter: l => l === layer }
       );
     }
 
@@ -3050,13 +3024,13 @@ export default new (class GUI extends Emitter {
       geometry = ol.geom.Polygon.fromExtent(bbox);
     }
 
-    const is_poly    = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
+    const is_poly = geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon;
 
     // check query geometry (Polygon or MultiPolygon)
-    if (is_poly && !has_coords && 'vector' === vectorLayer?.getType?.()) {
-      features = vectorLayer.getIntersectedFeatures(geometry);
-    } else if (is_poly && !has_coords && ol.layer.Vector === vectorLayer.constructor) {
-      vectorLayer.getSource().getFeatures().forEach(f => {
+    if (is_poly && !has_coords && 'vector' === layer?.getType?.()) {
+      features = layer.getIntersectedFeatures(geometry);
+    } else if (is_poly && !has_coords && ol.layer.Vector === layer.constructor) {
+      layer.getSource().getFeatures().forEach(f => {
         let add;
         switch (filterConfig.spatialMethod) {
           case 'within':     add = within(geometry, f.getGeometry());                      break;
@@ -3071,9 +3045,8 @@ export default new (class GUI extends Emitter {
 
     return {
       features,
-      layer: vectorLayer
+      layer
     };
-
   }
 
   /**
