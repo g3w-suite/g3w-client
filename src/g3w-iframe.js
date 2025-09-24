@@ -154,7 +154,9 @@ export class IframeApp extends Emitter {
       await ApplicationState.projections.set(params.epsg);
       coords = ol.proj.transform(coordinates, params.epsg, GUI.getEpsg());
     }
-    GUI.zoomTo(coords);
+    const view = GUI.getMap().getView();
+    view.setCenter(coords);
+    view.setZoom(6);
     return coords;
   }
 

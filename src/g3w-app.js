@@ -4438,20 +4438,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * @param { Array } coordinate
-   * @param { Number } zoom
-   * 
-   * @since 4.1.0
-   */
-  zoomTo(coordinate, zoom = 6) {
-    const view = this.#map.getView();
-    view.setCenter(coordinate);
-    view.setZoom(zoom);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
    * @since 4.1.0
    */
   goTo(coordinates, zoom, animate = true) {
@@ -4508,22 +4494,50 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  #getGeometryAndExtentFromFeatures(features = []) {
-    let extent;
-    let gtype;
-    let geometry;
-    const coordinates = [];
-    features
+  highlightFeatures(features, options = {}) {
+    features     = features || [];
+    
+    options.zoom = false;
+
+    let type, geometry;
+    const coordinates = features
+      .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+      .map(geom => {
+        type      = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
+        return geom?.getCoordinates?.() ?? geom.coordinates;
+      });
+
+    //check if features have geometry
+    if (coordinates.length > 0) {
+      try {
+        geometry = new ol.geom[type.includes('Multi') ? type : `Multi${gtype}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+      } catch(e) {
+        console.warn(e);
+      }
+    }
+
+    this.highlightGeometry(geometry, options);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  zoomToFeatures(features, options = { highlight: false }) {
+    features = features || [];
+
+    let extent, gtype, geometry;
+    const coordinates = features
       .filter(f => f.getGeometry ? f.getGeometry() : f.geometry)
-      .forEach(f => {
+      .map(f => {
         const geom       = f.getGeometry ? f.getGeometry() : f.geometry;
         const is_ol_geom = geom instanceof ol.geom.Geometry;
         const f_ext      = is_ol_geom ?  [...geom.getExtent()] : f.bbox;
         extent           = ol.extent.extend(undefined === extent ? f_ext : extent, f_ext);
         gtype            = gtype ? gtype : is_ol_geom ? geom.getType() : geom.type;
-        const coords     = ( is_ol_geom ? geom.getCoordinates() : geom.coordinates );
-        coordinates.push(coords);
-      })
+        return ( is_ol_geom ? geom.getCoordinates() : geom.coordinates );
+      });
 
     //check if features have geometry
     if (coordinates.length > 0) {
@@ -4536,34 +4550,10 @@ export default new (class GUI extends Emitter {
       }
     }
 
-    return {
-      extent,
-      geometry
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  highlightFeatures(features, options = {}) {
-    const { geometry } = this.#getGeometryAndExtentFromFeatures(features);
-    // force zoom false
-    options.zoom = false;
-    this.highlightGeometry(geometry, options);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  zoomToFeatures(features, options = { highlight: false }) {
-    let { geometry, extent } = this.#getGeometryAndExtentFromFeatures(features);
     if (options.highlight && extent) {
       options.highLightGeometry = geometry;
     }
+
     return this.zoomToExtent(extent, options);
   }
 
