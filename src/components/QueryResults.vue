@@ -32,8 +32,8 @@
               <div
                 class            = "box-header with-border"
                 :class           = "{'mobile': isMobile()}"
-                @mouseover.stop  = "!isMobile() && highlightLayer(layer, { highlight: true, duration: Infinity })"
-                @mouseout.stop   = "!isMobile() && highlightLayer(layer, { highlight: false })"
+                @mouseover.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
+                @mouseout.stop   = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
                 @click.stop      = "collapseSidebar"
               >
                 <div
@@ -935,7 +935,29 @@
        */
       highlightLayer(layer, opts) {
         if (layer.hasgeometry) {
-          GUI.highlightLayer(layer, opts);
+          const features = (layer.features || []).filter(f => GUI.showFeature(layer, f));
+          const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+          GUI.once('asyncFnc.todo', () => {
+            let type, geometry;
+            const coordinates = features
+              .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+              .map(geom => {
+                type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
+                return geom?.getCoordinates?.() ?? geom.coordinates;
+              });
+            //check if features have geometry
+            if (coordinates.length > 0) {
+              try {
+                geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+              } catch(e) {
+                console.warn(e);
+              }
+            }
+            GUI.highlightGeometry(geometry, opts);
+          });
+          if (!async) {
+            GUI.emit('asyncFnc.todo');
+          }
         }
       },
 
@@ -1024,7 +1046,7 @@
 
           // zoom to features when layer has geometry
           if (queried_layers[index].hasgeometry) {
-            GUI.highlightLayer(queried_layers[index]);
+            this.highlightLayer(queried_layers[index], { zoom: false });
           }
         } catch(e) {
           console.warn(e);
@@ -1066,7 +1088,23 @@
       },
       onelayerresult(bool) {
         if (bool && !this.state.query.pagination?.paginate?.at(0) && !this.state.queried_layers[0].filter.active) {
-          GUI.highlightFeatures(this.state.queried_layers[0].features, { duration: Infinity });
+          let type, geometry;
+          const coordinates = this.state.queried_layers[0].features
+            .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+            .map(geom => {
+              type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
+              return geom?.getCoordinates?.() ?? geom.coordinates;
+            });
+
+          //check if features have geometry
+          if (coordinates.length > 0) {
+            try {
+              geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+            } catch(e) {
+              console.warn(e);
+            }
+          }
+          GUI.highlightGeometry(geometry, { duration: Infinity, zoom: false });
         }
       }
     },

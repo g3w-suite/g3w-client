@@ -398,7 +398,23 @@ export default {
           if (zoom) {
             GUI.zoomToFeatures(features, { highlight: true });
           } else {
-            GUI.highlightFeatures(features);
+            let type, geometry;
+            const coordinates = features
+              .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+              .map(geom => {
+                type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
+                return geom?.getCoordinates?.() ?? geom.coordinates;
+              });
+
+            //check if features have geometry
+            if (coordinates.length > 0) {
+              try {
+                geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+              } catch(e) {
+                console.warn(e);
+              }
+            }
+            GUI.highlightGeometry(geometry, { zoom: false });
           }
         });
     },

@@ -465,7 +465,6 @@ export default new (class GUI extends Emitter {
     // BACKOMP v3.x
     this.outputDataPlace           = this.showData.bind(this);
     this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
-    this.highLightLayerFeatures    = this.highlightLayer.bind(this);
 
     // BACKCOMP: v3.x
     this.dialog.confirm = this.dialog.dialog;
@@ -2371,7 +2370,23 @@ export default new (class GUI extends Emitter {
 
     // highlight new feature
     if (1 === this.state.queried_layers.length) {
-      this.highlightFeatures(this.state.queried_layers[0].features, { duration: Infinity });
+      let type, geometry;
+      const coordinates = this.state.queried_layers[0].features
+        .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+        .map(geom => {
+          type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
+          return geom?.getCoordinates?.() ?? geom.coordinates;
+        });
+
+      //check if features have geometry
+      if (coordinates.length > 0) {
+        try {
+          geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+        } catch(e) {
+          console.warn(e);
+        }
+      }
+      this.highlightGeometry(geometry, { duration: Infinity, zoom: false });
     }
 
     // call "action.change"
@@ -4221,23 +4236,6 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param layer
-   * @param options
-   * 
-   * @since 4.1.0
-   */
-  highlightLayer(layer, options = {}) {
-    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
-    const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
-    this.once('asyncFnc.todo', () => { this.highlightFeatures(features, options); });
-    if (!async) {
-      this.emit('asyncFnc.todo');
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * @param { ol.geom.Geometry | Object } geometryObj
@@ -4328,36 +4326,6 @@ export default new (class GUI extends Emitter {
     if (!this.#highlighting) {
       this.defaultsLayers.highlightLayer.getSource().clear();
     }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  highlightFeatures(features, options = {}) {
-    features     = features || [];
-    
-    options.zoom = false;
-
-    let type, geometry;
-    const coordinates = features
-      .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
-      .map(geom => {
-        type      = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
-        return geom?.getCoordinates?.() ?? geom.coordinates;
-      });
-
-    //check if features have geometry
-    if (coordinates.length > 0) {
-      try {
-        geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
-      } catch(e) {
-        console.warn(e);
-      }
-    }
-
-    this.highlightGeometry(geometry, options);
   }
 
   /**
