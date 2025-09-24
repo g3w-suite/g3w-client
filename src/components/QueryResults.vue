@@ -908,11 +908,9 @@
         if ('clearHighlightGeometry' === action.id) {
           GUI.highlight(false);
         }
-        if (layer && GUI.state.layersactions[layer.id]) {
-          const _action = GUI.state.layersactions[layer.id].find(layerAction => layerAction.id === action.id);
-          if (_action?.cbk) {
-            await _action.cbk(layer, feature, _action, index, $(`#${layer.id}_${index} > td`));
-          }
+        const _action = layer && GUI.getActionLayerById({ layer, id: action.id });
+        if (_action?.cbk) {
+          await _action.cbk(layer, feature, _action, index, $(`#${layer.id}_${index} > td`));
         }
       },
       openLink(link_url) {
