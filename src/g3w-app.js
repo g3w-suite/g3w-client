@@ -3369,7 +3369,7 @@ export default new (class GUI extends Emitter {
           feat.setId(`${catalog_layer.getId()}_${f.id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
           feat.set(G3W_FID, f.get(G3W_FID) ?? `${f.id}`); // ensure `G3W_FID` is always set
           Object.entries(f.attributes).forEach(([a, v]) => feat.set(a, v));
-          catalog_layer.state.selection.features[f.id] = catalog_layer.state.selection.features[f.id] || {
+          catalog_layer.getSelection().features[f.id] = catalog_layer.getSelection().features[f.id] || {
             feature:  feat,
             selected: true
           };
@@ -3377,7 +3377,7 @@ export default new (class GUI extends Emitter {
         this.defaultsLayers.selectionLayer.getSource()[f.selected ? 'addFeature' : 'removeFeature'](catalog_layer.getSelection().features[f.id].feature);
         
       });
-      catalog_layer.state.selection.active = layer.features.some(f => f.selected);
+      catalog_layer.getSelection().active = layer.features.some(f => f.selected);
       return;
     }
 
@@ -3475,7 +3475,7 @@ export default new (class GUI extends Emitter {
         f.setId(`${catalog_layer.getId()}_${fid}`);          // see: #777, prevent ID collision when selecting features from multiple layers
         f.set(G3W_FID, f.get(G3W_FID) ?? `${fid}`); // ensure `G3W_FID` is always set
         Object.entries(features[i].attributes).forEach(([a, v]) => f.set(a, v));
-        catalog_layer.state.selection.features[fid] = catalog_layer.state.selection.features[fid] || {
+        catalog_layer.getSelection().features[fid] = catalog_layer.getSelection().features[fid] || {
           feature:  f,
           selected: true
         };
@@ -3506,7 +3506,7 @@ export default new (class GUI extends Emitter {
     }
 
     //set selection state of layer true if some feature is selected
-    catalog_layer.state.selection.active = layer.features.some(f => f.selected);
+    catalog_layer.getSelection().active = layer.features.some(f => f.selected);
 
     
     //remove Highlight geometry layer fetures
