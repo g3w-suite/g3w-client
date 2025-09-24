@@ -470,7 +470,7 @@ export default {
         )
          
         if (status) {
-          GUI.toggleSelection(this.state, status);
+          await GUI.toggleSelection(this.state, status);
         }
 
         this.all = this.state.features.every(f => f.selected);
