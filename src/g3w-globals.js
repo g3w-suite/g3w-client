@@ -32,7 +32,6 @@ import { waitFor }                                 from 'utils/waitFor';
 import { dissolve }                                from 'utils/dissolve';
 import { distance }                                from 'utils/distance';
 import { getProjectUrl }                           from 'utils/getProjectUrl';
-import { getProjectConfigByGid }                   from 'utils/getProjectConfigByGid';
 import { getListableProjects }                     from 'utils/getListableProjects';
 
 /**
@@ -277,7 +276,8 @@ globalThis.g3wsdk = {
     project: {
       ProjectsRegistry: Object.assign(new Emitter, {
         getProjectUrl,
-        getProjectConfigByGid,
+        /** used by the following plugins: "iframe", "archiweb" */
+        getProjectConfigByGid: (gid) => window.initConfig.projects.find(p => gid === p.gid),
         getListableProjects,
         getCurrentProject: () => ApplicationState.project,
       })
