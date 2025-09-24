@@ -445,7 +445,7 @@ export default {
       }
 
       this.search = {
-        field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
+        field:     status ? this.search.field : columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
         page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
