@@ -3343,7 +3343,7 @@ export default new (class GUI extends Emitter {
         if (f.selected && f.geometry && !catalog_layer.getSelection().features[f.id]) {
           const feat = new ol.Feature(f.geometry instanceof ol.geom.Geometry ? f.geometry : (new ol.format.GeoJSON()).readGeometry(f.geometry));
           feat.setId(`${catalog_layer.getId()}_${f.id}`); // see: #777, prevent ID collision when selecting features from multiple layers
-          feat.set(G3W_FID, f.get(G3W_FID) ?? `${f.id}`); // ensure `G3W_FID` is always set
+          feat.set(G3W_FID, feat.get(G3W_FID) ?? `${f.id}`); // ensure `G3W_FID` is always set
           Object.entries(f.attributes).forEach(([a, v]) => feat.set(a, v));
           catalog_layer.getSelection().features[f.id] = catalog_layer.getSelection().features[f.id] || {
             feature:  feat,
