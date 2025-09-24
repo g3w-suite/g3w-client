@@ -3201,7 +3201,10 @@ export default new (class GUI extends Emitter {
             selected: true
           };
         }
-        this.defaultsLayers.selectionLayer.getSource()[f.selected ? 'addFeature' : 'removeFeature'](catalog_layer.getSelection().features[f.id].feature);
+        //check if feature has geometry
+        if (f.geometry) {
+          this.defaultsLayers.selectionLayer.getSource()[f.selected ? 'addFeature' : 'removeFeature'](catalog_layer.getSelection().features[f.id].feature);
+        }
       });
       catalog_layer.getSelection().active = layer.features.some(f => f.selected);
       return;
