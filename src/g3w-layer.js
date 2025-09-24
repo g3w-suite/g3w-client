@@ -798,7 +798,6 @@ export class Layer extends Emitter {
         .values(this.state.selection.features)
         .forEach(f => {
           try {
-            f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
             if (!this.state.filter.active && f.selected) {
               GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
             } else {
@@ -1079,6 +1078,7 @@ export class Layer extends Emitter {
     if (selection.has('__EXCLUDE__'))  { selection.delete('__EXCLUDE__'); }
     else if (selection.has('__ALL__')) { selection.delete('__ALL__'); }
     else if (selection.size > 0)       { selection.add('__EXCLUDE__'); }
+    Object.entries(this.state.selection.features).forEach(([id, f]) => f.selected = (selection.has(id) && !selection.has('__EXCLUDE__') || (selection.has('__EXCLUDE__') && !selection.has(id))));
   }
 
   /**
@@ -2421,7 +2421,7 @@ export class Layer extends Emitter {
    *
    * @since 4.1.0
    */
-  makeSelectable(id, feature, selected = false) {
+  makeSelectable(id, feature, selected = true) {
     const f = new ol.Feature(feature.geometry instanceof ol.geom.Geometry ? feature.geometry : (new ol.format.GeoJSON()).readGeometry(feature.geometry));
     f.setId(`${this.getId()}_${id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
     f.set(G3W_FID, f.get(G3W_FID) ?? `${id}`); // ensure `G3W_FID` is always set

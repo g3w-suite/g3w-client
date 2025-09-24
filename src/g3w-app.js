@@ -2571,7 +2571,7 @@ export default new (class GUI extends Emitter {
               features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
           },
-          cbk: throttle((layer, feature) => { this.toggleSelection(layer, feature); })
+          cbk: throttle((layer, feature) => { this.toggleSelection({ layer, feature }); })
         },
 
         // permalink (click to copy)
@@ -3339,8 +3339,8 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async toggleSelection(layer, feature) {    
-    const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer
+  async toggleSelection({ layer, feature, inverse = false } = {}) { 
+    const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer result content)
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.selection.active && layer.features.every(f => f.selected); //check also if all features are selected
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
@@ -3350,18 +3350,30 @@ export default new (class GUI extends Emitter {
       return console.warn('no features');
     }
 
+    /**@since 4.1.0 Handle inverse */
+    if (inverse) {
+      catalog_layer.inverseSelection();
+      layer.features.forEach(f => {
+        f.selected = !f.selected;
+        // update OL selection layer (on map)
+        if (f.selected && f.geometry && !catalog_layer.getSelection().features[f.id]) {
+          catalog_layer.makeSelectable(f.id, f);
+        }
+        this.defaultsLayers.selectionLayer.getSource()[f.selected ? 'addFeature' : 'removeFeature'](catalog_layer.getSelection().features[f.id].feature);
+        
+      });
+      catalog_layer.state.selection.active = layer.features.some(f => f.selected);
+      return;
+    }
+
     // toggle selection
     layer.features.forEach((f, i) => {
       if (!feature) {
         f.selected = !toggled;
-        if (action) {
-          action.state.toggled[i] = !toggled;
-        }
+        if (action) { action.state.toggled[i] = !toggled; }
       } else if (i === index) {
         f.selected = !f.selected;
-        if (action) {
-          action.state.toggled[i] = f.selected;
-        }
+        if (action) { action.state.toggled[i] = f.selected;}
       }
     });
 
@@ -3439,6 +3451,7 @@ export default new (class GUI extends Emitter {
     // get fids (unique id) of features
     const fids = (features || []).map(f => f.attributes[G3W_FID] || f.id);
 
+
     fids.forEach((fid, i) => {
       const is_selected = catalog_layer.state.filter.active || catalog_layer.isSelected(fid);
       // update OL selection layer (on map)
@@ -3471,7 +3484,7 @@ export default new (class GUI extends Emitter {
     }
 
     //set selection state of layer true if some feature is selected
-    catalog_layer.state.selection.active = layer.features.some(f => f.selected);;
+    catalog_layer.state.selection.active = layer.features.some(f => f.selected);
 
     
     //remove Highlight geometry layer fetures

@@ -328,11 +328,7 @@ export default {
           }));
         }
         //In case of inverse selection
-        if (opts.inverse) {
-          this.state.features.forEach(feature => GUI.toggleSelection(this.state, feature));
-        } else {
-          GUI.toggleSelection(this.state);
-        }
+        GUI.toggleSelection({ layer: this.state, inverse: opts.inverse });
       } catch(e) {
         console.warn(e);
       } finally {
@@ -408,7 +404,7 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
-      GUI.toggleSelection(this.state, feature);
+      GUI.toggleSelection({ layer: this.state, feature });
     },
 
     async resize() {
@@ -482,7 +478,6 @@ export default {
 
         this.state.allfeatures   = data.count;
         this.state.featurescount = (data.features || []).length;
-        console.log(this.layer.state.filter.active)
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => ({
