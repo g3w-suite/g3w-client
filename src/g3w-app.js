@@ -465,6 +465,8 @@ export default new (class GUI extends Emitter {
     // BACKOMP v3.x
     this.outputDataPlace           = this.showData.bind(this);
     this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
+    this.highlightGeometry         = this.highlight.bind(this);
+    this.clearHighlightGeometry    = () => this.highlight(false);
 
     // BACKCOMP: v3.x
     this.dialog.confirm = this.dialog.dialog;
@@ -2363,7 +2365,7 @@ export default new (class GUI extends Emitter {
       // due to vue reactivity, wait a little bit before update layers
       setTimeout(() => {
         this.state.queried_layers = this.state.queried_layers.filter(l => l.id !== layer.id);
-        this.clearHighlightGeometry(layer);
+        this.highlight(false);
         this.removeAddFeaturesLayerResultInteraction(true);
       })
     }
@@ -2386,7 +2388,7 @@ export default new (class GUI extends Emitter {
           console.warn(e);
         }
       }
-      this.highlightGeometry(geometry, { duration: Infinity, zoom: false });
+      this.highlight(geometry, { duration: Infinity, zoom: false });
     }
 
     // call "action.change"
@@ -2468,7 +2470,7 @@ export default new (class GUI extends Emitter {
               if (this.isOneLayerResult()) {
                 this.zoomToFeatures([feature], {});
               } else {
-                this.highlightGeometry(feature.geometry, { layerId: layer.id, duration: 1500 });
+                this.highlight(feature.geometry, { layerId: layer.id, duration: 1500 });
               }
             });
             if (async) {
@@ -2689,7 +2691,7 @@ export default new (class GUI extends Emitter {
     // unlistener events actions
     this.#events.query.forEach(obj => obj.layer.off(obj.event, obj.handler));
     this.#events.query = [];
-    this.clearHighlightGeometry();
+    this.highlight(false);
     this.#layer.getSource().clear();
     this.removeAddFeaturesLayerResultInteraction(true);
     //reset pagination
@@ -2918,10 +2920,10 @@ export default new (class GUI extends Emitter {
    */
   async triggerAction(actionId, layer, feature, index, container) {
     if ('highlightgeometry' === actionId) {
-      this.highlightGeometry(layer, feature, index);
+      this.highlight(layer, feature, index);
     }
     if ('clearHighlightGeometry' === actionId) {
-      this.clearHighlightGeometry(layer, feature, index);
+      this.highlight(false);
     }
     if (layer && this.state.layersactions[layer.id]) {
       const action = this.state.layersactions[layer.id].find(layerAction => layerAction.id === actionId);
@@ -3367,9 +3369,8 @@ export default new (class GUI extends Emitter {
     //set selection state of layer true if some feature is selected
     catalog_layer.getSelection().active = layer.features.some(f => f.selected);
 
-    
-    //remove Highlight geometry layer fetures
-    this.clearHighlightGeometry();
+    // remove Highlight geometry layer fetures
+    this.highlight(false);
     
     // PROJECT LAYER - In case of single layer and no features, remove layer
     if (1 === this.state.queried_layers.length && !this.state.queried_layers[0].features.length) {
@@ -4238,8 +4239,8 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * @param { ol.geom.Geometry | Object } geometryObj
-   * @param { string } geometryObj.id
+   * @param { ol.geom.Geometry | Object | false } geom
+   * @param { string } geom.id
    * @param { Object } options
    * @param { boolean } options.feature
    * @param { boolean } options.zoom
@@ -4251,18 +4252,26 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async highlightGeometry(geometryObj, options = {}) {
+  async highlight(geom, options = {}) {
+
+    // reset highlighted geometries
+    if (false === geom) {
+      if (!this.#highlighting) {
+        this.defaultsLayers.highlightLayer.getSource().clear();
+      }
+      return;
+    }
 
     if (options.geometry) {
-      return this.highlightGeometry(options.geometry, { layerId: geometryObj.id, zoom: false, duration: Infinity });
+      return this.highlight(options.geometry, { layerId: geom.id, zoom: false, duration: Infinity });
     }
 
     const hide      = 'function' === typeof options.hide      ? options.hide      : null;
     const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
     const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
-    let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+    let geometry    = geom instanceof ol.geom.Geometry ? geom       : (new ol.format.GeoJSON()).readGeometry(geom);
 
-    this.clearHighlightGeometry();
+    this.highlight(false);
 
     if (zoom) {
       await this.zoomToExtent(geometry.getExtent());
@@ -4314,18 +4323,6 @@ export default new (class GUI extends Emitter {
       }
 
     });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  clearHighlightGeometry() {
-    if (!this.#highlighting) {
-      this.defaultsLayers.highlightLayer.getSource().clear();
-    }
   }
 
   /**
@@ -4526,7 +4523,7 @@ export default new (class GUI extends Emitter {
     }));
 
     if (options.highLightGeometry) {
-      await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
+      await this.highlight(options.highLightGeometry, { zoom: false, duration: options.duration });
     }
 
   }

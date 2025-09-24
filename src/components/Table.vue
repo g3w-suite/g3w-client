@@ -349,12 +349,12 @@ export default {
     async highlight(feature, zoom = true) {
       // no feature or no feature geometry → clear highlight
       if (!feature || !feature.geometry) {
-        return GUI.clearHighlightGeometry();
+        return GUI.highlight(false);
       }
 
       this.async_highlight = () => {
-        GUI.clearHighlightGeometry();
-        GUI.highlightGeometry(feature.geometry, { zoom, duration: Infinity })
+        GUI.highlight(false);
+        GUI.highlight(feature.geometry, { zoom, duration: Infinity })
       };
 
       // sync highlight
@@ -414,7 +414,7 @@ export default {
                 console.warn(e);
               }
             }
-            GUI.highlightGeometry(geometry, { zoom: false });
+            GUI.highlight(geometry, { zoom: false });
           }
         });
     },

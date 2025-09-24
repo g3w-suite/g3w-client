@@ -310,7 +310,7 @@
       */
       zoomToGeometry(geometry) {
         if (geometry) {
-          const geom   = new ol.geom[geometry.type](geometry.coordinates);
+          const geom = new ol.geom[geometry.type](geometry.coordinates);
           GUI.zoomToExtent(geom?.getExtent(), { highlight: true, highLightGeometry: geom });
         }
       },

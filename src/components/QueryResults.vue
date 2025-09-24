@@ -953,7 +953,7 @@
                 console.warn(e);
               }
             }
-            GUI.highlightGeometry(geometry, opts);
+            GUI.highlight(geometry, opts);
           });
           if (!async) {
             GUI.emit('asyncFnc.todo');
