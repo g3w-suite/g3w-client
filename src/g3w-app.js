@@ -2841,26 +2841,6 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param layer
-   * @param options
-   * 
-   * @since 4.1.0
-   */
-  zoomToLayer(layer, options = {}) {
-    options.highlight = !this.isOneLayerResult();
-    const async       = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
-    const features    = (layer.features || []).filter(f => this.showFeature(layer, f));
-    this.once('asyncFnc.todo', () => { this.zoomToFeatures(features, options); });
-    if (async) {
-      this.closeContent();
-    } else {
-      this.emit('asyncFnc.todo');
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * @returns { boolean } whether show feature in results (show + active filter + selected)
    * 
@@ -2868,23 +2848,6 @@ export default new (class GUI extends Emitter {
    */
   showFeature(layer, feature) {
     return feature.show && ((layer.filter || {}).active ? feature.selected : true);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param layer
-   * @param options
-   * 
-   * @since 4.1.0
-   */
-  highlightLayer(layer, options = {}) {
-    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
-    const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
-    this.once('asyncFnc.todo', () => { this.highlightFeatures(features, options); });
-    if (!async) {
-      this.emit('asyncFnc.todo');
-    }
   }
 
   /**
@@ -3157,100 +3120,6 @@ export default new (class GUI extends Emitter {
       }
     });
 
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @param { ol.geom.Geometry | Object } geometryObj
-   * @param { string } geometryObj.id
-   * @param { Object } options
-   * @param { boolean } options.feature
-   * @param { boolean } options.zoom
-   * @param { boolean } options.highlight
-   * @param options.style
-   * @param options.color
-   *
-   * @returns { Promise<any> }
-   * 
-   * @since 4.1.0
-   */
-  async highlightGeometry(geometryObj, options = {}) {
-
-    if (options.geometry) {
-      return this.highlightGeometry(options.geometry, { layerId: geometryObj.id, zoom: false, duration: Infinity });
-    }
-
-    const hide      = 'function' === typeof options.hide      ? options.hide      : null;
-    const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
-    const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
-    let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
-
-    this.clearHighlightGeometry();
-
-    if (zoom) {
-      await this.zoomToExtent(geometry.getExtent());
-    }
-
-    if (!highlight) {
-      return;
-    }
-
-    if (options.style) {
-      this.defaultsLayers.highlightLayer.setStyle(options.style);
-    }
-
-    this.defaultsLayers.highlightLayer.getSource().addFeature(new ol.Feature({ geometry }));
-
-    return new Promise(async resolve => {
-
-      const cb = () => {
-        this.defaultsLayers.highlightLayer.getSource().clear();
-        // set default style
-        if (options.style) {
-          this.defaultsLayers.highlightLayer.setStyle(feat => {
-            const color = options.color;
-            const type = feat.getGeometry().getType();
-            if (['Point', 'MultiPoint'].includes(type)) {
-              return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
-            }
-            if (['LineString', 'MultiLineString'].includes(type)) {
-              return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
-            }
-            if (['Polygon', 'MultiPolygon'].includes(type)) {
-              return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
-            }
-          });
-        }
-        if (!hide) {
-          this.#highlighting = false;
-        }
-        resolve();
-      }
-
-      if (hide) {
-        hide(cb);
-      }
-
-      if (options.duration && options.duration !== Infinity && !hide) {
-        this.#highlighting = true;
-        setTimeout(cb, options.duration || 2000);
-      }
-
-    });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  clearHighlightGeometry() {
-    if (!this.#highlighting) {
-      this.defaultsLayers.highlightLayer.getSource().clear();
-    }
   }
 
   /**
@@ -3813,101 +3682,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    *
-   * Zoom to Feature ID 
-   * 
-   * @since 4.1.0
-   */
-  async zoomToFid(zoom_to_fid = '', separator = '|') {
-    const [layerId, fid] = zoom_to_fid.split(separator);
-
-    if (undefined === layerId && undefined === fid) {
-      return;
-    }
-
-    const layer = ApplicationState.project.getLayerById(layerId);
-
-    const { data = [] } = await this.getData('search:fids', {
-      inputs: {
-        layer,
-        fids:  [fid]
-      },
-      outputs: {
-        show: {
-          loading: false,
-          async condition({ data = [] } = {}) {
-            if (layer.isEditable()) {
-              await waitFor(() => undefined !== layer.config.editing);
-            }
-            return !!(data[0] && data[0].features.length > 0);
-          }
-        }
-      }
-    });
-
-    const feature = data[0] && data[0].features[0];
-
-    if (feature) {
-      await this.zoomToFeatures([feature]);
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   *
-   * Handle ztf url parameter
-   * 
-   * @param zoom_to_features
-   * 
-   * @since 4.1.0
-   */
-  async zoomToFeaturesUrl(zoom_to_features = '') {
-    try {
-      const [id, filter] = zoom_to_features.split(':');
-
-      if (!id || !filter) {
-        return;
-      }
-
-      // find project layer
-      const pLayer = ApplicationState.project.getLayers().find(l =>
-        id === l.id ||
-        id === l.name ||
-        id === l.origname
-      );
-
-      const layer = pLayer && ApplicationState.project.getLayerById(pLayer.id);
-
-      const r = pLayer && await this.getData('search:features', {
-        inputs: {
-          layer,
-          filter: createFilterFromString({ layer, filter }),
-        },
-        outputs: {
-          show: {
-            loading: false,
-            async condition({ data = [] } = {}) {
-              if (layer.isEditable()) {
-                await waitFor(() => undefined !== layer.config.editing);
-              }
-              return !!(data[0] && data[0].features.length > 0);
-            }
-          }
-        }
-      });
-
-      const features = r && r.data && r.data[0] && r.data[0].features;
-
-      if (features) {
-        this.zoomToFeatures(features);
-      }
-    } catch(e) {
-      console.warn(e);
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   *
    * @since 4.1.0
    */
   getMapExtent() {
@@ -4446,6 +4220,117 @@ export default new (class GUI extends Emitter {
   }
 
   /**
+   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   *
+   * @param layer
+   * @param options
+   * 
+   * @since 4.1.0
+   */
+  highlightLayer(layer, options = {}) {
+    const features = (layer.features || []).filter(f => this.showFeature(layer, f));
+    const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    this.once('asyncFnc.todo', () => { this.highlightFeatures(features, options); });
+    if (!async) {
+      this.emit('asyncFnc.todo');
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @param { ol.geom.Geometry | Object } geometryObj
+   * @param { string } geometryObj.id
+   * @param { Object } options
+   * @param { boolean } options.feature
+   * @param { boolean } options.zoom
+   * @param { boolean } options.highlight
+   * @param options.style
+   * @param options.color
+   *
+   * @returns { Promise<any> }
+   * 
+   * @since 4.1.0
+   */
+  async highlightGeometry(geometryObj, options = {}) {
+
+    if (options.geometry) {
+      return this.highlightGeometry(options.geometry, { layerId: geometryObj.id, zoom: false, duration: Infinity });
+    }
+
+    const hide      = 'function' === typeof options.hide      ? options.hide      : null;
+    const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
+    const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
+    let geometry    = geometryObj instanceof ol.geom.Geometry ? geometryObj       : (new ol.format.GeoJSON()).readGeometry(geometryObj);
+
+    this.clearHighlightGeometry();
+
+    if (zoom) {
+      await this.zoomToExtent(geometry.getExtent());
+    }
+
+    if (!highlight) {
+      return;
+    }
+
+    if (options.style) {
+      this.defaultsLayers.highlightLayer.setStyle(options.style);
+    }
+
+    this.defaultsLayers.highlightLayer.getSource().addFeature(new ol.Feature({ geometry }));
+
+    return new Promise(async resolve => {
+
+      const cb = () => {
+        this.defaultsLayers.highlightLayer.getSource().clear();
+        // set default style
+        if (options.style) {
+          this.defaultsLayers.highlightLayer.setStyle(feat => {
+            const color = options.color;
+            const type = feat.getGeometry().getType();
+            if (['Point', 'MultiPoint'].includes(type)) {
+              return new ol.style.Style({ image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color }) }), zIndex: Infinity });
+            }
+            if (['LineString', 'MultiLineString'].includes(type)) {
+              return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }) });
+            }
+            if (['Polygon', 'MultiPolygon'].includes(type)) {
+              return new ol.style.Style({ stroke: new ol.style.Stroke({ color, width: 4 }), fill: new ol.style.Fill({ color: ol.color.asString([...ol.color.asArray(color)].splice(0, 3).concat(.25)) }) /* force rgba color transparency (alpha = .25) */ });
+            }
+          });
+        }
+        if (!hide) {
+          this.#highlighting = false;
+        }
+        resolve();
+      }
+
+      if (hide) {
+        hide(cb);
+      }
+
+      if (options.duration && options.duration !== Infinity && !hide) {
+        this.#highlighting = true;
+        setTimeout(cb, options.duration || 2000);
+      }
+
+    });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   * 
+   * @since 4.1.0
+   */
+  clearHighlightGeometry() {
+    if (!this.#highlighting) {
+      this.defaultsLayers.highlightLayer.getSource().clear();
+    }
+  }
+
+  /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * @since 4.1.0
@@ -4473,6 +4358,117 @@ export default new (class GUI extends Emitter {
     }
 
     this.highlightGeometry(geometry, options);
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
+   *
+   * @param layer
+   * @param options
+   * 
+   * @since 4.1.0
+   */
+  zoomToLayer(layer, options = {}) {
+    options.highlight = !this.isOneLayerResult();
+    const async       = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    const features    = (layer.features || []).filter(f => this.showFeature(layer, f));
+    this.once('asyncFnc.todo', () => { this.zoomToFeatures(features, options); });
+    if (async) {
+      this.closeContent();
+    } else {
+      this.emit('asyncFnc.todo');
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * Zoom to Feature ID 
+   * 
+   * @since 4.1.0
+   */
+  async #zoomToFid(zoom_to_fid = '', separator = '|') {
+    const [layerId, fid] = zoom_to_fid.split(separator);
+
+    if (undefined === layerId && undefined === fid) {
+      return;
+    }
+
+    const layer = ApplicationState.project.getLayerById(layerId);
+
+    const { data = [] } = await this.getData('search:fids', {
+      inputs: {
+        layer,
+        fids:  [fid]
+      },
+      outputs: {
+        show: {
+          loading: false,
+          async condition({ data = [] } = {}) {
+            if (layer.isEditable()) {
+              await waitFor(() => undefined !== layer.config.editing);
+            }
+            return !!(data[0] && data[0].features.length > 0);
+          }
+        }
+      }
+    });
+
+    if (data?.at(0)?.features?.at(0)) {
+      await this.zoomToFeatures([data?.at(0)?.features?.at(0)]);
+    }
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
+   *
+   * Handle ztf url parameter
+   * 
+   * @param zoom_to_features
+   * 
+   * @since 4.1.0
+   */
+  async #zoomToFeaturesUrl(zoom_to_features = '') {
+    try {
+      const [id, filter] = zoom_to_features.split(':');
+
+      if (!id || !filter) {
+        return;
+      }
+
+      // find project layer
+      const pLayer = ApplicationState.project.getLayers().find(l =>
+        id === l.id ||
+        id === l.name ||
+        id === l.origname
+      );
+
+      const layer = pLayer && ApplicationState.project.getLayerById(pLayer.id);
+
+      const r = pLayer && await this.getData('search:features', {
+        inputs: {
+          layer,
+          filter: createFilterFromString({ layer, filter }),
+        },
+        outputs: {
+          show: {
+            loading: false,
+            async condition({ data = [] } = {}) {
+              if (layer.isEditable()) {
+                await waitFor(() => undefined !== layer.config.editing);
+              }
+              return !!(data[0] && data[0].features.length > 0);
+            }
+          }
+        }
+      });
+
+      if (r?.data?.at(0)?.features) {
+        this.zoomToFeatures(r?.data?.at(0)?.features);
+      }
+    } catch(e) {
+      console.warn(e);
+    }
   }
 
   /**
@@ -4570,36 +4566,16 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * @since 4.1.0
-   */
-  fit(geometry, options = {}) {
-    const view    = this.#map.getView();
-    const animate = 'boolean' === typeof options.animate ? options.animate : true;
-
-    if (animate) {
-      view.animate({ duration: 200, center: view.getCenter() });
-      view.animate({ duration: 200, resolution: view.getResolution() });
-    }
-
-    delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
-
-    view.fit(geometry, {
-      ...options,
-      constrainResolution: (undefined !== options.constrainResolution ? options.constrainResolution : true),
-      size:  this.#map.getSize()
-    });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
    * Force to referesh a map
+   * 
+   * Used by the following plugins: "editing"
+   * 
    * @param options
    * 
    * @since 4.1.0
    */
-  refreshMap(options = { force: true }) {
-    this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, options));
+  refreshMap() {
+    this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, { force: true }));
   }
 
   /**
@@ -4737,9 +4713,9 @@ export default new (class GUI extends Emitter {
 
     let geom;
     if (zoom_to_fid) {
-      await this.zoomToFid(zoom_to_fid);
+      await this.#zoomToFid(zoom_to_fid);
     } else if (zoom_to_features) {
-      await this.zoomToFeaturesUrl(zoom_to_features);
+      await this.#zoomToFeaturesUrl(zoom_to_features);
     } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
       geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
     } else if (!isNaN(coords.x) && !isNaN(coords.y)) {

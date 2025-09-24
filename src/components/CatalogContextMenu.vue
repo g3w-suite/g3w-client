@@ -598,7 +598,13 @@
           let bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy];
           let epsg = layer.epsg;
           bbox = epsg === GUI.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, GUI.getEpsg());
-          GUI.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
+          const geometry = ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent;
+          const view = GUI.getMap().getView();
+          view.animate(
+            { duration: 200, center:     view.getCenter() },
+            { duration: 200, resolution: view.getResolution() }
+          );
+          view.fit(geometry, { constrainResolution: true, size: GUI.getMap().getSize() });
         } catch(e) {
           console.warn(e);
           GUI.showUserMessage({

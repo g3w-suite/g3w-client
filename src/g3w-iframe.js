@@ -195,7 +195,13 @@ export class IframeApp extends Emitter {
       await ApplicationState.projections.set(params.epsg);
       extent = ol.proj.transformExtent(extent, params.epsg, GUI.getEpsg());
     } else {
-      GUI.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, extent) ? extent : ApplicationState.project.state.extent);
+      const geometry = ol.extent.containsExtent(ApplicationState.project.state.extent, extent) ? extent : ApplicationState.project.state.extent;
+      const view = GUI.getMap().getView();
+      view.animate(
+        { duration: 200, center:     view.getCenter() },
+        { duration: 200, resolution: view.getResolution() }
+      );
+      view.fit(geometry, { constrainResolution: true, size: GUI.getMap().getSize() });
     }
     return extent;
   };
