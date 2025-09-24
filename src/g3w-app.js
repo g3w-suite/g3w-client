@@ -2050,7 +2050,7 @@ export default new (class GUI extends Emitter {
             '__g3w_marker' === layer.get('id') // keep geocoding control "marker" layer at the top
             ? 'unshift'
             : 'push'
-          ](this.getVectorLayerFeaturesFromQueryRequest(layer, queryResponse.query));
+          ](this.getVectorFeatures(layer, queryResponse.query));
         }
       });
     }
@@ -2817,7 +2817,7 @@ export default new (class GUI extends Emitter {
             // call setQueryResponse setters method directly in case of external layer 
             this.setQueryResponse(
               {
-                data:  [ this.getVectorLayerFeaturesFromQueryRequest(this.#vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
+                data:  [ this.getVectorFeatures(this.#vectorLayers.find(v => layer.id === v.get('id')), { coordinates }) ],
                 query: { coordinates }
               },
               { add: true }
@@ -3022,7 +3022,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  getVectorLayerFeaturesFromQueryRequest(vectorLayer, query = {}) {
+  getVectorFeatures(vectorLayer, query = {}) {
     let {
       coordinates,
       bbox,
