@@ -2953,7 +2953,10 @@ export default new (class GUI extends Emitter {
       if (action &&  action.route) {
         let url = action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
         if (url && '' !== url) {
-          this.goto(url);
+          this.#map.getView().animate(
+            { duration: 300, center: url },
+            { zoom: 6, duration: 300 }
+          );
         }
       }
     }
@@ -4359,7 +4362,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getCurrentToggledMapControl() {
-    return (this.#controls.find(c => c.control && c.control.isToggled && c.control.isToggled()) || {}).control;
+    return this.#controls.find(c => c?.control?.isToggled?.())?.control;
   }
 
   /**
@@ -4440,60 +4443,6 @@ export default new (class GUI extends Emitter {
   showMapInfo({ info, style } = {}) {
     this.state.map_info = info;
     this.state.map_style = style || this.state.map_style;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  goTo(coordinates, zoom, animate = true) {
-    const view    = this.#map.getView();
-    zoom = zoom || 6;
-
-    if (animate) {
-      view.animate(
-        { duration: 300, center: coordinates },
-        (zoom ? ({ zoom, duration: 300 }) : ({ duration: 300, resolution: view.getResolution() })
-      ));
-    } else {
-      view.setCenter(coordinates);
-    }
-
-    if (zoom && !animate) {
-      view.setZoom(zoom);
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * Set map center to coordinate at resolution
-   *
-   * @param { Array } coordinates
-   * @param resolution
-   * @param { boolean } animate
-   * 
-   * @since 4.1.0
-   */
-  async goToRes(coordinates, resolution, animate = true) {
-
-    resolution = resolution || this.#map.getView().getResolution();
-
-    await (new Promise(res => {
-
-      this.#map.getView().once('change:center', () => setTimeout(res, 500));
-
-      if (animate) {
-        this.#map.getView().animate(
-          { duration: 200, center: coordinates },
-          { duration: 200, resolution }
-        );
-      } else {
-        this.#map.getView().setCenter(coordinates);
-        this.#map.getView().setResolution(resolution);
-      }
-    }));
   }
 
   /**
@@ -4604,24 +4553,18 @@ export default new (class GUI extends Emitter {
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
-
-    await this.goToRes(ol.extent.getCenter(extent), resolution);
+    await (new Promise(res => {
+      this.#map.getView().once('change:center', () => setTimeout(res, 500));
+      this.#map.getView().animate(
+        { duration: 200, center: ol.extent.getCenter(extent) },
+        { duration: 200, resolution: resolution || this.#map.getView().getResolution() }
+      );
+    }));
 
     if (options.highLightGeometry) {
       await this.highlightGeometry(options.highLightGeometry, { zoom: false, duration: options.duration });
     }
 
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  goToBBox(bbox, epsg = this.getEpsg()) {
-    bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
-    // compare bbox extent with a project max extent
-    this.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
   }
 
   /**

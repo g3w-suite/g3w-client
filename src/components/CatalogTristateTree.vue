@@ -499,10 +499,10 @@ export default {
      */
     maybeZoomToLayer(layer) {
       if (this.canZoom(this.layerstree)) {
-        GUI.goToBBox(
-          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
-          layer.epsg
-        );
+        let bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy];
+        let epsg = layer.epsg;
+        bbox = epsg === GUI.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, GUI.getEpsg());
+        GUI.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent);
       }
     },
 

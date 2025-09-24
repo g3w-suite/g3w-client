@@ -195,7 +195,7 @@ export class IframeApp extends Emitter {
       await ApplicationState.projections.set(params.epsg);
       extent = ol.proj.transformExtent(extent, params.epsg, GUI.getEpsg());
     } else {
-      GUI.goToBBox(extent);
+      GUI.fit(ol.extent.containsExtent(ApplicationState.project.state.extent, extent) ? extent : ApplicationState.project.state.extent);
     }
     return extent;
   };

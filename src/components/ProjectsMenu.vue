@@ -51,7 +51,7 @@ export default {
     trigger(item) {
       if (item.cbk)        this._initCallback(item);
       else if (item.href)  window.open(item.href, '_blank');
-      else if (item.route) GUI.goto(item.route);
+      else if (item.route) GUI.getMap().getView().animate({ duration: 300, center: coordinates }, { zoom: 6, duration: 300 });
       else                 console.log("No action for "+item.title);
     },
 
