@@ -2910,41 +2910,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    *
-   * @param actionId
-   * @param layer
-   * @param feature
-   * @param index
-   * @param container
-   * 
-   * @since 4.1.0
-   */
-  async triggerAction(actionId, layer, feature, index, container) {
-    if ('highlightgeometry' === actionId) {
-      this.highlight(layer, feature, index);
-    }
-    if ('clearHighlightGeometry' === actionId) {
-      this.highlight(false);
-    }
-    if (layer && this.state.layersactions[layer.id]) {
-      const action = this.state.layersactions[layer.id].find(layerAction => layerAction.id === actionId);
-      if (action && action.cbk) {
-        await action.cbk(layer, feature, action, index, container);
-      }
-      if (action &&  action.route) {
-        let url = action.route.replace(/{(\w*)}/g, (m, key) => feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "");
-        if (url && '' !== url) {
-          this.#map.getView().animate(
-            { duration: 300, center: url },
-            { zoom: 6, duration: 300 }
-          );
-        }
-      }
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
    * @param vectorLayer
    * 
    * @since 4.1.0

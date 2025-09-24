@@ -797,9 +797,6 @@
       async addRemoveFilter(layer) {
         await getCatalogLayerById(layer.id).toggleToken();
       },
-      getContainerFromFeatureLayer({ layer, index } = {}) {
-        return $(`#${layer.id}_${index} > td`);
-      },
       hasOneLayerAndOneFeature(layer) {
         return this.hasLayerOneFeature(layer);
       },
@@ -861,7 +858,7 @@
             () => this.state.layersFeaturesBoxes[boxid].collapsed,
             collapsed => {
               const index     = layer.features.findIndex(_feature => feature.id === _feature.id);
-              const container = this.getContainerFromFeatureLayer({ layer, index });
+              const container = $(`#${layer.id}_${index} > td`);
             }
           );
           this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
@@ -900,12 +897,23 @@
       toggleFeatureBoxAndZoom(layer, feature, relation_index) {
         if (!this.hasLayerOneFeature(layer)) { this.toggleFeatureBox(layer, feature, relation_index) }
       },
-      async trigger(action,layer,feature, index) {
+      async trigger(action, layer,feature, index) {
         if (action.opened && 'none' === $(`#${layer.id}_${index}`).css('display')) {
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
-        await GUI.triggerAction(action.id, layer,feature, index, this.getContainerFromFeatureLayer({ layer, index }));
+        if ('highlightgeometry' === action.id) {
+          GUI.highlight(layer, feature, index);
+        }
+        if ('clearHighlightGeometry' === action.id) {
+          GUI.highlight(false);
+        }
+        if (layer && GUI.state.layersactions[layer.id]) {
+          const _action = GUI.state.layersactions[layer.id].find(layerAction => layerAction.id === action.id);
+          if (_action?.cbk) {
+            await _action.cbk(layer, feature, _action, index, $(`#${layer.id}_${index} > td`));
+          }
+        }
       },
       openLink(link_url) {
         window.open(link_url, '_blank');
