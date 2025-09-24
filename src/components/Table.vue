@@ -71,7 +71,7 @@
         <tr>
           <th v-disabled       = "disableSelectAll">
             <label @click.stop = "setSelection('all')">
-              <input type = "checkbox" :checked = "state.selection.active && state.features.length > 0 && state.features.every(f => f.selected)" />
+              <input type = "checkbox" :checked = "all" />
             </label>
           </th>
           <th v-for = "(header, i) in state.headers" v-if = "i > 0">
@@ -207,6 +207,7 @@ export default {
       firstCall:           true,
       map_bbox:            { key: null, cb: null },
       disableSelectAll:    false,
+      all:                 false, //@since all features loaded are selected
     };
   },
   
@@ -307,31 +308,15 @@ export default {
       GUI.disableContent(true);
       GUI.setLoadingContent(true);
       try {
-        
+        const loaded_features = [...this.state.features];
         // fetch features from server in case not all feature are loaded
         if (this.state.allfeatures > this.state.featurescount) {
-          const { count, features = [] } = (await this.layer.getDataTable({
-            formatter: 1,
-            page:      1, // get current page
-            page_size: this.layer.getAttributeTablePageLength(),
-            ...(this.filter.length > 0 ? { field: this.search.field } : {} ) 
-          }));
-          this.state.allfeatures   = count; //all count features 
-          this.state.featurescount = features.length; //all returned feature
-          features.splice(0, features.length, ...features.map(f => {
-            return {
-              id:         f.id,
-              selected:   this.layer.state.filter.active || (this.state.features.find(({id}) => id === f.id)?.selected ?? false),
-              attributes: f.attributes || f.properties,
-              geometry:   f.geometry 
-            };
-          }))
-          // reset features
-          this.state.features.splice(0);
-          //fill with new values
-          this.state.features.push(...features);
+          await this.getData();
         }
+        //
+        const features = this.state.features.concat(loaded_features.filter(({id}) => !this.state.features.find(f => id == f.id)));
         GUI.toggleSelection(this.state, status);
+        this.all = features.every(f => f.selected);
       } catch(e) {
         console.warn(e);
       } finally {
@@ -603,15 +588,13 @@ export default {
           const data = await this.getData(opts);
           cb(data);
           this.disableSelectAll = 0 === this.state.features.length;
-          if (resolve) {
-            resolve(data.filter);
-          }
+          if (resolve) { resolve(data.filter); }
           await this.$nextTick();
           table.columns.adjust();
         } catch(e) {
           console.warn(e);
         }
-        this.resize()
+        this.resize();
       }, 800),
       bSortCellsTop:  true,
       columns:        this.state.headers,
