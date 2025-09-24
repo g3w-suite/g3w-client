@@ -312,20 +312,26 @@ export default {
         
         // fetch features from server in case not all feature are loaded
         if (this.state.allfeatures > this.state.featurescount) {
-          const { count, features = [] } = (await this.layer.getDataTable({ formatter: 1, ...(this.filter.length > 0 ? { field: this.search.field } : {} ) }));
+          const { count, features = [] } = (await this.layer.getDataTable({
+            formatter: 1,
+            page:      1, // get current page
+            page_size: this.layer.getAttributeTablePageLength(),
+            ...(this.filter.length > 0 ? { field: this.search.field } : {} ) 
+          }));
           this.state.allfeatures   = count; //all count features 
           this.state.featurescount = features.length; //all returned feature
-          // reset features
-          this.state.features.splice(0);
-          //fill with new values
-          this.state.features.push(...features.map(f => {
+          features.splice(0, features.length, ...features.map(f => {
             return {
               id:         f.id,
               selected:   this.layer.state.filter.active || (this.state.features.find(({id}) => id === f.id)?.selected ?? false),
               attributes: f.attributes || f.properties,
               geometry:   f.geometry 
             };
-          }));
+          }))
+          // reset features
+          this.state.features.splice(0);
+          //fill with new values
+          this.state.features.push(...features);
         }
         //In case of inverse selection
         GUI.toggleSelection({ layer: this.state, inverse: opts.inverse });
