@@ -810,7 +810,7 @@
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
       toggleSelection(layer) {
-        GUI.toggleSelection({ layer });
+        GUI.toggleSelection(layer);
       },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
@@ -1013,7 +1013,7 @@
 
           queried_layers[index].features.forEach((f, i) => {
             if (page_size_change && !f.selected && f.geometry && layer.isGeoLayer()) {
-              GUI.toggleSelection({ layer, feature: f });
+              GUI.toggleSelection(layer, f);
             }
             f.selected    = page_size_change;
             action.state.toggled[i] = page_size_change;

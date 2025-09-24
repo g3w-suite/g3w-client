@@ -41,7 +41,7 @@
         :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip    = "'Invert Selection'"
         data-placement = "right"
-        @click.stop    = "setSelection({ inverse :true })"
+        @click.stop    = "setSelection('inverse')"
       ></div>
 
       <!-- TOGGLE FILTER -->
@@ -70,7 +70,7 @@
         </tr>
         <tr>
           <th v-disabled       = "disableSelectAll">
-            <label @click.stop = "setSelection({ inversion: false })">
+            <label @click.stop = "setSelection('all')">
               <input type = "checkbox" :checked = "state.selection.active && state.features.length > 0 && state.features.every(f => f.selected)" />
             </label>
           </th>
@@ -301,11 +301,9 @@ export default {
     },
 
     /**
-     * 
-     * @param opts @since 4.1.0
-     * 
+     * @param {'all' | 'inverse' } status whether to select all/inverse features
      */
-    async setSelection(opts = { inverse : false }) {
+    async setSelection(status) {
       GUI.disableContent(true);
       GUI.setLoadingContent(true);
       try {
@@ -333,8 +331,7 @@ export default {
           //fill with new values
           this.state.features.push(...features);
         }
-        //In case of inverse selection
-        GUI.toggleSelection({ layer: this.state, inverse: opts.inverse });
+        GUI.toggleSelection(this.state, status);
       } catch(e) {
         console.warn(e);
       } finally {
@@ -410,7 +407,7 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
-      GUI.toggleSelection({ layer: this.state, feature });
+      GUI.toggleSelection(this.state, feature);
     },
 
     async resize() {

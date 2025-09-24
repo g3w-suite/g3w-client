@@ -2571,7 +2571,7 @@ export default new (class GUI extends Emitter {
               features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
           },
-          cbk: throttle((layer, feature) => { this.toggleSelection({ layer, feature }); })
+          cbk: throttle((layer, feature) => { this.toggleSelection(layer, feature); })
         },
 
         // permalink (click to copy)
@@ -3334,12 +3334,20 @@ export default new (class GUI extends Emitter {
    * 
    * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::addToSelection
    * 
-   * @param layer queried layer instance
-   * @param feature when provided, the feature to be toggled (otherwise, toggle all features)
+   * @param {*}                       layer   queried layer instance
+   * @param { * | 'inverse' | 'all' } feature the feature to be toggled (when ommitted: toggle all features)
+   * @param { 'inverse' | 'all' }     force   wheter to force a particular state (for that feature)
    * 
    * @since 4.1.0
    */
-  async toggleSelection({ layer, feature, inverse = false } = {}) { 
+  async toggleSelection(layer, feature, force) {
+
+    // "feature" param can be omitted → parse it as "force" param
+    if ('string' === typeof feature && undefined === force) {
+      force   = feature;
+      feature = undefined;
+    }
+
     const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer result content)
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.selection.active && layer.features.every(f => f.selected); //check also if all features are selected
@@ -3350,14 +3358,21 @@ export default new (class GUI extends Emitter {
       return console.warn('no features');
     }
 
-    /**@since 4.1.0 Handle inverse */
-    if (inverse) {
+    // inverse selection (all features)
+    if ('inverse' === force) {
       catalog_layer.inverseSelection();
       layer.features.forEach(f => {
         f.selected = !f.selected;
         // update OL selection layer (on map)
         if (f.selected && f.geometry && !catalog_layer.getSelection().features[f.id]) {
-          catalog_layer.makeSelectable(f.id, f);
+          const feat = new ol.Feature(f.geometry instanceof ol.geom.Geometry ? f.geometry : (new ol.format.GeoJSON()).readGeometry(f.geometry));
+          feat.setId(`${this.getId()}_${f.id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
+          feat.set(G3W_FID, f.get(G3W_FID) ?? `${f.id}`); // ensure `G3W_FID` is always set
+          Object.entries(f.attributes).forEach(([a, v]) => feat.set(a, v));
+          catalog_layer.state.selection.features[f.id] = catalog_layer.state.selection.features[f.id] || {
+            feature:  feat,
+            selected: true
+          };
         }
         this.defaultsLayers.selectionLayer.getSource()[f.selected ? 'addFeature' : 'removeFeature'](catalog_layer.getSelection().features[f.id].feature);
         
@@ -3456,7 +3471,14 @@ export default new (class GUI extends Emitter {
       const is_selected = catalog_layer.state.filter.active || catalog_layer.isSelected(fid);
       // update OL selection layer (on map)
       if (!is_selected && features[i]?.geometry && !catalog_layer.getSelection().features[fid]) {
-        catalog_layer.makeSelectable(fid, features[i]);
+        const f = new ol.Feature(features[i].geometry instanceof ol.geom.Geometry ? features[i].geometry : (new ol.format.GeoJSON()).readGeometry(features[i].geometry));
+        f.setId(`${this.getId()}_${fid}`);          // see: #777, prevent ID collision when selecting features from multiple layers
+        f.set(G3W_FID, f.get(G3W_FID) ?? `${fid}`); // ensure `G3W_FID` is always set
+        Object.entries(features[i].attributes).forEach(([a, v]) => f.set(a, v));
+        catalog_layer.state.selection.features[fid] = catalog_layer.state.selection.features[fid] || {
+          feature:  f,
+          selected: true
+        };
       }
       // exclude / remove
       if ((feature && is_selected) || (!feature && toggled)) {

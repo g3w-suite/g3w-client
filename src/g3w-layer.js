@@ -2415,24 +2415,6 @@ export class Layer extends Emitter {
   }
 
   /**
-   * Create a new OL feature and store into current `state.selection.features`
-   * 
-   * [LAYER SELECTION] ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
-   *
-   * @since 4.1.0
-   */
-  makeSelectable(id, feature, selected = true) {
-    const f = new ol.Feature(feature.geometry instanceof ol.geom.Geometry ? feature.geometry : (new ol.format.GeoJSON()).readGeometry(feature.geometry));
-    f.setId(`${this.getId()}_${id}`);          // see: #777, prevent ID collision when selecting features from multiple layers
-    f.set(G3W_FID, f.get(G3W_FID) ?? `${id}`); // ensure `G3W_FID` is always set
-    Object.entries(feature.attributes).forEach(([a, v]) => f.set(a, v));
-    this.state.selection.features[id] = this.state.selection.features[id] || {
-      feature:  f,
-      selected, /** @since 3.9.9 */
-    };
-  }
-
-  /**
    * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
    *
    * Set layer legend item `checked` state (TOC)
