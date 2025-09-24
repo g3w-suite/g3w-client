@@ -41,7 +41,7 @@
         :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip    = "'Invert Selection'"
         data-placement = "right"
-        @click.stop    = "setSelection('inverse')"
+        @click.stop    = "getData({ status: 'inverse' })"
       ></div>
 
       <!-- TOGGLE FILTER -->
@@ -70,7 +70,7 @@
         </tr>
         <tr>
           <th v-disabled       = "disableSelectAll">
-            <label @click.stop = "setSelection('all')">
+            <label @click.stop = "getData({ status: 'all' })">
               <input type = "checkbox" :checked = "all" />
             </label>
           </th>
@@ -302,30 +302,6 @@ export default {
     },
 
     /**
-     * @param {'all' | 'inverse' } status whether to select all/inverse features
-     */
-    async setSelection(status) {
-      GUI.disableContent(true);
-      GUI.setLoadingContent(true);
-      try {
-        const loaded_features = [...this.state.features];
-        // fetch features from server in case not all feature are loaded
-        if (this.state.allfeatures > this.state.featurescount) {
-          await this.getData();
-        }
-        //
-        const features = this.state.features.concat(loaded_features.filter(({id}) => !this.state.features.find(f => id == f.id)));
-        GUI.toggleSelection(this.state, status);
-        this.all = features.every(f => f.selected);
-      } catch(e) {
-        console.warn(e);
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
-      }
-    },
-
-    /**
      * Highlight or zoom to feature
      * 
      * @param {*} feature
@@ -442,6 +418,7 @@ export default {
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = [],
       search    = { value: null },
+      status    = null, //@since 4.0.1
     } = {}) {
       GUI.setLoadingContent(true);
       GUI.disableContent(true);
@@ -491,7 +468,13 @@ export default {
             geometry:   f.geometry
           }))
         )
-        
+         
+        if (status) {
+          GUI.toggleSelection(this.state, status);
+        }
+
+        this.all = this.state.features.every(f => f.selected);
+      
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
           recordsFiltered: data.count,
