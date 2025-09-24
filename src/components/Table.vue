@@ -234,7 +234,7 @@ export default {
      * @since 4.0.0
      */
     show_on_active_filter() {
-      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
+      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__')));
     },
 
     current_layout() {
@@ -329,10 +329,13 @@ export default {
     async inverseSelection() {
       // get all features
       if (!this.getAll) {
-        await this.getFeatures()
+        await this.getFeatures({ formatter: 1 })
       }
+      //invert select attribute from current loaded features
       this.state.features.forEach(f => f.selected = !f.selected);
+      //Invert selection
       this.layer.invertSelectionFids();
+      //set state of all features on table
       this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
     },
 
@@ -349,7 +352,7 @@ export default {
 
       // get all features when any kind of filter is unset
       if (!filter && this.state.selectAll && !this.getAll) {
-        await this.getFeatures(); 
+        await this.getFeatures({ formatter: 1 }); 
       }
 
       // no filter
@@ -364,11 +367,10 @@ export default {
         this.state.selectAll = true;                                                             // force selectAll
         this.state.features.splice(0);                                                           // reset features
         await this.$nextTick();                                                                  // wait for DOM changes
-        (await this.getFeatures({ field: this.search.field }) || [])
+        (await this.getFeatures({ field: this.search.field, formatter: 1 }) || [])
           .forEach(f => {
-            const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
             f.selected = this.state.selectAll;
-            if (geometry) {
+            if (f.geometry) {
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
             }
             this.layer.includeSelectionFid(f.id);
@@ -376,7 +378,7 @@ export default {
               id:         f.id,
               selected:   f.selected,                                                            // whether filter token comes from a pagination
               attributes: f.attributes || f.properties,
-              geometry
+              geometry  : f.geometry
           });
         })
       }
@@ -471,8 +473,8 @@ export default {
      */
     select(feature) {
       feature.selected      = !feature.selected;                                                // inverse selected feature
-      this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
-      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
+      this.state.selectAll  = this.state.features.every(f => f.selected); 
+      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](`${feature.id}`); //string
       this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
     },
 
@@ -581,31 +583,24 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
+            f.selected = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id)
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
-            
             if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = this.state.selectAll;
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-              if (f.selected) {
-                this.layer.includeSelectionFid(f.id)
-              };
-            }
-
-            if (has_geometry && this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = true;
+              if (f.selected) { this.layer.includeSelectionFid(f.id) };
             }
 
             return {
               id:         f.id,
-              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id),
+              selected:   f.selected,
               attributes: f.attributes || f.properties,
-              geometry:   this.layer.isGeoLayer() && f.geometry || undefined
+              geometry:   has_geometry && f.geometry || undefined
             };
           })
         );
 
         this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
+        this.state.selectAll  = this.layer.state.filter.active || this.layer.state.selectionFids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
 
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),

@@ -1496,11 +1496,12 @@ class Layer extends G3WObject {
   invertSelectionFids() {
     const selection = this.state.selectionFids;
 
-    /** @TODO add description */
+    /** In case selection set has EXCLUDE string, just remove it and ids are already selection */
     if (selection.has(SELECTION.EXCLUDE))  { selection.delete(SELECTION.EXCLUDE); }
+    // In case of all features selected, need to remove ALL, and size of selection is 0 (no selection features)
     else if (selection.has(SELECTION.ALL)) { selection.delete(SELECTION.ALL); }
+    //In case there are some feature id selected, just add EXCLUDE to exclude current selection fids
     else if (selection.size > 0)           { selection.add(SELECTION.EXCLUDE); }
-
     // invert selection (state)
     if (this.isGeoLayer()) {
       const map = GUI.getService('map');
@@ -2731,6 +2732,10 @@ class Layer extends G3WObject {
   addOlSelectionFeature({ id, feature: feat } = {}) {
     //create a new ol feature
     const feature = new ol.Feature(feat.geometry);
+    //@since 4.0.2 In case of no G3W_FID attribute, need to add it to selection features to sync with content result
+    if (undefined === feat.attributes[G3W_FID]) {
+      feat.attributes[G3W_FID] = id; //add id as G3W_FID attribute
+    }
     feature.setId(`${this.getId()}_${id}`); // see: #777, prevent ID collision when selecting features from multiple layers
     Object.entries(feat.attributes).forEach(([a, v]) => feature.set(a, v));
     this.state.ol_selection[id] = this.state.ol_selection[id] || {

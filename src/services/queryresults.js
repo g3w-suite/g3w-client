@@ -456,7 +456,7 @@ export default new (class QueryResultsService extends G3WObject {
             id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
             attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
             geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.state.selection.active)}, //@since 3.11.8 check if autofilter is set
+            selection:  { selected: !external && (!!queryResponse.query.autofilter || layer.hasSelectionFid((f instanceof ol.Feature ? f.getId() : f.id)))}, //@since 3.11.8 check if autofilter is set
             show:       true,
           })),
           hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -845,10 +845,8 @@ export default new (class QueryResultsService extends G3WObject {
             }
             const _layer                = getCatalogLayerById(layer.id);
             const fid                   = feature.attributes[G3W_FID] || feature.id;
-            const selected              = layer.external ? feature.selection.selected : (_layer.state.filter.active || _layer.hasSelectionFid(fid));
-            action.state.toggled[index] = selected;
-            layer.selection.active      = (0 === index || layer.selection.active) && selected;
-            if (_layer && selected && !_layer.hasSelectionFid(fid)) {
+            action.state.toggled[index] = feature.selection.selected;
+            if (_layer && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
               _layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
               _layer.includeSelectionFid(fid, false);
             }
