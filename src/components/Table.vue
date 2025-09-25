@@ -55,7 +55,7 @@
           </th>
         </tr>
       </thead>
-      <tbody ref = "table_body" @mouseleave = "highlight()">
+      <tbody @mouseleave = "highlight()">
         <tr
           v-for       = "(feature, i) in state.features" :key = "feature.id"
           role        = "row"
@@ -151,7 +151,9 @@
       <!-- PAGINATION BUTTONS -->
       <div style="margin-left: auto;">
         <button @click="changePage(-1)" class="btn">«</button>
-        <span style="padding: 6px 12px;">{{ search.page }}</span>
+        <select v-model="search.page" style="padding: 5px 12px;appearance: none;border: 0;text-align: center;border-radius: 3px;">
+          <option v-for="p in 10" :selected="p == search.page">{{ p }}</option>
+        </select>
         <button @click="changePage(+1)" class="btn">»</button>
       </div>
 
