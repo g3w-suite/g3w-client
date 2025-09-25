@@ -486,7 +486,7 @@ export default {
     async getData({
       ordering  = 0,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-      columns   = [],
+      columns   = {},
       search    = { value: null },
       page      = 1,
     } = {}) {
@@ -505,7 +505,7 @@ export default {
       }
 
       this.search = {
-        field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
+        field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
         page, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
@@ -622,7 +622,7 @@ export default {
     await this.$nextTick();
 
     let resolve;              // resolve data from server
-    const filterColumns = {}; // store columns index value search
+    const columns = {}; // store columns index value search
 
     try {
       const data = await this.getData();
@@ -665,15 +665,8 @@ export default {
     // });
 
     this.changeColumn = debounce(async (e, i) => {
-      const value = e.target.value.trim();
-      // table.one('draw', async() => {
-        filterColumns[i]      = value;
-        this.disableSelectAll = 0 === this.state.features.length;
-        this.filter           = Object.values(filterColumns).find(f => f)
-          ? await (new Promise(res => resolve = res))
-          : [];
-      // })
-      // table.columns(i).search(value).draw();
+      columns[i]      = e.target.value.trim();       
+      this.getData({ columns });  
     });
 
     // move "table_info" and "table_search" before header action tools
