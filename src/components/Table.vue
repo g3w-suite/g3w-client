@@ -33,10 +33,10 @@
         <tr>
           <th style="pointer-events: none;"></th>
           <th
-            v-for  = "(header, i) in state.headers"
-            v-if   = "i > 0"
-            @click = "sortColumn(i)"
-            :class = "{ 'asc':  i === sorted_asc, 'desc': i === sorted_asc }"
+            v-for       = "(header, i) in state.headers"
+            v-if        = "i > 0"
+            @click.stop = "sortColumn(i)"
+            :class = "{ 'asc':  1 === ordering[i], 'desc': -1 === ordering[i] }"
           >{{ header.label }}</th>
         </tr>
         <tr>
@@ -208,7 +208,8 @@ export default {
   },
 
   data() {
-    const layer = getCatalogLayerById(this.$options.layerId);
+    const layer   = getCatalogLayerById(this.$options.layerId);
+    const headers = [null, ...layer.getTableHeaders()]; // first value is `null` for DataTable purpose (used to add a custom input selector)
     return {
       layer,
       state: {
@@ -216,7 +217,7 @@ export default {
         external:      false,         //@since 4.1.0 aligned with query state layer
         selection:     layer.state.selection,//@since 4.1.0 aligned with query state layer
         features:      [],
-        headers:       [null, ...layer.getTableHeaders()], // first value is `null` for DataTable purpose (used to add a custom input selector)
+        headers,      
         geometry:      true,
         allfeatures:   0,
         nofilteredrow: false,
@@ -244,8 +245,7 @@ export default {
       disableSelectAll:    false,
       all:                 false, //@since all features loaded are selected
       PAGELENGTHS,
-      sorted_asc:   1,
-      sorted_desc: -1,
+      ordering:            Array(headers.length).fill(1),
     };
   },
   
@@ -438,14 +438,8 @@ export default {
      * @param { number } index column index
      */
     sortColumn(index) {
-      if (index === this.sorted_asc) {
-        this.sorted_desc = index;
-        this.sorted_asc = undefined; 
-      } else if (index === this.sorted_desc) {
-        this.sorted_desc = undefined;
-        this.sorted_asc  = index; 
-      }
-      this.reload();
+      this.ordering[index] = -1 * this.ordering[index];
+      this.reload({ ordering: index });
     },
 
     /**
@@ -488,7 +482,7 @@ export default {
      */
     async getData({
       start     = 0,
-      order     = [],
+      ordering  = 1,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = [],
       search    = { value: null },
@@ -507,17 +501,13 @@ export default {
         };
       }
 
-      if (0 === order.length) {
-        order.push({ column: 1, dir: 'asc', });
-      }
-
       this.search = {
         field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
         page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
         in_bbox:   this.state.geolayer.in_bbox,
-        ordering:  ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name,
+        ordering:  (1 === this.ordering[ordering] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
       };
 
@@ -577,9 +567,9 @@ export default {
      * 
      * @since 4.1.0
      */
-    async reload() {
+    async reload(opts = {}) {
       try {
-        const data = await this.getData({ length });
+        const data = await this.getData(opts);
         this.disableSelectAll = 0 === this.state.features.length;
       } catch (e) {
         console.warn(e);
