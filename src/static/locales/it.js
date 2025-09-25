@@ -77,6 +77,7 @@ export default {
   'Show _MENU_ values per page': "Mostra _MENU_ valori per pagina",
   '_TOTAL_ entries': "_TOTAL_ elementi",
   'entries': "elementi",
+  ' of ': ' di ',
   'values per page': "valori per pagina",
   'No matching records found': "Nessun risultato trovato",
   '(filtered from _MAX_ total records)': "(Filtrati da _MAX_ total righe)",

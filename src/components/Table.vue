@@ -153,7 +153,12 @@
       <!-- PAGINATION BUTTONS -->
       <div style = "margin-left: auto;" >
         <button @click.stop = "search.page-= 1" class="btn" v-disabled = "1 === search.page">«</button>
-        <select v-model = "search.page" style = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;">
+        <select
+          v-model        = "search.page"
+          style          = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
+          :title         = "search.page + $t(' of ') + pages"
+          data-placement = "top"
+        >
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
         </select>
         <button @click.stop = "search.page+= 1" class="btn" v-disabled = "pages === search.page">»</button>
@@ -227,7 +232,6 @@ export default {
       has_map:             true,
       async_highlight:     () => {},
       firstCall:           true,
-      map_bbox:            { key: null, cb: null },
       disableSelectAll:    false,
       all:                 false, //@since all features loaded are selected
       PAGELENGTHS,
@@ -324,25 +328,24 @@ export default {
       const is_active = this.state.geolayer.active;
 
       if (is_active) {
-        this.map_bbox.cb = () => {
+        this.onMoveEnd = () => {
           this.state.geolayer.in_bbox = this.state.geolayer.active ? GUI.getMapBBOX().join(',') : undefined;
           this.reload();
         };
       }
 
       if (is_active) {
-        this.map_bbox.key = GUI.getMap().on('moveend', this.map_bbox.cb);
+        GUI.getMap().on('moveend', this.onMoveEnd);
       }
 
-      if (this.map_bbox.cb) {
-        this.map_bbox.cb();
+      if (onMoveEnd) {
+        this.onMoveEnd();
       }
 
       // reset bbox event handler
       if (!is_active) {
-        ol.Observable.unByKey(this.map_bbox.key);
-        this.map_bbox.key = null;
-        this.map_bbox.cb  = null;
+        GUI.getMap().un('moveend', onMoveEnd);
+        this.onMoveEnd = null;
       }
     },
 
@@ -687,9 +690,10 @@ export default {
     this.layer.off('filtertokenchange', this.reload);
 
     // reset bbox event handler
-    ol.Observable.unByKey(this.map_bbox.key);
-    this.map_bbox.key = null;
-    this.map_bbox.cb  = null;
+    if (this.onMoveEnd) {
+      GUI.getMap().un('moveend', this.onMoveEnd);
+      this.onMoveEnd = null;
+    }
 
     this.highlight();
 
