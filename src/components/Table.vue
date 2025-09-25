@@ -147,11 +147,11 @@
 
       <!-- PAGE SIZE -->
       <label style="margin-top: 5px;">{{ $t('show') }} <select style = "border: 1px solid #aaa;" v-model = "search.page_size">
-        <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
+        <option v-for = "l in PAGELENGTHS" :value = "l" :hidden="l > state.allfeatures">{{ l }}</option>
       </select> {{ $t('values per page') }}</label>
 
       <!-- PAGINATION BUTTONS -->
-      <div style = "margin-left: auto;" v-if = "pages > 1" >
+      <div style = "margin-left: auto;" >
         <button @click.stop = "search.page-= 1" class="btn" v-disabled = "1 === search.page">«</button>
         <select v-model = "search.page" style = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;">
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
