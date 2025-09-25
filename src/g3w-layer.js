@@ -1392,20 +1392,13 @@ export class Layer extends Emitter {
       response = await this.#getFeaturesJSON();
     }
 
-    const features          = response.data.features && response.data.features || [];
-    const layerAttributes   = this.getAttributes() || [];
-    const featureAttributes = (features.length ? features[0].properties : []);
-
     return {
-      features,
-      headers: (layerAttributes && layerAttributes.length > 0)
-      ? layerAttributes.filter(attr => Object.keys(featureAttributes).indexOf(attr.name) > -1)
-      : Object
-          .keys(featureAttributes)
-          .filter(name => -1 === GEOMETRY_FIELDS.indexOf(name))
-          .map(name => ({ name, label: name })),
-      title: this.getTitle(),
-      count: response.count
+      title:    this.getTitle(),
+      count:    response.count,
+      features: response?.data?.features || [],
+      headers: this.getAttributes()?.length
+        ? this.getAttributes().filter(attr => Object.keys(response?.data?.features?.at(0)?.properties || []).indexOf(attr.name) > -1)
+        : Object.keys(response?.data?.features?.at(0)?.properties || []).filter(name => -1 === GEOMETRY_FIELDS.indexOf(name)).map(name => ({ name, label: name })),
     };
   }
 
@@ -1989,7 +1982,6 @@ export class Layer extends Emitter {
       data: response.vector.data,
       count: response.vector.count
     };
-
   }
 
   async #getFeaturesJSON(opts = {}) {
