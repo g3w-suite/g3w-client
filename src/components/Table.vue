@@ -270,6 +270,14 @@ export default {
         console.warn(e);
       }
     },
+    async 'search.page'(page) {
+      try {
+        const data = await this.getData({ page });
+        this.disableSelectAll = 0 === this.state.features.length;
+      } catch (e) {
+        console.warn(e);
+      }
+    },
   },
 
   methods: {
@@ -481,11 +489,11 @@ export default {
      * @returns {Promise<{{ data: [], recordsTotal: number, recordsFiltered: number }}>}
      */
     async getData({
-      start     = 0,
       ordering  = 0,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = [],
       search    = { value: null },
+      page      = 1,
     } = {}) {
       GUI.setLoadingContent(true);
       GUI.disableContent(true);
@@ -503,7 +511,7 @@ export default {
 
       this.search = {
         field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
-        page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
+        page, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
         in_bbox:   this.state.geolayer.in_bbox,
