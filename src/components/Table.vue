@@ -767,11 +767,20 @@ export default {
     color: #FFF !important;
     background-color: var(--skin-color);
   }
-  #layer_attribute_table {
+
+  table {
     width: 100%;
     user-select: none;
+    display: block;
   }
-  #layer_attribute_table > tbody > tr:not(.selected):hover {
+
+  thead {
+    background-color: #FFF;
+    position: sticky;
+    top: 0;
+  }
+
+  tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
   }
 
@@ -783,11 +792,11 @@ export default {
     cursor: pointer;
   }
 
-  th a.asc::before {
+  th.asc::before {
     content: "▵";
   }
 
-  th a.desc::before {
+  th.desc::before {
     content: "▿";
   }
 </style>
