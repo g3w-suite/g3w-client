@@ -507,7 +507,7 @@ export default {
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
         in_bbox:   this.state.geolayer.in_bbox,
-        ordering:  ('asc' === this.ordering[0] ? '' : '-') + this.state.headers[ordering].name,
+        ordering:  ('asc' === this.ordering[1] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
       };
 
