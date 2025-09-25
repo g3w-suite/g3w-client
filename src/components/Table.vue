@@ -41,7 +41,7 @@
         :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip    = "'Invert Selection'"
         data-placement = "right"
-        @click.stop    = "getData({ status: 'inverse' })"
+        @click.stop    = "setSelection('inverse')"
       ></div>
 
       <!-- TOGGLE FILTER -->
@@ -70,7 +70,7 @@
         </tr>
         <tr>
           <th v-disabled       = "disableSelectAll">
-            <label @click.stop = "getData({ status: 'all' })">
+            <label @click.stop = "setSelection('all')">
               <input type = "checkbox" :checked = "all" />
             </label>
           </th>
@@ -391,6 +391,33 @@ export default {
     },
 
     /**
+     * @param {'all' | 'inverse' } status whether to select all/inverse features
+     */
+    async setSelection(status) {
+      GUI.disableContent(true);
+      GUI.setLoadingContent(true);
+      try {        
+        const features = [
+          ...this.state.features,
+          ...((await this.layer.getDataTable({ formatter: 1, field: this.search.field }))?.features || [])
+            .filter(f => !this.state.features.find(({ id }) => id === f.id)).map(f => ({
+              id:         f.id,
+              selected:   this.layer.state.filter.active || this.all,
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry
+            }))
+        ]
+        await GUI.toggleSelection({ ...this.state, features }, status);
+        this.all = features.every(f => f.selected);
+      } catch(e) {
+        console.warn(e);
+      } finally {
+        GUI.setLoadingContent(false);
+        GUI.disableContent(false);
+      }
+    },
+
+    /**
      * Get DataTable layer
      * 
      * @param data.start
@@ -407,7 +434,6 @@ export default {
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = [],
       search    = { value: null },
-      status    = null, //@since 4.0.1
     } = {}) {
       GUI.setLoadingContent(true);
       GUI.disableContent(true);
@@ -423,18 +449,12 @@ export default {
         };
       }
 
-      // reset features
-      this.state.features.splice(0);
-
-      await this.$nextTick();
-
-
       if (0 === order.length) {
         order.push({ column: 1, dir: 'asc', });
       }
 
       this.search = {
-        field:     status ? this.search.field : columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
+        field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
         page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
@@ -444,25 +464,30 @@ export default {
       };
 
       try {
-        const data = await this.layer.getDataTable(this.search);
+        const data     = await this.layer.getDataTable(this.search);
+        const features = (data.features || []).map(f => ({
+          id:         f.id,
+          selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
+          attributes: f.attributes || f.properties,
+          geometry:   f.geometry
+        }))
 
         this.state.allfeatures   = data.count;
-        this.state.featurescount = (data.features || []).length;
-        // add features
-        this.state.features.push(
-          ...(data.features || []).map(f => ({
-            id:         f.id,
-            selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
-            attributes: f.attributes || f.properties,
-            geometry:   f.geometry
-          }))
-        )
-         
-        if (status) {
-          await GUI.toggleSelection(this.state, status);
-        }
+        this.state.featurescount = (features || []).length;
 
-        this.all = this.state.features.every(f => f.selected);
+        // reset features
+        this.state.features.splice(0);
+
+        await this.$nextTick();
+        // add features
+        this.state.features.push(...features);
+        
+        //In case of no filter and get all features
+        if (!this.search.field && this.state.allfeatures === this.state.featurescount) {
+          //set selected all
+          this.all = this.state.features.every(f => f.selected);
+        }
+        
       
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),

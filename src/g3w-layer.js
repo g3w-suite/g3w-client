@@ -1103,9 +1103,9 @@ export class Layer extends Emitter {
 
     // update selection (state)
     if (this.isGeoLayer() && this.state.selection.features[fid]?.feature) {
-      this.state.selection.features[fid].selected          = !is_excluded;
+      this.state.selection.features[fid].selected          = !(selection.has('__EXCLUDE__') && selection.has(fid));
       this.state.selection.features[fid].feature.__layerId = this.getId();
-      if (is_excluded) {
+      if (!this.state.selection.features[fid].selected) {
         GUI.defaultsLayers.selectionLayer.getSource().removeFeature(this.state.selection.features[fid].feature);
       } else if (!this.state.filter.active) { //in case of no filter is active
         GUI.defaultsLayers.selectionLayer.getSource().addFeature(this.state.selection.features[fid].feature);
