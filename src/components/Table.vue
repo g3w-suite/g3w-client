@@ -51,7 +51,7 @@
         :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip    = "'Enable/Disable filter'"
         data-placement = "right"
-        @click.stop    = "toggleToken(layer)"
+        @click.stop    = "layer.toggleToken()"
       ></div>
 
     </div>
@@ -231,21 +231,11 @@ export default {
   methods: {
 
     /**
-     * @param layer
-     * 
-     * @since 3.11.0
-     */
-    toggleToken(layer) {
-      layer.toggleToken();
-    },
-
-    /**
      * @param feature
      * 
      * @since 3.10.0
      */
     editFeature(feature) {
-      $('.tooltip').remove();
       GUI.editFeature({ layer: { id: this.layer.getId() }, feature })
     },
 
@@ -255,7 +245,6 @@ export default {
      * @since 3.10.0
      */
      async openForm(feature) {
-      $('.tooltip').remove();
       try {
         await GUI.getData('search:fids', {
           inputs: {
@@ -503,9 +492,9 @@ export default {
     /**
      * Reload data from server
      * 
-     * @since 3.10.0
+     * @since 4.1.0
      */
-    filterChangeHandler() {
+    onTokenChange() {
       $(this.$refs.attribute_table).DataTable().ajax.reload();
     },
 
@@ -527,7 +516,7 @@ export default {
 
     GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
-    this.layer.on('filtertokenchange', this.filterChangeHandler);
+    this.layer.on('filtertokenchange', this.onTokenChange);
 
     GUI.closeSideBar();
 
@@ -632,7 +621,7 @@ export default {
     this.last_map_control = null;
 
     this.layer.off('unselectionall',    this.unSelectAll);
-    this.layer.off('filtertokenchange', this.filterChangeHandler);
+    this.layer.off('filtertokenchange', this.onTokenChange);
 
     // reset bbox event handler
     ol.Observable.unByKey(this.map_bbox.key);

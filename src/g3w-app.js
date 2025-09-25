@@ -3163,7 +3163,7 @@ export default new (class GUI extends Emitter {
    * 
    * @param {*}                       layer   queried layer instance
    * @param { * | 'inverse' | 'all' } feature the feature or the status to be toggled (when ommitted: toggle all features)
-   * @param { 'inverse' | 'all' }     force   wheter to force a particular state (for that feature)
+   * @param { 'inverse' | 'all' }     force   whether to force a particular state (for that feature)
    * 
    * @since 4.1.0
    */
