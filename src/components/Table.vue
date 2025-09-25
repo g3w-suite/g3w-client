@@ -144,16 +144,16 @@
 
       <!-- PAGE SIZE -->
       <label style="margin-top: 5px;">{{ $t('show') }} <select style="border: 1px solid #aaa;" v-model = "search.page_size">
-        <option v-for="l in PAGELENGTHS" :value="l">{{ l }}</option>
+        <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
       </select> {{ $t('values per page') }}</label>
 
       <!-- PAGINATION BUTTONS -->
       <div style="margin-left: auto;">
-        <button @click="changePage(-1)" class="btn">«</button>
-        <select v-model="search.page" style="padding: 5px 12px;appearance: none;border: 0;text-align: center;border-radius: 3px;">
+        <button @click.stop = "changePage(-1)" class="btn" v-disabled = "1 === search.page">«</button>
+        <select v-model = "search.page" style = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px;">
           <option v-for="p in 10" :selected="p == search.page">{{ p }}</option>
         </select>
-        <button @click="changePage(+1)" class="btn">»</button>
+        <button @click.stop = "changePage(+1)" class="btn">»</button>
       </div>
 
     </div>
@@ -223,13 +223,21 @@ export default {
       filter:              [],
       has_map:             true,
       async_highlight:     () => {},
-      search:              {},
       firstCall:           true,
       map_bbox:            { key: null, cb: null },
       disableSelectAll:    false,
       all:                 false, //@since all features loaded are selected
       PAGELENGTHS,
       ordering:            [0, 'asc'],
+      search: {
+        field:     undefined,
+        page:      1, // get current page
+        page_size: layer.getAttributeTablePageLength() || PAGELENGTHS[1],
+        search:    null,
+        in_bbox:   undefined,
+        ordering:  headers[0].name,
+        formatter: 1,
+      }
     };
   },
   
@@ -415,7 +423,7 @@ export default {
      * @since 4.1.0
      */
     changePage(dir) {
-      this.getData({ start: this.search.page_size / (this.search.page + dir) });
+      this.getData({ start: this.sate.search.page_size / (this.state.search.page + dir) });
     },
 
     /**
@@ -440,7 +448,7 @@ export default {
       try {        
         const features = [
           ...this.state.features,
-          ...((await this.layer.getDataTable({ formatter: 1, field: this.search.field }))?.features || [])
+          ...((await this.layer.getDataTable({ formatter: 1, field: this.state.search.field }))?.features || [])
             .filter(f => !this.state.features.find(({ id }) => id === f.id)).map(f => ({
               id:         f.id,
               selected:   this.layer.state.filter.active || this.all,
@@ -490,7 +498,7 @@ export default {
         };
       }
 
-      this.search = {
+      this.state.search = {
         field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
         page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
         page_size: length,
@@ -501,7 +509,7 @@ export default {
       };
 
       try {
-        const data     = await this.layer.getDataTable(this.search);
+        const data     = await this.layer.getDataTable(this.state.search);
         const features = (data.features || []).map(f => ({
           id:         f.id,
           selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
@@ -517,7 +525,7 @@ export default {
         this.state.features.push(...features);
         
         //In case of no filter and get all features
-        if (!this.search.field && this.state.allfeatures === this.state.featurescount) {
+        if (!this.state.search.field && this.state.allfeatures === this.state.featurescount) {
           //set selected all
           this.all = this.state.features.every(f => f.selected);
         }
@@ -602,7 +610,7 @@ export default {
     // un-toggle map controls
     this.last_map_control = GUI.getMapControls().find(c => c.control.isToggled && c.control.isToggled());
     if (this.last_map_control) {
-        this.last_map_control.control.toggle();
+      this.last_map_control.control.toggle();
     }
 
     await this.$nextTick();
