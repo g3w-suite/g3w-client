@@ -27,7 +27,6 @@
       v-if   = "state.headers.length"
       ref    = "attribute_table"
       id     = "layer_attribute_table"
-      class  = "table table-striped"
     >
       <thead>
         <tr>
@@ -109,7 +108,7 @@
     <div v-else id = "noheaders" v-t = "'No data'"></div>
 
     <!-- TABLE TOOLBAR -->
-    <div style="position: sticky; bottom: 0; background: white; display: flex; gap: 1ch;">
+    <div style="display: flex; gap: 1ch; margin-top: 1ch;">
 
       <div
         id    = "g3w-table-toolbar"
@@ -525,9 +524,6 @@ export default {
 
         // reset features
         this.state.features.splice(0);
-
-        await this.$nextTick();
-        // add features
         this.state.features.push(...features);
         
         //In case of no filter and get all features
@@ -535,8 +531,7 @@ export default {
           //set selected all
           this.all = this.state.features.every(f => f.selected);
         }
-        
-      
+
         return {
           data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
           recordsFiltered: data.count,
@@ -578,11 +573,6 @@ export default {
 
   },
 
-  /**
-   * TableService Class
-   * 
-   * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
-   */
   async created() {
 
     this.currentFilter = null
@@ -682,7 +672,7 @@ export default {
       // table.columns(i).search(value).draw();
     });
 
-    // move "dataTables_info" and "dataTables_filter" before header action tools
+    // move "table_info" and "table_search" before header action tools
     document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
     document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
   },
@@ -721,38 +711,40 @@ export default {
 };
 </script>
 
-<style>
-#open_attribute_table {
-  margin-top: 5px;
-  overflow-x: scroll;
-}
-
-#g3w-table-toolbar {
-  border: 1px solid #d2d6de;
-}
-</style>
-
 <style scoped>
   .geometry {
     cursor: pointer
   }
+
   #noheaders {
-    background-color: #ffffff;
+    background-color: #fff;
     font-weight: bold;
     margin-top: 10px;
   }
-  input.form-control.column-search::placeholder{
+
+  input.form-control.column-search::placeholder {
     font-weight: normal;
     font-style: italic;
   }
+
   input.form-control.column-search {
     height: 25px;
     min-width: 40px;
     padding: 2px;
   }
+
+  #open_attribute_table {
+    margin-top: 5px;
+  }
+
   #open_attribute_table .action-button {
     padding: 5px;
   }
+
+  #g3w-table-toolbar {
+    border: 1px solid #d2d6de;
+  }
+
   #g3w-table-toolbar .action-button.toggled {
     color: #FFF !important;
     background-color: var(--skin-color);
@@ -762,12 +754,14 @@ export default {
     width: 100%;
     user-select: none;
     display: block;
+    height: calc(100% - 25px);
+    overflow: auto;
   }
 
   thead {
-    background-color: #FFF;
     position: sticky;
     top: 0;
+    background-color: #fff;
   }
 
   tbody > tr:not(.selected):hover {
@@ -788,27 +782,5 @@ export default {
 
   th.desc::before {
     content: "▿";
-  }
-</style>
-
-<style>
-  #g3w-view-content .dataTables_filter {
-    margin-left: auto;
-    margin-right: 1ch;
-  }
-  #g3w-view-content .dataTables_info {
-    padding-left: .5ch;
-    font-weight: lighter;
-  }
-  #open_attribute_table .paginate_button {
-    background: transparent;
-    color: currentColor !important;
-    box-shadow: none;
-  }
-  #open_attribute_table .paginate_button.disabled {
-    opacity: 0.25;
-  }  
-  #open_attribute_table #layer_attribute_table_length {
-    padding-top: 5px;
   }
 </style>
