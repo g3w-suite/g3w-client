@@ -17,7 +17,7 @@
       ref          = "table_search"
       type         = "search"
       class        = "form-control search"
-      :placeholder = "$t('search')"
+      :placeholder = "$t('dosearch')"
       style        = "margin-left: auto !important; margin-right: 1ch;"
       @keyup       = "globalSearch"
     />
