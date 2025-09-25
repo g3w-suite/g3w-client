@@ -108,59 +108,43 @@
     <div v-else id = "noheaders" v-t = "'No data'"></div>
 
     <!-- TABLE TOOLBAR -->
-    <div style="display: flex; gap: 1ch; margin-top: 1ch;">
+    <div class="table-toolbar" style="display: flex; gap: 1ch; margin-top: 1ch;">
 
-      <div
-        id    = "g3w-table-toolbar"
-        ref   = "table_toolbar"
-        style = "display: flex; justify-content: space-between; padding: 1px;"
-      >
+      <!-- FETCH DATA FROM BBOX -->
+      <button
+        v-if            = "layer.isGeoLayer()"
+        v-disabled      = "state.geolayer.active && current_layout.rightpanel.height_100"
+        :class          = "['btn', state.geolayer.active ? 'toggled' : '' ]"
+        v-t-tooltip:top = "'Update results when map moves'"
+        @click.stop     = "getDataFromBBOX"
+      ><i class = "far fa-map"></i></button>
 
-        <!-- FETCH DATA FROM BBOX -->
-        <div
-          v-if           = "layer.isGeoLayer()"
-          class          = "skin-color action-button"
-          v-disabled     = "state.geolayer.active && current_layout.rightpanel.height_100"
-          :class         = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
-          v-t-tooltip    = "'Update results when map moves'"
-          data-placement = "right"
-          @click.stop    = "getDataFromBBOX"
-        ></div>
+      <!-- CLEAR SELECTION -->
+      <button
+        v-show          = "state.selection.active"
+        class           = "btn"
+        v-t-tooltip:top = "'Clear Selection'"
+        @click.stop     = "layer.clearSelectionFids()"
+      ><i class = "fas fa-broom"></i></button>
 
-        <!-- CLEAR SELECTION -->
-        <div
-          v-show         = "state.selection.active"
-          class          = "skin-color action-button"
-          :class         = "$fa('clear')"
-          v-t-tooltip    = "'Clear Selection'"
-          data-placement = "right"
-          @click.stop    = "layer.clearSelectionFids()"
-        ></div>
+      <!-- INVERSE SELECTION -->
+      <button
+        v-show          = "state.selection.active"
+        :class          = "[ 'btn', layer.state.filter.active ? 'g3w-disabled': '' ]"
+        v-t-tooltip:top = "'Invert Selection'"
+        @click.stop     = "setSelection('inverse')"
+      ><i class = "fas fa-exchange-alt"></i></button>
 
-        <!-- INVERSE SELECTION -->
-        <div
-          v-show         = "state.selection.active"
-          class          = "skin-color action-button"
-          :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
-          v-t-tooltip    = "'Invert Selection'"
-          data-placement = "right"
-          @click.stop    = "setSelection('inverse')"
-        ></div>
-
-        <!-- TOGGLE FILTER -->
-        <div
-          v-show         = "state.selection.active && show_on_active_filter"
-          class          = "skin-color action-button"
-          :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
-          v-t-tooltip    = "'Enable/Disable filter'"
-          data-placement = "right"
-          @click.stop    = "layer.toggleToken()"
-        ></div>
-
-      </div>
+      <!-- TOGGLE FILTER -->
+      <button
+        v-show          = "state.selection.active && show_on_active_filter"
+        :class          = "[ 'btn', layer.state.filter.active ? 'toggled' : '' ]"
+        v-t-tooltip:top = "'Enable/Disable filter'"
+        @click.stop     = "layer.toggleToken()"
+      ><i class = "fas fa-filter"></i></button>
 
       <!-- PAGE SIZE -->
-      <label>{{ $t('show') }} <select style="border: 1px solid #aaa;" v-model = "search.page_size">
+      <label style="margin-top: 5px;">{{ $t('show') }} <select style="border: 1px solid #aaa;" v-model = "search.page_size">
         <option v-for="l in PAGELENGTHS" :value="l">{{ l }}</option>
       </select> {{ $t('values per page') }}</label>
 
@@ -737,15 +721,11 @@ export default {
     margin-top: 5px;
   }
 
-  #open_attribute_table .action-button {
-    padding: 5px;
+  .action-button {
+    padding: 5px !important;
   }
 
-  #g3w-table-toolbar {
-    border: 1px solid #d2d6de;
-  }
-
-  #g3w-table-toolbar .action-button.toggled {
+  button.toggled {
     color: #FFF !important;
     background-color: var(--skin-color);
   }
