@@ -37,6 +37,7 @@
             :class         = "[i === ordering[0] ? ordering[1] : '' ]"
             :title         = "'sort by ' + header.name"
             data-placement = "top"
+            :style         = "{'width': `${100 / state.headers.length }%`}"
           >{{ header.label }}</th>
         </tr>
         <tr>
