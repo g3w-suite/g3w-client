@@ -155,10 +155,10 @@
       <div style = "margin-left: auto;" >
         <button @click.stop = "search.page = Number(search.page) - 1" class="btn" v-disabled = "1 == search.page">«</button>
         <select
-          v-model        = "search.page"
-          style          = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
-          :title         = "search.page + $t(' of ') + pages"
-          data-placement = "top"
+          v-model         = "search.page"
+          style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
+          v-t-tooltip:top = "search.page + $t(' of ') + pages"
+          data-placement  = "top"
         >
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
         </select>
