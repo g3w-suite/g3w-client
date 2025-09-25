@@ -764,6 +764,11 @@ export default {
     background-color: #fff;
   }
 
+  tbody > tr.selected {
+    box-shadow: inset 0 0 0 9999px rgb(13, 110, 253, .9);
+    color: #fff;
+  }
+
   tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
   }
