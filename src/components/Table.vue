@@ -32,9 +32,11 @@
         <tr>
           <th style="pointer-events: none;"></th>
           <th
-            v-for       = "(header, i) in state.headers"
-            @click.stop = "sortColumn(i)"
-            :class = "[i === ordering[0] ? ordering[1] : '' ]"
+            v-for          = "(header, i) in state.headers"
+            @click.stop    = "sortColumn(i)"
+            :class         = "[i === ordering[0] ? ordering[1] : '' ]"
+            :title         = "'sort by ' + header.name"
+            data-placement = "top"
           >{{ header.label }}</th>
         </tr>
         <tr>
@@ -45,11 +47,12 @@
           </th>
           <th v-for = "(header, i) in state.headers">
             <input
-              type         = "text"
-              class        = "form-control column-search"
-              @keyup       = "changeColumn($event, i)"
-              :placeholder = "header.name"
-              :title       = "'search by ' + header.name"
+              type           = "text"
+              class          = "form-control column-search"
+              @keyup         = "changeColumn($event, i)"
+              :placeholder   = "header.name"
+              :title         = "'search by ' + header.name"
+              data-placement = "bottom"
             />
           </th>
         </tr>
