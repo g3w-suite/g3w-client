@@ -146,7 +146,7 @@
       ><i class = "fas fa-filter"></i></button>
 
       <!-- PAGE SIZE -->
-      <label style="margin-top: 5px;">{{ $t('show') }} <select style="border: 1px solid #aaa;" v-model = "search.page_size">
+      <label style="margin-top: 5px;">{{ $t('show') }} <select style = "border: 1px solid #aaa;" v-model = "state.search.page_size">
         <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
       </select> {{ $t('values per page') }}</label>
 
@@ -235,7 +235,7 @@ export default {
       search: {
         field:     undefined,
         page:      1, // get current page
-        page_size: layer.getAttributeTablePageLength() || PAGELENGTHS[1],
+        page_size: PAGELENGTHS[1],
         search:    null,
         in_bbox:   undefined,
         ordering:  headers[0].name,
@@ -262,7 +262,7 @@ export default {
   },
 
   watch: {
-    async 'search.page_size'(length) {
+    async 'state.search.page_size'(length) {
       try {
         const data = await this.getData({ length });
         this.disableSelectAll = 0 === this.state.features.length;
@@ -426,7 +426,7 @@ export default {
      * @since 4.1.0
      */
     changePage(dir) {
-      this.getData({ start: this.sate.search.page_size / (this.state.search.page + dir) });
+      this.getData({ start: this.state.search.page_size / (this.state.search.page + dir) });
     },
 
     /**
