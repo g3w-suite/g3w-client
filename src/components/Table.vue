@@ -6,67 +6,38 @@
 <template>
   <div id = "open_attribute_table">
 
-    <!-- TABLE TOOLBAR -->
-    <!-- ORIGINAL SOURCE: src/components/TableToolBar.vue@3.9.7 -->
-    <div
-      ref   = "table_toolbar"
-      style = "display: flex; justify-content: space-between; padding: 1px;"
-    >
+    <!-- TOTAL ELEMENTS -->
+    <span
+      ref   = "table_info"
+      style = "margin-left: .5ch;"
+    >{{ state.allfeatures }} {{ $t('entries') }}</span>
 
-      <!-- FETCH DATA FROM BBOX -->
-      <div
-        v-if           = "layer.isGeoLayer()"
-        class          = "skin-color action-button"
-        v-disabled     = "state.geolayer.active && current_layout.rightpanel.height_100"
-        :class         = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
-        v-t-tooltip    = "'Update results when map moves'"
-        data-placement = "right"
-        @click.stop    = "getDataFromBBOX"
-      ></div>
-
-      <!-- CLEAR SELECTION -->
-      <div
-        v-show         = "state.selection.active"
-        class          = "skin-color action-button"
-        :class         = "$fa('clear')"
-        v-t-tooltip    = "'Clear Selection'"
-        data-placement = "right"
-        @click.stop    = "layer.clearSelectionFids()"
-      ></div>
-
-      <!-- INVERSE SELECTION -->
-      <div
-        v-show         = "state.selection.active"
-        class          = "skin-color action-button"
-        :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
-        v-t-tooltip    = "'Invert Selection'"
-        data-placement = "right"
-        @click.stop    = "setSelection('inverse')"
-      ></div>
-
-      <!-- TOGGLE FILTER -->
-      <div
-        v-show         = "state.selection.active && show_on_active_filter"
-        class          = "skin-color action-button"
-        :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
-        v-t-tooltip    = "'Enable/Disable filter'"
-        data-placement = "right"
-        @click.stop    = "layer.toggleToken()"
-      ></div>
-
-    </div>
+    <!-- GLOBAL SEARCH -->
+    <input
+      ref          = "table_search"
+      type         = "search"
+      class        = "form-control search"
+      :placeholder = "$t('search')"
+      style        = "margin-left: auto !important; margin-right: 1ch;"
+      @keyup       = "globalSearch"
+    />
 
     <!-- TABLE CONTENT -->
     <table
       v-if   = "state.headers.length"
       ref    = "attribute_table"
       id     = "layer_attribute_table"
-      class  = "table table-striped row-border compact nowrap"
+      class  = "table table-striped"
     >
       <thead>
         <tr>
-          <th></th>
-          <th v-for = "(header, i) in state.headers" v-if = "i > 0">{{ header.label }}</th>
+          <th style="pointer-events: none;"></th>
+          <th
+            v-for  = "(header, i) in state.headers"
+            v-if   = "i > 0"
+            @click = "sortColumn(i)"
+            :class = "{ 'asc':  i === sorted_asc, 'desc': i === sorted_asc }"
+          >{{ header.label }}</th>
         </tr>
         <tr>
           <th v-disabled       = "disableSelectAll">
@@ -85,9 +56,6 @@
           </th>
         </tr>
       </thead>
-
-      <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
-      <tbody id = "table_body_attributes" hidden></tbody>
       <tbody ref = "table_body" @mouseleave = "highlight()">
         <tr
           v-for       = "(feature, i) in state.features" :key = "feature.id"
@@ -139,6 +107,73 @@
 
     </table>
     <div v-else id = "noheaders" v-t = "'No data'"></div>
+
+    <!-- TABLE TOOLBAR -->
+    <div style="position: sticky; bottom: 0; background: white; display: flex; gap: 1ch;">
+
+      <div
+        id    = "g3w-table-toolbar"
+        ref   = "table_toolbar"
+        style = "display: flex; justify-content: space-between; padding: 1px;"
+      >
+
+        <!-- FETCH DATA FROM BBOX -->
+        <div
+          v-if           = "layer.isGeoLayer()"
+          class          = "skin-color action-button"
+          v-disabled     = "state.geolayer.active && current_layout.rightpanel.height_100"
+          :class         = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
+          v-t-tooltip    = "'Update results when map moves'"
+          data-placement = "right"
+          @click.stop    = "getDataFromBBOX"
+        ></div>
+
+        <!-- CLEAR SELECTION -->
+        <div
+          v-show         = "state.selection.active"
+          class          = "skin-color action-button"
+          :class         = "$fa('clear')"
+          v-t-tooltip    = "'Clear Selection'"
+          data-placement = "right"
+          @click.stop    = "layer.clearSelectionFids()"
+        ></div>
+
+        <!-- INVERSE SELECTION -->
+        <div
+          v-show         = "state.selection.active"
+          class          = "skin-color action-button"
+          :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
+          v-t-tooltip    = "'Invert Selection'"
+          data-placement = "right"
+          @click.stop    = "setSelection('inverse')"
+        ></div>
+
+        <!-- TOGGLE FILTER -->
+        <div
+          v-show         = "state.selection.active && show_on_active_filter"
+          class          = "skin-color action-button"
+          :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
+          v-t-tooltip    = "'Enable/Disable filter'"
+          data-placement = "right"
+          @click.stop    = "layer.toggleToken()"
+        ></div>
+
+      </div>
+
+      <!-- PAGE SIZE -->
+      <label>{{ $t('show') }} <select style="border: 1px solid #aaa;" v-model = "search.page_size">
+        <option v-for="l in PAGELENGTHS" :value="l">{{ l }}</option>
+      </select> {{ $t('values per page') }}</label>
+
+      <!-- PAGINATION BUTTONS -->
+      <div style="margin-left: auto;">
+        <button @click="changePage(-1)" class="btn">«</button>
+        <span style="padding: 6px 12px;">{{ search.page }}</span>
+        <button @click="changePage(+1)" class="btn">»</button>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
@@ -208,6 +243,9 @@ export default {
       map_bbox:            { key: null, cb: null },
       disableSelectAll:    false,
       all:                 false, //@since all features loaded are selected
+      PAGELENGTHS,
+      sorted_asc:   1,
+      sorted_desc: -1,
     };
   },
   
@@ -226,6 +264,17 @@ export default {
       return ApplicationState.layout[ApplicationState.layout.__current];
     }
 
+  },
+
+  watch: {
+    async 'search.page_size'(length) {
+      try {
+        const data = await this.getData({ length });
+        this.disableSelectAll = 0 === this.state.features.length;
+      } catch (e) {
+        console.warn(e);
+      }
+    },
   },
 
   methods: {
@@ -270,7 +319,7 @@ export default {
       if (is_active) {
         this.map_bbox.cb = () => {
           this.state.geolayer.in_bbox = this.state.geolayer.active ? GUI.getMapBBOX().join(',') : undefined;
-          $(this.$refs.attribute_table).DataTable().ajax.reload();
+          this.reload();
         };
       }
 
@@ -376,18 +425,27 @@ export default {
       GUI.toggleSelection(this.state, feature);
     },
 
-    async resize() {
-      await this.$nextTick();
-      const table = this.$el.querySelector('div.dataTables_scrollBody');
-      if (table) {
-        table.style.height = GUI.isMobile() ? '100%' : (
-            (ApplicationState.content.sizes.height)                              // table height
-          - (this.$el.querySelector('div.dataTables_scrollHeadInner')?.clientHeight || 0) // table header height
-          - 100
-        ) + 'px';
+    /**
+     * @param { number } dir +1 = next page, -1 = previous page
+     *
+     * @since 4.1.0
+     */
+    changePage(dir) {
+      this.getData({ start: this.search.page_size / (this.search.page + dir) });
+    },
+
+    /**
+     * @param { number } index column index
+     */
+    sortColumn(index) {
+      if (index === this.sorted_asc) {
+        this.sorted_desc = index;
+        this.sorted_asc = undefined; 
+      } else if (index === this.sorted_desc) {
+        this.sorted_desc = undefined;
+        this.sorted_asc  = index; 
       }
-      // adjust columns when resize
-      $(this.$refs.attribute_table).DataTable().columns.adjust();
+      this.reload();
     },
 
     /**
@@ -519,8 +577,13 @@ export default {
      * 
      * @since 4.1.0
      */
-    onTokenChange() {
-      $(this.$refs.attribute_table).DataTable().ajax.reload();
+    async reload() {
+      try {
+        const data = await this.getData({ length });
+        this.disableSelectAll = 0 === this.state.features.length;
+      } catch (e) {
+        console.warn(e);
+      }
     },
 
   },
@@ -532,8 +595,6 @@ export default {
    */
   async created() {
 
-    GUI.on('resize', this.resize);
-
     this.currentFilter = null
 
     this.unSelectAll  = this.unSelectAll.bind(this);
@@ -541,7 +602,11 @@ export default {
 
     GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
-    this.layer.on('filtertokenchange', this.onTokenChange);
+    this.layer.on('filtertokenchange', this.reload);
+
+    this.globalSearch = debounce(e => {
+      this.getData({ search: e.target });
+    });
 
     GUI.closeSideBar();
 
@@ -572,68 +637,64 @@ export default {
 
     await this.$nextTick();
 
-    // resolve data from server
-    let resolve;
-    // store columns index value search
-    const filterColumns = {};
+    let resolve;              // resolve data from server
+    const filterColumns = {}; // store columns index value search
+
+    try {
+      const data = await this.getData();
+      this.disableSelectAll = 0 === this.state.features.length;
+      if (resolve) { resolve(data.filter); }
+    } catch (e) {
+      console.warn(e);
+    }
 
     // set data table
-    const table = $(this.$refs.attribute_table).DataTable({
-      ajax: debounce(async (opts, cb) => {
-        GUI.disableContent(true);
-        try {
-          const data = await this.getData(opts);
-          cb(data);
-          this.disableSelectAll = 0 === this.state.features.length;
-          if (resolve) { resolve(data.filter); }
-          await this.$nextTick();
-          table.columns.adjust();
-        } catch(e) {
-          console.warn(e);
-        }
-        this.resize();
-      }, 800),
-      bSortCellsTop:  true,
-      columns:        this.state.headers,
-      columnDefs:     [{ orderable: false, searchable: false, targets: 0, width: '1%' }],
-      deferLoading:   this.state.allfeatures,
-      dom:            'frt<"#g3w-table-toolbar">lip',
-      lengthMenu:     PAGELENGTHS,
-      order:          [ 1, 'asc' ],
-      pageLength:     this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-      processing:     false,
-      responsive:     true,
-      scrollCollapse: true,
-      scrollX:        true,
-      serverSide:     true,
-      sSearch:        false,
-    });
+    // const table = $(this.$refs.attribute_table).DataTable({
+    //   ajax: debounce(async (opts, cb) => {
+    //     GUI.disableContent(true);
+    //     try {
+    //       const data = await this.getData(opts);
+    //       cb(data);
+    //       this.disableSelectAll = 0 === this.state.features.length;
+    //       if (resolve) { resolve(data.filter); }
+    //       await this.$nextTick();
+    //       table.columns.adjust();
+    //     } catch(e) {
+    //       console.warn(e);
+    //     }
+    //     this.resize();
+    //   }, 800),
+    //   bSortCellsTop:  true,
+    //   columns:        this.state.headers,
+    //   columnDefs:     [{ orderable: false, searchable: false, targets: 0, width: '1%' }],
+    //   deferLoading:   this.state.allfeatures,
+    //   dom:            'frt<"#g3w-table-toolbar">lip',
+    //   lengthMenu:     PAGELENGTHS,
+    //   order:          [ 1, 'asc' ],
+    //   pageLength:     this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
+    //   processing:     false,
+    //   responsive:     true,
+    //   scrollCollapse: true,
+    //   scrollX:        true,
+    //   serverSide:     true,
+    //   sSearch:        false,
+    // });
 
     this.changeColumn = debounce(async (e, i) => {
       const value = e.target.value.trim();
-      table.one('draw', async() => {
+      // table.one('draw', async() => {
         filterColumns[i]      = value;
         this.disableSelectAll = 0 === this.state.features.length;
         this.filter           = Object.values(filterColumns).find(f => f)
           ? await (new Promise(res => resolve = res))
           : [];
-      })
-      table.columns(i).search(value).draw();
+      // })
+      // table.columns(i).search(value).draw();
     });
 
-    // move "table_toolbar" DOM element under datatable 
-    const fragment = document.createDocumentFragment();
-    fragment.appendChild(this.$refs.table_toolbar);
-    document.getElementById('g3w-table-toolbar').appendChild(fragment);
-
     // move "dataTables_info" and "dataTables_filter" before header action tools
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));
-
-    // hide datatable rows → show only our custom "table_body"
-    document.getElementById('table_body_attributes').remove();
-
-    table.ajax.reload();
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
   },
 
   async beforeDestroy() {
@@ -646,7 +707,7 @@ export default {
     this.last_map_control = null;
 
     this.layer.off('unselectionall',    this.unSelectAll);
-    this.layer.off('filtertokenchange', this.onTokenChange);
+    this.layer.off('filtertokenchange', this.reload);
 
     // reset bbox event handler
     ol.Observable.unByKey(this.map_bbox.key);
@@ -663,11 +724,8 @@ export default {
       });
     }
 
-    GUI.off('resize', this.resize);
-
-    document.querySelector('#g3w-view-content .dataTables_info').remove();
-    document.querySelector('#g3w-view-content .dataTables_filter').remove();
-    $(this.$refs.attribute_table).DataTable().destroy(true);
+    this.$refs['table_info'].remove();
+    this.$refs['table_search'].remove();
   },
 
 };
@@ -676,16 +734,11 @@ export default {
 <style>
 #open_attribute_table {
   margin-top: 5px;
+  overflow-x: scroll;
 }
 
 #g3w-table-toolbar {
-  margin: 0.755em 1ch 0 0;
-  position: relative;
-  bottom: 3px;
-  display: inline-flex;
   border: 1px solid #d2d6de;
-  background-color: #fff;
-  float: left;
 }
 </style>
 
@@ -710,11 +763,8 @@ export default {
   #open_attribute_table .action-button {
     padding: 5px;
   }
-  #g3w-table-toolbar .action-button {
-    padding: 4px;
-  }
   #g3w-table-toolbar .action-button.toggled {
-    color: #FFFFFF !important;
+    color: #FFF !important;
     background-color: var(--skin-color);
   }
   #layer_attribute_table {
@@ -723,6 +773,22 @@ export default {
   }
   #layer_attribute_table > tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
+  }
+
+  th, td {
+    white-space: nowrap;
+  }
+
+  th {
+    cursor: pointer;
+  }
+
+  th a.asc::before {
+    content: "▵";
+  }
+
+  th a.desc::before {
+    content: "▿";
   }
 </style>
 
