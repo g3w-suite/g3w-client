@@ -782,6 +782,10 @@ export default {
     cursor: pointer;
   }
 
+  td {
+    border-top: 1px solid rgba(0,0,0,.15);
+  }
+
   th.asc, th.desc { 
     border-top: var(--skin-color) medium solid;
   }
