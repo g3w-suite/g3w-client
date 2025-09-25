@@ -33,9 +33,8 @@
           <th style="pointer-events: none;"></th>
           <th
             v-for       = "(header, i) in state.headers"
-            v-if        = "i > 0"
             @click.stop = "sortColumn(i)"
-            :class = "{ 'asc':  1 === ordering[i], 'desc': -1 === ordering[i] }"
+            :class = "[i === ordering[0] ? ordering[1] : '' ]"
           >{{ header.label }}</th>
         </tr>
         <tr>
@@ -44,7 +43,7 @@
               <input type = "checkbox" :checked = "all" />
             </label>
           </th>
-          <th v-for = "(header, i) in state.headers" v-if = "i > 0">
+          <th v-for = "(header, i) in state.headers">
             <input
               type         = "text"
               class        = "form-control column-search"
@@ -95,7 +94,7 @@
               ></i>
             </div>
           </td>
-          <td v-for = "(header, j) in state.headers" v-if="j > 0">
+          <td v-for = "header in state.headers">
             <field
               :feature = "feature"
               :state   = "({ label: undefined, value: feature.attributes[header.name] })"
@@ -194,7 +193,7 @@ export default {
 
   data() {
     const layer   = getCatalogLayerById(this.$options.layerId);
-    const headers = [null, ...layer.getTableHeaders()]; // first value is `null` for DataTable purpose (used to add a custom input selector)
+    const headers = layer.getTableHeaders();
     return {
       layer,
       state: {
@@ -224,20 +223,19 @@ export default {
       filter:              [],
       has_map:             true,
       async_highlight:     () => {},
-      search:              {},
       firstCall:           true,
       map_bbox:            { key: null, cb: null },
       disableSelectAll:    false,
       all:                 false, //@since all features loaded are selected
       PAGELENGTHS,
-      ordering:            Array(headers.length).fill(1),
+      ordering:            [0, 'asc'],
       search: {
         field:     undefined,
         page:      1, // get current page
         page_size: layer.getAttributeTablePageLength() || PAGELENGTHS[1],
         search:    null,
         in_bbox:   undefined,
-        ordering:  headers[1].name,
+        ordering:  headers[0].name,
         formatter: 1,
       }
     };
@@ -432,7 +430,12 @@ export default {
      * @param { number } index column index
      */
     sortColumn(index) {
-      this.ordering[index] = -1 * this.ordering[index];
+      if (index === this.ordering[0]) {
+        this.ordering[1] = 'asc' === this.ordering[1] ? 'desc' : 'asc';
+      } else {
+        this.ordering[0] = index;
+        this.ordering[1] = 'asc';
+      }
       this.reload({ ordering: index });
     },
 
@@ -476,7 +479,7 @@ export default {
      */
     async getData({
       start     = 0,
-      ordering  = 1,
+      ordering  = 0,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = [],
       search    = { value: null },
@@ -501,7 +504,7 @@ export default {
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
         in_bbox:   this.state.geolayer.in_bbox,
-        ordering:  (1 === this.ordering[ordering] ? '' : '-') + this.state.headers[ordering].name,
+        ordering:  ('asc' === this.ordering[0] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
       };
 
@@ -528,7 +531,7 @@ export default {
         }
 
         return {
-          data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
+          data:            this.state.features.map(f => this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; })),
           recordsFiltered: data.count,
           recordsTotal:    data.count,
           filter:          this.state.features.map(f => f.id),
@@ -747,6 +750,7 @@ export default {
     display: block;
     height: calc(100% - 25px);
     overflow: auto;
+    border-collapse: separate
   }
 
   thead {
@@ -772,11 +776,15 @@ export default {
     cursor: pointer;
   }
 
-  th.asc::before {
-    content: "▵";
+  th.asc, th.desc { 
+    border-top: var(--skin-color) medium solid;
   }
 
-  th.desc::before {
-    content: "▿";
+  th.asc::after {
+    content: "▴";
+  }
+
+  th.desc::after {
+    content: "▾";
   }
 </style>
