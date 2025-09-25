@@ -152,7 +152,7 @@
 
       <!-- PAGINATION BUTTONS -->
       <div style = "margin-left: auto;" >
-        <button @click.stop = "search.page-= 1" class="btn" v-disabled = "1 === search.page">«</button>
+        <button @click.stop = "search.page-= 1" class="btn" v-disabled = "1 == search.page">«</button>
         <select
           v-model        = "search.page"
           style          = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
@@ -161,7 +161,7 @@
         >
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
         </select>
-        <button @click.stop = "search.page+= 1" class="btn" v-disabled = "pages === search.page">»</button>
+        <button @click.stop = "search.page+= 1" class="btn" v-disabled = "pages == search.page">»</button>
       </div>
 
     </div>
