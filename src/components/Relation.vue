@@ -66,6 +66,7 @@
       v-if       = "!norelations" 
       ref        = "wrapper"
       v-disabled = "!table.get_data"
+      class      = "relation-wrapper"
     >
       <div
         id     = "table_content"
@@ -742,5 +743,13 @@
 
   th.desc::after {
     content: "▾";
+  }
+
+  .relation-wrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    margin-top: 3px;
+    height: 95%;
   }
 </style>
