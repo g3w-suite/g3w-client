@@ -354,7 +354,7 @@ export default {
      * Highlight or zoom to feature
      * 
      * @param {*} feature
-     * @param {*} zoom    - whether zoom to feature
+     * @param { boolean } zoom    - whether zoom to feature
      */
     async highlight(feature, zoom = true) {
       // no feature or no feature geometry → clear highlight
@@ -485,7 +485,7 @@ export default {
      * @param data.columns
      * @param data.search
      * 
-     * @returns {Promise<{{ data: [], recordsTotal: number, recordsFiltered: number }}>}
+     * @returns {Promise<{{ data: [], recordsTotal: number }}>}
      */
     async getData({
       ordering  = 0,
@@ -501,11 +501,7 @@ export default {
 
       // no headers are set
       if (0 === this.state.headers.length) {
-        return {
-          data:            [],
-          recordsTotal:    0,
-          recordsFiltered: 0
-        };
+        return;
       }
 
       this.search = {
@@ -533,19 +529,11 @@ export default {
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
-        
-        //In case of no filter and get all features
+
+        // no filter + get all
         if (!this.search.field && this.state.allfeatures === this.state.featurescount) {
-          //set selected all
           this.all = this.state.features.every(f => f.selected);
         }
-
-        return {
-          data:            this.state.features.map(f => this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; })),
-          recordsFiltered: data.count,
-          recordsTotal:    data.count,
-          filter:          this.state.features.map(f => f.id),
-        };
       } catch(e) {
         console.warn(e);
         GUI.notify.error(_("info.server_error"));
@@ -582,8 +570,6 @@ export default {
   },
 
   async created() {
-
-    this.currentFilter = null
 
     this.unSelectAll  = this.unSelectAll.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
@@ -623,8 +609,6 @@ export default {
       this.last_map_control.control.toggle();
     }
 
-    const columns = {}; // store columns index value search
-
     try {
       await this.getData();
       this.disableSelectAll = 0 === this.state.features.length;
@@ -632,8 +616,10 @@ export default {
       console.warn(e);
     }
 
+    const columns = {}; // store columns index value search
+
     this.changeColumn = debounce(async (e, i) => {
-      columns[i]      = e.target.value.trim();
+      columns[i] = e.target.value.trim();
       this.getData({ columns });  
     });
 
