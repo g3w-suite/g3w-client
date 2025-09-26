@@ -341,13 +341,11 @@ export default {
         GUI.getMap().on('moveend', this.onMoveEnd);
       }
 
-      if (onMoveEnd) {
-        this.onMoveEnd();
-      }
+      this?.onMoveEnd?.();
 
       // reset bbox event handler
       if (!is_active) {
-        GUI.getMap().un('moveend', onMoveEnd);
+        GUI.getMap().un('moveend', this.onMoveEnd);
         this.onMoveEnd = null;
       }
     },
