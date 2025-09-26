@@ -320,7 +320,7 @@ export default {
      * @since 4.1.0
      */
     showRelations(feature) {
-      this.layer.showRelationsPage({ feature });
+      this.layer.showRelationsPage({ feature, push: false });
     },
 
     async getDataFromBBOX() {

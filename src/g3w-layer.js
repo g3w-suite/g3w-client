@@ -2370,7 +2370,7 @@ export class Layer extends Emitter {
   /**
    * @since 4.1.0
    */
-  showRelationsPage({ feature }) {
+  showRelationsPage({ feature, push = true }) {
     GUI.setCurrentContentOptions({ title: this.state.title, crumb: { text: true, title: this.state.title } });
 
     const relations = ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
@@ -2379,7 +2379,17 @@ export class Layer extends Emitter {
       return group;
     }, {})[this.getId()] || []).filter(r => 'MANY' === r.type);
 
-    GUI.pushContent({
+    GUI.setContent({
+      push,
+      perc:        isMobile.any ? 100 : undefined,
+      backonclose: true,
+      title:      'info.list_of_relations',
+      id:         '__G3W_LIST_OF_RELATIONS_ID__',
+      crumb: {
+        title: 'info.list_of_relations',
+        trigger: null
+      },
+      closable: !push,
       content: new Component({
         internalComponent: new (Vue.extend({
           template: /* html */ `<component
@@ -2456,14 +2466,6 @@ export class Layer extends Emitter {
           layerId: this.getId(),
         })
       }),
-      backonclose: true,
-      title:      'info.list_of_relations',
-      id:         '__G3W_LIST_OF_RELATIONS_ID__',
-      crumb: {
-        title: 'info.list_of_relations',
-        trigger: null
-      },
-      closable: false
     });
   }
 
