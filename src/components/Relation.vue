@@ -701,7 +701,7 @@
     width: 100%;
     user-select: none;
     display: block;
-    height: calc(100% - 25px);
+    height: calc(100% - 60px);
     overflow: auto;
     border-collapse: separate
   }
