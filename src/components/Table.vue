@@ -206,14 +206,13 @@ export default {
     return {
       layer,
       state: {
-        id:            layer.getId(), //@since 4.1.0 aligned with query state layer
-        external:      false,         //@since 4.1.0 aligned with query state layer
-        selection:     layer.state.selection,//@since 4.1.0 aligned with query state layer
+        id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
+        external:      false,                 // @since 4.1.0 aligned with query state layer
+        selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
         features:      [],
         headers,      
         geometry:      true,
         allfeatures:   0,
-        nofilteredrow: false,
         geolayer: {
           active:    false,
           in_bbox:   undefined,
@@ -232,25 +231,28 @@ export default {
       filter:              [],
       has_map:             true,
       async_highlight:     () => {},
-      firstCall:           true,
       disableSelectAll:    false,
-      all:                 false, //@since all features loaded are selected
+      all:                 false,  // whehter all loaded features are selected
       PAGELENGTHS,
       ordering:            [0, 'asc'],
       search: {
         field:     undefined,
-        page:      1, // get current page
+        page:      1,              // current page
         page_size: PAGELENGTHS[1],
         search:    null,
         in_bbox:   undefined,
         ordering:  headers[0].name,
         formatter: 1,
+        columns:   {},
       }
     };
   },
   
   computed: {
-    /**@since 4.1.0 */
+
+    /**
+     * @since 4.1.0
+     */
     pages() {
       return Math.ceil(this.state.allfeatures / this.search.page_size);
     },
@@ -273,7 +275,7 @@ export default {
   watch: {
     async 'search.page_size'(length) {
       try {
-        const data = await this.getData({ length });
+        await this.getData({ length });
         this.disableSelectAll = 0 === this.state.features.length;
       } catch (e) {
         console.warn(e);
@@ -281,7 +283,7 @@ export default {
     },
     async 'search.page'(page) {
       try {
-        const data = await this.getData({ page });
+        await this.getData({ page });
         this.disableSelectAll = 0 === this.state.features.length;
       } catch (e) {
         console.warn(e);
@@ -510,7 +512,7 @@ export default {
 
       this.search = {
         field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
-        page, // get current page
+        page,      // get current page
         page_size: length,
         search:    search.value && search.value.length > 0 ? search.value : null,
         in_bbox:   this.state.geolayer.in_bbox,
@@ -572,7 +574,7 @@ export default {
      */
     async reload(opts = {}) {
       try {
-        const data = await this.getData(opts);
+        await this.getData(opts);
         this.disableSelectAll = 0 === this.state.features.length;
       } catch (e) {
         console.warn(e);
@@ -618,58 +620,22 @@ export default {
   async mounted() {
   
     // un-toggle map controls
-    this.last_map_control = GUI.getMapControls().find(c => c.control.isToggled && c.control.isToggled());
+    this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
     if (this.last_map_control) {
       this.last_map_control.control.toggle();
     }
 
-    await this.$nextTick();
-
-    let resolve;              // resolve data from server
     const columns = {}; // store columns index value search
 
     try {
-      const data = await this.getData();
+      await this.getData();
       this.disableSelectAll = 0 === this.state.features.length;
-      if (resolve) { resolve(data.filter); }
     } catch (e) {
       console.warn(e);
     }
 
-    // set data table
-    // const table = $(this.$refs.attribute_table).DataTable({
-    //   ajax: debounce(async (opts, cb) => {
-    //     GUI.disableContent(true);
-    //     try {
-    //       const data = await this.getData(opts);
-    //       cb(data);
-    //       this.disableSelectAll = 0 === this.state.features.length;
-    //       if (resolve) { resolve(data.filter); }
-    //       await this.$nextTick();
-    //       table.columns.adjust();
-    //     } catch(e) {
-    //       console.warn(e);
-    //     }
-    //     this.resize();
-    //   }, 800),
-    //   bSortCellsTop:  true,
-    //   columns:        this.state.headers,
-    //   columnDefs:     [{ orderable: false, searchable: false, targets: 0, width: '1%' }],
-    //   deferLoading:   this.state.allfeatures,
-    //   dom:            'frt<"#g3w-table-toolbar">lip',
-    //   lengthMenu:     PAGELENGTHS,
-    //   order:          [ 1, 'asc' ],
-    //   pageLength:     this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-    //   processing:     false,
-    //   responsive:     true,
-    //   scrollCollapse: true,
-    //   scrollX:        true,
-    //   serverSide:     true,
-    //   sSearch:        false,
-    // });
-
     this.changeColumn = debounce(async (e, i) => {
-      columns[i]      = e.target.value.trim();       
+      columns[i]      = e.target.value.trim();
       this.getData({ columns });  
     });
 
