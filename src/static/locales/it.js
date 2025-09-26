@@ -162,7 +162,7 @@ export default {
   'Add/Remove features to results': "Aggiungi elementi ai risultati",
   'Remove feature from results': "Rimuovi elemento dai risultati",
   'Zoom to feature': "Zoom sulla geometria",
-  'Show Relations': "Visualizza Relazioni",
+  'Show Relations': "Visualizza relazioni",
   'Print Atlas': "Stampa Atlas",
   'Share via link': "Condividi tramite link",
   'Select Template': "Seleziona Template",
