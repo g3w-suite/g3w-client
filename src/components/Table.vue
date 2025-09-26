@@ -460,15 +460,14 @@ export default {
     },
 
     /**
-     * Get DataTable layer
+     * Fetch data from server
      * 
-     * @param data.start
-     * @param data.order
-     * @param data.length
-     * @param data.columns
-     * @param data.search
-     * 
-     * @returns {Promise<{{ data: [], recordsTotal: number }}>}
+     * @param { Object } opts
+     * @param { number } opts.ordering
+     * @param { number } opts.length
+     * @param opts.columns
+     * @param { string } opts.search
+     * @param { number } opts.page current page
      */
     async getData({
       ordering  = 0,
@@ -489,7 +488,7 @@ export default {
 
       this.search = {
         field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
-        page,      // get current page
+        page,
         page_size: length,
         search:    search || null,
         in_bbox:   this.state.geolayer.in_bbox,
@@ -504,7 +503,7 @@ export default {
           selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
           attributes: f.attributes || f.properties,
           geometry:   f.geometry
-        }))
+        }));
 
         this.state.allfeatures   = data.count;
         this.state.featurescount = (features || []).length;
