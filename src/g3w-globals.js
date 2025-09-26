@@ -187,8 +187,6 @@ globalThis.g3w = {
  * @global g3wsdk
  */
 globalThis.g3wsdk = {
-  poppo: 10,
-
   // APP CONSTANTS
   constant: G3W_CONSTANT, // TODO: rename to "constants" which is more appropriate (in version 4.0)
 
