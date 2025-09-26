@@ -17,7 +17,7 @@
 
       <div class = "g3w-long-text">
 
-      <!-- BACK BUTTON -->
+        <!-- BACK BUTTON -->
         <span
           v-if              = "showrelationslist"
           v-t-tooltip:right = "'Back to relations'"
@@ -27,7 +27,7 @@
         </span>
 
         <!-- RELATION NAME -->
-        <b class = "relation-tile skin-color"> {{ relation.name }} </b>
+        <b class = "relation-tile"> {{ relation.name }} </b>
 
       </div>
       <div
@@ -65,7 +65,6 @@
     <div
       v-if       = "!norelations" 
       ref        = "wrapper"
-      class      = "relation-wrapper"
       v-disabled = "!table.get_data"
     >
       <div
@@ -84,10 +83,12 @@
           :config = "download.config"
         />
 
-        <table
-          ref       = "table"
-          class     = "hover relationtable table table-striped row-border compact nowrap"
-        >
+        <!-- PAGE SIZE -->
+        <label style="margin-top: 5px;">{{ $t('show') }} <select style = "border: 1px solid #aaa;" v-model = "table.page_size">
+          <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
+        </select> {{ $t('values per page') }}</label>
+
+        <table ref = "table">
           <thead>
             <tr style = "height: 0! important;">
               <th
@@ -97,7 +98,14 @@
                   padding:  '0 !important',
                 }"
               ></th>
-              <th v-for = "c in table.columns">{{ c.label }}</th>
+              <th
+                v-for          = "(c, i) in table.columns"
+                @click.stop    = "sortColumn(i)"
+                :class         = "[i === table.ordering[0] ? table.ordering[1] : '' ]"
+                :title         = "'sort by ' + c.label"
+                data-placement = "top"
+                :style         = "{'width': `${100 / table.columns.length }%`}"
+              >{{ c.label }}</th>
             </tr>
             <tr>
               <th v-if   = "showTools"></th>
@@ -113,12 +121,11 @@
               </th>
             </tr>
           </thead>
-          <tbody id = "table_body_attributes" hidden></tbody>
-          <tbody ref = "table_body">
+          <tbody>
             
             <tr
-              v-for  = "(row, index) in table.rows"
-              :key   = "table.rows_fid[index]"
+              v-for = "(row, index) in table.rows"
+              :key  = "table.rows_fid[index]"
             >
               <td
                 v-if  = "showTools"
@@ -133,7 +140,7 @@
                 ></span>
                 <span
                   v-if              = "table.formStructure"
-                  @click.stop       = "showFormStructure(row, index)"
+                  @click.stop       = "showForm(row, index)"
                   v-t-tooltip:right = "'Form View'"
                   class             = "action-button row-form skin-color"
                   :class            = "$fa('table')"
@@ -154,6 +161,26 @@
           </tbody>
 
         </table>
+
+        <!-- TABLE TOOLBAR -->
+        <div class="table-toolbar" style="display: flex; gap: 1ch; margin-top: 1ch;">
+          <!-- TOTAL ELEMENTS -->
+          <span>{{ table.rows.length }} {{ $t('entries') }}</span>
+
+          <!-- PAGINATION BUTTONS -->
+          <div style = "margin-left: auto;" >
+            <button @click.stop = "table.page = Number(table.page) - 1" class="btn" v-disabled = "1 == table.page">«</button>
+            <select
+              v-model         = "table.page"
+              style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
+              v-t-tooltip:top = "table.page + $t(' of ') + pages"
+              data-placement  = "top"
+            >
+              <option v-for = "p in pages" :selected = "p == table.page">{{ p }}</option>
+            </select>
+            <button @click.stop = "table.page = Number(table.page) + 1" class="btn" v-disabled = "pages == table.page">»</button>
+          </div>
+        </div>
       </div>
 
       <div
@@ -171,12 +198,7 @@
       ></div>
 
     </div>
-    <div
-      v-else
-      class = "dataTables_scrollBody"
-    >
-      <span v-t = "'No relations found'"></span>
-    </div>
+    <div v-else><span v-t = "'No relations found'"></span></div>
   </div>
 
 </template>
@@ -188,7 +210,7 @@
   import Component                         from 'g3w-component';
   import Field                             from 'components/FieldG3W.vue';
   import DownloadFormats                   from 'components/QueryResultsActionDownloadFormats.vue';
-  import { FieldsService }               from 'components/g3w-fields';
+  import { FieldsService }                 from 'components/g3w-fields';
   import GUI                               from 'g3w-app';
   import { throttle }                      from 'utils/throttle';
   import { debounce }                      from 'utils/debounce';
@@ -207,7 +229,7 @@
       relation:          {},
       previousview:      {},
       cardinality:       {},
-      layer:             {},
+      layerId:           0,
       showrelationslist: { default: false},
       chartRelationIds:  { default: [] }
     },
@@ -221,7 +243,9 @@
       const layer  = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
       return {
 
-        /** @since 4.0.0 */
+        /**
+         * @since 4.0.0
+         */
         ApplicationState,
 
         /**
@@ -236,7 +260,7 @@
          * @since 4.0.0 download state (action button)
          */
         download: {
-          formats: layer.getDownloadFormats().filter(f => 'pdf' !== f), // filter out pdf because already includes all features
+          formats: layer.getDownloadFormats().filter(f => 'pdf' !== f), // exclude pdf because already includes all features
           layer:   null,
           toggled: false,
           config:  { downloads: [] }
@@ -254,14 +278,12 @@
           title:         layer.getName() || layer.getTitle(),
           formStructure: layer.getLayerEditingFormStructure(),
           features:      [],
-          //@TODO
-          // Take in account code from 3.11 that check features attributes due settings of field visible
-          /*const attrs = Object.keys(features[0] ? features[0].attributes : {});
-          const cols  = layer.getTableHeaders().filter(h => attrs.includes(h.name));
-          */
+          page:          1,
+          page_size:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
           columns:       layer.getTableHeaders(),
           rows:          [],
-          rows_fid:      [],  
+          rows_fid:      [],
+          ordering:      [-1, 'asc']
         },
 
         /**
@@ -273,6 +295,11 @@
          * @since 4.0.0 whether to show table (inital request)
          */
         norelations: false,
+
+        /**
+         * @since 4.1.0
+         */
+        PAGELENGTHS,
       };
     },
 
@@ -284,19 +311,22 @@
        * @since 3.9.0
        */
       showTools() {
-        const isGeoLayer = (this.table.features || []).some(f => f.geometry);
-        return [!!this.isEditable, !!this.table.formStructure, !!isGeoLayer].filter(Boolean).length;
+        return [!!this.isEditable, !!this.table.formStructure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length;
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      pages() {
+        return Math.ceil(this.table.rows.length / this.table.page_size);
       },
 
     },
 
     watch: {
-
-      async norelations() {
-        await this.$nextTick();
-        this.resize();
+      async 'table.page_size'() {
+        this.getData();
       },
-      
     },
 
     methods: {
@@ -316,31 +346,49 @@
       },
 
       /**
-       * @param opts
+       * @param { number } index column index
+       */
+      sortColumn(index) {
+        if (index === this.table.ordering[0]) {
+          this.table.ordering[1] = 'asc' === this.table.ordering[1] ? 'desc' : 'asc';
+        } else {
+          this.table.ordering[0] = index;
+          this.table.ordering[1] = 'asc';
+        }
+        this.getData({ ordering: index });
+      },
+
+      /**
+       * Fetch data from server
        * 
-       * @returns DataTable pagination
+       * @param opts
+       * @param { number } opts.ordering
+       * @param { number } opts.page current page
        * 
        * @since 4.0.0
        */
-      async getData(opts = {}) {
-        try {
-          GUI.setLoadingContent(true);
-          GUI.disableContent(true);
+      async getData({
+        ordering  = 0,
+        page      = 1,
+      } = {}) {
+        GUI.setLoadingContent(true);
+        GUI.disableContent(true);
 
+        try {
           // get relations from server
           const response = await (await fetch(createRelationsUrl({
-              layer:    this.layer,
+              layerId:  this.layerId,
               fid:      this.feature.attributes[G3W_FID],
               relation: this.relation,
             }), {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
-              page:      (opts.start ? opts.start/opts.length : 0) + 1, // get current page
-              page_size: opts.length,
+              page,
+              page_size: this.table.page_size,
               formatter: 1,
-              ordering:  opts.order.length ? `${'desc' === opts.order[0].dir ? '-' : ''}${this.table.columns[opts.order[0].column - Number(!!this.showTools)].name}` : undefined,
-              field:     (this.table.columns || []).filter(c => ![null, undefined, ''].includes(c.search)).map(c => `${c.name}|ilike|${c.search}`).join('|AND,') || undefined,
+              ordering: ordering ? ('asc' === this.table.ordering[1] ? '' : '-') + this.table.columns[ordering].name : undefined,
+              field:     this.table.columns?.filter(c => c.search).map(c => `${c.name}|ilike|${c.search}`).join('|AND,') || undefined,
             }),
           })).json();
 
@@ -370,57 +418,20 @@
           this.table.features = features;
           this.table.rows     = features.map(f => [null].concat(this.table.columns.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; })))
           this.table.rows_fid = features.map(r => r.attributes[G3W_FID]);
+          this.table.page     = page;
 
-          return {
-            data:            this.table.rows,
-            recordsFiltered: response?.vector?.count ?? 0,
-            recordsTotal:    response?.vector?.count ?? 0,
-            filter:          features.map(f => f.id)
-          };
         } catch(e) {
           console.warn(e);
-          return {
-            data:            [],
-            recordsFiltered: 0,
-            recordsTotal:    0,
-          };
-        } finally {
-          // first request
-          if (!this.table.get_data) {
-            this.norelations = 0 === this.table.rows.length;
-            this.table.get_data = true;
-          }
-          GUI.setLoadingContent(false);
-          GUI.disableContent(false);
-        }
-      },
-
-      /**
-       * @returns { Promise<void> }
-       */
-      async resize() {
-        // skip when ..
-        if (!this.$refs.relation || 'none' === this.$refs.relation.parentNode.style.display) {
-          return;
         }
 
-        // in case of waiting table
-        const table      = $(this.$refs.relation).find('div.dataTables_scrollBody');
-        table.height(
-          $(".content").height()
-          - $('.query-relation  div.dataTables_scrollHeadInner').height()
-          - $('.content_breadcrumb')                       .outerHeight()
-          - $('.navbar')                                   .outerHeight()
-          - $('.close-panel-block')                        .outerHeight()
-          - $(this.$refs.header)                           .outerHeight()
-          - $('.dataTables_filter').last()                 .outerHeight()
-          - $('.dataTables_paginate.paging_simple_numbers').outerHeight()
-          - $('.dataTables_scrollHead').last()             .outerHeight()
-        );
-
-        if (this.$table) {
-          this.$table.columns.adjust();
+        // first request
+        if (!this.table.get_data) {
+          this.norelations = 0 === this.table.rows.length;
+          this.table.get_data = true;
         }
+
+        GUI.setLoadingContent(false);
+        GUI.disableContent(false);
       },
 
       /**
@@ -430,7 +441,7 @@
         ApplicationState.download = true;
         try {
           const response = await fetch(createRelationsUrl({
-              layer:    this.layer,
+              layerId:  this.layerId,
               fid:      this.feature.attributes[G3W_FID],
               relation: this.relation,
               type
@@ -467,7 +478,7 @@
        * @param row
        * @param index
        */
-      async showFormStructure(row, index) {
+      async showForm(row, index) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
@@ -547,11 +558,6 @@
 
     },
 
-    created() {
-      this.resize = debounce(this.resize.bind(this));
-      GUI.on('resize', this.resize);
-    },
-
     async mounted() {
       const layer = getCatalogLayerById(this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer);
 
@@ -574,11 +580,8 @@
           } else {
             this.download.toggled = !this.download.toggled;
           }
-          this.resize();
         };
       }
-
-      GUI.on('reload-relations', () => { this.$table?.columns?.adjust(); });
 
       this.chart.handler = throttle(async () => {
         this.chart.toggled = !this.chart.toggled;
@@ -589,62 +592,28 @@
         } else {
           GUI.hideChart(this.chart.container)
         }
-        this.resize();
       });
       
       if ('ONE' !== this.relation.type) {
-        this.$table = $(this.$refs.table).DataTable({
-          autoWidth:      false,
-          bLengthChange:  true,
-          dom:            'ltip',
-          bSortCellsTop:  true,
-          columnDefs:     [].concat(this.showTools ? { orderable: false, targets: 0, width: '1%' } : { orderable: true, targets: 0 }),
-          order:          [],
-          lengthMenu:     PAGELENGTHS,
-          pageLength:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-          responsive:     true,
-          scrollResize:   true,
-          scrollCollapse: true,
-          scrollX:        true,
-          serverSide:     true,
-          ajax: debounce(async (opts, cb) => {
-            cb(await this.getData(opts));
-            await this.$nextTick();
-            // initial request
-            if (this.norelations) {
-              this.$table.destroy(true);
-              this.$table = null;
-            } else {
-              this.$table.columns.adjust();
-            }
-          }),
+        this.getData().then(() => {
+          if (this.norelations) {
+            // this.$refs.table.hidden = true;
+          }
         });
 
         this.changeColumn = debounce((e, i) => {
-          const value = e.target.value.trim();
-          this.table.columns[i].search = value;
-          this.$table.columns(i).search(value).draw();
+          this.table.columns[i].search = e.target.value.trim();
+          this.getData();
         });
       }
 
-      // resize after popping child relation
-      GUI.on('pop-content', () => setTimeout(() => this.resize()));
-
-      // hide datatable rows → show only our custom "table_body"
-      document.getElementById('table_body_attributes').remove();
-
-      this.resize();
     },
 
     /**
      * @fires hide-chart
      */
     async beforeDestroy() {
-      if (this.$table) {
-        this.$table.destroy();
-        this.$table = null;
-      }
-      //In case of chart open, need to hide chart
+      // hide opened chart
       if (this.chart.toggled) {
          GUI.hideChart(this.chart.container);
       }
@@ -652,10 +621,8 @@
         this.$emit('hide-chart', this.chart.container);
         this.chart.container = null;
       }
-      //reset columns search attribute to reset search
+      // reset columns search
       this.table.columns.forEach(c => delete c.search); 
-      GUI.off('pop-content', this.resize);
-      GUI.off('resize', this.resize);
     },
 
   };
@@ -665,7 +632,10 @@
   .query-relation {
     margin-top: 3px;
   }
+
   .query-relation > .header {
+    margin-top: 5px;
+    margin-bottom: 5px;
     padding: 3px;
     display: flex;
     justify-content:
@@ -674,30 +644,29 @@
     width: 100%;
     margin: 0 !important;
   }
+
   .query-relation > .header > .g3w-long-text {
     border-radius: 3px;
     font-size: 1.3em;
   }
+
   .query-relation.mobile > .header > .g3w-long-text {
     font-size: 1em;
   }
+
   .relations-table-tools {
     font-size: 1.1em;
     margin-bottom: 3px
   }
+
   .relations-table-tools > .action-button {
     padding: 5px;
   }
-  .relation-wrapper {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    margin-top: 3px;
-    height: 95%;
-  }
+
   .back-button {
     font-size: 0.8em;
   }
+
   .header-component {
     width: 100%;
     display: flex;
@@ -705,48 +674,73 @@
     margin-bottom: 5px;
     margin-right: 4px;
   }
-  .relationtable .table-tools .action-button:hover {
+
+  .table-tools .action-button:hover {
     background-color: transparent;
   }
-  .relationtable.dataTable tbody tr.selected {
-    background-color: #e4e4e4 !important;
-  }
-  .relationtable.dataTable tbody tr.selected .row-wrap-tabs .tabs-wrapper {
-    background-color: #FFF !important;
-  }
+
   #chart_content {
     padding-bottom: 5px;
     margin-bottom: 5px;
     margin-left: 8px;
   }
-  .dataTables_scrollBody {
-    font-weight: bold;
-    margin-top: 10px;
-    font-size: 1.1em;
-    display: flex;
-    justify-content: space-between;
-  }
-  .form-control.column-search {
-    font-style: italic;
-    font-weight: normal;
-  }
-</style>
 
-<style>
-.relation-wrapper .dataTables_length select {
-  border: 1px solid #ccc;
-  background: #fff;
-  height: 27px;
-}
-.relation-wrapper .paginate_button {
-  background: transparent !important;
-  color: currentColor !important;
-  box-shadow: none !important;
-}
-.relation-wrapper .paginate_button.disabled {
-  opacity: 0.25 !important;
-}
-.relation-wrapper .dataTables_scroll {
-  background: #fff;
-}
+  input.form-control.column-search::placeholder {
+    font-weight: normal;
+    font-style: italic;
+  }
+
+  input.form-control.column-search {
+    height: 25px;
+    min-width: 40px;
+    padding: 2px;
+  }
+
+  table {
+    width: 100%;
+    user-select: none;
+    display: block;
+    height: calc(100% - 25px);
+    overflow: auto;
+    border-collapse: separate
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+  }
+
+  tbody > tr.selected {
+    box-shadow: inset 0 0 0 9999px rgb(13, 110, 253, .9);
+    color: #fff;
+  }
+
+  tbody > tr:not(.selected):hover {
+    background-color: rgb(255, 255, 0, 0.15);
+  }
+
+  th, td {
+    white-space: nowrap;
+  }
+
+  th {
+    cursor: pointer;
+  }
+
+  td {
+    border-top: 1px solid rgba(0,0,0,.15);
+  }
+
+  th.asc, th.desc { 
+    border-top: var(--skin-color) medium solid;
+  }
+
+  th.asc::after {
+    content: "▴";
+  }
+
+  th.desc::after {
+    content: "▾";
+  }
 </style>

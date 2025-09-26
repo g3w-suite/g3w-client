@@ -79,22 +79,27 @@
               >
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
-               <i
+              <i
+                v-if            = "layer.isEditable() && (layer.config.editing || {}).visible"
+                @click.stop     = "editFeature(feature)"
+                v-t-tooltip:top = "'Editing'"
+                :class          = "'action-button skin-color ' + $fa('pencil')"
+              ></i>
+              <i
                 @click.stop     = "openForm(feature)"
                 v-t-tooltip:top = "'Form View'"
                 :class          = "'action-button skin-color ' + $fa('table')"
+              ></i>
+              <i
+                @click.stop     = "showRelations(feature)"
+                v-t-tooltip:top = "'Show Relations'"
+                :class          = "'action-button skin-color ' + $fa('relation')"
               ></i>
               <i
                 v-if            = "layer.state.geolayer && !feature.geometry"
                 v-t-tooltip:top = "'This item has no geometry'"
                 style           = "color: currentColor !important;"
                 :class          = "'action-button ' + $fa('alert')"
-              ></i>
-              <i
-                v-if            = "layer.isEditable() && (layer.config.editing || {}).visible"
-                @click.stop     = "editFeature(feature)"
-                v-t-tooltip:top = "'Editing'"
-                :class          = "'action-button skin-color ' + $fa('pencil')"
               ></i>
             </div>
           </td>
@@ -307,6 +312,15 @@ export default {
       } catch (e) {
        console.warn(e); 
       }
+    },
+
+    /**
+     * @param feature
+     * 
+     * @since 4.1.0
+     */
+    showRelations(feature) {
+      this.layer.showRelationsPage({ feature });
     },
 
     async getDataFromBBOX() {

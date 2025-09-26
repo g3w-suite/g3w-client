@@ -2486,28 +2486,9 @@ export default new (class GUI extends Emitter {
           id:       'show-query-relations',
           class:    this.getFontClass('relation'),
           hint:     'Show Relations',
-          cbk: (layer, feature, action) => {
-            this.setCurrentContentOptions({ title: layer.title, crumb: { text: true, title: layer.title } });
-            this.pushContent({
-              content: new Component({
-                internalComponent: new (Vue.extend(require('components/RelationsPage.vue').default))({
-                  relations:        action.relations,
-                  chartRelationIds: action.relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
-                  feature,
-                  layer,
-                })
-              }),
-              backonclose: true,
-              title:      'info.list_of_relations',
-              id:         '__G3W_LIST_OF_RELATIONS_ID__',
-              crumb: {
-                title: 'info.list_of_relations',
-                trigger: null
-              },
-              closable: false
-            });
+          cbk: (layer, feature) => {
+            getCatalogLayerById(layer.id).showRelationsPage({ feature });
           },
-          relations: (this.#relations[layer.id] || []).filter(r => 'MANY' === r.type),
         },
 
         // print (atlas)

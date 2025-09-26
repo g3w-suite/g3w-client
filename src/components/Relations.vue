@@ -4,25 +4,24 @@
 -->
 
 <template>
-  <div
-    class = "query-relations"
-  >
+  <div class = "query-relations">
     <div class = "header skin-background-color lighten">
-      <div class = "skin-color-dark">
-        <span
-          style   = "font-size: 1.1em;"
-          v-t:pre = "'List of relations of feature'"
-        > </span>
-        <div v-for = "info in featureInfo()"> - <b>{{ info.key }}</b>: {{ info.value }}</div>
-      </div>
+      <span
+        style   = "font-size: 1.1em;"
+        v-t:pre = "'List of relations of feature'"
+      > </span>
+      <ul style="padding: 1em 0 0 15px; list-style: square;">
+        <li v-for = "info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }}</li>
+      </ul>
     </div>
-    <div class = "query-relations-content">
+    <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
       <div
         v-for       = "relation in relations"
         @click.stop = "showRelation(relation)"
         class       = "skin-border-color relation-grid-item"
       >
-        <span class = "skin-color g3w-long-text">{{ relation.name }}</span>
+        <i class="fas fa-sitemap" style="padding: 6px;"></i>
+        <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
       </div>
     </div>
   </div>
@@ -99,19 +98,8 @@ export default {
   .query-relations {
     overflow-y: auto;
   }
-  .query-relations > .header {
-    margin-bottom: 10px;
-    border-radius: 4px;
-    padding: 5px;
-  }
-  .query-relations > .query-relations-content {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    grid-column-gap: 5px;
-    grid-row-gap: 5px;
-  }
-  .relation-grid-item > .g3w-long-text {
-    font-weight: bold;
+  .header {
+    margin: 5px 0 10px 0;
     padding: 5px;
   }
 </style>
