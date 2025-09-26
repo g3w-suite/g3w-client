@@ -180,18 +180,6 @@ import { debounce }                from 'utils/debounce';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 import { gettext as _ }            from 'g3w-i18n';
 
-function toOLGeom(geom) {
-  return new (Object.entries({
-    'MultiPolygon': ol.geom.MultiPolygon,
-    'MultiLine':    ol.geom.MultiLineString,
-    'MultiPoint':   ol.geom.MultiPoint,
-    'Polygon':      ol.geom.Polygon,
-    'Line':         ol.geom.LineString,
-    'Point':        ol.geom.Point,
-    '':             ol.geom.Point, // fallback
-  }).find(o => geom.type.startsWith(o[0])))[1](geom.coordinates);
-}
-
 export default {
 
   name: "G3WTable",
@@ -306,7 +294,15 @@ export default {
         });
         // zoom to feature
         if (feature.geometry) {
-          GUI.zoomToExtent(toOLGeom(feature.geometry)?.getExtent());
+          GUI.zoomToExtent((new (Object.entries({
+            'MultiPolygon': ol.geom.MultiPolygon,
+            'MultiLine':    ol.geom.MultiLineString,
+            'MultiPoint':   ol.geom.MultiPoint,
+            'Polygon':      ol.geom.Polygon,
+            'Line':         ol.geom.LineString,
+            'Point':        ol.geom.Point,
+            '':             ol.geom.Point, // fallback
+          }).find(o => feature.geometry.type.startsWith(o[0])))[1](feature.geometry.coordinates))?.getExtent());
         }
       } catch (e) {
        console.warn(e); 
@@ -458,10 +454,9 @@ export default {
         this.all = features.every(f => f.selected);
       } catch(e) {
         console.warn(e);
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
       }
+      GUI.setLoadingContent(false);
+      GUI.disableContent(false);
     },
 
     /**
