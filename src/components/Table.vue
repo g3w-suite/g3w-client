@@ -207,7 +207,6 @@ export default {
       layer,
       state: {
         id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
-        external:      false,                 // @since 4.1.0 aligned with query state layer
         selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
         features:      [],
         headers,      
@@ -243,7 +242,6 @@ export default {
         in_bbox:   undefined,
         ordering:  headers[0].name,
         formatter: 1,
-        columns:   {},
       }
     };
   },
@@ -274,20 +272,10 @@ export default {
 
   watch: {
     async 'search.page_size'(length) {
-      try {
-        await this.getData({ length });
-        this.disableSelectAll = 0 === this.state.features.length;
-      } catch (e) {
-        console.warn(e);
-      }
+      this.reload({ length });
     },
     async 'search.page'(page) {
-      try {
-        await this.getData({ page });
-        this.disableSelectAll = 0 === this.state.features.length;
-      } catch (e) {
-        console.warn(e);
-      }
+      this.reload({ page });
     },
   },
 
@@ -491,24 +479,24 @@ export default {
       ordering  = 0,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = {},
-      search    = { value: null },
+      search    = null,
       page      = 1,
     } = {}) {
-      GUI.setLoadingContent(true);
-      GUI.disableContent(true);
-
-      this.layer.setAttributeTablePageLength(length);
-
       // no headers are set
       if (0 === this.state.headers.length) {
         return;
       }
 
+      GUI.setLoadingContent(true);
+      GUI.disableContent(true);
+
+      this.layer.setAttributeTablePageLength(length);
+
       this.search = {
         field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
         page,      // get current page
         page_size: length,
-        search:    search.value && search.value.length > 0 ? search.value : null,
+        search:    search || null,
         in_bbox:   this.state.geolayer.in_bbox,
         ordering:  ('asc' === this.ordering[1] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
@@ -537,11 +525,10 @@ export default {
       } catch(e) {
         console.warn(e);
         GUI.notify.error(_("info.server_error"));
-        return Promise.reject(e);
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
       }
+
+      GUI.setLoadingContent(false);
+      GUI.disableContent(false);
     },
 
     unSelectAll() {
@@ -559,12 +546,9 @@ export default {
      * @since 4.1.0
      */
     async reload(opts = {}) {
-      try {
-        await this.getData(opts);
+      this.getData(opts).then(() => {
         this.disableSelectAll = 0 === this.state.features.length;
-      } catch (e) {
-        console.warn(e);
-      }
+      });
     },
 
   },
@@ -579,7 +563,7 @@ export default {
     this.layer.on('filtertokenchange', this.reload);
 
     this.globalSearch = debounce(e => {
-      this.getData({ search: e.target });
+      this.getData({ search: e.target.value });
     });
 
     GUI.closeSideBar();
@@ -609,18 +593,13 @@ export default {
       this.last_map_control.control.toggle();
     }
 
-    try {
-      await this.getData();
-      this.disableSelectAll = 0 === this.state.features.length;
-    } catch (e) {
-      console.warn(e);
-    }
+    this.reload();
 
     const columns = {}; // store columns index value search
 
     this.changeColumn = debounce(async (e, i) => {
       columns[i] = e.target.value.trim();
-      this.getData({ columns });  
+      this.getData({ columns });
     });
 
     // move "table_info" and "table_search" before header action tools
