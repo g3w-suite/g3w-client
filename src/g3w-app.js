@@ -3110,7 +3110,7 @@ export default new (class GUI extends Emitter {
           relation:         projectRelation,
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
           nmRelation:       ApplicationState.project.getRelationById(relation.nmRelationId),
-          layer:            { id: layerId },
+          layerId:          layerId,
           feature,
         }
       }),
