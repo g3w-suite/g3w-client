@@ -2487,7 +2487,7 @@ export default new (class GUI extends Emitter {
           class:    this.getFontClass('relation'),
           hint:     'Show Relations',
           cbk: (layer, feature) => {
-            getCatalogLayerById(layer.id).showRelationsPage({ feature });
+            getCatalogLayerById(layer.id).showRelations({ feature });
           },
         },
 
@@ -3105,14 +3105,13 @@ export default new (class GUI extends Emitter {
     const projectRelation = ApplicationState.project.getRelationById(relation.name);
     this.pushContent({
       content: new Component({
-        vueComponentObject: require('components/Relation.vue').default,
-        propsData: {
+        internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
           relation:         projectRelation,
           chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
           nmRelation:       ApplicationState.project.getRelationById(relation.nmRelationId),
-          layerId:          layerId,
+          layerId,
           feature,
-        }
+        })
       }),
       crumb: {
         title: projectRelation.name,

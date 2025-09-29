@@ -2370,17 +2370,27 @@ export class Layer extends Emitter {
   /**
    * @since 4.1.0
    */
-  showRelationsPage({ feature, push = true }) {
+  showRelations({ feature, push = true }) {
     GUI.setCurrentContentOptions({ title: this.state.title, crumb: { text: true, title: this.state.title } });
 
     const relations = ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
       group[r.referencedLayer] = group[r.referencedLayer] || [];
       group[r.referencedLayer].push(r);
       return group;
-    }, {})[this.getId()] || []).filter(r => 'MANY' === r.type);
+    }, {})[this.getId()] || [])
+      .filter(r => 'MANY' === r.type)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     GUI.setContent({
       push,
+      content: new Component({
+        internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
+          relations,
+          chartRelationIds: relations.map(r => GUI.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
+          feature,
+          layerId: this.getId(),
+        })
+      }),
       perc:        isMobile.any ? 100 : undefined,
       backonclose: true,
       title:      'info.list_of_relations',
@@ -2390,82 +2400,6 @@ export class Layer extends Emitter {
         trigger: null
       },
       closable: !push,
-      content: new Component({
-        internalComponent: new (Vue.extend({
-          template: /* html */ `<component
-            :loading           = "loading"
-            :ref               = "currentview"
-            :previousview      = "previousview"
-            :is                = "currentview"
-            :relations         = "relations"
-            :relation          = "relation"
-            :feature           = "feature"
-            :layerId           = "layerId"
-            :chartRelationIds  = "chartRelationIds"
-            :showrelationslist = "showrelationslist"
-          />`,
-          components: {
-            'relations': require('components/Relations.vue').default,
-            'relation':  require('components/Relation.vue').default
-          },
-          data() {
-            return {
-              loading:          false,
-              state:            null,
-              error:            false,
-              previousview:     this.$options.currentview ?? 'relations',
-              feature:          this.$options.feature ?? null,
-              currentview:      this.$options.currentview ?? 'relations',
-              relation:         this.$options.relation ?? null,
-              relations:        this.$options.relations ?? [],
-              nmRelation:       this.$options.nmRelation,
-              chartRelationIds: this.$options.chartRelationIds ?? [],
-              layerId:          this.$options.layerId,
-            }
-          },
-          computed: {
-            showrelationslist() { return 'relations' === this.previousview && this.relations.length > 1; }
-          },
-          methods: {
-            async showRelation(relation) {
-              this.loading        = true;
-              this.relation       = relation;
-              try {
-                GUI.setCurrentContentOptions({ title: relation.name, crumb: { title: relation.name, text: true } });
-                await this.$nextTick();
-                this.previousview = this.currentview;
-                this.currentview  = 'relation';
-              } catch(e) {
-                console.warn(e);
-              }
-              this.loading = true;
-            },
-            setRelationsList() {
-              this.previousview = 'relation';
-              this.currentview  = 'relations';
-              GUI.setCurrentContentOptions({ crumb: { title: 'info.list_of_relations' } });
-              this.loading = false;
-            },
-          },
-          beforeMount() {
-            if ('relation' === this.currentview  || (1 === this.relations.length && 'ONE' === this.relations[0].type)) {
-              this.showRelation(this.relations[0])
-            }
-          },
-          async mounted() {
-            // sort relations by name
-            this.relations.sort((a, b) => a.name.localeCompare(b.name));
-            await this.$nextTick();
-            if (this.error) { requestAnimationFrame(() => GUI.popContent()) }
-            this.error = false;
-          },
-        }))({
-          relations,
-          chartRelationIds: relations.map(r => GUI.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
-          feature,
-          layerId: this.getId(),
-        })
-      }),
     });
   }
 
