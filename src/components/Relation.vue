@@ -103,7 +103,7 @@
                 v-for          = "(c, i) in table.columns"
                 @click.stop    = "sortColumn(i)"
                 :class         = "[i === table.ordering[0] ? table.ordering[1] : '' ]"
-                :title         = "'sort by ' + c.label"
+                :title         = "$t('sort by:') + ' ' + c.label"
                 data-placement = "top"
                 :style         = "{'width': `${100 / table.columns.length }%`}"
               >{{ c.label }}</th>
