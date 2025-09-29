@@ -353,11 +353,11 @@ g3wsdk.gui.GUI.once('ready', () => {
                     <input id = "g3w-iframe-simpleediting-layerid" placeholder  = "Insert Layer Id" />
                     <input id = "g3w-iframe-simpleediting-geojson" type = "textarea" placeholder  = "Paste GeoJson"/>
                   </div>
-                  <div id = "g3w-iframe-simpleediting-tools" style = "cursor: pointer">
-                    <button id = "g3w-insert" class = "btn" style = "background-color: lightgreen;" > Insert </button>
-                    <button id = "g3w-update" class = "btn" style = "background-color: lightblue;"> Update </button>
-                    <button id = "g3w-delete" class = "btn" style = "background-color: lightcoral;"> Delete </button>
-                    <button id = "g3w-draw" class = "btn" style = "background-color: lightyellow" > Draw </button>
+                  <div id = "g3w-iframe-simpleediting-buttons" style = "cursor: pointer">
+                    <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" > Insert </button>
+                    <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"> Update </button>
+                    <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;"> Delete </button>
+                    <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" > Draw </button>
                     <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey" > Get Geometry </button>
                   </div>  
                 </div>
@@ -366,21 +366,19 @@ g3wsdk.gui.GUI.once('ready', () => {
               </body>
               <script>
                 const iframe  = document.querySelector('iframe');
-                document.querySelector('#g3w-insert').addEventListener('click', () => { 
+                function postMessage(action) {
                   const layerId = document.querySelector('#g3w-iframe-simpleediting-layerid').value;
                   iframe.contentWindow.postMessage({ 
                     id: ${ Date.now()},
                     layerId: layerId,
-                    action: 'simpleediting:add',
+                    action: 'simpleediting:'+ action,
                     geojson: JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value)
                   }, '*');
-                })  
-                document.querySelector('#g3w-update').addEventListener('click', () => {});
-                document.querySelector('#g3w-delete').addEventListener('click', () => {});
+                }
+                document.querySelectorAll('#g3w-iframe-simpleediting-buttons button')
+                  .forEach(btn => btn.addEventListener('click', evt => postMessage(evt.target.id.split('g3w-')[1])))  
                 document.querySelector('#g3w-draw').addEventListener('click', () => {});
                 document.querySelector('#g3w-geometry').addEventListener('click', () => {});
-
-                window.addEventListener('message', async (message) => console.log(message))
               </script>
             </html>
           `);
