@@ -170,27 +170,29 @@ class IframePluginService {
       const [ context, method ] = (action || '').split(':');
       let result                = false;
       let data;
-      try {
-        const is_ready = this.services[context].getReady();
-        if (is_ready && single) {
-          await this.stopPendingActions();
+      if (this.services[context]) {
+        try {
+          const is_ready = this.services[context].getReady();
+          if (is_ready && single) {
+            await this.stopPendingActions();
+          }
+          if (is_ready) {
+            this.pendingactions[id] = { context };
+            data = await this.services[context][method](params);
+            result = true;
+          }
+        } catch(e) {
+          console.warn(e);
+          result = false;
+          data   = e;
         }
-        if (is_ready) {
-          this.pendingactions[id] = { context };
-          data = await this.services[context][method](params);
-          result = true;
-        }
-      } catch(e) {
-        console.warn(e);
-        result = false;
-        data   = e;
+        this.postMessage({
+          id,
+          action,
+          response: { result, data },
+        });
+        delete this.pendingactions[id];
       }
-      this.postMessage({
-        id,
-        action,
-        response: { result, data },
-      });
-      delete this.pendingactions[id];
     }
   }
 
