@@ -326,6 +326,123 @@ g3wsdk.gui.GUI.once('ready', () => {
         }
       },
     });
+
+    /**
+     * @since 4.0.3
+     * Custom map control: Simple Editing in iframe”
+     */
+    this.createMapControl({
+      id:            "SIMPLEEDITING",
+      options: {
+        add:         true,
+        clickmap:    false,
+        tipLabel:    'Simple Editing',
+        customClass: 'fas fa-pencil-alt',
+        onclick() {
+          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+          w.document.write(`
+            <!doctype HTML>
+            <html>
+              <head>
+                <title>Simple Editing Iframe</title>
+                <style>html,body,iframe{width:100%;height:98%;margin:0;border:0;display:block;}</style>
+              </head>
+              <body>
+                <div id = "g3w-iframe-simpleediting" style = "display: flex; justify-content: space-between;">
+                  <div id = "g3w-iframe-simpleediting-input">
+                    <input id = "g3w-iframe-simpleediting-layerid" placeholder  = "Insert Layer Id" />
+                  </div>
+                  <div id = "g3w-iframe-simpleediting-tools" style = "cursor: pointer">
+                    <button id = "g3w-insert" class = "btn" style = "background-color: lightgreen;" > Insert </button>
+                    <button id = "g3w-update" class = "btn" style = "background-color: lightblue;"> Update </button>
+                    <button id = "g3w-delete" class = "btn" style = "background-color: lightcoral;"> Delete </button>
+                    <button id = "g3w-draw" class = "btn" style = "background-color: lightyellow" > Draw </button>
+                    <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey" > Get Geometry </button>
+                  </div>  
+                </div>
+               
+                <iframe src="${location.href}"></iframe>
+              </body>
+              <script>
+                const iframe  = document.querySelector('iframe');
+                document.querySelector('#g3w-insert').addEventListener('click', () => { 
+                  const layerId = document.querySelector('#g3w-iframe-simpleediting-layerid').value;
+                  iframe.contentWindow.postMessage({ 
+                    id: ${ Date.now()},
+                    layerId: layerId,
+                    action: 'simpleediting:add',
+                    geojson: geojson = {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "MultiPolygon",
+                            "coordinates": [
+                                [
+                                    [
+                                        [
+                                            1252001.7448388448,
+                                            5433589.320775518
+                                        ],
+                                        [
+                                            1251956.4540502958,
+                                            5433444.157991708
+                                        ],
+                                        [
+                                            1252131.8106931387,
+                                            5433419.770644028
+                                        ],
+                                        [
+                                            1252213.1018520726,
+                                            5433487.126175716
+                                        ],
+                                        [
+                                            1252001.7448388448,
+                                            5433589.320775518
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        },
+                        "properties": {
+                            "fid": null,
+                            "name": "Cavour Palace",
+                            "address": null,
+                            "year": "2015",
+                            "photo": null,
+                            "link": null,
+                            "form": null,
+                            "high": "10",
+                            "volume": null,
+                            "surface": 12789.09,
+                            "architectural_barriers": "Not checked",
+                            "date_barriers": "2025-09-26",
+                            "safety_exits": "Not checked",
+                            "date_exits": null,
+                            "fire_system": "Not checked",
+                            "date_fire": null,
+                            "type": "Commercial",
+                            "zone": null,
+                            "attachment": "0",
+                            "subtype": null,
+                            "user": null,
+                            "description": "<p>2025-09-26T13:10:38.062-Cavour Palace</p>"
+                        },
+                        "id": "_new_${Date.now()}"
+                    }
+                  })
+                }, '*');
+                document.querySelector('#g3w-update').addEventListener('click', () => {});
+                document.querySelector('#g3w-delete').addEventListener('click', () => {});
+                document.querySelector('#g3w-draw').addEventListener('click', () => {});
+                document.querySelector('#g3w-geometry').addEventListener('click', () => {});
+
+                window.addEventListener('message', async (message) => console.log(message))
+              </script>
+            </html>
+          `);
+        }
+      },
+    });
+      
   });
 });
 
