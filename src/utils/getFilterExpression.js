@@ -1,4 +1,5 @@
 import DataRouterService from 'services/data';
+import ApplicationState  from 'store/application';
 
 /**
  * ORIGINAL SOURCE: src/app/core/expression/inputservice.js@3.8.6
@@ -66,18 +67,23 @@ export async function getFilterExpression({
           value: features[i].properties[key]
         })
       }
+      //@since 4.0.3 change value of relation field because relation firld value is get with formatter 1
+      if (parentData && null !== field.value) {
+        field.value = values.find(({ key }) => key == field.value)?.value ?? field.value;
+      }
       //Case Bonifica Renana https://github.com/orgs/g3w-suite/projects/12/views/1?pane=issue&itemId=123189761&issue=g3w-suite%7Cg3w-admin%7C1180
       //use not strict equality to avoid issues with numbers and strings
-      //@since 4.0.3 In case of parentDat, case relation, need to compare with key and not value
-      //because relations features are get with formatter: 1
-      if (field.value && !values.find(({ value, key }) => parentData ? key : value == field.value)) {
+      if (field.value && !values.find(({ value }) => value == field.value)) {
         values.unshift({
           key:   `(${field.value})`,
           value: field.value,
         });
       };
-
       field.input.options.values = values;
+      //@since 4.0.3 need to set values from input.option.values of config editing field to show key (formatter 1) value on relation table features
+      if (parentData) {
+        ApplicationState.project.getLayerById(qgs_layer_id).config.editing.fields.find(f => f.name === field.name ).input.options.values = values;
+      }
     }
 
     return features;
