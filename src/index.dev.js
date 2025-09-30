@@ -345,24 +345,27 @@ g3wsdk.gui.GUI.once('ready', () => {
             <html>
               <head>
                 <title>Simple Editing Iframe</title>
-                <style>html,body,iframe{width:100%;height:98%;margin:0;border:0;display:block;}</style>
+                <style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style>
+                <style>#g3w-iframe-simpleediting-input input { width: 100%; border-top: 1px solid; padding: 0;}</style>
+                <style>#g3w-iframe-simpleediting-buttons button { height: 50px; }</style>
               </head>
               <body>
-                <div id = "g3w-iframe-simpleediting" style = "display: flex; justify-content: space-between; height = "50px;">
-                  <div id = "g3w-iframe-simpleediting-input">
-                    <input id = "g3w-iframe-simpleediting-layerid" placeholder  = "Insert Layer Id" />
-                    <input id = "g3w-iframe-simpleediting-geojson" type = "textarea" placeholder  = "Paste GeoJson"/>
+                <div style = "display: flex; height: 100%">
+                  <iframe src="${location.href}"></iframe>
+                  <div id = "g3w-iframe-simpleediting" style = "display: flex; flex-direction: column; justify-content: space-between; width:30%;height:100%">
+                    <div id = "g3w-iframe-simpleediting-input" style = " display: flex; flex-direction: column; height: 100%;">
+                      <input id = "g3w-iframe-simpleediting-layerid" placeholder  = "Insert Layer Id" />
+                      <input id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2" type = "textarea" placeholder  = "Paste GeoJson"/>
+                    </div>
+                    <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column; cursor: pointer">
+                      <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" > Insert </button>
+                      <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"> Update </button>
+                      <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;"> Delete </button>
+                      <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" > Draw </button>
+                      <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey" > Get Geometry </button>
+                    </div>  
                   </div>
-                  <div id = "g3w-iframe-simpleediting-buttons" style = "cursor: pointer">
-                    <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" > Insert </button>
-                    <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"> Update </button>
-                    <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;"> Delete </button>
-                    <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" > Draw </button>
-                    <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey" > Get Geometry </button>
-                  </div>  
                 </div>
-               
-                <iframe src="${location.href}"></iframe>
               </body>
               <script>
                 const iframe  = document.querySelector('iframe');
