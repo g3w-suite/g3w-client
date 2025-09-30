@@ -3108,7 +3108,6 @@ export default new (class GUI extends Emitter {
     let _relation, relations, charts;
     if (relation) {
       _relation = ApplicationState.project.getRelationById(relation.name);
-      charts = this.plotLayerIds.find(pid => pid == _relation.referencingLayer) ? [_relation.referencingLayer] : [];
     } else {
       const title = getCatalogLayerById(layerId).getTitle();
       this.setCurrentContentOptions({ title, crumb: { text: true, title } });
@@ -3119,7 +3118,6 @@ export default new (class GUI extends Emitter {
       }, {})[layerId] || [])
         .filter(r => 'MANY' === r.type)
         .sort((a, b) => a.name.localeCompare(b.name));
-      charts = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
     }
     this.setContent({
       push,
@@ -3127,7 +3125,6 @@ export default new (class GUI extends Emitter {
         internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
           relation:  _relation,
           relations,
-          charts,
           layerId,
           feature,
         })

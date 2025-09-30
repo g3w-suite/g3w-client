@@ -71,7 +71,7 @@
 
         <!-- SHOW CHART BUTTON -->
         <span
-          v-if                      = "chart.button"
+          v-if                      = "has_charts"
           class                     = "action-button-icon action-button"
           :class                    = "[
             $fa('chart'),
@@ -268,7 +268,6 @@
          */
         chart: {
           toggled: false,
-          button: !!this.$options.charts.find(id => id === this?.relation?.referencingLayer),
         },
 
         /**
@@ -300,37 +299,32 @@
         /**
          * @since 4.1.0
          */
-        loading:          false,
+        loading:     false,
 
         /**
          * @since 4.1.0
          */
-        feature:          this.$options.feature ?? null,
+        feature:     this.$options.feature ?? null,
 
         /**
          * @since 4.1.0
          */
-        view:            'relations',
+        view:        'relations',
 
         /**
          * @since 4.1.0
          */
-        relation:         this.$options.relation ?? null,
+        relation:    this.$options.relation ?? null,
 
         /**
          * @since 4.1.0
          */
-        relations:        this.$options.relations ?? [],
+        relations:   this.$options.relations ?? [],
 
         /**
          * @since 4.1.0
          */
-        charts: this.$options.charts ?? [],
-
-        /**
-         * @since 4.1.0
-         */
-        layerId:          this.$options.layerId,
+        layerId:     this.$options.layerId,
       };
     },
 
@@ -394,6 +388,21 @@
        */
       featureId() {
         return this.feature.attributes[G3W_FID] || this.feature.attributes.fid;
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      charts() {
+        if ('relation' === this.view) {
+          return GUI.plotLayerIds.find(pid => pid == this.relation.referencingLayer) ? [this.relation.referencingLayer] : []
+        } else {
+          return this.relations.map(r => GUI.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean)
+        }
+      },
+
+      has_charts() {
+        return !!this.charts.find(id => id === this?.relation?.referencingLayer);
       },
 
       /**
