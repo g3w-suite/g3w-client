@@ -3105,26 +3105,18 @@ export default new (class GUI extends Emitter {
     feature,
     push = true
   } = {}) {
-    let _relation, relations;
+    let _relation;
     if (relation) {
       _relation = ApplicationState.project.getRelationById(relation.name);
     } else {
       const title = getCatalogLayerById(layerId).getTitle();
       this.setCurrentContentOptions({ title, crumb: { text: true, title } });
-      relations = ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
-        group[r.referencedLayer] = group[r.referencedLayer] || [];
-        group[r.referencedLayer].push(r);
-        return group;
-      }, {})[layerId] || [])
-        .filter(r => 'MANY' === r.type)
-        .sort((a, b) => a.name.localeCompare(b.name));
     }
     this.setContent({
       push,
       content: new Component({
         internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
           relation:  _relation,
-          relations,
           layerId,
           feature,
         })

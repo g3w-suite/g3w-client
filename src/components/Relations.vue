@@ -7,22 +7,19 @@
   <!-- CHOOSE A RELATION -->
   <div
     v-if  = "'relations' === view"
-    class = "query-relations"
+    class = "layer-relations"
   >
     <div class = "header skin-background-color lighten">
-      <span
-        style   = "font-size: 1.1em;"
-        v-t:pre = "'List of relations of feature'"
-      > </span>
+      <span style = "font-size: 1.1em;" v-t:pre = "'List of relations of feature'"></span>
       <ul style="padding: 1em 0 0 15px; list-style: square;">
         <li v-for = "info in feature_info()"><b>{{ info.key }}</b>: {{ info.value }}</li>
       </ul>
     </div>
     <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
       <div
-        v-for       = "relation in relations"
-        @click.stop = "showRelation(relation)"
-        class       = "skin-border-color relation-grid-item"
+        v-for  = "relation in relations"
+        @click = "showRelation(relation)"
+        class  = "skin-border-color grid-item"
       >
         <i class="fas fa-sitemap" style="padding: 6px;"></i>
         <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
@@ -33,7 +30,7 @@
   <!-- SELECTED RELATION -->
   <div
     v-else-if = "'relation' === view"
-    class     = "query-relation"
+    class     = "layer-relation"
   >
     <div class = "header skin-background-color lighten">
 
@@ -41,7 +38,7 @@
 
         <!-- BACK BUTTON -->
         <span
-          v-if        = "back_to_relations"
+          v-if        = "relations.length > 1"
           v-t-tooltip = "'Back to relations'"
           class       = "action-button-icon action-button back-button fas fa-door-open"
           @click.stop = "back"
@@ -53,7 +50,7 @@
       </div>
       <div
         v-if  = "table.rows.length"
-        class = "relations-table-tools"
+        class = "table-tools"
       >
 
         <!-- DOWNLOAD BUTTON -->
@@ -69,7 +66,7 @@
           v-t-tooltip:left = "download_formats.length > 1 ? 'Downloads' : `download_types.${this.download_formats[0]}`">
         </span>
 
-        <!-- SHOW CHART BUTTON -->
+        <!-- CHART BUTTON -->
         <span
           v-if                      = "has_charts"
           class                     = "action-button-icon action-button"
@@ -86,10 +83,9 @@
     <div
       v-if       = "table.rows.length" 
       ref        = "wrapper"
-      class      = "relation-wrapper"
+      class      = "relation-table"
     >
       <div
-        id     = "table_content"
         ref    = "content"
         :style = "{
           width:       chart.toggled ? '70%' : '100%',
@@ -97,6 +93,7 @@
           position:    'relative',
         }"
       >
+        <!-- DOWNLOAD BUTTON -->
         <downloadformats
           v-if    = "download.toggled"
           class   = "header-component"
@@ -109,6 +106,7 @@
           <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
         </select> {{ $t('values per page') }}</label>
 
+        <!-- TABLE CONTENT -->
         <table ref = "table">
           <thead>
             <tr style = "height: 0! important;">
@@ -143,7 +141,6 @@
             </tr>
           </thead>
           <tbody>
-            
             <tr
               v-for = "(row, i) in table.rows"
               :key  = "table.rows_fid[i]"
@@ -178,9 +175,7 @@
                 <field :state = "{ value }"/>
               </td>
             </tr>
-
           </tbody>
-
         </table>
 
         <!-- TABLE TOOLBAR -->
@@ -320,7 +315,13 @@
         /**
          * @since 4.1.0
          */
-        relations:   this.$options.relations ?? [],
+        relations: ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
+          group[r.referencedLayer] = group[r.referencedLayer] || [];
+          group[r.referencedLayer].push(r);
+          return group;
+        }, {})[this.$options.layerId] || [])
+          .filter(r => 'MANY' === r.type)
+          .sort((a, b) => a.name.localeCompare(b.name)),
 
         /**
          * @since 4.1.0
@@ -402,15 +403,11 @@
         }
       },
 
-      has_charts() {
-        return !!this.charts.find(id => id === this?.relation?.referencingLayer);
-      },
-
       /**
        * @since 4.1.0
        */
-      back_to_relations() {
-        return this.relations.length > 1;
+      has_charts() {
+        return !!this.charts.find(id => id === this?.relation?.referencingLayer);
       },
 
     },
@@ -759,7 +756,7 @@
 </script>
 
 <style scoped>
-  .relation-grid-item {
+  .grid-item {
     min-width: 0;
     min-height: 80px;
     border: 2px solid;
@@ -770,24 +767,24 @@
     align-items: center;
   }
 
-  .relation-grid-item:hover {
+  .grid-item:hover {
     background-color: transparent;
   }
 
-  .query-relations {
+  .layer-relations {
     overflow-y: auto;
   }
 
-  .query-relations > .header {
+  .layer-relations > .header {
     margin: 5px 0 10px 0;
     padding: 5px;
   }
 
-  .query-relation {
+  .layer-relation {
     margin-top: 3px;
   }
 
-  .query-relation > .header {
+  .layer-relation > .header {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 3px;
@@ -799,17 +796,17 @@
     margin: 0 !important;
   }
 
-  .query-relation > .header > .g3w-long-text {
+  .layer-relation > .header > .g3w-long-text {
     border-radius: 3px;
     font-size: 1.3em;
   }
 
-  .relations-table-tools {
+  .table-tools {
     font-size: 1.1em;
     margin-bottom: 3px
   }
 
-  .relations-table-tools > .action-button {
+  .table-tools > .action-button {
     padding: 5px;
   }
 
@@ -894,7 +891,7 @@
     content: "▾";
   }
 
-  .relation-wrapper {
+  .relation-table {
     display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
