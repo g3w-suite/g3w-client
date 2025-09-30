@@ -68,7 +68,9 @@ export async function getFilterExpression({
       }
       //Case Bonifica Renana https://github.com/orgs/g3w-suite/projects/12/views/1?pane=issue&itemId=123189761&issue=g3w-suite%7Cg3w-admin%7C1180
       //use not strict equality to avoid issues with numbers and strings
-      if (field.value && !values.find(({ value }) => value == field.value)) {
+      //@since 4.0.3 In case of parentDat, case relation, need to compare with key and not value
+      //because relations features are get with formatter: 1
+      if (field.value && !values.find(({ value, key }) => parentData ? key : value == field.value)) {
         values.unshift({
           key:   `(${field.value})`,
           value: field.value,
