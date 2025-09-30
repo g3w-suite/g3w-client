@@ -206,7 +206,7 @@ const Providers = {
             response = await XHR.post({
               url:         createRelationsUrl(options.filter.fid),
               contentType: 'application/json',
-              data:        JSON.stringify({ formatter: 0 }), //@since 4.0.3 set formatter 0 becouse need pure (raw) dara
+              data:        JSON.stringify({ formatter: 1 }),
             });
           } else if (options.filter.field) {
             response = await XHR.post({
