@@ -2,9 +2,7 @@
  * @file 
  * @since 3.11.0
  */
-
-import { SPATIAL_METHODS } from 'g3w-constants';
-import GUI                 from 'g3w-app';
+import GUI from 'g3w-app';
 
 /**
  * ORIGINAL SOURCE: src/map/controls/interactioncontrol.js@v4.0.0
@@ -630,7 +628,7 @@ export default class MapControl extends ol.control.Control {
                 <option v-for="method in methods">{{ method }}</option>
               </select>
             </div>`,
-          data:           () => ({ methods: SPATIAL_METHODS, method: this.getSpatialMethod() }),
+          data:           () => ({ methods: ['intersects', 'within'], method: this.getSpatialMethod() }),
           watch:          { method: m => this.setSpatialMethod(m) },
           created()       { GUI.toggleUserMessage(false); },
           beforeDestroy() { GUI.toggleUserMessage(true); }

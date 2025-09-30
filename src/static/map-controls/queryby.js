@@ -3,10 +3,10 @@
  * @since 4.1.0
  */
 
-const { GEOMETRY_TYPES, SPATIAL_METHODS } = g3w.constants;
-const ApplicationState                    = g3w.state;
-const GUI                                 = g3w.app;
-const MapControl                          = g3w.Control;
+const { GEOMETRY_TYPES } = g3w.constants;
+const ApplicationState   = g3w.state;
+const GUI                = g3w.app;
+const MapControl         = g3w.Control;
 const {
   getCatalogLayerById,
   PickCoordinatesInteraction,
@@ -107,7 +107,7 @@ export class QueryBy extends MapControl {
             data: () => ({
               types:           this.types,
               type:            this.types[0],
-              methods:         SPATIAL_METHODS,
+              methods:         ['intersects', 'within'],
               method:          this.getSpatialMethod(),
               layers:          [],
               selectedLayer:   (GUI.getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getSelectedLayer()?.getId() || '__ALL__'

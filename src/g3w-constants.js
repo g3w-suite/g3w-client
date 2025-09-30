@@ -327,13 +327,6 @@ export const FONT_AWESOME_ICONS = {
  */
 
 /**
- * List of Open Layers spatial methods used to find features
- * 
- * @since 3.9.0
- */
-export const SPATIAL_METHODS = ['intersects', 'within'];
-
-/**
  * DPI96
  * 
  * DOTS_PER_INCH = ol.has.DEVICE_PIXEL_RATIO * 96;
@@ -369,7 +362,6 @@ export default {
   PRINT_SCALES,
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
-  SPATIAL_METHODS,
   TIMEOUT,
   PAGELENGTHS,
 };
