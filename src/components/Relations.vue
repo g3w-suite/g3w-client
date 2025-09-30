@@ -74,7 +74,7 @@
             $fa('chart'),
             chart.toggled ? 'toggled-white' : '',
           ]"
-          @click.stop        = "onChart"
+          @click.stop        = "toggleChart"
           v-t-tooltip:bottom = "'Show Chart'">
         </span>
 
@@ -672,6 +672,10 @@
        * @FIXME add description
        */
       async back() {
+        // hide opened chart
+        if (this.chart.toggled) {
+          this.toggleChart();
+        }
         this.view = 'relations';
         await this.$nextTick();
         if (1 === this.relations.length) {
@@ -712,7 +716,7 @@
       /**
        * @since 4.1.0
        */
-      async onChart() {
+      async toggleChart() {
         this.chart.toggled = !this.chart.toggled;
         await this.$nextTick();
         this.chart.container = this.chart.container ||  $('#chart_content');
@@ -746,7 +750,6 @@
       }
       // reset columns search
       this.columns.forEach(c => delete c.search); 
-
       if (1 === this.relations.length) {
         delete this.relations[0].noback;
       }
