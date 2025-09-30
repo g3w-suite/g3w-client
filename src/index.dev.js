@@ -354,21 +354,45 @@ g3wsdk.gui.GUI.once('ready', () => {
                   <iframe src="${location.href}"></iframe>
                   <div id = "g3w-iframe-simpleediting" style = "display: flex; flex-direction: column; justify-content: space-between; width:30%;height:100%">
                     <div id = "g3w-iframe-simpleediting-input" style = " display: flex; flex-direction: column; height: 100%;">
-                      <input id = "g3w-iframe-simpleediting-layerid" style = "height: 50px; " placeholder  = "Insert Layer Id" />
-                      <input id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2; text-align: center;" type = "textarea" placeholder  = "Paste GeoJson"/>
+                      <input    id = "g3w-iframe-simpleediting-layerid" style = "height: 50px; " placeholder  = "Insert Layer Id" />
+                      <textarea id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2;" placeholder  = "Paste GeoJson"></textarea>
                     </div>
                     <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column; cursor: pointer">
-                      <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" > Insert </button>
-                      <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"> Update </button>
-                      <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;"> Delete </button>
-                      <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" > Draw </button>
-                      <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey" > Get Geometry </button>
+                      <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" disabled> Insert </button>
+                      <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"  disabled> Update </button>
+                      <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;" disabled> Delete </button>
+                      <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" disabled> Draw </button>
+                      <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey"   disabled> Get Geometry </button>
                     </div>  
                   </div>
                 </div>
               </body>
               <script>
-                const iframe  = document.querySelector('iframe');
+               const iframe  = document.querySelector('iframe');
+                const inputs  = document.querySelector('#g3w-iframe-simpleediting-input').children;
+                const buttons = document.querySelectorAll('#g3w-iframe-simpleediting-buttons button');
+                for (const i of inputs) {
+                  i.addEventListener('input', () => { 
+                    const enable = Array.from(inputs).reduce((a, i) => {
+                      let value = null;
+                      if ('textarea' === i.type) {
+                        try {
+                          value = JSON.parse(i.value);
+                        } catch(e) {
+                          console.warn(e); 
+                          value = null;
+                        }
+                      } else {
+                        value = iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(i.value);
+                      }
+                      a = a && value;
+                      return a;  
+                    }, true); 
+                    buttons.forEach(btn => btn.disabled = !enable ) 
+                  })
+                }
+                
+                //Post messagae
                 function postMessage(action) {
                   const layerId = document.querySelector('#g3w-iframe-simpleediting-layerid').value;
                   iframe.contentWindow.postMessage({ 
@@ -378,8 +402,8 @@ g3wsdk.gui.GUI.once('ready', () => {
                     geojson: JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value)
                   }, '*');
                 }
-                document.querySelectorAll('#g3w-iframe-simpleediting-buttons button')
-                  .forEach(btn => btn.addEventListener('click', evt => postMessage(evt.target.id.split('g3w-')[1])))  
+                
+                buttons.forEach(btn => btn.addEventListener('click', evt => postMessage(evt.target.id.split('g3w-')[1])))  
                 document.querySelector('#g3w-draw').addEventListener('click', () => {});
                 document.querySelector('#g3w-geometry').addEventListener('click', () => {});
               </script>
