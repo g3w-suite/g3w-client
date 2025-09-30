@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <!-- ALL RELATIONS -->
+  <!-- CHOOSE A RELATION -->
   <div
     v-if  = "'relations' === view"
     class = "query-relations"
@@ -30,7 +30,7 @@
     </div>
   </div>
 
-  <!-- A SINGLE RELATION -->
+  <!-- SELECTED RELATION -->
   <div
     v-else-if = "'relation' === view"
     class     = "query-relation"
@@ -204,6 +204,7 @@
         </div>
       </div>
 
+      <!-- VERTICAL RESIZE -->
       <div
         v-show          = "chart.toggled"
         class           = "skin-border-color lighten"

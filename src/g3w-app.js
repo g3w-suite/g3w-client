@@ -3105,7 +3105,7 @@ export default new (class GUI extends Emitter {
     feature,
     push = true
   } = {}) {
-    let _relation, relations, charts;
+    let _relation, relations;
     if (relation) {
       _relation = ApplicationState.project.getRelationById(relation.name);
     } else {
