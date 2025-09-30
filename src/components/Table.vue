@@ -320,7 +320,7 @@ export default {
      * @since 4.1.0
      */
     showRelations(feature) {
-      this.layer.showRelations({ feature, push: false });
+      GUI.showRelation({ feature, layerId: this.layer.getId(), push: false })
     },
 
     async getDataFromBBOX() {

@@ -466,6 +466,7 @@ export default new (class GUI extends Emitter {
     this.outputDataPlace           = this.showData.bind(this);
     this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
     this.highlightGeometry         = this.highlight.bind(this);
+    this.showRelation              = this.showRelations.bind(this);
     this.clearHighlightGeometry    = () => this.highlight(false);
 
     // BACKCOMP: v3.x
@@ -2487,7 +2488,7 @@ export default new (class GUI extends Emitter {
           class:    this.getFontClass('relation'),
           hint:     'Show Relations',
           cbk: (layer, feature) => {
-            getCatalogLayerById(layer.id).showRelations({ feature });
+            this.showRelations({ feature, layerId: layer.id });
           },
         },
 
@@ -3088,39 +3089,56 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
-   * Handle show Relation on result
+   * Show layer relations
    * 
    * @param { Object } opts
-   * @param opts.relation
-   * @param opts.layerId  current layer father id
-   * @param opts.feature  current feature father id
+   * @param opts.relation current relation (when omitted all relations all listed)
+   * @param opts.layerId  current layer id
+   * @param opts.feature  current feature
+   * @param opts.push     whether to append relations to current content
    * 
    * @since 4.1.0
    */
-  showRelation({
+  showRelations({
     relation,
     layerId,
-    feature
+    feature,
+    push = true
   } = {}) {
-    const projectRelation = ApplicationState.project.getRelationById(relation.name);
-    this.pushContent({
+    let _relation, relations, charts;
+    if (relation) {
+      _relation = ApplicationState.project.getRelationById(relation.name);
+      charts = this.plotLayerIds.find(pid => pid == _relation.referencingLayer) ? [_relation.referencingLayer] : [];
+    } else {
+      const title = getCatalogLayerById(layerId).getTitle();
+      this.setCurrentContentOptions({ title, crumb: { text: true, title } });
+      relations = ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
+        group[r.referencedLayer] = group[r.referencedLayer] || [];
+        group[r.referencedLayer].push(r);
+        return group;
+      }, {})[layerId] || [])
+        .filter(r => 'MANY' === r.type)
+        .sort((a, b) => a.name.localeCompare(b.name));
+      charts = relations.map(r => this.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean);
+    }
+    this.setContent({
+      push,
       content: new Component({
         internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
-          relation:         projectRelation,
-          chartRelationIds: this.plotLayerIds.find(pid => pid == projectRelation.referencingLayer) ? [projectRelation.referencingLayer] : [],
-          nmRelation:       ApplicationState.project.getRelationById(relation.nmRelationId),
+          relation:  _relation,
+          relations,
+          charts,
           layerId,
           feature,
         })
       }),
-      crumb: {
-        title: projectRelation.name,
-        text:  true,
-      },
-      title:    projectRelation.name,
-      text  :   true,
-      closable: false
-    })
+      perc:        isMobile.any ? 100                                   : undefined,
+      crumb:       _relation    ? { title: _relation.name, text: true } : { title: 'info.list_of_relations', trigger: null },
+      title:       _relation    ? _relation.name                        : 'info.list_of_relations',
+      text:        _relation    ? true                                  : undefined,
+      backonclose: _relation    ? undefined                             : true,
+      closable: !push
+    });
   };
 
   /**

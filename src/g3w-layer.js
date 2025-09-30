@@ -2366,42 +2366,6 @@ export class Layer extends Emitter {
   openAttributeTable(opts = {}) {
     new (Vue.extend(Table))({ ...opts, layerId: this.state.id });
   }
-  
-  /**
-   * @since 4.1.0
-   */
-  showRelations({ feature, push = true }) {
-    GUI.setCurrentContentOptions({ title: this.state.title, crumb: { text: true, title: this.state.title } });
-
-    const relations = ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
-      group[r.referencedLayer] = group[r.referencedLayer] || [];
-      group[r.referencedLayer].push(r);
-      return group;
-    }, {})[this.getId()] || [])
-      .filter(r => 'MANY' === r.type)
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    GUI.setContent({
-      push,
-      content: new Component({
-        internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
-          relations,
-          chartRelationIds: relations.map(r => GUI.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean),
-          feature,
-          layerId: this.getId(),
-        })
-      }),
-      perc:        isMobile.any ? 100 : undefined,
-      backonclose: true,
-      title:      'info.list_of_relations',
-      id:         '__G3W_LIST_OF_RELATIONS_ID__',
-      crumb: {
-        title: 'info.list_of_relations',
-        trigger: null
-      },
-      closable: !push,
-    });
-  }
 
   /**
    * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8

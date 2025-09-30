@@ -148,7 +148,7 @@
       },
       handleRelation: {
         type:     Function,
-        default: ({ relation, layerId, feature } = {}) => GUI.showRelation({relation, layerId, feature})
+        default: ({ relation, layerId, feature } = {}) => GUI.showRelations({ relation, layerId, feature })
       }
     },
     data() {

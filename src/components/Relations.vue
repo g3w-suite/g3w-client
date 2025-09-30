@@ -268,7 +268,7 @@
          */
         chart: {
           toggled: false,
-          button: !!this.$options.chartRelationIds.find(id => id === this?.relation?.referencingLayer),
+          button: !!this.$options.charts.find(id => id === this?.relation?.referencingLayer),
         },
 
         /**
@@ -325,7 +325,7 @@
         /**
          * @since 4.1.0
          */
-        chartRelationIds: this.$options.chartRelationIds ?? [],
+        charts: this.$options.charts ?? [],
 
         /**
          * @since 4.1.0
