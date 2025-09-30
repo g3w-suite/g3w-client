@@ -2,7 +2,6 @@
  * @file
  * @since v3.7
  */
-import autocompleteMixin from 'mixins/autocomplete';
 import fieldsMixin       from 'mixins/fields';
 import mediaMixin        from 'mixins/media';
 import geoMixin          from 'mixins/geo';
@@ -13,7 +12,6 @@ import formInputsMixins  from 'mixins/form-inputs';
 import baseInputMixin    from 'mixins/base-input';
 
 const mixins = {
-  autocompleteMixin,
   fieldsMixin,
   mediaMixin,
   geoMixin,
@@ -31,7 +29,6 @@ export { selectMixin };
 export { select2Mixin };
 export { formInputsMixins };
 export { baseInputMixin };
-export { autocompleteMixin };
 
 export { mixins };
 export default mixins;
