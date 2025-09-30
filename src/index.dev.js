@@ -346,7 +346,7 @@ g3wsdk.gui.GUI.once('ready', () => {
               <head>
                 <title>Simple Editing Iframe</title>
                 <style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style>
-                <style>#g3w-iframe-simpleediting-input input { width: 100%; border-top: 1px solid; padding: 0;}</style>
+                <style>#g3w-iframe-simpleediting-input input { width: 100%; border-width: 2px 0 0 0; padding: 0;}</style>
                 <style>#g3w-iframe-simpleediting-buttons button { height: 50px; }</style>
               </head>
               <body>
@@ -354,8 +354,8 @@ g3wsdk.gui.GUI.once('ready', () => {
                   <iframe src="${location.href}"></iframe>
                   <div id = "g3w-iframe-simpleediting" style = "display: flex; flex-direction: column; justify-content: space-between; width:30%;height:100%">
                     <div id = "g3w-iframe-simpleediting-input" style = " display: flex; flex-direction: column; height: 100%;">
-                      <input id = "g3w-iframe-simpleediting-layerid" placeholder  = "Insert Layer Id" />
-                      <input id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2" type = "textarea" placeholder  = "Paste GeoJson"/>
+                      <input id = "g3w-iframe-simpleediting-layerid" style = "height: 50px; " placeholder  = "Insert Layer Id" />
+                      <input id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2; text-align: center;" type = "textarea" placeholder  = "Paste GeoJson"/>
                     </div>
                     <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column; cursor: pointer">
                       <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" > Insert </button>
