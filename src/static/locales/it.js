@@ -386,4 +386,5 @@ export default {
   'Dock to Bottom': 'Fissa in basso',
   'Dock to Right': 'Fissa a destra',
   'sort by:': 'ordina per:',
+  'search by:': 'cerca per:',
 };

@@ -135,7 +135,7 @@
                   @keyup       = "changeColumn($event, i)"
                   :placeholder = "c.name"
                   :value       = "c.search"
-                  :title       = "'search by ' + c.name"
+                  :title       = "$t('search by:') + ' ' + c.name"
                 />
               </th>
             </tr>
