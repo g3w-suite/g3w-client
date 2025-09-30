@@ -91,6 +91,7 @@
                 :class          = "'action-button skin-color ' + $fa('table')"
               ></i>
               <i
+                v-if            = "layer.hasRelations()"
                 @click.stop     = "showRelations(feature)"
                 v-t-tooltip:top = "'Show Relations'"
                 :class          = "'action-button skin-color ' + $fa('relation')"

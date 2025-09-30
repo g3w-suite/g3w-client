@@ -743,7 +743,7 @@ export class Layer extends Emitter {
    * @TODO add description
    */
   hasRelations() {
-    return !!this.#relations;
+    return !!this.#relations.getLength();
   }
 
   /******************************************************************************************
