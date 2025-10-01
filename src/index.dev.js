@@ -353,7 +353,7 @@ g3wsdk.gui.GUI.once('ready', () => {
               <body>
                 <div style = "display: flex; height: 100%">
                   <iframe src="${location.href}"></iframe>
-                  <div id = "g3w-iframe-simpleediting" style = "display: flex; flex-direction: column; justify-content: space-between; width:30%;height:100%">
+                  <div id = "g3w-iframe-simpleediting" style = "display: flex; flex-direction: column; justify-content: space-between; width:40vw;height:100%">
                     <div id = "g3w-iframe-simpleediting-input" style = " display: flex; flex-direction: column; height: 100%;">
                       <input    id = "g3w-iframe-simpleediting-layerid" style = "height: 50px; " placeholder  = "Insert Layer Id" />
                       <textarea id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2; border-width: 1px 0 0 0;" placeholder  = "Paste GeoJson"></textarea>
@@ -367,7 +367,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                     </div> 
                     <div id = "g3w-iframe-simpleediting-output">
                       <label>Response from IFRAME</label>
-                      <textarea id = "g3w-iframe-simpleediting-response" style = "width: 100%; padding: 0; height: 30vh; border: 0" readonly></textarea>
+                      <textarea id = "g3w-iframe-simpleediting-response" style ="width: 100%; padding: 0; height: 30vh; border: 0" readonly></textarea>
                     </div> 
                   </div>
                 </div>
@@ -425,7 +425,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                 document.querySelector('#g3w-geometry').addEventListener('click', () => {});
                 window.addEventListener('message', async message => {
                   if (message.data && message.data.response) {
-                    document.querySelector('#g3w-iframe-simpleediting-response').value = JSON.stringify(message.data);
+                    document.querySelector('#g3w-iframe-simpleediting-response').value = JSON.stringify(message.data, null, 2);
                     document.querySelector('#g3w-iframe-simpleediting-response').style.color = message.data.response.result ? "black" : "red";
                   }
                 })
