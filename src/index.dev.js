@@ -365,8 +365,8 @@ g3wsdk.gui.GUI.once('ready', () => {
                       <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey"   disabled> Get Geometry </button>
                     </div> 
                     <div id = "g3w-iframe-simpleediting-output">
-                      <textarea id = "g3w-iframe-simpleediting-error" style = "color: red; width: 100%; border: 0; padding: 0; height: 5vh;" placeholder  = "Show Error" readonly></textarea>
-                      <textarea id = "g3w-iframe-simpleediting-geometry" style = "border-width: 1px 0 0 0; width: 100%; padding: 0; height: 20vh;" placeholder  = "Read GeoJson" readonly></textarea>
+                      <label>Response from IFRAME</label>
+                      <textarea id = "g3w-iframe-simpleediting-response" style = "width: 100%; padding: 0; height: 30vh; border: 0" readonly></textarea>
                     </div> 
                   </div>
                 </div>
@@ -423,11 +423,9 @@ g3wsdk.gui.GUI.once('ready', () => {
                 });
                 document.querySelector('#g3w-geometry').addEventListener('click', () => {});
                 window.addEventListener('message', async message => {
-                  if (message.data.response && !message.data.response.result) {
-                    document.querySelector('#g3w-iframe-simpleediting-error').value = message.data.response.data;
-                  }
-                  if (message.data.response && message.data.response.result && message.data.response.geojson) {
-                    document.querySelector('#g3w-iframe-simpleediting-geometry').value = JSON.stringify(message.data.response.geojson);
+                  if (message.data && message.data.response) {
+                    document.querySelector('#g3w-iframe-simpleediting-response').value = JSON.stringify(message.data);
+                    document.querySelector('#g3w-iframe-simpleediting-response').style.color = message.data.response.result ? "black" : "red";
                   }
                 })
               </script>
