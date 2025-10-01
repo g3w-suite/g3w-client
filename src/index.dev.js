@@ -358,15 +358,15 @@ g3wsdk.gui.GUI.once('ready', () => {
                       <textarea id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2; border-width: 1px 0 0 0;" placeholder  = "Paste GeoJson"></textarea>
                     </div>
                     <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column; cursor: pointer">
-                      <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" disabled> Insert </button>
+                      <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" disabled> Add </button>
                       <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"  disabled> Update </button>
                       <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;" disabled> Delete </button>
                       <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" disabled> Draw </button>
                       <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey"   disabled> Get Geometry </button>
                     </div> 
                     <div id = "g3w-iframe-simpleediting-output">
-                      <textarea id = "g3w-iframe-simpleediting-error" style = "color: red; width: 100%; border: 0; padding: 0; height: 5vh;" placeholder  = "Error" readonly></textarea>
-                      <textarea id = "g3w-iframe-simpleediting-geometry" style = "border-width: 1px 0 0 0; width: 100%; border: 0; padding: 0; height: 20vh;" placeholder  = "Read GeoJson" readonly></textarea>
+                      <textarea id = "g3w-iframe-simpleediting-error" style = "color: red; width: 100%; border: 0; padding: 0; height: 5vh;" placeholder  = "Show Error" readonly></textarea>
+                      <textarea id = "g3w-iframe-simpleediting-geometry" style = "border-width: 1px 0 0 0; width: 100%; padding: 0; height: 20vh;" placeholder  = "Read GeoJson" readonly></textarea>
                     </div> 
                   </div>
                 </div>
@@ -426,7 +426,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                   if (message.data.response && !message.data.response.result) {
                     document.querySelector('#g3w-iframe-simpleediting-error').value = message.data.response.data;
                   }
-                  if (message.data.response && message.data.response.result) {
+                  if (message.data.response && message.data.response.result && message.data.response.geojson) {
                     document.querySelector('#g3w-iframe-simpleediting-geometry').value = JSON.stringify(message.data.response.geojson);
                   }
                 })
