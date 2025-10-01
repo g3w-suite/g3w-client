@@ -348,6 +348,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                 <style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style>
                 <style>#g3w-iframe-simpleediting-input input { width: 100%; border: 0; padding: 0;}</style>
                 <style>#g3w-iframe-simpleediting-buttons button { height: 50px; }</style>
+                <style>#g3w-iframe-simpleediting textarea { resize: none; }</style>
               </head>
               <body>
                 <div style = "display: flex; height: 100%">
