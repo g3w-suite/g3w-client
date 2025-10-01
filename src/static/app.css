@@ -175,7 +175,6 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .g3w-long-text               { overflow: hidden; white-space: normal; overflow-wrap: break-word; }
 .g3w-icon-toggled,
 .g3w-panel button.run_button { background-color: var(--skin-color); }
-.g3w-mini-relation-icon      { color: var(--skin-color); cursor: pointer; font-size:12px; padding:5px; border-radius:5px; }
 *:focus                      { outline: none; }
 
 /**************************************************************************************
@@ -757,9 +756,6 @@ table.dataTable th.sorting_desc::after                         { color:#7a80dd; 
 .g3w-view.content .preview .previewtype.text                                     { color: var(--skin-primary);   border-color: var(--skin-primary); }
 .g3w-view.content .preview .previewtype.excel                                    { color: var(--skin-success);   border-color: var(--skin-success); }
 .g3w-view.content .preview .previewtype.ppt                                      { color: var(--skin-alternate); border-color: var(--skin-alternate); }
-.g3w-view.content .g3wform-relation-table tbody td .preview .previewtype         { width: 30px; height: 30px; padding-top: 6px; }
-.g3w-view.content .g3wform-relation-table tbody td .preview .previewtype i,
-.g3w-view.content .g3wform-relation-table tbody td .preview .previewtype i.fa-2x { font-size: 1em; }
 .g3w-view.content .error-message                                                 { font-weight: bold; font-size: 1.2em; color: red; padding: 5px; margin: 3px; }
 .g3w-view.content .table-header-tool                                             { padding: 10px; color: #fff; font-size: 1.3em; }
 .g3w-view.content .action-button                                                 { display:inline-block; text-align: center; padding: 3px 3px 5px 3px; cursor: pointer; border-radius: 5px; caret-color: rgba(0,0,0,0); }
@@ -1103,7 +1099,6 @@ textarea.form-control                     { height: auto; }
 .attr-label                                        { width: 30%; max-width: 40%; font-weight: bold; }
 .add-link                                          { margin-left: 5px; font-size: 1.8em !important; }
 .add-link span.disabled                            { opacity: 0.3; }
-.g3w-mini-relation-icon                            { padding: 13px; }
 
 .g3wform_body .editbtn                             { padding: 10px; margin: 2px; box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1), 0 1px 4px 0 rgba(0,0,0,0.3); border-radius: 30%; display: inline-block; opacity: .4; cursor: not-allowed; }
 .g3wform_body .editbtn.enabled                     { opacity: 1; cursor: pointer; }
@@ -1126,8 +1121,6 @@ textarea.form-control                     { height: auto; }
 .preview .previewtype.text                         { color: var(--skin-primary); border-color: currentColor; }
 .preview .previewtype.excel                        { color: var(--skin-success); border-color: currentColor; }
 .preview .previewtype.ppt                          { color: var(--skin-alternate); border-color: currentColor; }
-
-.g3wform-relation-table tbody td                   { vertical-align: bottom; }
 
 .g3wform_body                                                    { overflow-x:hidden; overflow-y: auto; clear:both; margin-bottom: 10px; }
 .g3wform_body .divider                                           { display: block; position: relative; padding: 0; margin: 5px auto; height: 0; width: 100%; max-height: 0; font-size: 1px; line-height: 0; clear: both; border: none; border-bottom: 1px solid rgba(122, 122, 122, 0.1); }
