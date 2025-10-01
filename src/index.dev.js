@@ -373,7 +373,6 @@ g3wsdk.gui.GUI.once('ready', () => {
               </body>
               <script>
                const iframe  = document.querySelector('iframe');
-               console.log(iframe)
                 const inputs  = document.querySelector('#g3w-iframe-simpleediting-input').children;
                 const buttons = document.querySelectorAll('#g3w-iframe-simpleediting-buttons button');
                 for (const i of inputs) {
@@ -389,11 +388,12 @@ g3wsdk.gui.GUI.once('ready', () => {
                         }
                       } else {
                         value = iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(i.value);
+                        document.querySelector('#g3w-draw').disabled = !value;
                       }
                       a = a && value;
                       return a;  
                     }, true); 
-                    buttons.forEach(btn => btn.disabled = !enable ) 
+                    Array.from(buttons).filter(btn => btn.id !== 'g3w-draw').forEach(btn => btn.disabled = !enable ) 
                   })
                 }
                 
@@ -413,8 +413,23 @@ g3wsdk.gui.GUI.once('ready', () => {
                 }
                 
                 buttons.forEach(btn => btn.addEventListener('click', evt => sendMessage(evt.target.id.split('g3w-')[1])));  
-                document.querySelector('#g3w-draw').addEventListener('click', () => {});
+                document.querySelector('#g3w-draw').addEventListener('click', () => {
+                  iframe.contentWindow.postMessage({ 
+                      id: ${ Date.now()},
+                      layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
+                      action: 'simpleediting:draw',
+                      geojson: document.querySelector('#g3w-iframe-simpleediting-geojson').value ? JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value) : undefined
+                    }, '*');
+                });
                 document.querySelector('#g3w-geometry').addEventListener('click', () => {});
+                window.addEventListener('message', async message => {
+                  if (message.data.response && !message.data.response.result) {
+                    document.querySelector('#g3w-iframe-simpleediting-error').value = message.data.response.data;
+                  }
+                  if (message.data.response && message.data.response.result) {
+                    document.querySelector('#g3w-iframe-simpleediting-geometry').value = JSON.stringify(message.data.response.geojson);
+                  }
+                })
               </script>
             </html>
           `);
