@@ -347,7 +347,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                 <title>Simple Editing Iframe</title>
                 <style>html,body,iframe{width:100%;height:100%;margin:0;border:0;display:block;}</style>
                 <style>#g3w-iframe-simpleediting-input input { width: 100%; border: 0; padding: 0;}</style>
-                <style>#g3w-iframe-simpleediting-buttons button { height: 50px; }</style>
+                <style>#g3w-iframe-simpleediting-buttons button { height: 50px; cursor: pointer; }</style>
                 <style>#g3w-iframe-simpleediting textarea { resize: none; }</style>
               </head>
               <body>
@@ -358,12 +358,12 @@ g3wsdk.gui.GUI.once('ready', () => {
                       <input    id = "g3w-iframe-simpleediting-layerid" style = "height: 50px; " placeholder  = "Insert Layer Id" />
                       <textarea id = "g3w-iframe-simpleediting-geojson" style = "flex-grow: 2; border-width: 1px 0 0 0;" placeholder  = "Paste GeoJson"></textarea>
                     </div>
-                    <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column; cursor: pointer">
+                    <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column;">
                       <button id = "g3w-add"      class = "btn" style = "background-color: lightgreen;" disabled> Add </button>
                       <button id = "g3w-update"   class = "btn" style = "background-color: lightblue;"  disabled> Update </button>
                       <button id = "g3w-delete"   class = "btn" style = "background-color: lightcoral;" disabled> Delete </button>
                       <button id = "g3w-draw"     class = "btn" style = "background-color: lightyellow" disabled> Draw </button>
-                      <button id = "g3w-geometry" class = "btn" style = "background-color: lightgrey"   disabled> Get Geometry </button>
+                      <button id = "g3w-drawstop" class = "btn" style = "background-color: lightgrey"   disabled> Stop Draw </button>
                     </div> 
                     <div id = "g3w-iframe-simpleediting-output">
                       <label>Response from IFRAME</label>
@@ -394,7 +394,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                       a = a && value;
                       return a;  
                     }, true); 
-                    Array.from(buttons).filter(btn => btn.id !== 'g3w-draw').forEach(btn => btn.disabled = !enable ) 
+                    Array.from(buttons).filter(btn => btn.id !== 'g3w-draw' && btn.id !== 'g3w-drawstop').forEach(btn => btn.disabled = !enable ) 
                   })
                 }
                 
@@ -422,12 +422,19 @@ g3wsdk.gui.GUI.once('ready', () => {
                       geojson: document.querySelector('#g3w-iframe-simpleediting-geojson').value ? JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value) : undefined
                     }, '*');
                 });
-                document.querySelector('#g3w-geometry').addEventListener('click', () => {});
+                document.querySelector('#g3w-drawstop').addEventListener('click', () => {
+                  iframe.contentWindow.postMessage({ 
+                    id: ${ Date.now()},
+                    action: 'simpleediting:drawstop',
+                    layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
+                  }, '*');  
+                });
                 window.addEventListener('message', async message => {
                   if (message.data && message.data.response) {
                     document.querySelector('#g3w-iframe-simpleediting-response').value = JSON.stringify(message.data, null, 2);
                     document.querySelector('#g3w-iframe-simpleediting-response').style.color = message.data.response.result ? "black" : "red";
                   }
+                  document.querySelector('#g3w-drawstop').disabled = !('simpleediting:draw' === message.data.action && message.data && message.data.response && message.data.response.result && message.data.response.geojson);
                 })
               </script>
             </html>
