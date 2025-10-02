@@ -450,6 +450,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                       page_size: 1
                     });
                     document.querySelector('#g3w-iframe-simpleediting-geojson').value = JSON.stringify((new iframe.contentWindow.ol.format.GeoJSON()).writeFeatureObject(data?.[0]?.features?.[0]));
+                    document.querySelector('#g3w-iframe-simpleediting-geojson').dispatchEvent(new Event('input'));                   
                   } catch(e) {
                     console.warn(e); 
                   }
