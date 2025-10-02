@@ -390,8 +390,9 @@ g3w.app.once('after:setupControls', () => {
               document.querySelector('iframe').addEventListener("load", () => {
                 const IFRAME               = document.querySelector('iframe').contentWindow;
                 const { ApplicationState } = IFRAME.g3wsdk.core;
-                const { GEOMETRY_FIELDS }  = IFRAME.g3wsdk.constant;
-                const { G3W_FID }          = IFRAME.g3wsdk.constant.G3W_FID;
+                const { 
+                  GEOMETRY_FIELDS,
+                  G3W_FID   }              = IFRAME.g3wsdk.constant;
                 const { GUI }              = IFRAME.g3wsdk.gui;
                 const { ol }               = IFRAME;
                 const inputs               = document.querySelectorAll('#layerid, #geojson');
