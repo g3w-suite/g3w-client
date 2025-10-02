@@ -357,7 +357,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                     <div id = "g3w-iframe-simpleediting-input" style = " display: flex; flex-direction: column; height: 100%;">
                       <select   id = "g3w-iframe-simpleediting-layerid" class = "input" style = "height: 30px; " placeholder  = "Insert Layer Id">
                       </select> 
-                      <button  id  = "g3w-create-geojson" class = "btn" style = "background-color: lightgrey; height: 30px; width: 100%; cursor: pointer;"  disabled> Generate GeoJson </button>
+                      <button  id  = "g3w-create-geojson" class = "btn" style = "background-color: lightgrey; height: 30px; width: 100%; cursor: pointer;"  disabled> Generate GeoJson from feature</button>
                       <textarea id = "g3w-iframe-simpleediting-geojson" class = "input" style = "flex-grow: 2; border-width: 1px 0 0 0;" placeholder  = "Paste GeoJson"></textarea>
                     </div>
                     <div id = "g3w-iframe-simpleediting-buttons" style = "display: flex; flex-direction: column;">
@@ -455,8 +455,21 @@ g3wsdk.gui.GUI.once('ready', () => {
                       page: 1,
                       page_size: 1
                     });
-                    document.querySelector('#g3w-iframe-simpleediting-geojson').value = JSON.stringify((new iframe.contentWindow.ol.format.GeoJSON()).writeFeatureObject(data?.[0]?.features?.[0]));
-                    document.querySelector('#g3w-iframe-simpleediting-geojson').dispatchEvent(new Event('input'));                   
+                    const feature = data?.[0]?.features?.[0];
+                    //get value from field media (pdf, photo)
+                    if (feature) {
+                      Object.entries(feature.getProperties()).forEach(([k,v]) => {
+                        
+                        if (null !== v && !iframe.contentWindow.g3wsdk.constant.GEOMETRY_FIELDS.includes(k) && 'object' === typeof v) {
+                          feature.set(k, v?.value);
+                        }  
+                      });
+                      feature.set(iframe.contentWindow.g3wsdk.constant.G3W_FID, undefined);
+                      iframe.contentWindow.g3wsdk.gui.GUI.getService('map').zoomToFeatures([feature], { highlight: true });
+                      document.querySelector('#g3w-iframe-simpleediting-geojson').value = JSON.stringify((new iframe.contentWindow.ol.format.GeoJSON()).writeFeatureObject(feature));
+                      document.querySelector('#g3w-iframe-simpleediting-geojson').dispatchEvent(new Event('input')); 
+                    }
+                                      
                   } catch(e) {
                     console.warn(e); 
                   }
