@@ -447,7 +447,7 @@ g3w.app.once('after:setupControls', () => {
               //create an geojson to update getting
               document.querySelector('#create').addEventListener('click', async () => {
                 try {
-                  const { data } = await ApplicationState.project.getLayerById(layerId.value).searchFeatures({ formatter: 0, page: 1, page_size: 1 });
+                  const { data } = await ApplicationState.project.getLayerById(layerId.value).getFilterData({ formatter: 0, page: 1, page_size: 1 });
                   const feature = data?.[0]?.features?.[0];
                   //get value from field media (pdf, photo)
                   if (feature) {
