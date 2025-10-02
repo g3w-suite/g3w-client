@@ -370,7 +370,7 @@ g3w.app.once('after:setupControls', () => {
               <div style="display: flex; flex-direction: column;  width:40vw;">
                 <div id = "input" style = " display: flex; flex-direction: column; height: 100%;">
                   <select   id = "layerid" placeholder  = "Insert Layer Id" style = "padding: 12px;"></select> 
-                  <button   id = "create" disabled>🛠️ Generate GeoJson</button>
+                  <button   id = "create" disabled>🛠️ Generate GeoJson from feature</button>
                   <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
                 </div>
                 <div id = "buttons" style="display: flex; justify-content: space-around;">
@@ -387,12 +387,17 @@ g3w.app.once('after:setupControls', () => {
               </div>
             </body>
             <script>
-              const iframe  = document.querySelector('iframe');
-              const inputs  = document.querySelectorAll('#layerid, #geojson');
-              const buttons = document.querySelectorAll('#buttons button');
-              const layerId = document.querySelector('#layerid');
-              const geoJson = document.querySelector('#geojson');
-              let isNew     = false;
+              const IFRAME               = document.querySelector('iframe').contentWindow;
+              const { ApplicationState } = IFRAME.g3wsdk.core;
+              const { GEOMETRY_FIELDS }  = IFRAME.g3wsdk.constant;
+              const { G3W_FID }          = IFRAME.g3wsdk.constant.G3W_FID;
+              const { GUI }              = IFRAME.g3wsdk.gui;
+              const { ol }               = IFRAME;
+              const inputs               = document.querySelectorAll('#layerid, #geojson');
+              const buttons              = document.querySelectorAll('#buttons button');
+              const layerId              = document.querySelector('#layerid');
+              const geoJson              = document.querySelector('#geojson');
+              let isNew                  = false;
 
               for (const i of inputs) {
                 i.addEventListener('input', () => { 
@@ -409,7 +414,7 @@ g3w.app.once('after:setupControls', () => {
                       isNew = value?.id?.startsWith('__new__');
                       document.querySelector('#create').disabled = !!value;
                     } else {
-                      value                                         = iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(i.value);
+                      value                                         = ApplicationState.project.getLayerById(i.value);
                       document.querySelector('#draw_json').disabled = !(value && value.isGeoLayer());
                     }
                     enabled = enabled && value;
@@ -424,7 +429,7 @@ g3w.app.once('after:setupControls', () => {
               //Post messagae
               function sendMessage(action, data) {
                 try {
-                  iframe.contentWindow.postMessage({ 
+                  IFRAME.postMessage({ 
                     id:     Date.now().toString(),
                     action: 'editing:'+ action,
                     data: {
@@ -440,9 +445,20 @@ g3w.app.once('after:setupControls', () => {
               //create an geojson to update getting
               document.querySelector('#create').addEventListener('click', async () => {
                 try {
-                  const { data } = await iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(layerId.value).searchFeatures({ formatter: 0, page: 1, page_size: 1 });
-                  geoJson.value = JSON.stringify((new iframe.contentWindow.ol.format.GeoJSON()).writeFeatureObject(data?.[0]?.features?.[0]));
-                  geoJson.dispatchEvent(new Event('input'));
+                  const { data } = await ApplicationState.project.getLayerById(layerId.value).searchFeatures({ formatter: 0, page: 1, page_size: 1 });
+                  const feature = data?.[0]?.features?.[0];
+                  //get value from field media (pdf, photo)
+                  if (feature) {
+                    Object.entries(feature.getProperties()).forEach(([k,v]) => {
+                      if (null !== v && !GEOMETRY_FIELDS.includes(k) && 'object' === typeof v) {
+                        feature.set(k, v?.value);
+                      }  
+                    });
+                    feature.set(G3W_FID, undefined);
+                    GUI.getService('map').zoomToFeatures([feature], { highlight: true });
+                    geoJson.value = JSON.stringify((new ol.format.GeoJSON()).writeFeatureObject(feature));
+                    geoJson.dispatchEvent(new Event('input')); 
+                  }
                 } catch(e) {
                   console.warn(e); 
                 }
@@ -452,7 +468,7 @@ g3w.app.once('after:setupControls', () => {
                   // dynamically create <options>
                   const layers = (message.data?.response?.data?.layers || []);
                   layers
-                  .filter(l => iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(l.id).isEditable())
+                  .filter(l => ApplicationState.project.getLayerById(l.id).isEditable())
                   .forEach(l => {
                     const option = document.createElement('option');
                     option.value = option.text = l.id;
