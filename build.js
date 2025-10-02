@@ -452,15 +452,25 @@ async function start_proxy_server() {
   });
 
   const server = http.createServer((req, res) => {
-    const localPath = path.join(g3w.admin_overrides_folder, req.url);
-    console.log(fs.existsSync(localPath), localPath);
-    if (req.url.startsWith('/static/client') && fs.existsSync(localPath)) {
-      const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
-      res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
-      res.end(require('fs').readFileSync(localPath));
-    } else {
-      proxy.web(req, res, { target: SERVER_URL });
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    let localPath;
+    // proxy core and static plugins
+    for (const pluginName of ['client', 'editing', 'openrouteservice', 'qplotly', 'qtimeseries']) {
+      if ('client' === pluginName) {
+        localPath = path.join(g3w.admin_overrides_folder, url.pathname)
+      } else {
+        localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
+      }
+      if (url.pathname.startsWith(`/static/${pluginName}`) && fs.existsSync(localPath)) {
+        console.log(true, '→', localPath);
+        const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
+        res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
+        res.end(require('fs').readFileSync(localPath));
+        return;
+      }
     }
+    console.log(false, '→', `${SERVER_URL.replace(/\/$/g, '')}${url.pathname}`);
+    proxy.web(req, res, { target: SERVER_URL });
   });
 
   // replace `https://dev.g3wsuite.it` → `http://localhost:3000` within text/html responses
