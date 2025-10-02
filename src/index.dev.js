@@ -414,9 +414,11 @@ g3wsdk.gui.GUI.once('ready', () => {
                   try {
                     iframe.contentWindow.postMessage({ 
                       id: ${ Date.now()},
-                      layerId: layerId,
                       action: 'simpleediting:'+ action,
-                      geojson: JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value)
+                      data: {
+                         layerId: layerId,
+                         geojson: JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value)
+                      },
                     }, '*');
                   } catch(e) {
                     console.warn(e); 
@@ -427,16 +429,20 @@ g3wsdk.gui.GUI.once('ready', () => {
                 document.querySelector('#g3w-draw').addEventListener('click', () => {
                   iframe.contentWindow.postMessage({ 
                       id: ${ Date.now()},
-                      layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
                       action: 'simpleediting:draw',
-                      geojson: document.querySelector('#g3w-iframe-simpleediting-geojson').value ? JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value) : undefined
+                      data: {
+                        layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
+                        geojson: document.querySelector('#g3w-iframe-simpleediting-geojson').value ? JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value) : undefined
+                      }
                     }, '*');
                 });
                 document.querySelector('#g3w-drawstop').addEventListener('click', () => {
                   iframe.contentWindow.postMessage({ 
                     id: ${ Date.now()},
                     action: 'simpleediting:drawstop',
-                    layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
+                    data: {
+                      layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value
+                    }
                   }, '*');  
                 });
 
