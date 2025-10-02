@@ -342,6 +342,149 @@ g3w.app.once('after:setupControls', () => {
 });
 
 /**
+ * Custom map control: “Simple Editing (iframe)”
+ */
+g3w.app.once('after:setupControls', () => {
+  g3w.app.createMapControl({
+    id:            "SIMPLEEDITING",
+    options: {
+      add:         true,
+      clickmap:    false,
+      tipLabel:    'Simple Editing',
+      customClass: 'fa fa-object-ungroup',
+      onclick() {
+        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+        w.document.write(/* html */`
+          <!doctype HTML>
+          <html>
+            <head>
+              <title>Simple Editing (iframe)</title>
+              <style>
+                html,body,iframe { width: 100%; height: 100%; margin: 0; border: 0; display: block; }
+                button           { cursor: pointer; padding: 12px; border: none; }
+                textarea         { resize: none; border: none; }
+              </style>
+            </head>
+            <body style = "display: flex;">
+              <iframe src="${ location.href }"></iframe>
+              <div style="display: flex; flex-direction: column;  width:40vw;">
+                <div id = "input" style = " display: flex; flex-direction: column; height: 100%;">
+                  <select   id = "layerid" placeholder  = "Insert Layer Id" style = "padding: 12px;"></select> 
+                  <button   id = "create" disabled>🛠️ Generate GeoJson</button>
+                  <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
+                </div>
+                <div id = "buttons" style="display: flex; justify-content: space-around;">
+                  <button id = "add_json"    disabled>➕ Add</button>
+                  <button id = "update_json" disabled>📝 Update</button>
+                  <button id = "delete_json" disabled>❌ Delete</button>
+                  <button id = "draw_json"   disabled>✍️ Draw</button>
+                  <button id = "save_json"   disabled>💾 Save</button>
+                </div>
+                <div id = "output">
+                  <label>Response from IFRAME</label>
+                  <textarea id = "response" style ="width: 100%; padding: 0; height: 30vh; border: 0; border-top: 2px solid lightgrey;" readonly></textarea>
+                </div> 
+              </div>
+            </body>
+            <script>
+              const iframe  = document.querySelector('iframe');
+              const inputs  = document.querySelectorAll('#layerid, #geojson');
+              const buttons = document.querySelectorAll('#buttons button');
+              const layerId = document.querySelector('#layerid');
+              const geoJson = document.querySelector('#geojson');
+              let isNew     = false;
+
+              for (const i of inputs) {
+                i.addEventListener('input', () => { 
+                  const enabled = Array.from(inputs).reduce((enabled, i) => {
+                    let value = null;
+                    if ('textarea' === i.type) {
+                      try {
+                        value = JSON.parse(i.value);
+                        //check if a new feature geojson
+                      } catch(e) {
+                        console.warn(e); 
+                        value = null;
+                      }
+                      isNew = value?.id?.startsWith('__new__');
+                      document.querySelector('#create').disabled = !!value;
+                    } else {
+                      value                                         = iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(i.value);
+                      document.querySelector('#draw_json').disabled = !(value && value.isGeoLayer());
+                    }
+                    enabled = enabled && value;
+                    return enabled;
+                  }, true);
+                  //disable draw button if enable update, insert or delete
+                  document.querySelector('#draw_json').disabled = enabled;
+                  //set button disabled based on id
+                  Array.from(buttons).filter(btn => btn.id !== 'draw_json' && btn.id !== 'save_json').forEach(btn => btn.disabled = !(enabled && ('add_json' === btn.id ? isNew : !isNew))); 
+                })
+              }
+              //Post messagae
+              function sendMessage(action, data) {
+                try {
+                  iframe.contentWindow.postMessage({ 
+                    id:     Date.now().toString(),
+                    action: 'editing:'+ action,
+                    data: {
+                      layerId: layerId.value,
+                      geojson: 'editing:save_json' !== action && geoJson.value ? JSON.parse(geoJson.value) : undefined,
+                    },
+                  }, '*');
+                } catch(e) {
+                  console.warn(e); 
+                }
+              }
+              buttons.forEach(btn => btn.addEventListener('click', evt => sendMessage(evt.target.id)));  
+              //create an geojson to update getting
+              document.querySelector('#create').addEventListener('click', async () => {
+                try {
+                  const { data } = await iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(layerId.value).searchFeatures({ formatter: 0, page: 1, page_size: 1 });
+                  geoJson.value = JSON.stringify((new iframe.contentWindow.ol.format.GeoJSON()).writeFeatureObject(data?.[0]?.features?.[0]));
+                  geoJson.dispatchEvent(new Event('input'));
+                } catch(e) {
+                  console.warn(e); 
+                }
+              });
+              window.addEventListener('message', async message => {
+                if ('app:ready' === message.data?.action) {
+                  // dynamically create <options>
+                  const layers = (message.data?.response?.data?.layers || []);
+                  layers
+                  .filter(l => iframe.contentWindow.g3wsdk.core.ApplicationState.project.getLayerById(l.id).isEditable())
+                  .forEach(l => {
+                    const option = document.createElement('option');
+                    option.value = option.text = l.id;
+                    layerId.appendChild(option);
+                  });
+                  //set start value
+                  if (layers.length) {
+                    layerId.value = layers[0].id;
+                    layerId.dispatchEvent(new Event('input'));
+                    document.querySelector('#create').disabled = false;
+                  }
+                }
+                if (message.data?.response) {
+                  document.querySelector('#response').value       = JSON.stringify(message.data, null, 2);
+                  document.querySelector('#response').style.color = message.data.response.result ? "black" : "red";
+                }
+                document.querySelector('#save_json').disabled = !('editing:draw_json' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
+                if ('editing:save_json' === message.data?.action && message.data?.response?.geojson) {
+                  geoJson.value = JSON.stringify(message.data?.response?.geojson);
+                  geoJson.dispatchEvent(new Event('input'));
+                }
+              })
+            </script>
+          </html>
+        `);
+      }
+    },
+  });
+});
+
+
+/**
  * Custom search action: “Create from template”
  */
 g3w.app.once('ready', async () => {
