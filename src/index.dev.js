@@ -386,7 +386,11 @@ g3wsdk.gui.GUI.once('ready', () => {
                   let isNew                  = false;
 
                   for (const i of inputs) {
-                    i.addEventListener('input', () => { 
+                    i.addEventListener('input', (evt) => {
+                      //On change layer id input, clear geoJson value
+                      if ('layerid' === evt.target.id) {
+                        geoJson.value = null;
+                      } 
                       const enabled = Array.from(inputs).reduce((enabled, i) => {
                         let value = null;
                         if ('textarea' === i.type) {
