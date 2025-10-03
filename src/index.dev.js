@@ -404,7 +404,11 @@ g3w.app.once('after:setupControls', () => {
                 let isNew                  = false;
 
                 for (const i of inputs) {
-                  i.addEventListener('input', () => { 
+                  i.addEventListener('input', evt => { 
+                    // on change → reset geoJson value 
+                    if ('layerid' === evt.target.id) {
+                      geoJson.value = null;
+                    }
                     const enabled = Array.from(inputs).reduce((enabled, i) => {
                       let value = null;
                       if ('textarea' === i.type) {
