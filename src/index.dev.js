@@ -413,7 +413,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                         return enabled;
                       }, true);
                       //disable draw button if enable update, insert or delete
-                      document.querySelector('#draw_json').disabled = enabled;
+                      document.querySelector('#draw_json').disabled = enabled && isNew;
                       //clear response
                       document.querySelector('#response').value  = null;
                       //set button disabled based on id
