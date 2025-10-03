@@ -511,7 +511,10 @@ g3wsdk.gui.GUI.once('ready', () => {
                     }
                     document.querySelector('#g3w-drawstop').disabled = !('simpleediting:draw' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
                     if ('simpleediting:drawstop' === message.data?.action && message.data?.response?.geojson) {
-                      document.querySelector('#g3w-iframe-simpleediting-geojson').value = JSON.stringify(message.data?.response?.geojson);
+                      const geojson      = message.data.response.geojson;
+                      const layerId      = document.querySelector('#g3w-iframe-simpleediting-layerid').value;
+                      geojson.properties = ApplicationState.project.getLayerById(layerId).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
+                      document.querySelector('#g3w-iframe-simpleediting-geojson').value = JSON.stringify(geojson);
                       document.querySelector('#g3w-iframe-simpleediting-geojson').dispatchEvent(new Event('input'));
                     }
                   })
