@@ -395,6 +395,7 @@ g3w.app.once('after:setupControls', () => {
               document.querySelector('iframe').addEventListener("load", () => {
                 const IFRAME               = document.querySelector('iframe').contentWindow;
                 const OUTPUT               = document.querySelector('#response');
+                const g3w                  = IFRAME.g3w;
                 const { ApplicationState } = IFRAME.g3wsdk.core;
                 const { 
                   GEOMETRY_FIELDS,
@@ -509,17 +510,18 @@ g3w.app.once('after:setupControls', () => {
                     return;
                   }
                   const response = message.data?.response || {};
-                  const method   = message.data?.response?.method;
+                  const data     = response?.data || {}; 
+                  const method   = data?.method;
                   if (response) {
                     OUTPUT.value  = JSON.stringify(message.data , null, 2);
                     OUTPUT.style.color = response?.result ? "black" : "red";
                   }
-                  document.querySelector('#save').disabled = !('draw' === method && response.result && response.geojson);
-                  if ('save' === method && response.geojson) {
+                  document.querySelector('#save').disabled = !('draw' === method && response.result && data.geojson);
+                  if ('save' === method && data.geojson) {
                     layerId.disabled                           = false;
                     document.querySelector('#create').disabled = false;
-                    response.geojson.properties                = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = geojson?.properties?.[p.name] ?? null; return a },{});
-                    geoJson.value                              = JSON.stringify(response.geojson, null, 2);
+                    data.geojson.properties                = g3w.app.getPlugin('editing').getEditingFields(layerId.value).reduce((a, p) => { a[p.name] = data?.geojson?.properties?.[p.name] ?? null; return a },{});
+                    geoJson.value                          = JSON.stringify(data.geojson, null, 2);
                     geoJson.dispatchEvent(new Event('input'));
                   }
                 });
