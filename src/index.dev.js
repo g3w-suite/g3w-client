@@ -394,6 +394,7 @@ g3w.app.once('after:setupControls', () => {
             <script>
               document.querySelector('iframe').addEventListener("load", () => {
                 const IFRAME               = document.querySelector('iframe').contentWindow;
+                const OUTPUT               = document.querySelector('#response');
                 const { ApplicationState } = IFRAME.g3wsdk.core;
                 const { 
                   GEOMETRY_FIELDS,
@@ -416,7 +417,7 @@ g3w.app.once('after:setupControls', () => {
                       let value = null;
                       if ('textarea' === i.type) {
                         try {
-                          value = JSON.parse(i.value);
+                          value = JSON.parse(i.value || null);
                           //check if a new feature geojson
                         } catch(e) {
                           console.warn(e); 
@@ -434,8 +435,8 @@ g3w.app.once('after:setupControls', () => {
                     }, true);
                     //disable draw button if enable update, insert or delete
                     document.querySelector('#draw').disabled = enabled && isNew;
-                    //clear response
-                    document.querySelector('#response').value  = null;
+                    // clear response
+                    OUTPUT.value = null;
                     //set button disabled based on id
                     Array.from(buttons).filter(btn => !['draw', 'save'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
                   })
@@ -481,32 +482,42 @@ g3w.app.once('after:setupControls', () => {
                     console.warn(e); 
                   }
                 });
+                // dynamically create layerId <options>
                 window.addEventListener('message', async message => {
-                  if ('app:ready' === message.data?.action) {
-                    // dynamically create <options>
-                    const layers = (message.data?.response?.data?.layers || []);
-                    layers
+                  if ('app:ready' !== message.data?.action) {
+                    return;
+                  }
+                  const layers = (message.data?.response?.data?.layers || []);
+                  layers
                     .filter(l => ApplicationState.project.getLayerById(l.id).isEditable())
                     .forEach(l => {
                       const option = document.createElement('option');
                       option.value = option.text = l.id;
                       layerId.appendChild(option);
                     });
-                    //set start value
-                    if (layers.length) {
-                      layerId.value = layers[0].id;
-                      layerId.dispatchEvent(new Event('input'));
-                      document.querySelector('#create').disabled = false;
-                    }
+                  // initial value
+                  if (layers.length) {
+                    layerId.value = layers[0].id;
+                    layerId.dispatchEvent(new Event('input'));
+                    document.querySelector('#create').disabled = false;
                   }
-                  if (message.data?.response) {
-                    document.querySelector('#response').value       = JSON.stringify(message.data, null, 2);
-                    document.querySelector('#response').style.color = message.data.response.result ? "black" : "red";
+                });
+                // handle editing response (from parent frame)
+                window.addEventListener('message', async message => {
+                  if ('editing:json' !== action) {
+                    return;
                   }
-                  document.querySelector('#save').disabled = !('editing:json' === message.data?.action && 'draw' === message.data?.response?.method && message.data?.response?.result && message.data?.response?.geojson);
-                  if ('editing:json' === message.data?.action && 'save' === message.data?.response?.method && message.data?.response?.geojson) {
-                    message.data.response.geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
-                    geoJson.value                            = JSON.stringify(message.data.response.geojson, null, 2);
+                  const action   = message.data?.action;
+                  const response = message.data?.response || {};
+                  const method   = message.data?.response?.method
+                  if (response) {
+                    OUTPUT.value  = JSON.stringify(message.data , null, 2);
+                    OUTPUT.style.color = response?.result ? "black" : "red";
+                  }
+                  document.querySelector('#save').disabled = !('draw' === method && response.result && response.geojson);
+                  if ('save' === method && response.geojson) {
+                    response.geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
+                    geoJson.value               = JSON.stringify(response.geojson, null, 2);
                     geoJson.dispatchEvent(new Event('input'));
                   }
                 });
