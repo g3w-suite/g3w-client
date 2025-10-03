@@ -378,12 +378,12 @@ g3w.app.once('after:setupControls', () => {
                   <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
                 </div>
                 <div id = "buttons" style="display: flex; justify-content: space-around;">
-                  <button id = "add"    disabled>➕ Add</button>
-                  <button id = "update" disabled>📝 Update</button>
-                  <button id = "delete" disabled>❌ Delete</button>
-                  <button id = "draw"   disabled>✍️ Draw/Edit</button>
-                  <button id = "save"   disabled>💾 Save</button>
-                  <button id = "clear"  disabled>🧹 Clear</button>
+                  <button id = "add"    disabled title="add a new feature">➕ Add</button>
+                  <button id = "update" disabled title="update an existing feature">📝 Update</button>
+                  <button id = "delete" disabled title="delete a feature">❌ Delete</button>
+                  <button id = "draw"   disabled title="draw a new feature">✍️ Draw/Edit</button>
+                  <button id = "save"   disabled title="save changes on server">💾 Save</button>
+                  <button id = "clear"  disabled title="clear map">🧹 Clear</button>
                 </div>
                 <div>
                   <label>IFRAME response:</label>
