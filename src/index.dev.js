@@ -381,7 +381,7 @@ g3w.app.once('after:setupControls', () => {
                   <button id = "add"    disabled>➕ Add</button>
                   <button id = "update" disabled>📝 Update</button>
                   <button id = "delete" disabled>❌ Delete</button>
-                  <button id = "draw"   disabled>✍️ Draw</button>
+                  <button id = "draw"   disabled>✍️ Draw/Edit</button>
                   <button id = "save"   disabled>💾 Save</button>
                   <button id = "clear"  disabled>🧹 Clear</button>
                 </div>
@@ -433,7 +433,9 @@ g3w.app.once('after:setupControls', () => {
                       return enabled;
                     }, true);
                     //disable draw button if enable update, insert or delete
-                    document.querySelector('#draw').disabled = enabled;
+                    document.querySelector('#draw').disabled = enabled && isNew;
+                    //clear response
+                    document.querySelector('#response').value  = null;
                     //set button disabled based on id
                     Array.from(buttons).filter(btn => !['draw', 'save'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
                   })
