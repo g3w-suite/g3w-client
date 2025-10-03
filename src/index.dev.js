@@ -432,8 +432,6 @@ g3w.app.once('after:setupControls', () => {
                       enabled = enabled && value;
                       return enabled;
                     }, true);
-                    //disable draw button if enable update, insert or delete
-                    document.querySelector('#draw').disabled = enabled && isNew;
                     // clear response
                     OUTPUT.value = null;
                     //set button disabled based on id
@@ -443,6 +441,10 @@ g3w.app.once('after:setupControls', () => {
                 // post message
                 buttons.forEach(btn => btn.addEventListener('click', evt => {
                   try {
+                    if ('draw' == evt.target.id) {
+                      layerId.disabled                           = true;
+                      document.querySelector('#create').disabled = true;
+                    }
                     IFRAME.postMessage({ 
                       id:     Date.now().toString(),
                       action: 'editing:json',
@@ -514,8 +516,10 @@ g3w.app.once('after:setupControls', () => {
                   }
                   document.querySelector('#save').disabled = !('draw' === method && response.result && response.geojson);
                   if ('save' === method && response.geojson) {
-                    response.geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
-                    geoJson.value               = JSON.stringify(response.geojson, null, 2);
+                    layerId.disabled                           = false;
+                    document.querySelector('#create').disabled = false;
+                    response.geojson.properties                = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = geojson?.properties?.[p.name] ?? null; return a },{});
+                    geoJson.value                              = JSON.stringify(response.geojson, null, 2);
                     geoJson.dispatchEvent(new Event('input'));
                   }
                 });
