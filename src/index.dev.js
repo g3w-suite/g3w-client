@@ -409,7 +409,7 @@ g3w.app.once('after:setupControls', () => {
                 let isNew                  = false; // whether is a new feature (geojson)
 
                 for (const i of inputs) {
-                  i.addEventListener('input', evt => { 
+                  i.addEventListener('input', evt => {
                     // on change → reset geoJson value 
                     if ('layerid' === evt.target.id) {
                       geoJson.value = null;
@@ -437,7 +437,7 @@ g3w.app.once('after:setupControls', () => {
                     OUTPUT.value = null;
                     //set button disabled based on id
                     Array.from(buttons).filter(btn => !['draw', 'save'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
-                  })
+                  });
                 }
                 // post message
                 buttons.forEach(btn => btn.addEventListener('click', evt => {
@@ -491,12 +491,8 @@ g3w.app.once('after:setupControls', () => {
                   }
                   const layers = (message.data?.response?.data?.layers || []);
                   layers
-                    .filter(l => ApplicationState.project.getLayerById(l.id).isEditable())
-                    .forEach(l => {
-                      const option = document.createElement('option');
-                      option.value = option.text = l.id;
-                      layerId.appendChild(option);
-                    });
+                    .filter(l  => ApplicationState.project.getLayerById(l.id).isEditable())
+                    .forEach(l => layerId.appendChild(Object.assign(document.createElement('option'), { value: l.id, text: l.id })));
                   // initial value
                   if (layers.length) {
                     layerId.value = layers[0].id;
@@ -513,7 +509,7 @@ g3w.app.once('after:setupControls', () => {
                   const data     = response?.data || {}; 
                   const method   = data?.method;
                   if (response) {
-                    OUTPUT.value  = JSON.stringify(message.data , null, 2);
+                    OUTPUT.value  = JSON.stringify(message.data, null, 2);
                     OUTPUT.style.color = response?.result ? "black" : "red";
                   }
                   document.querySelector('#save').disabled = !('draw' === method && response.result && data.geojson);
