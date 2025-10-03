@@ -343,6 +343,8 @@ g3w.app.once('after:setupControls', () => {
 
 /**
  * Custom map control: “Simple Editing (iframe)”
+ * 
+ * @see https://github.com/g3w-suite/g3w-client/pull/855
  */
 g3w.app.once('after:setupControls', () => {
   g3w.app.createMapControl({
