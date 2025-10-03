@@ -355,7 +355,7 @@ g3w.app.once('after:setupControls', () => {
       tipLabel:    'Simple Editing',
       customClass: 'fa fa-object-ungroup',
       onclick() {
-        const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+        const w = window.open('about:blank', '_blank');
         w.document.write(/* html */`
           <!doctype HTML>
           <html>
@@ -504,6 +504,8 @@ g3w.app.once('after:setupControls', () => {
             </script>
           </html>
         `);
+        // prevent page refresh (eg. CTRL+R)
+        w.onbeforeunload = () => w.close();
       }
     },
   });
