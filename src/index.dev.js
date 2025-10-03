@@ -362,7 +362,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                     <button id = "add_json"    disabled>➕ Add</button>
                     <button id = "update_json" disabled>📝 Update</button>
                     <button id = "delete_json" disabled>❌ Delete</button>
-                    <button id = "draw_json"   disabled>✍️ Draw</button>
+                    <button id = "draw_json"   disabled>✍️ Draw/Modify</button>
                     <button id = "save_json"   disabled>💾 Save</button>
                   </div>
                   <div id = "output">
