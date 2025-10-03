@@ -426,7 +426,7 @@ g3w.app.once('after:setupControls', () => {
                         document.querySelector('#create').disabled = !!value;
                         document.querySelector('#clear').disabled = !value;
                       } else {
-                        value                                         = ApplicationState.project.getLayerById(i.value);
+                        value                                    = ApplicationState.project.getLayerById(i.value);
                         document.querySelector('#draw').disabled = !(value && value.isGeoLayer());
                       }
                       enabled = enabled && value;
@@ -472,7 +472,7 @@ g3w.app.once('after:setupControls', () => {
                       });
                       feature.set(G3W_FID, undefined);
                       GUI.getService('map').zoomToFeatures([feature], { highlight: true });
-                      geoJson.value = JSON.stringify((new ol.format.GeoJSON()).writeFeatureObject(feature));
+                      geoJson.value = JSON.stringify((new ol.format.GeoJSON()).writeFeatureObject(feature), null, 2);
                       geoJson.dispatchEvent(new Event('input')); 
                     }
                   } catch(e) {
@@ -504,7 +504,7 @@ g3w.app.once('after:setupControls', () => {
                   document.querySelector('#save').disabled = !('editing:json' === message.data?.action && 'draw' === message.data?.response?.method && message.data?.response?.result && message.data?.response?.geojson);
                   if ('editing:json' === message.data?.action && 'save' === message.data?.response?.method && message.data?.response?.geojson) {
                     message.data.response.geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
-                    geoJson.value                            = JSON.stringify(message.data.response.geojson);
+                    geoJson.value                            = JSON.stringify(message.data.response.geojson, null, 2);
                     geoJson.dispatchEvent(new Event('input'));
                   }
                 });
