@@ -376,11 +376,11 @@ g3w.app.once('after:setupControls', () => {
                   <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
                 </div>
                 <div id = "buttons" style="display: flex; justify-content: space-around;">
-                  <button id = "add_json"    disabled>➕ Add</button>
-                  <button id = "update_json" disabled>📝 Update</button>
-                  <button id = "delete_json" disabled>❌ Delete</button>
-                  <button id = "draw_json"   disabled>✍️ Draw</button>
-                  <button id = "save_json"   disabled>💾 Save</button>
+                  <button id = "add"    disabled>➕ Add</button>
+                  <button id = "update" disabled>📝 Update</button>
+                  <button id = "delete" disabled>❌ Delete</button>
+                  <button id = "draw"   disabled>✍️ Draw</button>
+                  <button id = "save"   disabled>💾 Save</button>
                 </div>
                 <div id = "output">
                   <label>Response from IFRAME</label>
@@ -419,27 +419,27 @@ g3w.app.once('after:setupControls', () => {
                         document.querySelector('#create').disabled = !!value;
                       } else {
                         value                                         = ApplicationState.project.getLayerById(i.value);
-                        document.querySelector('#draw_json').disabled = !(value && value.isGeoLayer());
+                        document.querySelector('#draw').disabled = !(value && value.isGeoLayer());
                       }
                       enabled = enabled && value;
                       return enabled;
                     }, true);
                     //disable draw button if enable update, insert or delete
-                    document.querySelector('#draw_json').disabled = enabled;
+                    document.querySelector('#draw').disabled = enabled;
                     //set button disabled based on id
-                    Array.from(buttons).filter(btn => btn.id !== 'draw_json' && btn.id !== 'save_json').forEach(btn => btn.disabled = !(enabled && ('add_json' === btn.id ? isNew : !isNew))); 
+                    Array.from(buttons).filter(btn => !['draw', 'save'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
                   })
                 }
                 // post message
                 buttons.forEach(btn => btn.addEventListener('click', evt => {
                   try {
-                    const action = evt.target.id;
                     IFRAME.postMessage({ 
                       id:     Date.now().toString(),
-                      action: 'editing:'+ action,
+                      action: 'editing:json',
                       data: {
                         qgs_layer_id: layerId.value,
-                        geojson: 'editing:save_json' !== action && geoJson.value ? JSON.parse(geoJson.value) : undefined,
+                        geojson: 'save' !== evt.target.id && geoJson.value ? JSON.parse(geoJson.value) : undefined,
+                        method: evt.target.id,
                       },
                     }, '*');
                   } catch(e) {
@@ -489,8 +489,8 @@ g3w.app.once('after:setupControls', () => {
                     document.querySelector('#response').value       = JSON.stringify(message.data, null, 2);
                     document.querySelector('#response').style.color = message.data.response.result ? "black" : "red";
                   }
-                  document.querySelector('#save_json').disabled = !('editing:draw_json' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
-                  if ('editing:save_json' === message.data?.action && message.data?.response?.geojson) {
+                  document.querySelector('#save').disabled = !('editing:json' === message.data?.action && 'draw' === message.data?.response?.method && message.data?.response?.result && message.data?.response?.geojson);
+                  if ('editing:json' === message.data?.action && 'save' === message.data?.response?.method && message.data?.response?.geojson) {
                     message.data.response.geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
                     geoJson.value                            = JSON.stringify(message.data.response.geojson);
                     geoJson.dispatchEvent(new Event('input'));
