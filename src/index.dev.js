@@ -460,7 +460,6 @@ g3wsdk.gui.GUI.once('ready', () => {
                     }
                   });
                   window.addEventListener('message', async message => {
-                    console.log(message)
                     if ('app:ready' === message.data?.action) {
                       // dynamically create <options>
                       const layers = (message.data?.response?.data?.layers || []);
