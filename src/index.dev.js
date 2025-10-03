@@ -422,9 +422,9 @@ g3w.app.once('after:setupControls', () => {
                           console.warn(e); 
                           value = null;
                         }
-                        isNew = value?.id?.startsWith('__new__');
+                        isNew                                      = value?.id?.startsWith('__new__');
                         document.querySelector('#create').disabled = !!value;
-                        document.querySelector('#clear').disabled = !value;
+                        document.querySelector('#clear').disabled  = !value;
                       } else {
                         value                                    = ApplicationState.project.getLayerById(i.value);
                         document.querySelector('#draw').disabled = !(value && value.isGeoLayer());
@@ -503,12 +503,11 @@ g3w.app.once('after:setupControls', () => {
                 });
                 // handle editing response (from parent frame)
                 window.addEventListener('message', async message => {
-                  if ('editing:json' !== action) {
+                  if ('editing:json' !== message.data?.action) {
                     return;
                   }
-                  const action   = message.data?.action;
                   const response = message.data?.response || {};
-                  const method   = message.data?.response?.method
+                  const method   = message.data?.response?.method;
                   if (response) {
                     OUTPUT.value  = JSON.stringify(message.data , null, 2);
                     OUTPUT.style.color = response?.result ? "black" : "red";
