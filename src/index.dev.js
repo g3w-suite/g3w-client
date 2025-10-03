@@ -381,6 +381,7 @@ g3w.app.once('after:setupControls', () => {
                   <button id = "delete" disabled>❌ Delete</button>
                   <button id = "draw"   disabled>✍️ Draw</button>
                   <button id = "save"   disabled>💾 Save</button>
+                  <button id = "clear"  disabled>🧹 Clear</button>
                 </div>
                 <div id = "output">
                   <label>Response from IFRAME</label>
@@ -421,6 +422,7 @@ g3w.app.once('after:setupControls', () => {
                         }
                         isNew = value?.id?.startsWith('__new__');
                         document.querySelector('#create').disabled = !!value;
+                        document.querySelector('#clear').disabled = !value;
                       } else {
                         value                                         = ApplicationState.project.getLayerById(i.value);
                         document.querySelector('#draw').disabled = !(value && value.isGeoLayer());
@@ -450,6 +452,10 @@ g3w.app.once('after:setupControls', () => {
                     console.warn(e); 
                   }
                 }));  
+                document.querySelector('#clear').addEventListener('click', async () => {
+                  geoJson.value = null;
+                  geoJson.dispatchEvent(new Event('input')); 
+                })
                 //create an geojson to update getting
                 document.querySelector('#create').addEventListener('click', async () => {
                   try {
