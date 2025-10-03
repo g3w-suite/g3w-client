@@ -342,17 +342,17 @@ g3w.app.once('after:setupControls', () => {
 });
 
 /**
- * Custom map control: “Simple Editing (iframe)”
+ * Custom map control: “Iframe editor”
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/855
  */
 g3w.app.once('after:setupControls', () => {
   g3w.app.createMapControl({
-    id:            "SIMPLEEDITING",
+    id:            "IFRAMEEDITOR",
     options: {
       add:         true,
       clickmap:    false,
-      tipLabel:    'Simple Editing',
+      tipLabel:    'Iframe editor',
       customClass: 'fa fa-object-ungroup',
       onclick() {
         const w = window.open('about:blank', '_blank');
@@ -360,7 +360,7 @@ g3w.app.once('after:setupControls', () => {
           <!doctype HTML>
           <html>
             <head>
-              <title>Simple Editing (iframe)</title>
+              <title>Iframe editor</title>
               <style>
                 html,body,iframe { width: 100%; height: 100%; margin: 0; border: 0; display: block; }
                 button           { cursor: pointer; padding: 12px; border: none; }
