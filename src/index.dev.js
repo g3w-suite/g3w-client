@@ -491,7 +491,8 @@ g3w.app.once('after:setupControls', () => {
                   }
                   document.querySelector('#save_json').disabled = !('editing:draw_json' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
                   if ('editing:save_json' === message.data?.action && message.data?.response?.geojson) {
-                    geoJson.value = JSON.stringify(message.data?.response?.geojson);
+                    message.data.response.geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
+                    geoJson.value                            = JSON.stringify(message.data.response.geojson);
                     geoJson.dispatchEvent(new Event('input'));
                   }
                 });
