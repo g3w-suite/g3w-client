@@ -355,6 +355,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                   <div id = "input" style = " display: flex; flex-direction: column; height: 100%;">
                     <select   id = "layerid" placeholder  = "Insert Layer Id" style = "padding: 12px;"></select> 
                     <button   id = "create" disabled>🛠️ Generate GeoJson from feature</button>
+                    <button   id = "clear"  disabled>🧹 Clear</button>
                     <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
                   </div>
                   <div id = "buttons" style="display: flex; justify-content: space-around;">
@@ -403,6 +404,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                           }
                           isNew = value?.id?.startsWith('__new__');
                           document.querySelector('#create').disabled = !!value;
+                          document.querySelector('#clear').disabled  =  !value;
                         } else {
                           value                                         = ApplicationState.project.getLayerById(i.value);
                           document.querySelector('#draw_json').disabled = !(value && value.isGeoLayer());
@@ -432,6 +434,10 @@ g3wsdk.gui.GUI.once('ready', () => {
                       console.warn(e); 
                     }
                   }));  
+                  document.querySelector('#clear').addEventListener('click', async () => {
+                    geoJson.value = null;
+                    geoJson.dispatchEvent(new Event('input')); 
+                  })
                   //create an geojson to update getting
                   document.querySelector('#create').addEventListener('click', async () => {
                     try {
