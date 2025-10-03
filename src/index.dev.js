@@ -360,18 +360,20 @@ g3w.app.once('after:setupControls', () => {
           <!doctype HTML>
           <html>
             <head>
-              <title>Iframe editor</title>
+              <title>🛠️ Iframe editor</title>
               <style>
-                html,body,iframe { width: 100%; height: 100%; margin: 0; border: 0; display: block; }
-                button           { cursor: pointer; padding: 12px; border: none; }
-                textarea         { resize: none; border: none; }
+                html, body, iframe         { width: 100%; height: 100%; margin: 0; border: 0; display: block; }
+                button                     { cursor: pointer; padding: 12px; border: none; }
+                textarea                   { resize: none; border: none; }
+                select:required:invalid    { opacity: .8; }
+                option[value=""][disabled] { display: none; }
               </style>
             </head>
             <body style = "display: flex;">
               <iframe src="${ location.href }"></iframe>
               <div style="display: flex; flex-direction: column;  width:40vw;">
                 <div id = "input" style = " display: flex; flex-direction: column; height: 100%;">
-                  <select   id = "layerid" placeholder  = "Insert Layer Id" style = "padding: 12px;"></select> 
+                  <select   id = "layerid" style = "padding: 12px;" required><option value="" disabled selected hidden>loading options ...</option></select> 
                   <button   id = "create" disabled>🛠️ Generate GeoJson from feature</button>
                   <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
                 </div>
@@ -383,9 +385,9 @@ g3w.app.once('after:setupControls', () => {
                   <button id = "save"   disabled>💾 Save</button>
                   <button id = "clear"  disabled>🧹 Clear</button>
                 </div>
-                <div id = "output">
-                  <label>Response from IFRAME</label>
-                  <textarea id = "response" style ="width: 100%; padding: 0; height: 30vh; border: 0; border-top: 2px solid lightgrey;" readonly></textarea>
+                <div>
+                  <label>IFRAME response:</label>
+                  <textarea id = "response" style ="width: 100%; padding: 0; height: 50vh; border: 0; border-top: 2px solid lightgrey;" readonly></textarea>
                 </div> 
               </div>
             </body>
