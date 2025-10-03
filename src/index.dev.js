@@ -422,6 +422,10 @@ g3wsdk.gui.GUI.once('ready', () => {
                   buttons.forEach(btn => btn.addEventListener('click', evt => {
                     try {
                       const action = evt.target.id;
+                      if ('draw_json' == action) {
+                        layerId.disabled                           = true;
+                        document.querySelector('#create').disabled = true;
+                      }
                       IFRAME.postMessage({ 
                         id:     Date.now().toString(),
                         action: 'editing:'+ action,
@@ -483,6 +487,8 @@ g3wsdk.gui.GUI.once('ready', () => {
                     }
                     document.querySelector('#save_json').disabled = !('editing:draw_json' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
                     if ('editing:save_json' === message.data?.action && message.data?.response?.data?.geojson) {
+                      layerId.disabled                           = false;
+                      document.querySelector('#create').disabled = false;
                       const geojson      = message.data.response.data.geojson;
                       geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = geojson?.properties?.[p.name] ?? null; return a },{});
                       geoJson.value = JSON.stringify(geojson);
