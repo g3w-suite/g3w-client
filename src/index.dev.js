@@ -335,9 +335,9 @@ g3wsdk.gui.GUI.once('ready', () => {
         add:         true,
         clickmap:    false,
         tipLabel:    'Simple Editing',
-        customClass: 'fa fa-object-ungroup',
+        customClass: 'far fa-edit',
         onclick() {
-          const w = window.open('about:blank', '_blank', `fullscreen=yes`);
+          const w = window.open('about:blank', '_blank');;
           w.document.write(/* html */`
             <!doctype HTML>
             <html>
