@@ -412,8 +412,6 @@ g3wsdk.gui.GUI.once('ready', () => {
                         enabled = enabled && value;
                         return enabled;
                       }, true);
-                      //disable draw button if enable update, insert or delete
-                      document.querySelector('#draw_json').disabled = enabled && isNew;
                       //clear response
                       document.querySelector('#response').value  = null;
                       //set button disabled based on id
@@ -487,7 +485,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                     document.querySelector('#save_json').disabled = !('editing:draw_json' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
                     if ('editing:save_json' === message.data?.action && message.data?.response?.data?.geojson) {
                       const geojson      = message.data.response.data.geojson;
-                      geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = null; return a },{});
+                      geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = geojson?.properties[p.name] ?? null; return a },{});
                       geoJson.value = JSON.stringify(geojson);
                       geoJson.dispatchEvent(new Event('input'));
                     }
