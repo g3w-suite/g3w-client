@@ -395,6 +395,7 @@ g3w.app.once('after:setupControls', () => {
               document.querySelector('iframe').addEventListener("load", () => {
                 const IFRAME               = document.querySelector('iframe').contentWindow;
                 const OUTPUT               = document.querySelector('#response');
+                const g3w                  = IFRAME.g3w;
                 const { ApplicationState } = IFRAME.g3wsdk.core;
                 const { 
                   GEOMETRY_FIELDS,
@@ -519,8 +520,8 @@ g3w.app.once('after:setupControls', () => {
                   if ('save' === method && data.geojson) {
                     layerId.disabled                           = false;
                     document.querySelector('#create').disabled = false;
-                    data.geojson.properties                = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = data?.geojson?.properties?.[p.name] ?? null; return a },{});
-                    geoJson.value                              = JSON.stringify(data.geojson, null, 2);
+                    data.geojson.properties                = g3w.app.getPlugin('editing').getEditingFields(layerId.value).reduce((a, p) => { a[p.name] = data?.geojson?.properties?.[p.name] ?? null; return a },{});
+                    geoJson.value                          = JSON.stringify(data.geojson, null, 2);
                     geoJson.dispatchEvent(new Event('input'));
                   }
                 });
