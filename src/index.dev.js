@@ -436,7 +436,7 @@ g3w.app.once('after:setupControls', () => {
                       id:     Date.now().toString(),
                       action: 'editing:'+ action,
                       data: {
-                        layerId: layerId.value,
+                        qgs_layer_id: layerId.value,
                         geojson: 'editing:save_json' !== action && geoJson.value ? JSON.parse(geoJson.value) : undefined,
                       },
                     }, '*');
