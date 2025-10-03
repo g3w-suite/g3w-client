@@ -405,7 +405,7 @@ g3w.app.once('after:setupControls', () => {
                 const buttons              = document.querySelectorAll('#buttons button');
                 const layerId              = document.querySelector('#layerid');
                 const geoJson              = document.querySelector('#geojson');
-                let isNew                  = false;
+                let isNew                  = false; // whether is a new feature (geojson)
 
                 for (const i of inputs) {
                   i.addEventListener('input', evt => { 
@@ -418,7 +418,6 @@ g3w.app.once('after:setupControls', () => {
                       if ('textarea' === i.type) {
                         try {
                           value = JSON.parse(i.value || null);
-                          //check if a new feature geojson
                         } catch(e) {
                           console.warn(e); 
                           value = null;
