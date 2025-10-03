@@ -353,7 +353,7 @@ g3w.app.once('after:setupControls', () => {
       add:         true,
       clickmap:    false,
       tipLabel:    'Iframe editor',
-      customClass: 'fa fa-object-ungroup',
+      customClass: 'far fa-edit',
       onclick() {
         const w = window.open('about:blank', '_blank');
         w.document.write(/* html */`
