@@ -425,7 +425,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                         id: ${ Date.now()},
                         action: 'simpleediting:'+ action,
                         data: {
-                          layerId: layerId,
+                          qgs_layer_id: layerId,
                           geojson: JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value)
                         },
                       }, '*');
@@ -440,7 +440,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                         id: ${ Date.now()},
                         action: 'simpleediting:draw',
                         data: {
-                          layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
+                          qgs_layer_id: document.querySelector('#g3w-iframe-simpleediting-layerid').value,
                           geojson: document.querySelector('#g3w-iframe-simpleediting-geojson').value ? JSON.parse(document.querySelector('#g3w-iframe-simpleediting-geojson').value) : undefined
                         }
                       }, '*');
@@ -450,7 +450,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                       id: ${ Date.now()},
                       action: 'simpleediting:drawstop',
                       data: {
-                        layerId: document.querySelector('#g3w-iframe-simpleediting-layerid').value
+                        qgs_layer_id: document.querySelector('#g3w-iframe-simpleediting-layerid').value
                       }
                     }, '*');  
                   });
