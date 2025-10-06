@@ -402,7 +402,7 @@ g3wsdk.gui.GUI.once('ready', () => {
                             console.warn(e); 
                             value = null;
                           }
-                          isNew = value?.id?.startsWith('__new__');
+                          isNew = value?.id?.startsWith('_new_');
                           document.querySelector('#create').disabled = !!value;
                           document.querySelector('#clear').disabled  =  !value;
                         } else {
