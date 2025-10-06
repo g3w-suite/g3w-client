@@ -329,179 +329,191 @@ g3wsdk.gui.GUI.once('ready', () => {
     /**
      * @since 4.0.3 Simple editing map control
      */
-    this.createMapControl({
-      id:            "SIMPLEEDITING",
-      options: {
-        add:         true,
-        clickmap:    false,
-        tipLabel:    'Simple Editing',
-        customClass: 'far fa-edit',
-        onclick() {
-          const w = window.open('about:blank', '_blank');;
-          w.document.write(/* html */`
-            <!doctype HTML>
-            <html>
-              <head>
-                <title>Simple Editing (iframe)</title>
-                <style>
-                  html,body,iframe { width: 100%; height: 100%; margin: 0; border: 0; display: block; }
-                  button           { cursor: pointer; padding: 12px; border: none; }
-                  textarea         { resize: none; border: none; }
-                </style>
-              </head>
-              <body style = "display: flex;">
-                <iframe src="${ location.href }"></iframe>
-                <div style="display: flex; flex-direction: column;  width:40vw;">
-                  <div id = "input" style = " display: flex; flex-direction: column; height: 100%;">
-                    <select   id = "layerid" placeholder  = "Insert Layer Id" style = "padding: 12px;"></select> 
-                    <button   id = "create" disabled>🛠️ Generate GeoJson from feature</button>
-                    <button   id = "clear"  disabled>🧹 Clear</button>
-                    <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
-                  </div>
-                  <div id = "buttons" style="display: flex; justify-content: space-around;">
-                    <button id = "add_json"    disabled>➕ Add</button>
-                    <button id = "update_json" disabled>📝 Update</button>
-                    <button id = "delete_json" disabled>❌ Delete</button>
-                    <button id = "draw_json"   disabled>✍️ Draw/Modify</button>
-                    <button id = "save_json"   disabled>💾 Save</button>
-                  </div>
-                  <div id = "output">
-                    <label>Response from IFRAME</label>
-                    <textarea id = "response" style ="width: 100%; padding: 0; height: 30vh; border: 0; border-top: 2px solid lightgrey;" readonly></textarea>
-                  </div> 
+   this.createMapControl({
+    id:            "IFRAMEEDITOR",
+    options: {
+      add:         true,
+      clickmap:    false,
+      tipLabel:    'Iframe editor',
+      customClass: 'far fa-edit',
+      onclick() {
+        const w = window.open('about:blank', '_blank');
+        w.document.write(/* html */`
+          <!doctype HTML>
+          <html>
+            <head>
+              <title>🛠️ Iframe editor</title>
+              <style>
+                html, body, iframe         { width: 100%; height: 100%; margin: 0; border: 0; display: block; }
+                button                     { cursor: pointer; padding: 12px; border: none; }
+                textarea                   { resize: none; border: none; }
+                select:required:invalid    { opacity: .8; }
+                option[value=""][disabled] { display: none; }
+              </style>
+            </head>
+            <body style = "display: flex;">
+              <iframe src="${ location.href }"></iframe>
+              <div style="display: flex; flex-direction: column;  width:40vw;">
+                <div id = "input" style = " display: flex; flex-direction: column; height: 100%;">
+                  <select   id = "layerid" style = "padding: 12px;" required><option value="" disabled selected hidden>loading options ...</option></select> 
+                  <button   id = "create" disabled>🛠️ Generate GeoJson from feature</button>
+                  <textarea id = "geojson" placeholder  = "Paste GeoJson"   style = "flex-grow: 2;"></textarea>
                 </div>
-              </body>
-              <script>
-                document.querySelector('iframe').addEventListener("load", () => {
-                  const IFRAME               = document.querySelector('iframe').contentWindow;
-                  const { ApplicationState } = IFRAME.g3wsdk.core;
-                  const { 
-                    GEOMETRY_FIELDS,
-                    G3W_FID   }              = IFRAME.g3wsdk.constant;
-                  const { GUI }              = IFRAME.g3wsdk.gui;
-                  const { ol }               = IFRAME;
-                  const inputs               = document.querySelectorAll('#layerid, #geojson');
-                  const buttons              = document.querySelectorAll('#buttons button');
-                  const layerId              = document.querySelector('#layerid');
-                  const geoJson              = document.querySelector('#geojson');
-                  let isNew                  = false;
+                <div id = "buttons" style="display: flex; justify-content: space-around;">
+                  <button id = "add"    disabled title="add a new feature">➕ Add</button>
+                  <button id = "update" disabled title="update an existing feature">📝 Update</button>
+                  <button id = "delete" disabled title="delete a feature">❌ Delete</button>
+                  <button id = "draw"   disabled title="draw a new feature">✍️ Draw/Edit</button>
+                  <button id = "save"   disabled title="save changes on server">💾 Save</button>
+                  <button id = "clear"  disabled title="clear map">🧹 Clear</button>
+                </div>
+                <div>
+                  <label>IFRAME response:</label>
+                  <textarea id = "response" style ="width: 100%; padding: 0; height: 50vh; border: 0; border-top: 2px solid lightgrey;" readonly></textarea>
+                </div> 
+              </div>
+            </body>
+            <script>
+              document.querySelector('iframe').addEventListener("load", () => {
+                const IFRAME                      = document.querySelector('iframe').contentWindow;
+                const OUTPUT                      = document.querySelector('#response');
+                const { ApplicationState }        = IFRAME.g3wsdk.core;
+                const { GEOMETRY_FIELDS,G3W_FID } = IFRAME.g3wsdk.constant;
+                const { GUI }                     = IFRAME.g3wsdk.gui;
+                const { ol }                      = IFRAME;
 
-                  for (const i of inputs) {
-                    i.addEventListener('input', (evt) => {
-                      //On change layer id input, clear geoJson value
-                      if ('layerid' === evt.target.id) {
-                        geoJson.value = null;
-                      } 
-                      const enabled = Array.from(inputs).reduce((enabled, i) => {
-                        let value = null;
-                        if ('textarea' === i.type) {
-                          try {
-                            value = JSON.parse(i.value);
-                            //check if a new feature geojson
-                          } catch(e) {
-                            console.warn(e); 
-                            value = null;
-                          }
-                          isNew = value?.id?.startsWith('_new_');
-                          document.querySelector('#create').disabled = !!value;
-                          document.querySelector('#clear').disabled  =  !value;
-                        } else {
-                          value                                         = ApplicationState.project.getLayerById(i.value);
-                          document.querySelector('#draw_json').disabled = !(value && value.isGeoLayer());
+                const inputs                      = document.querySelectorAll('#layerid, #geojson');
+                const buttons                     = document.querySelectorAll('#buttons button');
+                const layerId                     = document.querySelector('#layerid');
+                const geoJson                     = document.querySelector('#geojson');
+                const create                      = document.querySelector('#create');
+                const clear                       = document.querySelector('#clear');
+                const draw                        = document.querySelector('#draw');
+
+                let isNew                         = false; // whether is a new feature (geojson)
+
+                for (const i of inputs) {
+                  i.addEventListener('input', evt => {
+                    // on change → reset geoJson value 
+                    if ('layerid' === evt.target.id) {
+                      geoJson.value = null;
+                    }
+                    const enabled = Array.from(inputs).reduce((enabled, i) => {
+                      let value = null;
+                      if ('textarea' === i.type) {
+                        try {
+                          value = JSON.parse(i.value || null);
+                        } catch(e) {
+                          console.warn(e); 
+                          value = null;
                         }
-                        enabled = enabled && value;
-                        return enabled;
-                      }, true);
-                      //clear response
-                      document.querySelector('#response').value  = null;
-                      //set button disabled based on id
-                      Array.from(buttons).filter(btn => btn.id !== 'draw_json' && btn.id !== 'save_json').forEach(btn => btn.disabled = !(enabled && ('add_json' === btn.id ? isNew : !isNew))); 
-                    })
+                        isNew           = value?.id?.toString().startsWith('_new_');
+                        create.disabled = !!value;
+                        clear.disabled  = !value;
+                      } else {
+                        value         = ApplicationState.project.getLayerById(i.value);
+                        draw.disabled = !(value && value.isGeoLayer());
+                      }
+                      enabled = enabled && value;
+                      return enabled;
+                    }, true);
+                    // clear response
+                    OUTPUT.value = null;
+                    //set button disabled based on id
+                    Array.from(buttons).filter(btn => !['draw', 'save', 'clear'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
+                  });
+                }
+                // post message
+                buttons.forEach(btn => btn.addEventListener('click', evt => {
+                  try {
+                    if ('draw' == evt.target.id) {
+                      layerId.disabled                           = true;
+                      create.disabled = true;
+                    }
+                    IFRAME.postMessage({ 
+                      id:     Date.now().toString(),
+                      action: 'editing:json',
+                      data: {
+                        qgs_layer_id: layerId.value,
+                        geojson: 'save' !== evt.target.id && geoJson.value ? JSON.parse(geoJson.value) : undefined,
+                        method: evt.target.id,
+                      },
+                    }, '*');
+                  } catch(e) {
+                    console.warn(e); 
                   }
-                  // post message
-                  buttons.forEach(btn => btn.addEventListener('click', evt => {
-                    try {
-                      const action = evt.target.id;
-                      if ('draw_json' == action) {
-                        layerId.disabled                           = true;
-                        document.querySelector('#create').disabled = true;
-                      }
-                      IFRAME.postMessage({ 
-                        id:     Date.now().toString(),
-                        action: 'editing:'+ action,
-                        data: {
-                          qgs_layer_id: layerId.value,
-                          geojson: 'editing:save_json' !== action && geoJson.value ? JSON.parse(geoJson.value) : undefined,
-                        },
-                      }, '*');
-                    } catch(e) {
-                      console.warn(e); 
-                    }
-                  }));  
-                  document.querySelector('#clear').addEventListener('click', async () => {
-                    geoJson.value = null;
-                    geoJson.dispatchEvent(new Event('input')); 
-                  })
-                  //create an geojson to update getting
-                  document.querySelector('#create').addEventListener('click', async () => {
-                    try {
-                      const { data } = await ApplicationState.project.getLayerById(layerId.value).getFilterData({ formatter: 0, page: 1, page_size: 1 });
-                      const feature = data?.[0]?.features?.[0];
-                      //get value from field media (pdf, photo)
-                      if (feature) {
-                        Object.entries(feature.getProperties()).forEach(([k,v]) => {
-                          if (null !== v && !GEOMETRY_FIELDS.includes(k) && 'object' === typeof v) {
-                            feature.set(k, v?.value);
-                          }  
-                        });
-                        feature.set(G3W_FID, undefined);
-                        GUI.getService('map').zoomToFeatures([feature], { highlight: true });
-                        geoJson.value = JSON.stringify((new ol.format.GeoJSON()).writeFeatureObject(feature));
-                        geoJson.dispatchEvent(new Event('input')); 
-                      }
-                    } catch(e) {
-                      console.warn(e); 
-                    }
-                  });
-                  window.addEventListener('message', async message => {
-                    if ('app:ready' === message.data?.action) {
-                      // dynamically create <options>
-                      const layers = (message.data?.response?.data?.layers || []);
-                      layers
-                      .filter(l => ApplicationState.project.getLayerById(l.id).isEditable())
-                      .forEach(l => {
-                        const option = document.createElement('option');
-                        option.value = option.text = l.id;
-                        layerId.appendChild(option);
+                }));  
+                clear.addEventListener('click', async () => {
+                  geoJson.value = null;
+                  geoJson.dispatchEvent(new Event('input')); 
+                })
+                //create an geojson to update getting
+                create.addEventListener('click', async () => {
+                  try {
+                    const { data } = await ApplicationState.project.getLayerById(layerId.value).getFilterData({ formatter: 0, page: 1, page_size: 1 });
+                    const feature = data?.[0]?.features?.[0];
+                    //get value from field media (pdf, photo)
+                    if (feature) {
+                      Object.entries(feature.getProperties()).forEach(([k,v]) => {
+                        if (null !== v && !GEOMETRY_FIELDS.includes(k) && 'object' === typeof v) {
+                          feature.set(k, v?.value);
+                        }  
                       });
-                      //set start value
-                      if (layers.length) {
-                        layerId.value = layers[0].id;
-                        layerId.dispatchEvent(new Event('input'));
-                        document.querySelector('#create').disabled = false;
-                      }
+                      feature.set(G3W_FID, undefined);
+                      GUI.getService('map').zoomToFeatures([feature], { highlight: true });
+                      geoJson.value = JSON.stringify((new ol.format.GeoJSON()).writeFeatureObject(feature), null, 2);
+                      geoJson.dispatchEvent(new Event('input')); 
                     }
-                    if (message.data?.response) {
-                      document.querySelector('#response').value       = JSON.stringify(message.data, null, 2);
-                      document.querySelector('#response').style.color = message.data.response.result ? "black" : "red";
-                    }
-                    document.querySelector('#save_json').disabled = !('editing:draw_json' === message.data?.action && message.data?.response?.result && message.data?.response?.geojson);
-                    if ('editing:save_json' === message.data?.action && message.data?.response?.data?.geojson) {
-                      layerId.disabled                           = false;
-                      document.querySelector('#create').disabled = false;
-                      const geojson      = message.data.response.data.geojson;
-                      geojson.properties = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = geojson?.properties?.[p.name] ?? null; return a },{});
-                      geoJson.value = JSON.stringify(geojson);
-                      geoJson.dispatchEvent(new Event('input'));
-                    }
-                  });
+                  } catch(e) {
+                    console.warn(e); 
+                  }
                 });
-              </script>
-            </html>
-          `);
-        }
-      },
-    });
+                // dynamically create layerId <options>
+                window.addEventListener('message', async message => {
+                  if ('app:ready' !== message.data?.action) {
+                    return;
+                  }
+                  const layers = (message.data?.response?.data?.layers || []);
+                  layers
+                    .filter(l  => ApplicationState.project.getLayerById(l.id).isEditable())
+                    .forEach(l => layerId.appendChild(Object.assign(document.createElement('option'), { value: l.id, text: l.id })));
+                  // initial value
+                  if (layers.length) {
+                    layerId.value = layers[0].id;
+                    layerId.dispatchEvent(new Event('input'));
+                    create.disabled = false;
+                  }
+                });
+                // handle editing response (from parent frame)
+                window.addEventListener('message', async message => {
+                  if ('editing:json' !== message.data?.action) {
+                    return;
+                  }
+                  const response = message.data?.response || {};
+                  const data     = response?.data || {}; 
+                  const method   = data?.method;
+                  if (response) {
+                    OUTPUT.value  = JSON.stringify(message.data, null, 2);
+                    OUTPUT.style.color = response?.result ? "black" : "red";
+                  }
+                  document.querySelector('#save').disabled = !('draw' === method && response.result && data.geojson);
+                  if ('save' === method && data.geojson) {
+                    layerId.disabled                           = false;
+                    create.disabled = false;
+                    data.geojson.properties                = ApplicationState.project.getLayerById(layerId.value).getEditingFields().reduce((a, p) => { a[p.name] = data?.geojson?.properties?.[p.name] ?? null; return a },{});
+                    geoJson.value                          = JSON.stringify(data.geojson, null, 2);
+                    geoJson.dispatchEvent(new Event('input'));
+                  }
+                });
+              });
+            </script>
+          </html>
+        `);
+        // prevent page refresh (eg. CTRL+R)
+        w.onbeforeunload = () => w.close();
+      }
+    },
+  });
 
   })  
       
