@@ -393,20 +393,23 @@ g3w.app.once('after:setupControls', () => {
             </body>
             <script>
               document.querySelector('iframe').addEventListener("load", () => {
-                const IFRAME               = document.querySelector('iframe').contentWindow;
-                const OUTPUT               = document.querySelector('#response');
-                const g3w                  = IFRAME.g3w;
-                const { ApplicationState } = IFRAME.g3wsdk.core;
-                const { 
-                  GEOMETRY_FIELDS,
-                  G3W_FID   }              = IFRAME.g3wsdk.constant;
-                const { GUI }              = IFRAME.g3wsdk.gui;
-                const { ol }               = IFRAME;
-                const inputs               = document.querySelectorAll('#layerid, #geojson');
-                const buttons              = document.querySelectorAll('#buttons button');
-                const layerId              = document.querySelector('#layerid');
-                const geoJson              = document.querySelector('#geojson');
-                let isNew                  = false; // whether is a new feature (geojson)
+                const IFRAME                      = document.querySelector('iframe').contentWindow;
+                const OUTPUT                      = document.querySelector('#response');
+                const g3w                         = IFRAME.g3w;
+                const { ApplicationState }        = IFRAME.g3wsdk.core;
+                const { GEOMETRY_FIELDS,G3W_FID } = IFRAME.g3wsdk.constant;
+                const { GUI }                     = IFRAME.g3wsdk.gui;
+                const { ol }                      = IFRAME;
+
+                const inputs                      = document.querySelectorAll('#layerid, #geojson');
+                const buttons                     = document.querySelectorAll('#buttons button');
+                const layerId                     = document.querySelector('#layerid');
+                const geoJson                     = document.querySelector('#geojson');
+                const create                      = document.querySelector('#create');
+                const clear                       = document.querySelector('#clear');
+                const draw                        = document.querySelector('#draw');
+
+                let isNew                         = false; // whether is a new feature (geojson)
 
                 for (const i of inputs) {
                   i.addEventListener('input', evt => {
@@ -424,11 +427,11 @@ g3w.app.once('after:setupControls', () => {
                           value = null;
                         }
                         isNew                                      = value?.id?.startsWith('__new__');
-                        document.querySelector('#create').disabled = !!value;
-                        document.querySelector('#clear').disabled  = !value;
+                        create.disabled = !!value;
+                        clear.disabled  = !value;
                       } else {
                         value                                    = ApplicationState.project.getLayerById(i.value);
-                        document.querySelector('#draw').disabled = !(value && value.isGeoLayer());
+                        draw.disabled = !(value && value.isGeoLayer());
                       }
                       enabled = enabled && value;
                       return enabled;
@@ -444,7 +447,7 @@ g3w.app.once('after:setupControls', () => {
                   try {
                     if ('draw' == evt.target.id) {
                       layerId.disabled                           = true;
-                      document.querySelector('#create').disabled = true;
+                      create.disabled = true;
                     }
                     IFRAME.postMessage({ 
                       id:     Date.now().toString(),
@@ -459,12 +462,12 @@ g3w.app.once('after:setupControls', () => {
                     console.warn(e); 
                   }
                 }));  
-                document.querySelector('#clear').addEventListener('click', async () => {
+                clear.addEventListener('click', async () => {
                   geoJson.value = null;
                   geoJson.dispatchEvent(new Event('input')); 
                 })
                 //create an geojson to update getting
-                document.querySelector('#create').addEventListener('click', async () => {
+                create.addEventListener('click', async () => {
                   try {
                     const { data } = await ApplicationState.project.getLayerById(layerId.value).getFilterData({ formatter: 0, page: 1, page_size: 1 });
                     const feature = data?.[0]?.features?.[0];
@@ -497,7 +500,7 @@ g3w.app.once('after:setupControls', () => {
                   if (layers.length) {
                     layerId.value = layers[0].id;
                     layerId.dispatchEvent(new Event('input'));
-                    document.querySelector('#create').disabled = false;
+                    create.disabled = false;
                   }
                 });
                 // handle editing response (from parent frame)
@@ -515,7 +518,7 @@ g3w.app.once('after:setupControls', () => {
                   document.querySelector('#save').disabled = !('draw' === method && response.result && data.geojson);
                   if ('save' === method && data.geojson) {
                     layerId.disabled                           = false;
-                    document.querySelector('#create').disabled = false;
+                    create.disabled = false;
                     data.geojson.properties                = g3w.app.getPlugin('editing').getEditingFields(layerId.value).reduce((a, p) => { a[p.name] = data?.geojson?.properties?.[p.name] ?? null; return a },{});
                     geoJson.value                          = JSON.stringify(data.geojson, null, 2);
                     geoJson.dispatchEvent(new Event('input'));
