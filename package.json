@@ -31,7 +31,6 @@
     "@mapbox/shp-write": "^0.4.3",
     "@ungap/with-resolvers": "^0.1.0",
     "bootstrap": "^3.3.7",
-    "datatables.net-dt": "^1.10.16",
     "eonasdan-bootstrap-datetimepicker": "^4.17.49",
     "invokers-polyfill": "^0.5.5",
     "ismobilejs": "^1.1.1",

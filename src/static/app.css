@@ -1,7 +1,6 @@
 @import url("../../node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css");
 @import url("../../node_modules/ol/ol.css");
 @import url("../../node_modules/select2/dist/css/select2.css");
-@import url("../../node_modules/datatables.net-dt/css/jquery.dataTables.css");
 @import url("../../node_modules/@fortawesome/fontawesome-free/css/all.css");
 @import url("../../node_modules/quill/dist/quill.snow.css");
 
@@ -373,15 +372,6 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .table-bordered > :is(thead, tbody, tfoot) > tr > :is(td, th)  { border: 1px solid #f4f4f4; }
 .table-bordered > thead > tr > :is(td, th)                     { border-bottom-width: 2px; }
 .table-striped > tbody > tr:nth-of-type(odd)                   { background-color: #f9f9f9; }
-
-table.dataTable > tbody > tr.child ul.dtr-details > li         { border-bottom: 0 !important; }
-table.dataTable th.sorting::after,
-table.dataTable th.sorting::before                             { font-family: Monospace; }
-
-table.dataTable th.sorting_asc::after,
-table.dataTable th.sorting_desc::before                        { display: none; }
-table.dataTable th.sorting_asc::before,
-table.dataTable th.sorting_desc::after                         { color:#7a80dd; opacity: 1; }
 
 /**************************************************************************************
 * carousel.less
@@ -1093,7 +1083,6 @@ textarea.form-control                     { height: auto; }
 .g3w_input_help                                    { font-weight: normal; text-align: justify; padding: 5px; border-radius: 3px; margin-top: 5px; }
 .g3w_input_help img                                { max-height: 50px; }
 
-.g3wform_body .dataTable.no-footer                 { border-bottom: none; }
 .g3wform_body                                      { margin-bottom: 10px; }
 
 .attr-label                                        { width: 30%; max-width: 40%; font-weight: bold; }
@@ -1223,15 +1212,7 @@ textarea.form-control                     { height: auto; }
 .select2-container .select2-selection--single .select2-selection__rendered                        { padding-right: 10px; }
 
 input[type="range"]                                                       { accent-color: var(--skin-color); margin: 5px 0 5px 0; }
-table.dataTable .no-footer                                                { border-bottom: 0 !important; }
-table.dataTable thead tr                                                  { font-size:  1.1em; }
-table.dataTable thead tr th                                               { padding-top: 2px ; padding-bottom: 2px; }
-.dataTables_scroll                                                        { border: 1px solid #cccccc; }
-.dataTables_wrapper.no-footer .dataTables_scrollBody                      { border-bottom: 0; }
 
-/** @since 3.9.0 */
-.dataTables_filter input.search,
-.dataTables_length select                                                 { border-radius: 3px; }
 .bootbox.dialogFullScreen .modal-dialog                                   { width: 90% !important; height: 90% !important; }
 .bootbox.modal.in .modal-title                                            { font-weight: bold; }
 .bootbox.modal.in.modal-left .modal-dialog                                { width: 350px !important; margin-left: 0 !important; margin-top: 5px !important; }

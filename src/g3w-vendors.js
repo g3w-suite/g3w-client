@@ -159,7 +159,6 @@ require('bootstrap/js/modal');
 require('bootstrap/js/tooltip');
 require('bootstrap/js/tab');
 
-require('datatables.net/js/jquery.dataTables');
 require('select2')(jQuery);
 
 globalThis.moment = require('moment/min/moment-with-locales');

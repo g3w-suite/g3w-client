@@ -1134,25 +1134,6 @@ export default {
 
         /** @since 4.0.0 */
         GUI.emit('i18n-ready', lang);
-
-        //set form control class to filter
-        $.extend($.fn.dataTableExt.oStdClasses, {
-          "sFilterInput": "form-control search"
-        });
-        $.extend(true, $.fn.dataTable.defaults, {
-          "language": {
-             "sSearch": '',
-            "searchPlaceholder": _("dosearch"),
-            "sLengthMenu": _('Show _MENU_ values per page'),
-            "paginate": {
-              "previous": '«',
-               "next": '»',
-            },
-            "info": _('_TOTAL_ entries'),
-            "zeroRecords": _('No matching records found'),
-            "infoFiltered": ''
-          }
-        });
       },
     },
 
