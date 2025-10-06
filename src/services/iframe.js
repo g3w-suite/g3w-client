@@ -961,7 +961,7 @@ class EditingService extends BaseIframeService {
   async json({ qgs_layer_id, geojson, method }) {
     const VECTOR_URL = ApplicationState.project.state.vectorurl;
     const GID        = `${ApplicationState.project.getType()}/${ApplicationState.project.getId()}`;
-    const fid        = geojson && ((new ol.format.GeoJSON()).readFeature(geojson)).getId();
+    const fid        = geojson?.id.toString(); //get id of the feature in string
     const layer      = qgs_layer_id && GUI.getService('map').getMap().getLayers().getArray().find(l => qgs_layer_id === l.get('id')); // get editing layer
     let lock         = {};
     let commit       = { result: true };
