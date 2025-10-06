@@ -4208,7 +4208,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   async highlight(geom, options = {}) {
-
+    
     // reset highlighted geometries
     if (false === geom) {
       if (!this.#highlighting) {
@@ -4224,6 +4224,7 @@ export default new (class GUI extends Emitter {
     const hide      = 'function' === typeof options.hide      ? options.hide      : null;
     const highlight = 'boolean' === typeof options.highlight  ? options.highlight : true;
     const zoom      = 'boolean' === typeof options.zoom       ? options.zoom      : true;
+    const duration  = options.duration ?? 2000;
     let geometry    = geom instanceof ol.geom.Geometry ? geom       : (new ol.format.GeoJSON()).readGeometry(geom);
 
     this.highlight(false);
@@ -4272,9 +4273,9 @@ export default new (class GUI extends Emitter {
         hide(cb);
       }
 
-      if (options.duration && options.duration !== Infinity && !hide) {
+      if (duration !== Infinity && !hide) {
         this.#highlighting = true;
-        setTimeout(cb, options.duration || 2000);
+        setTimeout(cb, duration);
       }
 
     });
