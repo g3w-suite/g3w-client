@@ -430,7 +430,7 @@ g3w.app.once('after:setupControls', () => {
                         create.disabled = !!value;
                         clear.disabled  = !value;
                       } else {
-                        value                                    = ApplicationState.project.getLayerById(i.value);
+                        value         = ApplicationState.project.getLayerById(i.value);
                         draw.disabled = !(value && value.isGeoLayer());
                       }
                       enabled = enabled && value;
