@@ -436,7 +436,7 @@ g3w.app.once('after:setupControls', () => {
                     // clear response
                     OUTPUT.value = null;
                     //set button disabled based on id
-                    Array.from(buttons).filter(btn => !['draw', 'save'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
+                    Array.from(buttons).filter(btn => !['draw', 'save', 'clear'].includes(btn.id)).forEach(btn => btn.disabled = !(enabled && ('add' === btn.id ? isNew : !isNew))); 
                   });
                 }
                 // post message
