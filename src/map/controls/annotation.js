@@ -365,7 +365,7 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE RADIUS (point) -->
                 <div v-if = "feature && 'Point' === feature.get('type')">
-                  <label for = "radius" v-t = "'Radius'"></label>
+                  <label for = "radius">{{ $t('Radius') }}</label>
                   <input 
                     type    = "range" 
                     name    = "radius" 
@@ -378,7 +378,7 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE STROKE WIDTH -->
                 <div v-if = "feature && ['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.get('type'))">
-                  <label for = "stroke" v-t = "'Stroke'"></label>
+                  <label for = "stroke">{{ $t('Stroke') }}</label>
                   <input 
                     type    = "range" 
                     name    = "stroke" 
@@ -390,17 +390,17 @@ class AnnotationControl extends InteractionControl {
                 </div>
                 <!-- LINE DIRECTION (line) -->
                 <div v-if = "feature && 'LineString' === feature.get('type')">
-                  <label v-t = "'Direction'"></label>
+                  <label>{{ $t('Direction') }}</label>
                   <select class = "form-control" style = "margin-bottom: 5px;" v-model = "style.direction">
                     <option :value = "null">---</option>
-                    <option value  = "forward" v-t = "'Forward'"></option>
-                    <option value  = "backward" v-t = "'Backward'"></option>  
+                    <option value  = "forward">{{ $t('Forward') }}</option>
+                    <option value  = "backward">{{ $t('Backward') }}</option>  
                   </select>   
                 </div>
 
                 <!-- SHAPE OPACITY -->
                 <div v-if = "feature && ['Polygon', 'Rectangle' , 'Circle'].includes(feature.get('type'))">
-                  <label for = "opacity" v-t = "'Opacity'"></label>
+                  <label for = "opacity">{{ $t('Opacity') }}</label>
                   <input 
                     type    = "range" 
                     name    = "opacity" 
