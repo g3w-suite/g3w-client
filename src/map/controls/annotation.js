@@ -210,7 +210,7 @@ class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment length (line)” -->
                 <div v-if = "'LineString' === type && !feature" style="display: flex; align-items: end;">
                   <label style = "margin: 0; width: 100%">
-                    <span v-t = "'Length'"></span>
+                    <span>{{ $t('Length') }}</span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -229,7 +229,7 @@ class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment length (polygon)” -->
                 <div v-if = "'Polygon' === type && !feature" style="display: flex; align-items: end;">
                   <label style = "margin: 0; width: 100%">
-                    <span v-t = "'Length'"></span>
+                    <span>{{ $t('Length') }}</span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -248,7 +248,7 @@ class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment width (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
                   <label style = "margin: 0; width: 100%">
-                    <span v-t = "'Width Length'"></span>
+                    <span>{{ $t('Width Length') }}</span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -267,7 +267,7 @@ class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Segment height (rectangle)” -->
                 <div v-if = "'Rectangle' === type && !feature" style="display: flex; align-items: end;">
                   <label style = "margin: 0; width: 100%">
-                    <span v-t = "'Height Length'"></span>
+                    <span>{{ $t('Height Length') }}</span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -286,7 +286,7 @@ class AnnotationControl extends InteractionControl {
                 <!-- SHAPE CONSTRAINT: “Circle radius” -->
                 <div v-if = "'Circle' === type && !feature" style="display: flex; align-items: end;">
                   <label style = "margin: 0; width: 100%">
-                    <span v-t = "'Radius'"></span>
+                    <span>{{ $t('Radius') }}</span>
                     <input 
                       class   = "form-control"
                       type    = "number" 
@@ -313,7 +313,7 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE LABEL (rotation) -->
                 <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
-                  <span v-t = "'Rotation'"></span>
+                  <span>{{ $t('Rotation') }}</span>
                   <input 
                     type    = "range" 
                     name    = "rotation" 
@@ -325,7 +325,7 @@ class AnnotationControl extends InteractionControl {
                 </label>
 
                 <label v-if = "feature && 'Text' === feature.get('type')" style = "display: block;">
-                  <span v-t = "'Font Size'"></span>
+                  <span>{{ $t('Font Size') }}</span>
                   <input 
                     type    = "range" 
                     name    = "fontsize" 
@@ -365,7 +365,7 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE RADIUS (point) -->
                 <div v-if = "feature && 'Point' === feature.get('type')">
-                  <label for = "radius" v-t = "'Radius'"></label>
+                  <label for = "radius">{{ $t('Radius') }}</label>
                   <input 
                     type    = "range" 
                     name    = "radius" 
@@ -378,7 +378,7 @@ class AnnotationControl extends InteractionControl {
 
                 <!-- SHAPE STROKE WIDTH -->
                 <div v-if = "feature && ['LineString', 'Polygon', 'Rectangle', 'Circle'].includes(feature.get('type'))">
-                  <label for = "stroke" v-t = "'Stroke'"></label>
+                  <label for = "stroke">{{ $t('Stroke') }}</label>
                   <input 
                     type    = "range" 
                     name    = "stroke" 
@@ -390,17 +390,17 @@ class AnnotationControl extends InteractionControl {
                 </div>
                 <!-- LINE DIRECTION (line) -->
                 <div v-if = "feature && 'LineString' === feature.get('type')">
-                  <label v-t = "'Direction'"></label>
+                  <label>{{ $t('Direction') }}</label>
                   <select class = "form-control" style = "margin-bottom: 5px;" v-model = "style.direction">
                     <option :value = "null">---</option>
-                    <option value  = "forward" v-t = "'Forward'"></option>
-                    <option value  = "backward" v-t = "'Backward'"></option>  
+                    <option value  = "forward">{{ $t('Forward') }}</option>
+                    <option value  = "backward">{{ $t('Backward') }}</option>  
                   </select>   
                 </div>
 
                 <!-- SHAPE OPACITY -->
                 <div v-if = "feature && ['Polygon', 'Rectangle' , 'Circle'].includes(feature.get('type'))">
-                  <label for = "opacity" v-t = "'Opacity'"></label>
+                  <label for = "opacity">{{ $t('Opacity') }}</label>
                   <input 
                     type    = "range" 
                     name    = "opacity" 
@@ -420,7 +420,7 @@ class AnnotationControl extends InteractionControl {
                       v-model = "show_text"
                       style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
                     />
-                    <span v-t = "'Show Text'" ></span>
+                    <span>{{ $t('Show Text') }}</span>
                   </label>
                   <label :hidden = "'Text' === feature.get('type')">
                     <input 
@@ -429,7 +429,7 @@ class AnnotationControl extends InteractionControl {
                       v-model = "show_info"
                       style   = "width: 1.25em; aspect-ratio: 1; vertical-align: sub; accent-color: var(--skin-color);"
                     />
-                    <span v-t = "'Show Info'" ></span>
+                    <span>{{ $t('Show Info') }}</span>
                   </label>
                 </div>
 
