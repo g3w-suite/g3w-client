@@ -1098,9 +1098,10 @@
           const coordinates = this.state.queried_layers[0].features
             .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
             .map(geom => {
-              type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
-              return geom?.getCoordinates?.() ?? geom.coordinates;
-            });
+              type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom?.type;
+              return geom?.getCoordinates?.() ?? geom?.coordinates;
+            })
+            .filter(c => c); //filter geometry valid
 
           //check if features have geometry
           if (coordinates.length > 0) {
