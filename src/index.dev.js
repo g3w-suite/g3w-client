@@ -426,7 +426,7 @@ g3w.app.once('after:setupControls', () => {
                           console.warn(e); 
                           value = null;
                         }
-                        isNew           = value?.id?.toString().startsWith('__new__');
+                        isNew           = value?.id?.toString().startsWith('_new_');
                         create.disabled = !!value;
                         clear.disabled  = !value;
                       } else {
