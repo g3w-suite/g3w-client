@@ -5431,27 +5431,22 @@ export default new (class GUI extends Emitter {
         .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []);
 
       if (!external && layers.length) {
-        const geometry   = ol.geom.Polygon.fromExtent(bbox);
-        const projection = this.getMap().getView().getProjection();
-
+        const geometry  = ol.geom.Polygon.fromExtent(bbox);
         const responses = await Promise.allSettled(Object.values(
           multilayers
             ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
             : layers
         ).map(layers => {
           const layer = [].concat(layers)[0];
-          const crs   = layer.getProjection().getCode();
-          const filter = {
-            config: filterConfig,
-            type:   'geometry',
-            // Convert filter geometry from map to layer CRS
-            value:  projection.getCode() === crs ? geometry : geometry.clone().transform(projection.getCode(), crs),
-          };
-          return layer.query(
-            multilayers
-              ? { filter, feature_count, layers }
-              : { filter, feature_count, filterConfig }
-          )
+          return layer.query({
+            feature_count,
+            filter: {
+              config: filterConfig,
+              type:   'geometry',
+              value:  geometry,
+            },
+            ...(multilayers ? { layers } : { filterConfig })
+          });
         }));
         // show all errors
         if (responses.some(r => 'rejected' === r.status)) {
@@ -5518,29 +5513,25 @@ export default new (class GUI extends Emitter {
         }) : []);
 
         if (layers.length) {
-          const projection = ApplicationState.project.getProjection();
-
           const responses = await Promise.allSettled(Object.values(
             multilayers
               ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
               : layers
           ).map(layers => {
             const layer = [].concat(layers)[0];
-            const crs   = layer.getProjection().getCode();
-            const filter = {
-              config: filterConfig,
-              type:   'geometry',
-              // Convert filter geometry from map to layer CRS
-              value:  projection.getCode() === crs ? geometry : geometry.clone().transform(projection.getCode(), crs),
-            };
-            return layer.query(
-              multilayers
-                ? { filter, feature_count, layers }
-                : { filter, feature_count, filterConfig }
-            )
-          }));
+            return layer.query({
+              feature_count,
+              filter: {
+                config: filterConfig,
+                type:   'geometry',
+                value:  geometry,
+              },
+              ...(multilayers ? { layers } : { filterConfig })
+            })
+            }
+          ));
           // show all errors
-          if (responses.some(r => 'fulfilled' === r.status)) {
+          if (responses.some(r => 'rejected' === r.status)) {
             throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
           }
           // at least one response
