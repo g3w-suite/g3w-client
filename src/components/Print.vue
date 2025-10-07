@@ -150,7 +150,7 @@
 
       </form>
 
-      <div style = "padding: 1em;text-align: center;">
+      <div v-if="is_staff" style = "padding: 1em;text-align: center;">
         <b>
           <a
             :href            = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
@@ -225,6 +225,11 @@ export default {
     /** @since 3.10.0  */
     lang() {
       return ApplicationState.language;
+    },
+
+    /** @since 4.1.0 */
+    is_staff() {
+      return window.initConfig.user.is_staff;
     },
 
   },
