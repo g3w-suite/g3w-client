@@ -236,8 +236,6 @@ export default class Component extends Emitter {
   /**
    * @param { Element | 'string' } parent DOM element
    * @param { boolean } append
-   *  
-   * @returns jquery promise
    * 
    * @fires internalComponent~ready
    * @fires mount event
@@ -266,8 +264,6 @@ export default class Component extends Emitter {
   }
 
   /**
-   * @returns jquery promise
-   * 
    * @fires unmount
    */
   async unmount() {
