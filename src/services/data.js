@@ -525,7 +525,6 @@ export default {
   async getQueryLayersPromisesByGeometry(layers,
     {
       geometry,
-      projection,
       filterConfig  = {},
       multilayers   = false,
       feature_count = 10
@@ -536,20 +535,16 @@ export default {
       return [];
     }
 
-    const mapCrs = projection.getCode();
-
     return await handleQueryPromises(Object.values(
       multilayers
         ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
         : layers
     ).map(layers => {
       const layer = [].concat(layers)[0];
-      const crs   = layer.getProjection().getCode();
       const filter = {
         config: filterConfig,
         type:   'geometry',
-        // Convert filter geometry from map to layer CRS
-        value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
+        value:  geometry,
       };
       return promisify(layer.query(
         multilayers
