@@ -16,30 +16,21 @@ export const G3W_FID = 'g3w_fid';
  * @type {Object<string, string>}
  * @since v3.5
  */
-export const FILTER_OPERATORS = {
-  gte:      '>=',
-  lte:      '<=',
-  NOT:      '!=',
-  eq:       '=',
-  gt:       '>',
-  lt:       '<',
-  in:        'IN',
-  LIKE:     'LIKE',
-  ILIKE:    'ILIKE',
-  AND:      'AND',
-  OR:       'OR',
-};
-
-/**
- * @type {Object<string, string>}
- * @since v3.5
- */
 export const FILTER_EXPRESSION_OPERATORS = {
-  lte:   '<=',
   ltgt:  '!=',
   ilike: 'ILIKE',
   like:  'LIKE',
-  ...FILTER_OPERATORS,
+  gte:   '>=',
+  lte:   '<=',
+  NOT:   '!=',
+  eq:    '=',
+  gt:    '>',
+  lt:    '<',
+  in:    'IN',
+  LIKE:  'LIKE',
+  ILIKE: 'ILIKE',
+  AND:   'AND',
+  OR:    'OR',
 };
 
 /**
@@ -47,7 +38,7 @@ export const FILTER_EXPRESSION_OPERATORS = {
  * 
  * @type {string[]}
  */
- export const GEOMETRY_FIELDS = [
+export const GEOMETRY_FIELDS = [
   'geometryProperty',
   'boundedBy',
   'geom',
@@ -352,7 +343,6 @@ export const PAGELENGTHS = [10, 25, 50, 100];
 
 export default {
   DOTS_PER_INCH,
-  FILTER_OPERATORS,
   FILTER_EXPRESSION_OPERATORS,
   FONT_AWESOME_ICONS,
   G3W_FID,

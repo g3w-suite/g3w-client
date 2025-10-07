@@ -80,7 +80,7 @@
     <!-- SEARCH OPERATORS -->
     <div class = "content-wrap mb-5">
       <button
-        v-for  = "operator in operators"
+        v-for  = "operator in ['>=', '<=', '!=', '=', '>', '<', 'IN', 'LIKE', 'ILIKE', 'AND', 'OR' ]"
         @click = "addToExpression({ value: operator, type: 'operator' })"
         :key   = "operator"
         class  = "query_builder_button btn btn-secondary bold"
@@ -115,7 +115,6 @@
 </template>
 
 <script>
-import { FILTER_OPERATORS }        from 'g3w-constants';
 import ApplicationState            from 'g3w-state';
 import GUI                         from 'g3w-app';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
@@ -146,7 +145,7 @@ export default {
       select: {
         field: null,
         value: null
-      }
+      },
     }
   },
 
@@ -340,8 +339,6 @@ export default {
           fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => !exclude.includes(f))
         }
       });
-
-    this.operators    = Object.values(FILTER_OPERATORS);
 
     this.currentlayer = this.edit ? this.layers.find(l => l.id === this.$options.options.layerId) : this.layers[0];
 
