@@ -66,7 +66,7 @@ export default {
         }
       },
       print: {
-        no_layers: 'Aucune layer visible',
+        no_layers: 'Aucune couche visible',
         scale: "Échelle",
         format: "Format",
         rotation: "Rotation",
@@ -124,7 +124,7 @@ export default {
               description: "DESCRIPTION",
               abstract: "ABREGE",
               keywords: 'LISTE DE MOTS-CLÉS',
-              fees: "DROITS D'INSCRIPTION",
+              fees: "DROITS D'UTILISATION",
               accessconstraints: "CONTRAINTES D'ACCÈS",
               contactinformation: "CONTACTS",
               subfields: {
@@ -205,7 +205,7 @@ export default {
               hint: "Zoom sur les entités"
             },
             add_features_to_results: {
-              hint: "Ajouter des fonctionnalités aux résultats"
+              hint: "Ajouter des entités aux résultats"
             },
             remove_feature_from_results: {
               hint: "Supprimer l'entité des résultats"
@@ -220,16 +220,16 @@ export default {
               hint: "Voir les graphiques de relations"
             },
             download_features_shapefile:{
-              hint: 'Télécharger les entités vers Shapefile'
+              hint: 'Télécharger les entités en Shapefile'
             },
             download_shapefile: {
               hint: 'Télécharger le Shapefile'
             },
             download_features_gpx: {
-              hint: "Télécharger les entités vers GPX"
+              hint: "Télécharger les entités en GPX"
             },
             download_features_gpkg: {
-              hint: "Télécharger les entités vers GPKG"
+              hint: "Télécharger les entités en GPKG"
             },
             download_gpx: {
               hint: "Télécharger le GPX"
@@ -238,13 +238,13 @@ export default {
               hint: "Télécharger le GPKG"
             },
             download_features_csv: {
-              hint: "Télécharger les entités vers CSV"
+              hint: "Télécharger les entités en CSV"
             },
             download_csv: {
               hint: "Télécharger le CSV"
             },
             download_features_xls: {
-              hint: "Télécharger les entités vers XLS"
+              hint: "Télécharger les entités en XLS"
             },
             download_xls: {
               hint: "Télécharger le XLS"
@@ -256,7 +256,7 @@ export default {
               hint: "Imprimer l'Atlas"
             },
             copy_zoom_to_fid_url: {
-              hint: "Copier l'URL de la carte avec l'extension vers cette géométrie",
+              hint: "Copier l'URL de la carte zoomée sur cette géométrie",
               hint_change: "Copié"
             }
           }
@@ -297,7 +297,7 @@ export default {
               warning: "Le résultat de la carte est partiel en raison de la présence des enregistrements incorrects suivants :"
             }
           },
-          tooltip: 'Ajouter un layer'
+          tooltip: 'Ajouter une couche'
         },
         geolocation: {
           tooltip: 'Géolocalisation'
@@ -417,7 +417,7 @@ export default {
     back:"Retour",
     backto: "Retour à ",
     changemap: "Changer de carte",
-    change_session: "Changer de sessuib",
+    change_session: "Changer de session",
     component: "Composant générique",
     search: "Recherches",
     no_results: "Aucun résultat trouvé",
@@ -432,7 +432,7 @@ export default {
     tree: "Strates",
     legend: "Légende",
     nobaselayer: "Pas de carte de base",
-    street_search: "Adresse de recherche",
+    street_search: "Recherche d'adresse",
     show: "Afficher",
     hide: "Cacher",
     copy_form_data: "Copier les données du formulaire",
@@ -537,7 +537,7 @@ export default {
         styles: "Styles",
         vector_color_menu:"Définir/changer la couleur",
         layer_opacity: "Opacité",
-        filters: "Filters",
+        filters: "Filtres",
       }
     },
     dataTable: {
@@ -547,6 +547,8 @@ export default {
       info: "_TOTAL_ résultats",
       nodatafilterd: "Aucun résultat trouvé",
       infoFiltered: "(Filtré par _MAX_ rangs totaux)"
-    }
+    },
+    /**@since 3.10.0 */
+    no_geometry: 'Cet élément est sans géométrie',
   },
 };
