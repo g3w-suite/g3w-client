@@ -342,7 +342,7 @@ export default new (class GUI extends G3WObject {
 
       //Check id we can show data
       const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-      const last = show && rid === this.outputDataPlace.reqs.at(-1);
+      const last = rid === this.outputDataPlace.reqs.at(-1);
 
       // set request output ids empty
       if (last) {
@@ -364,8 +364,12 @@ export default new (class GUI extends G3WObject {
       }
 
       // check if data can be shown on query result content
-      if (last) {
+      if (last && show) {
         (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: !!output.add });
+      }
+      //@since 4.0.3 in case of show false, need to close content
+      if (last && !show) {
+        await this.closeContent();
       }
 
       // call after is set with data

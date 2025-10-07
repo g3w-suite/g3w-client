@@ -308,6 +308,11 @@ export class QueryBy extends InteractionControl {
             },
             beforeDestroy: () => {
               GUI.toggleUserMessage(true);
+              //@since 4.0.3 take in account error/warning user message arise
+              //during runSpatialQuery
+              if (this.isToggled()) {
+                this.toggle();
+              }
               this.types.forEach(t => {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;

@@ -191,7 +191,7 @@ export default {
           messagetext: true,
           autoclose:   false
         },
-        data: (await this.getQueryLayersPromisesByGeometry(
+        data: geometry ? (await this.getQueryLayersPromisesByGeometry(
           // layers
           getMapLayersByFilter({
             ...(
@@ -210,11 +210,11 @@ export default {
             filterConfig,
             projection: ApplicationState.project.getProjection()
           }
-        ) || []).flatMap(({ data = [] }) => data),
+        ) || []).flatMap(({ data = [] }) => data) : [],
       };
-    } catch (error) {
-      console.warn(error);
-      throw error;
+    } catch (err) {
+      console.warn(err);
+      throw err;
     }
   },
 
@@ -530,8 +530,8 @@ export default {
       feature_count = 10
     } = {}
   ) {
-    // skip when no features
-    if (0 === layers.length) {
+    // skip when no features or no geometry
+    if (0 === layers.length || !geometry) {
       return [];
     }
 
