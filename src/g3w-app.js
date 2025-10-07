@@ -1025,7 +1025,7 @@ export default new (class GUI extends Emitter {
 
       //Check id we can show data
       const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-      const last = show && rid === this.showData.reqs.at(-1);
+      const last = rid === this.showData.reqs.at(-1);
 
       // set request output ids empty
       if (last) {
@@ -1047,7 +1047,7 @@ export default new (class GUI extends Emitter {
       }
 
       // check if data can be shown on query result content
-      if (last) {
+      if (last && show) {
         this.#clearState();
         this.setContent({
           content:    new Component({
@@ -5296,10 +5296,10 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/data.js@v4.0.0
    * 
-   * @param { 'query:coordinates' | 'query:bbox' | 'query:polygon' | 'search:features' | 'search:fids' } func function name
+   * @param { 'query:coordinates' | 'search:features' | 'search:fids' } func function name
    * @param options
    * 
-   * @returns {ReturnType<GUI['getData/query:coordinates' | 'getData/query:bbox' | 'getData/query:polygon' | 'getData/search:features' | 'getData/search:fids']>}
+   * @returns {ReturnType<GUI['getData/query:coordinates' | 'getData/search:features' | 'getData/search:fids']>}
    */
   async getData(func, options = {}) {
     const { inputs = {}, outputs = {} } = options;
@@ -5377,171 +5377,6 @@ export default new (class GUI extends Emitter {
         },
         data: data.flatMap(({ data = [] }) => data),
         
-      };
-    } catch (error) {
-      console.warn(error);
-      throw error;
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
-   * 
-   * @param bbox
-   * @param feature_count
-   * @param multilayers
-   * @param condition
-   * @param filterConfig
-   * @param addExternal
-   * @param layersFilterObject
-   * 
-   * @private invoked by `getData('query:bbox')`
-   */
-  async 'getData/query:bbox'({
-    bbox,
-    feature_count      = ApplicationState.project.state.feature_count || 5,
-    filterConfig       = {},
-    multilayers        = false,
-    /** @since 3.8.0 **/
-    excludeSelected    = null,
-    /** @since 3.8.0 **/
-    addExternal = true,
-    layersFilterObject = { SELECTED_OR_ALL: true, QUERYABLE: true, VISIBLE: true }
-  } = {}) {
-    try {
-      let data       = [];
-      const external = this.getService('catalog').state.external.vector.some(l => l.selected);
-      const selected = external || !!excludeSelected;
-      const layers   = Object.values(ApplicationState.layers)
-        .flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(layersFilterObject || {}) }) : []);
-
-      if (!external && layers.length) {
-        const geometry  = ol.geom.Polygon.fromExtent(bbox);
-        const responses = await Promise.allSettled(Object.values(
-          multilayers
-            ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
-            : layers
-        ).map(layers => {
-          const layer = [].concat(layers)[0];
-          return layer.query({
-            feature_count,
-            filter: {
-              config: filterConfig,
-              type:   'geometry',
-              value:  geometry,
-            },
-            ...(multilayers ? { layers } : { filterConfig })
-          });
-        }));
-        // show all errors
-        if (responses.some(r => 'rejected' === r.status)) {
-          throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
-        }
-        // at least one response
-        data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
-      }
-      return {
-        result: true,
-        type: 'ows',
-        query: {
-          bbox,
-          type: 'bbox',
-          filterConfig,
-          external: {
-            add: addExternal,
-            filter: {
-              SELECTED: selected
-            }
-          },
-        },
-        data: data.flatMap(({ data = [] }) => data),
-      };
-    } catch (error) {
-      console.warn(error);
-      throw error;
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/data.js@v4.0.0
-   * 
-   * @private invoked by `getData('query:polygon')`
-   */
-  async 'getData/query:polygon'({
-    feature,
-    feature_count   = ApplicationState.project.state.feature_count || 5,
-    filterConfig    = {},
-    multilayers     = false,
-    /** @since 3.8.0 */
-    layerName       = '',
-    /** @since 3.8.0 */
-    excludeSelected = null,
-    /** @since 3.8.0 **/
-    external = {
-      add: true,
-      filter: {
-        SELECTED : false
-      }
-    },
-    /**@since 3.9.0**/
-    type = 'polygon'
-  } = {}) {
-    try {
-      let data       = [];
-      const geometry = feature.getGeometry();
-      const layers   = Object.values(ApplicationState.layers)
-        .flatMap(s => s.isQueryable() ? s.getLayers({
-          GEOLAYER: true,
-          ...( "boolean" === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true } ),
-          QUERYABLE: true,
-          VISIBLE: true
-        }) : []);
-
-        if (layers.length) {
-          const responses = await Promise.allSettled(Object.values(
-            multilayers
-              ? groupBy(layers, l => `${l.getMultiLayerId()}_${l.getProjection().getCode()}`)
-              : layers
-          ).map(layers => {
-            const layer = [].concat(layers)[0];
-            return layer.query({
-              feature_count,
-              filter: {
-                config: filterConfig,
-                type:   'geometry',
-                value:  geometry,
-              },
-              ...(multilayers ? { layers } : { filterConfig })
-            })
-            }
-          ));
-          // show all errors
-          if (responses.some(r => 'rejected' === r.status)) {
-            throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
-          }
-          // at least one response
-          data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
-        }
-
-      return {
-        result: true,
-        type: 'ows',
-        error: !geometry,
-        query: {
-          fid: this.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
-          geometry,
-          layerName,
-          type,
-          filterConfig,
-          external
-        },
-        usermessage: !geometry && {
-          type:        'warning',
-          message:     `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
-          messagetext: true,
-          autoclose:   false
-        },
-        data: data.flatMap(({ data = [] }) => data),
       };
     } catch (error) {
       console.warn(error);
