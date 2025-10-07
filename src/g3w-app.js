@@ -313,13 +313,6 @@ export default new (class GUI extends Emitter {
   });
 
   /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Layer ids sorted by TOC
-   */
-  #layer_ids = [];
-
-  /**
    * Based on bootbox.js v4.4.0
    * Copyright 2011-2020 Nick Payne
    * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
@@ -1011,7 +1004,19 @@ export default new (class GUI extends Emitter {
 
     // if request doesn't need to add to a current query result
     if (!output.add) {
-      this.showQueryResults(output.title || '');
+      this.#clearState();
+      this.setContent({
+        content:    new Component({
+          id:                 'queryresults',
+          service:            this,
+          vueComponentObject: require('components/QueryResults.vue').default,
+        }),
+        title:      "info.title",
+        crumb:      { title: "info.title", trigger: null },
+        push:       this.push_content,
+        post_title: output.title || '',
+        perc:       isMobile.any ? 100 : undefined,
+      });
     }
 
     try {
@@ -1043,7 +1048,20 @@ export default new (class GUI extends Emitter {
 
       // check if data can be shown on query result content
       if (last) {
-        (this.showQueryResults(output.title || '')).setQueryResponse(data, { add: !!output.add });
+        this.#clearState();
+        this.setContent({
+          content:    new Component({
+            id:                 'queryresults',
+            service:            this,
+            vueComponentObject: require('components/QueryResults.vue').default,
+          }),
+          title:      "info.title",
+          crumb:      { title: "info.title", trigger: null },
+          push:       this.push_content,
+          post_title: output.title || '',
+          perc:       isMobile.any ? 100 : undefined,
+        });
+        this.setQueryResponse(data, { add: !!output.add });
       }
 
       // call after is set with data
@@ -1138,47 +1156,6 @@ export default new (class GUI extends Emitter {
     };
     ApplicationState.project.state.layerstree.forEach(traverse);
     return layersId;
-  }
-
-  // show results info/search
-  showQueryResults(title, results) {
-    this.#clearState();
-
-    if (results) {
-      this.setQueryResponse(results);
-    }
-
-    this.#layer_ids = this._projectLayerIds;
-
-    /**
-     * @FIXME add description
-     */
-    this.#relations = (ApplicationState.project.getRelations() || []).reduce((group, r) => {
-      group[r.referencedLayer] = group[r.referencedLayer] || [];
-      group[r.referencedLayer].push(r);
-      return group;
-    }, {});
-
-    /**
-     * @FIXME add description
-     */
-    this.#atlas = ApplicationState.project.getPrint().filter(p => p.atlas) || [];
-
-    // show contextual content
-    this.setContent({
-      content:    new Component({
-        id:                 'queryresults',
-        service:            this,
-        vueComponentObject: require('components/QueryResults.vue').default,
-      }),
-      title:      "info.title",
-      crumb:      { title: "info.title", trigger: null },
-      push:       this.push_content,
-      post_title: title,
-      perc:       isMobile.any ? 100 : undefined,
-    });
-
-    return this;
   }
 
   async showPanel(content, opts = {}) {
@@ -2153,6 +2130,7 @@ export default new (class GUI extends Emitter {
             this.#setRelationField(node);
           }
         }
+
         // layerObj
         return {
           id,
@@ -2198,9 +2176,10 @@ export default new (class GUI extends Emitter {
         };
       });
 
-    // sort layers as Catalog project layers (external layer always on bottom)
+    // sort layers by TOC (external layer always on bottom)
     if (false === options.add) {
-      layers.sort((a, b) => a.external ? 0 : (this.#layer_ids.indexOf(a.id) > this.#layer_ids.indexOf(b.id) ? 1 : -1));
+      const layer_ids = this._projectLayerIds;
+      layers.sort((a, b) => a.external ? 0 : (layer_ids.indexOf(a.id) > layer_ids.indexOf(b.id) ? 1 : -1));
     }
 
     // get features from added pick layer in case of a new request query
@@ -2867,6 +2846,12 @@ export default new (class GUI extends Emitter {
     this.state.currentactiontools  = {};
     this.state.layersFeaturesBoxes = {};
     this.removeAddFeaturesLayerResultInteraction();
+    this.#relations = (ApplicationState.project.getRelations() || []).reduce((group, r) => {
+      group[r.referencedLayer] = group[r.referencedLayer] || [];
+      group[r.referencedLayer].push(r);
+      return group;
+    }, {});
+    this.#atlas = ApplicationState.project.getPrint().filter(p => p.atlas) || [];
   }
 
   /**
