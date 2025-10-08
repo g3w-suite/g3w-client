@@ -599,32 +599,27 @@
       <button class="cookie-button" v-t="'Got It!'" @click="acceptCookie"></button>
     </div>
 
-    <Teleport to="body">
-      <!-- MODAL (FULL SCREEN) -->
-      <div
-        class           = "modal fade modal-fullscreen"
-        id              = "modal-fullscreen"
-        tabindex        = "-1"
-        role            = "dialog"
-        data-backdrop   = "static"
-        data-keyboard   = "false"
-        aria-labelledby = "modal-fullscreen"
-        aria-hidden     = "true"
-      ></div>
+    <!-- MODAL (FULL SCREEN) -->
+    <div
+      class           = "modal fade modal-fullscreen"
+      id              = "modal-fullscreen"
+      tabindex        = "-1"
+      role            = "dialog"
+      data-backdrop   = "static"
+      data-keyboard   = "false"
+      aria-labelledby = "modal-fullscreen"
+      aria-hidden     = "true"
+    ></div>
 
-      <modal-login v-if = "!user && has_iframe_login" />
-      <modal-addlayer />
-      <modal-changemap />
-      <modal-metadata />
-
-    </Teleport>
+    <modal-login v-if = "!user && has_iframe_login" />
+    <modal-addlayer />
+    <modal-changemap />
+    <modal-metadata />
 
   </div>
 </template>
 
 <script>
-import Teleport           from 'vue2-teleport';
-
 import ApplicationState   from 'g3w-state';
 import Panel              from 'g3w-panel';
 import Component          from 'g3w-component';
@@ -673,7 +668,6 @@ export default {
     ModalAddlayer,
     ModalChangemap,
     ModalMetadata,
-    Teleport,
   },
 
   computed: {
@@ -1144,6 +1138,8 @@ export default {
   },
 
   async mounted() {
+
+    document.body.appendChild(this.$el.querySelector('#modal-fullscreen'));
 
     this.language = this.appconfig.user.i18n;
 

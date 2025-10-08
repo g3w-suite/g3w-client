@@ -43,7 +43,7 @@
                   
                   <div v-else-if="'contactinformation' !== field" class="col-sm-10 value">
                     <div v-for = "(value, index) in data.value">
-                      <span v-if="'extent' === field" class="bbox-labels">{{ (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] }}</span>
+                      <b v-if="'extent' === field">{{ (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] }}</b>
                       <span>{{ value }}</span>
                     </div>
                   </div>
@@ -297,7 +297,6 @@
 
   import ApplicationState from 'g3w-state';
   import { XHR }          from 'utils/XHR';
-  import { waitFor }      from 'utils/waitFor';
 
   export default {
 
@@ -370,6 +369,7 @@
     },
 
     mounted() {
+      document.body.appendChild(this.$el);
       $('#modal-metadata').on('show.bs.modal', async () => {
       await Promise
         .allSettled([
@@ -489,10 +489,6 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
   .metadata-label {
     font-weight: bold;
     font-size: 1.1em;
-  }
-
-  .bbox-labels {
-    font-weight: bold;
   }
 
   .metadata-contact-label {

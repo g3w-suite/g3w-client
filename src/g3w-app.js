@@ -1034,12 +1034,12 @@ export default new (class GUI extends Emitter {
 
       //if set before call method and wait
       if (last && output.before) {
-        await output.before(data)
+        await output.before(data);
       }
 
       // in case of usermessage show user message
       if (last && data.usermessage) {
-        this.showUserMessage({
+        await this.showUserMessage({
           type:      data.usermessage.type,
           message:   data.usermessage.message,
           autoclose: data.usermessage.autoclose
@@ -1066,7 +1066,7 @@ export default new (class GUI extends Emitter {
 
       // call after is set with data
       if (last && output.after) {
-        output.after(data)
+        output.after(data);
       }
     } catch(e) {
       console.warn(e);
@@ -1223,8 +1223,7 @@ export default new (class GUI extends Emitter {
     }
   }
 
-  //showusermessage
-  showUserMessage({
+  async showUserMessage({
     title,
     subtitle,
     message,
@@ -1242,7 +1241,7 @@ export default new (class GUI extends Emitter {
 
     this.closeUserMessage();
 
-    setTimeout(() => {
+    await new Promise((res) => setTimeout(() => {
       Object.assign(ApplicationState.usermessage, {
         id: getUniqueDomId(),
         show: true,
@@ -1260,7 +1259,8 @@ export default new (class GUI extends Emitter {
         hooks,
         iconClass,
       });
-    });
+      res();
+    }));
 
     return ApplicationState.usermessage;
   }
@@ -1309,7 +1309,7 @@ export default new (class GUI extends Emitter {
   /**
    * Toggle set full screen modal
    */
-  showFullModal({element = "#modal-fullscreen", show = true} = {}) {
+  showFullModal({ element = "#modal-fullscreen", show = true} = {}) {
     $(element).modal(show ? 'show' : 'hide')
   }
 
@@ -1808,6 +1808,51 @@ export default new (class GUI extends Emitter {
       dialog.remove();
       this.getPermalink.loading = false;
     });
+    document.body.appendChild(dialog);
+    dialog.showModal();
+  }
+
+  /**
+   * @param { Array<{ src: string }> } images array of images
+   * @param { number } index image to be shown
+   * 
+   * @since 4.1.0
+   */
+  showGallery(images, index) {
+    const dialog = Object.assign(document.createElement('template'), {
+      innerHTML: /* html */`
+        <dialog class="modal-gallery" style="padding: 0;position:absolute;max-height:unset;margin: 0 auto;height: 100%;background: none;">
+          ${
+            images
+              .map((img, i) => /* html */`<img src="${img.src}" loading="lazy" style="width: 100%;height: 100%; object-fit: contain; cursor:pointer;" ${ i === index ? '' : 'hidden' } />`)
+              .join('')
+          }
+          <menu style="position: fixed;inset: 0;pointer-events: none;display: flex;padding: 0;margin: 0;justify-content: space-between;align-items: center;font: 50px Monospace;">
+            <button value="close" title="close"    style="width: 80px;height: 80px;border: 0;pointer-events: all;background: none;color: #fff;position: fixed;right: 0;top: 0;">🗙</button>
+            <button value="prev"  title="Previous" style="width: 80px;height: 80px;border: 0;pointer-events: all;" ${1 === images.length ? 'hidden' : ''}>&lsaquo;</button>
+            <button value="next"  title="Next"     style="width: 80px;height: 80px;border: 0;pointer-events: all;" ${1 === images.length ? 'hidden' : ''}>&rsaquo;</button>
+          </menu>
+        </dialog>
+      `.trim()
+    }).content.firstChild;
+
+    dialog.addEventListener("click", e => {
+      const btn = e.target.closest('button');
+      if (e.target === dialog || 'close' === btn?.value || (1 === images.length && 'IMG' === e.target.tagName)) {
+        dialog.close();
+      }
+      if (['next','prev'].includes(btn?.value)) {
+        const imgs = Array.from(dialog.querySelectorAll('img'));
+        const i    = imgs.findIndex(img => !img.hidden);
+        imgs[i].hidden = true;
+        imgs.at((i + ('next' === btn.value ? 1 : -1)) % imgs.length).hidden = false;
+      }
+    });
+
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+    });
+
     document.body.appendChild(dialog);
     dialog.showModal();
   }

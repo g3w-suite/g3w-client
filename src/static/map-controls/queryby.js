@@ -299,6 +299,7 @@ export class QueryBy extends MapControl {
             },
             beforeDestroy: () => {
               GUI.toggleUserMessage(true);
+              this.toggle(false);
               this.types.forEach(t => {
                 CONTROLS[t].toggle(false);
                 CONTROLS[t].autorun = false;

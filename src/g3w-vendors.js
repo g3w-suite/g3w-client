@@ -152,7 +152,6 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 /**
  * Based on Bootstrap v3.3.7
  */
-require('bootstrap/js/carousel');
 require('bootstrap/js/collapse');
 require('bootstrap/js/dropdown');
 require('bootstrap/js/modal');

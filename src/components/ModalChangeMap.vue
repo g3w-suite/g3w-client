@@ -361,6 +361,10 @@ export default {
       .forEach(([type, d]) => d.forEach(item => this.setItemImageSrc({ item, type })))
   },
 
+  mounted() {
+    document.body.appendChild(this.$el);
+  },
+
 };
 </script>
 

@@ -66,6 +66,7 @@ export default {
   },
 
   async mounted() {
+    document.body.appendChild(this.$el);
     await this.$nextTick();
     this.show = true;
   }

@@ -1148,6 +1148,7 @@ export default {
   },
 
   async mounted() {
+    document.body.appendChild(this.$el);
     $('#modal-addlayer').modal('hide');
     $('#modal-addlayer').on('hide.bs.modal',  () => {
       this.layer_type = undefined;
