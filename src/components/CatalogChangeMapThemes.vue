@@ -357,30 +357,31 @@ export default {
      * 
      * @since 3.10.0
      */
-    deleteTheme(theme) {
-      GUI.dialog.confirm(_('Do you want delete the theme?'), async bool => {
-        // skip when ..
-        if (!bool || !theme) {
-          return;
+    async deleteTheme(theme) {
+      const ok = await GUI.confirm(_('Do you want delete the theme?'));
+
+      // skip when ..
+      if (!ok || !theme) {
+        return;
+      }
+
+      try {
+        const response = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
+          method: 'DELETE',
+        })).json();
+        // handle server error
+        if (!response.result) {
+          throw response;
         }
-        try {
-          const response = await (await fetch(`${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`, {
-            method: 'DELETE',
-          })).json();
-          // handle server error
-          if (!response.result) {
-            throw response;
-          }
-          this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
-          // show a success message to user
-          GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
-          // in the case of deleted current map theme set current theme to null
-          if (theme === this.active_theme) { this.active_theme = null;}
-        } catch(e) {
-          console.warn(e);
-          GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
-        }
-      });
+        this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
+        // show a success message to user
+        GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
+        // in the case of deleted current map theme set current theme to null
+        if (theme === this.active_theme) { this.active_theme = null;}
+      } catch(e) {
+        console.warn(e);
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
+      }
     },
 
   },

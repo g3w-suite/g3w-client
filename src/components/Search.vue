@@ -99,33 +99,34 @@ export default {
      * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
      */
     async remove(search, index) {
+      const ok = await GUI.confirm(_('Do you want delete it?'));
+
+      if (!ok) {
+        return;
+      }
+
+      const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      const items = item ? JSON.parse(item) : undefined;
+      const projectId = ApplicationState.project.getId();
+      const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
+
+      if (searches.length) {
+        items[projectId] = searches;
+      } else {
+        delete items[projectId];
+      }
+
       try {
-        await (new Promise((res, rej) => { GUI.dialog.confirm(_('Do you want delete it?'), d => d ? res() : rej()) }));
-        const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
-        const items = item ? JSON.parse(item) : undefined;
-        const projectId = ApplicationState.project.getId();
-        const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
-
-        if (searches.length) {
-          items[projectId] = searches;
+        if (Object.keys(items).length) {
+          window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(items));
         } else {
-          delete items[projectId];
+          window.localStorage.removeItem('QUERYBUILDERSEARCHES');
         }
-
-        try {
-          if (Object.keys(items).length) {
-            window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(items));
-          } else {
-            window.localStorage.removeItem('QUERYBUILDERSEARCHES');
-          }
-        } catch(e) {
-          console.warn(e);
-        }
-
-        this.state.querybuildersearches.splice(index, 1); // remove item
       } catch(e) {
         console.warn(e);
       }
+
+      this.state.querybuildersearches.splice(index, 1); // remove item
     },
 
     edit(search) {

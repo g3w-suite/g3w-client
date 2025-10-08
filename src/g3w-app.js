@@ -321,22 +321,7 @@ export default new (class GUI extends Emitter {
    */
   dialog = {
   
-    dialog(options, callback) {
-
-    // BACKCOMP: v3.x
-    if (undefined != callback) {
-      console.warn('GUI.dialog.confirm(message, callback) is deprecated')
-      options = {
-        message: options,
-        callback,
-        buttons: {
-          cancel:  { label: "Cancel" },
-          confirm: { label: "OK" }
-        }
-      };
-      options.buttons.cancel.callback  = function() { return options.callback.call(this, false); };
-      options.buttons.confirm.callback = function() { return options.callback.call(this, true); };
-    }
+    dialog(options) {
 
     options = Object.assign({
         className:   null,   // additional class string applied to the top level dialog
@@ -461,9 +446,6 @@ export default new (class GUI extends Emitter {
     this.highlightGeometry         = this.highlight.bind(this);
     this.showRelation              = this.showRelations.bind(this);
     this.clearHighlightGeometry    = () => this.highlight(false);
-
-    // BACKCOMP: v3.x
-    this.dialog.confirm = this.dialog.dialog;
 
     this.notify = {
       warning:(message, autoclose = false) => { this.showUserMessage({ type: 'warning', message, autoclose }) },
@@ -1277,6 +1259,39 @@ export default new (class GUI extends Emitter {
   //modal dialog//
   showModalDialog(options = {}) {
     return this.dialog.dialog(options);
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  async confirm(message) {
+    return new Promise((resolve, reject) => {
+      const dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */`
+          <dialog>
+            <form method="dialog">
+              ${message}
+              <menu style="display: flex;justify-content: end; gap:5px;border-top: 1px solid #f4f4f4;margin-top: 15px;">
+                <button value="no" class="btn btn-secondary">${ _('Cancel') }</button>
+                <button value="yes" class="btn btn-success">${ _('OK') }</button>
+              </menu>
+            </form>
+          </dialog>
+        `.trim()
+      }).content.firstChild;
+
+      document.body.appendChild(dialog);
+      dialog.showModal();
+
+      dialog.addEventListener('close', () => {
+        if (dialog.returnValue === 'yes') {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+        dialog.remove();
+      });
+    });
   }
 
   showSpinner(options = {}) {
