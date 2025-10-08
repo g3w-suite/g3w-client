@@ -562,7 +562,7 @@ export class QueryBy extends MapControl {
   }
 
   async runSpatialQuery(type) {
-    //@since 3.11.0 In case of error error-output-data set to true and not autorun is set
+    // @since 3.11.0 In case of error error-output-data set to true and not autorun is set
     let error = false;
     const setError = () => { error = true; this.toggle(); };
 

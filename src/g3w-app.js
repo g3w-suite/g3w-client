@@ -5324,64 +5324,56 @@ export default new (class GUI extends Emitter {
     addExternal = true,
     feature_count = 10
   } = {}) {
-    try {
-      let data       = [];
-      const external = this.getService('catalog').state.external.vector.some(l => l.selected);
-      const layers   = Object.values(ApplicationState.layers)
-        .flatMap(s => s.isQueryable() ? s.getLayers({
-          GEOLAYER:        true,
-          QUERYABLE:       true,
-          SELECTED_OR_ALL: (0 === layerIds.length),
-          VISIBLE:         true,
-          IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
-        }) : []);
-
-      if ((!external || layerIds.length > 0) && layers.length) {
-        const size           = this.getMap().getSize();
-        const mapProjection  = this.getMap().getView().getProjection();
-        const resolution     = this.getMap().getView().getResolution();
-        // group query by multilayerid
-        const responses = await Promise.allSettled(Object.values(
-          multilayers
-            ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`)
-            : layers
-        ).map(layers => 
-          [].concat(layers)[0].query(
-            multilayers
-              ? { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution, reproject: true, layers }
-              : { feature_count, coordinates, query_point_tolerance, mapProjection, size, resolution }
-            )
-          )
-        );
-        // show all errors
-        if (responses.some(r => 'rejected' === r.status)) {
-          throw responses.filter(r => 'rejected' === r.status).map(r => r.reason);
-        }
-        // at least one response
-        data = responses.filter(r => 'fulfilled' === r.status).map(r => r.value);
-      }
-      return {
-        result: true,
-        type: 'ows',
-        query: {
-          coordinates,
-          type: 'coordinates',
-          external: {
-            add: (!external || layerIds.length > 0)
-              ? (1 === layers.length && layers[0].isSelected() ? false : addExternal) // avoid querying a temporary layer (external layer) when another layer is selected
-              : addExternal,                                                          // an external layer is selected
-            filter: {
-              SELECTED: external
-            }
-          }
-        },
-        data: data.flatMap(({ data = [] }) => data),
-        
-      };
-    } catch (error) {
-      console.warn(error);
-      throw error;
+    let data       = [];
+    const external = this.getService('catalog').state.external.vector.some(l => l.selected);
+    const layers   = Object.values(ApplicationState.layers)
+      .flatMap(s => s.isQueryable() ? s.getLayers({
+        GEOLAYER:        true,
+        QUERYABLE:       true,
+        SELECTED_OR_ALL: (0 === layerIds.length),
+        VISIBLE:         true,
+        IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
+      }) : []);
+    const size           = this.getMap().getSize();
+    const mapProjection  = this.getMap().getView().getProjection();
+    const resolution     = this.getMap().getView().getResolution();
+    if ((!external || layerIds.length > 0) && layers.length) {
+      data = await Promise.allSettled(Object.values(
+        multilayers
+          ? groupBy(layers, l => `${l.getInfoFormat()}:${l.getInfoUrl()}:${l.getMultiLayerId()}`) // group query by multilayerid
+          : layers
+      ).map(layers => [].concat(layers)[0].query({
+        feature_count,
+        coordinates,
+        query_point_tolerance,
+        mapProjection,
+        size,
+        resolution,
+        ...(multilayers ? { reproject: true, layers } : {})
+      }))
+      );
     }
+    // show all errors
+    if (data.some(r => 'rejected' === r.status)) {
+      throw data.filter(r => 'rejected' === r.status).map(r => r.reason);
+    }
+    return {
+      result: true,
+      type: 'ows',
+      query: {
+        coordinates,
+        type: 'coordinates',
+        external: {
+          add: (!external || layerIds.length > 0)
+            ? (1 === layers.length && layers[0].isSelected() ? false : addExternal) // avoid querying a temporary layer (external layer) when another layer is selected
+            : addExternal,                                                          // an external layer is selected
+          filter: {
+            SELECTED: external
+          }
+        }
+      },
+      data: data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ data = [] }) => data),
+    };
   }
 
   /**
