@@ -178,13 +178,10 @@ import ApplicationState             from 'g3w-state';
 import GUI                          from 'g3w-app';
 import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
 import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
-import { saveBlob }                 from 'utils/saveBlob';
-import { printAtlas }               from 'utils/printAtlas';
 import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
 
 import resizeMixin                  from 'mixins/resize';
 
-import vueComp                      from 'components/PrintPage.vue';
 import { gettext as _ }             from 'g3w-i18n';
 
 export default {
@@ -466,30 +463,103 @@ export default {
 
         // ATLAS PRINT
         if (has_atlas) {
-          ApplicationState.download = true;
-
-          const { url } = await printAtlas({
+          await GUI.printAtlas(undefined, undefined, {
             template: this.state.template,
             field:    this.state.atlas.field_name || '$id',
             values:   this.atlas_values,
-            download: true
           });
-
-          const response = url && await fetch(url);
-
-          if (!response?.ok) {
-            throw (await response.json()).message;
-          }
-
-          saveBlob(await response.blob(), this.state.template);
         }
 
         // SIMPLE PRINT
         if (!has_atlas) {
-          this.state.url       = null;
-          this.state.layers    = true;
+          this.state.url     = null;
+          this.state.layers  = true;
 
-          this._page = new Component({ service: { state: this.state }, vueComponentObject: vueComp });
+          this._page = new Component({
+            service: { state: this.state },
+            vueComponentObject: {
+              data: () => ({
+                state: this.state,
+                format: this.state.format, // extract `state.format` so it doesn't react to Print.vue changes
+                ready : false,
+              }),
+              template: /* html */`
+                <div style="height:100%; position: relative;">
+                  <bar-loader :loading = "state.loading && state.layers" />
+                  <h4 v-if = "!state.layers"><b>${$t('No Layer to print')}</b></h4>
+                  <template v-else>
+
+                    <!-- PRINT as PDF or GEOPDF-->
+                    <iframe
+                      v-if   = "['pdf', 'geopdf'].includes(format)"
+                      :src   = "state.url"
+                      @load  = "ready = true"
+                      @error = "ready = true"
+                      style  = "border:0; width:100%; height:100%;"
+                    ></iframe>
+
+                    <!-- PRINT as PNG, JPG, SVG -->
+                    <template v-else>
+                      <div style = "text-align: right; margin: 5px 0;">
+                        <a
+                          :href       = "state.url"
+                          @click.stop = "downloadImage"
+                          class       = "btn skin-button"
+                          title       = "Download Image"
+                          :class      = "$fa('download')"
+                          :disabled   = "!!(state.downloading && state.layers)"
+                        ></a>
+                      </div>
+                      <div v-if  = "state.url">
+                        <img :src = "state.url" @load = "ready = true" @error = "ready = true" style  = "height:auto; width: 100%;">
+                      </div>
+                    </template>
+                  </template>
+                </div>`,
+
+              methods: {
+                async downloadImage() {
+                  try {
+                    GUI.disableSideBar(true);
+                    this.state.downloading = true;
+                    if (['jpg', 'png', 'svg'].includes(this.format)) {
+                      await new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.onload = () => {
+                          const canvas  = document.createElement('canvas');
+                          canvas.height = img.naturalHeight;
+                          canvas.width  = img.naturalWidth;
+                          canvas.getContext('2d').drawImage(img, 0, 0);
+                          resolve(canvas.toDataURL(`image/${this.format}`));
+                        };
+                        img.onerror = reject;
+                        img.src = this.state.url;
+                      });
+                      setTimeout(() => {
+                        GUI.disableSideBar(false);
+                        this.state.downloading = false;
+                      });
+                    }
+                  } catch (e) {
+                    console.warn(e);
+                  }
+                },
+              },
+              watch: {
+                ready: {
+                  handler(bool) {
+                    GUI.setLoadingContent(!bool);
+                  },
+                  immediate: true,
+                }
+              },
+              beforeDestroy() {
+                if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
+                  URL.revokeObjectURL(this.state.url);
+                }
+              },
+            }
+          });
 
           // show print page with loading state
           GUI.setContent({
@@ -531,7 +601,6 @@ export default {
             ...(this.state.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
           })).toString();
 
-      
           response = await (fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },

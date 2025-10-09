@@ -1269,14 +1269,28 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   async prompt(message, value) {
+    // auto-select first value
+    if (Array.isArray(value) && 1 === value.length) {
+      return '0';
+    }
     return new Promise((resolve, reject) => {
       const uid    = getUniqueDomId();
       const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */`
           <dialog>
             <form method="dialog">
-              <label for="${uid}">${message}</label>
-              <input id="${uid}" class="form-control" autocomplete="off" type="text" value="${value}">
+              <h4 style="color: var(--skin-color); font-weight: 700;" ${Array.isArray(value) ? '' : 'hidden'}>${ message }</h4>
+              ${
+                Array.isArray(value)
+                ? value
+                    .map(item => ({ value: item.value, label: item.label, id: getUniqueDomId() }))
+                    .map(item => /* html */`<label for="${item.id}"><input id="${item.id}" type="radio" name="template" value="${item.value}" autocomplete="off" /> ${item.label || item.value}</label><br>`)
+                    .join('')
+                : /* html */`
+                  <label for="${uid}">${message}</label>
+                  <input id="${uid}" class="form-control" autocomplete="off" type="text" value="${value}">
+                `
+              }
               <menu style="display: flex;justify-content: end; gap:5px;border-top: 1px solid #f4f4f4;margin-top: 15px;">
                 <button value="no" class="btn btn-secondary">${ _('Cancel') }</button>
                 <button value="yes" class="btn btn-success">${ _('OK') }</button>
@@ -1288,17 +1302,23 @@ export default new (class GUI extends Emitter {
 
       const input = dialog.querySelector('input');
       const yes   = dialog.querySelector('button[value="yes"]');
+      let _value;
 
-      input.addEventListener('input', () => yes.disabled = !input.value.trim().length);
+      const canSubmit = () => {
+        _value = Array.isArray(value) ? dialog.querySelector('input[name="template"]:checked')?.value : input.value;
+        yes.disabled = !_value?.trim()?.length;
+      }
 
-      yes.disabled = !input.value.trim().length;
+      input.addEventListener('input', canSubmit);
+
+      canSubmit();
 
       document.body.appendChild(dialog);
       dialog.showModal();
 
       dialog.addEventListener('close', () => {
         if ('yes' === dialog.returnValue) {
-          resolve(input.value);
+          resolve(_value);
         } else {
           reject();
         }
@@ -2550,7 +2570,7 @@ export default new (class GUI extends Emitter {
           download: true,
           class:    this.getFontClass('print'),
           hint:     'Print Atlas',
-          cbk:      this.printAtlas.bind(this)
+          cbk:      (layer, feature) => this.printAtlas(layer, feature)
         },
 
         // remove feature
@@ -3039,44 +3059,6 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
-  async #printSingleAtlas({
-    atlas    = {},
-    features = [],
-  } = {}) {
-    let field = atlas.atlas?.field_name || '$id';
-
-    ApplicationState.download = true;
-
-    this.setLoadingContent(true);
-
-    try {
-      const { url } = await require('utils/printAtlas').printAtlas({
-        field,
-        values:   features.map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
-        template: atlas.name,
-        download: true
-      });
-      const response = url && await fetch(url);
-
-      if (!response?.ok) {
-        throw (await response.json()).message;
-      }
-
-      saveBlob(await response.blob(), atlas.name || (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(1));
-    } catch(e) {
-      this.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
-    }
-
-    ApplicationState.download = false;
-
-    this.setLoadingContent(false);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    *
    * @param ids
    * @param container
@@ -3104,40 +3086,70 @@ export default new (class GUI extends Emitter {
    *
    * @param layer
    * @param feature
+   * @param { Object } opts
+   * @param opts.field
+   * @param opts.values
+   * @param opts.template
    * 
    * @since 4.1.0
    */
-  printAtlas(layer, feature) {
-    const features   = feature ? [feature] : layer.features;
-    const atlasLayer = this.#atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
+  async printAtlas(layer, feature, opts) {
+    const emit = undefined !== opts;
+    try {
 
-    /** @FIXME add description */
-    if (atlasLayer.length <= 1) {
-      this.#printSingleAtlas({ features, atlas: atlasLayer[0] });
-      return;
-    }
-
-    this.dialog({
-      title: _('Select Template'),
-      message: atlasLayer
-        .map((atlas, index) => ({ atlas, index, id: getUniqueDomId() }))
-        .map(({ atlas, index, id }) => /* html */`<label for="${id}"><input id="${id}" g3w_atlas_index="${index}" type="radio" name="template" value="${atlas.name}" /> ${atlas.name}</label><br>`)
-        .join(''),
-      buttons: {
-        success: {
-          label: "OK",
-          className: "skin-button",
-          callback: () => {
-            const index = $('input[name="template"]:checked').attr('g3w_atlas_index');
-            if (undefined === index) {
-              return false; // prevent default
-            }
-            this.#printSingleAtlas({ features, atlas: atlasLayer[index] });
-          }
+      if (undefined === opts) {
+        const atlas = this.#atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
+        const index = await this.prompt(_('Select Template'), atlas.map((atlas, i) => ({ value: i, label: atlas.name })) );
+        if (!index) {
+          return;
         }
+        let field = atlas?.[index]?.atlas?.field_name || '$id';
+        opts = {
+          field,
+          values:   (feature ? [feature] : layer.features).map(feat => feat.attributes['$id' === field ? G3W_FID : field]),
+          template: atlas?.[index]?.name,
+        };
       }
-    });
 
+      ApplicationState.download = true;
+      this.setLoadingContent(true);
+
+      let response = await fetch(ApplicationState.project.state.WMSUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body:  new URLSearchParams(await this.getPrintParams({
+          SERVICE:     'WMS',
+          VERSION:     '1.3.0',
+          REQUEST:     'GetPrintAtlas',
+          EXP_FILTER:  opts.field + (opts.values.length > 1 ? ' IN (' : '=') + (opts.values.map(v => `'${v}'`).join()) + (opts.values.length > 1 ? ')' : ''),
+          TEMPLATE:    opts.template,
+          filtertoken: ApplicationState.tokens.filtertoken,
+          DOWNLOAD:    1,
+        }) || {}).toString(),
+      });
+
+      if (!response.ok) {
+        throw new Error(500 === response.status ? 'Internal Server Error' : 'Request Failed');
+      }
+        
+      const url = URL.createObjectURL(await response.blob());
+      response  = url && await fetch(url);
+
+      if (!response?.ok) {
+        throw (await response.json()).message;
+      }
+
+      saveBlob(await response.blob(), opts.template || (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(1));
+    } catch(e) {
+      if (emit) {
+        throw e;
+      } else {
+        this.showUserMessage({ type: 'alert', message: e || 'server_error', textMessage: !!e })
+      }
+    } finally {
+      ApplicationState.download = false;
+      this.setLoadingContent(false);
+    }
   }
 
   /**
