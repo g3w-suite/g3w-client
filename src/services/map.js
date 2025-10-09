@@ -514,7 +514,8 @@ class MapService extends G3WObject {
     const { data = [] } = await DataRouterService.getData('search:fids', {
       inputs: {
         layer,
-        fids:  [fid]
+        fids:      [fid],
+        formatter: 1, //@since 4.0.3 need to set formatter 1 to show formatted data
       },
       outputs: {
         show: {
