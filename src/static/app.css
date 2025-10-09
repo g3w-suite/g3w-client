@@ -113,6 +113,7 @@ dialog                                      { border-width: 0; animation: slide-
 dialog::backdrop                            { background-color: rgb(0, 0, 0, .5); }
 dialog[popover=manual]::backdrop            { opacity: .25; }
 dialog.modal-gallery::backdrop              { background-color: rgb(0, 0, 0); }
+dialog.modal-left                           { width: 350px; margin-left: 2px; margin-top: 3px; }
 dialog > form > menu                        { background: #fff; position:sticky; bottom:0; margin: 0; padding: 10px 0; }
 dialog:has(> form)                          { padding: 0; }
 dialog form                                 { padding: 14px; }
@@ -1177,9 +1178,6 @@ textarea.form-control                     { height: auto; }
 
 input[type="range"]                                                       { accent-color: var(--skin-color); margin: 5px 0 5px 0; }
 
-.bootbox.modal.in .modal-title                                            { font-weight: bold; }
-.bootbox.modal.in.modal-left .modal-dialog                                { width: 350px !important; margin-left: 0 !important; margin-top: 5px !important; }
-
 .c3-title                                                                 { font-weight: bold; top: 5px; font-size: 2em; }
 .select2-dropdown                                                         { color: #444 !important; }
 .table.mobile thead tr th,
@@ -1197,7 +1195,6 @@ input[type="range"]                                                       { acce
 body .tooltip .tooltip-inner                                              { max-width: 100% !important; }
 
 :is(.magic-checkbox, .magic-radio) + label                                          { display: inline-flex !important; width: calc(100% - 1.5em);}
-.bootbox.modal.in .modal-title                                                      { color: var(--skin-color); }
 .c3-title                                                                           { fill: var(--skin-color); }
 .select2-container--default .select2-results__option--highlighted[aria-selected]    { background-color: var(--skin-color) !important; }
 .select2-container--default .select2-selection--multiple .select2-selection__choice { background-color: var(--skin-color); border-color: var(--skin-color); }

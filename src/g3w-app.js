@@ -351,7 +351,6 @@ export default new (class GUI extends Emitter {
     this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
     this.highlightGeometry         = this.highlight.bind(this);
     this.showRelation              = this.showRelations.bind(this);
-    this.showModalDialog           = this.dialog.bind(this);
     this.clearHighlightGeometry    = () => this.highlight(false);
 
     this.notify = {
@@ -1164,64 +1163,65 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * Based on bootbox.js v4.4.0
-   * Copyright 2011-2020 Nick Payne
-   * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
+   * used by the following plugins: "qps_timeseries"
    * 
-   * @deprecated use native `<dialog>` element instead
+   * @deprecated since 4.1.0, use `GUI.dialog(options)` instead
+   */
+  showModalDialog(options = {}) {
+    const dialog  = this.dialog(options);
+    const $dialog = $(dialog);
+    setTimeout(() => { $dialog.trigger('shown.bs.modal'); }, 500);
+    dialog.addEventListener('close', () => { $dialog.trigger('hidden.bs.modal'); });
+    return $dialog;
+  }
+
+  /**
+   * Initally based on bootbox.js v4.4.0
+   * 
+   * @since 4.1.0
    */
   dialog(options = {}) {
 
-    const dialog = $(/* html */ `<div class="bootbox modal fade ${options.className || ''}" tabindex="-1" role="dialog">
-      <div class="modal-dialog ${({ large: "modal-lg", small: "modal-sm" })[options.size] || '' }">
-        <div class="modal-content">
-          ${
-            options.title
-              ? /* html */`
-                <div class="modal-header">
-                  ${ (options.closeButton ?? true) ? /* html */`<button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true">&times;</button>` : '' }
-                  <h4 class="modal-title">${ options.title }</h4>
-                </div>`
-              : ''
-          }
-          <div class="modal-body">
-            ${(options.closeButton ?? true) && !options.title ? /* html */`<button type="button" class="bootbox-close-button close" style="margin-top:-10px;" data-dismiss="modal" aria-hidden="true">&times;</button>` : ''}
-            <div class="bootbox-body">${ options.message || '' }</div>
-          </div>
-          ${
-            Object.keys(options.buttons).length
-              ? /* html */`
-                <div class='modal-footer'>
-                  ${
-                    Object
-                      .keys(options.buttons)
-                      .map(key => /* html */`<button data-bbx="${key}" type="button" class="btn ${options.buttons[key].className}">${options.buttons[key].label}</button>`)
-                      .join('')
-                  }
-                </div>`
-              : ''
-          }
-        </div>
-      </div>
-    </div>`);
+    const dialog = Object.assign(document.createElement('template'), {
+      innerHTML: /* html */ `
+        <dialog class="${options.className || ''}">
+          <form method="dialog">
+            <button value="cancel" ${(options.closeButton ?? true) ? '' : 'hidden'} style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;">&times;</button>
+            <h4 style="color: var(--skin-color); font-weight: 700;" ${options.title ? '' : 'hidden'}>${ options.title || '' }</h4>
+            <menu style="display: flex;justify-content: end;gap: 5px;">
+              ${
+                Object
+                  .keys(options.buttons || {})
+                  .map(key => /* html */`<button value="${key}" class="btn ${options.buttons[key].className}">${options.buttons[key].label}</button>`)
+                  .join('')
+              }
+            </menu>
+          </form>
+        </dialog>
+      `.trim()
+    }).content.firstChild;
+
+    if ('string' !== typeof options.message) {
+      dialog.querySelector('h4').insertAdjacentElement('afterend', options.message)
+    } else {
+      dialog.querySelector('h4').insertAdjacentHTML('afterend', options.message)
+    }
 
     const cb = (e, bbx) => {
-      const callback = options?.buttons?.[bbx]?.callback;
-      e.stopPropagation();
-      e.preventDefault();
-      if ('function' !== typeof callback || false !== callback.call(dialog, e)) {
-        dialog.modal("hide");
+      if (false === options?.buttons?.[bbx]?.callback?.call(dialog, e)) {
+        e.stopPropagation();
+        e.preventDefault();
+      } else {
+        dialog.close();
+        dialog.remove();
       }
     };
 
-    dialog.on("hidden.bs.modal",                function(e) { if (e.target === this) { dialog.remove(); } });
-    dialog.on("shown.bs.modal",                 function()  { dialog.find(".btn-primary:first").focus(); });
-    dialog.on("click", ".modal-footer button",  function(e) { cb(e, $(this).data("bbx")); });
-    dialog.on("click", ".bootbox-close-button", function(e) { cb(e, 'cancel'); });
-    dialog.on("keyup",                          function(e) { if (e.which === 27) { cb(e, 'cancel'); } });
-  
-    $("body").append(dialog);
-    dialog.modal({ backdrop: "static", keyboard: false, show: true });
+    document.body.appendChild(dialog);
+    dialog.showModal();
+
+    dialog.addEventListener('cancel', e => { cb(e, 'cancel'); });
+    dialog.addEventListener('close', e => { cb(e, dialog.returnValue); });
   
     return dialog;
   }
@@ -4374,7 +4374,8 @@ export default new (class GUI extends Emitter {
     const { data = [] } = await this.getData('search:fids', {
       inputs: {
         layer,
-        fids:  [fid]
+        fids:  [fid],
+        formatter: 1,
       },
       outputs: {
         show: {
