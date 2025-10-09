@@ -378,8 +378,6 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 * modal.less
 **************************************************************************************/
 
-#g3w-modal-overlay { height: 100vh; }
-
 .modal-open                           { overflow: hidden; }
 .modal                                { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 1050; display: none; overflow: hidden; -webkit-overflow-scrolling: touch; outline: 0; background: rgba(0,0,0,.3); }
 .modal.fade .modal-dialog             { transform: translate(0, -25%); transition: transform 0.3s ease-out; }
@@ -1179,7 +1177,6 @@ textarea.form-control                     { height: auto; }
 
 input[type="range"]                                                       { accent-color: var(--skin-color); margin: 5px 0 5px 0; }
 
-.bootbox.dialogFullScreen .modal-dialog                                   { width: 90% !important; height: 90% !important; }
 .bootbox.modal.in .modal-title                                            { font-weight: bold; }
 .bootbox.modal.in.modal-left .modal-dialog                                { width: 350px !important; margin-left: 0 !important; margin-top: 5px !important; }
 

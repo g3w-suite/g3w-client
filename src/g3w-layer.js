@@ -18,7 +18,6 @@ import {
   G3W_FID,
 }                                 from 'g3w-constants';
 import Emitter                    from 'g3w-emitter';
-import Component                  from 'g3w-component';
 import { gettext as _ }           from 'g3w-i18n';
 import ApplicationState           from 'g3w-state';
 import GUI                        from 'g3w-app';
@@ -27,7 +26,6 @@ import Table                      from 'components/Table.vue';
 
 import { saveBlob }               from 'utils/saveBlob';
 import { XHR }                    from 'utils/XHR';
-import { prompt }                 from 'utils/prompt';
 import { getCatalogLayerById }    from 'utils/getCatalogLayerById';
 import { getScaleFromResolution } from 'utils/getScaleFromResolution';
 import { groupBy }                from 'utils/groupBy';
@@ -846,58 +844,59 @@ export class Layer extends Emitter {
   /**
    * @since 3.9.0
    */
-  saveFilter() {
+  async saveFilter() {
 
     // skip when ..
     if (!this.getProvider('filtertoken') || !this.state.selection.fids.size > 0) {
       return;
     }
 
-    prompt({
-      label: _('Save Filter'),
-      value: this.state.filter.current?.name || '',
-      callback: async(name) => {
-
-        /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved> */
-        const response = await XHR.get({
-          url:    this.getUrl('filtertoken'),
-          params: { mode: 'save', name } }
-        );
-
-        // skip when no data return from provider
-        if (!response || !response.result || !response.data) {
-          return;
+    try {
+      /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=save&name=<name_filter_saved> */
+      const response = await XHR.get({
+        url:    this.getUrl('filtertoken'),
+        params: {
+          mode: 'save',
+          name: await GUI.prompt(_('Save Filter'), this.state.filter.current?.name || '')
         }
+      });
 
-        let filter = this.state.filters.find(f => response.data.fid === f.fid);
-      
-        // add saved filter to filters array
-        if (undefined === filter) {
-          filter = {
-            fid:  response.data.fid, //get fid
-            name: response.data.name //get name
-          }
-          this.state.filters.push(filter);
+      // skip when no data return from provider
+      if (!response || !response.result || !response.data) {
+        return;
+      }
+
+      let filter = this.state.filters.find(f => response.data.fid === f.fid);
+    
+      // add saved filter to filters array
+      if (undefined === filter) {
+        filter = {
+          fid:  response.data.fid, //get fid
+          name: response.data.name //get name
         }
+        this.state.filters.push(filter);
+      }
 
-        this.state.filter.current = filter; // set current filter
-        this.setFilter(false);              // set to false
-        this.getSelection().active = false; // reset selection to false
-        this.state.selection.fids.clear();   // clear current fids
+      this.state.filter.current = filter; // set current filter
+      this.setFilter(false);              // set to false
+      this.getSelection().active = false; // reset selection to false
+      this.state.selection.fids.clear();   // clear current fids
 
-        // remove selection feature from map
-        if (this.isGeoLayer()) {
-          Object
-            .values(this.state.selection.features)
-            .forEach(f => {
-              f.selected = false;
-              GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-            });
-        }
+      // remove selection feature from map
+      if (this.isGeoLayer()) {
+        Object
+          .values(this.state.selection.features)
+          .forEach(f => {
+            f.selected = false;
+            GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
+          });
+      }
 
-        this.emit('unselectionall', this.getId());
-      },
-    });
+      this.emit('unselectionall', this.getId());
+    } catch (e) {
+      console.warn(e);
+    }
+
 
   }
 

@@ -312,100 +312,6 @@ export default new (class GUI extends Emitter {
     )
   });
 
-  /**
-   * Based on bootbox.js v4.4.0
-   * Copyright 2011-2020 Nick Payne
-   * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
-   * 
-   * @deprecated use native `<dialog>` element instead
-   */
-  dialog = {
-  
-    dialog(options) {
-
-    options = Object.assign({
-        className:   null,   // additional class string applied to the top level dialog
-        closeButton: true,   // whether or not to include a close button
-        show:        true,   // show the dialog immediately by default
-        container:   "body", // dialog container
-        buttons:     {},
-        message:     '',
-      }, options);
-  
-      const dialog = $(/* html */ `<div class="bootbox modal fade ${options.className || ''}" tabindex="-1" role="dialog">
-        <div class="modal-dialog ${({ large: "modal-lg", small: "modal-sm" })[options.size] || '' }">
-          <div class="modal-content">
-            ${ options.title ? "<div class='modal-header'><h4 class='modal-title'></h4></div>" : '' }
-            <div class="modal-body"><div class="bootbox-body"></div></div>
-          </div>
-        </div>
-      </div>`);
-
-      dialog.find(".bootbox-body").html(options.message);
-  
-      let btns = "";
-      const callbacks = {};
-  
-      Object.keys(options.buttons).forEach((key, i, arr) => {
-        if ('function' === typeof options.buttons[key]) {
-          options.buttons[key] = { callback: options.buttons[key] };
-        }
-        // the lack of an explicit label means we'll assume the key is good enough
-        if (!options.buttons[key].label) {
-          options.buttons[key].label = key;
-        }
-        // always add a primary to the main option in a two-button dialog
-        if (!options.buttons[key].className) {
-          options.buttons[key].className = arr.length <= 2 && i === arr.length - 1 ? "btn-primary" : "btn-default";
-        }
-        btns += "<button data-bbx='" + key + "' type='button' class='btn " + options.buttons[key].className + "'>" + options.buttons[key].label + "</button>";
-        callbacks[key] = options.buttons[key].callback;
-      });
-    
-      if (options.closeButton) {
-        const close = $("<button type='button' class='bootbox-close-button close' data-dismiss='modal' aria-hidden='true'>&times;</button>");
-        if (options.title) {
-          dialog.find(".modal-header").prepend(close);
-        } else {
-          close.css("margin-top", "-10px").prependTo(dialog.find(".modal-body"));
-        }
-      }
-    
-      if (options.title) {
-        dialog.find(".modal-title").html(options.title);
-      }
-    
-      if (btns) {
-        dialog.find(".modal-body").after("<div class='modal-footer'></div>");
-        dialog.find(".modal-footer").html(btns);
-      }
-  
-      const onCallback = (e, dialog, callback) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if ('function' !== typeof callback || false !== callback.call(dialog, e)) {
-          dialog.modal("hide");
-        }
-      };
-  
-      dialog.on("hidden.bs.modal",                function(e) { if (e.target === this) { dialog.remove(); } });
-      dialog.on("shown.bs.modal",                 function()  { dialog.find(".btn-primary:first").focus(); });
-      dialog.on("click", ".modal-footer button",  function(e) { onCallback(e, dialog, callbacks[$(this).data("bbx")]); });
-      dialog.on("click", ".bootbox-close-button", function(e) { onCallback(e, dialog, callbacks.cancel); });
-      dialog.on("keyup",                          function(e) { if (e.which === 27 && callbacks.cancel) { onCallback(e, dialog, callbacks.cancel); } });
-    
-      $(options.container).append(dialog);
-      dialog.modal({ backdrop: "static", keyboard: false, show: false });
-    
-      if (options.show) {
-        dialog.modal("show");
-      }
-    
-      return dialog;
-    },
-  
-  };
-
   constructor(opts) {
     super(opts);
 
@@ -445,6 +351,7 @@ export default new (class GUI extends Emitter {
     this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
     this.highlightGeometry         = this.highlight.bind(this);
     this.showRelation              = this.showRelations.bind(this);
+    this.showModalDialog           = this.dialog.bind(this);
     this.clearHighlightGeometry    = () => this.highlight(false);
 
     this.notify = {
@@ -1256,12 +1163,72 @@ export default new (class GUI extends Emitter {
     });
   }
 
-  //modal dialog//
-  showModalDialog(options = {}) {
-    return this.dialog.dialog(options);
+  /**
+   * Based on bootbox.js v4.4.0
+   * Copyright 2011-2020 Nick Payne
+   * Licensed under MIT (https://github.com/bootboxjs/bootbox/blob/v4.x/LICENSE.md)
+   * 
+   * @deprecated use native `<dialog>` element instead
+   */
+  dialog(options = {}) {
+
+    const dialog = $(/* html */ `<div class="bootbox modal fade ${options.className || ''}" tabindex="-1" role="dialog">
+      <div class="modal-dialog ${({ large: "modal-lg", small: "modal-sm" })[options.size] || '' }">
+        <div class="modal-content">
+          ${
+            options.title
+              ? /* html */`
+                <div class="modal-header">
+                  ${ (options.closeButton ?? true) ? /* html */`<button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true">&times;</button>` : '' }
+                  <h4 class="modal-title">${ options.title }</h4>
+                </div>`
+              : ''
+          }
+          <div class="modal-body">
+            ${(options.closeButton ?? true) && !options.title ? /* html */`<button type="button" class="bootbox-close-button close" style="margin-top:-10px;" data-dismiss="modal" aria-hidden="true">&times;</button>` : ''}
+            <div class="bootbox-body">${ options.message || '' }</div>
+          </div>
+          ${
+            Object.keys(options.buttons).length
+              ? /* html */`
+                <div class='modal-footer'>
+                  ${
+                    Object
+                      .keys(options.buttons)
+                      .map(key => /* html */`<button data-bbx="${key}" type="button" class="btn ${options.buttons[key].className}">${options.buttons[key].label}</button>`)
+                      .join('')
+                  }
+                </div>`
+              : ''
+          }
+        </div>
+      </div>
+    </div>`);
+
+    const cb = (e, bbx) => {
+      const callback = options?.buttons?.[bbx]?.callback;
+      e.stopPropagation();
+      e.preventDefault();
+      if ('function' !== typeof callback || false !== callback.call(dialog, e)) {
+        dialog.modal("hide");
+      }
+    };
+
+    dialog.on("hidden.bs.modal",                function(e) { if (e.target === this) { dialog.remove(); } });
+    dialog.on("shown.bs.modal",                 function()  { dialog.find(".btn-primary:first").focus(); });
+    dialog.on("click", ".modal-footer button",  function(e) { cb(e, $(this).data("bbx")); });
+    dialog.on("click", ".bootbox-close-button", function(e) { cb(e, 'cancel'); });
+    dialog.on("keyup",                          function(e) { if (e.which === 27) { cb(e, 'cancel'); } });
+  
+    $("body").append(dialog);
+    dialog.modal({ backdrop: "static", keyboard: false, show: true });
+  
+    return dialog;
   }
 
   /**
+   * Similar to `window.confirm`
+   * 
    * @since 4.1.0
    */
   async confirm(message) {
@@ -1284,10 +1251,56 @@ export default new (class GUI extends Emitter {
       dialog.showModal();
 
       dialog.addEventListener('close', () => {
-        if (dialog.returnValue === 'yes') {
+        if ('yes' === dialog.returnValue) {
           resolve(true);
         } else {
           resolve(false);
+        }
+        dialog.remove();
+      });
+    });
+  }
+
+  /**
+   * ORIGINAL SOURCE: src/utils/prompt.js@v4.0.0
+   * 
+   * Similar to `window.prompt`
+   * 
+   * @since 4.1.0
+   */
+  async prompt(message, value) {
+    return new Promise((resolve, reject) => {
+      const uid    = getUniqueDomId();
+      const dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */`
+          <dialog>
+            <form method="dialog">
+              <label for="${uid}">${message}</label>
+              <input id="${uid}" class="form-control" autocomplete="off" type="text" value="${value}">
+              <menu style="display: flex;justify-content: end; gap:5px;border-top: 1px solid #f4f4f4;margin-top: 15px;">
+                <button value="no" class="btn btn-secondary">${ _('Cancel') }</button>
+                <button value="yes" class="btn btn-success">${ _('OK') }</button>
+              </menu>
+            </form>
+          </dialog>
+        `.trim()
+      }).content.firstChild;
+
+      const input = dialog.querySelector('input');
+      const yes   = dialog.querySelector('button[value="yes"]');
+
+      input.addEventListener('input', () => yes.disabled = !input.value.trim().length);
+
+      yes.disabled = !input.value.trim().length;
+
+      document.body.appendChild(dialog);
+      dialog.showModal();
+
+      dialog.addEventListener('close', () => {
+        if ('yes' === dialog.returnValue) {
+          resolve(input.value);
+        } else {
+          reject();
         }
         dialog.remove();
       });
@@ -3104,16 +3117,12 @@ export default new (class GUI extends Emitter {
       return;
     }
 
-    let inputs = '';
-
-    atlasLayer.forEach((atlas, index) => {
-      const id = getUniqueDomId();
-      inputs += /* html */`<label for="${id}"><input id="${id}" g3w_atlas_index="${index}" type="radio" name="template" value="${atlas.name}" /> ${atlas.name}</label><br>`;
-    });
-
-    this.showModalDialog({
+    this.dialog({
       title: _('Select Template'),
-      message: inputs,
+      message: atlasLayer
+        .map((atlas, index) => ({ atlas, index, id: getUniqueDomId() }))
+        .map(({ atlas, index, id }) => /* html */`<label for="${id}"><input id="${id}" g3w_atlas_index="${index}" type="radio" name="template" value="${atlas.name}" /> ${atlas.name}</label><br>`)
+        .join(''),
       buttons: {
         success: {
           label: "OK",

@@ -64,7 +64,10 @@ export default {
   props: ['tool'],
   methods: {
     showToolStateMessage() {
-      GUI.showModalDialog({ title: this.tool.state.type.toUpperCase(), message: this.tool.state.message });
+      GUI.dialog({
+        title: this.tool.state.type.toUpperCase(),
+        message: this.tool.state.message
+      });
     },
   },
   computed: {
