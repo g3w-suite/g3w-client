@@ -1,190 +1,233 @@
-<!--
-  @file
-  @since v3.7
--->
-
-<template>
-  <ul id = "print" class = "treeview-menu">
-    <li>
-
-      <form
-        v-if  = "state.print.length"
-        class = "g3w-search-form form-horizonal"
-        style = "border-radius: 0 0 3px 3px; padding: 10px;"
-      >
-
-        <bar-loader :loading = "state.loading" />
-
-        <fieldset style="border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: hsl(from var(--bgcolor) h s calc(l + 8)); color: rgb(255, 255, 255); user-select:none">
-          <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
-          <details>
-            <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right = "'Show more'">
-              <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'Exportable layers are defined by the administrator'"></span>
-              <i class="far fa-eye"></i>
-            </summary>
-            <hr style="margin: 10px 0;border-style: dotted;">
-            <div style="white-space: wrap; line-height: 25px;" v-t="'print_help'"></div>
-          </details>
-        </fieldset>
-
-        <!-- PRINT TEMPLATE -->
-        <label for = "templates" v-t = "'Template'"></label>
-        <select
-          id             = "templates"
-          class          = "form-control"
-          v-select2      = "'state.template'"
-          :select2_value = "state.template"
-          :style         = "{ marginBottom: this.state.atlas && '10px' }"
-          @change        = "changeTemplate"
-        >
-          <option v-for = "print in state.print" :value = "print.name">{{ print.name }}</option>
-        </select>
-
-        <template v-if = "!state.atlas">
-
-          <!-- PRINT SCALE -->
-          <label for = "scale" v-t = "'Scale'"></label>
-          <select
-            id             = "scale"
-            class          = "form-control"
-            v-disabled     = "!has_maps"
-            v-select2      = "'state.scale'"
-            :select2_value = "state.scale"
-            :createTag     = "true"
-            @change        = "changeScale"
-            ref            = "scales"
-          >
-            <option v-for = "scale in state.scales" :value = "scale.value">{{ scale.label }}</option>
-          </select>
-
-          <!-- PRINT DPI -->
-          <label for = "dpi">dpi</label>
-          <select
-            id             = "dpi"
-            class          = "form-control"
-            v-select2      = "'state.dpi'"
-            :select2_value = "state.dpi"
-            @change        = "changeDpi"
-            :createTag     = "true"
-            ref            = "dpi"
-          >
-            <option v-for = "dpi in state.dpis">{{ dpi }}</option>
-          </select>
-
-          <!-- PRINT ROTATION -->
-          <label for = "rotation" v-t = "'Rotation'"></label>
-          <input
-            id         = "rotation"
-            class      = "form-control"
-            v-disabled = "!has_maps"
-            min        = "-360"
-            max        = "360"
-            @input     = "changeRotation"
-            v-model    = "state.rotation"
-            type       = "number"
-          />
-
-          <!-- PRINT FORMAT -->
-          <label for = "format" v-t = "'Format'"></label>
-          <select
-            id             = "format"
-            class          = "form-control"
-            v-select2      = "'state.format'"
-            :select2_value = "state.format"
-          >
-            <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
-          </select>
-
-        </template>
-
-        <!-- PRINT ATLAS -->
-        <div
-          v-if  = "state.atlas"
-          class = "form-group"
-          style = "width: 100%;"
-          ref   = "print_atlas"
-        >
-          <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
-          <template v-if = "has_autocomplete">
-            <label  for = "print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
-            <select id = "print_atlas_autocomplete" :name = "state.atlas.field_name" class = "form-control"></select>
-          </template>
-          <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
-          <template v-else>
-            <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
-            <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
-            <div id = "fid-print-atals-instruction">
-              <div id = "fids_intruction"      v-t = "'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6'"></div>
-              <div id = "fids_examples_values" v-t = "'Ex. 1,4-6 will be printed id 1,4,5,6'"></div>
-            </div>
-          </template>
-        </div>
-
-        <div
-          v-if  = "state.labels && state.labels.length > 0"
-          class = "print-labels-content"
-        >
-          <b class = "skin-color" v-t = "'Labels'"></b>
-          <div class = "labels-input-content">
-            <span
-              v-for = "label in state.labels"
-              :key  = "label.id"
-            >
-              <label :for = "`g3w_label_id_input_${label.id}`"> {{ label.id }}</label>
-              <input
-                :id     = "`g3w_label_id_input_${label.id}`"
-                class   = "form-control"
-                v-model = "label.text"
-              />
-            </span>
-          </div>
-        </div>
-
-        <button
-          id                  = "printbutton"
-          class               = "sidebar-button-run btn"
-          v-disabled          = "ApplicationState.download || disabled"
-          v-t                 = "'Create Print'"
-          @click.stop.prevent = "print"
-        ></button>
-
-      </form>
-
-      <div v-if="is_staff" style = "padding: 1em;text-align: center;">
-        <b>
-          <a
-            :href            = "`https://docs.qgis.org/3.34/${lang}/docs/training_manual/map_composer/map_composer.html`"
-            target           = "_blank"
-            data-i18n-title  = "QGIS Docs"
-            data-placement   = "right"
-          >
-          <i :class = "$fa('external-link')"></i> {{ $t('Edit in QGIS') }}
-          </a>
-        </b>
-      </div>
-
-    </li>
-  </ul>
-</template>
-
-<script>
-
-import {
+/**
+ * @file ORIGINAL SOURCE: src/components/Print.vue@v4.0.0
+ * @since 4.1.0
+ */
+const {
   PRINT_SCALES,
   TIMEOUT,
-}                                   from 'g3w-constants';
-import Component                    from 'g3w-component';
-import ApplicationState             from 'g3w-state';
-import GUI                          from 'g3w-app';
-import { getScaleFromResolution }   from 'utils/getScaleFromResolution';
-import { getResolutionFromScale }   from 'utils/getResolutionFromScale';
-import { getCatalogLayerById }      from 'utils/getCatalogLayerById';
+}                      = g3w.constants;
+const ApplicationState = g3w.state;
+const GUI              = g3w.app;
+const {
+  getScaleFromResolution,
+  getResolutionFromScale,
+  getCatalogLayerById,
+  saveBlob,
+} = g3w.utils;
+const { resizeMixin }  = g3wsdk.gui.vue.Mixins;
+const _                = g3w.gettext;
 
-import resizeMixin                  from 'mixins/resize';
+export default ({
 
-import { gettext as _ }             from 'g3w-i18n';
+template: /*html*/`
+<div class="print-modal">
+  <form
+    v-if  = "state.print.length"
+    class = "g3w-search-form form-horizonal"
+    style = "border-radius: 0 0 3px 3px; padding: 10px;max-height: 75vh;overflow-y: auto;"
+  >
 
-export default {
+    <bar-loader :loading = "state.loading" />
+
+    <!-- PRINT TEMPLATE -->
+    <label for = "templates" v-t = "'Template'"></label>
+    <select
+      id             = "templates"
+      class          = "form-control"
+      v-select2      = "'state.template'"
+      :select2_value = "state.template"
+      :style         = "{ marginBottom: this.state.atlas && '10px' }"
+      @change        = "changeTemplate"
+    >
+      <option v-for = "print in state.print" :value = "print.name">{{ print.name }}</option>
+    </select>
+
+    <button v-if="!state.atlas" type="button" @click="toggleAdvancedOptions" class="btn btn-block" style="margin: 15px 0;">
+      <span v-if="advanced_options">-</span>
+      <span v-else>+</span>
+      Advanced options
+    </button>
+
+    <template v-if = "!state.atlas && advanced_options">
+
+      <!-- PRINT SCALE -->
+      <label for = "scale" v-t = "'Scale'"></label>
+      <select
+        id             = "scale"
+        class          = "form-control"
+        v-disabled     = "!has_maps"
+        v-select2      = "'state.scale'"
+        :select2_value = "state.scale"
+        :createTag     = "true"
+        @change        = "changeScale"
+        ref            = "scales"
+      >
+        <option v-for = "scale in state.scales" :value = "scale.value">{{ scale.label }}</option>
+      </select>
+
+      <!-- PRINT DPI -->
+      <label for = "dpi">dpi</label>
+      <select
+        id             = "dpi"
+        class          = "form-control"
+        v-select2      = "'state.dpi'"
+        :select2_value = "state.dpi"
+        @change        = "changeDpi"
+        :createTag     = "true"
+        ref            = "dpi"
+      >
+        <option v-for = "dpi in state.dpis">{{ dpi }}</option>
+      </select>
+
+      <!-- PRINT ROTATION -->
+      <label for = "rotation" v-t = "'Rotation'"></label>
+      <input
+        id         = "rotation"
+        class      = "form-control"
+        v-disabled = "!has_maps"
+        min        = "-360"
+        max        = "360"
+        @input     = "changeRotation"
+        v-model    = "state.rotation"
+        type       = "number"
+      />
+
+      <!-- PRINT FORMAT -->
+      <label for = "format" v-t = "'Format'"></label>
+      <select
+        id             = "format"
+        class          = "form-control"
+        v-select2      = "'state.format'"
+        :select2_value = "state.format"
+      >
+        <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
+      </select>
+
+    </template>
+
+    <!-- PRINT ATLAS -->
+    <div
+      v-if  = "state.atlas"
+      class = "form-group"
+      style = "width: 100%;"
+      ref   = "print_atlas"
+    >
+      <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
+      <template v-if = "has_autocomplete">
+        <label  for = "print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
+        <select id = "print_atlas_autocomplete" :name = "state.atlas.field_name" class = "form-control"></select>
+      </template>
+      <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
+      <template v-else>
+        <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
+        <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
+        <div id = "fid-print-atals-instruction">
+          <div id = "fids_intruction"      v-t = "'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6'"></div>
+          <div id = "fids_examples_values" v-t = "'Ex. 1,4-6 will be printed id 1,4,5,6'"></div>
+        </div>
+      </template>
+    </div>
+
+    <div
+      v-if  = "state.labels && state.labels.length > 0 && advanced_options"
+      class = "print-labels-content"
+    >
+      <b class = "skin-color" v-t = "'Labels'"></b>
+      <div class = "labels-input-content">
+        <span
+          v-for = "label in state.labels"
+          :key  = "label.id"
+        >
+          <label :for = "'g3w_label_id_input_'+ label.id"> {{ label.id }}</label>
+          <input
+            :id     = "'g3w_label_id_input_' + label.id"
+            class   = "form-control"
+            v-model = "label.text"
+          />
+        </span>
+      </div>
+    </div>
+
+    <button
+      class      = "btn btn-block btn-success"
+      v-disabled = "ApplicationState.download || disabled"
+      v-t        = "'Create Print'"
+      @click     = "print"
+      style      = "margin: 15px 0;"
+      type       = "button"
+    ></button>
+
+    <fieldset style="border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: hsl(from var(--bgcolor) h s calc(l + 8)); user-select:none">
+      <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
+      <details>
+        <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right = "'Show more'">
+          <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'Exportable layers are defined by the administrator'"></span>
+          <i class="far fa-eye"></i>
+        </summary>
+        <hr style="margin: 10px 0;border-style: dotted;color:black;">
+        <div style="white-space: wrap; line-height: 25px;" v-t="'print_help'"></div>
+      </details>
+    </fieldset>
+
+  </form>
+
+  <div v-if="is_staff" style = "padding: 1em;text-align: center;">
+    <b>
+      <a
+        :href           = "'https://docs.qgis.org/3.34/' + lang + '/docs/training_manual/map_composer/map_composer.html'"
+        target          = "_blank"
+        data-i18n-title = "QGIS Docs"
+        data-placement  = "right"
+      >
+      <i :class = "$fa('external-link')"></i> {{ $t('Edit in QGIS') }}
+      </a>
+    </b>
+  </div>
+
+  <dialog
+    ref    = "dialog"
+    style  = "max-width: max(70vw, 800px);"
+    @click = "$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()"
+  >
+    <form method="dialog">
+      <bar-loader :loading = "state.loading && state.layers" />
+      <h4 v-if = "!state.layers"><b>{{ $t('No Layer to print') }}</b></h4>
+      <menu style="position: sticky;top: 0;">
+        <a
+          v-if       = "state.layers && !['pdf', 'geopdf'].includes(state.format)"
+          :href      = "state.url"
+          @click     = "downloadImage($event)"
+          class      = "btn btn-success"
+          :disabled  = "!!(state.downloading && state.layers)"
+          title      = "Download Image"
+        ><i :class = "$fa('download')"></i> {{ $t('Download') }}</a>
+        <button
+          value = "cancel"
+          style = "border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;"
+          title = 'close'
+        >&times;</button>
+      </menu>
+      <!-- PRINT as PDF or GEOPDF-->
+      <iframe
+        v-if   = "state.layers && ['pdf', 'geopdf'].includes(state.format)"
+        :src   = "state.url"
+        @load  = "ready = true"
+        @error = "ready = true"
+        style  = "border:0; width:100%; height:100%;"
+      ></iframe>
+
+      <!-- PRINT as PNG, JPG, SVG -->
+      <img
+        v-if   = "state.layers && !['pdf', 'geopdf'].includes(state.format)"
+        :src   = "state.url"
+        @load  = "ready = true"
+        @error = "ready = true"
+        style  = "height:auto; width: 100%;"
+      >
+    </form>
+  </dialog>
+</div>
+`,
 
   /** @since 3.8.6 */
   name: 'print',
@@ -200,6 +243,8 @@ export default {
       disabled: false,
       /** @since 3.10.0 */
       atlas_values:   [],
+      advanced_options: false,
+      ready: false,
     };
   },
 
@@ -236,7 +281,6 @@ export default {
     init() {
       this._init        = undefined !== this._init ? this._init: false;
       this._moveKey     = this._moveKey || null;
-      this._page        = this._page || null;
       this._resolutions = this._resolutions || {};
 
       const print   = ApplicationState.project.getPrint() || [];
@@ -414,6 +458,37 @@ export default {
       return this.print_extent;
     },
 
+    async downloadImage(e) {
+      try {
+        e.preventDefault();
+        e.stopPropagation();
+        GUI.disableSideBar(true);
+        this.state.downloading = true;
+        if (['jpg', 'png', 'svg'].includes(this.state.format)) {
+          await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = async () => {
+              const canvas  = document.createElement('canvas');
+              canvas.height = img.naturalHeight;
+              canvas.width  = img.naturalWidth;
+              canvas.getContext('2d').drawImage(img, 0, 0);
+              saveBlob(await (await fetch(canvas.toDataURL(`image/${this.state.format}`))).blob(), g3w.state.project.getName());
+              this.$refs.dialog.close();
+              resolve();
+            };
+            img.onerror = reject;
+            img.src = this.state.url;
+          });
+          setTimeout(() => {
+            GUI.disableSideBar(false);
+            this.state.downloading = false;
+          });
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    },
+
     /*
     http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi
       ?MAP=/home/marco/geodaten/projekte/composertest.qgs
@@ -456,11 +531,6 @@ export default {
         // disable sidebar
         GUI.disableSideBar(true);
 
-        // close print page if already open
-        if (this._page) {
-          await GUI.closeContent();
-        }
-
         // ATLAS PRINT
         if (has_atlas) {
           await GUI.printAtlas(undefined, undefined, {
@@ -474,99 +544,6 @@ export default {
         if (!has_atlas) {
           this.state.url     = null;
           this.state.layers  = true;
-
-          this._page = new Component({
-            service: { state: this.state },
-            vueComponentObject: {
-              data: () => ({
-                state: this.state,
-                format: this.state.format, // extract `state.format` so it doesn't react to Print.vue changes
-                ready : false,
-              }),
-              template: /* html */`
-                <div style="height:100%; position: relative;">
-                  <bar-loader :loading = "state.loading && state.layers" />
-                  <h4 v-if = "!state.layers"><b>${$t('No Layer to print')}</b></h4>
-                  <template v-else>
-
-                    <!-- PRINT as PDF or GEOPDF-->
-                    <iframe
-                      v-if   = "['pdf', 'geopdf'].includes(format)"
-                      :src   = "state.url"
-                      @load  = "ready = true"
-                      @error = "ready = true"
-                      style  = "border:0; width:100%; height:100%;"
-                    ></iframe>
-
-                    <!-- PRINT as PNG, JPG, SVG -->
-                    <template v-else>
-                      <div style = "text-align: right; margin: 5px 0;">
-                        <a
-                          :href       = "state.url"
-                          @click.stop = "downloadImage"
-                          class       = "btn skin-button"
-                          title       = "Download Image"
-                          :class      = "$fa('download')"
-                          :disabled   = "!!(state.downloading && state.layers)"
-                        ></a>
-                      </div>
-                      <div v-if  = "state.url">
-                        <img :src = "state.url" @load = "ready = true" @error = "ready = true" style  = "height:auto; width: 100%;">
-                      </div>
-                    </template>
-                  </template>
-                </div>`,
-
-              methods: {
-                async downloadImage() {
-                  try {
-                    GUI.disableSideBar(true);
-                    this.state.downloading = true;
-                    if (['jpg', 'png', 'svg'].includes(this.format)) {
-                      await new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.onload = () => {
-                          const canvas  = document.createElement('canvas');
-                          canvas.height = img.naturalHeight;
-                          canvas.width  = img.naturalWidth;
-                          canvas.getContext('2d').drawImage(img, 0, 0);
-                          resolve(canvas.toDataURL(`image/${this.format}`));
-                        };
-                        img.onerror = reject;
-                        img.src = this.state.url;
-                      });
-                      setTimeout(() => {
-                        GUI.disableSideBar(false);
-                        this.state.downloading = false;
-                      });
-                    }
-                  } catch (e) {
-                    console.warn(e);
-                  }
-                },
-              },
-              watch: {
-                ready: {
-                  handler(bool) {
-                    GUI.setLoadingContent(!bool);
-                  },
-                  immediate: true,
-                }
-              },
-              beforeDestroy() {
-                if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
-                  URL.revokeObjectURL(this.state.url);
-                }
-              },
-            }
-          });
-
-          // show print page with loading state
-          GUI.setContent({
-            content: this._page,
-            title:   'print',
-            perc:    100
-          });
 
           const has_theme = this.state.maps.some(m => undefined !== m.preset_theme);
           const store     = ApplicationState.project.getLayersStore();
@@ -613,15 +590,10 @@ export default {
 
           this.state.url       = URL.createObjectURL(await response.blob());
           this.state.layers    = !!response.ok;
-          //after component mount
-          this._page.getInternalComponent().$on('hook:mounted', () => this.state.loading = false);
-          // set print area after closing content
-          this._page.unmount = () => {
-            GUI.getMap().once('postrender', this._setPrintArea.bind(this));
-            const promise     = Component.prototype.unmount.call(this._page);
-            this._page        = null;
-            return promise;
-          };
+
+          this.$refs.dialog.showModal();
+
+          this.state.loading = false;
         }
 
       } catch(e) {
@@ -815,9 +787,20 @@ export default {
       this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
     },
 
+    toggleAdvancedOptions() {
+      this.advanced_options = !this.advanced_options;
+    }
+
   },
 
   watch: {
+
+    ready: {
+      handler(bool) {
+        GUI.setLoadingContent(!bool);
+      },
+      immediate: true,
+    },
 
     async has_autocomplete(b) {
       if (!b) { return; }
@@ -908,66 +891,76 @@ export default {
     if (this.state.atlas) {
       this.initSelect2Field();
     }
-  }
+    this.showPrintArea(true);
 
-};
-</script>
+    document.body.appendChild(this.$refs.dialog);
 
+    this.$refs.dialog.addEventListener('close', () => {
+      if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
+        URL.revokeObjectURL(this.state.url);
+      }
+      // GUI.getMap().once('postrender', this._setPrintArea.bind(this));
+    });
+  },
+
+  beforeDestroy() {
+    this.showPrintArea(false);
+    this.$refs.dialog.close();
+    this.$refs.dialog.remove();
+
+  },
+
+});
+
+document.head.insertAdjacentHTML(
+  'beforeend',
+  /* css */`
 <style>
-#print .select2-container--open {
+.print-modal .select2-container--open {
   width: 100%;
 }
-#print .select2-container--open input.select2-search__field {
+.print-modal .select2-container--open input.select2-search__field {
   color: #555;
   width: 100%;
 }
-#print.treeview-menu .select2.select2-container {
+.print-modal .select2.select2-container {
   display: block;
 }
-</style>
 
-<style scoped>
-.print-labels-content {
+.print-modal .print-labels-content {
   margin: 15px 0;
-  color: white;
 }
-.print-labels-content > span.skin-color {
+.print-modal .print-labels-content > span.skin-color {
   font-size: 1.1em;
   display: block;
   border-bottom: 2px solid #fff;
   margin-bottom: 5px;
 }
-.print-labels-content > .labels-input-content {
+
+.print-modal .print-labels-content > .labels-input-content {
   max-height: 120px;
   overflow-y: auto
 }
-label {
-  color: #fff;
-}
-#printbutton {
-  width:100%;
-  font-weight: bold;
-  background-color: var(--skin-color);
-  margin: 15px 0;
-}
-#fid-print-atals-instruction {
-  margin-top: 5px;
-  color: #fff;
-}
-#fids_intruction {
+
+.print-modal #fids_intruction {
   white-space: pre-line;
 }
-#fids_examples_values {
+
+.print-modal #fids_examples_values {
   margin-top: 3px;
   font-weight: bold;
 }
-.g3w-search-form > label:not(:nth-child(1)) {
-  margin-top: 15px;
-}
-details[open] .fa-eye {
+
+.print-modal details[open] .fa-eye {
   display: none;
 }
-details[open] summary > span {
+
+.print-modal details[open] summary > span {
   overflow: visible !important;
 }
-</style>
+
+.print-modal details:not([open]) summary > span {
+  white-space: nowrap;
+}
+</style>`
+);

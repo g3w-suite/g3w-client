@@ -501,11 +501,25 @@ export default new (class GUI extends Emitter {
       icon:              g3w.app.getFontClass('print'),
       iconColor:         '#FF9B21',
       title:             'print',
-      service:           {},
-      internalComponent: new (Vue.extend(require('components/Print.vue').default)),
+      internalComponent: new (Vue.extend({})),
+      collapsible:       false,
     }), {
-      //@since 3.11.0 use internal methods called by component setters if declared
-      _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
+      _setOpen: async () => {
+        if (ApplicationState.usermessage.show) {
+          this.closeUserMessage()
+        } else {
+          this.showUserMessage({
+            title: 'print',
+            type: 'tool',
+            size: 'small',
+            iconClass: 'print',
+            closable: true,
+            hooks: {
+              body: Vue.extend((await import(`${initConfig.staticurl}${initConfig.client}map-controls/print.js`)).default)
+            }
+          });
+        }
+      },
     }));
 
     // G3W-SEARCH
