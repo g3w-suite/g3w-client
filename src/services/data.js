@@ -191,7 +191,7 @@ export default {
           messagetext: true,
           autoclose:   false
         },
-        data: (await this.getQueryLayersPromisesByGeometry(
+        data: geometry ? (await this.getQueryLayersPromisesByGeometry(
           // layers
           getMapLayersByFilter({
             ...(
@@ -210,11 +210,11 @@ export default {
             filterConfig,
             projection: ApplicationState.project.getProjection()
           }
-        ) || []).flatMap(({ data = [] }) => data),
+        ) || []).flatMap(({ data = [] }) => data) : [],
       };
-    } catch (error) {
-      console.warn(error);
-      throw error;
+    } catch (err) {
+      console.warn(err);
+      throw err;
     }
   },
 
@@ -525,18 +525,15 @@ export default {
   async getQueryLayersPromisesByGeometry(layers,
     {
       geometry,
-      projection,
       filterConfig  = {},
       multilayers   = false,
       feature_count = 10
     } = {}
   ) {
-    // skip when no features
-    if (0 === layers.length) {
+    // skip when no features or no geometry
+    if (0 === layers.length || !geometry) {
       return [];
     }
-
-    const mapCrs = projection.getCode();
 
     return await handleQueryPromises(Object.values(
       multilayers
@@ -544,12 +541,10 @@ export default {
         : layers
     ).map(layers => {
       const layer = [].concat(layers)[0];
-      const crs   = layer.getProjection().getCode();
       const filter = {
         config: filterConfig,
         type:   'geometry',
-        // Convert filter geometry from map to layer CRS
-        value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
+        value:  geometry,
       };
       return promisify(layer.query(
         multilayers
