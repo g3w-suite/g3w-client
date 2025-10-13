@@ -1043,7 +1043,16 @@ template: /*html*/`
     this.showPrintArea(false);
     this.$refs.dialog.close();
     this.$refs.dialog.remove();
+    //screenshto control
+    const control = GUI.getMapControlByType('screenshot');
+    if (control?.isToggled()) {
+      control._toggled = false;
+      control.element.children[0].classList.remove('g3w-ol-toggled');
+    };
 
+    if (GUI.getComponent('print').internalComponent.state.open) {
+      GUI.getComponent('print').internalComponent.state.open = false;
+    }
   },
 
 });
@@ -1057,10 +1066,7 @@ const showPrintUserMessage = (show, type) => {
     state.template = (ApplicationState.project.getPrint() || [])[0]?.name;
   }
 
-  if (!show && ApplicationState.usermessage.show) {
-    GUI.closeUserMessage()
-  }
-
+  
   if (show && !ApplicationState.usermessage.show) {
     GUI.showUserMessage({
       title: 'print',
@@ -1103,12 +1109,9 @@ GUI.setupControl.geoscreenshot = function(type) {
     //add screenshot template
     ApplicationState.project.state.print.push({ name: '__G3W_SCREENSHOT__', label: 'Screenshot', maps: [], labels: [] });
     GUI.addControl('screenshot', control);
-    Vue.watch(
-      () => ApplicationState.usermessage.show,
-      (bool) => { if (!bool && control.isToggled()) {control._toggled = false; control.element.children[0].classList.remove('g3w-ol-toggled') } 
-    })
   }
 };
+
 
 if (GUI.getComponent('print')) {
   throw 'print component already added';
