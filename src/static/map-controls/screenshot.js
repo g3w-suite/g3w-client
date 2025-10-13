@@ -86,7 +86,7 @@ GUI.addComponent(Object.assign(new Component({
   },
 }), { position: 'search' });
 
-const vueComp = Vue.extend(({
+const vueComp = ({
 template: /*html*/`
 <div class="print-modal">
   <bar-loader :loading = "state.loading" />
@@ -1074,7 +1074,7 @@ template: /*html*/`
 
   },
 
-}));
+});
 
 document.head.insertAdjacentHTML(
   'beforeend',
