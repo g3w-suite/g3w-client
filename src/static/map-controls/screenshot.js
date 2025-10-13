@@ -110,13 +110,13 @@ template: /*html*/`
       <option v-if="screenshot_types.length" value = "__G3W_SCREENSHOT__">{{ $t('Screenshot') }}</option>
     </select>
 
-    <button v-if="'__G3W_SCREENSHOT__' !== state.template && !state.atlas" type="button" @click="toggleAdvancedOptions" class="btn btn-block" style="margin: 15px 0;">
+    <button v-if="is_customizable" type="button" @click="toggleAdvancedOptions" class="btn btn-block" style="margin: 15px 0;">
       <span v-if="advanced_options">-</span>
       <span v-else>+</span>
       Advanced options
     </button>
 
-    <template v-if = "'__G3W_SCREENSHOT__' !== state.template && !state.atlas && advanced_options">
+    <template v-if = "is_customizable && advanced_options">
 
       <!-- PRINT SCALE -->
       <label for = "scale" v-t = "'Scale'"></label>
@@ -175,7 +175,7 @@ template: /*html*/`
 
     <!-- PRINT ATLAS -->
     <div
-      v-if  = "'__G3W_SCREENSHOT__' !== state.template && state.atlas"
+      v-if  = "!is_screenshot && state.atlas"
       class = "form-group"
       style = "width: 100%;"
       ref   = "print_atlas"
@@ -197,7 +197,7 @@ template: /*html*/`
     </div>
 
     <div
-      v-if  = "'__G3W_SCREENSHOT__' !== state.template && state.labels && state.labels.length > 0 && advanced_options"
+      v-if  = "!is_screenshot && state.labels && state.labels.length > 0 && advanced_options"
       class = "print-labels-content"
     >
       <b class = "skin-color" v-t = "'Labels'"></b>
@@ -217,7 +217,7 @@ template: /*html*/`
     </div>
 
     <button
-      v-if       = "'__G3W_SCREENSHOT__' !== state.template"
+      v-if       = "!is_screenshot"
       class      = "btn btn-block btn-success"
       v-disabled = "ApplicationState.download || disabled"
       v-t        = "'Create Print'"
@@ -226,7 +226,7 @@ template: /*html*/`
       type       = "button"
     ></button>
 
-    <div v-if="'__G3W_SCREENSHOT__' === state.template">
+    <div v-if="is_screenshot">
       <label for = "format" v-t = "'Format'"></label>
       <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
         <option v-for="type in screenshot_types" :value="type" v-t="({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]"></option>
@@ -235,7 +235,7 @@ template: /*html*/`
     </div>
 
     <fieldset
-      v-if  = "'__G3W_SCREENSHOT__' !== state.template"
+      v-if  = "!is_screenshot"
       style = "border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: hsl(from var(--bgcolor) h s calc(l + 8)); user-select:none"
     >
       <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
@@ -353,6 +353,14 @@ template: /*html*/`
     /** @since 4.1.0 */
     is_staff() {
       return window.initConfig.user.is_staff;
+    },
+
+    is_screenshot() {
+      return '__G3W_SCREENSHOT__' === this.state.template;
+    },
+
+    is_customizable() {
+      return !this.is_screenshot && !this.state.atlas;
     },
 
     /**
