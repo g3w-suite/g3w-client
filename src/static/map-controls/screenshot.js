@@ -1060,13 +1060,20 @@ template: /*html*/`
 const showPrintUserMessage = (show, type) => {
   if (show && type === 'screenshot') {
     state.template = '__G3W_SCREENSHOT__';
+    if (GUI.getComponent('print').internalComponent.state.open) {
+      GUI.getComponent('print').internalComponent.state.open = false;
+    }
   }
 
   if (show && type === 'print' && '__G3W_SCREENSHOT__' === state.template) {
     state.template = (ApplicationState.project.getPrint() || [])[0]?.name;
+    const control = GUI.getMapControlByType('screenshot');
+    if (control?.isToggled()) {
+      control._toggled = false;
+      control.element.children[0].classList.remove('g3w-ol-toggled');
+    };
   }
 
-  
   if (show && !ApplicationState.usermessage.show) {
     GUI.showUserMessage({
       title: 'print',
@@ -1078,6 +1085,10 @@ const showPrintUserMessage = (show, type) => {
         body: Vue.extend(vueComp)
       }
     });
+  }
+
+  if (!show) {
+    GUI.closeUserMessage();
   }
 }
 
