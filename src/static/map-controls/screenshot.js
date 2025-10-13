@@ -25,66 +25,38 @@ const {
 
 const _                = g3w.gettext;
 
-// wait for map ready
-GUI.setupControl.screenshot = 
-GUI.setupControl.geoscreenshot = function(type) {
-  if (!isMobile.any && !GUI.getMapControlByType('screenshot')) {
-    /**
-     * @FIXME prevent tainted canvas error
-     * 
-     * Because the pixels in a canvas's bitmap can come from a variety of sources,
-     * including images or videos retrieved from other hosts, it's inevitable that
-     * security problems may arise. As soon as you draw into a canvas any data that
-     * was loaded from another origin without CORS approval, the canvas becomes
-     * tainted.
-     * 
-     * A tainted canvas is one which is no longer considered secure, and any attempts
-     * to retrieve image data back from the canvas will cause an exception to be thrown.
-     * 
-     * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
-     */
-    const control = new MapControl({
-      name: "maptoimage",
-      tipLabel: "Screenshot",
-      clickmap: true,
-      enabled:  true,
-    });
-    control.on('toggled', () => { GUI.getComponent('print').click(); });
-    GUI.addControl('screenshot', control);
-  }
+const print   = ApplicationState.project.getPrint() || [];
+const visible = print.length > 0;
+
+const PRINT_FORMATS = [
+  { value: 'png',    label: 'PNG'    },
+  { value: 'jpg',    label: 'JPG'    },
+  { value: 'svg',    label: 'SVG'    },
+  { value: 'pdf',    label: 'PDF'    },
+  { value: 'geopdf', label: 'GEOPDF' },
+];
+
+const state = {
+  visible,
+  print,
+  loading:      false,
+  downloading:  false,
+  url:          null,
+  layers:       true,
+  maps:         visible ? print[0].maps   : undefined,
+  labels:       visible ? print[0].labels : undefined,
+  template:     visible ? print[0].name   : undefined,
+  atlas:        visible ? print[0].atlas  : undefined,
+  rotation:     visible ? 0               : undefined,
+  inner:        [0, 0, 0, 0],
+  scales:       [], // initial set empty
+  scale:        visible ? null            : undefined,
+  dpis:         [150, 300],
+  dpi:          150,
+  formats:      PRINT_FORMATS,
+  format:       PRINT_FORMATS[0].value,
 };
 
-if (GUI.getComponent('print')) {
-  throw 'print component already added';
-}
-
-// G3W-PRINT
-GUI.addComponent(Object.assign(new Component({
-  id:                'print',
-  visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-  icon:              g3w.app.getFontClass('print'),
-  iconColor:         '#FF9B21',
-  title:             'print',
-  internalComponent: new (Vue.extend({})),
-  collapsible:       false,
-}), {
-  _setOpen: async () => {
-    if (ApplicationState.usermessage.show) {
-      GUI.closeUserMessage()
-    } else {
-      GUI.showUserMessage({
-        title: 'print',
-        type: 'tool',
-        size: 'small',
-        iconClass: 'print',
-        closable: true,
-        hooks: {
-          body: Vue.extend(vueComp)
-        }
-      });
-    }
-  },
-}), { position: 'search' });
 
 const vueComp = ({
 template: /*html*/`
@@ -104,10 +76,8 @@ template: /*html*/`
       v-select2      = "'state.template'"
       :select2_value = "state.template"
       :style         = "{ marginBottom: this.state.atlas && '10px' }"
-      @change        = "changeTemplate"
     >
-      <option v-for = "print in state.print" :value = "print.name">{{ print.name }}</option>
-      <option v-if="screenshot_types.length" value = "__G3W_SCREENSHOT__">{{ $t('Screenshot') }}</option>
+      <option v-for = "print in state.print" :value = "print.name">{{ print.label || print.name }}</option>
     </select>
 
     <details v-if="is_customizable" class="custom-settings">
@@ -342,7 +312,7 @@ template: /*html*/`
     return {
       /** @since 4.0.0 */
       ApplicationState,
-      state: this.state || {},
+      state,
       disabled: false,
       /** @since 3.10.0 */
       atlas_values:   [],
@@ -419,38 +389,7 @@ template: /*html*/`
       this._moveKey     = this._moveKey || null;
       this._resolutions = this._resolutions || {};
 
-      const print   = ApplicationState.project.getPrint() || [];
-      const visible = print.length > 0;
-
-      const PRINT_FORMATS = [
-        { value: 'png', label: 'PNG' },
-        { value: 'jpg', label: 'JPG' },
-        { value: 'svg', label: 'SVG' },
-        { value: 'pdf', label: 'PDF' },
-        { value: 'geopdf', label: 'GEOPDF' },
-      ];
-
-      this.state = Object.assign(this.state || {}, {
-        visible,
-        print,
-        loading:      false,
-        downloading:  false,
-        url:          null,
-        layers:       true,
-        maps:         visible ? print[0].maps   : undefined,
-        labels:       visible ? print[0].labels : undefined,
-        template:     visible ? print[0].name   : undefined,
-        atlas:        visible ? print[0].atlas  : undefined,
-        rotation:     visible ? 0               : undefined,
-        inner:        [0, 0, 0, 0],
-        scales:       [], // initial set empty
-        scale:        visible ? null            : undefined,
-        dpis:         [150, 300],
-        dpi:          150,
-        formats:      PRINT_FORMATS,
-        format:       PRINT_FORMATS[0].value,
-      });
-
+    
       /**@since v3.10 Store map extent for print in case of already open print page*/
       this.print_extent = null;
 
@@ -990,6 +929,10 @@ template: /*html*/`
 
   watch: {
 
+    'state.template': {
+      immediate: true,
+      handler() { this.changeTemplate() }
+    },
     ready: {
       handler(bool) {
         GUI.setLoadingContent(!bool);
@@ -1106,6 +1049,88 @@ template: /*html*/`
   },
 
 });
+
+const showPrintUserMessage = (show, type) => {
+  if (show && type === 'screenshot') {
+    state.template = '__G3W_SCREENSHOT__';
+  }
+
+  if (show && type === 'print' && '__G3W_SCREENSHOT__' === state.template) {
+    state.template = (ApplicationState.project.getPrint() || [])[0]?.name;
+  }
+
+  if (!show && ApplicationState.usermessage.show) {
+    GUI.closeUserMessage()
+  }
+
+  if (show && !ApplicationState.usermessage.show) {
+    GUI.showUserMessage({
+      title: 'print',
+      type: 'tool',
+      size: 'small',
+      iconClass: 'print',
+      closable: true,
+      hooks: {
+        body: Vue.extend(vueComp)
+      }
+    });
+  }
+}
+
+// wait for map ready
+GUI.setupControl.screenshot = 
+GUI.setupControl.geoscreenshot = function(type) {
+  if (!isMobile.any && !GUI.getMapControlByType('screenshot')) {
+    /**
+     * @FIXME prevent tainted canvas error
+     * 
+     * Because the pixels in a canvas's bitmap can come from a variety of sources,
+     * including images or videos retrieved from other hosts, it's inevitable that
+     * security problems may arise. As soon as you draw into a canvas any data that
+     * was loaded from another origin without CORS approval, the canvas becomes
+     * tainted.
+     * 
+     * A tainted canvas is one which is no longer considered secure, and any attempts
+     * to retrieve image data back from the canvas will cause an exception to be thrown.
+     * 
+     * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+     */
+    const control = new MapControl({
+      name: "maptoimage",
+      tipLabel: "Screenshot",
+      clickmap: true,
+      enabled:  true,
+    });
+    control.on('toggled', ({ toggled }) => showPrintUserMessage(toggled, 'screenshot'));
+    //add screenshot template
+    ApplicationState.project.state.print.push({ name: '__G3W_SCREENSHOT__', label: (new Vue()).$t('Screeshot'), maps: [], labels: [] });
+    GUI.addControl('screenshot', control);
+    Vue.watch(
+      () => ApplicationState.usermessage.show,
+      (bool) => { if (!bool && control.isToggled()) {control._toggled = false; control.element.children[0].classList.remove('g3w-ol-toggled') } 
+    })
+  }
+};
+
+if (GUI.getComponent('print')) {
+  throw 'print component already added';
+}
+
+// G3W-PRINT
+GUI.addComponent(Object.assign(new Component({
+  id:                'print',
+  visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
+  icon:              g3w.app.getFontClass('print'),
+  iconColor:         '#FF9B21',
+  title:             'print',
+  internalComponent: new (Vue.extend({})),
+  collapsible:       false,
+}), {
+  _setOpen: async bool => {
+    showPrintUserMessage(bool, 'print');
+  },
+}), { position: 'search' });
+
 
 document.head.insertAdjacentHTML(
   'beforeend',
