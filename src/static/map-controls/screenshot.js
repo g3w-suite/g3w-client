@@ -25,8 +25,6 @@ const {
 
 const _                = g3w.gettext;
 
-let MODAL;
-
 // wait for map ready
 GUI.setupControl.screenshot = 
 GUI.setupControl.geoscreenshot = function(type) {
@@ -88,7 +86,7 @@ GUI.addComponent(Object.assign(new Component({
   },
 }), { position: 'search' });
 
-MODAL = Vue.extend(({
+const vueComp = Vue.extend(({
 template: /*html*/`
 <div class="print-modal">
   <bar-loader :loading = "state.loading" />
