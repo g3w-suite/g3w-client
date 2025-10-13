@@ -494,34 +494,6 @@ export default new (class GUI extends Emitter {
       vueComponentObject: require('components/SpatialBookMarks.vue').default,
     }));
 
-    // G3W-PRINT
-    this.addComponent(Object.assign(new Component({
-      id:                'print',
-      visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-      icon:              g3w.app.getFontClass('print'),
-      iconColor:         '#FF9B21',
-      title:             'print',
-      internalComponent: new (Vue.extend({})),
-      collapsible:       false,
-    }), {
-      _setOpen: async () => {
-        if (ApplicationState.usermessage.show) {
-          this.closeUserMessage()
-        } else {
-          this.showUserMessage({
-            title: 'print',
-            type: 'tool',
-            size: 'small',
-            iconClass: 'print',
-            closable: true,
-            hooks: {
-              body: Vue.extend((await import(`${initConfig.staticurl}${initConfig.client}map-controls/print.js`)).default)
-            }
-          });
-        }
-      },
-    }));
-
     // G3W-SEARCH
     this.addComponent(new Component({
       id:         'search',
