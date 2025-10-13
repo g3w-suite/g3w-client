@@ -97,7 +97,7 @@ template: /*html*/`
   >
 
     <!-- PRINT TEMPLATE -->
-    <label for = "templates" v-t = "'Template'"></label>
+    <label for = "templates">{{ $t('Template') }}</label>
     <select
       id             = "templates"
       class          = "form-control"
@@ -110,16 +110,11 @@ template: /*html*/`
       <option v-if="screenshot_types.length" value = "__G3W_SCREENSHOT__">{{ $t('Screenshot') }}</option>
     </select>
 
-    <button v-if="is_customizable" type="button" @click="toggleAdvancedOptions" class="btn btn-block" style="margin: 15px 0;">
-      <span v-if="advanced_options">-</span>
-      <span v-else>+</span>
-      Advanced options
-    </button>
-
-    <template v-if = "is_customizable && advanced_options">
+    <details v-if="is_customizable" class="custom-settings">
+      <summary>{{ $t('Advanced options') }}</summary>
 
       <!-- PRINT SCALE -->
-      <label for = "scale" v-t = "'Scale'"></label>
+      <label for = "scale">{{ $t('Scale') }}</label>
       <select
         id             = "scale"
         class          = "form-control"
@@ -148,7 +143,7 @@ template: /*html*/`
       </select>
 
       <!-- PRINT ROTATION -->
-      <label for = "rotation" v-t = "'Rotation'"></label>
+      <label for = "rotation">{{ $t('Rotation') }}</label>
       <input
         id         = "rotation"
         class      = "form-control"
@@ -161,7 +156,7 @@ template: /*html*/`
       />
 
       <!-- PRINT FORMAT -->
-      <label for = "format" v-t = "'Format'"></label>
+      <label for = "format">{{ $t('Format') }}</label>
       <select
         id             = "format"
         class          = "form-control"
@@ -171,7 +166,28 @@ template: /*html*/`
         <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
       </select>
 
-    </template>
+      <!-- PRINT LABEL -->
+      <div
+        v-if  = "state.labels && state.labels.length > 0"
+        class = "print-labels-content"
+      >
+        <b class = "skin-color" hidden>{{ $t('Labels') }}</b>
+        <div class = "labels-input-content">
+          <span
+            v-for = "label in state.labels"
+            :key  = "label.id"
+          >
+            <label :for = "'g3w_label_id_input_'+ label.id"> {{ label.id }}</label>
+            <input
+              :id     = "'g3w_label_id_input_' + label.id"
+              class   = "form-control"
+              v-model = "label.text"
+            />
+          </span>
+        </div>
+      </div>
+
+    </details>
 
     <!-- PRINT ATLAS -->
     <div
@@ -190,34 +206,14 @@ template: /*html*/`
         <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
         <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
         <div id = "fid-print-atals-instruction">
-          <div id = "fids_intruction"      v-t = "'Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6'"></div>
-          <div id = "fids_examples_values" v-t = "'Ex. 1,4-6 will be printed id 1,4,5,6'"></div>
+          <div id = "fids_intruction">{{ $t('Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6') }}</div>
+          <div id = "fids_examples_values">{{ $t('Ex. 1,4-6 will be printed id 1,4,5,6') }}</div>
         </div>
       </template>
     </div>
 
-    <div
-      v-if  = "!is_screenshot && state.labels && state.labels.length > 0 && advanced_options"
-      class = "print-labels-content"
-    >
-      <b class = "skin-color" v-t = "'Labels'"></b>
-      <div class = "labels-input-content">
-        <span
-          v-for = "label in state.labels"
-          :key  = "label.id"
-        >
-          <label :for = "'g3w_label_id_input_'+ label.id"> {{ label.id }}</label>
-          <input
-            :id     = "'g3w_label_id_input_' + label.id"
-            class   = "form-control"
-            v-model = "label.text"
-          />
-        </span>
-      </div>
-    </div>
-
     <template v-if="is_screenshot">
-      <label for = "format" v-t = "'Format'"></label>
+      <label for = "format">{{ $t('Format') }}</label>
       <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
         <option
           v-for  = "type in screenshot_types"
@@ -350,7 +346,6 @@ template: /*html*/`
       disabled: false,
       /** @since 3.10.0 */
       atlas_values:   [],
-      advanced_options: false,
       ready: false,
       screenshot_types,
       screenshot_type: screenshot_types[0]
@@ -660,8 +655,32 @@ template: /*html*/`
      * @returns { Promise<unknown> }
      */
     async print() {
+
+      // generate screenshot
       if (this.is_screenshot) {
-        return this.generate_screenshot(this.screenshot_type);
+        ApplicationState.download = true;
+        try {
+          const blob = 'screenshot' === this.screenshot_type
+            ? await GUI.createMapImage()                                                              // PNG
+            : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
+                method: 'POST',
+                body: Object.entries({
+                  image:               await GUI.createMapImage(),
+                  csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
+                  bbox:                GUI.getMapBBOX().toString(),
+                }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
+              })).blob();
+          // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)
+          (this._onclick || saveBlob)(blob, `map_${Date.now()}`);
+        } catch (e) {
+          GUI.showUserMessage({
+            type:    'SecurityError' === e.name ? 'warning' : 'alert',
+            message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
+          });
+          console.warn(e);
+        }
+        ApplicationState.download = false;
+        return;
       }
 
       const has_atlas = !!this.state.atlas;
@@ -933,38 +952,6 @@ template: /*html*/`
       this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
     },
 
-    toggleAdvancedOptions() {
-      this.advanced_options = !this.advanced_options;
-    },
-
-    async generate_screenshot(type) {
-      // Start download
-      ApplicationState.download = true;
-      try {
-        const blob = 'screenshot' === type
-          ? await GUI.createMapImage()                                                              // PNG
-          : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
-              method: 'POST',
-              body: Object.entries({
-                image:               await GUI.createMapImage(),
-                csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
-                bbox:                GUI.getMapBBOX().toString(),
-              }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
-            })).blob();
-        // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)
-        (this._onclick || saveBlob)(blob, `map_${Date.now()}`);
-      } catch (e) {
-        GUI.showUserMessage({
-          type:    'SecurityError' === e.name ? 'warning' : 'alert',
-          message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
-        });
-        console.warn(e);
-      }
-      // End download
-      ApplicationState.download = false;
-      return true;
-    },
-
     /**
      * Check if a layer has a Cross Origin source URI
      * 
@@ -1169,6 +1156,20 @@ document.head.insertAdjacentHTML(
 
 .print-modal details:not([open]) summary > span {
   white-space: nowrap;
+}
+
+.print-modal .custom-settings summary {
+  position: relative;
+  padding: 4px 0;
+  margin: 10px 0 3px 0;
+  cursor: pointer;
+  border-radius: 3px;
+  text-align: center;
+  background-color: rgb(233, 233, 237);
+  &::marker { content: ""; }
+  &::before { content: '+'; font-size: 18px; margin-right: 4px; }
+  [open] &::before { content: '-' }
+  &:hover { background-color:rgb(208, 208, 215); }
 }
 </style>`
 );
