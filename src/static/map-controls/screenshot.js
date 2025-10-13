@@ -28,14 +28,6 @@ const _                = g3w.gettext;
 const print   = ApplicationState.project.getPrint() || [];
 const visible = print.length > 0;
 
-const PRINT_FORMATS = [
-  { value: 'png',    label: 'PNG'    },
-  { value: 'jpg',    label: 'JPG'    },
-  { value: 'svg',    label: 'SVG'    },
-  { value: 'pdf',    label: 'PDF'    },
-  { value: 'geopdf', label: 'GEOPDF' },
-];
-
 const state = {
   visible,
   print,
@@ -43,18 +35,24 @@ const state = {
   downloading:  false,
   url:          null,
   layers:       true,
-  maps:         visible ? print[0].maps   : undefined,
-  labels:       visible ? print[0].labels : undefined,
-  template:     visible ? print[0].name   : undefined,
-  atlas:        visible ? print[0].atlas  : undefined,
+  maps:         print?.[0]?.maps,
+  labels:       print?.[0]?.labels,
+  template:     print?.[0]?.name,
+  atlas:        print?.[0]?.atlas,
   rotation:     visible ? 0               : undefined,
   inner:        [0, 0, 0, 0],
   scales:       [], // initial set empty
   scale:        visible ? null            : undefined,
   dpis:         [150, 300],
   dpi:          150,
-  formats:      PRINT_FORMATS,
-  format:       PRINT_FORMATS[0].value,
+  formats:      [
+    { value: 'png',    label: 'PNG'    },
+    { value: 'jpg',    label: 'JPG'    },
+    { value: 'svg',    label: 'SVG'    },
+    { value: 'pdf',    label: 'PDF'    },
+    { value: 'geopdf', label: 'GEOPDF' },
+  ],
+  format:       'png',
 };
 
 
