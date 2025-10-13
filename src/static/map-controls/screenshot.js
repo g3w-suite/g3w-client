@@ -1076,11 +1076,11 @@ const showPrintUserMessage = (show, type) => {
 
   if (show && !ApplicationState.usermessage.show) {
     GUI.showUserMessage({
-      title: 'print',
-      type: 'tool',
-      size: 'small',
+      title:     'print',
+      type:      'tool',
+      size:      'small',
       iconClass: 'print',
-      closable: true,
+      closable:  true,
       hooks: {
         body: Vue.extend(vueComp)
       }
