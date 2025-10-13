@@ -216,32 +216,60 @@ template: /*html*/`
       </div>
     </div>
 
-    <button
-      v-if       = "!is_screenshot"
-      class      = "btn btn-block btn-success"
-      v-disabled = "ApplicationState.download || disabled"
-      v-t        = "'Create Print'"
-      @click     = "print"
-      style      = "margin: 15px 0;"
-      type       = "button"
-    ></button>
-
-    <div v-if="is_screenshot">
+    <template v-if="is_screenshot">
       <label for = "format" v-t = "'Format'"></label>
       <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
-        <option v-for="type in screenshot_types" :value="type" v-t="({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]"></option>
+        <option
+          v-for  = "type in screenshot_types"
+          :value = "type"
+        >{{ $t(({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]) }}</option>
       </select>
-      <button type="button" v-disabled = "!can_screenshot || state.loading" style="margin-top: 5px" class="btn btn-block btn-success" @click.stop="generate_screenshot(screenshot_type)" v-t="'Generate'"></button>
-    </div>
+    </template>
+
+    <button
+      class     = "btn btn-block btn-success"
+      :disabled = "!can_submit"
+      @click    = "print"
+      style     = "margin: 15px 0;"
+      type      = "button"
+    >{{ $t('Generate') }}</button>
 
     <fieldset
       v-if  = "!is_screenshot"
-      style = "border: 1px solid; padding: 4.9px 8.75px 8.75px 10.5px; border-radius: 3px; background-color: hsl(from var(--bgcolor) h s calc(l + 8)); user-select:none"
+      style = "
+        border: 1px solid;
+        padding: 4.9px 8.75px 8.75px 10.5px;
+        border-radius: 3px;
+        background-color: hsl(from var(--bgcolor) h s calc(l + 8));
+        user-select:none
+      "
     >
-      <legend style="width: 15px; height: 15px; border: 1px solid; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex;justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
+      <legend style="
+        width: 15px;
+        height: 15px;
+        border: 1px solid;
+        border-radius: 50%;
+        background-color: rgb(34, 45, 50);
+        font-weight: bold;
+        color: rgb(255, 255, 255);
+        font-size: 0.7em;
+        display: flex;
+        justify-content: center;
+        margin: 0px -14px;
+        user-select: none;
+      ">i</legend>
       <details>
-        <summary style="cursor: pointer;display: flex;justify-content: space-between; align-items: center; width: 100%;" v-t-tooltip:right = "'Show more'">
-          <span style="text-overflow: ellipsis;overflow: hidden;" v-t="'Exportable layers are defined by the administrator'"></span>
+        <summary
+          v-t-tooltip:right = "'Show more'"
+          style             = "
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+          "
+        >
+          <span style="text-overflow: ellipsis;overflow: hidden;">{{ $t('Exportable layers are defined by the administrator') }}</span>
           <i class="far fa-eye"></i>
         </summary>
         <hr style="margin: 10px 0;border-style: dotted;color:black;">
@@ -381,6 +409,10 @@ template: /*html*/`
       // If it was not visible, the CORS issue was raised.
       // Need to reload and remove layer
       return ![...Object.values(ApplicationState.layers).flatMap(s => s.getLayers()), ...GUI.getExternalLayers()].some(this.isCrossOrigin);
+    },
+
+    can_submit() {
+      return !this.disabled && !this.state.loading && (this.is_screenshot ? this.can_screenshot : true) && !ApplicationState.download;
     },
 
   },
@@ -628,6 +660,10 @@ template: /*html*/`
      * @returns { Promise<unknown> }
      */
     async print() {
+      if (this.is_screenshot) {
+        return this.generate_screenshot(this.screenshot_type);
+      }
+
       const has_atlas = !!this.state.atlas;
       let err;
       let response;
