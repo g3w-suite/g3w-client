@@ -1103,7 +1103,7 @@ GUI.setupControl.geoscreenshot = function(type) {
     });
     control.on('toggled', ({ toggled }) => showPrintUserMessage(toggled, 'screenshot'));
     //add screenshot template
-    ApplicationState.project.state.print.push({ name: '__G3W_SCREENSHOT__', label: (new Vue()).$t('Screeshot'), maps: [], labels: [] });
+    ApplicationState.project.state.print.push({ name: '__G3W_SCREENSHOT__', label: (new Vue()).$t('Screenshot'), maps: [], labels: [] });
     GUI.addControl('screenshot', control);
     Vue.watch(
       () => ApplicationState.usermessage.show,
