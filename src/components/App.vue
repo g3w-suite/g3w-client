@@ -1481,8 +1481,8 @@ export default {
   }
   .g3w-map-controls-left-bottom {
     position: absolute;
-    bottom: 30px;
-    left: px;
+    bottom: 35px;
+    left: 5px;
     z-index: 1;
     background-color: rgb(255, 255, 255); 
     border: 1px solid var(--skin-color);
