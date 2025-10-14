@@ -400,11 +400,12 @@
                 v-if   = "hasBaseLayers"
                 id     = "baselayers"
                 style  =" border-bottom: 2px solid var(--skin-color);"
-              >
+              > 
+                <section v-t = "'baselayers'" style = "text-align: center; font-weight: bold;" ></section>
                 <ul
                   id     = "baselayers-content"
                   :class = "{'mobile': isMobile()}"
-                  :style = "{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
+                  :style = "{ gridTemplateColumns: `repeat(auto-fill, minmax(80px, 1fr))` }"
                 >
                   <li
                     v-if  = "!base.fixed"
@@ -1487,6 +1488,7 @@ export default {
     background-color: rgb(255, 255, 255); 
     border: 1px solid var(--skin-color);
     border-radius: 3px;
+    width: 250px;
   }
   #g3w-map-info {
     position: absolute;
