@@ -15,17 +15,20 @@ GUI.setupControl.zoomhistory = function() {
       ol: new (class extends ol.control.Control {
         constructor() {
           super({
-            element: Object.assign(document.createElement('div'), { className: 'ol-zoom-history ol-unselectable ol-control' }),
-            target: document.querySelector('.g3w-map-controls-left-bottom'),
+            element: Object.assign(document.createElement('div'), { className: 'ol-zoom-history' }),
+            target: document.querySelector('.g3w-map-controls-left-bottom .controls .zoomhistory'),
           });
           const map     = GUI.getMap();
           const history = [];
           let curr      = 0;
           this.element.style.display = 'flex';
+          this.element.style.position = 'relative';
           this.element.style.gap     = '5px';
+          this.element.style.left    = '0';
+          this.element.style.margin  = '3px';
           this.element.innerHTML     = /* html */`
-            <div data-i18n-title="Zoom Last"><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900;"></button></div>
-            <div data-i18n-title="Zoom Next"><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900;"></button></div>
+            <div data-i18n-title="Zoom Last" style = "flex-grow: 1"><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900; width: 100%; height: 30px;"></button></div>
+            <div data-i18n-title="Zoom Next" style = "flex-grow: 1"><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900; width: 100%; height: 30px;"></button></div>
           `;
           this.element.querySelectorAll('button').forEach(btn => {
             btn.parentElement.setAttribute('data-placement', 'top');

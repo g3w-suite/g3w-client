@@ -439,6 +439,7 @@ export default {
     flex-wrap: wrap;
     align-items: center;
     padding: 5px;
+    color: black
   }
   .add-map-theme {
     border-top: 2px solid;
