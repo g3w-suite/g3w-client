@@ -1178,7 +1178,7 @@ export default new (class GUI extends Emitter {
               ${
                 Object
                   .keys(options.buttons || {})
-                  .map(key => /* html */`<button value="${key}" class="btn ${options.buttons[key].className}">${options.buttons[key].label}</button>`)
+                  .map(key => /* html */`<button value="${key}" class="btn ${options.buttons[key].className}" ${options.buttons[key].disabled ? 'disabled' : ''}>${options.buttons[key].label}</button>`)
                   .join('')
               }
             </menu>
