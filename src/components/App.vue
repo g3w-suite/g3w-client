@@ -687,6 +687,7 @@ import GUI                from 'g3w-app';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { sameOrigin }     from 'utils/sameOrigin';
 import { waitFor }        from 'utils/waitFor';
+import { XHR }            from 'utils/XHR';
 
 import userMessage        from 'components/UserMessage.vue';
 import CatalogContextMenu from 'components/CatalogContextMenu.vue';
@@ -1572,7 +1573,10 @@ export default {
     right: 60px;
     top: 60px;
   }
-
+  #baselayers ul {
+    list-style-type: none;
+  }
+  
   #baselayers-content {
     display: grid;
     justify-content: center;
