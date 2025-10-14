@@ -39,19 +39,12 @@ const state = {
   labels:       print?.[0]?.labels,
   template:     print?.[0]?.name,
   atlas:        print?.[0]?.atlas,
-  rotation:     visible ? 0               : undefined,
+  rotation:     visible ? 0    : undefined,
   inner:        [0, 0, 0, 0],
-  scales:       [], // initial set empty
-  scale:        visible ? null            : undefined,
+  scales:       [],
+  scale:        visible ? null : undefined,
   dpis:         [150, 300],
   dpi:          150,
-  formats:      [
-    { value: 'png',    label: 'PNG'    },
-    { value: 'jpg',    label: 'JPG'    },
-    { value: 'svg',    label: 'SVG'    },
-    { value: 'pdf',    label: 'PDF'    },
-    { value: 'geopdf', label: 'GEOPDF' },
-  ],
   format:       'png',
 };
 
@@ -131,7 +124,11 @@ template: /*html*/`
         v-select2      = "'state.format'"
         :select2_value = "state.format"
       >
-        <option v-for = "format in state.formats" :value = "format.value">{{ format.label }}</option>
+        <option value = "png">PNG</option>
+        <option value = "jpg">JPG</option>
+        <option value = "svg">SVG</option>
+        <option value = "pdf">PDF</option>
+        <option value = "geopdf">GEOPDF</option>
       </select>
 
       <!-- PRINT LABEL -->
@@ -439,7 +436,6 @@ template: /*html*/`
      * On scale change set print area
      */
     changeScale() {
-
       try {
         //check if create new tag value with ':' 1:2300
         if (this.state.scale.includes(':')) {
@@ -469,9 +465,9 @@ template: /*html*/`
       //set value
       $(this.$refs.scales).val(this.state.scale).trigger('change');
 
-      if (this.state.scale) { this._setPrintArea(); }
-
-
+      if (this.state.scale) {
+        this._setPrintArea();
+      }
     },
 
     /**
@@ -495,20 +491,13 @@ template: /*html*/`
     },
 
     /**
-     * @since 3.11.0
-     */
-    isAxisOrientationInverted() {
-      return 'neu' === GUI.getProjection().getAxisOrientation();
-    },
-
-    /**
      * @param extent
      *
      * @returns { string }
      */
     getOverviewExtent(extent={}) {
       const { xmin, xmax, ymin, ymax } = extent;
-      return (this.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+      return ('neu' === GUI.getProjection().getAxisOrientation() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
     },
 
     /**
@@ -520,7 +509,7 @@ template: /*html*/`
       try {
         const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
         const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
-        this.print_extent  = (this.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
+        this.print_extent  = ('neu' === GUI.getProjection().getAxisOrientation() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
       }
       catch(e) {
          //in case of already open content print page
@@ -835,10 +824,6 @@ template: /*html*/`
       }
       if (visible) {
         this._initPrintConfig();
-        GUI.on('changeviewaftercurrentproject', () => {
-          this.state.scales = PRINT_SCALES;
-          this._setScales(GUI.getMap().getView().getMaxResolution());
-        });
       } else {
         this._clearPrint();
       }
