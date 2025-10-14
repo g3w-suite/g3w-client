@@ -52,7 +52,7 @@ const state = {
 const vueComp = ({
 template: /*html*/`
 <div class="print-modal">
-  <bar-loader :loading = "state.loading" />
+  <div v-show = "state.loading" class = "bar-loader"></div>
 
   <form
     v-if  = "state.print.length"
@@ -259,7 +259,7 @@ template: /*html*/`
     @click = "$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()"
   >
     <form method="dialog">
-      <bar-loader :loading = "state.loading && state.layers" />
+      <div v-show = "state.loading && state.layers" class = "bar-loader"></div>
       <h4 v-if = "!state.layers"><b>{{ $t('No Layer to print') }}</b></h4>
       <menu style="position: sticky;top: 0;">
         <a
