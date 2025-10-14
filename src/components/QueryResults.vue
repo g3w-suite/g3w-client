@@ -567,6 +567,7 @@
 </template>
 
 <script>
+  import { G3W_FID }                 from 'g3w-constants';
   import ApplicationState            from 'store/application';
   import { fieldsMixin }             from 'mixins';
   import TableAttributeFieldValue    from 'components/QueryResultsTableAttributeFieldValue.vue';
