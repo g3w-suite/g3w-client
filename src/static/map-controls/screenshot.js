@@ -240,7 +240,7 @@ template: /*html*/`
 
   </form>
 
-  <div v-if="is_staff" style = "padding: 1em;text-align: center;">
+  <div v-if="is_staff && !is_screenshot" style = "padding: 1em;text-align: center;">
     <b>
       <a
         :href           = "'https://docs.qgis.org/3.34/' + lang + '/docs/training_manual/map_composer/map_composer.html'"
