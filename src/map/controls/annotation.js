@@ -1198,7 +1198,7 @@ class AnnotationControl extends InteractionControl {
   #style(type) {
     const epsg         = ApplicationState.project.getProjection().getCode();
     const units        = ApplicationState.project.getProjection().getUnits();
-    const stroke       = new ol.style.Stroke({ color: '#FFF', width: 3 });
+    const stroke       = new ol.style.Stroke({ color: '#FFF', width: 4 });
     const font_family  = 'Titillium Web';
     const image        = new ol.style.Circle({ radius: 5, stroke: new ol.style.Stroke({ color: '#000', width: 3 }) });
 
@@ -1208,9 +1208,9 @@ class AnnotationControl extends InteractionControl {
           text:      feat.get('text'),
           rotation:  feat.get('style')?.rotation * (Math.PI / 180),
           fill:      new ol.style.Fill({ color : '#000' }),
-          font:      `${feat.get('style')?.fontsize}px ${font_family}`,
+          font:      `bold ${feat.get('style')?.fontsize}px ${font_family}`,
           placement: 'point',
-          stroke:    new ol.style.Stroke({ color: '#FFF', width: 8 }),
+          stroke:    new ol.style.Stroke({ color: '#FFF', width: 5 }),
         }),
       });
     }
@@ -1222,7 +1222,7 @@ class AnnotationControl extends InteractionControl {
           offsetY:    -Number(feat.get('style')?.radius) - 10 + (feat.get('show_text') ? -10 : 0),
           text:      `${feat.get('show_info') && `${`${ol.coordinate.format(feat.getGeometry().getCoordinates(), '{x},{y}', 2)}`} ${feat.get('show_text') && '\n' || ''}` || '' }${feat.get('show_text') && feat.get('text') || ''}`,
           fill:       new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-          font:      `${feat.get('style')?.fontsize}px ${font_family}`,
+          font:      `bold ${feat.get('style')?.fontsize}px ${font_family}`,
           stroke,
         }),
         image: new ol.style.Circle({
@@ -1242,7 +1242,7 @@ class AnnotationControl extends InteractionControl {
             placement: 'point',
             text:      `${feat.get('show_info') && (get_formatted_length(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill:       new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-            font:      `${feat.get('style')?.fontsize}px ${font_family}`,
+            font:      `bold ${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
           }),
           stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
@@ -1280,7 +1280,7 @@ class AnnotationControl extends InteractionControl {
             placement: 'point',
             text:      `${feat.get('show_info') && (get_formatted_area(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill:       new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-            font:       `${feat.get('style')?.fontsize}px ${font_family}`,            
+            font:       `bold ${feat.get('style')?.fontsize}px ${font_family}`,            
             stroke,
           }),
           stroke: new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
@@ -1301,7 +1301,7 @@ class AnnotationControl extends InteractionControl {
             placement: 'point',
             text:      `${feat.get('show_info') && (get_formatted_area(feat.getGeometry(), epsg, units) + '\n') || ''}${feat.get('show_text') && feat.get('text') || ''}`,
             fill:       new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-            font:      `${feat.get('style')?.fontsize}px ${font_family}`,
+            font:      `bold ${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
           }),
           stroke:   new ol.style.Stroke({ width: feat.get('style')?.width, color: feat.get('style')?.color }),
@@ -1324,7 +1324,7 @@ class AnnotationControl extends InteractionControl {
             placement: 'point',
             text:      feat.get('show_text') && feat.get('text') || '',
             fill:      new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-            font:      `${feat.get('style')?.fontsize}px ${font_family}`,
+            font:      `bold ${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
           }),
           stroke: new ol.style.Stroke({ width: feat.get('style')?.width || 3, color: feat.get('style')?.color || 'rgb(3, 169, 244)' }),
@@ -1344,7 +1344,7 @@ class AnnotationControl extends InteractionControl {
               : ''
             }`,
             fill:  new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-            font:  `${feat.get('style')?.fontsize}px ${font_family}`,
+            font:  `bold ${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
           }),
           ...(feat.get('show_info') || undefined === feat.get('show_info') 
@@ -1361,7 +1361,7 @@ class AnnotationControl extends InteractionControl {
             offsetX:   20,
             text:      `${feat.get('show_info') && `${parseInt(Math.atan2(feat.getGeometry().getCenter()[0] - feat.get('endCoordinates')[0], feat.getGeometry().getCenter()[1] - feat.get('endCoordinates')[1]) * 180 / Math.PI)}°` || ''}`,
             fill:       new ol.style.Fill({ color : feat.get('style')?.color ?? '#000' }),
-            font:      `${feat.get('style')?.fontsize}px ${font_family}`,
+            font:      `bold ${feat.get('style')?.fontsize}px ${font_family}`,
             stroke,
           }),
           geometry: () => new ol.geom.Point(feat.get('endCoordinates'))
