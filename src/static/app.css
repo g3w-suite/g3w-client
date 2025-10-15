@@ -817,7 +817,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-custom-overviewmap                                                 { border-radius: 5px; }
 .ol-custom-overviewmap button                                          { display: inline-block;     left: 3px; bottom: 8px; width: 30px; height: 30px; }
 .ol-custom-overviewmap button span                                     { font-size: 15px; font-weight: bold; position: absolute; margin: -6px; }
-.ol-custom-overviewmap .ol-overviewmap-map                             { border: none; width: 100%; }
+.ol-custom-overviewmap .ol-overviewmap-map                             { border: none; width: 100%; height: 100px;}
 .ol-custom-overviewmap.ol-collapsed                                    { border: 0; }
 .ol-control-tl                                                         { top: 0;     left: 7px; }
 .ol-control-bl                                                         { bottom: 40px; left: 7px; }
