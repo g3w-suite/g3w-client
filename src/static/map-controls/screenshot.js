@@ -25,23 +25,30 @@ const {
 
 const _                = g3w.gettext;
 
+const screenshot_types = Object.keys(initConfig.mapcontrols).filter(t => ['screenshot', 'geoscreenshot'].includes(t));
+
 const state = {
-  print:       ApplicationState.project.getPrint() || [],
-  loading:     false,
-  downloading: false,
-  url:         null,
-  layers:      true,
-  maps:        print?.[0]?.maps,
-  labels:      print?.[0]?.labels,
-  template:    print?.[0]?.name,
-  atlas:       print?.[0]?.atlas,
-  rotation:    0,
-  scale:       null,
-  inner:       [0, 0, 0, 0],
-  scales:      [],
-  dpis:        [150, 300],
-  dpi:         150,
-  format:      'png',
+  ready:        false,
+  disabled:     false,
+  print:        ApplicationState.project.getPrint() || [],
+  loading:      false,
+  downloading:  false,
+  url:          null,
+  layers:       true,
+  maps:         print?.[0]?.maps,
+  labels:       print?.[0]?.labels,
+  template:     print?.[0]?.name,
+  atlas:        print?.[0]?.atlas,
+  atlas_values: [],
+  rotation:     0,
+  scale:        null,
+  inner:        [0, 0, 0, 0],
+  scales:       [],
+  dpis:         [150, 300],
+  dpi:          150,
+  format:       'png',
+  screenshot_types,
+  screenshot_type: screenshot_types[0],
 };
 
 
@@ -165,7 +172,7 @@ template: /*html*/`
       <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
       <template v-else>
         <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
-        <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
+        <input class = "form-control" v-model = "state.atlas_values" @keydown.space.prevent>
         <div id = "fid-print-atals-instruction">
           <div id = "fids_intruction">{{ $t('Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6') }}</div>
           <div id = "fids_examples_values">{{ $t('Ex. 1,4-6 will be printed id 1,4,5,6') }}</div>
@@ -175,9 +182,9 @@ template: /*html*/`
 
     <template v-if="is_screenshot">
       <label for = "format">{{ $t('Format') }}</label>
-      <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
+      <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'state.screenshot_type'">
         <option
-          v-for  = "type in screenshot_types"
+          v-for  = "type in state.screenshot_types"
           :value = "type"
         >{{ $t(({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]) }}</option>
       </select>
@@ -276,8 +283,8 @@ template: /*html*/`
       <iframe
         v-if   = "state.layers && ['pdf', 'geopdf'].includes(state.format)"
         :src   = "state.url"
-        @load  = "ready = true"
-        @error = "ready = true"
+        @load  = "state.ready = true"
+        @error = "state.ready = true"
         style  = "border:0; width:100%; height:100%;"
       ></iframe>
 
@@ -285,8 +292,8 @@ template: /*html*/`
       <img
         v-if   = "state.layers && !['pdf', 'geopdf'].includes(state.format)"
         :src   = "state.url"
-        @load  = "ready = true"
-        @error = "ready = true"
+        @load  = "state.ready = true"
+        @error = "state.ready = true"
         style  = "height:auto; width: 100%;"
       >
     </form>
@@ -298,18 +305,12 @@ template: /*html*/`
   name: 'print',
 
   data() {
-    this.init();
-    const screenshot_types = Object.keys(initConfig.mapcontrols).filter(t => ['screenshot', 'geoscreenshot'].includes(t));
     return {
-      /** @since 4.0.0 */
-      ApplicationState,
       state,
-      disabled: false,
-      /** @since 3.10.0 */
-      atlas_values:   [],
-      ready: false,
-      screenshot_types,
-      screenshot_type: screenshot_types[0]
+      /**@since v3.10 Store map extent for print in case of already open print page*/
+      print_extent: null,
+      resolutions:  {},
+      moveKey:      null,
     };
   },
 
@@ -368,25 +369,16 @@ template: /*html*/`
     },
 
     can_submit() {
-      return !this.disabled && !this.state.loading && (this.is_screenshot ? this.can_screenshot : true) && !ApplicationState.download;
+      return !this.state.disabled && !this.state.loading && (this.is_screenshot ? this.can_screenshot : true) && !ApplicationState.download;
     },
 
   },
 
   methods: {
 
-    init() {
-      this._init        = undefined !== this._init ? this._init: false;
-      this._moveKey     = this._moveKey || null;
-      this._resolutions = this._resolutions || {};
-
-      /**@since v3.10 Store map extent for print in case of already open print page*/
-      this.print_extent = null;
-    },
-
     async changeTemplate() {
       const has_previous = this.state.atlas || 0 === this.state.maps?.length;
-      const print = this.state.print.find(p => p.name === this.state.template);
+      const print        = this.state.print.find(p => p.name === this.state.template);
 
       if (!print) {
         this.showPrintArea(false);
@@ -400,15 +392,13 @@ template: /*html*/`
         this.select2 = null;
       }
 
-      this.disabled = false;
-
       Object.assign(this.state, {
-        maps:        print.maps,
-        atlas:       print.atlas,
-        labels:      print.labels,
+        disabled:     false,
+        maps:         print.maps,
+        atlas:        print.atlas,
+        labels:       print.labels,
+        atlas_values: [],
       });
-
-      this.atlas_values = [];
 
       if (this.state.atlas) {
         this._clearPrint();
@@ -500,8 +490,7 @@ template: /*html*/`
         const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
         const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
         this.print_extent  = ('neu' === GUI.getProjection().getAxisOrientation() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
-      }
-      catch(e) {
+      } catch(e) {
          //in case of already open content print page
         console.warn(e);
       }
@@ -571,41 +560,40 @@ template: /*html*/`
      * @returns { Promise<unknown> }
      */
     async print() {
-
-      // generate screenshot
-      if (this.is_screenshot) {
-        ApplicationState.download = true;
-        try {
-          const blob = 'screenshot' === this.screenshot_type
-            ? await GUI.createMapImage()                                                              // PNG
-            : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
-                method: 'POST',
-                body: Object.entries({
-                  image:               await GUI.createMapImage(),
-                  csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
-                  bbox:                GUI.getMapBBOX().toString(),
-                }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
-              })).blob();
-          // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)
-          (this._onclick || saveBlob)(blob, `map_${Date.now()}`);
-        } catch (e) {
-          GUI.showUserMessage({
-            type:    'SecurityError' === e.name ? 'warning' : 'alert',
-            message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
-          });
-          console.warn(e);
-        }
-        ApplicationState.download = false;
-        return;
-      }
-
-      const has_atlas = !!this.state.atlas;
-      let err;
-      let response;
-
-      this.state.loading = true;
+      let err, response;
 
       try {
+
+        // generate screenshot
+        if (this.is_screenshot) {
+          ApplicationState.download = true;
+          try {
+            const blob = 'screenshot' === this.state.screenshot_type
+              ? await GUI.createMapImage()                                                              // PNG
+              : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
+                  method: 'POST',
+                  body: Object.entries({
+                    image:               await GUI.createMapImage(),
+                    csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
+                    bbox:                GUI.getMapBBOX().toString(),
+                  }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
+                })).blob();
+            // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)
+            (GUI.getMapControlByType('screenshot')?._onclick || saveBlob)(blob, `map_${Date.now()}`);
+          } catch (e) {
+            GUI.showUserMessage({
+              type:    'SecurityError' === e.name ? 'warning' : 'alert',
+              message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
+            });
+            console.warn(e);
+          }
+          ApplicationState.download = false;
+          return;
+        }
+
+        const has_atlas = !!this.state.atlas;
+
+        this.state.loading = true;
 
         // disable sidebar
         GUI.disableSideBar(true);
@@ -615,7 +603,7 @@ template: /*html*/`
           await GUI.printAtlas(undefined, undefined, {
             template: this.state.template,
             field:    this.state.atlas.field_name || '$id',
-            values:   this.atlas_values,
+            values:   this.state.atlas_values,
           });
         }
 
@@ -676,7 +664,7 @@ template: /*html*/`
         }
 
       } catch(e) {
-        if (response && !response.ok && 500 === response.status) {
+        if (!response?.ok && 500 === response?.status) {
           err = 500 === response.status ? 'Internal Server Error' : 'Request Failed';
         } else {
           err = e;
@@ -699,7 +687,6 @@ template: /*html*/`
       if (err) {
         console.warn(err);
         GUI.notify.error(err || _("info.server_error"));
-        GUI.closeContent();
       }
 
     },
@@ -711,29 +698,23 @@ template: /*html*/`
       // close content if open
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
-      if (reset)                           { this.atlas_values = []; this.print_extent = null; }
+      if (reset)                           { this.state.atlas_values = []; this.print_extent = null; }
       // @since 3.11.0 In case of no print set, exit
       if (0 === this.state.print.length)   {
         return;
       }
-      GUI
-        .closeContent()
-        .then(() => {
-          setTimeout(() => {
-            GUI.getMap().once('postrender', () => {
-              if (!show) {
-                return this._clearPrint();
-              }
-              this._moveKey = GUI.getMap().on('moveend', this._setPrintArea.bind(this));
-              this._initPrintConfig();
-              // show print area if is not atlas template and have maps
-              if (undefined === this.state.atlas && this._setPrintArea()) {
-                GUI.setModal(true);
-              }
-            });
-            GUI.getMap().renderSync();
-          })
-        })
+      GUI.getMap().once('postrender', () => {
+        if (!show) {
+          return this._clearPrint();
+        }
+        this.moveKey = GUI.getMap().on('moveend', this._setPrintArea.bind(this));
+        this._initPrintConfig();
+        // show print area if is not atlas template and have maps
+        if (undefined === this.state.atlas && this._setPrintArea()) {
+          GUI.setModal(true);
+        }
+      });
+      GUI.getMap().renderSync();
     },
 
     /**
@@ -764,8 +745,8 @@ template: /*html*/`
     },
 
     _clearPrint() {
-      ol.Observable.unByKey(this._moveKey);
-      this._moveKey = null;
+      ol.Observable.unByKey(this.moveKey);
+      this.moveKey = null;
       GUI.setModal(false);
     },
 
@@ -781,7 +762,7 @@ template: /*html*/`
       const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
       const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
       this.state.scales = (above ? [above] : []).concat(below);
-      this.state.scales.forEach(s => this._resolutions[s.value] = getResolutionFromScale(s.value, units))
+      this.state.scales.forEach(s => this.resolutions[s.value] = getResolutionFromScale(s.value, units))
     },
 
     _initPrintConfig() {
@@ -794,29 +775,13 @@ template: /*html*/`
 
       // set current scale
       Object
-        .entries(this._resolutions)
+        .entries(this.resolutions)
         .find(([scala, res]) => {
           if (resolution <= res) {
             this.state.scale = scala;
             return true
           }
         });
-    },
-
-
-    reload() {
-      this.state.print    = ApplicationState.project.state.print || [];
-      const visible       = this.state.print.length > 0;
-      const init          = this._initialized;
-      this.state.template = visible ? this.state.print[0].name : this.state.template;
-      if (visible && !init) {
-        this.init();
-      }
-      if (visible) {
-        this._initPrintConfig();
-      } else {
-        this._clearPrint();
-      }
     },
 
     initSelect2Field() {
@@ -860,8 +825,8 @@ template: /*html*/`
           inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
         },
       });
-      this.select2.on('select2:select',   e => { this.atlas_values.push(e.params.data.id); });
-      this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
+      this.select2.on('select2:select',   e => { this.state.atlas_values.push(e.params.data.id); });
+      this.select2.on('select2:unselect', e => { this.state.atlas_values = this.state.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
     },
 
     /**
@@ -906,7 +871,8 @@ template: /*html*/`
       immediate: true,
       handler() { this.changeTemplate() }
     },
-    ready: {
+
+    'state.ready': {
       handler(bool) {
         GUI.setLoadingContent(!bool);
       },
@@ -919,14 +885,14 @@ template: /*html*/`
       this.initSelect2Field();
     },
 
-    atlas_values: {
+    'state.atlas_values': {
       immediate: true,
       async handler(vals) {
         if (this._skip_atlas_check || !this.state.atlas) {
           return;
         }
         if (this.has_autocomplete) {
-          this.disabled = 0 === vals.length;
+          this.state.disabled = 0 === vals.length;
           return;
         }
         const validate = n => (n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count) || null;
@@ -950,10 +916,10 @@ template: /*html*/`
             }
           });
         this._skip_atlas_check = true;
-        this.atlas_values = Array.from(values);
+        this.state.atlas_values = Array.from(values);
         await this.$nextTick();
         this._skip_atlas_check = false;
-        this.disabled = '' === value.trim();
+        this.state.disabled = '' === value.trim();
       }
     },
 
@@ -982,7 +948,6 @@ template: /*html*/`
       } catch (e) {
         console.warn(e);
         GUI.notify.error(e || _("info.server_error"));
-        GUI.closeContent();
       } finally {
         clearTimeout(timeout);
         GUI.disableSideBar(false);
