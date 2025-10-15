@@ -25,27 +25,23 @@ const {
 
 const _                = g3w.gettext;
 
-const print   = ApplicationState.project.getPrint() || [];
-const visible = print.length > 0;
-
 const state = {
-  visible,
-  print,
-  loading:      false,
-  downloading:  false,
-  url:          null,
-  layers:       true,
-  maps:         print?.[0]?.maps,
-  labels:       print?.[0]?.labels,
-  template:     print?.[0]?.name,
-  atlas:        print?.[0]?.atlas,
-  rotation:     visible ? 0    : undefined,
-  inner:        [0, 0, 0, 0],
-  scales:       [],
-  scale:        visible ? null : undefined,
-  dpis:         [150, 300],
-  dpi:          150,
-  format:       'png',
+  print:       ApplicationState.project.getPrint() || [],
+  loading:     false,
+  downloading: false,
+  url:         null,
+  layers:      true,
+  maps:        print?.[0]?.maps,
+  labels:      print?.[0]?.labels,
+  template:    print?.[0]?.name,
+  atlas:       print?.[0]?.atlas,
+  rotation:    0,
+  scale:       null,
+  inner:       [0, 0, 0, 0],
+  scales:      [],
+  dpis:        [150, 300],
+  dpi:         150,
+  format:      'png',
 };
 
 
@@ -384,19 +380,13 @@ template: /*html*/`
       this._moveKey     = this._moveKey || null;
       this._resolutions = this._resolutions || {};
 
-    
       /**@since v3.10 Store map extent for print in case of already open print page*/
       this.print_extent = null;
-
     },
 
     async changeTemplate() {
-      if (!this.state.template) { return; }
-
-      await this.$nextTick();
-
-      const has_previous = this.state.atlas || 0 === this.state.maps.length;
-      const print        = this.state.print.find(p => p.name === this.state.template);
+      const has_previous = this.state.atlas || 0 === this.state.maps?.length;
+      const print = this.state.print.find(p => p.name === this.state.template);
 
       if (!print) {
         this.showPrintArea(false);
@@ -1003,6 +993,18 @@ template: /*html*/`
 
   },
 
+  beforeMount() {
+    const button = GUI.getComponent('print')?.internalComponent;
+    const control = GUI.getMapControlByType('screenshot');
+    if (button) {
+      button.state.open = true;
+    }
+    if (control) {
+      control._toggled = true;
+      control.element.children[0].classList.toggle('g3w-ol-toggled', true);
+    };
+  },
+
   /**
    * @since 3.10.2
    */
@@ -1028,33 +1030,21 @@ template: /*html*/`
     this.showPrintArea(false);
     this.$refs.dialog.close();
     this.$refs.dialog.remove();
-    //screenshto control
-    const control = GUI.getMapControlByType('screenshot');
-    if (control?.isToggled()) {
-      control._toggled = false;
-      control.element.children[0].classList.remove('g3w-ol-toggled');
-    };
 
-    if (GUI.getComponent('print').internalComponent.state.open) {
-      GUI.getComponent('print').internalComponent.state.open = false;
+    const button = GUI.getComponent('print')?.internalComponent;
+    const control = GUI.getMapControlByType('screenshot');
+    if (button) {
+      button.state.open = false;
     }
+    if (control) {
+      control._toggled = false;
+      control.element.children[0].classList.toggle('g3w-ol-toggled', false);
+    };
   },
 
 });
 
 const toggleUserMessage = (toggle, type) => {
-  const control = GUI.getMapControlByType('screenshot');
-  const button  = GUI.getComponent('print').internalComponent;
-
-  if (button) {
-    button.state.open = toggle;
-  }
-
-  if (control) {
-    control._toggled  = toggle;
-    control.element.children[0].classList.toggle('g3w-ol-toggled', toggle);
-  }
-
   state.template = type ?? print[0]?.name;
 
   if (toggle) {
