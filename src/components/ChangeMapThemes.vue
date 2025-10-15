@@ -11,8 +11,9 @@
     >
 
       <a href = "#" class = "g3w-map-theme-anchor">
-        <section @click.stop = "toggle" display = "flex; justify-content: space-between;">
+        <section @click.stop = "toggle">
           <i :class = "$fa(collapsed ? 'caret-down' : 'caret-up')" style = "padding: 3px;"></i>
+          <i :class = "$fa(collapsed ? 'eye-close' : 'eye')"       style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
             v-if  = "active_theme"

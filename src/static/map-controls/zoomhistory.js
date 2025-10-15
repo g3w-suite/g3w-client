@@ -26,7 +26,6 @@ GUI.setupControl.zoomhistory = function() {
           this.element.style.gap     = '5px';
           this.element.style.left    = '0';
           this.element.style.margin  = '3px';
-          this.element.style.cursor  = 'pointer';
           this.element.innerHTML     = /* html */`
             <div data-i18n-title="Zoom Last" style = "flex-grow: 1"><button type="button" value="last" class="fas fa-reply g3w-disabled" style="font-weight: 900; width: 100%; height: 30px;"></button></div>
             <div data-i18n-title="Zoom Next" style = "flex-grow: 1"><button type="button" value="next" class="fas fa-share g3w-disabled" style="font-weight: 900; width: 100%; height: 30px;"></button></div>
