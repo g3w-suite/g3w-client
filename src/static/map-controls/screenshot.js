@@ -30,36 +30,39 @@ const screenshot_types = Object.keys(initConfig.mapcontrols).filter(t => ['scree
 
 const state = {
   print,
-  ready:        false,
-  disabled:     false,
-  loading:      false,
-  downloading:  false,
-  url:          null,
-  layers:       true,
-  maps:         print?.[0]?.maps,
-  labels:       print?.[0]?.labels,
-  template:     print?.[0]?.name,
-  atlas:        print?.[0]?.atlas,
-  atlas_values: [],
-  rotation:     0,
-  scale:        null,
-  inner:        [0, 0, 0, 0],
-  scales:       [],
-  dpis:         [150, 300],
-  dpi:          150,
-  format:       'png',
+  ready:           false,
+  disabled:        false,
+  loading:         false,
+  downloading:     false,
+  url:             null,
+  layers:          true,
+  maps:            print?.[0]?.maps,
+  labels:          print?.[0]?.labels,
+  template:        print?.[0]?.name,
+  atlas:           print?.[0]?.atlas,
+  atlas_values:    [],
+  rotation:        0,
+  scale:           null,
+  inner:           [0, 0, 0, 0],
+  scales:          [],
+  dpis:            [150, 300],
+  dpi:             150,
+  format:          'png',
   screenshot_types,
   screenshot_type: screenshot_types[0],
+  print_extent:    null,
+  resolutions:     {},
+  moveKey:      null,
 };
 
 
 const vueComp = ({
 template: /*html*/`
 <div class="print-modal">
-  <div v-show = "state.loading" class = "bar-loader"></div>
+  <div v-show = "loading" class = "bar-loader"></div>
 
   <form
-    v-if  = "state.print.length"
+    v-if  = "print.length"
     style = "padding: 10px;max-height: 75vh;overflow-y: auto;"
   >
 
@@ -68,15 +71,15 @@ template: /*html*/`
     <select
       id             = "templates"
       class          = "form-control"
-      v-select2      = "'state.template'"
-      :select2_value = "state.template"
-      :style         = "{ marginBottom: this.state.atlas && '10px' }"
+      v-select2      = "'template'"
+      :select2_value = "template"
+      :style         = "{ marginBottom: atlas && '10px' }"
     >
-      <option v-for = "print in state.print" :value = "print.name" v-t = "print.label || print.name"></option>
+      <option v-for = "p in print" :value = "p.name" v-t = "p.label || p.name"></option>
     </select>
 
     <details v-if="is_customizable" class="custom-settings">
-      <summary>{{ $t('Advanced options') }}</summary>
+      <summary>{{ $t('Advanced settings') }}</summary>
 
       <!-- PRINT SCALE -->
       <label for = "scale">{{ $t('Scale') }}</label>
@@ -84,13 +87,13 @@ template: /*html*/`
         id             = "scale"
         class          = "form-control"
         v-disabled     = "!has_maps"
-        v-select2      = "'state.scale'"
-        :select2_value = "state.scale"
+        v-select2      = "'scale'"
+        :select2_value = "scale"
         :createTag     = "true"
         @change        = "changeScale"
         ref            = "scales"
       >
-        <option v-for = "scale in state.scales" :value = "scale.value">{{ scale.label }}</option>
+        <option v-for = "scale in scales" :value = "scale.value">{{ scale.label }}</option>
       </select>
 
       <!-- PRINT DPI -->
@@ -98,13 +101,13 @@ template: /*html*/`
       <select
         id             = "dpi"
         class          = "form-control"
-        v-select2      = "'state.dpi'"
-        :select2_value = "state.dpi"
+        v-select2      = "'dpi'"
+        :select2_value = "dpi"
         @change        = "changeDpi"
         :createTag     = "true"
         ref            = "dpi"
       >
-        <option v-for = "dpi in state.dpis">{{ dpi }}</option>
+        <option v-for = "dpi in dpis">{{ dpi }}</option>
       </select>
 
       <!-- PRINT ROTATION -->
@@ -116,7 +119,7 @@ template: /*html*/`
         min        = "-360"
         max        = "360"
         @input     = "changeRotation"
-        v-model    = "state.rotation"
+        v-model    = "rotation"
         type       = "number"
       />
 
@@ -125,8 +128,8 @@ template: /*html*/`
       <select
         id             = "format"
         class          = "form-control"
-        v-select2      = "'state.format'"
-        :select2_value = "state.format"
+        v-select2      = "'format'"
+        :select2_value = "format"
       >
         <option value = "png">PNG</option>
         <option value = "jpg">JPG</option>
@@ -137,13 +140,13 @@ template: /*html*/`
 
       <!-- PRINT LABEL -->
       <div
-        v-if  = "state.labels && state.labels.length > 0"
+        v-if  = "labels && labels.length > 0"
         class = "print-labels-content"
       >
         <b class = "skin-color" hidden>{{ $t('Labels') }}</b>
         <div class = "labels-input-content">
           <span
-            v-for = "label in state.labels"
+            v-for = "label in labels"
             :key  = "label.id"
           >
             <label :for = "'g3w_label_id_input_'+ label.id"> {{ label.id }}</label>
@@ -160,20 +163,20 @@ template: /*html*/`
 
     <!-- PRINT ATLAS -->
     <div
-      v-if  = "!is_screenshot && state.atlas"
+      v-if  = "!is_screenshot && atlas"
       class = "form-group"
       style = "width: 100%;"
       ref   = "print_atlas"
     >
       <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
       <template v-if = "has_autocomplete">
-        <label  for = "print_atlas_autocomplete"><span>{{ state.atlas.field_name }}</span></label>
-        <select id = "print_atlas_autocomplete" :name = "state.atlas.field_name" class = "form-control"></select>
+        <label  for = "print_atlas_autocomplete"><span>{{ atlas.field_name }}</span></label>
+        <select id = "print_atlas_autocomplete" :name = "atlas.field_name" class = "form-control"></select>
       </template>
       <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
       <template v-else>
-        <label><span>fids [max: {{ state.atlas.feature_count - 1 }}]</span></label>
-        <input class = "form-control" v-model = "state.atlas_values" @keydown.space.prevent>
+        <label><span>fids [max: {{ atlas.feature_count - 1 }}]</span></label>
+        <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
         <div id = "fid-print-atals-instruction">
           <div id = "fids_intruction">{{ $t('Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6') }}</div>
           <div id = "fids_examples_values">{{ $t('Ex. 1,4-6 will be printed id 1,4,5,6') }}</div>
@@ -183,9 +186,9 @@ template: /*html*/`
 
     <template v-if="is_screenshot">
       <label for = "format">{{ $t('Format') }}</label>
-      <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'state.screenshot_type'">
+      <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
         <option
-          v-for  = "type in state.screenshot_types"
+          v-for  = "type in screenshot_types"
           :value = "type"
         >{{ $t(({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]) }}</option>
       </select>
@@ -194,7 +197,7 @@ template: /*html*/`
     <button
       class     = "btn btn-block btn-success"
       :disabled = "!can_submit"
-      @click    = "print"
+      @click    = "onSubmit"
       style     = "margin: 15px 0;"
       type      = "button"
     >{{ $t('Generate') }}</button>
@@ -263,15 +266,15 @@ template: /*html*/`
     @click = "$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()"
   >
     <form method="dialog">
-      <div v-show = "state.loading && state.layers" class = "bar-loader"></div>
-      <h4 v-if = "!state.layers"><b>{{ $t('No Layer to print') }}</b></h4>
+      <div v-show = "loading && layers" class = "bar-loader"></div>
+      <h4 v-if = "!layers"><b>{{ $t('No Layer to print') }}</b></h4>
       <menu style="position: sticky;top: 0;">
         <a
-          v-if       = "state.layers && !['pdf', 'geopdf'].includes(state.format)"
-          :href      = "state.url"
+          v-if       = "layers && !['pdf', 'geopdf'].includes(format)"
+          :href      = "url"
           @click     = "downloadImage($event)"
           class      = "btn btn-success"
-          :disabled  = "!!(state.downloading && state.layers)"
+          :disabled  = "!!(downloading && layers)"
           title      = "Download Image"
         ><i :class = "$fa('download')"></i> {{ $t('Download') }}</a>
         <button
@@ -282,19 +285,19 @@ template: /*html*/`
       </menu>
       <!-- PRINT as PDF or GEOPDF-->
       <iframe
-        v-if   = "state.layers && ['pdf', 'geopdf'].includes(state.format)"
-        :src   = "state.url"
-        @load  = "state.ready = true"
-        @error = "state.ready = true"
+        v-if   = "layers && ['pdf', 'geopdf'].includes(format)"
+        :src   = "url"
+        @load  = "ready = true"
+        @error = "ready = true"
         style  = "border:0; width:100%; height:100%;"
       ></iframe>
 
       <!-- PRINT as PNG, JPG, SVG -->
       <img
-        v-if   = "state.layers && !['pdf', 'geopdf'].includes(state.format)"
-        :src   = "state.url"
-        @load  = "state.ready = true"
-        @error = "state.ready = true"
+        v-if   = "layers && !['pdf', 'geopdf'].includes(format)"
+        :src   = "url"
+        @load  = "ready = true"
+        @error = "ready = true"
         style  = "height:auto; width: 100%;"
       >
     </form>
@@ -305,15 +308,7 @@ template: /*html*/`
   /** @since 3.8.6 */
   name: 'print',
 
-  data() {
-    return {
-      state,
-      /**@since v3.10 Store map extent for print in case of already open print page*/
-      print_extent: null,
-      resolutions:  {},
-      moveKey:      null,
-    };
-  },
+  data: () => state,
 
   computed: {
 
@@ -323,12 +318,12 @@ template: /*html*/`
      * @since 3.9.4
      */
     has_maps() {
-      return (this.state.maps || []).length > 0;
+      return (this.maps || []).length > 0;
     },
 
     //in the case of current template is atlas and has field_name
     has_autocomplete() {
-      return !!(this.state.atlas && this.state.atlas.field_name);
+      return !!(this.atlas && this.atlas.field_name);
     },
 
     /** @since 3.10.0  */
@@ -342,11 +337,11 @@ template: /*html*/`
     },
 
     is_screenshot() {
-      return '__G3W_SCREENSHOT__' === this.state.template;
+      return '__G3W_SCREENSHOT__' === this.template;
     },
 
     is_customizable() {
-      return !this.is_screenshot && !this.state.atlas;
+      return !this.is_screenshot && !this.atlas;
     },
 
     /**
@@ -370,16 +365,112 @@ template: /*html*/`
     },
 
     can_submit() {
-      return !this.state.disabled && !this.state.loading && (this.is_screenshot ? this.can_screenshot : true) && !ApplicationState.download;
+      return !this.disabled && !this.loading && (this.is_screenshot ? this.can_screenshot : true) && !ApplicationState.download;
     },
+
+  },
+
+  watch: {
+
+    template: {
+      immediate: true,
+      handler() {
+        this.changeTemplate();
+      }
+    },
+
+    ready: {
+      handler(bool) {
+        GUI.setLoadingContent(!bool);
+      },
+      immediate: true,
+    },
+
+    async has_autocomplete(b) {
+      if (b) {
+        await this.$nextTick();
+        this.initSelect2Field();
+      }
+    },
+
+    atlas_values: {
+      immediate: true,
+      async handler(vals) {
+        if (this._skip_atlas_check || !this.atlas) {
+          return;
+        }
+        if (this.has_autocomplete) {
+          this.disabled = 0 === vals.length;
+          return;
+        }
+        const validate = n => (n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.atlas.feature_count) || null;
+        const values = new Set();
+        const value = (vals ? vals[0] : '') || '';
+        value
+          .split(',')
+          .filter(v => v)
+          .forEach(value => {
+            if (!value.includes('-') && null !== validate(value)) {
+              values.add(value);
+              return;
+            }
+            const _values = value.split('-');
+            const range = _values.filter(v => validate(v) !== null);
+            if (range.length === _values.length && range.reduce((bool, value, i) => bool && ((0 === i) || range[i-1] <= value), true)) {
+              for (let i = 1; i < range.length; i++) {
+                for (let j = range[i-1]; j < range[i]; j++ ) { values.add(j+''); }
+              }
+              values.add(range[range.length-1]);
+            }
+          });
+        this._skip_atlas_check = true;
+        this.atlas_values = Array.from(values);
+        await this.$nextTick();
+        this._skip_atlas_check = false;
+        this.disabled = '' === value.trim();
+      }
+    },
+
+    async url(url) {
+      if (!url) {
+        return;
+      }
+      let timeout;
+
+      try {
+
+        await this.$nextTick();
+
+        // add timeout
+        timeout = setTimeout(() => {
+          GUI.disableSideBar(false);
+          this.downloading = false;
+          GUI.showUserMessage({ type: 'alert', message: 'timeout' });
+        }, TIMEOUT);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw response.statusText;
+        }
+      } catch (e) {
+        console.warn(e);
+        GUI.notify.error(e || _("info.server_error"));
+      } finally {
+        clearTimeout(timeout);
+        GUI.disableSideBar(false);
+        this.downloading = false;
+      }
+
+    }
 
   },
 
   methods: {
 
-    async changeTemplate() {
-      const has_previous = this.state.atlas || 0 === this.state.maps?.length;
-      const print        = this.state.print.find(p => p.name === this.state.template);
+    changeTemplate() {
+      const has_previous = this.atlas || 0 === this.maps?.length;
+      const print        = this.print.find(p => p.name === this.template);
 
       if (!print) {
         this.showPrintArea(false);
@@ -393,7 +484,7 @@ template: /*html*/`
         this.select2 = null;
       }
 
-      Object.assign(this.state, {
+      Object.assign(this, {
         disabled:     false,
         maps:         print.maps,
         atlas:        print.atlas,
@@ -401,7 +492,7 @@ template: /*html*/`
         atlas_values: [],
       });
 
-      if (this.state.atlas) {
+      if (this.atlas) {
         this._clearPrint();
         this.initSelect2Field();
       } else if (has_previous) {
@@ -409,8 +500,6 @@ template: /*html*/`
       } else {
         this._setPrintArea();
       }
-
-      await this.$nextTick();
     },
 
     /**
@@ -419,34 +508,34 @@ template: /*html*/`
     changeScale() {
       try {
         //check if create new tag value with ':' 1:2300
-        if (this.state.scale.includes(':')) {
+        if (this.scale.includes(':')) {
           //get value
-          const scale = Number(this.state.scale.split(':')[1].trim());
+          const scale = Number(this.scale.split(':')[1].trim());
           //set options last tag created by user
           this.$refs.scales.children.at(-1).value = scale;
           //set scale
-          this.state.scale = scale;
+          this.scale = scale;
 
         }
       } catch(e) {
         console.warn(e);
-        this.state.scale = this.state.scales[0].value;
+        this.scale = this.scales[0].value;
       }
 
       //check if a current scale is a number or has a value more than maximum scale permission
-      if (Number.isNaN(Number(this.state.scale)) || (this.state.scale > this.state.scales[0].value)) {
-        this.state.scale = this.state.scales[0].value;
+      if (Number.isNaN(Number(this.scale)) || (this.scale > this.scales[0].value)) {
+        this.scale = this.scales[0].value;
       }
 
       //In case of scale negative or less than minimum scale permission
-      if (this.state.scale < 0) {
-        this.state.scale = this.state.scales.at(- 1).value;
+      if (this.scale < 0) {
+        this.scale = this.scales.at(- 1).value;
       }
 
       //set value
-      $(this.$refs.scales).val(this.state.scale).trigger('change');
+      $(this.$refs.scales).val(this.scale).trigger('change');
 
-      if (this.state.scale) {
+      if (this.scale) {
         this._setPrintArea();
       }
     },
@@ -456,10 +545,10 @@ template: /*html*/`
      */
     changeDpi() {
       //check dpi if si a NaN
-      if (Number.isNaN(Number(this.state.dpi))) {
-        this.state.dpi = this.state.dpis[0];
+      if (Number.isNaN(Number(this.dpi))) {
+        this.dpi = this.dpis[0];
         //set value
-        $(this.$refs.dpi).val(this.state.dpi).trigger('change');
+        $(this.$refs.dpi).val(this.dpi).trigger('change');
       }
     },
 
@@ -467,8 +556,8 @@ template: /*html*/`
      * On change rotation, rotate print area
      */
     changeRotation() {
-      this.state.rotation = this.state.rotation >= 0 ? Math.min(this.state.rotation || 0, 360) : Math.max(this.state.rotation || 0, -360);
-      GUI.setInnerGreyCoverBBox({ rotation: this.state.rotation });
+      this.rotation = this.rotation >= 0 ? Math.min(this.rotation || 0, 360) : Math.max(this.rotation || 0, -360);
+      GUI.setInnerGreyCoverBBox({ rotation: this.rotation });
     },
 
     /**
@@ -488,8 +577,8 @@ template: /*html*/`
       const map          = GUI.getMap();
       // Need to check in case di an open print page
       try {
-        const [xmin, ymin] = map.getCoordinateFromPixel([this.state.inner[0], this.state.inner[1]]);
-        const [xmax, ymax] = map.getCoordinateFromPixel([this.state.inner[2], this.state.inner[3]]);
+        const [xmin, ymin] = map.getCoordinateFromPixel([this.inner[0], this.inner[1]]);
+        const [xmax, ymax] = map.getCoordinateFromPixel([this.inner[2], this.inner[3]]);
         this.print_extent  = ('neu' === GUI.getProjection().getAxisOrientation() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
       } catch(e) {
          //in case of already open content print page
@@ -504,8 +593,8 @@ template: /*html*/`
         e.preventDefault();
         e.stopPropagation();
         GUI.disableSideBar(true);
-        this.state.downloading = true;
-        if (['jpg', 'png', 'svg'].includes(this.state.format)) {
+        this.downloading = true;
+        if (['jpg', 'png', 'svg'].includes(this.format)) {
           await new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = async () => {
@@ -513,16 +602,16 @@ template: /*html*/`
               canvas.height = img.naturalHeight;
               canvas.width  = img.naturalWidth;
               canvas.getContext('2d').drawImage(img, 0, 0);
-              saveBlob(await (await fetch(canvas.toDataURL(`image/${this.state.format}`))).blob(), g3w.state.project.getName());
+              saveBlob(await (await fetch(canvas.toDataURL(`image/${this.format}`))).blob(), g3w.state.project.getName());
               this.$refs.dialog.close();
               resolve();
             };
             img.onerror = reject;
-            img.src = this.state.url;
+            img.src = this.url;
           });
           setTimeout(() => {
             GUI.disableSideBar(false);
-            this.state.downloading = false;
+            this.downloading = false;
           });
         }
       } catch (e) {
@@ -560,7 +649,7 @@ template: /*html*/`
     /**
      * @returns { Promise<unknown> }
      */
-    async print() {
+    async onSubmit() {
       let err, response;
 
       try {
@@ -569,7 +658,7 @@ template: /*html*/`
         if (this.is_screenshot) {
           ApplicationState.download = true;
           try {
-            const blob = 'screenshot' === this.state.screenshot_type
+            const blob = 'screenshot' === this.screenshot_type
               ? await GUI.createMapImage()                                                              // PNG
               : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
                   method: 'POST',
@@ -592,58 +681,56 @@ template: /*html*/`
           return;
         }
 
-        const has_atlas = !!this.state.atlas;
-
-        this.state.loading = true;
+        this.loading = true;
 
         // disable sidebar
         GUI.disableSideBar(true);
 
         // ATLAS PRINT
-        if (has_atlas) {
+        if (!!this.atlas) {
           await GUI.printAtlas(undefined, undefined, {
-            template: this.state.template,
-            field:    this.state.atlas.field_name || '$id',
-            values:   this.state.atlas_values,
+            template: this.template,
+            field:    this.atlas.field_name || '$id',
+            values:   this.atlas_values,
           });
         }
 
         // SIMPLE PRINT
-        if (!has_atlas) {
-          this.state.url     = null;
-          this.state.layers  = true;
+        if (!this.atlas) {
+          this.url     = null;
+          this.layers  = true;
 
-          const has_theme = this.state.maps.some(m => undefined !== m.preset_theme);
+          const has_theme = this.maps.some(m => undefined !== m.preset_theme);
           const store     = ApplicationState.project.getLayersStore();
-          const layers    = store.getLayers({ PRINTABLE: { scale: this.state.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
+          const layers    = store.getLayers({ PRINTABLE: { scale: this.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
           const LAYERS    = (layers || []).map(l => l.isRaster() ? (l.state.wms_use_layer_ids ? l.getId() : l.getName()) : undefined).join();
           const url       = ApplicationState.project.state.WMSUrl;
           const params    = layers.length && new URLSearchParams(await GUI.getPrintParams({
             SERVICE:       'WMS',
             VERSION:       '1.3.0',
             REQUEST:       'GetPrint',
-            TEMPLATE:       this.state.template,
-            DPI:            this.state.dpi,
+            TEMPLATE:       this.template,
+            DPI:            this.dpi,
             STYLES:         layers.map(l => l.getStyle()).join(','),
             OPACITIES:      layers.map(l => parseInt((l.getOpacity() / 100) * 255)).join(','), //@since 4.0.1 send OPACITIES parameter
             ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
-            FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.state.format] || this.state.format,
-            ...('geopdf' === this.state.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
+            FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.format] || this.format,
+            ...('geopdf' === this.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
             CRS:            store.getProjection().getCode(),
             filtertoken:    ApplicationState.tokens.filtertoken,
-            ...this.state.maps.map(m => ({
+            ...this.maps.map(m => ({
               name:         m.name,
               preset_theme: m.preset_theme,
-              scale:        m.overview ? m.scale : this.state.scale,
+              scale:        m.overview ? m.scale : this.scale,
               extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
             })).reduce((params, map) => Object.assign(params, {
               [`${map.name}:SCALE`]:    map.scale,
               [`${map.name}:EXTENT`]:   map.extent,
-              [`${map.name}:ROTATION`]: this.state.rotation,
+              [`${map.name}:ROTATION`]: this.rotation,
               //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
               ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
             }), {}),
-            ...(this.state.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
+            ...(this.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
           })).toString();
 
           response = await (fetch(url, {
@@ -656,12 +743,12 @@ template: /*html*/`
             throw new Error(response.statusText);
           }
 
-          this.state.url       = URL.createObjectURL(await response.blob());
-          this.state.layers    = !!response.ok;
+          this.url       = URL.createObjectURL(await response.blob());
+          this.layers    = !!response.ok;
 
           this.$refs.dialog.showModal();
 
-          this.state.loading = false;
+          this.loading = false;
         }
 
       } catch(e) {
@@ -670,18 +757,18 @@ template: /*html*/`
         } else {
           err = e;
         }
-        this.state.loading = false;
+        this.loading = false;
         // enable sidebar
         GUI.disableSideBar(false);
         console.warn(e);
       }
 
-      this.state.loading = false;
+      this.loading = false;
 
       ApplicationState.download = false;
 
       // in case of no layers
-      if (has_atlas || !this.state.layers) {
+      if (!!this.atlas || !this.layers) {
         GUI.disableSideBar(false);
       }
 
@@ -699,9 +786,9 @@ template: /*html*/`
       // close content if open
       const reset = !show;
       if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
-      if (reset)                           { this.state.atlas_values = []; this.print_extent = null; }
+      if (reset)                           { this.atlas_values = []; this.print_extent = null; }
       // @since 3.11.0 In case of no print set, exit
-      if (0 === this.state.print.length)   {
+      if (0 === this.print.length)   {
         return;
       }
       GUI.getMap().once('postrender', () => {
@@ -711,7 +798,7 @@ template: /*html*/`
         this.moveKey = GUI.getMap().on('moveend', this._setPrintArea.bind(this));
         this._initPrintConfig();
         // show print area if is not atlas template and have maps
-        if (undefined === this.state.atlas && this._setPrintArea()) {
+        if (undefined === this.atlas && this._setPrintArea()) {
           GUI.setModal(true);
         }
       });
@@ -731,16 +818,16 @@ template: /*html*/`
       const map        = GUI.getMap();
       const size       = map.getSize();
       const resolution = map.getView().getResolution();
-      const { h, w }   = this.state.maps.find(m => !m.overview);
+      const { h, w }   = this.maps.find(m => !m.overview);
       const res        = resolution * ('m' === GUI.getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
-      const w2         = (((w / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
-      const h2         = (((h / 1000.0) * parseFloat(this.state.scale)) / res) / 2;
+      const w2         = (((w / 1000.0) * parseFloat(this.scale)) / res) / 2;
+      const h2         = (((h / 1000.0) * parseFloat(this.scale)) / res) / 2;
       const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
-      this.state.inner = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
+      this.inner       = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
       GUI.setInnerGreyCoverBBox({
         type:     'pixel',
-        inner:    this.state.inner,
-        rotation: this.state.rotation
+        inner:    this.inner,
+        rotation: this.rotation
       });
       return true;
     },
@@ -762,8 +849,8 @@ template: /*html*/`
       const scales      = PRINT_SCALES.sort((a, b) => b.value - a.value);
       const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
       const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
-      this.state.scales = (above ? [above] : []).concat(below);
-      this.state.scales.forEach(s => this.resolutions[s.value] = getResolutionFromScale(s.value, units))
+      this.scales = (above ? [above] : []).concat(below);
+      this.scales.forEach(s => this.resolutions[s.value] = getResolutionFromScale(s.value, units))
     },
 
     _initPrintConfig() {
@@ -779,7 +866,7 @@ template: /*html*/`
         .entries(this.resolutions)
         .find(([scala, res]) => {
           if (resolution <= res) {
-            this.state.scale = scala;
+            this.scale = scala;
             return true
           }
         });
@@ -796,9 +883,9 @@ template: /*html*/`
           transport: async (d, ok, ko) => {
             try {
               ok({
-                results: (await getCatalogLayerById(this.state.atlas.qgs_layer_id).getFilterData({
-                  suggest: `${this.state.atlas.field_name}|${d.data.q}`,
-                  unique: this.state.atlas.field_name,
+                results: (await getCatalogLayerById(this.atlas.qgs_layer_id).getFilterData({
+                  suggest: `${this.atlas.field_name}|${d.data.q}`,
+                  unique: this.atlas.field_name,
                 })).map(v => ({ id: v, text: v }))
               });
             } catch(e) {
@@ -826,8 +913,8 @@ template: /*html*/`
           inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
         },
       });
-      this.select2.on('select2:select',   e => { this.state.atlas_values.push(e.params.data.id); });
-      this.select2.on('select2:unselect', e => { this.state.atlas_values = this.state.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
+      this.select2.on('select2:select',   e => { this.atlas_values.push(e.params.data.id); });
+      this.select2.on('select2:unselect', e => { this.atlas_values = this.atlas_values.filter(v => v != e.params.data.id); }); // NB: != instead of !== because sometime we need to compare "numbers" with "strings"
     },
 
     /**
@@ -866,97 +953,12 @@ template: /*html*/`
 
   },
 
-  watch: {
-
-    'state.template': {
-      immediate: true,
-      handler() { this.changeTemplate() }
-    },
-
-    'state.ready': {
-      handler(bool) {
-        GUI.setLoadingContent(!bool);
-      },
-      immediate: true,
-    },
-
-    async has_autocomplete(b) {
-      if (!b) { return; }
-      await this.$nextTick();
-      this.initSelect2Field();
-    },
-
-    'state.atlas_values': {
-      immediate: true,
-      async handler(vals) {
-        if (this._skip_atlas_check || !this.state.atlas) {
-          return;
-        }
-        if (this.has_autocomplete) {
-          this.state.disabled = 0 === vals.length;
-          return;
-        }
-        const validate = n => (n && Number.isInteger(1 * n) && 1 * n >= 0 && 1 * n < this.state.atlas.feature_count) || null;
-        const values = new Set();
-        const value = (vals ? vals[0] : '') || '';
-        value
-          .split(',')
-          .filter(v => v)
-          .forEach(value => {
-            if (!value.includes('-') && null !== validate(value)) {
-              values.add(value);
-              return;
-            }
-            const _values = value.split('-');
-            const range = _values.filter(v => validate(v) !== null);
-            if (range.length === _values.length && range.reduce((bool, value, i) => bool && ((0 === i) || range[i-1] <= value), true)) {
-              for (let i = 1; i < range.length; i++) {
-                for (let j = range[i-1]; j < range[i]; j++ ) { values.add(j+''); }
-              }
-              values.add(range[range.length-1]);
-            }
-          });
-        this._skip_atlas_check = true;
-        this.state.atlas_values = Array.from(values);
-        await this.$nextTick();
-        this._skip_atlas_check = false;
-        this.state.disabled = '' === value.trim();
-      }
-    },
-
-    'state.url': async function(url) {
-      if (!url) {
-        return;
-      }
-      let timeout;
-
-      try {
-
-        await this.$nextTick();
-
-        // add timeout
-        timeout = setTimeout(() => {
-          GUI.disableSideBar(false);
-          this.state.downloading = false;
-          GUI.showUserMessage({ type: 'alert', message: 'timeout' });
-        }, TIMEOUT);
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw response.statusText;
-        }
-      } catch (e) {
-        console.warn(e);
-        GUI.notify.error(e || _("info.server_error"));
-      } finally {
-        clearTimeout(timeout);
-        GUI.disableSideBar(false);
-        this.state.downloading = false;
-      }
-
-    }
-
+  beforeCreate() {
+    Object.assign(state, {
+      print_extent: null,
+      resolutions:  {},
+      moveKey:      null,
+    });
   },
 
   beforeMount() {
@@ -977,7 +979,7 @@ template: /*html*/`
   async mounted() {
     await this.$nextTick();
     // when default print template is "atlas" → initialize select2
-    if (this.state.atlas) {
+    if (this.atlas) {
       this.initSelect2Field();
     }
     this.showPrintArea(true);
@@ -985,8 +987,8 @@ template: /*html*/`
     document.body.appendChild(this.$refs.dialog);
 
     this.$refs.dialog.addEventListener('close', () => {
-      if (this.state.url && 'POST' === ApplicationState.project.state.ows_method) {
-        URL.revokeObjectURL(this.state.url);
+      if (this.url && 'POST' === ApplicationState.project.state.ows_method) {
+        URL.revokeObjectURL(this.url);
       }
       // GUI.getMap().once('postrender', this._setPrintArea.bind(this));
     });
