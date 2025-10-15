@@ -29,7 +29,7 @@
         v-show         = "state.show_tools"
         class          = "skin-color action-button"
         :class         = "$fa('clear')"
-        v-t-tooltip    = "'Invert Selection'"
+        v-t-tooltip    = "'Clear Selection'"
         data-placement = "right"
         @click.stop    = "layer.clearSelectionFids()"
       ></div>
