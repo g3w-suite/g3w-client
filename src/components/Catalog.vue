@@ -43,6 +43,20 @@
             v-t           = "'externalwms'">
           </a>
         </li>
+        <!-- TAB BASE LAYERS -->
+        <li
+          v-if   = "hasBaseLayers"
+          role   = "presentation"
+          :class = "{ active: ('baselayers' === activeTab) }"
+        >
+          <a
+            href          = "#baselayers"
+            aria-controls = "baselayers"
+            role          = "tab"
+            data-toggle   = "tab"
+            v-t           = "'baselayers'">
+          </a>
+        </li>
         <!-- TAB LEGEND LAYERS -->
         <li
           v-if   = "'tab' === legend_position && showlegend"
@@ -73,6 +87,20 @@
           class  = "tab-pane"
           :class = "{ active: ('layers' === activeTab) }"
         >
+
+          <!-- TOOLBAR -->
+          <div
+            id    = "g3w-catalog-toc-layers-toolbar"
+            style = "margin: 2px;"
+          >
+            <catalog-change-map-themes
+              :key              = "project.state.gid"
+              :map_themes       = "project.state.map_themes"
+              :layerstrees      = "state.layerstrees"
+              @change-map-theme = "changeMapTheme"
+            />
+          </div>
+
           <!-- LAYER TREES -->
           <ul
             v-for = "root in state.layerstrees"
@@ -142,6 +170,51 @@
             />
           </ul>
         </div>
+
+        <!-- BASE LAYERS -->
+        <div
+          v-if   = "hasBaseLayers"
+          id     = "baselayers"
+          role   = "tabpanel"
+          class  = "tab-pane baselayers"
+          :class = "{ active: ('baselayers' === activeTab || !hasLayers) }"
+        >
+          <ul
+            id     = "baselayers-content"
+            :class = "{'mobile': isMobile()}"
+            :style = "{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
+          >
+            <li
+              v-if  = "!base.fixed"
+              v-for = "base in baselayers"
+              :key  = "base.title"
+            >
+              <img
+                :src        = "getSrcBaseLayerImage(base)"
+                @click.stop = "setBaseLayer(base.id)"
+                class       = "img-responsive img-thumbnail baselayer"
+                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5, height: baselayers.length > 4 ? '108px' : null  }"
+              >
+              <div class = "baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
+            </li>
+
+            <li @click.stop="setBaseLayer(null)">
+              <img
+                :src   = "getSrcBaseLayerImage(null)"
+                class  = "img-responsive img-thumbnail baselayer"
+                :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
+              >
+              <div
+                class = "baseselayer-text text-center g3w-long-text"
+                v-t   = "'nobaselayer'">
+              </div>
+
+            </li>
+
+          </ul>
+
+        </div>
+
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
         <div
@@ -218,6 +291,7 @@ import GUI                     from 'g3w-app';
 import { XHR }                 from 'utils/XHR';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
+import CatalogChangeMapThemes  from 'components/CatalogChangeMapThemes.vue';
 import CatalogTristateTree     from 'components/CatalogTristateTree.vue';
 
 /**
@@ -244,12 +318,14 @@ export default {
       iframe:           ApplicationState.iframe,
       showlegend:       false,
       backgroundLegend: ApplicationState.layout.app.legend && ApplicationState.layout.app.legend.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
+      currentBaseLayer: null,
       activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
     }
   },
 
   components: {
+    CatalogChangeMapThemes,
     CatalogTristateTree,
   },
 
@@ -261,6 +337,14 @@ export default {
 
     title() {
       return this.project.state.name;
+    },
+
+    baselayers() {
+      return this.project.state.baselayers;
+    },
+
+    hasBaseLayers() {
+      return this.project.state.baselayers.length > 0;
     },
 
     hasLayers() {
@@ -444,11 +528,157 @@ export default {
       return legendurls;
     },
 
-    
+    /**
+     * get map Theme_configuration
+     */
+    async getMapThemeFromThemeName(theme) {
+      const project = ApplicationState.project;
+      // get map theme configuration from map_themes project config
+      const config = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
+      if (config && undefined === config.layerstree) {
+        try {
+          const response = await XHR.get({ url: `${project.urls.map_themes}${theme}/` });
+          if (response.result) {
+            config.layerstree = response.data;
+          }
+        } catch(e) {
+          console.warn('Error while retreiving map theme configuration', e);
+        }
+      }
+      return config;
+    },
+
+    /**
+     * ORIGINAL SOURCE: src/app/core/project/project.js@v3.10.2
+     * 
+     * Set properties (checked and visible) from view to layerstree
+     * 
+     * @param map_theme map theme name
+     * @param layerstree // current layerstree of TOC
+     * 
+     * @since 3.11.0
+     */
+    async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
+      const project = ApplicationState.project;
+      layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
+      /** map theme config */
+      const theme = await this.getMapThemeFromThemeName(map_theme);
+      // create a chages need to apply map_theme changes to map and TOC
+      const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
+      const promises = [];
+      /**
+       * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
+       * @param mapThemeLayersTree // new mapLayerTree
+       * @param layerstree // current layerstree
+       */
+      const groups = [];
+      const traverse = (mapThemeLayersTree, layerstree, checked) => {
+        mapThemeLayersTree
+          .forEach((node, index) => {
+            if (node.nodes) { // case of a group
+              groups.push({
+                node,
+                group: layerstree[index]
+              });
+              traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+            } else {
+              // case of layer
+              node.style = theme.styles[node.id]; // set style from map_theme
+              if (layerstree[index].checked !== node.visible) {
+                changes.layers[node.id] = {
+                  visibility: true,
+                  style:      false
+                };
+              }
+              layerstree[index].checked = node.visible;
+              // if it has a style settled
+              if (node.style) {
+                const promise = new Promise(resolve => {
+                  const setCurrentStyleAndResolvePromise = node => {
+                    if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                      visibility: false,
+                      style:      false
+                    };
+                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
+                    resolve();
+                  };
+                  if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
+                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
+                });
+                promises.push(promise);
+              }
+            }
+        });
+      };
+      traverse(theme.layerstree, layerstree);
+
+      await Promise.allSettled(promises);
+
+      // all groups checked after layer checked so is set checked but not visible
+      groups.forEach(({ group, node: { checked, expanded }}) => {
+        group.checked  = checked;
+        group.expanded = expanded;
+      });
+
+      return changes // eventually, information about changes (for example style etc..)
+    },
+
+    /**
+     * Change view
+     *
+     * @fires GUI~layer-change-style since 4.1.0
+     */
+    async changeMapTheme(map_theme) {
+      GUI.closeContent();
+
+      // change map theme
+      this.state.layerstrees[0].checked = true;
+
+      const changes = (await this.setLayersTreePropertiesFromMapTheme({
+        map_theme,
+        rootNode:   this.state.layerstrees[0],
+        layerstree: this.state.layerstrees[0].tree[0].nodes
+      })).layers;
+
+      // get all layers with styles
+      const layers  = Object.keys(changes).filter(id => changes[id].style);
+      const styles  = (await this.getMapThemeFromThemeName(map_theme)).styles;
+
+      // clear categories
+      layers.forEach(id => {
+        if (!changes[id].visible) {
+          const layer = getCatalogLayerById(id);
+          layer.clearCategories();
+          layer.change();
+        }
+      });
+
+      // apply styles on each layer
+      layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
+
+    },
+
     onTabClick(e) {
       if (e.target.attributes['aria-controls']) {
         this.activeTab = e.target.attributes['aria-controls'].value;
       }
+    },
+
+    setBaseLayer(id) {
+      this.currentBaseLayer = id;
+      this.project.setBaseLayer(id);
+      ApplicationState.baseLayerId = id;
+    },
+
+    getSrcBaseLayerImage(baseLayer) {
+      let image = 'nobaselayer.png';
+      switch (baseLayer && baseLayer.servertype || baseLayer) {
+        case 'OSM':  image = 'osm.png';                                    break;
+        case 'Bing': image = `bing${baseLayer.source.subtype}.png`;        break;
+        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : image;      break;
+        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : image;      break;
+      }
+      return (baseLayer || {}).icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
     },
 
     /**
@@ -555,12 +785,12 @@ export default {
     project: {
       async handler(project) {
         const activeTab = project.state.catalog_tab || 'layers';
-        this.loading    = false;
+        this.loading    = 'baselayers' === activeTab;
         await this.$nextTick();
         setTimeout(() => {
           this.loading   = false;
           this.activeTab = activeTab;
-        },  0)
+        }, ('baselayers' === activeTab) ? 500 : 0)
       },
       immediate: false
     },
@@ -589,6 +819,10 @@ export default {
     GUI.on('treenodevisible',        this.onTreeNodeVisible);
     GUI.on('treenodeselected',       this.onTreeNodeSelected);
     GUI.on('layer-change-style',     this.getLegendSrc);
+  },
+
+  beforeMount() {
+    this.currentBaseLayer = this.project.state.initbaselayer;
   },
 
   async mounted() {
@@ -871,8 +1105,32 @@ export default {
   .catalog .g3w-external_wms_layers-group {
     padding: 5px;
   }
-  
-  
+  .catalog .baselayers .radio {
+    margin: 0;
+  }
+
+  #baselayers-content {
+    display: grid;
+    justify-content: center;
+    grid-gap: 5px;
+    padding: 0;
+    margin: 5px;
+  }
+  #baselayers-content.mobile {
+    grid-template-columns: repeat(auto-fill,minmax(80px,110px));
+  }
+  #baselayers-content .baseselayer-text {
+    white-space: pre-line;
+    font-weight: bold;
+  }
+  #baselayers-content .baselayer {
+    cursor: pointer;
+  }
+  #baselayers-content .baselayer .baselayer-name {
+    font-weight: bold;
+    white-space: pre-line;
+    text-align: center;
+  }
   #catalog #layers ul.g3w-external_layers-group {
     padding-left: 0 !important;
   }

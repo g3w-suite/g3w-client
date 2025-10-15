@@ -808,7 +808,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 :is(.ol-control, .ol-custom-overviewmap) button                        { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border-radius: 3px; font-size: 25px; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 1px solid rgba(0,0,0,0.5); background-clip: padding-box; box-shadow: none !important; border-radius: 3px; }
 :is(.ol-control, .ol-custom-overviewmap) button:hover                  { text-decoration: none; }
 :is(.ol-control, .ol-custom-overviewmap) button:focus                  { text-decoration: none; outline: none; }
-.ol-overviewmap                                                        { position: relative !important; left: 0 !important; bottom: 0 !important; margin: 7px; border: 1px solid rgba(0,0,0,0.5); background-color: rgba(255,255,255, 0.7) !important; } 
 .ol-overviewmap:not(.ol-collapsed) button                              { bottom: 5px; }
 .ol-overviewmap:hover                                                  { background-color: rgba(255,255,255, 1) !important; }
 .ol-mouse-position                                                     { position: relative !important; height: 20px; font-weight: bold; font-size: 0.9em; margin-left: 8px; }
@@ -817,7 +816,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-custom-overviewmap                                                 { border-radius: 5px; }
 .ol-custom-overviewmap button                                          { display: inline-block;     left: 3px; bottom: 8px; width: 30px; height: 30px; }
 .ol-custom-overviewmap button span                                     { font-size: 15px; font-weight: bold; position: absolute; margin: -6px; }
-.ol-custom-overviewmap .ol-overviewmap-map                             { border: none; width: 100%; height: 100px;}
+.ol-custom-overviewmap .ol-overviewmap-map                             { border: none; height: 150px; width: 200px; }
 .ol-custom-overviewmap.ol-collapsed                                    { border: 0; }
 .ol-control-tl                                                         { top: 0;     left: 7px; }
 .ol-control-bl                                                         { bottom: 40px; left: 7px; }

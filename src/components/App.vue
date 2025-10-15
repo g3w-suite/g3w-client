@@ -382,66 +382,8 @@
             <div style = "display: none;"><div id = "marker"></div></div>
 
             <!-- @since 3.8.0   -->
-            <div class = "g3w-map-controls-left-bottom">
-              <!-- MAP-THEME -->
-              <div
-                id    = "g3w-catalog-toc-layers-toolbar"
-                style = "margin: 2px;"
-              >
-                <change-map-themes
-                  :key              = "gid"
-                  :map_themes       = "map_themes"
-                  :layerstrees      = "layerstrees"
-                  @change-map-theme = "changeMapTheme"
-                />
-              </div>
-              <!-- BASE LAYERS -->
-              <div
-                v-if   = "hasBaseLayers"
-                id     = "baselayers"
-                style  =" border-bottom: 2px solid var(--skin-color);"
-              >
-                <ul
-                  id     = "baselayers-content"
-                  :class = "{'mobile': isMobile()}"
-                  :style = "{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
-                >
-                  <li
-                    v-if  = "!base.fixed"
-                    v-for = "base in baselayers"
-                    :key  = "base.title"
-                  >
-                    <img
-                      :src        = "getSrcBaseLayerImage(base)"
-                      @click.stop = "setBaseLayer(base.id)"
-                      class       = "img-responsive img-thumbnail baselayer"
-                      :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5, height: baselayers.length > 4 ? '108px' : null  }"
-                    >
-                    <div class = "baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
-                  </li>
+            <div class="g3w-map-controls-left-bottom"></div>
 
-                  <li @click.stop="setBaseLayer(null)">
-                    <img
-                      :src   = "getSrcBaseLayerImage(null)"
-                      class  = "img-responsive img-thumbnail baselayer"
-                      :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
-                    >
-                    <div
-                      class = "baseselayer-text text-center g3w-long-text"
-                      v-t   = "'nobaselayer'">
-                    </div>
-
-                  </li>
-
-                </ul>
-
-              </div>
-              <!-- CONTROLS> -->
-              <div class = "controls">
-                <div class = "overviewmap"></div>
-                <div class = "zoomhistory"></div>
-              </div> 
-            </div>
           </div>
 
           <!-- Footer (bottom part) where scale and other component can be set -->
@@ -693,8 +635,6 @@ import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
 import ModalMetadata      from 'components/ModalMetadata.vue';
-import ChangeMapThemes    from 'components/ChangeMapThemes.vue';
-
 import { gettext as _ }   from 'g3w-i18n';
 
 export default {
@@ -718,8 +658,6 @@ export default {
         epsg_4326:   false,
         tooltip:     null,
       },
-      layerstrees:      Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : []),
-      currentBaseLayer: ApplicationState.project.state.initbaselayer,
     }
   },
 
@@ -730,26 +668,9 @@ export default {
     ModalAddlayer,
     ModalChangemap,
     ModalMetadata,
-    ChangeMapThemes
   },
 
   computed: {
-
-    gid() {
-      return ApplicationState.project.state.gid;
-    },
-
-    map_themes() {
-      return ApplicationState.project.state.map_themes;
-    },
-
-    baselayers() {
-      return ApplicationState.project.state.baselayers;
-    },
-
-    hasBaseLayers() {
-      return ApplicationState.project.state.baselayers.length > 0;
-    },
 
     languages() {
       const languages = (Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || []).sort((a, b) => a[0].localeCompare(b[0]));
@@ -905,153 +826,6 @@ export default {
   },
 
   methods: {
-
-    /**
-     * get map Theme_configuration
-     */
-    async getMapThemeFromThemeName(theme) {
-      const project = ApplicationState.project;
-      // get map theme configuration from map_themes project config
-      const config = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
-      if (config && undefined === config.layerstree) {
-        try {
-          const response = await XHR.get({ url: `${project.urls.map_themes}${theme}/` });
-          if (response.result) {
-            config.layerstree = response.data;
-          }
-        } catch(e) {
-          console.warn('Error while retreiving map theme configuration', e);
-        }
-      }
-      return config;
-    },
-
-    /**
-     * ORIGINAL SOURCE: src/app/core/project/project.js@v3.10.2
-     * 
-     * Set properties (checked and visible) from view to layerstree
-     * 
-     * @param map_theme map theme name
-     * @param layerstree // current layerstree of TOC
-     * 
-     * @since 3.11.0
-     */
-    async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
-      const project = ApplicationState.project;
-      layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
-      /** map theme config */
-      const theme = await this.getMapThemeFromThemeName(map_theme);
-      // create a chages need to apply map_theme changes to map and TOC
-      const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
-      const promises = [];
-      /**
-       * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
-       * @param mapThemeLayersTree // new mapLayerTree
-       * @param layerstree // current layerstree
-       */
-      const groups = [];
-      const traverse = (mapThemeLayersTree, layerstree, checked) => {
-        mapThemeLayersTree
-          .forEach((node, index) => {
-            if (node.nodes) { // case of a group
-              groups.push({
-                node,
-                group: layerstree[index]
-              });
-              traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
-            } else {
-              // case of layer
-              node.style = theme.styles[node.id]; // set style from map_theme
-              if (layerstree[index].checked !== node.visible) {
-                changes.layers[node.id] = {
-                  visibility: true,
-                  style:      false
-                };
-              }
-              layerstree[index].checked = node.visible;
-              // if it has a style settled
-              if (node.style) {
-                const promise = new Promise(resolve => {
-                  const setCurrentStyleAndResolvePromise = node => {
-                    if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                      visibility: false,
-                      style:      false
-                    };
-                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
-                    resolve();
-                  };
-                  if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
-                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
-                });
-                promises.push(promise);
-              }
-            }
-        });
-      };
-      traverse(theme.layerstree, layerstree);
-
-      await Promise.allSettled(promises);
-
-      // all groups checked after layer checked so is set checked but not visible
-      groups.forEach(({ group, node: { checked, expanded }}) => {
-        group.checked  = checked;
-        group.expanded = expanded;
-      });
-
-      return changes // eventually, information about changes (for example style etc..)
-    },
-
-    /**
-     * Change view
-     *
-     * @fires GUI~layer-change-style since 4.1.0
-     */
-    async changeMapTheme(map_theme) {
-      GUI.closeContent();
-
-      // change map theme
-      this.layerstrees[0].checked = true;
-
-      const changes = (await this.setLayersTreePropertiesFromMapTheme({
-        map_theme,
-        rootNode:   this.layerstrees[0],
-        layerstree: this.layerstrees[0].tree[0].nodes
-      })).layers;
-
-      // get all layers with styles
-      const layers  = Object.keys(changes).filter(id => changes[id].style);
-      const styles  = (await this.getMapThemeFromThemeName(map_theme)).styles;
-
-      // clear categories
-      layers.forEach(id => {
-        if (!changes[id].visible) {
-          const layer = getCatalogLayerById(id);
-          layer.clearCategories();
-          layer.change();
-        }
-      });
-
-      // apply styles on each layer
-      layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
-
-    },
-
-    setBaseLayer(id) {
-      this.currentBaseLayer = id;
-      ApplicationState.project.setBaseLayer(id);
-      ApplicationState.baseLayerId = id;
-    },
-
-    getSrcBaseLayerImage(baseLayer) {
-      let image = 'nobaselayer.png';
-      switch (baseLayer && baseLayer.servertype || baseLayer) {
-        case 'OSM':  image = 'osm.png';                                    break;
-        case 'Bing': image = `bing${baseLayer.source.subtype}.png`;        break;
-        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : image;      break;
-        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : image;      break;
-      }
-      return (baseLayer || {}).icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
-    },
 
     /**
      * @since 3.11.0
@@ -1481,12 +1255,9 @@ export default {
   }
   .g3w-map-controls-left-bottom {
     position: absolute;
-    bottom: 30px;
-    left: px;
+    bottom: 75px;
+    left: 10px;
     z-index: 1;
-    background-color: rgb(255, 255, 255); 
-    border: 1px solid var(--skin-color);
-    border-radius: 3px;
   }
   #g3w-map-info {
     position: absolute;
@@ -1569,30 +1340,6 @@ export default {
     position: absolute;
     right: 60px;
     top: 60px;
-  }
-
-  #baselayers-content {
-    display: grid;
-    justify-content: center;
-    grid-gap: 5px;
-    padding: 5px;
-    margin: 5px;
-    background-color: rgba(255,255,255,0.5);
-  }
-  #baselayers-content.mobile {
-    grid-template-columns: repeat(auto-fill,minmax(80px,110px));
-  }
-  #baselayers-content .baseselayer-text {
-    white-space: pre-line;
-    font-weight: bold;
-  }
-  #baselayers-content .baselayer {
-    cursor: pointer;
-  }
-  #baselayers-content .baselayer .baselayer-name {
-    font-weight: bold;
-    white-space: pre-line;
-    text-align: center;
   }
 
 </style>

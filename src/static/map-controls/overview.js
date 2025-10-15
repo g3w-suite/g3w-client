@@ -106,9 +106,10 @@ GUI.setupControl.overview = async function() {
             maxResolution: Math.max(ol.extent.getWidth(PROJECT.state.extent) / 200,     ol.extent.getHeight(PROJECT.state.extent) / 150),     // max(xRes, yRes)
             resolution:    Math.max(ol.extent.getWidth(PROJECT.state.initextent) / 200, ol.extent.getHeight(PROJECT.state.initextent) / 150), // max(xInitRes, yInitRes)
           }), // hardcoded
-          collapsible:   false,
+          collapsed:     false,
           className:     'ol-overviewmap ol-custom-overviewmap',
-          target:        document.querySelector('.g3w-map-controls-left-bottom .controls .overviewmap'),
+          collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+          label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
           layers:        Object
             .entries(
               // group layer by multilayerId
@@ -142,7 +143,17 @@ GUI.setupControl.overview = async function() {
         position: 'bl',
       }
     })
-  } catch(e) {
-    console.warn(e);
+    /** @since 3.10.0 Move another bottom left map controls bottom to a left of overview control**/
+    document.querySelector('.g3w-map-controls-left-bottom').style.left = '230px';
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if ("class" === mutation.attributeName) {
+          document.querySelector('.g3w-map-controls-left-bottom').style.left = mutation.target.classList.contains('ol-collapsed') ? '50px' : '230px';
+        }
+      });
+    });
+    observer.observe(document.querySelector('.ol-custom-overviewmap'), { attributes: true });
+  } catch (err) {
+    console.warn(err)
   }
 };
