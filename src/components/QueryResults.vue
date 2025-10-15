@@ -1041,7 +1041,7 @@
 
           queried_layers[index].features.forEach((f, i) => {
             if (page_size_change && !f.selected && f.geometry && layer.isGeoLayer()) {
-              GUI.toggleSelection(layer, f);
+              GUI.toggleSelection(queried_layers[index], f);
             }
             f.selected    = page_size_change;
             action.state.toggled[i] = page_size_change;
