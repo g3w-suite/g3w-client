@@ -25,12 +25,13 @@ const {
 
 const _                = g3w.gettext;
 
+const print            = ApplicationState.project.getPrint() || [];
 const screenshot_types = Object.keys(initConfig.mapcontrols).filter(t => ['screenshot', 'geoscreenshot'].includes(t));
 
 const state = {
+  print,
   ready:        false,
   disabled:     false,
-  print:        ApplicationState.project.getPrint() || [],
   loading:      false,
   downloading:  false,
   url:          null,
