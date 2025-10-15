@@ -1042,24 +1042,22 @@ template: /*html*/`
 
 });
 
-const showPrintUserMessage = (show, type) => {
-  if (show && type === 'screenshot') {
-    state.template = '__G3W_SCREENSHOT__';
-    if (GUI.getComponent('print').internalComponent.state.open) {
-      GUI.getComponent('print').internalComponent.state.open = false;
-    }
+const toggleUserMessage = (toggle, type) => {
+  const control = GUI.getMapControlByType('screenshot');
+  const button  = GUI.getComponent('print').internalComponent;
+
+  if (button) {
+    button.state.open = toggle;
   }
 
-  if (show && type === 'print' && '__G3W_SCREENSHOT__' === state.template) {
-    state.template = (ApplicationState.project.getPrint() || [])[0]?.name;
-    const control = GUI.getMapControlByType('screenshot');
-    if (control?.isToggled()) {
-      control._toggled = false;
-      control.element.children[0].classList.remove('g3w-ol-toggled');
-    };
+  if (control) {
+    control._toggled  = toggle;
+    control.element.children[0].classList.toggle('g3w-ol-toggled', toggle);
   }
 
-  if (show && !ApplicationState.usermessage.show) {
+  state.template = type ?? print[0]?.name;
+
+  if (toggle) {
     GUI.showUserMessage({
       title:     'print',
       type:      'tool',
@@ -1070,9 +1068,7 @@ const showPrintUserMessage = (show, type) => {
         body: Vue.extend(vueComp)
       }
     });
-  }
-
-  if (!show) {
+  } else {
     GUI.closeUserMessage();
   }
 }
@@ -1101,7 +1097,7 @@ GUI.setupControl.geoscreenshot = function(type) {
       clickmap: true,
       enabled:  true,
     });
-    control.on('toggled', ({ toggled }) => showPrintUserMessage(toggled, 'screenshot'));
+    control.on('toggled', ({ toggled }) => toggleUserMessage(toggled, '__G3W_SCREENSHOT__'));
     //add screenshot template
     ApplicationState.project.state.print.push({ name: '__G3W_SCREENSHOT__', label: 'Screenshot', maps: [], labels: [] });
     GUI.addControl('screenshot', control);
@@ -1123,9 +1119,7 @@ GUI.addComponent(Object.assign(new Component({
   internalComponent: new (Vue.extend({})),
   collapsible:       false,
 }), {
-  _setOpen: async bool => {
-    showPrintUserMessage(bool, 'print');
-  },
+  _setOpen: bool => { toggleUserMessage(bool); },
 }), { position: 'search' });
 
 
