@@ -3200,9 +3200,9 @@ export default new (class GUI extends Emitter {
    * 
    * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::addToSelection
    * 
-   * @param {*}                       layer   queried layer instance
-   * @param { * | 'inverse' | 'all' } feature the feature or the status to be toggled (when ommitted: toggle all features)
-   * @param { 'inverse' | 'all' }     force   whether to force a particular state (for that feature)
+   * @param { * }                              layer   queried layer instance
+   * @param { * }                              feature the feature or the status to be toggled (when ommitted: toggle all features)
+   * @param { 'inverse' | 'all' | 'paginate' } force   whether to force a particular state (for that feature)
    * 
    * @since 4.1.0
    */
@@ -3360,8 +3360,8 @@ export default new (class GUI extends Emitter {
 
     // set layer selection state
 
-    // PROJECT LAYER Only on result content
-    if (catalog_layer.state.filter.active && action) {
+    // PROJECT LAYER Only on result content && not coming from paginate result
+    if (catalog_layer.state.filter.active && 'paginate' !== force) {
       fids.forEach((_, idx) => {
         // index of feature to remove
         const i = feature ? index : idx;
