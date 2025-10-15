@@ -3200,9 +3200,9 @@ export default new (class GUI extends Emitter {
    * 
    * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js@3.8.12::addToSelection
    * 
-   * @param { * }                              layer   queried layer instance
-   * @param { * }                              feature the feature or the status to be toggled (when ommitted: toggle all features)
-   * @param { 'inverse' | 'all' | 'paginate' } force   whether to force a particular state (for that feature)
+   * @param { * }                                  layer   queried layer instance
+   * @param { * | 'inverse' | 'all' | 'paginate' } feature the feature or the status to be toggled (when ommitted: toggle all features)
+   * @param { 'inverse' | 'all' | 'paginate' }     force   whether to force a particular state (for that feature)
    * 
    * @since 4.1.0
    */
