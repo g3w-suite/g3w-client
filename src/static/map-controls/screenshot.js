@@ -386,10 +386,43 @@ template: /*html*/`
 
   watch: {
 
+    /**
+     * Change print template
+     */
     template: {
       immediate: true,
       handler() {
-        this.changeTemplate();
+        const has_previous = this.atlas || 0 === this.maps?.length;
+        const print        = this.print.find(p => p.name === this.template);
+
+        if (!print) {
+          this.showPrintArea(false);
+          return;
+        }
+
+        // destroy select2 dom element and remove all events
+        if (this.select2) {
+          this.select2.select2('destroy');
+          this.select2.off();
+          this.select2 = null;
+        }
+
+        Object.assign(this, {
+          disabled:     false,
+          maps:         print.maps,
+          atlas:        print.atlas,
+          labels:       print.labels,
+          atlas_values: [],
+        });
+
+        if (this.atlas) {
+          this._clearPrint();
+          this.initSelect2Field();
+        } else if (has_previous) {
+          this.showPrintArea(true);
+        } else {
+          this._setPrintArea();
+        }
       }
     },
 
@@ -474,40 +507,6 @@ template: /*html*/`
   },
 
   methods: {
-
-    changeTemplate() {
-      const has_previous = this.atlas || 0 === this.maps?.length;
-      const print        = this.print.find(p => p.name === this.template);
-
-      if (!print) {
-        this.showPrintArea(false);
-        return;
-      }
-
-      // destroy select2 dom element and remove all events
-      if (this.select2) {
-        this.select2.select2('destroy');
-        this.select2.off();
-        this.select2 = null;
-      }
-
-      Object.assign(this, {
-        disabled:     false,
-        maps:         print.maps,
-        atlas:        print.atlas,
-        labels:       print.labels,
-        atlas_values: [],
-      });
-
-      if (this.atlas) {
-        this._clearPrint();
-        this.initSelect2Field();
-      } else if (has_previous) {
-        this.showPrintArea(true);
-      } else {
-        this._setPrintArea();
-      }
-    },
 
     /**
      * On scale change set print area
@@ -652,44 +651,32 @@ template: /*html*/`
      * @returns { Promise<unknown> }
      */
     async onSubmit() {
-      let err, response;
-
       try {
-
-        // generate screenshot
-        if (this.is_screenshot) {
-          ApplicationState.download = true;
-          try {
-            const blob = 'screenshot' === this.screenshot_type
-              ? await GUI.createMapImage()                                                              // PNG
-              : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
-                  method: 'POST',
-                  body: Object.entries({
-                    image:               await GUI.createMapImage(),
-                    csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
-                    bbox:                GUI.getMapBBOX().toString(),
-                  }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
-                })).blob();
-            // handle click when app is within iframe (ref: "IframePluginService" → overwriteOnClickEvent)
-            (GUI.getMapControlByType('screenshot')?._onclick || saveBlob)(blob, `map_${Date.now()}`);
-          } catch (e) {
-            GUI.showUserMessage({
-              type:    'SecurityError' === e.name ? 'warning' : 'alert',
-              message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
-            });
-            console.warn(e);
-          }
-          ApplicationState.download = false;
-          return;
-        }
 
         this.loading = true;
 
-        // disable sidebar
+        ApplicationState.download = true;
+
         GUI.disableSideBar(true);
 
+        // SCREENSHOT
+        if (this.is_screenshot) {
+          const blob = 'screenshot' === this.screenshot_type
+            ? await GUI.createMapImage()                                                              // PNG
+            : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
+                method: 'POST',
+                body: Object.entries({
+                  image:               await GUI.createMapImage(),
+                  csrfmiddlewaretoken: GUI.getCookie('csrftoken'),
+                  bbox:                GUI.getMapBBOX().toString(),
+                }).reduce((a, k) => { a.append(k[0], k[1]); return a; }, new FormData())
+              })).blob();
+          // handle click when app is within iframe (ref: "g3w-iframe" → overwriteOnClickEvent)
+          (GUI.getMapControlByType('screenshot')?._onclick || saveBlob)(blob, `map_${Date.now()}`);
+        }
+
         // ATLAS PRINT
-        if (!!this.atlas) {
+        if (!this.is_screenshot && !!this.atlas) {
           await GUI.printAtlas(undefined, undefined, {
             template: this.template,
             field:    this.atlas.field_name || '$id',
@@ -698,82 +685,80 @@ template: /*html*/`
         }
 
         // SIMPLE PRINT
-        if (!this.atlas) {
+        if (!this.is_screenshot && !this.atlas) {
           this.url     = null;
           this.layers  = true;
 
           const has_theme = this.maps.some(m => undefined !== m.preset_theme);
-          const store     = ApplicationState.project.getLayersStore();
-          const layers    = store.getLayers({ PRINTABLE: { scale: this.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
+          const layers    = ApplicationState.project.getLayersStore().getLayers({ PRINTABLE: { scale: this.scale }, SERVERTYPE: 'QGIS' }).reverse(); // reverse order is important
           const LAYERS    = (layers || []).map(l => l.isRaster() ? (l.state.wms_use_layer_ids ? l.getId() : l.getName()) : undefined).join();
-          const url       = ApplicationState.project.state.WMSUrl;
-          const params    = layers.length && new URLSearchParams(await GUI.getPrintParams({
-            SERVICE:       'WMS',
-            VERSION:       '1.3.0',
-            REQUEST:       'GetPrint',
-            TEMPLATE:       this.template,
-            DPI:            this.dpi,
-            STYLES:         layers.map(l => l.getStyle()).join(','),
-            OPACITIES:      layers.map(l => parseInt((l.getOpacity() / 100) * 255)).join(','), //@since 4.0.1 send OPACITIES parameter
-            ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
-            FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.format] || this.format,
-            ...('geopdf' === this.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
-            CRS:            store.getProjection().getCode(),
-            filtertoken:    ApplicationState.tokens.filtertoken,
-            ...this.maps.map(m => ({
-              name:         m.name,
-              preset_theme: m.preset_theme,
-              scale:        m.overview ? m.scale : this.scale,
-              extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
-            })).reduce((params, map) => Object.assign(params, {
-              [`${map.name}:SCALE`]:    map.scale,
-              [`${map.name}:EXTENT`]:   map.extent,
-              [`${map.name}:ROTATION`]: this.rotation,
-              //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
-              ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
-            }), {}),
-            ...(this.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
-          })).toString();
-
-          response = await (fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-            body:  params,
-          }));
+          const response  = await (
+            fetch(
+              ApplicationState.project.state.WMSUrl,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body:  layers.length && new URLSearchParams(await GUI.getPrintParams({
+                  SERVICE:       'WMS',
+                  VERSION:       '1.3.0',
+                  REQUEST:       'GetPrint',
+                  TEMPLATE:       this.template,
+                  DPI:            this.dpi,
+                  STYLES:         layers.map(l => l.getStyle()).join(','),
+                  OPACITIES:      layers.map(l => parseInt((l.getOpacity() / 100) * 255)).join(','), //@since 4.0.1 send OPACITIES parameter
+                  ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
+                  FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.format] || this.format,
+                  ...('geopdf' === this.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
+                  CRS:            ApplicationState.project.getLayersStore().getProjection().getCode(),
+                  filtertoken:    ApplicationState.tokens.filtertoken,
+                  ...this.maps.map(m => ({
+                    name:         m.name,
+                    preset_theme: m.preset_theme,
+                    scale:        m.overview ? m.scale : this.scale,
+                    extent:       m.overview ? this.getOverviewExtent(m.extent) : this.getPrintExtent()
+                  })).reduce((params, map) => Object.assign(params, {
+                    [`${map.name}:SCALE`]:    map.scale,
+                    [`${map.name}:EXTENT`]:   map.extent,
+                    [`${map.name}:ROTATION`]: this.rotation,
+                    //need to specify LAYERS from mapX in case of maps has at least one preset theme set, otherwise get layers from LAYERS param
+                    ...(has_theme && undefined === map.preset_theme ? { [`${map.name}:LAYERS`]: LAYERS } : {})
+                  }), {}),
+                  ...(this.labels || []).reduce((params, label) => Object.assign(params, { [label.id]: label.text }), {})
+                })).toString(),
+              }
+            )
+          );
           
           if (200 !== response.status) {
-            throw new Error(response.statusText);
+            throw response.statusText;
           }
 
           this.url       = URL.createObjectURL(await response.blob());
           this.layers    = !!response.ok;
 
           this.$refs.dialog.showModal();
-
-          this.loading = false;
         }
 
       } catch(e) {
-        err = e;
-        this.loading = false;
-        GUI.disableSideBar(false);
         console.warn(e);
-      }
+        if (this.is_screenshot) {
+          GUI.showUserMessage({
+            type:    'SecurityError' === e.name ? 'warning' : 'alert',
+            message: 'SecurityError' === e.name ? 'screenshot_error' : 'Screenshot error creation',
+          });
+        } else {
+          GUI.showUserMessage({
+            type: 'alert',
+            message: e || _("info.server_error")
+          });
+        }
+      } finally {
+        this.loading = false;
 
-      this.loading = false;
+        ApplicationState.download = false;
 
-      ApplicationState.download = false;
-
-      // in case of no layers
-      if (!!this.atlas || !this.layers) {
         GUI.disableSideBar(false);
       }
-
-      if (err) {
-        console.warn(err);
-        GUI.showUserMessage({ type: 'alert', message: err || _("info.server_error") });
-      }
-
     },
 
     /**
@@ -980,9 +965,7 @@ template: /*html*/`
     document.body.appendChild(this.$refs.dialog);
 
     this.$refs.dialog.addEventListener('close', () => {
-      if (this.url && 'POST' === ApplicationState.project.state.ows_method) {
-        URL.revokeObjectURL(this.url);
-      }
+      URL.revokeObjectURL(this.url);
       // GUI.getMap().once('postrender', this._setPrintArea.bind(this));
     });
   },

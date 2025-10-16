@@ -48,7 +48,6 @@ export default {
         .select2({
           tags:             createTag,
           width:            '100%',
-          // dropdownCssClass: 'skin-color',
           dropdownAutoWidth,
           dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
           templateResult,
@@ -131,6 +130,5 @@ export default {
       vnode.g3w_observer.disconnect();
     }
     $(el).select2('destroy');
-    // unwatch({ el, attr });
   }
 };
