@@ -2219,7 +2219,7 @@ export default new (class GUI extends Emitter {
             id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
             attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
             geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-            selected:   !external && (!!queryResponse.query.autofilter || layer.isSelected((f instanceof ol.Feature ? f.getId() : f.id))),
+            selected:   !external && (!!queryResponse.query.autofilter || layer.state.filter.active || layer.isSelected((f instanceof ol.Feature ? f.getId() : f.id))),
             show:       true,
           })),
           hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -2263,8 +2263,8 @@ export default new (class GUI extends Emitter {
 
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
-      // whether result comes from pagination
-      l.filter.pagination = l.filter.active && this.state.query?.pagination?.paginate?.at(index);
+      // whether result comes from pagination or previous request is a filter pagination (search with autofilter)
+      l.filter.pagination = l.filter.active && (l.filter.pagination || !!this.state.query?.pagination?.paginate?.at(index));
       if (options.add || options.update) {
         this.updateLayerResultFeatures(l, options.update);
       } else {
@@ -2598,7 +2598,7 @@ export default new (class GUI extends Emitter {
           change({ features }) {
             // wait for pagination change request
             setTimeout(() => {
-              this.state.show = !layer.filter.pagination; 
+              this.state.show = !layer.filter.pagination; // show action when filter with pagination is not set or is set and current index is paginated
               features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
           },
