@@ -533,7 +533,7 @@ export default {
         }
       } catch(e) {
         console.warn(e);
-        GUI.notify.error(_("info.server_error"));
+        GUI.showUserMessage({ type: 'alert', message: _("info.server_error") });
       }
 
       GUI.setLoadingContent(false);

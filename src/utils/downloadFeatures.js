@@ -195,7 +195,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
           saveBlob(blob, filename);
         } catch (e) {
-          GUI.notify.error(e.message || e);
+          GUI.showUserMessage({ type: 'alert', message: e.message || e });
         }
         ApplicationState.download = false;
       }

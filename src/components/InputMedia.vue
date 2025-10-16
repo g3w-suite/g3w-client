@@ -91,7 +91,7 @@ export default {
         }
       } catch(e) {
         console.warn(e);
-        GUI.notify.error(this.$t("info.server_error"));
+        GUI.showUserMessage({ type: 'alert', message: this.$t("info.server_error") });
       }
 
       this.loading = false;

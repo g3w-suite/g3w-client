@@ -3437,7 +3437,7 @@ export default new (class GUI extends Emitter {
   onLayerLoadError() {
     /** @since 4.1.0 - notify warning */
     if (ApplicationState.project.state.show_load_layer_error && !this.onLayerLoadError.shown) {
-      this.notify.warning('Some layers are not available');
+      this.showUserMessage({ type: 'warning', message: 'Some layers are not available' });
       this.onLayerLoadError.shown = true;
     }
     //Need to set layer in load end state
@@ -5159,7 +5159,7 @@ export default new (class GUI extends Emitter {
 
     // skip when another layer with the same name was already added
     if (this.getLayerByName(externalLayer.name)) {
-      this.notify.warning('Layer with same name already added', false);
+      this.showUserMessage({ type: 'warning', message: 'Layer with same name already added' });
     }
 
     const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();

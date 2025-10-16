@@ -30,7 +30,6 @@ const screenshot_types = Object.keys(initConfig.mapcontrols).filter(t => ['scree
 
 const state = {
   print,
-  ready:           false,
   disabled:        false,
   loading:         false,
   downloading:     false,
@@ -174,7 +173,11 @@ template: /*html*/`
     <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
     <template v-if = "!is_screenshot && atlas && has_autocomplete">
       <label  for = "print_atlas_autocomplete"><span>{{ atlas.field_name }}</span></label>
-      <select id = "print_atlas_autocomplete" :name = "atlas.field_name" class = "form-control"></select>
+      <select
+        id    = "print_atlas_autocomplete"
+        :name = "atlas.field_name"
+        class = "form-control"
+      ></select>
     </template>
 
     <!-- PRINT ATLAS -->
@@ -191,7 +194,13 @@ template: /*html*/`
     <!-- SCREENSHOT FORMAT -->
     <template v-if="is_screenshot">
       <label for = "format">{{ $t('Format') }}</label>
-      <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
+      <select
+        id        = "format"
+        ref       = "select"
+        style     = "width: 100%;"
+        :search   = "false"
+        v-select2 = "'screenshot_type'"
+      >
         <option
           v-for  = "type in screenshot_types"
           :value = "type"
@@ -296,8 +305,6 @@ template: /*html*/`
       <iframe
         v-if   = "layers && ['pdf', 'geopdf'].includes(format)"
         :src   = "url"
-        @load  = "ready = true"
-        @error = "ready = true"
         style  = "border:0; width:100%; height:100%;"
       ></iframe>
 
@@ -305,8 +312,6 @@ template: /*html*/`
       <img
         v-if   = "layers && !['pdf', 'geopdf'].includes(format)"
         :src   = "url"
-        @load  = "ready = true"
-        @error = "ready = true"
         style  = "height:auto; width: 100%;"
       >
     </form>
@@ -388,13 +393,6 @@ template: /*html*/`
       }
     },
 
-    ready: {
-      handler(bool) {
-        GUI.setLoadingContent(!bool);
-      },
-      immediate: true,
-    },
-
     async has_autocomplete(b) {
       if (b) {
         await this.$nextTick();
@@ -464,7 +462,7 @@ template: /*html*/`
         }
       } catch (e) {
         console.warn(e);
-        GUI.notify.error(e || _("info.server_error"));
+        GUI.showUserMessage({ type: 'alert', message: e || _("info.server_error") });
       } finally {
         clearTimeout(timeout);
         GUI.disableSideBar(false);
@@ -773,7 +771,7 @@ template: /*html*/`
 
       if (err) {
         console.warn(err);
-        GUI.notify.error(err || _("info.server_error"));
+        GUI.showUserMessage({ type: 'alert', message: err || _("info.server_error") });
       }
 
     },

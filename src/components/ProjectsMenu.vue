@@ -65,7 +65,7 @@ export default {
         .then(promise => { // changeProject is a setter so it returns a promise
           promise
             .then(project => { if (project) document.title = project.state.html_page_title })
-            .fail(() => { GUI.notify.error("<h4>" + _('Error occurs loading map') + "</h4>" + "<h5>"+ _('Check internet connection or contact admin') + "</h5>"); })
+            .fail(() => { GUI.showUserMessage({ type: 'alert', message: "<h4>" + _('Error occurs loading map') + "</h4>" + "<h5>"+ _('Check internet connection or contact admin') + "</h5>" }); })
             .always(() => { this._toggleModal(false); })
         });
     },
