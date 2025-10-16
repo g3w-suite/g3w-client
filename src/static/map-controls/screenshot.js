@@ -66,7 +66,7 @@ template: /*html*/`
     style = "padding: 10px;max-height: 75vh;overflow-y: auto;"
   >
 
-    <!-- PRINT TEMPLATE -->
+    <!-- CHOOSE A TEMPLATE -->
     <label for = "templates">{{ $t('Template') }}</label>
     <select
       id             = "templates"
@@ -78,8 +78,30 @@ template: /*html*/`
       <option v-for = "p in print" :value = "p.name" v-t = "p.label || p.name"></option>
     </select>
 
+    <!-- ADVANCED SETTINGS -->
     <details v-if="is_customizable" class="custom-settings">
       <summary>{{ $t('Advanced settings') }}</summary>
+
+      <!-- PRINT ROTATION -->
+      <label for = "rotation">{{ $t('Rotation') }}: {{ rotation }}°</label>
+      <input
+        id         = "rotation"
+        v-disabled = "!has_maps"
+        min        = "0"
+        max        = "360"
+        step       = "1"
+        @input     = "changeRotation"
+        v-model    = "rotation"
+        type       = "range"
+        list       = "print-rotation-markers"
+      />
+      <datalist id="print-rotation-markers" style="display: flex; justify-content: space-between;">
+        <option value="0" style="margin-left: 6px;">0</option>
+        <option value="90" style="margin-left: 10px;">90</option>
+        <option value="180" style="margin-left: 6px;">180</option>
+        <option value="270">270</option>
+        <option value="360">360</option>
+      </datalist>
 
       <!-- PRINT SCALE -->
       <label for = "scale">{{ $t('Scale') }}</label>
@@ -96,33 +118,6 @@ template: /*html*/`
         <option v-for = "scale in scales" :value = "scale.value">{{ scale.label }}</option>
       </select>
 
-      <!-- PRINT DPI -->
-      <label for = "dpi">dpi</label>
-      <select
-        id             = "dpi"
-        class          = "form-control"
-        v-select2      = "'dpi'"
-        :select2_value = "dpi"
-        @change        = "changeDpi"
-        :createTag     = "true"
-        ref            = "dpi"
-      >
-        <option v-for = "dpi in dpis">{{ dpi }}</option>
-      </select>
-
-      <!-- PRINT ROTATION -->
-      <label for = "rotation">{{ $t('Rotation') }}</label>
-      <input
-        id         = "rotation"
-        class      = "form-control"
-        v-disabled = "!has_maps"
-        min        = "-360"
-        max        = "360"
-        @input     = "changeRotation"
-        v-model    = "rotation"
-        type       = "number"
-      />
-
       <!-- PRINT FORMAT -->
       <label for = "format">{{ $t('Format') }}</label>
       <select
@@ -136,6 +131,20 @@ template: /*html*/`
         <option value = "svg">SVG</option>
         <option value = "pdf">PDF</option>
         <option value = "geopdf">GEOPDF</option>
+      </select>
+
+      <!-- PRINT DPI -->
+      <label for = "dpi">{{ $t('Resolution') }}</label>
+      <select
+        id             = "dpi"
+        class          = "form-control"
+        v-select2      = "'dpi'"
+        :select2_value = "dpi"
+        @change        = "changeDpi"
+        :createTag     = "true"
+        ref            = "dpi"
+      >
+        <option v-for = "dpi in dpis" :value="dpi">{{ dpi }} dpi</option>
       </select>
 
       <!-- PRINT LABEL -->
@@ -162,28 +171,24 @@ template: /*html*/`
     </details>
 
     <!-- PRINT ATLAS -->
-    <div
-      v-if  = "!is_screenshot && atlas"
-      class = "form-group"
-      style = "width: 100%;"
-      ref   = "print_atlas"
-    >
-      <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
-      <template v-if = "has_autocomplete">
-        <label  for = "print_atlas_autocomplete"><span>{{ atlas.field_name }}</span></label>
-        <select id = "print_atlas_autocomplete" :name = "atlas.field_name" class = "form-control"></select>
-      </template>
-      <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
-      <template v-else>
-        <label><span>fids [max: {{ atlas.feature_count - 1 }}]</span></label>
-        <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
-        <div id = "fid-print-atals-instruction">
-          <div id = "fids_intruction">{{ $t('Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6') }}</div>
-          <div id = "fids_examples_values">{{ $t('Ex. 1,4-6 will be printed id 1,4,5,6') }}</div>
-        </div>
-      </template>
-    </div>
+    <!-- ORIGINAL SOURCE: src/componentsPrintSelectAtlasFieldValues.vue@v3.9.3 -->
+    <template v-if = "!is_screenshot && atlas && has_autocomplete">
+      <label  for = "print_atlas_autocomplete"><span>{{ atlas.field_name }}</span></label>
+      <select id = "print_atlas_autocomplete" :name = "atlas.field_name" class = "form-control"></select>
+    </template>
 
+    <!-- PRINT ATLAS -->
+    <!-- ORIGINAL SOURCE: src/components/PrintFidAtlasValues.vue@v3.9.3 -->
+    <template v-if="!is_screenshot && atlas && !has_autocomplete">
+      <label><span>fids [max: {{ atlas.feature_count - 1 }}]</span></label>
+      <input class = "form-control" v-model = "atlas_values" @keydown.space.prevent>
+      <div id = "fid-print-atals-instruction">
+        <div id = "fids_intruction">{{ $t('Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6') }}</div>
+        <div id = "fids_examples_values">{{ $t('Ex. 1,4-6 will be printed id 1,4,5,6') }}</div>
+      </div>
+    </template>
+
+    <!-- SCREENSHOT FORMAT -->
     <template v-if="is_screenshot">
       <label for = "format">{{ $t('Format') }}</label>
       <select id="format" ref="select" style="width: 100%;" :search="false" v-select2="'screenshot_type'">
@@ -194,6 +199,7 @@ template: /*html*/`
       </select>
     </template>
 
+    <!-- SUBMIT BUTTON -->
     <button
       class     = "btn btn-block btn-success"
       :disabled = "!can_submit"
@@ -202,6 +208,7 @@ template: /*html*/`
       type      = "button"
     >{{ $t('Generate') }}</button>
 
+    <!-- WARNING PANEL -->
     <fieldset
       v-if  = "!is_screenshot"
       style = "
@@ -247,6 +254,7 @@ template: /*html*/`
 
   </form>
 
+  <!-- DOCS URL -->
   <div v-if="is_staff && !is_screenshot" style = "padding: 1em;text-align: center;">
     <b>
       <a
@@ -260,6 +268,7 @@ template: /*html*/`
     </b>
   </div>
 
+  <!-- PREVIEW MODAL -->
   <dialog
     ref    = "dialog"
     style  = "max-width: max(70vw, 800px);"
@@ -506,33 +515,29 @@ template: /*html*/`
      * On scale change set print area
      */
     changeScale() {
+      // custom scale provided by user (eg. "1:2300")
       try {
-        //check if create new tag value with ':' 1:2300
         if (this.scale.includes(':')) {
-          //get value
           const scale = Number(this.scale.split(':')[1].trim());
-          //set options last tag created by user
           this.$refs.scales.children.at(-1).value = scale;
-          //set scale
           this.scale = scale;
-
         }
       } catch(e) {
         console.warn(e);
         this.scale = this.scales[0].value;
       }
 
-      //check if a current scale is a number or has a value more than maximum scale permission
-      if (Number.isNaN(Number(this.scale)) || (this.scale > this.scales[0].value)) {
+      // check if current scale is a valid number
+      if (Number.isNaN(Number(this.scale)) || this.scale > this.scales[0].value) {
         this.scale = this.scales[0].value;
       }
 
-      //In case of scale negative or less than minimum scale permission
+      // eg. when is less than minimum scale permission
       if (this.scale < 0) {
-        this.scale = this.scales.at(- 1).value;
+        this.state.scale = this.state.scales.at(-1).value;
       }
 
-      //set value
+      // update select2 value
       $(this.$refs.scales).val(this.scale).trigger('change');
 
       if (this.scale) {
@@ -544,7 +549,7 @@ template: /*html*/`
      * @since 3.10.0
      */
     changeDpi() {
-      //check dpi if si a NaN
+      // check dpi if si a NaN
       if (Number.isNaN(Number(this.dpi))) {
         this.dpi = this.dpis[0];
         //set value
@@ -556,7 +561,7 @@ template: /*html*/`
      * On change rotation, rotate print area
      */
     changeRotation() {
-      this.rotation = this.rotation >= 0 ? Math.min(this.rotation || 0, 360) : Math.max(this.rotation || 0, -360);
+      this.rotation = Number(this.rotation);
       GUI.setInnerGreyCoverBBox({ rotation: this.rotation });
     },
 
@@ -574,11 +579,10 @@ template: /*html*/`
      * @returns { string }
      */
     getPrintExtent() {
-      const map          = GUI.getMap();
       // Need to check in case di an open print page
       try {
-        const [xmin, ymin] = map.getCoordinateFromPixel([this.inner[0], this.inner[1]]);
-        const [xmax, ymax] = map.getCoordinateFromPixel([this.inner[2], this.inner[3]]);
+        const [xmin, ymin] = GUI.getMap().getCoordinateFromPixel([this.inner[0], this.inner[1]]);
+        const [xmax, ymax] = GUI.getMap().getCoordinateFromPixel([this.inner[2], this.inner[3]]);
         this.print_extent  = ('neu' === GUI.getProjection().getAxisOrientation() ? [ymin, xmin, ymax, xmax] : [xmin, ymin, xmax, ymax]).join();
       } catch(e) {
          //in case of already open content print page
@@ -752,13 +756,8 @@ template: /*html*/`
         }
 
       } catch(e) {
-        if (!response?.ok && 500 === response?.status) {
-          err = 500 === response.status ? 'Internal Server Error' : 'Request Failed';
-        } else {
-          err = e;
-        }
+        err = e;
         this.loading = false;
-        // enable sidebar
         GUI.disableSideBar(false);
         console.warn(e);
       }
@@ -780,13 +779,16 @@ template: /*html*/`
     },
 
     /**
-     * @param { boolean } show
+     * @param { boolean } show when true it will close content
      */
     showPrintArea(show) {
-      // close content if open
-      const reset = !show;
-      if (reset && this.select2)           { this.select2.val(null).trigger('change'); }
-      if (reset)                           { this.atlas_values = []; this.print_extent = null; }
+      if (!show && this.select2) {
+        this.select2.val(null).trigger('change');
+      }
+      if (!show) {
+        this.atlas_values = [];
+        this.print_extent = null;
+      }
       // @since 3.11.0 In case of no print set, exit
       if (0 === this.print.length)   {
         return;
@@ -807,6 +809,7 @@ template: /*html*/`
 
     /**
      * Calculate internal print extent
+     * 
      * @returns { Boolean }
      */
     _setPrintArea() {
@@ -815,20 +818,13 @@ template: /*html*/`
         this._clearPrint();
         return false;
       }
-      const map        = GUI.getMap();
-      const size       = map.getSize();
-      const resolution = map.getView().getResolution();
-      const { h, w }   = this.maps.find(m => !m.overview);
-      const res        = resolution * ('m' === GUI.getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
-      const w2         = (((w / 1000.0) * parseFloat(this.scale)) / res) / 2;
-      const h2         = (((h / 1000.0) * parseFloat(this.scale)) / res) / 2;
-      const [x, y]     = [ (size[0]) / 2, (size[1]) / 2 ]; // current map center: [x, y] (in pixel)
-      this.inner       = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
-      GUI.setInnerGreyCoverBBox({
-        type:     'pixel',
-        inner:    this.inner,
-        rotation: this.rotation
-      });
+      const { h, w } = this.maps.find(m => !m.overview);
+      const res      = GUI.getMap().getView().getResolution() * ('m' === GUI.getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
+      const w2       = (((w / 1000.0) * parseFloat(this.scale)) / res) / 2;
+      const h2       = (((h / 1000.0) * parseFloat(this.scale)) / res) / 2;
+      const [x, y]   = GUI.getMap().getSize().map(size => size / 2); // current map center: [x, y] (in pixel)
+      this.inner     = [x - w2, y + h2, x + w2, y - h2]; // inner bbox: [xmin, ymax, xmax, ymin] (in pixel)
+      GUI.setInnerGreyCoverBBox({ type: 'pixel', inner: this.inner, rotation: this.rotation });
       return true;
     },
 
@@ -844,12 +840,12 @@ template: /*html*/`
      * @param maxRes maximum resolution
      */
     _setScales(maxRes) {
-      const units       = GUI.getMapUnits();
-      const mapScale    = getScaleFromResolution(maxRes, units);
-      const scales      = PRINT_SCALES.sort((a, b) => b.value - a.value);
-      const below       = scales.filter(s => s.value < mapScale);           // all scales below mapScale
-      const above       = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
-      this.scales = (above ? [above] : []).concat(below);
+      const units    = GUI.getMapUnits();
+      const mapScale = getScaleFromResolution(maxRes, units);
+      const scales   = PRINT_SCALES.sort((a, b) => b.value - a.value);
+      const below    = scales.filter(s => s.value < mapScale);           // all scales below mapScale
+      const above    = scales.findLast(s => s.value >= mapScale);        // first scale above mapScale
+      this.scales    = (above ? [above] : []).concat(below);
       this.scales.forEach(s => this.resolutions[s.value] = getResolutionFromScale(s.value, units))
     },
 
@@ -876,7 +872,6 @@ template: /*html*/`
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
-        dropdownParent: $(this.$refs.print_atlas),
         minimumInputLength: 1,
         ajax: {
           delay: 500,
@@ -904,7 +899,7 @@ template: /*html*/`
           const search = params.term ? params.term.toLowerCase() : params.term;
           if ('' === (search || '').toString().trim())                             { return data; }        // no search terms → get all of the data
           if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data }; } // the searched term
-          return null;                                                                                 // hide the term
+          return null;                                                                                     // hide the term
         },
         language: {
           noResults:     () => _('No results'),
@@ -1085,6 +1080,10 @@ document.head.insertAdjacentHTML(
   'beforeend',
   /* css */`
 <style>
+.print-modal label:not(:first-of-type) {
+  margin-top: 8px;
+}
+
 .print-modal .select2-container--open {
   width: 100%;
 }
