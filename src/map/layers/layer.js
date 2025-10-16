@@ -1262,7 +1262,7 @@ class Layer extends G3WObject {
   saveFilter() {
 
     // skip when ..
-    if (!this.providers['filtertoken'] || !this.state.selectionFids.size > 0) {
+    if (!this.providers['filtertoken'] || !this.state.filter.active) {
       return;
     }
 
