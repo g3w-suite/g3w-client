@@ -25,7 +25,8 @@ const {
 
 const _                = g3w.gettext;
 
-const print = ApplicationState.project.getPrint() || [];
+const print            = ApplicationState.project.getPrint() || [];
+const screenshot_types = Object.keys(initConfig.mapcontrols).filter(t => ['screenshot', 'geoscreenshot'].includes(t));
 
 const state = {
   print,
@@ -46,10 +47,11 @@ const state = {
   dpis:            [150, 300],
   dpi:             150,
   format:          'png',
-  screenshot_types: Object.keys(initConfig.mapcontrols).filter(t => ['screenshot', 'geoscreenshot'].includes(t)),
+  screenshot_types,
+  screenshot_type: screenshot_types[0],
   print_extent:    null,
   resolutions:     {},
-  moveKey:         null,
+  moveKey:      null,
 };
 
 
@@ -197,11 +199,11 @@ template: /*html*/`
         ref       = "select"
         style     = "width: 100%;"
         :search   = "false"
-        v-select2 = "'format'"
+        v-select2 = "'screenshot_type'"
       >
         <option
           v-for  = "type in screenshot_types"
-          :value = "({ screenshot: 'png', geoscreenshot: 'tiff' })[type]"
+          :value = "type"
         >{{ $t(({ screenshot: 'PNG', geoscreenshot: 'GeoTIFF'})[type]) }}</option>
       </select>
     </template>
@@ -659,7 +661,7 @@ template: /*html*/`
 
         // SCREENSHOT
         if (this.is_screenshot) {
-          const blob = 'png' === this.format
+          const blob = 'screenshot' === this.screenshot_type
             ? await GUI.createMapImage()                                                              // PNG
             : await (await fetch(`/${GUI.project.getType()}/api/asgeotiff/${GUI.project.getId()}/`, { // GeoTIFF
                 method: 'POST',
