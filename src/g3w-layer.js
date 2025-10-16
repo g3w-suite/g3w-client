@@ -847,7 +847,7 @@ export class Layer extends Emitter {
   async saveFilter() {
 
     // skip when ..
-    if (!this.getProvider('filtertoken') || !this.state.selection.fids.size > 0) {
+    if (!this.getProvider('filtertoken') || !this.state.filter.active) {
       return;
     }
 
