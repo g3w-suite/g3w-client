@@ -840,21 +840,24 @@ export default new (class QueryResultsService extends G3WObject {
             show:    !layer.filter.pagination // show action when filter with pagination is not set
           }),
           init({ layer, feature, index, action } = {}) {
+            this.unwatch = VM.$watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
             if (!feature) {
               return console.trace('Invalid feature');
             }
             const _layer                = getCatalogLayerById(layer.id);
             const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selection.selected;
-            if (_layer && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
+            if (_layer && !_layer.state.filter.active && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
               _layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
               _layer.includeSelectionFid(fid, false);
             }
           },
+          clear() {
+            this.unwatch && this.unwatch(); // remove action when destroy
+          },
           change({ features }) {
             // wait for pagination change request
             setTimeout(() => {
-              this.state.show = !layer.filter.pagination; // show action when filter with pagination is not set or is set and current index is paginated
               features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
             })
           },
