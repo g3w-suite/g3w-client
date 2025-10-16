@@ -810,8 +810,15 @@
       layerHasFeatures(layer) {
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
-      toggleSelection(layer) {
-        this.$options.service.toggleSelection(layer);
+      async toggleSelection(layer) {
+        //check if a filter pagination is set
+        const pagination = layer.filter.pagination;
+        await this.$options.service.toggleSelection(layer);
+        //@since 4.0.4
+        //In case of pafination, need to show single select tool of each feature
+        if (pagination) {
+          this.$options.service.changeLayerResult(layer);
+        }
       },
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();

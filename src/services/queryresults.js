@@ -507,8 +507,8 @@ export default new (class QueryResultsService extends G3WObject {
     }
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
-      // whether result comes from pagination
-      l.filter.pagination = l.filter.active && this.state.query?.pagination?.paginate?.at(index);
+      // whether result comes from pagination or previous requestis a filter pagination (case search with autofilter)
+      l.filter.pagination = l.filter.active && (l.filter.pagination || !!(this.state.query?.pagination?.paginate?.at(index)));
       if (options.add || options.update) {
         this.updateLayerResultFeatures(l, options.update);
       } else {
@@ -854,7 +854,7 @@ export default new (class QueryResultsService extends G3WObject {
           change({ features }) {
             // wait for pagination change request
             setTimeout(() => {
-              this.state.show = !layer.filter.pagination; 
+              this.state.show = !layer.filter.pagination; // show action when filter with pagination is not set or is set and current index is paginated
               features.forEach((_, index) => undefined === this.state.toggled[index] && VM.$set(this.state.toggled, index, false))
             })
           },
@@ -1559,7 +1559,7 @@ export default new (class QueryResultsService extends G3WObject {
 
     // handle pagination
     if (!layer.external && !feature && toggled) {
-      catalog_layer.clearSelectionFids();
+      await catalog_layer.clearSelectionFids();
       return;
     }
 
