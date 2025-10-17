@@ -447,11 +447,6 @@ export default new (class QueryResultsService extends G3WObject {
             _setRelationField(node);
           }
         }
-
-        //@since 4.0.4 need to set active false
-        if (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) {
-          layer.state.selection.active = false;
-        }
         
         // layerObj
         return {
@@ -765,7 +760,6 @@ export default new (class QueryResultsService extends G3WObject {
       this.state.currentactiontools[layer.id]        = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.currentactionfeaturelayer[layer.id] = Vue.observable({ ...Array((layer.features || []).length).fill(null) });
       this.state.layersactions[layer.id]             = this.state.layersactions[layer.id] || [];
-
       this.state.layersactions[layer.id].push(...([
 
         // zoom to geometry
@@ -846,11 +840,10 @@ export default new (class QueryResultsService extends G3WObject {
             show:    !layer.filter.pagination // show action when filter with pagination is not set
           }),
           init({ layer, feature, index, action } = {}) {
-            this.unwatch = VM.$watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
+            this.unwatch = VM.$watch(() => layer.filter.active, bool => this.state.show = !bool ); // listen filter layer pagination change
             if (!feature) {
               return console.trace('Invalid feature');
             }
-            layer.selection.active      = layer.features.every(f => f.selection.selected); //@since 4.0.4 set active base on features
             const _layer                = getCatalogLayerById(layer.id);
             const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selection.selected;
@@ -1633,7 +1626,7 @@ export default new (class QueryResultsService extends G3WObject {
       );
 
       // set selection property (external layer)
-      catalog_layer.selection.active = Object.values(action.state.toggled).some(t => t);;
+      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);;
       
       return;
     }
@@ -1685,7 +1678,8 @@ export default new (class QueryResultsService extends G3WObject {
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
       });
     }
-    catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
+    //@since 4.0.4 set active base on toggled or selection fids
+    catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t) || catalog_layer.state.selectionFids.size > 0;
 
     //remove Highlight geometry layer fetures
     GUI.getService('map').clearHighlightGeometry();
