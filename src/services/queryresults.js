@@ -847,7 +847,8 @@ export default new (class QueryResultsService extends G3WObject {
             const _layer                = getCatalogLayerById(layer.id);
             const fid                   = feature.attributes[G3W_FID] || feature.id;
             action.state.toggled[index] = feature.selection.selected;
-            if (_layer && !_layer.state.filter.active && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
+            //In case of filter pagination, no need to set selection on map
+            if (_layer && !_layer.state.filter.pagination && feature.selection.selected && !_layer.hasSelectionFid(fid)) {
               _layer.addOlSelectionFeature({ id: fid, feature }).selected = true;
               _layer.includeSelectionFid(fid, false);
             }
@@ -1542,7 +1543,7 @@ export default new (class QueryResultsService extends G3WObject {
     const query         = GUI.getService('queryresults'); //get query service
     const action        = query.getActionLayerById({ layer, id: 'selection' }); //get selction action
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
-    const toggled       = layer.selection.active; 
+    const toggled       = layer.features.every(f => f.selection.selected); // check if all features are selected  
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
@@ -1561,7 +1562,7 @@ export default new (class QueryResultsService extends G3WObject {
     });
 
     // handle pagination
-    if (!layer.external && !feature && toggled) {
+    if (!layer.external && !feature && toggled && layer.filter.pagination) {
       await catalog_layer.clearSelectionFids();
       return;
     }
@@ -1664,8 +1665,8 @@ export default new (class QueryResultsService extends G3WObject {
 
     // set layer selection state
 
-    // PROJECT LAYER
-    if (catalog_layer.state.filter.active) {
+    // PROJECT LAYER and not all toggled
+    if (catalog_layer.state.filter.active && !toggled) {
       fids.forEach((_, idx) => {
         // index of feature to remove
         const i = feature ? index : idx;
