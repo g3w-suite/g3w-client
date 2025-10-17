@@ -586,7 +586,7 @@ export default {
             f.selected = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id);
             const has_geometry = this.layer.isGeoLayer() && f.geometry;
             //@since 4.0.4 Need to take in account filter pagination active from selection
-            if (this.show_on_active_filter && has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
+            if (!this.layer.state.filter.active && has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
               this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
               if (f.selected) { this.layer.includeSelectionFid(f.id) };
             }
