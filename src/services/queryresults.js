@@ -447,6 +447,12 @@ export default new (class QueryResultsService extends G3WObject {
             _setRelationField(node);
           }
         }
+
+        //@since 4.0.4 need to set active false
+        if (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) {
+          layer.state.selection.active = false;
+        }
+        
         // layerObj
         return {
           id,
@@ -482,7 +488,7 @@ export default new (class QueryResultsService extends G3WObject {
           relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
           hasdownloadablerelations:  !external && layer.hasDowloadableRelations(), //@since 3.11.7
           filter:                    (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-          selection:                 (is_vector && layer.selection) || { active: false }, //@since 4.0.4 init false if not extrnal
+          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: false },
           title:                     (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
           atlas:                     this._atlas.filter(a => a.atlas.qgs_layer_id === id),
           rawdata:                   rawdata  || null,
@@ -1562,6 +1568,7 @@ export default new (class QueryResultsService extends G3WObject {
       f.selection.selected = action.state.toggled[i];
     });
 
+
     // handle pagination
     if (!layer.external && !feature && toggled && layer.filter.pagination) {
       await catalog_layer.clearSelectionFids();
@@ -1678,7 +1685,6 @@ export default new (class QueryResultsService extends G3WObject {
         action.state.toggled = Object.entries(action.state.toggled).reduce((a, t, i) => Object.assign(a, { [i]: t }), {});
       });
     }
-
     catalog_layer.state.selection.active = Object.values(action.state.toggled).some(t => t);
 
     //remove Highlight geometry layer fetures
