@@ -107,7 +107,7 @@
                     <!--        END DOWNLOAD        -->
                   </template>
                   <span
-                    v-if             = "layer.external || (layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                    v-if             = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
                     @click.stop      = "addLayerFeaturesToResults(layer)"
                     class            = "action-button"
                     :class           = "{'toggled': layer.addfeaturesresults.active}"
