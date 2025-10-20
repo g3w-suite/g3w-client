@@ -136,7 +136,7 @@
                   <!-- Filter template tools -->
                   <template v-if = "!layer.external && layer.selection.active">
                     <span
-                      v-if             = !layer.filter.pagination
+                      v-if             = "!layer.filter.pagination && layer.features.some(f => f.selection.selected)"
                       @click.stop      = "addRemoveFilter(layer)"
                       class            = "action-button"
                       :class           = "{'toggled': layer.filter.active}"
