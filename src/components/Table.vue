@@ -571,18 +571,11 @@ export default {
         this.state.features.push(
           ...(data.features || []).map(f => {
             f.selected = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id);
-            const has_geometry = this.layer.isGeoLayer() && f.geometry;
-            //@since 4.0.4 Need to take in account filter active from selection
-            if (!this.layer.state.filter.active && has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
-              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-              if (f.selected) { this.layer.includeSelectionFid(f.id) };
-            }
-
             return {
               id:         f.id,
               selected:   f.selected,
               attributes: f.attributes || f.properties,
-              geometry:   has_geometry && f.geometry || undefined
+              geometry:   f.geometry || undefined
             };
           })
         );
