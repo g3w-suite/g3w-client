@@ -26,7 +26,7 @@
 
       <!-- CLEAR SELECTION -->
       <div
-        v-show         = "state.show_tools"
+        v-show         = "layer.state.selection.active"
         class          = "skin-color action-button"
         :class         = "$fa('clear')"
         v-t-tooltip    = "'Clear Selection'"
@@ -36,7 +36,7 @@
 
       <!-- INVERSE SELECTION -->
       <div
-        v-show         = "state.show_tools"
+        v-show         = "!layer.state.filter.active && layer.state.selection.active"
         class          = "skin-color action-button"
         :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip    = "'Invert Selection'"
@@ -46,7 +46,7 @@
 
       <!-- TOGGLE FILTER -->
       <div
-        v-show         = "state.show_tools && show_on_active_filter"
+        v-show         = "layer.state.selection.active && !layer.state.filter.pagination"
         class          = "skin-color action-button"
         :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip    = "'Enable/Disable filter'"
@@ -104,7 +104,7 @@
           <td>
             <div style = "display: flex">
               <label
-                v-if   = "show_on_active_filter"
+                v-if   = "!layer.state.filter.active"
                 @click = "select(feature)"
               >
                 <input type = "checkbox" :checked = "feature.selected" />
@@ -199,7 +199,6 @@ export default {
         allfeatures:   0,
         selectAll:     false,
         nofilteredrow: false,
-        show_tools:    false,
         geolayer: {
           active:    false,
           in_bbox:   undefined,
@@ -227,15 +226,6 @@ export default {
   },
   
   computed: {
-
-    /**
-     * @returns { Boolean } In case of filter without pagination active
-     * 
-     * @since 4.0.0
-     */
-    show_on_active_filter() {
-      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__')));
-    },
 
     current_layout() {
       return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
@@ -399,8 +389,6 @@ export default {
         this.state.features.forEach(f => f.selected = false);
         await this.layer.clearSelectionFids();
       }
-
-      this.state.show_tools = this.state.features.some(f => f.selected);
     },
 
     /**
@@ -475,7 +463,6 @@ export default {
       feature.selected      = !feature.selected;                                                // inverse selected feature
       this.state.selectAll  = this.state.features.every(f => f.selected); 
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](`${feature.id}`); //string
-      this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
     },
 
     async resize() {
@@ -600,7 +587,6 @@ export default {
           })
         );
 
-        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
         this.state.selectAll  = this.layer.state.filter.active || this.layer.state.selectionFids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
 
         return {
@@ -621,7 +607,6 @@ export default {
 
     unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
-      this.state.show_tools = false;
       this.state.selectAll  = false;
     },
 
