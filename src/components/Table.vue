@@ -571,7 +571,7 @@ export default {
         // add features
         this.state.features.push(
           ...(data.features || []).map(f => {
-            f.selected = this.state.selectAll || this.layer.state.filter.active || this.layer.hasSelectionFid(f.id);
+            f.selected = this.layer.state.filter.active || this.layer.hasSelectionFid(f.id);
             return {
               id:         f.id,
               selected:   f.selected,
