@@ -1205,7 +1205,7 @@ class Layer extends G3WObject {
    * @param {boolean} bool
    */
   setFilter(bool = false) {
-    this.state.filter.active     = bool;
+    this.state.filter.active = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
       GUI.getService('map').toggleSelection(false, this.state.id); // hide selection features (open layers)
     }
