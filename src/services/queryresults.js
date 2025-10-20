@@ -837,7 +837,7 @@ export default new (class QueryResultsService extends G3WObject {
           hint:     'Add/Remove Selection',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
-            show:    !layer.filter.pagination // show action when filter with pagination is not set
+            show:    !layer.filter.active // show action when filter with pagination is not set
           }),
           init({ layer, feature, index, action } = {}) {
             this.unwatch = VM.$watch(() => layer.filter.active, bool => this.state.show = !bool ); // listen filter layer pagination change
