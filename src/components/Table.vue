@@ -462,6 +462,7 @@ export default {
     select(feature) {
       feature.selected      = !feature.selected;                                                // inverse selected feature
       this.state.selectAll  = this.state.features.every(f => f.selected); 
+      if (feature.selected && feature.geometry) { this.layer.addOlSelectionFeature(_createFeatureForSelection(feature)); };
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](`${feature.id}`); //string
     },
 
