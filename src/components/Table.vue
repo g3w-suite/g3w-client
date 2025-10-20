@@ -241,10 +241,6 @@ export default {
      * @since 3.11.0
      */
     toggleFilterToken(layer) {
-      // get selection features in case of autofilter + pagination
-      if (layer.state.filter.active && !layer.state.selectionFids.has('__ALL__')) {
-        this.state.selectAll = false;
-      }
       layer.toggleFilterToken();
     },
 
