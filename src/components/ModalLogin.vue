@@ -56,8 +56,8 @@ export default {
   methods: {
 
      onIframeLoaded(e) {
-      const iframe = this.$refs.login_iframe.contentWindow.g3wsdk && this.$refs.login_iframe.contentWindow.g3wsdk.core.ApplicationState;
-      if (iframe && iframe.user && iframe.user.logout_url) {
+      const iframe = this.$refs.login_iframe?.contentWindow?.g3wsdk?.core?.ApplicationState;
+      if (iframe?.user?.logout_url) {
         this.show = false;
         window.location.reload();
       }
