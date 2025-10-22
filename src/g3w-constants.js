@@ -312,12 +312,6 @@ export const FONT_AWESOME_ICONS = {
 };
 
 /**
- * @typedef LocalItem
- * @property {string} id unique identifier
- * @property {any} value initial value
- */
-
-/**
  * DPI96
  * 
  * DOTS_PER_INCH = ol.has.DEVICE_PIXEL_RATIO * 96;
