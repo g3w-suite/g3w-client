@@ -314,9 +314,9 @@ export default class Component extends Emitter {
  * @deprecated since 3.10.0 Will be deleted in 4.x.
  */
 Object.assign(Component.prototype, {
-  destroy:                           noop,
-  click:                             noop,
-  show:                              noop,
+  destroy:                 noop,
+  click:                   noop,
+  show:                    noop,
   /** used by the following plugins: "iternet" */
-  overwriteServiceMethods:           deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
+  overwriteServiceMethods: deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
 });
