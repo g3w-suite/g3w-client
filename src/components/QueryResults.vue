@@ -65,7 +65,7 @@
                 >
                   <!-- info format layer component -->
                   <infoformats :layer = "layer"/>
-                  <template v-if = "layer.features.length > 1">
+                  <template v-if = "layer.features.length > 0">
                     <span
                       v-if             = "layer.hasgeometry"
                       @click.stop      = "zoomToLayerFeaturesExtent(layer)"
