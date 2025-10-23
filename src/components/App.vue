@@ -298,7 +298,6 @@
           :draggable         = "usermessage.draggable"
           :closable          = "usermessage.closable"
           :duration          = "usermessage.duration"
-          :position          = "usermessage.position"
           :autoclose         = "usermessage.autoclose"
           :textMessage       = "usermessage.textMessage"
           :size              = "usermessage.size"
