@@ -252,6 +252,7 @@
          * @since 3.11.2 table state
          */
         table: {
+          layerId:       layer.getId(), //@since 4.0.4
           title:         layer.getName() || layer.getTitle(),
           formStructure: layer.getLayerEditingFormStructure(),
           features:      [],
