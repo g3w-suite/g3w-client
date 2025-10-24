@@ -279,6 +279,7 @@
          * @since 3.11.2 table state
          */
         table: {
+          layerId:       layer.getId(),
           features:      [],
           page:          1,
           page_size:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
