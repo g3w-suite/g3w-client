@@ -67,7 +67,9 @@ class MeasureControl extends MapControl {
           this._interaction = this.interactions[this.types[0]];
           this.getMap().addInteraction(this._interaction);      // add first interaction
         }
-        if (toggled && this.types.length > 1) {
+        if (!toggled && this.types.length > 1) {
+          GUI.closeUserMessage();
+        } else if (this.types.length > 1) {
           GUI.showUserMessage({
             title:     'Measure',
             type:      'tool',
@@ -101,8 +103,6 @@ class MeasureControl extends MapControl {
               }
             }
           });
-        } else if (this.types.length > 1) {
-          GUI.closeUserMessage()
         }
       },
     });
