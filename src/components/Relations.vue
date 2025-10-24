@@ -158,7 +158,7 @@
                 ></span>
                 <span
                   v-if              = "form_structure"
-                  @click.stop       = "showForm(row, i)"
+                  @click.stop       = "showForm(i)"
                   v-t-tooltip:right = "'Form View'"
                   class             = "action-button row-form skin-color"
                   :class            = "$fa('table')"
@@ -610,17 +610,22 @@
       },
 
       /**
-       * @param row
-       * @param index
+       * @param i index
        */
-      async showForm(row, index) {
+      async showForm(i) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
               data: () => ({
                 layerid:        this.table.layerId,
-                feature:        this.table.features[index],
-                fields:         this.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${FieldsService.getType(c)}` } })),
+                feature:        this.table.features[i],
+                fields:         this.columns.map(c => Object.assign(c, {
+                  value: this.table.features[i].attributes[c.name],
+                  query: true,
+                  input: {
+                    type: `${FieldsService.getType(c)}`
+                  }
+                })),
                 form_structure: this.form_structure,
               }),
               template: /* html */`
