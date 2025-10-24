@@ -261,7 +261,7 @@ export default {
       data: (await Promise.allSettled(
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1))).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features?.length > 0) //@since 4.0.1 check length features
+        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features) //@since 4.0.4 remove check lenght
         .map(({ value } = {}) => {
           //@since 3.11.0 In case autofilter set
           if (1 === params.autofilter) {
