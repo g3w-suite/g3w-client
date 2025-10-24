@@ -771,7 +771,7 @@
        * @since 3.8.3
        */
       canShowStylesMenu(layer) {
-        return layer.geolayer && layer.styles && layer.styles.length > 1;
+        return layer.styles && layer.styles.length > 1;
       },
 
       /**
