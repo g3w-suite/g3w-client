@@ -415,30 +415,25 @@
               style ="display: flex;"
             >
 
-              <!-- SWITCH COORDINATES  -->
-              <div
-                v-if                = "mouse.visible && mouse.switch_icon && !isMobile()"
-                id                  = "switch-mouse-coordinate"
-                v-t-tooltip:top     = "mouse.tooltip"
-                @click.stop.prevent = "switchMapsCoordinateTo4326"
-              >
-                <span
-                  class  = "skin-color-dark"
-                  :class = "$fa('mouse')"
-                  style  = "caret-color: rgba(0,0,0,0);"
-                ></span>
-              </div>
-
               <!-- MOUSE POSITION -->
               <div
                 v-show = "mouse.visible"
                 id     = "mouse-position-control"
               ></div>
 
+              <!-- SWITCH COORDINATES  -->
+              <div
+                v-if                = "mouse.visible && mouse.switch_icon && !isMobile()"
+                v-t-tooltip:top     = "mouse.tooltip"
+                @click.stop.prevent = "switchMapsCoordinateTo4326"
+                style               = "caret-color: transparent; padding: 0 5px 0 0; display: flex; height: 100%; align-items: center; cursor: pointer;"
+                :class              = "$fa('mouse')"
+              ></div>
+
               <div
                 id              = "permalink"
                 v-t-tooltip:top = "'Copy share URL'"
-                :class          = "$fa('share-alt') + ' skin-color-dark'"
+                :class          = "$fa('share-alt')"
                 @click.stop     = "showEmbedModal"
               ></div>
 
@@ -451,7 +446,6 @@
               >
                 <select
                   style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
-                  class   = "skin-color-dark"
                   v-model = "ApplicationState.map_unit"
                 >
                   <option
@@ -459,8 +453,8 @@
                     :value    = "unit"
                     v-t       = "`scaleline_units.${unit}`"
                     :selected = "ApplicationState.map_unit === unit"
-                    style     = "font-weight: bold">
-                  </option>
+                    style     = "font-weight: bold"
+                  ></option>
                 </select>
 
               </div>
@@ -1300,16 +1294,7 @@ export default {
     cursor: pointer;
     background-color: #eee;
   }
-  #switch-mouse-coordinate {
-    display: flex;
-    height: 100%;
-    margin-left: 8px;
-    align-items: center;
-    cursor: pointer;
-  }
-  #switch-mouse-coordinate span {
-    padding: 3px 5px 0 3px;
-  }
+
   #map_footer_right {
     flex-shrink: 0;
   }

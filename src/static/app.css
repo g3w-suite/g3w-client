@@ -810,9 +810,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 :is(.ol-control, .ol-custom-overviewmap) button:focus                  { text-decoration: none; outline: none; }
 .ol-overviewmap:not(.ol-collapsed) button                              { bottom: 5px; }
 .ol-overviewmap:hover                                                  { background-color: rgba(255,255,255, 1) !important; }
-.ol-mouse-position                                                     { position: relative !important; height: 20px; font-weight: bold; font-size: 0.9em; margin-left: 8px; }
-.ol-mouse-position-default                                             { right: 50px; border-radius: 4px; z-index: 1; }
-.ol-mouse-position-default                                             { color: #fff; }
+.ol-mouse-position                                                     { position: relative !important; font-weight: 700; font-size: .9em; margin-top: -2px; }
 .ol-custom-overviewmap                                                 { border-radius: 5px; }
 .ol-custom-overviewmap button                                          { display: inline-block;     left: 3px; bottom: 8px; width: 30px; height: 30px; }
 .ol-custom-overviewmap button span                                     { font-size: 15px; font-weight: bold; position: absolute; margin: -6px; }
@@ -857,7 +855,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3w-map-controls .ol-zoom-extent                                      { top:0; left:0; }
 :is(.ol-control, .ol-custom-overviewmap) button:hover                  { background-color:var(--skin-color); }
 :is(.ol-control, .ol-custom-overviewmap) button:focus                  { background-color:#e5e5e5; }
-.ol-mouse-position-default                                             { background: var(--skin-color); }
 
 .ol-custom-overviewmap,
 .ol-custom-overviewmap .ol-overviewmap-box,
@@ -873,7 +870,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .tool_mapcontrol_button                                                { background-color: var(--skin-color); }
 .g3w-ol-toggled                                                        { background-color: var(--skin-color) !important; }
 
-.ol-mouse-position,
 .ol-attribution li a                                                                           { color: hsl(from var(--skin-color) h s calc(l - 20)); }
 #scale-control .select2-selection__rendered                                                    { color: hsl(from var(--skin-color) h s calc(l - 20)) !important; }
 #scale-control .select2-selection__arrow b                                                     { border-top-color: hsl(from var(--skin-color) h s calc(l - 20)) !important; }
