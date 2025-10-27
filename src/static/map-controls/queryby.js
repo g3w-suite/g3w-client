@@ -645,10 +645,15 @@ export class QueryBy extends MapControl {
         type: 'ows',
         error: !GEOMETRY,
         query: {
-          ...('querybbox' === type ? { bbox: feature } : {}),
-          ...('querybbox' === type ? {}                : { fid: GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID) }),
-          ...('querybbox' === type ? {}                : { geometry: GEOMETRY }),
-          ...('querybbox' === type ? {}                : { layerName }),
+          ...(
+            'querybbox' === type
+              ? { bbox: feature }
+              : {
+                  fid:      GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
+                  geometry: GEOMETRY,
+                  layerName,
+                }
+          ),
           type: (type || '').replace('queryby', '').replace('querybbox', 'bbox') || undefined,
           filterConfig,
           external: {
@@ -661,12 +666,10 @@ export class QueryBy extends MapControl {
               : { SELECTED: ['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type) && !!SELECTED },
           },
         },
-        usermessage: 'querybbox' === type ? undefined : (!GEOMETRY && {
-          type:        'warning',
-          message:     `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
-          messagetext: true,
-          autoclose:   false
-        }),
+        usermessage: 'querybbox' !== type && !GEOMETRY && {
+          type:    'warning',
+          message: `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
+        } || undefined,
         data: data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ data = [] }) => data),
       });
     } catch (e) {
