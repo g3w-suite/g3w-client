@@ -75,7 +75,7 @@ class MeasureControl extends MapControl {
             type:      'tool',
             size:      'small',
             iconClass: 'measure',
-            closable:  this._toolButton ? true : false,
+            closable:  false,
             hooks:     {
               body: {
                 data: () => ({ types: this.types, type: this.types[0] }),

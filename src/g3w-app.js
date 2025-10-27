@@ -1115,7 +1115,7 @@ export default new (class GUI extends Emitter {
 
     this.closeUserMessage();
 
-    await new Promise((res) => setTimeout(() => {
+    await new Promise(res => setTimeout(() => {
       Object.assign(ApplicationState.usermessage, {
         id: getUniqueDomId(),
         show: true,

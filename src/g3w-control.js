@@ -671,7 +671,9 @@ export default class MapControl extends ol.control.Control {
         closable:  this._toolButton ? true : false,
         hooks:     { body: this.toggledTool }
       });
-    } else { GUI.closeUserMessage() }
+    } else {
+      GUI.closeUserMessage();
+    }
   }
 
   /**

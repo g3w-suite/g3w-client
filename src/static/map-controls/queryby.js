@@ -97,11 +97,11 @@ export class QueryBy extends MapControl {
         return GUI.closeUserMessage();
       }
       GUI.showUserMessage({
-        title: 'mapcontrols.queryby.title',
-        type: 'tool',
-        size: 'small',
+        title:     'mapcontrols.queryby.title',
+        type:      'tool',
+        size:      'small',
         iconClass: 'info',
-        closable: false,
+        closable:  false,
         hooks: {
           body: {
             data: () => ({
