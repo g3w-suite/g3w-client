@@ -107,7 +107,7 @@ GUI.setupControl.overview = async function() {
             resolution:    Math.max(ol.extent.getWidth(PROJECT.state.initextent) / 200, ol.extent.getHeight(PROJECT.state.initextent) / 150), // max(xInitRes, yInitRes)
           }), // hardcoded
           collapsed:     false,
-          className:     'ol-overviewmap ol-custom-overviewmap',
+          className:     'ol-overviewmap',
           collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
           label:         $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
           layers:        Object
@@ -152,7 +152,7 @@ GUI.setupControl.overview = async function() {
         }
       });
     });
-    observer.observe(document.querySelector('.ol-custom-overviewmap'), { attributes: true });
+    observer.observe(document.querySelector('.ol-overviewmap'), { attributes: true });
   } catch (err) {
     console.warn(err)
   }
