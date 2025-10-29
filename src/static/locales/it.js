@@ -389,4 +389,5 @@ export default {
   'search by:': 'cerca per:',
   'Advanced settings': 'Impostazioni avanzate',
   'Resolution': 'Risoluzione',
+  'Overview map': 'Mappa panoramica',
 };
