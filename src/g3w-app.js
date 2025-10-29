@@ -1295,7 +1295,7 @@ export default new (class GUI extends Emitter {
         yes.disabled = !_value?.trim()?.length;
       }
 
-      input.addEventListener('input', canSubmit);
+      dialog.querySelector('form').addEventListener('input', canSubmit);
 
       canSubmit();
 
