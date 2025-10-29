@@ -261,7 +261,7 @@ export default {
       data: (await Promise.allSettled(
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1))).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features?.length > 0) //@since 4.0.1 check length features
+        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features) //@since 4.0.4 remove check lenght
         .map(({ value } = {}) => {
           //@since 3.11.0 In case autofilter set
           if (1 === params.autofilter) {
@@ -275,7 +275,6 @@ export default {
           }
 
           if (params.page_sizes)  {
-            const features = (value.data || [])[0].features;
             //@since 4.0.1 get project layer
             const layer    = (value.data || [])[0].layer;
             //get max number of elements per page
@@ -284,7 +283,7 @@ export default {
             page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             //add a count element on counts array
             counts.push(value.count);
-            paginate.push(features && value.count > features.length);
+            paginate.push(true); //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
             layers.push(layer);
           }
           if (params.raw)                                         { return { data: value }; }
