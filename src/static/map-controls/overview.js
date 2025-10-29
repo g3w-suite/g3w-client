@@ -94,6 +94,11 @@ GUI.setupControl.overview = async function() {
       Object.defineProperty(PROJECT, 'state', { get() { return PROJECT; }, configurable: false, enumerable: true });
     }
 
+    const collapseLabel = Object.assign(document.createElement('span'), { classList: "fas fa-minus", title: 'close' });
+    const label         = Object.assign(document.createElement('span'), { classList: "fas fa-globe-americas", title: 'Overview map' });
+
+    collapseLabel.dataset.placement = label.dataset.placement = 'top';
+
     GUI.createMapControl({
       id: 'overview',
       add: false,
@@ -110,8 +115,8 @@ GUI.setupControl.overview = async function() {
           collapsed:     false,
           className:     'ol-overviewmap',
           tipLabel:      '',
-          collapseLabel: Object.assign(document.createElement('span'), { classList: "fas fa-minus", title: 'close' }),
-          label:         Object.assign(document.createElement('span'), { classList: "fas fa-globe-americas", title: 'Overview map' }),
+          collapseLabel,
+          label,
           layers:        Object
             .entries(
               // group layer by multilayerId
@@ -145,6 +150,7 @@ GUI.setupControl.overview = async function() {
         position: 'bl',
       }
     });
+
   } catch (err) {
     console.warn(err)
   }
