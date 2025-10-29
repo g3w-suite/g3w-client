@@ -814,7 +814,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-overviewmap                                                        { bottom: 0 !important; }
 .ol-overviewmap:hover                                                  { background-color: rgba(255,255,255, 1) !important; }
 .ol-overviewmap .ol-overviewmap-map                                    { border: none; height: 150px; width: 200px; }
-.ol-overviewmap .ol-overviewmap-box                                    { border: 2px solid var(--skin-color); }
+.ol-overviewmap .ol-overviewmap-box                                    { border: 3px solid var(--skin-color); }
 .ol-control-tl                                                         { top: 0;     left: 7px; }
 .ol-control-bl                                                         { bottom: 40px; left: 7px; }
 .ol-control-tr                                                         { top: 7px;     right: 7px; }
