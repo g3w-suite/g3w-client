@@ -108,7 +108,7 @@
             return true
           } else {
             return !!this.fields.find(field => {
-              return (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === field.name  || node.relation;
+              return node.field_name === (field.name || node.relation);
             })
           }
         });
@@ -218,7 +218,7 @@
       getField(node) {
         if (node.relation) { return node }
         //get field of layer
-        const field = this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
+        const field = this.fields.find(f => node.field_name === f.name);
         //set showlabel
         field.showlabel = node.showlabel;
         return field;

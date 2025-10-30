@@ -753,7 +753,7 @@
         for (const field of layer.formStructure.fields) {
           const _field = { ...field };
           _field.query = true;
-          _field.value = feature.attributes[field.name];
+          _field.value = feature.attributes[field.name] ?? feature.attributes[field.name.replace(/ /g,"_")];
           _field.input = {
             type: `${this.getFieldType(_field)}`
           };
