@@ -43,7 +43,7 @@
         <tr>
           <th v-disabled       = "disableSelectAll">
             <label @click.stop = "setSelection('all')">
-              <input type = "checkbox" :checked = "all" />
+              <input type = "checkbox" :checked = "all " />
             </label>
           </th>
           <th v-for = "(header, i) in state.headers">
@@ -74,7 +74,7 @@
           <td>
             <div style = "display: flex">
               <label
-                v-if   = "show_on_active_filter"
+                v-if   = "!layer.state.filter.active"
                 @click = "select(feature)"
               >
                 <input type = "checkbox" :checked = "feature.selected" />
@@ -130,7 +130,7 @@
 
       <!-- CLEAR SELECTION -->
       <button
-        v-show          = "state.selection.active"
+        v-show          = "layer.state.selection.active"
         class           = "btn"
         v-t-tooltip:top = "'Clear Selection'"
         @click.stop     = "layer.clearSelectionFids()"
@@ -138,7 +138,7 @@
 
       <!-- INVERSE SELECTION -->
       <button
-        v-show          = "state.selection.active"
+        v-show          = "!layer.state.filter.active && layer.state.selection.active"
         :class          = "[ 'btn', layer.state.filter.active ? 'g3w-disabled': '' ]"
         v-t-tooltip:top = "'Invert Selection'"
         @click.stop     = "setSelection('inverse')"
@@ -146,7 +146,7 @@
 
       <!-- TOGGLE FILTER -->
       <button
-        v-show          = "state.selection.active && show_on_active_filter"
+        v-show          = "layer.state.selection.active && !layer.state.filter.pagination"
         :class          = "[ 'btn', layer.state.filter.active ? 'toggled' : '' ]"
         v-t-tooltip:top = "'Enable/Disable filter'"
         @click.stop     = "layer.toggleToken()"
@@ -202,6 +202,7 @@ export default {
       state: {
         id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
         selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
+        filter:        layer.state.filter,    // @since 4.1.0 aligned with query state layer
         features:      [],
         headers,      
         geometry:      true,
@@ -248,16 +249,6 @@ export default {
     pages() {
       return Math.ceil(this.state.allfeatures / this.search.page_size);
     },
-
-    /**
-     * @returns { Boolean } In case of filter without pagination active
-     * 
-     * @since 4.0.0
-     */
-    show_on_active_filter() {
-      return !(this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.getSelection().fids.has('__ALL__')));
-    },
-
     current_layout() {
       return ApplicationState.layout[ApplicationState.layout.__current];
     }
@@ -517,7 +508,7 @@ export default {
           id:         f.id,
           selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
           attributes: f.attributes || f.properties,
-          geometry:   f.geometry
+          geometry:   f.geometry || undefined
         }));
 
         this.state.allfeatures   = data.count;
@@ -526,11 +517,9 @@ export default {
         // reset features
         this.state.features.splice(0);
         this.state.features.push(...features);
-
-        // no filter + get all
-        if (!this.search.field && this.state.allfeatures === this.state.featurescount) {
-          this.all = this.state.features.every(f => f.selected);
-        }
+        
+        this.all = this.layer.state.filter.active || this.layer.state.selection.fids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
+        
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: _("info.server_error") });

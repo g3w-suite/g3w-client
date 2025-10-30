@@ -688,7 +688,7 @@ export default {
      *
      * @since 3.10.0
      */
-    onUnSelectionLayer(storeid, layer) {
+   async onUnSelectionLayer(storeid, layer) {
       if (!layer) {
         return console.warn('undefined layer');;
       }
@@ -697,7 +697,7 @@ export default {
 
       // PROJECT LAYER
       if (!layer.external && storeid) {
-        ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
+        await ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
       }
 
       // EXTERNAL LAYER
@@ -714,6 +714,10 @@ export default {
           }
           GUI.defaultsLayers.selectionLayer.getSource().removeFeature(feature);
         });
+      }
+      //@since 4.0.4 Need to set to false eventually features of layer in queryresults service
+      if (!layer.external) {
+        (service.state.layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selection.selected = false);
       }
     },
 

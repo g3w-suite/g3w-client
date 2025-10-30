@@ -2219,7 +2219,7 @@ export default new (class GUI extends Emitter {
             id:         external ? f.getId() : (f instanceof ol.Feature ? f.getId() : f.id),
             attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
             geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
-            selected:   !external && (!!queryResponse.query.autofilter || layer.state.filter.active || layer.isSelected((f instanceof ol.Feature ? f.getId() : f.id))),
+            selected:   !external && (!!queryResponse.query.autofilter || layer.state.filter.active || layer.hasSelectionFid((f instanceof ol.Feature ? f.getId() : f.id))), //@since 3.11.8 check if autofilter is set
             show:       true,
           })),
           hasgeometry:            Array.isArray(features) && !rawdata && features.some(f => f instanceof ol.Feature ? f.getGeometry() : f.geometry),
@@ -2263,8 +2263,8 @@ export default new (class GUI extends Emitter {
 
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
-      // whether result comes from pagination or previous request is a filter pagination (search with autofilter)
-      l.filter.pagination = l.filter.active && (l.filter.pagination || !!this.state.query?.pagination?.paginate?.at(index));
+       // whether result comes from pagination or previous requestis a filter pagination (case search with autofilter)
+      l.filter.pagination = l.filter.active && (l.filter.pagination || !!(this.state.query?.pagination?.paginate?.at(index)));
       if (options.add || options.update) {
         this.updateLayerResultFeatures(l, options.update);
       } else {
@@ -2587,9 +2587,10 @@ export default new (class GUI extends Emitter {
           hint:     'Add/Remove Selection',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
-            show:    !layer.filter.pagination // show action when filter with pagination is not set
+            show:    !layer.filter.active // show action when filter is not set
           }),
           init({ layer, feature, index, action } = {}) {
+            this.unwatch = Vue.watch(() => layer.filter.active, bool => this.state.show = !bool ); // listen filter layer pagination change
             if (!feature) {
               return console.trace('Invalid feature');
             }
@@ -2598,9 +2599,11 @@ export default new (class GUI extends Emitter {
           change({ features }) {
             // wait for pagination change request
             setTimeout(() => {
-              this.state.show = !layer.filter.pagination; // show action when filter with pagination is not set or is set and current index is paginated
               features.forEach((_, index) => undefined === this.state.toggled[index] && Vue.set(this.state.toggled, index, false))
             })
+          },
+          clear() {
+            this.unwatch && this.unwatch(); // remove action when destroy
           },
           cbk: throttle((layer, feature) => { this.toggleSelection(layer, feature); })
         },
@@ -3215,8 +3218,9 @@ export default new (class GUI extends Emitter {
     }
 
     const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer result content)
+    console.log(action)
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
-    const toggled       = layer.selection.active && layer.features.every(f => f.selected); //check also if all features are selected
+    const toggled       = layer.features.every(f => f.selected); // check if all features are selected  
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
     const features      = [].concat(feature || layer.features || []);
 
@@ -3261,8 +3265,8 @@ export default new (class GUI extends Emitter {
     });
 
     // handle pagination
-    if (!layer.external && !feature && toggled) {
-      catalog_layer.clearSelectionFids();
+    if (!layer.external && !feature && toggled && layer.filter.pagination) {
+      await catalog_layer.clearSelectionFids();
       return;
     }
 
@@ -3326,7 +3330,7 @@ export default new (class GUI extends Emitter {
       }
 
       // set selection property (external layer)
-      catalog_layer.selection.active = layer.features.some(f => f.selected);;
+      catalog_layer.selection.active = catalog_layer.selection.features.some(f => f.selection.selected);
       
       return;
     }
@@ -3360,8 +3364,8 @@ export default new (class GUI extends Emitter {
 
     // set layer selection state
 
-    // PROJECT LAYER Only on result content && not coming from paginate result
-    if (catalog_layer.state.filter.active && 'paginate' !== force) {
+    // PROJECT LAYER and not all toggled
+    if (catalog_layer.state.filter.active && !toggled) {
       fids.forEach((_, idx) => {
         // index of feature to remove
         const i = feature ? index : idx;
@@ -3374,7 +3378,7 @@ export default new (class GUI extends Emitter {
     }
 
     //set selection state of layer true if some feature is selected
-    catalog_layer.getSelection().active = layer.features.some(f => f.selected);
+    catalog_layer.getSelection().active = layer.features.some(f => f.selected) || catalog_layer.state.selection.fids.size > 0;
 
     // remove Highlight geometry layer fetures
     this.highlight(false);
@@ -4745,8 +4749,8 @@ export default new (class GUI extends Emitter {
       });
       //In case of add wms on bottom position, check current zindex of default layers that need to set on top of map layers
       if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.getZIndex()      < zindex && this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
-      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.getZIndex() < zindex && this.defaultsLayers.highlightLayer.setZIndex(zindex + 1); }
-      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
+      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 1); }
+      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.getZIndex() < zindex && this.defaultsLayers.highlightLayer.setZIndex(zindex + 2); }
     });
 
     this.#map.getLayers().on('remove', e => {
@@ -5499,7 +5503,7 @@ export default new (class GUI extends Emitter {
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1)))
           .map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features?.length)
+        .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features)
         .map(({ value } = {}) => {
           // autofilter → automatically set filtertoken
           if (1 === params.autofilter) {
@@ -5514,7 +5518,7 @@ export default new (class GUI extends Emitter {
             const page_size = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes])); // page size = max elements per page
             page_sizes.push(page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             counts.push(value.count);
-            paginate.push(value.data?.at?.(0)?.features && value.count > value.data?.at?.(0)?.features?.length);
+            paginate.push(true); //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
             layers.push(value.data?.at?.(0)?.layer);
           }
           // raw data
