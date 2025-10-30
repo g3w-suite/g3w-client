@@ -3218,7 +3218,6 @@ export default new (class GUI extends Emitter {
     }
 
     const action        = this.getActionLayerById({ layer, id: 'selection' }); //get selection action of layer result content)
-    console.log(action)
     const index         = (layer.features || []).findIndex(f => f == feature); // find feature index when selection is set to single feature
     const toggled       = layer.features.every(f => f.selected); // check if all features are selected  
     const catalog_layer = layer.external ? layer : getCatalogLayerById(layer.id);
