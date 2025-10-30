@@ -218,15 +218,15 @@
                   @click.stop    = "closePanel"
                   data-placement = "left"
                   v-t-tooltip    = "'back'"
-                  class          = "g3w-span-button close-pane-button"
+                  class          = "close-pane-button"
                 >
                   <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
                 </span>
                 <span
-                  @click.stop       = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-                  :data-i18n-title  = "ApplicationState.sidebar.tooltip_close || 'close'"
-                  data-placement    = "right"
-                  class             = "g3w-span-button close-pane-button"
+                  @click.stop    = "ApplicationState.sidebar.btn_close && closeAllPanels()"
+                  :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
+                  data-placement = "right"
+                  class          = "close-pane-button"
                 >
                   <i
                     :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
@@ -1325,5 +1325,4 @@ export default {
     right: 60px;
     top: 60px;
   }
-
 </style>
