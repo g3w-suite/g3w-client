@@ -1026,7 +1026,7 @@ GUI.setupControl.geoscreenshot = function(type) {
      * @see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
      */
     const control = new MapControl({
-      name: "maptoimage",
+      name:     "maptoimage",
       tipLabel: "Screenshot",
       clickmap: true,
       enabled:  true,

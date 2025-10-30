@@ -1325,5 +1325,4 @@ export default {
     right: 60px;
     top: 60px;
   }
-
 </style>
