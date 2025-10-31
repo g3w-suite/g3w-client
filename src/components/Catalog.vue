@@ -717,7 +717,7 @@ export default {
       }
       //@since 4.0.4 Need to set to false eventually features of layer in queryresults service
       if (!layer.external) {
-        (service.state.layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selection.selected = false);
+        (GUI.state.queried_layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selected = false);
       }
     },
 
