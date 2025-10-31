@@ -74,18 +74,11 @@
             <!-- LAYERS METADATA -->
             <div id="metadata_layers" class = "tab-pane fade">
               <div v-for = "layer in groups.layers.layers.value" class = "row-info">
-                <h4
-                  @click       = "showHideInfo"
-                  class        = "layer_header"
-                  data-toggle  = "collapse"
-                  :data-target = "`#${layer.id}`"
-                >
-                  <i :class="'layer-header-icon action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" aria-hidden="true"></i>
-                  <span class = "layer-name">{{ layer.name }}</span>
-                  <span class = "action-button open-close" :class = "$fa('plus')"></span>
-                </h4>
-
-                <div :id = "layer.id" class = "collapse">
+                <details>
+                  <summary class = "layer_header">
+                    <i :class="'layer-header-icon action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" aria-hidden="true"></i>
+                    <span class = "layer-name">{{ layer.name }}</span>
+                  </summary>
 
                   <ul class = "metadata-nav-tabs nav nav-tabs layer-nav-tabs" role = "tablist">
 
@@ -192,7 +185,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </details>
               </div>
             </div>
 
@@ -331,12 +324,6 @@
     },
 
     methods: {
-
-      showHideInfo(e) {
-        const box       = e.target.closest(".layer_header");
-        box.querySelector(".open-close").classList.toggle('fa-plus');
-        box.querySelector(".open-close").classList.toggle('fa-minus');
-      },
 
       sanitizeValue(value) {
         if (Array.isArray(value) || ('object' === typeof value && null !== value)) {
@@ -503,11 +490,18 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
     margin-bottom: 5px;
   }
 
-  .layer_header {
+  summary.layer_header {
     padding: 5px;
     margin-bottom: 0;
     margin-top:0;
     cursor: pointer;
+    font-size: 18px;
+    position: relative;
+    padding: 4px 0;
+    margin: 10px 0 3px 0;
+    &::marker { content: ""; }
+    &::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
+    [open] &::after { content: '-' }
   }
 
   .layer-name {
@@ -516,12 +510,6 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
 
   .layer-header-icon {
     margin-right: 10px;
-    color: #999;
-  }
-
-  .layer_header span.open-close {
-    position: absolute;
-    right: 5px;
     color: #999;
   }
 
