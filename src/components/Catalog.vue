@@ -26,8 +26,7 @@
             aria-controls = "layers"
             role          = "tab"
             data-toggle   = "tab"
-            v-t           = "'data'">
-          </a>
+          >{{ $t('data') }}</a>
         </li>
         <!-- TAB EXTERNAL WMS LAYERS -->
         <li
@@ -40,8 +39,7 @@
             aria-controls = "externalwms"
             role          = "tab"
             data-toggle   = "tab"
-            v-t           = "'externalwms'">
-          </a>
+          >{{ $t('externalwms') }}</a>
         </li>
         <!-- TAB BASE LAYERS -->
         <li
@@ -54,8 +52,7 @@
             aria-controls = "baselayers"
             role          = "tab"
             data-toggle   = "tab"
-            v-t           = "'baselayers'">
-          </a>
+          >{{ $t('baselayers') }}</a>
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
@@ -69,9 +66,7 @@
             role          = "tab"
             data-toggle   = "tab"
             data-i18n     = "legend"
-            v-t           = "'legend'">
-          </a>
-
+          >{{ $t('legend') }}</a>
         </li>
 
       </ul>

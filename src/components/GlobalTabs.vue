@@ -25,7 +25,7 @@
                   :style      = "{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
                   @click      = "group && toggleGroup($event)"
                 >
-                 {{tab.name}} <span style = "padding-left: 3px; font-size: 1.1em;" v-if = "contenttype === 'editing' && tab.required">*</span>
+                 {{ tab.name }} <span style = "padding-left: 3px; font-size: 1.1em;" v-if = "contenttype === 'editing' && tab.required">*</span>
                 </a>
             </li>
 
@@ -39,8 +39,8 @@
             <div
               v-if   = "undefined === tab.visible || tab.visible"
               :id    = "ids[index]"
-              class  = "tab-pane fade"
-              :class = "{'in active': index === 0}"
+              class  = "tab-pane"
+              :class = "{'active': index === 0}"
             >
               <node
                 :showRelationByField = "showRelationByField"

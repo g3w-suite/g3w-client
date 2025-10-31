@@ -152,15 +152,40 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 /**
  * Based on Bootstrap v3.3.7
  */
-require('bootstrap/js/collapse');
 require('bootstrap/js/dropdown');
 require('bootstrap/js/modal');
 require('bootstrap/js/tooltip');
-require('bootstrap/js/tab');
 
 require('select2')(jQuery);
 
 globalThis.moment = require('moment/min/moment-with-locales');
+
+/**
+ * Based on bootstrap/js/tab.js@v3.3.7
+ */
+document.addEventListener('click', function(e) {
+  const tab = e.target.closest('[data-toggle="tab"]');
+  if (!tab) {
+    return;
+  }
+  e.preventDefault();
+  if (tab.parentElement.classList.contains('active')) {
+    return;
+  }
+  const pane = document.querySelector(tab.getAttribute('href'));
+  [
+    { element: tab.closest('li'), container: tab.closest('ul') },
+    { element: pane,              container: pane.parentNode },
+  ].forEach(({ element, container }) => {
+    const active = container.querySelector(':scope > .active');
+    if (active) {
+      active.classList.remove('active');
+      active.querySelectorAll('[data-toggle="tab"]').forEach(tab => tab.setAttribute('aria-expanded', false));
+    }
+    element.classList.add('active');
+    element.querySelectorAll('[data-toggle="tab"]').forEach(tab => tab.setAttribute('aria-expanded', true));
+  });
+});
 
 /*!
   * HOTFIX: for invalid UMD definition

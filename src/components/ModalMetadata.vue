@@ -28,7 +28,7 @@
           <div class = "tab-content">
 
             <!-- GENERAL METADATA | SPATIAL METADATA -->
-            <div v-for="item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane fade" :class="{ in: 'general' === item, active: 'general' === item }">
+            <div v-for="item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ in: 'general' === item, active: 'general' === item }">
               <div v-for = "(data, field) in groups[item]" class = "row row-info">
                 <div class="wrap-content-tab">
                   <div class="col-sm-2 metadata-label" v-t="data.label"></div>
@@ -72,7 +72,7 @@
             </div>
 
             <!-- LAYERS METADATA -->
-            <div id="metadata_layers" class = "tab-pane fade">
+            <div id="metadata_layers" class = "tab-pane">
               <div v-for = "layer in groups.layers.layers.value" class = "row-info">
                 <details>
                   <summary class = "layer_header">
@@ -192,7 +192,7 @@
             <!-- MODAL CREDITS -->
             <div
               id       = "metadata_credits"
-              class    = "tab-pane fade"
+              class    = "tab-pane"
             >
               <div
                 v-if   = "!!customcredits"
