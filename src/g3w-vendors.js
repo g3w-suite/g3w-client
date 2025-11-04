@@ -152,13 +152,41 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 /**
  * Based on Bootstrap v3.3.7
  */
-require('bootstrap/js/dropdown');
 require('bootstrap/js/modal');
 require('bootstrap/js/tooltip');
 
 require('select2')(jQuery);
 
 globalThis.moment = require('moment/min/moment-with-locales');
+
+/**
+ * Based on bootstrap/js/dropdown.js@v3.3.7
+ */
+document.addEventListener('click', function (e) {
+  const target = e.target.closest('[data-toggle="dropdown"]');
+  if (3 !== e.button) {
+    document
+      .querySelectorAll('[data-toggle="dropdown"]')
+      .forEach(toggle => {
+        const open = target === toggle && !target.parentNode.classList.contains('open');
+        toggle.setAttribute('aria-expanded', open);
+        toggle.parentNode.classList.toggle('open', open);
+        if (open) {
+          toggle.focus();
+        }
+      });
+  }
+});
+
+/**
+ * Based on bootstrap/js/dropdown.js@v3.3.7
+ */
+document.addEventListener('keydown', function (e) {
+  const target = e.target.closest('[data-toggle="dropdown"]');
+  if (target && 'Escape' === e.key) {
+    target.click();
+  }
+});
 
 /**
  * Based on bootstrap/js/tab.js@v3.3.7
