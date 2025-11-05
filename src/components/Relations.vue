@@ -185,7 +185,6 @@
 
           <!-- PAGINATION BUTTONS -->
           <div style = "margin-left: auto;" >
-            <button @click.stop = "table.page = Number(table.page) - 1" class="btn" v-disabled = "1 == table.page">«</button>
             <select
               v-model         = "table.page"
               style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
@@ -194,7 +193,9 @@
             >
               <option v-for = "p in pages" :selected = "p == table.page">{{ p }}</option>
             </select>
-            <button @click.stop = "table.page = Number(table.page) + 1" class="btn" v-disabled = "pages == table.page">»</button>
+            {{ $t(' of ') + pages }}
+            <button title="Backward" data-placement="top" @click.stop = "table.page = Number(table.page) - 1" class="btn" v-disabled = "1 == table.page">🞀</button>
+            <button title="Forward"  data-placement="top" @click.stop = "table.page = Number(table.page) + 1" class="btn" v-disabled = "pages == table.page">🞂</button>
           </div>
         </div>
       </div>
