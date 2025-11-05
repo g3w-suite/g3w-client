@@ -41,7 +41,6 @@ import * as xml             from 'ol/xml';
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
 import $script              from 'scriptjs';
-import isMobile             from 'ismobilejs';
 import Vue                  from 'vue/dist/vue.js';
 
 /**
@@ -81,7 +80,9 @@ Vue.extend = function(opts) {
 Object.assign(globalThis, {
   Vue,
   /** @deprecated since 3.11.0 */
-  isMobile: isMobile(),
+  isMobile: {
+    get any() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
+  },
   /** @deprecated since 3.11.0 */
   $script,
   /** @deprecated since 3.11.0 */
@@ -153,7 +154,16 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
  * Based on Bootstrap v3.3.7
  */
 require('bootstrap/js/modal');
-require('bootstrap/js/tooltip');
+
+/**
+ * Based on bootstrap/js/tooltip.js@v3.3.7
+ */
+$.fn.tooltip = function(opts) {
+  if ('hide' === opts) {
+    document.querySelector('#tooltip').hidePopover()
+  }
+  return this;
+};
 
 require('select2')(jQuery);
 
