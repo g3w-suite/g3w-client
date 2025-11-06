@@ -101,10 +101,8 @@
           :config = "download.config"
         />
 
-        <!-- PAGE SIZE -->
-        <label style="margin-top: 5px;"><select style = "border: 1px solid #aaa;" v-model = "table.page_size">
-          <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
-        </select> {{ $t('values per page') }}</label>
+        <!-- TOTAL ELEMENTS -->
+        <span>{{ table.rows.length }} {{ $t('entries') }}</span>
 
         <!-- TABLE CONTENT -->
         <table ref = "table">
@@ -180,8 +178,11 @@
 
         <!-- TABLE TOOLBAR -->
         <div class="table-toolbar" style="display: flex; gap: 1ch; margin-top: 1ch;">
-          <!-- TOTAL ELEMENTS -->
-          <span>{{ table.rows.length }} {{ $t('entries') }}</span>
+
+          <!-- PAGE SIZE -->
+          <label style="margin-top: 5px;"><select style = "border: 1px solid #aaa;" v-model = "table.page_size">
+            <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
+          </select> {{ $t('values per page') }}</label>
 
           <!-- PAGINATION BUTTONS -->
           <div style = "margin-left: auto;" >
@@ -194,8 +195,8 @@
               <option v-for = "p in pages" :selected = "p == table.page">{{ p }}</option>
             </select>
             {{ $t(' of ') + pages }}
-            <button title="Backward" data-placement="top" @click.stop = "table.page = Number(table.page) - 1" class="btn" v-disabled = "1 == table.page">🞀</button>
-            <button title="Forward"  data-placement="top" @click.stop = "table.page = Number(table.page) + 1" class="btn" v-disabled = "pages == table.page">🞂</button>
+            <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "table.page = Number(table.page) - 1" class="btn" v-disabled = "1 == table.page">🞀</button>
+            <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "table.page = Number(table.page) + 1" class="btn" v-disabled = "pages == table.page">🞂</button>
           </div>
         </div>
       </div>
