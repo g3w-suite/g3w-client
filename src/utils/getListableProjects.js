@@ -2,7 +2,6 @@ import ApplicationState            from 'g3w-state';
 
 /** used by the following plugins: "iframe", "archiweb" */
 export function getListableProjects() {
-  window.initConfig.projects
   return window.initConfig.projects.filter(p => {
     if (![null, undefined].includes(p.listable)) {
       return p.listable;
