@@ -2257,8 +2257,7 @@ export default new (class GUI extends Emitter {
 
     // sort layers by TOC (external layer always on bottom)
     if (false === options.add) {
-      const layer_ids = this._projectLayerIds;
-      layers.sort((a, b) => a.external ? 0 : (layer_ids.indexOf(a.id) > layer_ids.indexOf(b.id) ? 1 : -1));
+      layers.sort((a, _) => a.external ? 1 : 0);
     }
 
     // get features from added pick layer in case of a new request query
@@ -5482,10 +5481,10 @@ export default new (class GUI extends Emitter {
     params.filter              = [].concat(params.filter);
     params.page_size           = (params.page_sizes || [])[0];
 
-    const counts     = []; // number of features returned by server
-    const page_sizes = []; // page sizes based on features returned by server
-    const paginate   = []; // whether each layer has pagination (boolean array)
-    const layers     = []; // layers that has at least one feature (to be shown in query result)
+    const counts     = {}; // number of features returned by server
+    const page_sizes = {}; // page sizes based on features returned by server
+    const paginate   = {}; // whether each layer has pagination (boolean array)
+    const layers     = {}; // layers that has at least one feature (to be shown in query result)
     const layersId   = []; // id of project layers (sorted by TOC).
 
     const traverse = tree => (tree.nodes || [tree]).forEach(n => {
@@ -5504,6 +5503,7 @@ export default new (class GUI extends Emitter {
       ))
         .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features)
         .map(({ value } = {}) => {
+          const layerId = value.data?.at?.(0)?.layer?.state?.id;
           // autofilter → automatically set filtertoken
           if (1 === params.autofilter) {
             (value.data || []).forEach(({ layer, filtertoken }) => {
@@ -5514,18 +5514,18 @@ export default new (class GUI extends Emitter {
           }
           // pagination (total elements > page size)
           if (params.page_sizes)  {
-            const page_size = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes])); // page size = max elements per page
-            page_sizes.push(page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
-            counts.push(value.count);
-            paginate.push(true); //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
-            layers.push(value.data?.at?.(0)?.layer);
+            const page_size     = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes])); // page size = max elements per page
+            page_sizes[layerId] = (page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
+            counts[layerId]     = value.count;
+            paginate[layerId]   = true; //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
+            layers[layerId]     =  value.data?.at?.(0)?.layer;
           }
           // raw data
           if (params.raw) {
             return { data: value };
           }
           if (Array.isArray(value.data) && value.data.length > 0) {
-            return value.data[0];
+            return value.data?.at?.(0);
           }
         }),
       query: {
@@ -5537,19 +5537,19 @@ export default new (class GUI extends Emitter {
         /** @since 3.11.0 - pagination info (in case of paginated request) */
         pagination: params.page_size && {
           /** number of pages */
-          pages:         params.page && counts.map(count => Math.ceil(count / params.page_size)),
+          pages:        params.page && Object.entries(counts).reduce((a, [id, count]) => { a[id] = Math.ceil(count / params.page_size); return a; }, {}),
           /** current page */
-          current:       params.page && counts.map(() => params.page),
+          current:      params.page && Object.keys(counts).reduce((a, id) => { a[id] = params.page; return a; }, {}),
+          /** @since 3.11.8 - current page size (how many features are get) */
+          current_sizes: Object.keys(counts).reduce((a, id) => {a[id] = page_sizes[id][0]; return a;}, {}),
           /** @type { Array } number of features that want get with pagination */
           page_sizes,
-          /** @since 3.11.8 - current page size (how many features are get) */
-          current_sizes: counts.map((_, i) => page_sizes[i][0]),
           counts,
           paginate,
           /** data object used to perform subsequent pagination request */
           getData: {
             layers,
-            params: params.filter.slice(0, layers.length).map(filter => ({ ...params, filter })),
+            params: Object.keys(counts).reduce((a, id) => { a[id] = { ...params, filetr: params.filter[0] }; return a; }, {}),
             method: 'getFilterData',
           }
         },

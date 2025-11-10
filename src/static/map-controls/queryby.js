@@ -612,7 +612,7 @@ export class QueryBy extends MapControl {
       const filterConfig = { spatialMethod: control.getSpatialMethod() };
 
       let data       = [];
-      const counts   = []
+      const counts   = {};
       const GEOMETRY = 'querybbox' === type ? ol.geom.Polygon.fromExtent(feature) : feature.getGeometry();
       const layers   = Object
         .values(ApplicationState.layers)
@@ -644,7 +644,7 @@ export class QueryBy extends MapControl {
       if (data.some(r => 'rejected' === r.status)) {
         throw data.filter(r => 'rejected' === r.status).map(r => r.reason);
       }
-      data = data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ count, data = [] }) => { counts.push(count); return data });
+      data = data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ count, data = [] }) => { counts[data[0].layer.getId()] = count; return data; });
       resolve({
         result: true,
         type: 'ows',
@@ -672,19 +672,19 @@ export class QueryBy extends MapControl {
           },
           pagination: { //@since 4.1.0 add pagination
             /** number of pages */
-            pages:         counts.map(count => Math.ceil(count / PAGELENGTHS[0])),
+            pages:   Object.entries(counts).reduce((a, [id, count]) => { a[id] = Math.ceil(count / PAGELENGTHS[0]); return a;}, {}),
             /** current page */
-            current:       counts.map(() => params.page),
+            current:  Object.keys(counts).reduce((a, id) => { a[id] = params.page; return a }, {}),
             /** @type { Array } number of features that want get with pagination */
-            page_sizes: counts.map(count => count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count]),
+            page_sizes: Object.entries(counts).reduce((a, [id, count]) => { a[id] = count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count]; return a;}, {}),
             /** @since 3.11.8 - current page size (how many features are get) */
-            current_sizes: data.map((_, i) => PAGELENGTHS[0]),
+            current_sizes: Object.keys(counts).reduce((a, id) => { a[id] = PAGELENGTHS[0]; return a }, {}),
             counts,
-            paginate: counts.map((c) => c > PAGELENGTHS[0]),
+            paginate: Object.entries(counts).reduce((a, [id, count]) => { a[id] = count > PAGELENGTHS[0]; return a }, {}),
             /** data object used to perform subsequent pagination request */
             getData: {
-              layers,
-              params: data.map(() => params),
+              layers: layers.reduce((a, l) => { a[l.getId()] = l; return a; }, {}),
+              params: Object.keys(counts).reduce((a, id) => { a[id] = params; return a }, {}),
               method: 'query',
             }
           },
