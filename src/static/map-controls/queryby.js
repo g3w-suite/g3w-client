@@ -671,23 +671,23 @@ export class QueryBy extends MapControl {
               : { SELECTED: ['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type) && !!SELECTED },
           },
           pagination: { //@since 4.1.0 add pagination
-          /** number of pages */
-          pages:         counts.map(count => Math.ceil(count / PAGELENGTHS[0])),
-          /** current page */
-          current:       counts.map(() => params.page),
-          /** @type { Array } number of features that want get with pagination */
-          page_sizes: counts.map(count => count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count]),
-          /** @since 3.11.8 - current page size (how many features are get) */
-          current_sizes: data.map((_, i) => PAGELENGTHS[0]),
-          counts,
-          paginate: counts.map((c) => c > PAGELENGTHS[0]),
-          /** data object used to perform subsequent pagination request */
-          getData: {
-            layers,
-            params: data.map(() => params),
-            method: 'query',
-          }
-        },
+            /** number of pages */
+            pages:         counts.map(count => Math.ceil(count / PAGELENGTHS[0])),
+            /** current page */
+            current:       counts.map(() => params.page),
+            /** @type { Array } number of features that want get with pagination */
+            page_sizes: counts.map(count => count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count]),
+            /** @since 3.11.8 - current page size (how many features are get) */
+            current_sizes: data.map((_, i) => PAGELENGTHS[0]),
+            counts,
+            paginate: counts.map((c) => c > PAGELENGTHS[0]),
+            /** data object used to perform subsequent pagination request */
+            getData: {
+              layers,
+              params: data.map(() => params),
+              method: 'query',
+            }
+          },
         },
         usermessage: 'querybbox' !== type && !GEOMETRY && {
           type:    'warning',
