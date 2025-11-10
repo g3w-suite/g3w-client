@@ -1993,6 +1993,12 @@ export class Layer extends Emitter {
   }
 
   async #queryG3W(opts = {}, params = {}) {
+    //@since 4.1.0 add pagination params
+    params.autofilter = opts.autofilter;
+    params.page       = opts.page;
+    params.page_size  = opts.page_size;
+    params.page       = opts.page;
+    
     switch(opts?.filter?.type) {
       case 'bbox':
       case 'geometry':
@@ -2005,8 +2011,8 @@ export class Layer extends Emitter {
         break;    
     }
 
-    const data = [];
-
+    const data  = [];
+    let count   = 0;
     try {
       const response = await XHR.post({ 
         url:         this.getUrl('data'),
@@ -2014,6 +2020,7 @@ export class Layer extends Emitter {
         data:        JSON.stringify(params),
       });
       if (response?.result) {
+        count  = response?.vector?.count;
         data.push({ 
           layer:    this,
           features: Layer._parse('g3w-vector/json',
@@ -2028,7 +2035,7 @@ export class Layer extends Emitter {
       console.warn(e);
     }
 
-    return { data }
+    return { count, data }
   }
 
   #queryWMS(opts = {}) {

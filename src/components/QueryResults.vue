@@ -196,7 +196,7 @@
 
               <!-- PAGINATION -->
               <div
-                v-if       = "state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
+                v-if       = "!layer.external && state.query.pagination && state.query.pagination.page_sizes[index].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
@@ -683,7 +683,7 @@
        * @returns { boolean } whether can paginate layer results
        */
       canPaginate(layer) {
-        return !!(this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[this.state.queried_layers.findIndex(l => l == layer)]);
+        return !!(!layer.external && this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[this.state.queried_layers.findIndex(l => l == layer)]);
       },
 
       /**

@@ -3,7 +3,11 @@
  * @since 4.1.0
  */
 
-const { GEOMETRY_TYPES, G3W_FID } = g3w.constants;
+const { 
+  GEOMETRY_TYPES,
+  G3W_FID,
+  PAGELENGTHS, 
+}                        = g3w.constants;
 const ApplicationState   = g3w.state;
 const GUI                = g3w.app;
 const MapControl         = g3w.Control;
@@ -608,6 +612,7 @@ export class QueryBy extends MapControl {
       const filterConfig = { spatialMethod: control.getSpatialMethod() };
 
       let data       = [];
+      const counts   = []
       const GEOMETRY = 'querybbox' === type ? ol.geom.Polygon.fromExtent(feature) : feature.getGeometry();
       const layers   = Object
         .values(ApplicationState.layers)
@@ -621,25 +626,25 @@ export class QueryBy extends MapControl {
               })
             : []
         );
-
-      data = await Promise.allSettled(Object.values(layers).map(layers => {
-        const layer = [].concat(layers)[0];
-        return layer.query({
-          feature_count: ApplicationState.project.state.feature_count || 5,
-          filterConfig,
-          filter: {
-            config: filterConfig,
-            type:   'geometry',
-            value:  GEOMETRY,
-          },
-        });
-      }));
+      const params = {
+        feature_count: ApplicationState.project.state.feature_count || 5,
+        filterConfig,
+        autofilter: 1,                          
+        page:       1, 
+        page_size: PAGELENGTHS[0],
+        filter: {
+          config: filterConfig,
+          type:   'geometry',
+          value:  GEOMETRY,
+        }
+      };  
+      data = await Promise.allSettled(Object.values(layers).map(layers => [].concat(layers)[0].query(params) ));
 
       // show all errors
       if (data.some(r => 'rejected' === r.status)) {
         throw data.filter(r => 'rejected' === r.status).map(r => r.reason);
       }
-
+      data = data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ count, data = [] }) => { counts.push(count); return data });
       resolve({
         result: true,
         type: 'ows',
@@ -665,12 +670,30 @@ export class QueryBy extends MapControl {
               ? { SELECTED: !!SELECTED }
               : { SELECTED: ['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type) && !!SELECTED },
           },
+          pagination: { //@since 4.1.0 add pagination
+          /** number of pages */
+          pages:         counts.map(count => Math.ceil(count / PAGELENGTHS[0])),
+          /** current page */
+          current:       counts.map(() => params.page),
+          /** @type { Array } number of features that want get with pagination */
+          page_sizes: counts.map(count => count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count]),
+          /** @since 3.11.8 - current page size (how many features are get) */
+          current_sizes: data.map((_, i) => PAGELENGTHS[0]),
+          counts,
+          paginate: counts.map((c) => c > PAGELENGTHS[0]),
+          /** data object used to perform subsequent pagination request */
+          getData: {
+            layers,
+            params: data.map(() => params),
+            method: 'query',
+          }
+        },
         },
         usermessage: 'querybbox' !== type && !GEOMETRY && {
           type:    'warning',
           message: `${layerName} - ${_('mapcontrols.querybypolygon.no_geometry')}`,
         } || undefined,
-        data: data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ data = [] }) => data),
+        data,
       });
     } catch (e) {
       console.warn('Error running spatial query: ', e);
