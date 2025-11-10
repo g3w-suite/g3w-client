@@ -196,7 +196,7 @@
 
               <!-- PAGINATION -->
               <div
-                v-if       = "!layer.external && state.query.pagination && state.query.pagination.page_sizes[layer.id] && state.query.pagination.page_sizes[layer.id].length > 1"
+                v-if       = "state.query.pagination && state.query.pagination.page_sizes[layer.id] && state.query.pagination.page_sizes[layer.id].length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
