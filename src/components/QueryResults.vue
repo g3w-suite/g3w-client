@@ -25,7 +25,7 @@
           style = "position: relative"
         >
           <li
-            v-for = "(layer, index) in state.queried_layers.filter(l => showLayer(l))"
+            v-for = "layer in state.queried_layers.filter(l => showLayer(l))"
           >
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
@@ -82,7 +82,7 @@
                       @click.stop      = "printAtlas(layer)"
                       class            = "action-button"
                       v-t-tooltip:left = "'Print Atlas'"
-                      v-disabled       = "ApplicationState.download"
+                      v-disabled       = "state.download"
                     >
                       <span
                         class  = "action-button-icon"
@@ -95,7 +95,7 @@
                         class            = "action-button"
                         :class           = "{'toggled': layer.downloadformats.active}"
                         v-t-tooltip:left = "'Downloads'"
-                        v-disabled       = "ApplicationState.download"
+                        v-disabled       = "state.download"
                       >
                         <span
                           class       = "action-button-icon"
@@ -572,9 +572,7 @@
   import { downloadFeatures, showDownloadFormats } from 'utils/downloadFeatures';
   import GUI                                       from 'g3w-app';
   
-  const headerExpandActionCellWidth = 10;
-  const headerActionsCellWidth      = 10;
-  const HEADERTYPESFIELD            = [
+  const HEADERTYPESFIELD = [
     'varchar',
     'integer',
     'float',
@@ -589,27 +587,31 @@
 
     data() {
       return {
-        /** @since 4.0.0 */
-        ApplicationState,
         state:                       ApplicationState,
-        headerExpandActionCellWidth: headerExpandActionCellWidth,
-        headerActionsCellWidth:      headerActionsCellWidth,
+        headerExpandActionCellWidth: 10,
+        headerActionsCellWidth:      10,
       }
     },
+
     mixins: [fieldsMixin],
+
     components: {
       TableAttributeFieldValue,
       'infoformats':         InfoFormats,
       'header-feature-body': HeaderFeatureBody,
       HeaderFeatureActionsBody
     },
+
     computed: {
+
       onelayerresult() {
         return 1 === this.state.queried_layers.length;
       },
+
       hasLayers() {
         return this.hasResults || !!this.state.components.length;
       },
+
       hasResults() {
         return this.state.queried_layers.length > 0;
       },
@@ -647,12 +649,12 @@
                 icon: 'draw',
                 message: (query.layerName) ?
                   `${query.layerName} ${undefined !== query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
-                  : ' '                                                                                         // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+                  : ' '                                                                                // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
               };
               case 'circle':
                 return {
                   icon: 'empty-circle',
-                  message: ' ',                                                                                     // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+                  message: ' ',                                                                        // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
                 };
             default:
               console.warn(`Unsupported query type:  ${query.type}`);
@@ -677,6 +679,7 @@
       },
 
     },
+
     methods: {
 
       /**
@@ -703,7 +706,7 @@
        *
        * @param { Array.<string> } downloads
        *
-       * return {Array} return array of download formats enable of layer features
+       * @returns { Array } array of download formats enable of layer features
        */
       getLayerDownloads(downloads = []) {
         return downloads.filter(d => 'pdf' !== d);
@@ -740,14 +743,15 @@
           && this.state.layerscustomcomponents[layerId][type][position]
           || [];
       },
+
       getLayerField({ layer, feature, fieldName }) {
-        const layerField = layer.attributes.find(a => fieldName === a.name);
         return {
-          ...layerField,
-          label: null, // needed to hide label in query result dom table value content
+          ...layer.attributes.find(a => fieldName === a.name), // layer field
+          label: null,                                         // hide label in query result (dom table value content)
           value: feature.attributes[fieldName]
         };
       },
+
       getQueryFields(layer, feature) {
         const fields = [];
         for (const field of layer.formStructure.fields) {
@@ -761,21 +765,27 @@
         }
         return fields;
       },
+
       getColSpan(layer) {
         return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
       },
+
       addLayerFeaturesToResults(layer) {
         GUI.addLayerFeaturesToResultsAction(layer);
       },
+
       printAtlas(layer) {
         GUI.printAtlas(layer);
       },
+
       showLayerDownloadFormats(layer) {
         showDownloadFormats(layer);
       },
+
       saveLayerResult(layer, type = "csv") {
         downloadFeatures(type, layer, layer.features);
       },
+
       hasLayerOneFeature(layer) {
         return 1 === layer.features.length;
       },
@@ -788,21 +798,27 @@
       saveFilter(layer) {
         getCatalogLayerById(layer.id).saveFilter();
       },
+
       async addRemoveFilter(layer) {
         await getCatalogLayerById(layer.id).toggleToken();
       },
+
       hasOneLayerAndOneFeature(layer) {
         return this.hasLayerOneFeature(layer);
       },
+
       hasFormStructure(layer) {
         return !!layer.formStructure;
       },
+
       layerHasFeatures(layer) {
         return Array.isArray(layer.features) && layer.features.length > 0;
       },
+
       async toggleSelection(layer) {
         await GUI.toggleSelection(layer);
       },
+
       extractAttributesFromFirstTabOfFormStructureLayers(layer) {
         const attributes = new Set();
         const traverseStructure = item => {
@@ -835,13 +851,15 @@
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.max_preview_fields, attributes.length);
         return _attributes.slice(0, end);
       },
+
       attributesSubsetLength(layer) {
         return this.attributesSubset(layer).length;
       },
+
       getLayerFormStructure(layer) {
-        //need to clone structure objects in deep and set reactive with Vue.observable
-        return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n)));
+        return layer.formStructure.structure.map(n => Vue.observable(structuredClone(n))); // clone deep + set reactive with Vue.observable
       },
+
       getLayerFeatureBox(layer, feature, relation_index) {
         const boxid = GUI.getBoxId(layer, feature, relation_index);
         if (undefined === this.state.layersFeaturesBoxes[boxid] ) {
@@ -876,21 +894,27 @@
       },
 
       /**
+       * Show only features that have show true and in case of active filter, only selected
+       * 
        * @since 3.11.8
-       * Show only features that have show true and in case of active filter, only selected 
        */
       showFeature(layer, feature) {
         return GUI.showFeature(layer, feature);
       },
+
       async toggleFeatureBox(layer, feature, relation_index) {
         const boxid = GUI.getBoxId(layer, feature, relation_index);
         this.state.layersFeaturesBoxes[boxid].collapsed = !this.state.layersFeaturesBoxes[boxid].collapsed;
         await this.$nextTick();
         this.showFeatureInfo(layer, boxid);
       },
+
       toggleFeatureBoxAndZoom(layer, feature, relation_index) {
-        if (!this.hasLayerOneFeature(layer)) { this.toggleFeatureBox(layer, feature, relation_index) }
+        if (!this.hasLayerOneFeature(layer)) {
+          this.toggleFeatureBox(layer, feature, relation_index);
+        }
       },
+
       async trigger(action, layer,feature, index) {
         if (action.opened && 'none' === $(`#${layer.id}_${index}`).css('display')) {
           this.toggleFeatureBox(layer, feature);
@@ -907,6 +931,7 @@
           await _action.cbk(layer, feature, _action, index, $(`#${layer.id}_${index} > td`));
         }
       },
+
       openLink(link_url) {
         window.open(link_url, '_blank');
       },
@@ -945,7 +970,7 @@
                 type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
                 return geom?.getCoordinates?.() ?? geom.coordinates;
               });
-            //check if features have geometry
+            // whether features have geometry
             if (coordinates.length > 0) {
               try {
                 geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
@@ -1054,9 +1079,11 @@
 
         queried_layers[index].loading = false;
       },
+
     },
 
     watch: {
+
       async 'state.queried_layers'(queried_layers = []) {
         queried_layers.forEach(layer => {
           if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
@@ -1086,6 +1113,7 @@
         requestAnimationFrame(() => GUI.postRender(this.$el));
         await this.$nextTick();
       },
+
       onelayerresult(bool) {
         if (bool && !this.state.query?.pagination?.[this.state.queried_layers[0].id]?.paginate && !this.state.queried_layers[0].filter.active) {
           let type, geometry;
@@ -1108,14 +1136,17 @@
           GUI.highlightGeometry(geometry, { duration: Infinity, zoom: false });
         }
       }
+
     },
+
     created() {
-      // THROTTLED FUNCTION
       this.zoomToLayer = throttle(layer => { GUI.zoomToLayer(layer); });
     },
+
     destroyed() {
       GUI.clear();
-    }
+    },
+
   };
 </script>
 
