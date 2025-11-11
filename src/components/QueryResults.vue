@@ -375,7 +375,7 @@
                           </td>
                         </tr>
                         <tr
-                          v-show = "!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
+                          v-show = "!collapsedFeatureBox(layer,feature) || hasLayerOneFeature(layer)"
                           :id    = "`${layer.id}_${index}`"
                           class  = "featurebox-body"
                         >
@@ -476,7 +476,7 @@
                         </td>
                       </tr>
                       <tr
-                        v-show = "!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)"
+                        v-show = "!collapsedFeatureBox(layer,feature) || hasLayerOneFeature(layer)"
                         :id    = "`${layer.id}_${index}`"
                         class  = "featurebox-body"
                       >
@@ -683,7 +683,7 @@
        * @returns { boolean } whether can paginate layer results
        */
       canPaginate(layer) {
-        return !!(this.state.query?.pagination && this.state.query.pagination?.[layer.id]?.paginate);
+        return !!this.state?.query?.pagination?.[layer.id]?.paginate;
       },
 
       /**
@@ -718,27 +718,22 @@
        */
       showLayer(layer) {
         return (
-          layer.show &&                                                      // check if is set show
+          layer.show &&                    // check if is set show
           (
-            this.layerHasFeatures(layer) ||                                  // check if layer has at least one features
-            layer.rawdata ||                                                 // check if layer has rawdata
-            Array.isArray(layer.infoformats) && layer.infoformats.length > 0 // check if it has info formats (eg. external wms layer)
+            layer?.features?.length > 0 || // whether has at least one feature
+            layer.rawdata ||               // whether has rawdata
+            layer?.infoformats?.length > 0 // whether has info formats (eg. external wms layer)
           )
         )
       },
 
       /**
-       *
        * @param layerId
        * @param type feature or layer
        * @param position
-       * @returns {*}
        */
       getLayerCustomComponents(layerId, type = 'feature', position = 'after') {
-        return this.state.layerscustomcomponents[layerId]
-          && this.state.layerscustomcomponents[layerId][type]
-          && this.state.layerscustomcomponents[layerId][type][position]
-          || [];
+        return this.state?.layerscustomcomponents?.[layerId]?.[type]?.[position] || [];
       },
 
       getLayerField({ layer, feature, fieldName }) {
@@ -764,7 +759,7 @@
       },
 
       getColSpan(layer) {
-        return this.attributesSubsetLength(layer)+(!this.hasLayerOneFeature(layer)*1);
+        return this.attributesSubset(layer).length + (!this.hasLayerOneFeature(layer)*1);
       },
 
       addLayerFeaturesToResults(layer) {
@@ -800,57 +795,46 @@
         await getCatalogLayerById(layer.id).toggleToken();
       },
 
-      hasOneLayerAndOneFeature(layer) {
-        return this.hasLayerOneFeature(layer);
-      },
-
       hasFormStructure(layer) {
         return !!layer.formStructure;
-      },
-
-      layerHasFeatures(layer) {
-        return Array.isArray(layer.features) && layer.features.length > 0;
       },
 
       async toggleSelection(layer) {
         await GUI.toggleSelection(layer);
       },
 
-      extractAttributesFromFirstTabOfFormStructureLayers(layer) {
-        const attributes = new Set();
-        const traverseStructure = item => {
-          if (item.nodes) {
-            item.nodes.forEach(node => traverseStructure(node));
-          } else {
-            let field = layer.formStructure.fields.find(f => item.field_name === f.name);
-            if (field) {
-              if (this.state.type === 'ows') {
-                // clone it to avoid replacing original
-                field = {...field};
-                field.name = field.name.replace(/ /g, '_');
-              }
-              attributes.add(field);
-            }
-          }
-        };
-        if (layer.formStructure.structure.length) {
-          layer.formStructure.structure.forEach(structure => traverseStructure(structure));
-        }
-        return Array.from(attributes);
-      },
-
       attributesSubset(layer) {
-        const attributes = this.hasFormStructure(layer)
-          ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer)
-          : layer.attributes;
+        let attributes;
+        
+        // extract attributes from first tab of form structure layers
+        if (this.hasFormStructure(layer)) {
+          const attrs = new Set();
+          const traverseStructure = item => {
+            if (item.nodes) {
+              item.nodes.forEach(node => traverseStructure(node));
+            } else {
+              let field = layer.formStructure.fields.find(f => item.field_name === f.name);
+              if (field) {
+                if (this.state.type === 'ows') {
+                  // clone it to avoid replacing original
+                  field = {...field};
+                  field.name = field.name.replace(/ /g, '_');
+                }
+                attrs.add(field);
+              }
+            }
+          };
+          if (layer.formStructure.structure.length) {
+            layer.formStructure.structure.forEach(structure => traverseStructure(structure));
+          }
+          attributes = Array.from(attrs);
+        } else {
+          attributes = layer.attributes;
+        }
         const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.includes(attribute.type));
         // TODO: find a clever way to handle geocoding results..
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.max_preview_fields, attributes.length);
         return _attributes.slice(0, end);
-      },
-
-      attributesSubsetLength(layer) {
-        return this.attributesSubset(layer).length;
       },
 
       getLayerFormStructure(layer) {
@@ -1101,8 +1085,7 @@
         // check if is a single result layer and if it has one feature
         if (this.onelayerresult && this.hasLayerOneFeature(queried_layers[0])) {
           const layer   = queried_layers[0];
-          const feature = layer.features[0];
-          const boxid   = GUI.getBoxId(layer, feature);
+          const boxid   = GUI.getBoxId(layer, layer.features[0]);
           GUI.onceafter('postRender', () => {
             this.showFeatureInfo(layer, boxid);
           });
