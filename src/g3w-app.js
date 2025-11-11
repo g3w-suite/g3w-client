@@ -5478,14 +5478,16 @@ export default new (class GUI extends Emitter {
     page_sizes,
   }) {
     const { layer, ...params } = options;
-    params.filter              = [].concat(params.filter);
-    params.page_size           = (params.page_sizes || [])[0];
 
-    const counts     = {}; // number of features returned by server
-    const page_sizes = {}; // page sizes based on features returned by server
-    const paginate   = {}; // whether each layer has pagination (boolean array)
-    const layers     = {}; // layers that has at least one feature (to be shown in query result)
+    params.filter    = [].concat(params.filter);
+    params.page_size = (params.page_sizes || [])[0];
     const layersId   = []; // id of project layers (sorted by TOC).
+    const pagination = {
+      getData: {
+        params: {},
+        method: 'getFilterData',
+      }
+    };
 
     const traverse = tree => (tree.nodes || [tree]).forEach(n => {
       if (n.id) {
@@ -5515,10 +5517,21 @@ export default new (class GUI extends Emitter {
           // pagination (total elements > page size)
           if (params.page_sizes)  {
             const page_size     = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes])); // page size = max elements per page
-            page_sizes[layerId] = (page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
-            counts[layerId]     = value.count;
-            paginate[layerId]   = true; //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
-            layers[layerId]     =  value.data?.at?.(0)?.layer;
+            const page_sizes    = (page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
+            pagination[layerId] = {
+              /** number of pages */
+              pages          : params.page && Math.ceil(value.count / params.page_size),
+              /** @type { Array } number of features that want get with pagination */
+              page_sizes     : page_sizes,
+              /** current page */
+              current        : params.page,
+              /** @since 3.11.8 - current page size (how many features are get) */
+              current_sizes  : page_sizes[0],
+              count          : value.count,
+              paginate       : true, //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
+              layer          : value.data?.at?.(0)?.layer,
+            };
+            pagination.getData.params[layerId] = { ...params, filter: params.filter[0] };
           }
           // raw data
           if (params.raw) {
@@ -5535,24 +5548,7 @@ export default new (class GUI extends Emitter {
         /** whether it was an autofilter request */
         autofilter: !!params.autofilter,
         /** @since 3.11.0 - pagination info (in case of paginated request) */
-        pagination: params.page_size && {
-          /** number of pages */
-          pages:        params.page && Object.entries(counts).reduce((a, [id, count]) => { a[id] = Math.ceil(count / params.page_size); return a; }, {}),
-          /** current page */
-          current:      params.page && Object.keys(counts).reduce((a, id) => { a[id] = params.page; return a; }, {}),
-          /** @since 3.11.8 - current page size (how many features are get) */
-          current_sizes: Object.keys(counts).reduce((a, id) => {a[id] = page_sizes[id][0]; return a;}, {}),
-          /** @type { Array } number of features that want get with pagination */
-          page_sizes,
-          counts,
-          paginate,
-          /** data object used to perform subsequent pagination request */
-          getData: {
-            layers,
-            params: Object.keys(counts).reduce((a, id) => { a[id] = { ...params, filetr: params.filter[0] }; return a; }, {}),
-            method: 'getFilterData',
-          }
-        },
+        pagination: params.page_size && pagination
       },
       type: 'api',
     };

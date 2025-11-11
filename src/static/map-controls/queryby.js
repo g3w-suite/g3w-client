@@ -2,7 +2,6 @@
  * @file ORIGINAL SOURCE: src/map/controls/query.js@v4.0.0
  * @since 4.1.0
  */
-
 const { 
   GEOMETRY_TYPES,
   G3W_FID,
@@ -645,6 +644,31 @@ export class QueryBy extends MapControl {
         throw data.filter(r => 'rejected' === r.status).map(r => r.reason);
       }
       data = data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ count, data = [] }) => { counts[data[0].layer.getId()] = count; return data; });
+      
+      const pagination = {
+        /** data object used to perform subsequent pagination request */
+        getData: {
+          params: {},
+          method: 'query',
+        }
+      };
+
+      Object.entries(counts).forEach(([id, count]) => {
+        pagination[id] = {
+          /** number of pages */
+          pages:         Math.ceil(count / PAGELENGTHS[0]),
+          /** current page */
+          current:       params.page,
+          /** @type { Array } number of features that want get with pagination */
+          page_sizes:    count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count],
+          /** current page size (how many features are get) */
+          current_sizes: PAGELENGTHS[0],
+          paginate:      count > PAGELENGTHS[0],
+          layer:         layers.find(l => id === l.getId()),
+          count,
+        };
+        pagination.getData.params[id] = params;
+      });
       resolve({
         result: true,
         type: 'ows',
@@ -670,24 +694,7 @@ export class QueryBy extends MapControl {
               ? { SELECTED: !!SELECTED }
               : { SELECTED: ['querybydrawpolygon', 'querybycircle', 'querybyfreehand'].includes(type) && !!SELECTED },
           },
-          pagination: { //@since 4.1.0 add pagination
-            /** number of pages */
-            pages:   Object.entries(counts).reduce((a, [id, count]) => { a[id] = Math.ceil(count / PAGELENGTHS[0]); return a;}, {}),
-            /** current page */
-            current:  Object.keys(counts).reduce((a, id) => { a[id] = params.page; return a }, {}),
-            /** @type { Array } number of features that want get with pagination */
-            page_sizes: Object.entries(counts).reduce((a, [id, count]) => { a[id] = count <= PAGELENGTHS[0] ? PAGELENGTHS[0] : [...PAGELENGTHS.filter(p => p < count), count]; return a;}, {}),
-            /** @since 3.11.8 - current page size (how many features are get) */
-            current_sizes: Object.keys(counts).reduce((a, id) => { a[id] = PAGELENGTHS[0]; return a }, {}),
-            counts,
-            paginate: Object.entries(counts).reduce((a, [id, count]) => { a[id] = count > PAGELENGTHS[0]; return a }, {}),
-            /** data object used to perform subsequent pagination request */
-            getData: {
-              layers: layers.reduce((a, l) => { a[l.getId()] = l; return a; }, {}),
-              params: Object.keys(counts).reduce((a, id) => { a[id] = params; return a }, {}),
-              method: 'query',
-            }
-          },
+          pagination, //@since 4.1.0 add pagination
         },
         usermessage: 'querybbox' !== type && !GEOMETRY && {
           type:    'warning',

@@ -54,7 +54,7 @@
                   <span v-if = "!layer.rawdata">
                     ({{
                       canPaginate(layer)
-                        ? (layer.features.length + ((state.query.pagination.current[layer.id] - 1) * state.query.pagination.getData.params[layer.id].page_size)) + ' - ' + state.query.pagination.counts[layer.id]
+                        ? (layer.features.length + ((state.query.pagination[layer.id].current - 1) * state.query.pagination.getData.params[layer.id].page_size)) + ' - ' + state.query.pagination[layer.id].count
                         : layer.features.length
                     }})
                   </span>
@@ -196,7 +196,7 @@
 
               <!-- PAGINATION -->
               <div
-                v-if       = "state.query.pagination && state.query.pagination.page_sizes[layer.id] && state.query.pagination.page_sizes[layer.id].length > 1"
+                v-if       = "state.query.pagination && state.query.pagination[layer.id] && state.query.pagination[layer.id].page_sizes.length > 1"
                 id         = "g3w-queryresults-pagination"
                 v-disabled = "layer.loading"
               >
@@ -208,7 +208,7 @@
                   style   = "width: auto;"
                 >
                   <option
-                    v-for  = "page in state.query.pagination.page_sizes[layer.id]"
+                    v-for  = "page in state.query.pagination[layer.id].page_sizes"
                     :key   = "page"
                     :value = "page"
                   >{{ page }}</option>
@@ -220,10 +220,10 @@
                   <!-- GOTO: PREVIOUS PAGE -->
                   <li>
                     <button
-                      v-if        =  "state.query.pagination.counts[layer.id] > layer.features.length"
+                      v-if        =  "state.query.pagination[layer.id].count > layer.features.length"
                       class       = "btn fas fa-angle-left"
-                      :disabled   = "1 === state.query.pagination.current[layer.id]"
-                      @click.stop = "changePage(layer.id, state.query.pagination.current[layer.id] - 1)"
+                      :disabled   = "1 === state.query.pagination[layer.id].current"
+                      @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current - 1)"
                     ></button>
                   </li>
 
@@ -231,29 +231,29 @@
                   <li>
                     <button
                       class       = "btn"
-                      :class      = "{ 'skin-background-color': 1 === state.query.pagination.current[layer.id] }"
-                      v-disabled  = "layer.features.length === state.query.pagination.counts[layer.id]"
+                      :class      = "{ 'skin-background-color': 1 === state.query.pagination[layer.id].current }"
+                      v-disabled  = "layer.features.length === state.query.pagination[layer.id].count"
                       @click.stop = "changePage(layer.id, 1)"
                     >1</button>
                   </li>
 
                   <!-- ELLIPSIS SEPARATOR -->
                   <li
-                    v-if = "state.query.pagination.counts[layer.id] > layer.features.length && state.query.pagination.pages[layer.id] > 4 && state.query.pagination.current[layer.id] > 2"
+                    v-if = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 4 && state.query.pagination[layer.id].current > 2"
                   >…</li>
 
                   <li>
-                    <template v-if = "state.query.pagination.pages[layer.id] > 1 && state.query.pagination.counts[layer.id] > layer.features.length">
+                    <template v-if = "state.query.pagination[layer.id].pages > 1 && state.query.pagination[layer.id].count > layer.features.length">
                       <button
                         v-for= "page in (
-                        (state.query.pagination.pages[layer.id] < 4 || state.query.pagination.current[layer.id] < 3)
-                          ? Array.from(Array(state.query.pagination.pages[layer.id] - 2).keys()).slice(0, 2).map(i => i + 2)
-                          : (state.query.pagination.pages[layer.id] - state.query.pagination.current[layer.id]) > 2
-                          ? [state.query.pagination.current[layer.id], state.query.pagination.current[layer.id] + 1 ]
-                          : [state.query.pagination.pages[layer.id] - 2, state.query.pagination.pages[layer.id] - 1 ]
+                        (state.query.pagination[layer.id].pages < 4 || state.query.pagination[layer.id].current < 3)
+                          ? Array.from(Array(state.query.pagination[layer.id].pages - 2).keys()).slice(0, 2).map(i => i + 2)
+                          : (state.query.pagination[layer.id].pages - state.query.pagination[layer.id].current) > 2
+                          ? [state.query.pagination[layer.id].current, state.query.pagination[layer.id].current + 1 ]
+                          : [state.query.pagination[layer.id].pages - 2, state.query.pagination[layer.id].pages - 1 ]
                         )"
                         class       = "btn"
-                        :class      = "{ 'skin-background-color': page === state.query.pagination.current[layer.id]  }"
+                        :class      = "{ 'skin-background-color': page === state.query.pagination[layer.id].current }"
                         @click.stop = "changePage(layer.id, page)"
                       >{{ page }}
                       </button>
@@ -262,28 +262,28 @@
 
                   <!-- ELLIPSIS SEPARATOR -->
                   <li
-                    v-if = "state.query.pagination.counts[layer.id] > layer.features.length && state.query.pagination.pages[layer.id] > 4 && (state.query.pagination.current[layer.id] < state.query.pagination.pages[layer.id] - 2)"
+                    v-if = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 4 && (state.query.pagination[layer.id].current < state.query.pagination[layer.id].pages - 2)"
                   >…</li>
 
                   <!-- GOTO: LAST PAGE  -->
                   <li>
                     <button
-                      v-if        = "state.query.pagination.counts[layer.id] > layer.features.length && state.query.pagination.pages[layer.id] > 1"
+                      v-if        = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 1"
                       class       = "btn"
-                      :class      = "{ 'skin-background-color': state.query.pagination.pages[layer.id] === state.query.pagination.current[layer.id]  }"
-                      @click.stop = "changePage(layer.id, state.query.pagination.pages[layer.id])"
+                      :class      = "{ 'skin-background-color': state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current }"
+                      @click.stop = "changePage(layer.id, state.query.pagination[layer.id].pages)"
                     >
-                      {{ state.query.pagination.pages[layer.id] }}
+                      {{ state.query.pagination[layer.id].pages }}
                     </button>
                   </li>
 
                   <!-- GOTO: NEXT PAGE -->
                   <li>
                     <button
-                      v-if="state.query.pagination.counts[layer.id] > layer.features.length"
-                      :disabled   = "state.query.pagination.pages[layer.id] === state.query.pagination.current[layer.id]"
+                      v-if="state.query.pagination[layer.id].count > layer.features.length"
+                      :disabled   = "state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current"
                       class       = "btn fas fa-angle-right"
-                      @click.stop = "changePage(layer.id, state.query.pagination.current[layer.id] + 1)"
+                      @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current + 1)"
                     ></button>
                   </li>
 
@@ -683,7 +683,7 @@
        * @returns { boolean } whether can paginate layer results
        */
       canPaginate(layer) {
-        return !!(!layer.external && this.state.query && this.state.query.pagination && this.state.query.pagination.paginate[layer.id]);
+        return !!(this.state.query?.pagination && this.state.query.pagination?.[layer.id]?.paginate);
       },
 
       /**
@@ -985,13 +985,13 @@
         try {
           // set current features count shown by selection 
           if (undefined !== size) {
-            query.pagination.current_sizes[id] = size;
+            query.pagination[id].current_sizes = size;
           }
 
-          const page_size = query.pagination.current_sizes[id];
+          const page_size = query.pagination[id].current_sizes;
 
           // remove "autofilter" parameter (on first request)
-          if (query.autofilter && query.pagination.paginate[id]) {
+          if (query.autofilter && query.pagination[id].paginate) {
             query.autofilter = false;
             Object.keys(query.pagination.getData.params).forEach(id => delete query.pagination.getData.params[id].autofilter);
           }
@@ -1002,7 +1002,7 @@
           }
 
           // get config from getData object
-          const layer = query.pagination.getData.layers[id];
+          const layer = query.pagination[id].layer;
 
           // whehter layer has filter
           const has_filtertoken = !!layer.getToken();
@@ -1017,18 +1017,18 @@
           );
 
           // set paginate base of change amount of features request changing select value on query result
-          query.pagination.paginate[id] = data.count > (data.data || [])[0].features.length;
+          query.pagination[id].paginate            = data.count > (data.data || [])[0].features.length;
 
           // set new number of pages
-          query.pagination.pages[id]    = Math.ceil(data.count / page_size);
+          query.pagination[id].pages               = Math.ceil(data.count / page_size);
 
           // set filter pagination in case of all features are get from pagination
-          queried_layers[index].filter.pagination  = queried_layers[index].filter.active && query.pagination.paginate[id];
+          queried_layers[index].filter.pagination  = queried_layers[index].filter.active && query.pagination[id].paginate;
 
           // set the current page
-          query.pagination.current[id]  = page;
+          query.pagination[id].current             = page;
 
-          const page_size_change = layer.state.selection.active || has_filtertoken ;
+          const page_size_change                   = layer.state.selection.active || has_filtertoken ;
 
           // get selection action
           const action = this.state.layersactions[layer.getId()].find(({ id }) => 'selection' === id);
@@ -1087,7 +1087,7 @@
         await this.$nextTick();
       },
       onelayerresult(bool) {
-        if (bool && !this.state.query.pagination?.paginate[this.state.queried_layers[0].id] && !this.state.queried_layers[0].filter.active) {
+        if (bool && !this.state.query?.pagination?.[this.state.queried_layers[0].id]?.paginate && !this.state.queried_layers[0].filter.active) {
           let type, geometry;
           const coordinates = this.state.queried_layers[0].features
             .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
