@@ -5,6 +5,8 @@
 
 <template>
   <div id = "search-results" class = "queryresults-wrapper">
+
+    <!-- QUERY RESULTS INFO -->
     <div
       v-if  = "info.message"
       class = "skin-color"
@@ -16,6 +18,7 @@
       </span>
       <span> {{ info.message }} </span>
     </div>
+
     <div class = "queryresults-container">
       <template v-if = "state.queried_layers.length">
         <ul
@@ -621,51 +624,45 @@
        * 
        * @property { string | null }     icon
        * @property { string | null }     message
-       * @property { (() => {}) | null } action
        */
       /**
-       * @returns {QueryResultsInfo} query info
+       * @returns { QueryResultsInfo } query info
        */
       info() {
-        if (this.state.query) {
-          const query         = this.state.query;
-          //@since 3.8.1 coordinates show only four decimal numbers
-          //In case of map units degrees, show four decimal numbers otherwise, meter, show only two decimal numbers
-          const decimalNumber = 'degrees' === GUI.getMapUnits() ? 4 : 2;
-          switch (query.type) {
-            case 'coordinates':
-              return {
-                icon:    'marker',
-                message: `  ${query.coordinates[0].toFixed(decimalNumber)}, ${query.coordinates[1].toFixed(decimalNumber)}`
-              };
-            case 'bbox':
-              return {
-                icon:    'square',
-                message: `  [${query.bbox.map(c => c.toFixed(decimalNumber)).join(' , ')}]`
-              };
-            case 'polygon':
-            case 'drawpolygon':
-              return {
-                icon: 'draw',
-                message: (query.layerName) ?
-                  `${query.layerName} ${undefined !== query.fid ? ` - Feature Id: ${query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
-                  : ' '                                                                                // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
-              };
-              case 'circle':
-                return {
-                  icon: 'empty-circle',
-                  message: ' ',                                                                        // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
-                };
-            default:
-              console.warn(`Unsupported query type:  ${query.type}`);
-              break;
-          }
-        } else if (this.state.search) {
-          /** @FIXME missing implementation? */
+        const precision = 'degrees' === GUI.getMapUnits() ? 4 : 2;
+
+        if ('coordinates' === this.state?.query?.type) {
+          return {
+            icon:    'marker',
+            message: `  ${this.state.query.coordinates[0].toFixed(precision)}, ${this.state.query.coordinates[1].toFixed(precision)}`
+          };
+        }
+
+        if ('bbox' === this.state?.query?.type) {
+          return {
+            icon:    'square',
+            message: `  [${this.state.query.bbox.map(c => c.toFixed(precision)).join(' , ')}]`
+          };
+        }
+
+        if ('circle' === this.state?.query?.type) {
+          return {
+            icon:    'empty-circle',
+            message: ' ',
+          };
+        }
+
+        if (['polygon', 'drawpolygon'].includes(this.state?.query?.type)) {
+          return {
+            icon: 'draw',
+            message: 
+              this.state.query.layerName
+              ? `${this.state.query.layerName} ${undefined !== this.state.query.fid ? ` - Feature Id: ${this.state.query.fid}` : ''}` // <Feature ID>:   when polygon feature comes from a Feature layer
+              : ' '                                                                                                                   // <empty string>: when polygon feature comes from a Drawed layer (temporary layer)
+          };
         }
 
         return { icon: null, message: null };
-
       },
 
       queryableLayers() {
