@@ -643,7 +643,7 @@ export class QueryBy extends MapControl {
       if (data.some(r => 'rejected' === r.status)) {
         throw data.filter(r => 'rejected' === r.status).map(r => r.reason);
       }
-      data = data.filter(r => 'fulfilled' === r.status).map(r => r.value).flatMap(({ count, data = [] }) => { counts[data[0].layer.getId()] = count; return data; });
+      data = data.filter(r => 'fulfilled' === r.status).map(r => r.value).filter(({ count = 0 }) => count ).flatMap(({ count, data = [] }) => { counts[data?.[0]?.layer?.getId()] = count; return data; });
       
       const pagination = {
         /** data object used to perform subsequent pagination request */
