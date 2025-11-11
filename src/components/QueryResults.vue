@@ -93,7 +93,7 @@
                       </span>
                     </span>
                     <!--        DOWNLOAD        -->
-                    <template v-if = "getLayerDownloads(layer.downloads).length > 0">
+                    <template v-if = "(layer.downloads || []).filter(d => 'pdf' !== d).length > 0">
                       <span
                         class            = "action-button"
                         :class           = "{'toggled': layer.downloadformats.active}"
@@ -140,7 +140,7 @@
                   <template v-if = "!layer.external && layer.selection.active">
                     <span
                       v-if             = "!layer.filter.pagination && layer.features.some(f => f.selected)"
-                      @click.stop      = "addRemoveFilter(layer)"
+                      @click.stop      = "toggleFilter(layer)"
                       class            = "action-button"
                       :class           = "{'toggled': layer.filter.active}"
                       v-t-tooltip:left = "'Enable/Disable filter'"
@@ -699,17 +699,6 @@
       },
 
       /**
-       * @since v3.10.0
-       *
-       * @param { Array.<string> } downloads
-       *
-       * @returns { Array } array of download formats enable of layer features
-       */
-      getLayerDownloads(downloads = []) {
-        return downloads.filter(d => 'pdf' !== d);
-      },
-
-      /**
        * @param { Object } layer
        * 
        * @return { boolean } whether layer need to be show on query result list
@@ -747,12 +736,12 @@
       getQueryFields(layer, feature) {
         const fields = [];
         for (const field of layer.formStructure.fields) {
-          const _field = { ...field };
-          _field.query = true;
-          _field.value = feature.attributes[field.name] ?? feature.attributes[field.name.replace(/ /g,"_")];
-          _field.input = {
-            type: `${this.getFieldType(_field)}`
+          const _field = {
+            ...field,
+            query: true,
+            value: feature.attributes[field.name] ?? feature.attributes[field.name.replace(/ /g,"_")],
           };
+          _field.input = { type: `${this.getFieldType(_field)}` };
           fields.push(_field);
         }
         return fields;
@@ -791,7 +780,7 @@
         getCatalogLayerById(layer.id).saveFilter();
       },
 
-      async addRemoveFilter(layer) {
+      async toggleFilter(layer) {
         await getCatalogLayerById(layer.id).toggleToken();
       },
 
@@ -809,9 +798,9 @@
         // extract attributes from first tab of form structure layers
         if (this.hasFormStructure(layer)) {
           const attrs = new Set();
-          const traverseStructure = item => {
+          const traverse = item => {
             if (item.nodes) {
-              item.nodes.forEach(node => traverseStructure(node));
+              item.nodes.forEach(node => traverse(node));
             } else {
               let field = layer.formStructure.fields.find(f => item.field_name === f.name);
               if (field) {
@@ -824,9 +813,7 @@
               }
             }
           };
-          if (layer.formStructure.structure.length) {
-            layer.formStructure.structure.forEach(structure => traverseStructure(structure));
-          }
+          (layer.formStructure.structure || []).forEach(struct => traverse(struct));
           attributes = Array.from(attrs);
         } else {
           attributes = layer.attributes;
