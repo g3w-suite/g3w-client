@@ -1249,7 +1249,7 @@ export class Layer extends Emitter {
       // set url params (GET)
       if ('POST' !== params.method) {
         const url = new URL(params.url);
-        Object.keys(params).forEach(p => url.searchParams.set(p, params.params[p]));
+        Object.entries(params.params).filter(([_,v]) => undefined !== v).forEach(([p,v]) => url.searchParams.set(p, v));
         params.url = url.toString();
       }
 
