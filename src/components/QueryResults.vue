@@ -67,7 +67,21 @@
                   @click.stop = ""
                 >
                   <!-- INFO FORMATS -->
-                  <infoformats :layer = "layer"/>
+                  <!-- <infoformats :layer = "layer"/> -->
+                  <select
+                    v-if      = "(layer.infoformats || []).length"
+                    class     = "form-control"
+                    @change   = "changeInfoFormat(layer, $event.target.value)"
+                    :disabled = "layer.loading"
+                  >
+                    <option
+                      v-for  = "format in layer.infoformats"
+                      :key   = "format"
+                      :value = "format"
+                    >
+                      {{ format }}
+                    </option>
+                  </select>
 
                   <!-- ZOOM TO LAYER -->
                   <span
@@ -559,6 +573,9 @@
   import { getCatalogLayerById }                   from 'utils/getCatalogLayerById';
   import { downloadFeatures, showDownloadFormats } from 'utils/downloadFeatures';
   import GUI                                       from 'g3w-app';
+
+  import { Layer }                from 'g3w-layer';
+  import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   
   const HEADERTYPESFIELD = [
     'varchar',
@@ -578,6 +595,8 @@
         state:                       ApplicationState,
         headerExpandActionCellWidth: 10,
         headerActionsCellWidth:      10,
+        /** @since 4.1.0 */
+        proxied_layers:              [],
       }
     },
 
@@ -1030,11 +1049,66 @@
         queried_layers[index].loading = false;
       },
 
+      /**
+       * @since 4.1.0 
+       */
+      async changeInfoFormat(layer, contenttype) {
+        layer.loading = true;
+        try {
+          const catalog_layer = getCatalogLayerById(layer.id);
+
+          if (!this.proxied_layers.includes(catalog_layer)) {
+            this.proxied_layers.push(catalog_layer);
+          }
+          
+          const response      = await catalog_layer.fetchProxyData('wms', { changes: {
+            headers: { 'Content-Type': contenttype },
+            params:  { INFO_FORMAT: contenttype }
+          }});
+
+          layer.infoformat = contenttype;
+
+          catalog_layer.setInfoFormat(layer.infoformat);
+
+          const [data] = Layer._parse(contenttype, { layers: [catalog_layer], response });
+
+          // parse as raw data
+          if (!data.features) {
+            layer.features.splice(0);
+            await this.$nextTick();
+            layer.rawdata = data.rawdata;
+          }
+
+          // parse data
+          if (data.features) {
+            layer.rawdata = null;
+            data.features.forEach(f => {
+              const feature = {
+                id:         f instanceof ol.Feature ? f.getId()         : f.id,
+                attributes: f instanceof ol.Feature ? f.getProperties() : f.properties,
+                geometry:   f instanceof ol.Feature ? f.getGeometry()   : f.geometry,
+                show:       true,
+              };
+              // raw data (html) → set attributes to visualize it on result
+              if (0 === layer.attributes.length) {
+                layer.hasgeometry = !!feature.geometry;
+                GUI.setActionsForLayers([layer]);
+                getAlphanumericProps(feature.attributes).forEach(name => layer.attributes.push({ name, label: name, show: true }));
+              }
+              layer.features.push(feature);
+            });
+          }
+        } catch (e) {
+          console.warn(e);
+        }
+        layer.loading = false;
+      },
+
     },
 
     watch: {
 
-      async 'state.queried_layers'(queried_layers = []) {
+      async 'state.queried_layers'(queried_layers = [], prev = []) {
         queried_layers.forEach(layer => {
           if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
@@ -1090,6 +1164,10 @@
 
     created() {
       this.zoomToLayer = throttle(layer => { GUI.zoomToLayer(layer); });
+    },
+
+    beforeDestroy() {
+      this.proxied_layers.forEach(layer => layer?.clearProxyData?.('wms'));
     },
 
     destroyed() {
