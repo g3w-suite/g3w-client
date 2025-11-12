@@ -30,7 +30,7 @@
         class       = "btn skin-button"
         @click.stop = config.download(type)
       >
-        <span :class = "g3wtemplate.getFontClass('download')"></span>
+        <span :class = "$fa('download')"></span>
       </button>
     </div>
   </div>

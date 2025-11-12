@@ -14,7 +14,7 @@
     >
       <span
         v-if   = "info.icon"
-        :class = "g3wtemplate.getFontClass(info.icon)">
+        :class = "$fa(info.icon)">
       </span>
       <span> {{ info.message }} </span>
     </div>
@@ -39,9 +39,12 @@
                 @mouseout.stop   = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
                 @click.stop      = "collapseSidebar"
               >
+                <!-- LAYER NAME -->
                 <div
                   class  = "box-title query-layer-title"
-                  :style = "{fontSize: isMobile() && '1em !important'}">
+                  :style = "{ fontSize: isMobile() && '1em !important' }"
+                >
+                  <!-- OPEN ATTRIBUTE TABLE -->
                   <span
                     v-if             = "!layer.external"
                     @click.stop      = "openAttributeTable(layer)"
@@ -50,7 +53,7 @@
                   >
                     <span
                       class  = "action-button-icon"
-                      :class = "g3wtemplate.getFontClass('list')"
+                      :class = "$fa('list')"
                     ></span>
                   </span>
                   {{ layer.title }}
@@ -62,53 +65,57 @@
                     }})
                   </span>
                 </div>
+
                 <div
                   class       = "box-features-action"
                   @click.stop = ""
                 >
-                  <!-- info format layer component -->
+                  <!-- INFO FORMATS  -->
                   <infoformats :layer = "layer"/>
-                  <template v-if = "layer.features.length > 0">
+
+                  <!-- ZOOM TO LAYER -->
+                  <span
+                    v-if             = "layer.features.length > 0 && layer.hasgeometry"
+                    @click.stop      = "zoomToLayer(layer)"
+                    class           = "action-button"
+                    v-t-tooltip:top  = "'Zoom to features extent'"
+                  >
                     <span
-                      v-if             = "layer.hasgeometry"
-                      @click.stop      = "zoomToLayer(layer)"
-                      class           = "action-button"
-                      v-t-tooltip:top  = "'Zoom to features extent'"
-                    >
-                      <span
-                        class  = "action-button-icon"
-                        :class = "g3wtemplate.getFontClass('marker')">
-                      </span>
+                      class  = "action-button-icon"
+                      :class = "$fa('marker')">
                     </span>
+                  </span>
+
+                  <!-- PRINT LAYER -->
+                  <span
+                    v-if             = "layer.features.length > 0 && layer.atlas.length"
+                    @click.stop      = "printAtlas(layer)"
+                    class            = "action-button"
+                    v-t-tooltip:left = "'Print Atlas'"
+                    v-disabled       = "state.download"
+                  >
                     <span
-                      v-if             = "layer.atlas.length"
-                      @click.stop      = "printAtlas(layer)"
-                      class            = "action-button"
-                      v-t-tooltip:left = "'Print Atlas'"
-                      v-disabled       = "state.download"
-                    >
-                      <span
-                        class  = "action-button-icon"
-                        :class = "g3wtemplate.getFontClass('print')">
-                      </span>
+                      class  = "action-button-icon"
+                      :class = "$fa('print')">
                     </span>
-                    <!--        DOWNLOAD        -->
-                    <template v-if = "(layer.downloads || []).filter(d => 'pdf' !== d).length > 0">
-                      <span
-                        class            = "action-button"
-                        :class           = "{'toggled': layer.downloadformats.active}"
-                        v-t-tooltip:left = "'Downloads'"
-                        v-disabled       = "state.download"
-                      >
-                        <span
-                          class       = "action-button-icon"
-                          :class      = "g3wtemplate.getFontClass('download')"
-                          @click.stop = "showLayerDownloadFormats(layer)"
-                        ></span>
-                      </span>
-                    </template>
-                    <!--        END DOWNLOAD        -->
-                  </template>
+                  </span>
+
+                  <!-- DOWNLOAD LAYER -->
+                  <span
+                    v-if             = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
+                    class            = "action-button"
+                    :class           = "{'toggled': layer.downloadformats.active}"
+                    v-t-tooltip:left = "'Downloads'"
+                    v-disabled       = "state.download"
+                  >
+                    <span
+                      class       = "action-button-icon"
+                      :class      = "$fa('download')"
+                      @click.stop = "showLayerDownloadFormats(layer)"
+                    ></span>
+                  </span>
+
+                  <!-- TOGGLE LAYER FEATURES -->
                   <span
                     v-if             = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
                     @click.stop      = "addLayerFeaturesToResults(layer)"
@@ -118,7 +125,7 @@
                   >
                     <span
                       class  = "action-button-icon"
-                      :class = "g3wtemplate.getFontClass('plus-square')"
+                      :class = "$fa('plus-square')"
                     ></span>
                   </span>
 
@@ -132,41 +139,47 @@
                   >
                     <span
                       class  = "action-button-icon"
-                      :class = "g3wtemplate.getFontClass('success')"
+                      :class = "$fa('success')"
                     ></span>
                   </span>
 
-                  <!-- Filter template tools -->
-                  <template v-if = "!layer.external && layer.selection.active">
+                  <!-- TOGGLE LAYER FILTER -->
+                  <span
+                    v-if             = "
+                      !layer.external
+                      && layer.selection.active
+                      && !layer.filter.pagination
+                      && layer.features.some(f => f.selected)
+                    "
+                    @click.stop      = "toggleFilter(layer)"
+                    class            = "action-button"
+                    :class           = "{'toggled': layer.filter.active}"
+                    v-t-tooltip:left = "'Enable/Disable filter'"
+                  >
                     <span
-                      v-if             = "!layer.filter.pagination && layer.features.some(f => f.selected)"
-                      @click.stop      = "toggleFilter(layer)"
-                      class            = "action-button"
-                      :class           = "{'toggled': layer.filter.active}"
-                      v-t-tooltip:left = "'Enable/Disable filter'"
-                    >
-                      <span
-                        class  = "action-button-icon"
-                        :class = "g3wtemplate.getFontClass('filter')"
-                      ></span>
-                    </span>
-                    <!-- @since 3.9 add save -->
+                      class  = "action-button-icon"
+                      :class = "$fa('filter')"
+                    ></span>
+                  </span>
+
+                  <!-- SAVE LAYER FILTER -->
+                  <span
+                    v-if                    = "
+                      !layer.external
+                      && layer.selection.active
+                      && state.logged
+                      && layer.filter.active
+                      && (null === layer.filter.current || layer.selection.active)
+                    "
+                    @click.stop      = "saveFilter(layer)"
+                    class            = "action-button"
+                    v-t-tooltip:left = "'Save Filter'"
+                  >
                     <span
-                      v-if                    = "
-                        state.logged
-                        && layer.filter.active
-                        && (null === layer.filter.current || layer.selection.active)
-                      "
-                      @click.stop      = "saveFilter(layer)"
-                      class            = "action-button"
-                      v-t-tooltip:left = "'Save Filter'"
-                    >
-                      <span
-                        class  = "action-button-icon"
-                        :class = "g3wtemplate.getFontClass('save')"
-                      ></span>
-                    </span>
-                  </template>
+                      class  = "action-button-icon"
+                      :class = "$fa('save')"
+                    ></span>
+                  </span>
 
                 </div>
                 <button
@@ -190,11 +203,13 @@
                     :config = "state.layeractiontool[layer.id].config"/>
                 </div>
               </template>
+              
               <!--     Add Custom layer components      -->
               <component
                 v-for = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
                 :is   = "component"
-                :layer = "layer"/>
+                :layer = "layer"
+              />
               <!--   End custom layer component         -->
 
               <!-- PAGINATION -->

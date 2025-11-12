@@ -300,7 +300,7 @@
                 <b v-if="!layer_data" v-t="'Add your file here'"></b>
                 <b v-else-if = "layer_name">{{ layer_name }}</b>
               </h4>
-              <i v-if="!layer_data" :class = "g3wtemplate.getFontClass('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
+              <i v-if="!layer_data" :class = "$fa('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
               <span v-if="!layer_data" style="font-family: Monospace;">.gml, .geojson, .kml, .kmz, .gpx, .csv, .zip (shapefile)</span>
             </form>
 

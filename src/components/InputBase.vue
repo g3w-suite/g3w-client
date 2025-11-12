@@ -38,7 +38,7 @@
       v-if   = "state.relationField"
       style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
     >
-      <span :class = "g3wtemplate.getFontClass('warning')"></span>
+      <span :class = "$fa('warning')"></span>
       <span v-t = "'Relation key field'"></span>
     </div>
 

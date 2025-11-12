@@ -106,7 +106,7 @@
       :class    = "{'skin-border-color' : !manual }"
       style     = "color: #000;"
     >
-      <i :class = "g3wtemplate.getFontClass('search')"></i>
+      <i :class = "$fa('search')"></i>
       <span v-t = "'SEARCH A VALUE'"></span>
     </button>
 

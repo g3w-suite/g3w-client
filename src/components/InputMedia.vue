@@ -11,7 +11,7 @@
         @click = "onClick"
         style  = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
       >
-        <i :class = "g3wtemplate.getFontClass('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
+        <i :class = "$fa('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
           <input
             :id       = "mediaid"
             style     = "display:none"

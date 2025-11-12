@@ -27,7 +27,7 @@
       style       = "padding-right: 2px;"
       :class      = "[
         { bold : isGroup },
-        g3wtemplate.getFontClass(layerstree.expanded ? 'caret-down' : 'caret-right')
+        $fa(layerstree.expanded ? 'caret-down' : 'caret-right')
       ]"
       @click.stop = "expandCollapse"
       class       = "root collapse-expande-collapse-icon"
@@ -48,7 +48,7 @@
       style     = "padding-left: 18px"
       :class    = "[
         parentFolder ? 'child' : 'root',
-        g3wtemplate.getFontClass('table')
+        $fa('table')
       ]"
     ></span>
 
@@ -58,7 +58,7 @@
       <span
         v-if        = "layerstree.external && layerstree.removable"
         style       = "color: red; padding-left: 1px;"
-        :class      = "g3wtemplate.getFontClass('trash')"
+        :class      = "$fa('trash')"
         @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
@@ -72,7 +72,7 @@
           v-if             = "'toc' === legendlayerposition || !isGroup && layerstree.categories"
           @click.self.stop = "expandCollapse"
           class            = "collapse-expande-collapse-icon"
-          :class           = "g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
+          :class           = "$fa(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
         ></span>
 
         <span
@@ -87,7 +87,7 @@
                   : '18px'
           }"
           :class      = "[
-            g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'),
+            $fa(layerstree.checked ? 'check': 'uncheck'),
             { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
           ]"
         ></span>
@@ -127,7 +127,7 @@
         >
           <span
             style  = "color: red"
-            :class = "g3wtemplate.getFontClass('filter')">
+            :class = "$fa('filter')">
           </span>
         </span>
         <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
@@ -147,7 +147,7 @@
           v-if                         = "layerstree.selection.active"
           class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          :class                       = "g3wtemplate.getFontClass('clear')"
+          :class                       = "$fa('clear')"
           @click.caputure.prevent.stop = "clearSelection"
           v-t-tooltip                  = "'Clear Selection'"
         ></span>
@@ -158,7 +158,7 @@
           class                        = "action-button selection-filter-icon"
           data-placement               = "left"
           :class                       = "[
-            g3wtemplate.getFontClass('filter'),
+            $fa('filter'),
             layerstree.filter.active  ? 'active' : '',
           ]"
           @click.caputure.prevent.stop = "toggleFilterLayer"
@@ -170,7 +170,7 @@
           v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           class                        = "action-button selection-filter-icon"
           data-placement               = "left"
-          :class                       = "g3wtemplate.getFontClass('save')"
+          :class                       = "$fa('save')"
           @click.caputure.prevent.stop = "saveFilter(layerstree)"
           v-t-tooltip                  = "'Save Filter'"
         ></span>

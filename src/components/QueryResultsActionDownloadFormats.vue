@@ -39,7 +39,7 @@
         @click.stop = download
         v-disabled  = "ApplicationState.download"
       >
-        <span :class = "g3wtemplate.getFontClass('download')">
+        <span :class = "$fa('download')">
         </span>
       </button>
     </div>

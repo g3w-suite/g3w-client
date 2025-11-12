@@ -27,7 +27,7 @@
           class="form-control"
         />
         <span class="input-group-addon caret">
-          <span :class="[ g3wtemplate.getFontClass(timeOnly() ? 'time' : 'calendar') ]"></span>
+          <span :class="[ $fa(timeOnly() ? 'time' : 'calendar') ]"></span>
         </span>
       </div>
 

@@ -12,7 +12,7 @@
       <span
         v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
         class  = "skin-color"
-        :class = "g3wtemplate.getFontClass('link')">
+        :class = "$fa('link')">
       </span>
 
       <g3w-image
