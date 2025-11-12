@@ -71,78 +71,85 @@
 
                   <!-- ZOOM TO LAYER -->
                   <span
-                    v-if            = "layer.features.length > 0 && layer.hasgeometry"
-                    @click.stop     = "zoomToLayer(layer)"
-                    :class          = "$fa('marker')"
-                    class           = "action-button action-button-icon"
-                    v-t-tooltip:top = "'Zoom to features extent'"
+                    v-if           = "layer.features.length > 0 && layer.hasgeometry"
+                    @click.stop    = "zoomToLayer(layer)"
+                    :class         = "$fa('marker')"
+                    class          = "action-button action-button-icon"
+                    title          = "Zoom to features extent"
+                    data-placement = "top"
                   ></span>
 
                   <!-- PRINT LAYER -->
                   <span
-                    v-if             = "layer.features.length > 0 && layer.atlas.length"
-                    @click.stop      = "printAtlas(layer)"
-                    :class           = "$fa('print')"
-                    class            = "action-button action-button-icon"
-                    v-t-tooltip:left = "'Print Atlas'"
-                    v-disabled       = "state.download"
+                    v-if           = "layer.features.length > 0 && layer.atlas.length"
+                    @click.stop    = "printAtlas(layer)"
+                    :class         = "$fa('print')"
+                    class          = "action-button action-button-icon"
+                    title          = "Print Atlas"
+                    data-placement = "top"
+                    v-disabled     = "state.download"
                   ></span>
 
                   <!-- DOWNLOAD LAYER -->
                   <span
-                    v-if             = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
-                    @click.stop      = "showLayerDownloadFormats(layer)"
-                    class            = "action-button action-button-icon"
-                    :class           = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
-                    v-t-tooltip:left = "'Downloads'"
-                    v-disabled       = "state.download"
+                    v-if           = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
+                    @click.stop    = "showLayerDownloadFormats(layer)"
+                    class          = "action-button action-button-icon"
+                    :class         = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
+                    title          = "Downloads"
+                    data-placement = "top"
+                    v-disabled     = "state.download"
                   ></span>
 
                   <!-- TOGGLE LAYER FEATURES -->
                   <span
-                    v-if             = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
-                    @click.stop      = "addLayerFeaturesToResults(layer)"
-                    class            = "action-button action-button-icon"
-                    :class           = "{ 'toggled': layer.addfeaturesresults.active, [$fa('plus-square')]: true }"
-                    v-t-tooltip:left = "'Add/Remove features to results'"
+                    v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                    @click.stop    = "addLayerFeaturesToResults(layer)"
+                    class          = "action-button action-button-icon"
+                    :class         = "{ 'toggled': layer.addfeaturesresults.active, [$fa('plus-square')]: true }"
+                    title          = "Add/Remove features to results"
+                    data-placement = "top"
                   ></span>
 
                   <!-- TOGGLE LAYER SELECTION -->
                   <span
-                    v-if             = "canSelect(layer)"
-                    @click.stop      = "toggleSelection(layer)"
-                    class            = "action-button action-button-icon"
-                    v-t-tooltip:left = "'Add/Remove Selection'"
-                    :class           = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected), [$fa('success')]: true }"
+                    v-if           = "canSelect(layer)"
+                    @click.stop    = "toggleSelection(layer)"
+                    class          = "action-button action-button-icon"
+                    title          = "Add/Remove Selection"
+                    data-placement = "top"
+                    :class         = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected), [$fa('success')]: true }"
                   ></span>
 
                   <!-- TOGGLE LAYER FILTER -->
                   <span
-                    v-if             = "
+                    v-if           = "
                       !layer.external
                       && layer.selection.active
                       && !layer.filter.pagination
                       && layer.features.some(f => f.selected)
                     "
-                    @click.stop      = "toggleFilter(layer)"
-                    class            = "action-button action-button-icon"
-                    :class           = "{'toggled': layer.filter.active, [$fa('filter')]: true }"
-                    v-t-tooltip:left = "'Enable/Disable filter'"
+                    @click.stop    = "toggleFilter(layer)"
+                    class          = "action-button action-button-icon"
+                    :class         = "{'toggled': layer.filter.active, [$fa('filter')]: true }"
+                    title          = "Enable/Disable filter"
+                    data-placement = "top"
                   ></span>
 
                   <!-- SAVE LAYER FILTER -->
                   <span
-                    v-if                    = "
+                    v-if           = "
                       !layer.external
                       && layer.selection.active
                       && state.logged
                       && layer.filter.active
                       && (null === layer.filter.current || layer.selection.active)
                     "
-                    @click.stop      = "saveFilter(layer)"
-                    :class           = "$fa('save')"
-                    class            = "action-button action-button-icon"
-                    v-t-tooltip:left = "'Save Filter'"
+                    @click.stop    = "saveFilter(layer)"
+                    :class         = "$fa('save')"
+                    class          = "action-button action-button-icon"
+                    title          = "Save Filter"
+                    data-placement = "top"
                   ></span>
 
                 </div>
