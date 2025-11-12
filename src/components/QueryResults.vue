@@ -67,7 +67,6 @@
                   @click.stop = ""
                 >
                   <!-- INFO FORMATS -->
-                  <!-- <infoformats :layer = "layer"/> -->
                   <select
                     v-if      = "(layer.infoformats || []).length"
                     class     = "form-control"
@@ -565,7 +564,6 @@
   import ApplicationState                          from 'g3w-state';
   import { fieldsMixin }                           from 'mixins';
   import TableAttributeFieldValue                  from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import InfoFormats                               from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody                         from 'components/QueryResultsHeaderFeatureBody.vue';
   import HeaderFeatureActionsBody                  from 'components/QueryResultsHeaderFeatureActionsBody.vue';
   import { toRawType }                             from 'utils/toRawType';
@@ -604,7 +602,6 @@
 
     components: {
       TableAttributeFieldValue,
-      'infoformats':         InfoFormats,
       'header-feature-body': HeaderFeatureBody,
       HeaderFeatureActionsBody
     },
