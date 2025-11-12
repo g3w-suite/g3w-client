@@ -48,14 +48,10 @@
                   <span
                     v-if             = "!layer.external"
                     @click.stop      = "openAttributeTable(layer)"
-                    class            = "action-button"
+                    :class           = "$fa('list')"
+                    class            = "action-button action-button-icon"
                     v-t-tooltip:left = "'Open Attribute Table'"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('list')"
-                    ></span>
-                  </span>
+                  ></span>
                   {{ layer.title }}
                   <span v-if = "!layer.rawdata">
                     ({{
@@ -70,78 +66,55 @@
                   class       = "box-features-action"
                   @click.stop = ""
                 >
-                  <!-- INFO FORMATS  -->
+                  <!-- INFO FORMATS -->
                   <infoformats :layer = "layer"/>
 
                   <!-- ZOOM TO LAYER -->
                   <span
-                    v-if             = "layer.features.length > 0 && layer.hasgeometry"
-                    @click.stop      = "zoomToLayer(layer)"
-                    class           = "action-button"
-                    v-t-tooltip:top  = "'Zoom to features extent'"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('marker')">
-                    </span>
-                  </span>
+                    v-if            = "layer.features.length > 0 && layer.hasgeometry"
+                    @click.stop     = "zoomToLayer(layer)"
+                    :class          = "$fa('marker')"
+                    class           = "action-button action-button-icon"
+                    v-t-tooltip:top = "'Zoom to features extent'"
+                  ></span>
 
                   <!-- PRINT LAYER -->
                   <span
                     v-if             = "layer.features.length > 0 && layer.atlas.length"
                     @click.stop      = "printAtlas(layer)"
-                    class            = "action-button"
+                    :class           = "$fa('print')"
+                    class            = "action-button action-button-icon"
                     v-t-tooltip:left = "'Print Atlas'"
                     v-disabled       = "state.download"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('print')">
-                    </span>
-                  </span>
+                  ></span>
 
                   <!-- DOWNLOAD LAYER -->
                   <span
                     v-if             = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
-                    class            = "action-button"
-                    :class           = "{'toggled': layer.downloadformats.active}"
+                    @click.stop      = "showLayerDownloadFormats(layer)"
+                    class            = "action-button action-button-icon"
+                    :class           = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
                     v-t-tooltip:left = "'Downloads'"
                     v-disabled       = "state.download"
-                  >
-                    <span
-                      class       = "action-button-icon"
-                      :class      = "$fa('download')"
-                      @click.stop = "showLayerDownloadFormats(layer)"
-                    ></span>
-                  </span>
+                  ></span>
 
                   <!-- TOGGLE LAYER FEATURES -->
                   <span
                     v-if             = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
                     @click.stop      = "addLayerFeaturesToResults(layer)"
-                    class            = "action-button"
-                    :class           = "{'toggled': layer.addfeaturesresults.active}"
+                    class            = "action-button action-button-icon"
+                    :class           = "{ 'toggled': layer.addfeaturesresults.active, [$fa('plus-square')]: true }"
                     v-t-tooltip:left = "'Add/Remove features to results'"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('plus-square')"
-                    ></span>
-                  </span>
+                  ></span>
 
                   <!-- TOGGLE LAYER SELECTION -->
                   <span
                     v-if             = "canSelect(layer)"
                     @click.stop      = "toggleSelection(layer)"
-                    class            = "action-button"
+                    class            = "action-button action-button-icon"
                     v-t-tooltip:left = "'Add/Remove Selection'"
-                    :class           = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected) }"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('success')"
-                    ></span>
-                  </span>
+                    :class           = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected), [$fa('success')]: true }"
+                  ></span>
 
                   <!-- TOGGLE LAYER FILTER -->
                   <span
@@ -152,15 +125,10 @@
                       && layer.features.some(f => f.selected)
                     "
                     @click.stop      = "toggleFilter(layer)"
-                    class            = "action-button"
-                    :class           = "{'toggled': layer.filter.active}"
+                    class            = "action-button action-button-icon"
+                    :class           = "{'toggled': layer.filter.active, [$fa('filter')]: true }"
                     v-t-tooltip:left = "'Enable/Disable filter'"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('filter')"
-                    ></span>
-                  </span>
+                  ></span>
 
                   <!-- SAVE LAYER FILTER -->
                   <span
@@ -172,19 +140,15 @@
                       && (null === layer.filter.current || layer.selection.active)
                     "
                     @click.stop      = "saveFilter(layer)"
-                    class            = "action-button"
+                    :class           = "$fa('save')"
+                    class            = "action-button action-button-icon"
                     v-t-tooltip:left = "'Save Filter'"
-                  >
-                    <span
-                      class  = "action-button-icon"
-                      :class = "$fa('save')"
-                    ></span>
-                  </span>
+                  ></span>
 
                 </div>
                 <button
-                  class          = "btn btn-box-tool"
-                  style          = "pointer-events: none;"
+                  class = "btn btn-box-tool"
+                  style = "pointer-events: none;"
                 >
                   <i
                     class  = "btn-collapser skin-color"
@@ -192,25 +156,24 @@
                   </i>
                 </button>
               </div>
-              <template v-if = "state.layeractiontool[layer.id].component">
-                <div
-                  class  = "g3w-layer-action-tools with-border"
-                  style  = "padding: 5px"
-                  :class = "{'mobile': isMobile()}">
-                  <component
-                    :is     = "state.layeractiontool[layer.id].component"
-                    :layer  = "layer"
-                    :config = "state.layeractiontool[layer.id].config"/>
-                </div>
-              </template>
+
+              <div
+                v-if   = "state.layeractiontool[layer.id].component"
+                class  = "g3w-layer-action-tools with-border"
+                style  = "padding: 5px"
+                :class = "{'mobile': isMobile()}">
+                <component
+                  :is     = "state.layeractiontool[layer.id].component"
+                  :layer  = "layer"
+                  :config = "state.layeractiontool[layer.id].config"/>
+              </div>
               
-              <!--     Add Custom layer components      -->
+              <!-- CUSTOM COMPONENTS -->
               <component
                 v-for = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
                 :is   = "component"
                 :layer = "layer"
               />
-              <!--   End custom layer component         -->
 
               <!-- PAGINATION -->
               <div
@@ -1024,17 +987,14 @@
             { add: false, update: true }
           );
 
-          // set paginate base of change amount of features request changing select value on query result
-          query.pagination[id].paginate            = data.count > (data.data || [])[0].features.length;
-
-          // set new number of pages
-          query.pagination[id].pages               = Math.ceil(data.count / page_size);
+          Object.assign(query.pagination[id], {
+            paginate: data.count > (data.data || [])[0].features.length, // paginate in base of change amount of features request changing select value on query result
+            pages:    Math.ceil(data.count / page_size),                 // new number of pages
+            current:  page,                                              // the current page
+          });
 
           // set filter pagination in case of all features are get from pagination
           queried_layers[index].filter.pagination  = queried_layers[index].filter.active && query.pagination[id].paginate;
-
-          // set the current page
-          query.pagination[id].current             = page;
 
           const page_size_change                   = layer.state.selection.active || has_filtertoken ;
 
