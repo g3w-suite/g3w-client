@@ -3552,7 +3552,7 @@ Layer._parse = function(type, params, opts) {
       }
 
       // fields starting with an invalid key
-      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)|qgs:(\w+):(\w+)/g)).filter((_, i) => 0 === i % 2);
+      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g)).filter((_, i) => 0 === i % 2);
 
       // numeric value (integer or float)
       if (invalids) {
