@@ -3087,7 +3087,12 @@ export default new (class GUI extends Emitter {
 
       if (undefined === opts) {
         const atlas = this.#atlas.filter(a => a.atlas.qgs_layer_id === layer.id);
-        const index = await this.prompt(_('Select Template'), atlas.map((atlas, i) => ({ value: i, label: atlas.name })) );
+        let index;
+        try {
+          index = await this.prompt(_('Select Template'), atlas.map((atlas, i) => ({ value: i, label: atlas.name })) );
+        } catch(e) {
+          console.warn(e);
+        }
         if (!index) {
           return;
         }
