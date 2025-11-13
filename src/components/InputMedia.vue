@@ -82,14 +82,19 @@ export default {
       this.loading = true;
 
       try {
-        const response = (await (await fetch(this.state.input.options.uploadurl, {
+        let response = (await (await fetch(this.state.input.options.uploadurl, {
           method:  'POST',
           headers: { Accept: 'application/json' },
           body
-        })).json())[this.state.name];
-        console.log(response)
-        if (response) {
-          this.state.value = response;
+        })).json());
+        //@since 4.0.5 in case 
+        if (response?.[this.state.name]) {
+          this.state.value = response?.[this.state.name];
+        }
+        
+        //@since 4.0.5
+        if (false === response?.result) {
+          GUI.notify.error(response.error || this.$t("info.server_error"));
         }
       } catch(e) {
         console.warn(e);
