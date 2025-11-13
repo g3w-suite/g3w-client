@@ -33,11 +33,11 @@
             <bar-loader :loading = "layer.loading"/>
             <div class = "box box-primary">
               <div
-                class            = "box-header with-border"
-                :class           = "{'mobile': isMobile()}"
-                @mouseover.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
-                @mouseout.stop   = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
-                @click.stop      = "collapseSidebar"
+                class           = "box-header with-border"
+                :class          = "{'mobile': isMobile()}"
+                @mouseover.stop = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
+                @mouseout.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
+                @click.stop     = "collapseSidebar"
               >
                 <!-- LAYER NAME -->
                 <div
@@ -62,6 +62,7 @@
                   </span>
                 </div>
 
+                <!-- LAYER ACTIONS -->
                 <div style = "display: flex;">
                   <!-- INFO FORMATS -->
                   <select
@@ -174,6 +175,7 @@
                 ></button>
               </div>
 
+              <!-- CUSTOM ACTIONS -->
               <div
                 v-if   = "state.layeractiontool[layer.id].component"
                 class  = "g3w-layer-action-tools with-border"
@@ -297,113 +299,12 @@
                   v-if   = "layer.rawdata"
                   class  = "queryresults-text-html"
                   :class = "{ text: layer.infoformat === 'text/plain' }"
-                  v-html = "layer.rawdata">
-                </div>
+                  v-html = "layer.rawdata"
+                ></div>
 
-                <!-- LAYER WITH A FORM STRUCTURE-->
-                <table v-else-if = "hasFormStructure(layer)" class = "table" :class = "{'mobile': isMobile()}">
-                  <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id"> 
-                    <header-feature-actions-body
-                      :colspan                 = "getColSpan(layer)"
-                      :actions                 = "state.layersactions[layer.id]"
-                      :layer                   = "layer"
-                      :feature                 = "feature"
-                      :index                   = "index"
-                      :onelayerresult          = "onelayerresult"
-                      :trigger                 = "trigger"
-                      :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                      :hasLayerOneFeature      = "hasLayerOneFeature"
-                      :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                      :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"/>
-                      <tr class = "g3w-feature-result-action-tools">
-                        <template v-if = "state.currentactiontools[layer.id][index]">
-                          <td :colspan = "getColSpan(layer)">
-                            <component
-                              :is           = "state.currentactiontools[layer.id][index]"
-                              :colspan      = "getColSpan(layer)"
-                              :layer        = "layer"
-                              :feature      = "feature"
-                              :featureIndex = "index"
-                              :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
-                            />
-
-                          </td>
-                        </template>
-                      </tr>
-                      <tr
-                        v-if  = "!hasLayerOneFeature(layer)"
-                        style = "font-weight: bold; text-align: center" >
-                        <td
-                          v-for = "(attribute, index) in attributesSubset(layer)"
-                          class = "centered"
-                        >
-                          {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
-                        </td>
-                        <td
-                          @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
-                          class       = "collapsed"
-                          style       = "text-align: end"
-                          :class      = "{noAttributes: attributesSubset(layer).length === 0}">
-                          <span
-                            class  = "fa link morelink skin-color"
-                            :class = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')">
-                          </span>
-                        </td>
-                      </tr>
-                      <header-feature-body
-                        v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
-                        :actions                 = "state.layersactions[layer.id]"
-                        :layer                   = "layer"
-                        :feature                 = "feature"
-                        :index                   = "index"
-                        :onelayerresult          = "onelayerresult"
-                        :trigger                 = "trigger"
-                        :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                        :hasLayerOneFeature      = "hasLayerOneFeature"
-                        :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                        :attributesSubset        = "attributesSubset"
-                        :getLayerField           = "getLayerField"/>
-                      <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
-                        <td :colspan = "getColSpan(layer)">
-                          <component
-                            :is      = "component"
-                            :layer   = "layer"
-                            :feature = "feature"/>
-                        </td>
-                      </tr>
-                      <tr
-                        v-show = "!collapsedFeatureBox(layer,feature) || hasLayerOneFeature(layer)"
-                        :id    = "`${layer.id}_${index}`"
-                        class  = "featurebox-body"
-                      >
-                        <td
-                          :colspan              = "getColSpan(layer)"
-                          :feature-html-content = "`${layer.id}_${index}`"
-                        > <!-- @since v3.10.0  Reference to content of feature html response -->
-                          <tabs
-                            :fields  = "getQueryFields(layer, feature)"
-                            :layerid = "layer.id"
-                            :feature = "feature"
-                            :tabs    = "getLayerFormStructure(layer)"/>
-                        </td>
-                      </tr>
-                      <tr
-                        v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')"
-                      >
-                        <td :colspan = "getColSpan(layer)">
-                          <component
-                            :is      = "component"
-                            :layer   = "layer"
-                            :feature = "feature"/>
-                        </td>
-                      </tr>
-                  </tbody>
-                </table>
-
-                <!-- SIMPLE LAYER WITH NO STRUCTURE -->
                 <table v-else class = "table" :class = "{'mobile': isMobile()}">
-                  <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id">
+                  <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id"> 
+
                     <header-feature-actions-body
                       :colspan                 = "getColSpan(layer)"
                       :actions                 = "state.layersactions[layer.id]"
@@ -416,7 +317,9 @@
                       :hasLayerOneFeature      = "hasLayerOneFeature"
                       :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
                       :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"/>
+                      :getLayerField           = "getLayerField"
+                    />
+
                     <tr class = "g3w-feature-result-action-tools">
                       <template v-if = "state.currentactiontools[layer.id][index]">
                         <td :colspan = "getColSpan(layer)">
@@ -426,13 +329,17 @@
                             :layer        = "layer"
                             :feature      = "feature"
                             :featureIndex = "index"
-                            :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
-                          </td>
+                            :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
+                          />
+
+                        </td>
                       </template>
                     </tr>
+
                     <tr
                       v-if  = "!hasLayerOneFeature(layer)"
-                      style = "font-weight: bold; text-align: center" >
+                      style = "font-weight: bold; text-align: center"
+                    >
                       <td
                         v-for = "(attribute, index) in attributesSubset(layer)"
                         class = "centered"
@@ -443,15 +350,16 @@
                         @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
                         class       = "collapsed"
                         style       = "text-align: end"
-                        :class      = "{ noAttributes: 0 === attributesSubset(layer).length }">
-                          <span
-                            class  = "fa link morelink skin-color"
-                            :class = "$fa(getLayerFeatureBox(layer, feature).collapsed ? 'plus': 'minus')">
-                          </span>
+                        :class      = "{noAttributes: attributesSubset(layer).length === 0}">
+                        <span
+                          class  = "fa link morelink skin-color"
+                          :class = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')">
+                        </span>
                       </td>
                     </tr>
+
                     <header-feature-body
-                      v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                      v-if                     = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                       :actions                 = "state.layersactions[layer.id]"
                       :layer                   = "layer"
                       :feature                 = "feature"
@@ -462,16 +370,20 @@
                       :hasLayerOneFeature      = "hasLayerOneFeature"
                       :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
                       :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"/>
+                      :getLayerField           = "getLayerField"
+                    />
+
                     <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                       <td :colspan = "getColSpan(layer)">
                         <component
-                          class    = "box-body"
+                          :class   = "hasFormStructure(layer) ? '': 'box-body'"
                           :is      = "component"
                           :layer   = "layer"
-                          :feature = "feature"/>
+                          :feature = "feature"
+                        />
                       </td>
                     </tr>
+
                     <tr
                       v-show = "!collapsedFeatureBox(layer,feature) || hasLayerOneFeature(layer)"
                       :id    = "`${layer.id}_${index}`"
@@ -480,47 +392,65 @@
                       <td
                         :colspan              = "getColSpan(layer)"
                         :feature-html-content = "`${layer.id}_${index}`"
-                      ><!--@since v3.10.0  Reference to content of feature html response-->
-                        <table class = "feature_attributes">
-                          <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
-                            <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
-                              <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
-                              <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
-                                <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
-                                  <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
-                                  <td class = "attr-value">{{ v2 }}</td>
-                                </tr>
+                      >
+                        <!-- LAYER WITH A FORM STRUCTURE -->
+                        <template v-if = "hasFormStructure(layer)">
+                          <!-- @since v3.10.0  Reference to content of feature html response -->
+                          <tabs
+                            :fields  = "getQueryFields(layer, feature)"
+                            :layerid = "layer.id"
+                            :feature = "feature"
+                            :tabs    = "getLayerFormStructure(layer)"
+                          />
+                        </template>
+
+                        <!-- SIMPLE LAYER WITH NO STRUCTURE -->  
+                        <template v-else>
+                          <table class = "feature_attributes">
+                            <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
+                              <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
+                                <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
+                                <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
+                                  <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
+                                    <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
+                                    <td class = "attr-value">{{ v2 }}</td>
+                                  </tr>
+                                </template>
                               </template>
+                              <tr v-else>
+                                <td class = "attr-label">{{ attribute.label }}</td>
+                                <td class = "attr-value" :attribute = "attribute.name">
+                                  <table-attribute-field-value
+                                    :feature = "feature"
+                                    :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
+                                  />
+                                </td>
+                              </tr>
                             </template>
-                            <tr v-else>
-                              <td class = "attr-label">{{ attribute.label }}</td>
-                              <td class = "attr-value" :attribute = "attribute.name">
-                                <table-attribute-field-value
-                                  :feature = "feature"
-                                  :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
-                                />
-                              </td>
-                            </tr>
-                          </template>
-                        </table>
+                          </table>
+                        </template>
                       </td>
                     </tr>
+
                     <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                       <td colspan = "getColSpan(layer)">
                         <component
-                          class    = "box-body"
+                          :class   = "hasFormStructure(layer) ? '': 'box-body'"
                           :is      = "component"
                           :layer   = "layer"
                           :feature = "feature"/>
                       </td>
                     </tr>
+
                   </tbody>
                 </table>
+
               </div>
               <div
                 v-for  = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
                 class  = "box-body"
-                :class = "{'mobile': isMobile()}" >
+                :class = "{'mobile': isMobile()}"
+              >
                 <component :is = "component" :layer = "layer"/>
               </div>
             </div>
