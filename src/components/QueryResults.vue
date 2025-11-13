@@ -46,11 +46,12 @@
                 >
                   <!-- OPEN ATTRIBUTE TABLE -->
                   <span
-                    v-if             = "!layer.external"
-                    @click.stop      = "openAttributeTable(layer)"
-                    :class           = "$fa('list')"
-                    class            = "action-button action-button-icon"
-                    v-t-tooltip:left = "'Open Attribute Table'"
+                    v-if           = "!layer.external"
+                    @click.stop    = "openAttributeTable(layer)"
+                    :class         = "$fa('list')"
+                    class          = "action-button action-button-icon"
+                    title          = "'Open Attribute Table'"
+                    data-placement = "left"
                   ></span>
                   {{ layer.title }}
                   <span v-if = "!layer.rawdata">
@@ -305,20 +306,21 @@
                 <table v-else class = "table" :class = "{'mobile': isMobile()}">
                   <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id"> 
 
-                    <header-feature-actions-body
-                      :colspan                 = "getColSpan(layer)"
-                      :actions                 = "state.layersactions[layer.id]"
-                      :layer                   = "layer"
-                      :feature                 = "feature"
-                      :index                   = "index"
-                      :onelayerresult          = "onelayerresult"
-                      :trigger                 = "trigger"
-                      :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                      :hasLayerOneFeature      = "hasLayerOneFeature"
-                      :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                      :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"
-                    />
+                    <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@v4.0.0 -->
+                    <tr
+                      @mouseover.stop = "feature.geometry && trigger({ id: 'highlightgeometry'}, layer, feature, index)"
+                      @mouseout.stop  = "feature.geometry && trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
+                      class           = "featurebox-header"
+                    > 
+                      <actions
+                        :colspan      = "getColSpan(layer)"
+                        :layer        = "layer"
+                        :featureIndex = "index"
+                        :trigger      = "trigger"
+                        :feature      = "feature"
+                        :actions      = "state.layersactions[layer.id]"
+                      />
+                    </tr>
 
                     <tr class = "g3w-feature-result-action-tools">
                       <template v-if = "state.currentactiontools[layer.id][index]">
@@ -358,20 +360,26 @@
                       </td>
                     </tr>
 
-                    <header-feature-body
-                      v-if                     = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
-                      :actions                 = "state.layersactions[layer.id]"
-                      :layer                   = "layer"
-                      :feature                 = "feature"
-                      :index                   = "index"
-                      :onelayerresult          = "onelayerresult"
-                      :trigger                 = "trigger"
-                      :toggleFeatureBoxAndZoom = "toggleFeatureBoxAndZoom"
-                      :hasLayerOneFeature      = "hasLayerOneFeature"
-                      :boxLayerFeature         = "getLayerFeatureBox(layer, feature)"
-                      :attributesSubset        = "attributesSubset"
-                      :getLayerField           = "getLayerField"
-                    />
+                    <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@v4.0.0 -->
+                    <tr
+                      v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                    >
+                      <td v-for = "attribute in attributesSubset(layer)" class = "attribute">
+                        <span
+                          v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
+                          class  = "skin-color"
+                          :class = "$fa('link')">
+                        </span>
+
+                        <g3w-image
+                          v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
+                          :state    = "getLayerField({layer, feature, fieldName: attribute.name})"
+                        />
+
+                        <span v-else v-html = "feature.attributes[attribute.name]"></span>
+                      </td>
+                      <td v-if="!hasLayerOneFeature(layer)"></td>
+                    </tr>
 
                     <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                       <td :colspan = "getColSpan(layer)">
@@ -492,8 +500,8 @@
   import ApplicationState                          from 'g3w-state';
   import { fieldsMixin }                           from 'mixins';
   import TableAttributeFieldValue                  from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import HeaderFeatureBody                         from 'components/QueryResultsHeaderFeatureBody.vue';
-  import HeaderFeatureActionsBody                  from 'components/QueryResultsHeaderFeatureActionsBody.vue';
+  import Actions                                   from 'components/QueryResultsActions.vue';
+  import Image                                     from 'components/FieldImage.vue'
   import { toRawType }                             from 'utils/toRawType';
   import { throttle }                              from 'utils/throttle';
   import { getCatalogLayerById }                   from 'utils/getCatalogLayerById';
@@ -530,8 +538,8 @@
 
     components: {
       TableAttributeFieldValue,
-      'header-feature-body': HeaderFeatureBody,
-      HeaderFeatureActionsBody
+      actions:     Actions,
+      'g3w-image': Image
     },
 
     computed: {
@@ -1103,6 +1111,10 @@
 </script>
 
 <style scoped>
+.noAttributes {
+  display: flex;
+  justify-content: flex-end;
+}
 .feature_attributes tr {
   line-height: 1.8em;
 }
