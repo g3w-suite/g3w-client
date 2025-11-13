@@ -20,467 +20,463 @@
     </div>
 
     <div class = "queryresults-container">
-      <template v-if = "state.queried_layers.length">
-        <ul
-          v-if  = "hasLayers"
-          class = "queryresults"
-          id    = "queryresults"
-          style = "position: relative"
+      <ul
+        v-if  = "state.queried_layers.length && hasLayers"
+        class = "queryresults"
+        id    = "queryresults"
+        style = "position: relative"
+      >
+        <li
+          v-for = "layer in state.queried_layers.filter(l => showLayer(l))"
         >
-          <li
-            v-for = "layer in state.queried_layers.filter(l => showLayer(l))"
-          >
-            <bar-loader :loading = "layer.loading"/>
-            <div class = "box box-primary">
+          <bar-loader :loading = "layer.loading"/>
+          <div class = "box box-primary">
+            <div
+              class           = "box-header with-border"
+              :class          = "{'mobile': isMobile()}"
+              @mouseover.stop = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
+              @mouseout.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
+              @click.stop     = "collapseSidebar"
+            >
+              <!-- LAYER NAME -->
               <div
-                class           = "box-header with-border"
-                :class          = "{'mobile': isMobile()}"
-                @mouseover.stop = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
-                @mouseout.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
-                @click.stop     = "collapseSidebar"
+                class  = "box-title query-layer-title"
+                :style = "{ fontSize: isMobile() && '1em !important' }"
               >
-                <!-- LAYER NAME -->
-                <div
-                  class  = "box-title query-layer-title"
-                  :style = "{ fontSize: isMobile() && '1em !important' }"
-                >
-                  <!-- OPEN ATTRIBUTE TABLE -->
-                  <span
-                    v-if           = "!layer.external"
-                    @click.stop    = "openAttributeTable(layer)"
-                    :class         = "$fa('list')"
-                    class          = "action-button action-button-icon"
-                    title          = "'Open Attribute Table'"
-                    data-placement = "left"
-                  ></span>
-                  {{ layer.title }}
-                  <span v-if = "!layer.rawdata">
-                    ({{
-                      canPaginate(layer)
-                        ? (layer.features.length + ((state.query.pagination[layer.id].current - 1) * state.query.pagination.getData.params[layer.id].page_size)) + ' - ' + state.query.pagination[layer.id].count
-                        : layer.features.length
-                    }})
-                  </span>
-                </div>
-
-                <!-- LAYER ACTIONS -->
-                <div style = "display: flex;">
-                  <!-- INFO FORMATS -->
-                  <select
-                    v-if      = "(layer.infoformats || []).length"
-                    class     = "form-control"
-                    @change   = "changeInfoFormat(layer, $event.target.value)"
-                    :disabled = "layer.loading"
-                  >
-                    <option
-                      v-for     = "format in layer.infoformats"
-                      :key      = "format"
-                      :value    = "format"
-                      :selected = "format === layer.infoformat"
-                    >
-                      {{ format }}
-                    </option>
-                  </select>
-
-                  <!-- ZOOM TO LAYER -->
-                  <span
-                    v-if           = "layer.features.length > 0 && layer.hasgeometry"
-                    @click.stop    = "zoomToLayer(layer)"
-                    :class         = "$fa('marker')"
-                    class          = "action-button action-button-icon"
-                    title          = "Zoom to features extent"
-                    data-placement = "top"
-                  ></span>
-
-                  <!-- PRINT LAYER -->
-                  <span
-                    v-if           = "layer.features.length > 0 && layer.atlas.length"
-                    @click.stop    = "printAtlas(layer)"
-                    :class         = "$fa('print')"
-                    class          = "action-button action-button-icon"
-                    title          = "Print Atlas"
-                    data-placement = "top"
-                    v-disabled     = "state.download"
-                  ></span>
-
-                  <!-- DOWNLOAD LAYER -->
-                  <span
-                    v-if           = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
-                    @click.stop    = "showLayerDownloadFormats(layer)"
-                    class          = "action-button action-button-icon"
-                    :class         = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
-                    title          = "Downloads"
-                    data-placement = "top"
-                    v-disabled     = "state.download"
-                  ></span>
-
-                  <!-- TOGGLE LAYER FEATURES -->
-                  <span
-                    v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
-                    @click.stop    = "addLayerFeaturesToResults(layer)"
-                    class          = "action-button action-button-icon"
-                    :class         = "{ 'toggled': layer.addfeaturesresults.active, [$fa('plus-square')]: true }"
-                    title          = "Add/Remove features to results"
-                    data-placement = "top"
-                  ></span>
-
-                  <!-- TOGGLE LAYER SELECTION -->
-                  <span
-                    v-if           = "canSelect(layer)"
-                    @click.stop    = "toggleSelection(layer)"
-                    class          = "action-button action-button-icon"
-                    title          = "Add/Remove Selection"
-                    data-placement = "top"
-                    :class         = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected), [$fa('success')]: true }"
-                  ></span>
-
-                  <!-- TOGGLE LAYER FILTER -->
-                  <span
-                    v-if           = "
-                      !layer.external
-                      && layer.selection.active
-                      && !layer.filter.pagination
-                      && layer.features.some(f => f.selected)
-                    "
-                    @click.stop    = "toggleFilter(layer)"
-                    class          = "action-button action-button-icon"
-                    :class         = "{'toggled': layer.filter.active, [$fa('filter')]: true }"
-                    title          = "Enable/Disable filter"
-                    data-placement = "top"
-                  ></span>
-
-                  <!-- SAVE LAYER FILTER -->
-                  <span
-                    v-if           = "
-                      !layer.external
-                      && layer.selection.active
-                      && state.logged
-                      && layer.filter.active
-                      && (null === layer.filter.current || layer.selection.active)
-                    "
-                    @click.stop    = "saveFilter(layer)"
-                    :class         = "$fa('save')"
-                    class          = "action-button action-button-icon"
-                    title          = "Save Filter"
-                    data-placement = "top"
-                  ></span>
-
-                </div>
-                <button
-                  class          = "btn btn-box-tool btn-collapser skin-color"
-                  type           = "button"
-                  style          = "font-weight: 900;"
-                  :class         = "$fa('minus')"
-                  title          = "Enlarge / Reduce"
-                  data-placement = "top"
-                ></button>
+                <!-- OPEN ATTRIBUTE TABLE -->
+                <span
+                  v-if           = "!layer.external"
+                  @click.stop    = "openAttributeTable(layer)"
+                  :class         = "$fa('list')"
+                  class          = "action-button action-button-icon"
+                  title          = "'Open Attribute Table'"
+                  data-placement = "left"
+                ></span>
+                {{ layer.title }}
+                <span v-if = "!layer.rawdata">
+                  ({{
+                    canPaginate(layer)
+                      ? (layer.features.length + ((state.query.pagination[layer.id].current - 1) * state.query.pagination.getData.params[layer.id].page_size)) + ' - ' + state.query.pagination[layer.id].count
+                      : layer.features.length
+                  }})
+                </span>
               </div>
 
-              <!-- CUSTOM ACTIONS -->
-              <div
-                v-if   = "state.layeractiontool[layer.id].component"
-                class  = "g3w-layer-action-tools with-border"
-                style  = "padding: 5px"
-                :class = "{'mobile': isMobile()}"
-              >
-                <component
-                  :is     = "state.layeractiontool[layer.id].component"
-                  :layer  = "layer"
-                  :config = "state.layeractiontool[layer.id].config"
-                />
-              </div>
-              
-              <!-- CUSTOM COMPONENTS -->
-              <component
-                v-for = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
-                :is   = "component"
-                :layer = "layer"
-              />
-
-              <!-- PAGINATION -->
-              <div
-                v-if       = "state.query.pagination && state.query.pagination[layer.id] && state.query.pagination[layer.id].page_sizes.length > 1"
-                id         = "g3w-queryresults-pagination"
-                v-disabled = "layer.loading"
-              >
-
-                <!-- PAGE SIZE -->
+              <!-- LAYER ACTIONS -->
+              <div style = "display: flex;">
+                <!-- INFO FORMATS -->
                 <select
-                  class   = "form-control"
-                  @change = "changePage(layer.id, 1, Number($event.target.value))"
-                  style   = "width: auto;"
+                  v-if      = "(layer.infoformats || []).length"
+                  class     = "form-control"
+                  @change   = "changeInfoFormat(layer, $event.target.value)"
+                  :disabled = "layer.loading"
                 >
                   <option
-                    v-for  = "page in state.query.pagination[layer.id].page_sizes"
-                    :key   = "page"
-                    :value = "page"
-                  >{{ page }}</option>
+                    v-for     = "format in layer.infoformats"
+                    :key      = "format"
+                    :value    = "format"
+                    :selected = "format === layer.infoformat"
+                  >
+                    {{ format }}
+                  </option>
                 </select>
 
-                <!-- PAGINATION BUTTONS -->
-                <ul :disabled ="!layer.loading" style="display: flex; align-items: center;">
+                <!-- ZOOM TO LAYER -->
+                <span
+                  v-if           = "layer.features.length > 0 && layer.hasgeometry"
+                  @click.stop    = "zoomToLayer(layer)"
+                  :class         = "$fa('marker')"
+                  class          = "action-button action-button-icon"
+                  title          = "Zoom to features extent"
+                  data-placement = "top"
+                ></span>
 
-                  <!-- GOTO: PREVIOUS PAGE -->
-                  <li>
-                    <button
-                      v-if        =  "state.query.pagination[layer.id].count > layer.features.length"
-                      class       = "btn fas fa-angle-left"
-                      :disabled   = "1 === state.query.pagination[layer.id].current"
-                      @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current - 1)"
-                    ></button>
-                  </li>
+                <!-- PRINT LAYER -->
+                <span
+                  v-if           = "layer.features.length > 0 && layer.atlas.length"
+                  @click.stop    = "printAtlas(layer)"
+                  :class         = "$fa('print')"
+                  class          = "action-button action-button-icon"
+                  title          = "Print Atlas"
+                  data-placement = "top"
+                  v-disabled     = "state.download"
+                ></span>
 
-                  <!-- GOTO: FIRST PAGE -->
-                  <li>
-                    <button
-                      class       = "btn"
-                      :class      = "{ 'skin-background-color': 1 === state.query.pagination[layer.id].current }"
-                      v-disabled  = "layer.features.length === state.query.pagination[layer.id].count"
-                      @click.stop = "changePage(layer.id, 1)"
-                    >1</button>
-                  </li>
+                <!-- DOWNLOAD LAYER -->
+                <span
+                  v-if           = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
+                  @click.stop    = "showLayerDownloadFormats(layer)"
+                  class          = "action-button action-button-icon"
+                  :class         = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
+                  title          = "Downloads"
+                  data-placement = "top"
+                  v-disabled     = "state.download"
+                ></span>
 
-                  <!-- ELLIPSIS SEPARATOR -->
-                  <li
-                    v-if = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 4 && state.query.pagination[layer.id].current > 2"
-                  >…</li>
+                <!-- TOGGLE LAYER FEATURES -->
+                <span
+                  v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                  @click.stop    = "addLayerFeaturesToResults(layer)"
+                  class          = "action-button action-button-icon"
+                  :class         = "{ 'toggled': layer.addfeaturesresults.active, [$fa('plus-square')]: true }"
+                  title          = "Add/Remove features to results"
+                  data-placement = "top"
+                ></span>
 
-                  <li>
-                    <template v-if = "state.query.pagination[layer.id].pages > 1 && state.query.pagination[layer.id].count > layer.features.length">
-                      <button
-                        v-for= "page in (
-                        (state.query.pagination[layer.id].pages < 4 || state.query.pagination[layer.id].current < 3)
-                          ? Array.from(Array(state.query.pagination[layer.id].pages - 2).keys()).slice(0, 2).map(i => i + 2)
-                          : (state.query.pagination[layer.id].pages - state.query.pagination[layer.id].current) > 2
-                          ? [state.query.pagination[layer.id].current, state.query.pagination[layer.id].current + 1 ]
-                          : [state.query.pagination[layer.id].pages - 2, state.query.pagination[layer.id].pages - 1 ]
-                        )"
-                        class       = "btn"
-                        :class      = "{ 'skin-background-color': page === state.query.pagination[layer.id].current }"
-                        @click.stop = "changePage(layer.id, page)"
-                      >{{ page }}
-                      </button>
-                    </template>
-                  </li>
+                <!-- TOGGLE LAYER SELECTION -->
+                <span
+                  v-if           = "canSelect(layer)"
+                  @click.stop    = "toggleSelection(layer)"
+                  class          = "action-button action-button-icon"
+                  title          = "Add/Remove Selection"
+                  data-placement = "top"
+                  :class         = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected), [$fa('success')]: true }"
+                ></span>
 
-                  <!-- ELLIPSIS SEPARATOR -->
-                  <li
-                    v-if = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 4 && (state.query.pagination[layer.id].current < state.query.pagination[layer.id].pages - 2)"
-                  >…</li>
+                <!-- TOGGLE LAYER FILTER -->
+                <span
+                  v-if           = "
+                    !layer.external
+                    && layer.selection.active
+                    && !layer.filter.pagination
+                    && layer.features.some(f => f.selected)
+                  "
+                  @click.stop    = "toggleFilter(layer)"
+                  class          = "action-button action-button-icon"
+                  :class         = "{'toggled': layer.filter.active, [$fa('filter')]: true }"
+                  title          = "Enable/Disable filter"
+                  data-placement = "top"
+                ></span>
 
-                  <!-- GOTO: LAST PAGE  -->
-                  <li>
-                    <button
-                      v-if        = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 1"
-                      class       = "btn"
-                      :class      = "{ 'skin-background-color': state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current }"
-                      @click.stop = "changePage(layer.id, state.query.pagination[layer.id].pages)"
-                    >
-                      {{ state.query.pagination[layer.id].pages }}
-                    </button>
-                  </li>
+                <!-- SAVE LAYER FILTER -->
+                <span
+                  v-if           = "
+                    !layer.external
+                    && layer.selection.active
+                    && state.logged
+                    && layer.filter.active
+                    && (null === layer.filter.current || layer.selection.active)
+                  "
+                  @click.stop    = "saveFilter(layer)"
+                  :class         = "$fa('save')"
+                  class          = "action-button action-button-icon"
+                  title          = "Save Filter"
+                  data-placement = "top"
+                ></span>
 
-                  <!-- GOTO: NEXT PAGE -->
-                  <li>
-                    <button
-                      v-if="state.query.pagination[layer.id].count > layer.features.length"
-                      :disabled   = "state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current"
-                      class       = "btn fas fa-angle-right"
-                      @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current + 1)"
-                    ></button>
-                  </li>
-
-                </ul>
               </div>
+              <button
+                class          = "btn btn-box-tool btn-collapser skin-color"
+                type           = "button"
+                style          = "font-weight: 900;"
+                :class         = "$fa('minus')"
+                title          = "Enlarge / Reduce"
+                data-placement = "top"
+              ></button>
+            </div>
 
-              <div class = "box-body" :class = "{'mobile': isMobile()}">
+            <!-- CUSTOM ACTIONS -->
+            <div
+              v-if   = "state.layeractiontool[layer.id].component"
+              class  = "g3w-layer-action-tools with-border"
+              style  = "padding: 5px"
+              :class = "{'mobile': isMobile()}"
+            >
+              <component
+                :is     = "state.layeractiontool[layer.id].component"
+                :layer  = "layer"
+                :config = "state.layeractiontool[layer.id].config"
+              />
+            </div>
+            
+            <!-- CUSTOM COMPONENTS -->
+            <component
+              v-for = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')"
+              :is   = "component"
+              :layer = "layer"
+            />
 
-                <!-- LAYER WITH RAW DATA -->
-                <div
-                  v-if   = "layer.rawdata"
-                  class  = "queryresults-text-html"
-                  :class = "{ text: layer.infoformat === 'text/plain' }"
-                  v-html = "layer.rawdata"
-                ></div>
+            <!-- PAGINATION -->
+            <div
+              v-if       = "state.query.pagination && state.query.pagination[layer.id] && state.query.pagination[layer.id].page_sizes.length > 1"
+              id         = "g3w-queryresults-pagination"
+              v-disabled = "layer.loading"
+            >
 
-                <table v-else class = "table" :class = "{'mobile': isMobile()}">
-                  <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id"> 
+              <!-- PAGE SIZE -->
+              <select
+                class   = "form-control"
+                @change = "changePage(layer.id, 1, Number($event.target.value))"
+                style   = "width: auto;"
+              >
+                <option
+                  v-for  = "page in state.query.pagination[layer.id].page_sizes"
+                  :key   = "page"
+                  :value = "page"
+                >{{ page }}</option>
+              </select>
 
-                    <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@v4.0.0 -->
-                    <tr
-                      @mouseover.stop = "feature.geometry && trigger({ id: 'highlightgeometry'}, layer, feature, index)"
-                      @mouseout.stop  = "feature.geometry && trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
-                      class           = "featurebox-header"
-                    > 
-                      <actions
-                        :colspan      = "getColSpan(layer)"
-                        :layer        = "layer"
-                        :featureIndex = "index"
-                        :trigger      = "trigger"
-                        :feature      = "feature"
-                        :actions      = "state.layersactions[layer.id]"
-                      />
-                    </tr>
+              <!-- PAGINATION BUTTONS -->
+              <ul :disabled ="!layer.loading" style="display: flex; align-items: center;">
 
-                    <tr class = "g3w-feature-result-action-tools">
-                      <template v-if = "state.currentactiontools[layer.id][index]">
-                        <td :colspan = "getColSpan(layer)">
-                          <component
-                            :is           = "state.currentactiontools[layer.id][index]"
-                            :colspan      = "getColSpan(layer)"
-                            :layer        = "layer"
-                            :feature      = "feature"
-                            :featureIndex = "index"
-                            :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
-                          />
+                <!-- GOTO: PREVIOUS PAGE -->
+                <li>
+                  <button
+                    v-if        =  "state.query.pagination[layer.id].count > layer.features.length"
+                    class       = "btn fas fa-angle-left"
+                    :disabled   = "1 === state.query.pagination[layer.id].current"
+                    @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current - 1)"
+                  ></button>
+                </li>
 
-                        </td>
-                      </template>
-                    </tr>
+                <!-- GOTO: FIRST PAGE -->
+                <li>
+                  <button
+                    class       = "btn"
+                    :class      = "{ 'skin-background-color': 1 === state.query.pagination[layer.id].current }"
+                    v-disabled  = "layer.features.length === state.query.pagination[layer.id].count"
+                    @click.stop = "changePage(layer.id, 1)"
+                  >1</button>
+                </li>
 
-                    <tr
-                      v-if  = "!hasLayerOneFeature(layer)"
-                      style = "font-weight: bold; text-align: center"
-                    >
-                      <td
-                        v-for = "(attribute, index) in attributesSubset(layer)"
-                        class = "centered"
-                      >
-                        {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
-                      </td>
-                      <td
-                        @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
-                        class       = "collapsed"
-                        style       = "text-align: end"
-                        :class      = "{noAttributes: attributesSubset(layer).length === 0}">
-                        <span
-                          class  = "fa link morelink skin-color"
-                          :class = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')">
-                        </span>
-                      </td>
-                    </tr>
+                <!-- ELLIPSIS SEPARATOR -->
+                <li
+                  v-if = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 4 && state.query.pagination[layer.id].current > 2"
+                >…</li>
 
-                    <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@v4.0.0 -->
-                    <tr
-                      v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
-                    >
-                      <td v-for = "attribute in attributesSubset(layer)" class = "attribute">
-                        <span
-                          v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
-                          class  = "skin-color"
-                          :class = "$fa('link')">
-                        </span>
+                <li>
+                  <template v-if = "state.query.pagination[layer.id].pages > 1 && state.query.pagination[layer.id].count > layer.features.length">
+                    <button
+                      v-for= "page in (
+                      (state.query.pagination[layer.id].pages < 4 || state.query.pagination[layer.id].current < 3)
+                        ? Array.from(Array(state.query.pagination[layer.id].pages - 2).keys()).slice(0, 2).map(i => i + 2)
+                        : (state.query.pagination[layer.id].pages - state.query.pagination[layer.id].current) > 2
+                        ? [state.query.pagination[layer.id].current, state.query.pagination[layer.id].current + 1 ]
+                        : [state.query.pagination[layer.id].pages - 2, state.query.pagination[layer.id].pages - 1 ]
+                      )"
+                      class       = "btn"
+                      :class      = "{ 'skin-background-color': page === state.query.pagination[layer.id].current }"
+                      @click.stop = "changePage(layer.id, page)"
+                    >{{ page }}
+                    </button>
+                  </template>
+                </li>
 
-                        <g3w-image
-                          v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
-                          :state    = "getLayerField({layer, feature, fieldName: attribute.name})"
-                        />
+                <!-- ELLIPSIS SEPARATOR -->
+                <li
+                  v-if = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 4 && (state.query.pagination[layer.id].current < state.query.pagination[layer.id].pages - 2)"
+                >…</li>
 
-                        <span v-else v-html = "feature.attributes[attribute.name]"></span>
-                      </td>
-                      <td v-if="!hasLayerOneFeature(layer)"></td>
-                    </tr>
+                <!-- GOTO: LAST PAGE  -->
+                <li>
+                  <button
+                    v-if        = "state.query.pagination[layer.id].count > layer.features.length && state.query.pagination[layer.id].pages > 1"
+                    class       = "btn"
+                    :class      = "{ 'skin-background-color': state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current }"
+                    @click.stop = "changePage(layer.id, state.query.pagination[layer.id].pages)"
+                  >
+                    {{ state.query.pagination[layer.id].pages }}
+                  </button>
+                </li>
 
-                    <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                <!-- GOTO: NEXT PAGE -->
+                <li>
+                  <button
+                    v-if="state.query.pagination[layer.id].count > layer.features.length"
+                    :disabled   = "state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current"
+                    class       = "btn fas fa-angle-right"
+                    @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current + 1)"
+                  ></button>
+                </li>
+
+              </ul>
+            </div>
+
+            <div class = "box-body" :class = "{'mobile': isMobile()}">
+
+              <!-- LAYER WITH RAW DATA -->
+              <div
+                v-if   = "layer.rawdata"
+                class  = "queryresults-text-html"
+                :class = "{ text: layer.infoformat === 'text/plain' }"
+                v-html = "layer.rawdata"
+              ></div>
+
+              <table v-else class = "table" :class = "{'mobile': isMobile()}">
+                <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id"> 
+
+                  <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@v4.0.0 -->
+                  <tr
+                    @mouseover.stop = "feature.geometry && trigger({ id: 'highlightgeometry'}, layer, feature, index)"
+                    @mouseout.stop  = "feature.geometry && trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
+                    class           = "featurebox-header"
+                  > 
+                    <actions
+                      :colspan      = "getColSpan(layer)"
+                      :layer        = "layer"
+                      :featureIndex = "index"
+                      :trigger      = "trigger"
+                      :feature      = "feature"
+                      :actions      = "state.layersactions[layer.id]"
+                    />
+                  </tr>
+
+                  <tr class = "g3w-feature-result-action-tools">
+                    <template v-if = "state.currentactiontools[layer.id][index]">
                       <td :colspan = "getColSpan(layer)">
                         <component
-                          :class   = "hasFormStructure(layer) ? '': 'box-body'"
-                          :is      = "component"
-                          :layer   = "layer"
-                          :feature = "feature"
+                          :is           = "state.currentactiontools[layer.id][index]"
+                          :colspan      = "getColSpan(layer)"
+                          :layer        = "layer"
+                          :feature      = "feature"
+                          :featureIndex = "index"
+                          :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
                         />
-                      </td>
-                    </tr>
 
-                    <tr
-                      v-show = "!collapsedFeatureBox(layer,feature) || hasLayerOneFeature(layer)"
-                      :id    = "`${layer.id}_${index}`"
-                      class  = "featurebox-body"
+                      </td>
+                    </template>
+                  </tr>
+
+                  <tr
+                    v-if  = "!hasLayerOneFeature(layer)"
+                    style = "font-weight: bold; text-align: center"
+                  >
+                    <td
+                      v-for = "(attribute, index) in attributesSubset(layer)"
+                      class = "centered"
                     >
-                      <td
-                        :colspan              = "getColSpan(layer)"
-                        :feature-html-content = "`${layer.id}_${index}`"
-                      >
-                        <!-- LAYER WITH A FORM STRUCTURE -->
-                        <template v-if = "hasFormStructure(layer)">
-                          <!-- @since v3.10.0  Reference to content of feature html response -->
-                          <tabs
-                            :fields  = "getQueryFields(layer, feature)"
-                            :layerid = "layer.id"
-                            :feature = "feature"
-                            :tabs    = "getLayerFormStructure(layer)"
-                          />
-                        </template>
+                      {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
+                    </td>
+                    <td
+                      @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
+                      class       = "collapsed"
+                      style       = "text-align: end"
+                      :class      = "{noAttributes: attributesSubset(layer).length === 0}">
+                      <span
+                        class  = "fa link morelink skin-color"
+                        :class = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')">
+                      </span>
+                    </td>
+                  </tr>
 
-                        <!-- SIMPLE LAYER WITH NO STRUCTURE -->  
-                        <template v-else>
-                          <table class = "feature_attributes">
-                            <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
-                              <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
-                                <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
-                                <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
-                                  <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
-                                    <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
-                                    <td class = "attr-value">{{ v2 }}</td>
-                                  </tr>
-                                </template>
+                  <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureBody.vue@v4.0.0 -->
+                  <tr
+                    v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
+                  >
+                    <td v-for = "attribute in attributesSubset(layer)" class = "attribute">
+                      <span
+                        v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
+                        class  = "skin-color"
+                        :class = "$fa('link')">
+                      </span>
+
+                      <g3w-image
+                        v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
+                        :state    = "getLayerField({layer, feature, fieldName: attribute.name})"
+                      />
+
+                      <span v-else v-html = "feature.attributes[attribute.name]"></span>
+                    </td>
+                    <td v-if="!hasLayerOneFeature(layer)"></td>
+                  </tr>
+
+                  <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                    <td :colspan = "getColSpan(layer)">
+                      <component
+                        :class   = "hasFormStructure(layer) ? '': 'box-body'"
+                        :is      = "component"
+                        :layer   = "layer"
+                        :feature = "feature"
+                      />
+                    </td>
+                  </tr>
+
+                  <tr
+                    v-show = "!collapsedFeatureBox(layer,feature) || hasLayerOneFeature(layer)"
+                    :id    = "`${layer.id}_${index}`"
+                    class  = "featurebox-body"
+                  >
+                    <td
+                      :colspan              = "getColSpan(layer)"
+                      :feature-html-content = "`${layer.id}_${index}`"
+                    >
+                      <!-- LAYER WITH A FORM STRUCTURE -->
+                      <template v-if = "hasFormStructure(layer)">
+                        <!-- @since v3.10.0  Reference to content of feature html response -->
+                        <tabs
+                          :fields  = "getQueryFields(layer, feature)"
+                          :layerid = "layer.id"
+                          :feature = "feature"
+                          :tabs    = "getLayerFormStructure(layer)"
+                        />
+                      </template>
+
+                      <!-- SIMPLE LAYER WITH NO STRUCTURE -->  
+                      <template v-else>
+                        <table class = "feature_attributes">
+                          <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
+                            <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
+                              <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
+                              <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
+                                <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
+                                  <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
+                                  <td class = "attr-value">{{ v2 }}</td>
+                                </tr>
                               </template>
-                              <tr v-else>
-                                <td class = "attr-label">{{ attribute.label }}</td>
-                                <td class = "attr-value" :attribute = "attribute.name">
-                                  <table-attribute-field-value
-                                    :feature = "feature"
-                                    :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
-                                  />
-                                </td>
-                              </tr>
                             </template>
-                          </table>
-                        </template>
-                      </td>
-                    </tr>
+                            <tr v-else>
+                              <td class = "attr-label">{{ attribute.label }}</td>
+                              <td class = "attr-value" :attribute = "attribute.name">
+                                <table-attribute-field-value
+                                  :feature = "feature"
+                                  :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
+                                />
+                              </td>
+                            </tr>
+                          </template>
+                        </table>
+                      </template>
+                    </td>
+                  </tr>
 
-                    <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
-                      <td colspan = "getColSpan(layer)">
-                        <component
-                          :class   = "hasFormStructure(layer) ? '': 'box-body'"
-                          :is      = "component"
-                          :layer   = "layer"
-                          :feature = "feature"/>
-                      </td>
-                    </tr>
+                  <tr v-for = "({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
+                    <td colspan = "getColSpan(layer)">
+                      <component
+                        :class   = "hasFormStructure(layer) ? '': 'box-body'"
+                        :is      = "component"
+                        :layer   = "layer"
+                        :feature = "feature"/>
+                    </td>
+                  </tr>
 
-                  </tbody>
-                </table>
+                </tbody>
+              </table>
 
-              </div>
-              <div
-                v-for  = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
-                class  = "box-body"
-                :class = "{'mobile': isMobile()}"
-              >
-                <component :is = "component" :layer = "layer"/>
-              </div>
             </div>
-          </li>
-          <li v-for = "component in state.components">
-            <component :is = "component" @showresults="showResults()" />
-          </li>
-        </ul>
-      </template>
+            <div
+              v-for  = "({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')"
+              class  = "box-body"
+              :class = "{'mobile': isMobile()}"
+            >
+              <component :is = "component" :layer = "layer"/>
+            </div>
+          </div>
+        </li>
+        <li v-for = "component in state.components">
+          <component :is = "component" @showresults="showResults()" />
+        </li>
+      </ul>
       <!--   NO RESULTS   -->
-      <template v-else>
-        <div
-          v-if  = "state.changed"
-          class = "query-results-not-found"
-        >
-          <h4
-            class = "skin-color"
-            style = "font-weight: bold; text-align: center"
-            v-t   = "'info.no_results'">
-          </h4>
-        </div>
-      </template>
+      <div
+        v-else-if  = "!state.queried_layers.length && state.changed"
+        class = "query-results-not-found"
+      >
+        <h4
+          class = "skin-color"
+          style = "font-weight: bold; text-align: center"
+          v-t   = "'info.no_results'">
+        </h4>
+      </div>
 
     </div>
 
