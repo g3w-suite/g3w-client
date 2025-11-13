@@ -62,10 +62,7 @@
                   </span>
                 </div>
 
-                <div
-                  class       = "box-features-action"
-                  @click.stop = ""
-                >
+                <div style = "display: flex;">
                   <!-- INFO FORMATS -->
                   <select
                     v-if      = "(layer.infoformats || []).length"
@@ -168,21 +165,21 @@
 
                 </div>
                 <button
-                  class = "btn btn-box-tool"
-                  style = "pointer-events: none;"
-                >
-                  <i
-                    class  = "btn-collapser skin-color"
-                    :class = "g3wtemplate.font['minus']">
-                  </i>
-                </button>
+                  class          = "btn btn-box-tool btn-collapser skin-color"
+                  type           = "button"
+                  style          = "font-weight: 900;"
+                  :class         = "$fa('minus')"
+                  title          = "Enlarge / Reduce"
+                  data-placement = "top"
+                ></button>
               </div>
 
               <div
                 v-if   = "state.layeractiontool[layer.id].component"
                 class  = "g3w-layer-action-tools with-border"
                 style  = "padding: 5px"
-                :class = "{'mobile': isMobile()}">
+                :class = "{'mobile': isMobile()}"
+              >
                 <component
                   :is     = "state.layeractiontool[layer.id].component"
                   :layer  = "layer"
@@ -350,7 +347,7 @@
                           :class      = "{noAttributes: attributesSubset(layer).length === 0}">
                           <span
                             class  = "fa link morelink skin-color"
-                            :class = "g3wtemplate.font[getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus']">
+                            :class = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')">
                           </span>
                         </td>
                       </tr>
@@ -449,7 +446,7 @@
                         :class      = "{ noAttributes: 0 === attributesSubset(layer).length }">
                           <span
                             class  = "fa link morelink skin-color"
-                            :class = "g3wtemplate.font[getLayerFeatureBox(layer, feature).collapsed ? 'plus': 'minus']">
+                            :class = "$fa(getLayerFeatureBox(layer, feature).collapsed ? 'plus': 'minus')">
                           </span>
                       </td>
                     </tr>
