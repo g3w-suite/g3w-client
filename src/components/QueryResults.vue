@@ -335,19 +335,19 @@
                   </tr>
 
                   <tr class = "g3w-feature-result-action-tools">
-                    <template v-if = "state.currentactiontools[layer.id][index]">
-                      <td :colspan = "getColSpan(layer)">
-                        <component
-                          :is           = "state.currentactiontools[layer.id][index]"
-                          :colspan      = "getColSpan(layer)"
-                          :layer        = "layer"
-                          :feature      = "feature"
-                          :featureIndex = "index"
-                          :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
-                        />
-
-                      </td>
-                    </template>
+                    <td
+                      v-if     = "state.currentactiontools[layer.id][index]"
+                      :colspan = "getColSpan(layer)"
+                    >
+                      <component
+                        :is           = "state.currentactiontools[layer.id][index]"
+                        :colspan      = "getColSpan(layer)"
+                        :layer        = "layer"
+                        :feature      = "feature"
+                        :featureIndex = "index"
+                        :config       = "state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"
+                      />
+                    </td>
                   </tr>
 
                   <tr
@@ -380,8 +380,8 @@
                       <span
                         v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
                         class  = "skin-color"
-                        :class = "$fa('link')">
-                      </span>
+                        :class = "$fa('link')"
+                      ></span>
 
                       <g3w-image
                         v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
@@ -414,41 +414,39 @@
                       :feature-html-content = "`${layer.id}_${index}`"
                     >
                       <!-- LAYER WITH A FORM STRUCTURE -->
-                      <template v-if = "hasFormStructure(layer)">
-                        <!-- @since v3.10.0  Reference to content of feature html response -->
-                        <tabs
-                          :fields  = "getQueryFields(layer, feature)"
-                          :layerid = "layer.id"
-                          :feature = "feature"
-                          :tabs    = "getLayerFormStructure(layer)"
-                        />
-                      </template>
+                      <!-- @since v3.10.0  Reference to content of feature html response -->
+                      <tabs
+                        v-if     = "hasFormStructure(layer)"
+                        :fields  = "getQueryFields(layer, feature)"
+                        :layerid = "layer.id"
+                        :feature = "feature"
+                        :tabs    = "getLayerFormStructure(layer)"
+                      />
 
                       <!-- SIMPLE LAYER WITH NO STRUCTURE -->  
-                      <template v-else>
-                        <table class = "feature_attributes">
-                          <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
-                            <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
-                              <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
-                              <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
-                                <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
-                                  <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
-                                  <td class = "attr-value">{{ v2 }}</td>
-                                </tr>
-                              </template>
+                      <table v-else class = "feature_attributes">
+                        <template v-for = "attribute in layer.attributes.filter(attribute => attribute.show)">
+                          <template v-if = "isJSON(getLayerField({layer, feature, fieldName: attribute.name}))">
+                            <!-- DUMP JSON objects (MAX 2 NESTING LEVELS) -->
+                            <template v-for = "(v, k) in getLayerField({layer, feature, fieldName: attribute.name}).value">
+                              <tr v-for = "(v2, k2) in ('object' === typeof v ? v : { [k]: v })" style = "padding-top:10px; padding-bottom:10px;">
+                                <td class = "attr-label">{{ attribute.label }}.<template v-if = "('object' === typeof v)">{{ k }}.</template>{{ k2 }}</td>
+                                <td class = "attr-value">{{ v2 }}</td>
+                              </tr>
                             </template>
-                            <tr v-else>
-                              <td class = "attr-label">{{ attribute.label }}</td>
-                              <td class = "attr-value" :attribute = "attribute.name">
-                                <table-attribute-field-value
-                                  :feature = "feature"
-                                  :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
-                                />
-                              </td>
-                            </tr>
                           </template>
-                        </table>
-                      </template>
+                          <tr v-else>
+                            <td class = "attr-label">{{ attribute.label }}</td>
+                            <td class = "attr-value" :attribute = "attribute.name">
+                              <table-attribute-field-value
+                                :feature = "feature"
+                                :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
+                              />
+                            </td>
+                          </tr>
+                        </template>
+                      </table>
+
                     </td>
                   </tr>
 
