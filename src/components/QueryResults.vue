@@ -311,14 +311,27 @@
                     @mouseout.stop  = "feature.geometry && trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
                     class           = "featurebox-header"
                   > 
-                    <actions
-                      :colspan      = "getColSpan(layer)"
-                      :layer        = "layer"
-                      :featureIndex = "index"
-                      :trigger      = "trigger"
-                      :feature      = "feature"
-                      :actions      = "state.layersactions[layer.id]"
-                    />
+                    <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
+                    <td
+                      v-if     = "state.layersactions[layer.id].length"
+                      style    = "padding: 3px"
+                      class    = "g3w-feature-actions"
+                      :colspan = "getColSpan(layer)"
+                    >
+                      <action
+                        v-for  = "action in state.layersactions[layer.id]"
+                        :key   = "action.id"
+                        v-bind = "({
+                          colspan: getColSpan(layer),
+                          layer,
+                          featureIndex: index,
+                          trigger,
+                          feature,
+                          actions: state.layersactions[layer.id]
+                        })"
+                        :action = "action"
+                      />
+                    </td>
                   </tr>
 
                   <tr class = "g3w-feature-result-action-tools">
@@ -345,7 +358,7 @@
                       v-for = "(attribute, index) in attributesSubset(layer)"
                       class = "centered"
                     >
-                      {{getLayerFeatureBox(layer, feature).collapsed ? attribute.label : ''}}
+                      {{ getLayerFeatureBox(layer, feature).collapsed ? attribute.label : '' }}
                     </td>
                     <td
                       @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
@@ -496,7 +509,7 @@
   import ApplicationState                          from 'g3w-state';
   import { fieldsMixin }                           from 'mixins';
   import TableAttributeFieldValue                  from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import Actions                                   from 'components/QueryResultsActions.vue';
+  import Action                                    from 'components/QueryResultsAction.vue';
   import Image                                     from 'components/FieldImage.vue'
   import { toRawType }                             from 'utils/toRawType';
   import { throttle }                              from 'utils/throttle';
@@ -534,7 +547,7 @@
 
     components: {
       TableAttributeFieldValue,
-      actions:     Actions,
+      action:      Action,
       'g3w-image': Image
     },
 
@@ -1110,6 +1123,10 @@
 .noAttributes {
   display: flex;
   justify-content: flex-end;
+}
+.g3w-feature-actions {
+  padding: 3px;
+  background-color: rgba(34, 45, 50, 0.1) !important;
 }
 .feature_attributes tr {
   line-height: 1.8em;
