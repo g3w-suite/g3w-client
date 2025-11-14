@@ -4,20 +4,21 @@
 -->
 
 <template>
-   <span
-     v-if                      = "show && (undefined === (action.state || {}).show ? show : action.state.show)"
-     @contextmenu.prevent.stop = ""
-     @click.stop               = "clickAction(action, layer, feature, featureIndex, $event)"
-     :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[featureIndex] }"
-     class                     = "action-button"
-     v-disabled                = "ApplicationState.download || !!(action.state || {}).disabled"
-     v-t-tooltip:top           = "action.hint">
-     <span
-       style  = "padding: 2px;"
-       :style = "action.style"
-       :class = "`action-button-icon ${action.class}`">
-     </span>
-   </span>
+  <span
+    v-if                      = "show && (undefined === (action.state || {}).show ? show : action.state.show)"
+    @contextmenu.prevent.stop = ""
+    @click.stop               = "clickAction(action, layer, feature, featureIndex)"
+    :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[featureIndex] }"
+    class                     = "action-button"
+    v-disabled                = "ApplicationState.download || !!(action.state || {}).disabled"
+    v-t-tooltip:top           = "action.hint"
+  >
+    <span
+      style  = "padding: 2px;"
+      :style = "action.style"
+      :class = "`action-button-icon ${action.class}`"
+    ></span>
+  </span>
 </template>
 
 <script>
@@ -51,23 +52,34 @@
       },
     },
     methods: {
-      async clickAction(action, layer, feature, featureIndex, event) {
+      async clickAction(action, layer, feature, featureIndex) {
         await this.trigger(action, layer, feature, featureIndex);
-        this.$emit('action-clicked', action)
       }
     },
     async created() {
       if (this.action.init) {
-        this.action.init({ layer: this.layer, feature: this.feature, index: this.featureIndex, action: this.action });
+        this.action.init({
+          layer:   this.layer,
+          feature: this.feature,
+          index:   this.featureIndex,
+          action:  this.action
+        });
       }
-      if (typeof this.action.condition === 'function') {
-        const show = this.action.condition({ layer: this.layer, feature: this.feature });
+      if ('function' === typeof this.action.condition) {
+        const show = this.action.condition({
+          layer:   this.layer,
+          feature: this.feature
+        });
         this.show = show instanceof Promise ? await show: show;
       }
     },
     beforeDestroy() {
-      if (typeof this.action.clear === 'function') {
-        this.action.clear({ action: this.action, layer: this.layer, feature: this.feature });
+      if ('function' === typeof this.action.clear) {
+        this.action.clear({
+          action:  this.action,
+          layer:   this.layer,
+          feature: this.feature
+        });
       }
     }
   }
