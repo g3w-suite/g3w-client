@@ -75,23 +75,30 @@ export default {
     },
     async onChangeFile(event) {
       const body = new FormData();
-      body.append('csrfmiddlewaretoken', GUI.getCookie('csrftoken'));
+      body.append('csrfmiddlewaretoken', this.$cookie.get('csrftoken'));
       body.append(this.state.name, event.target.files[0]);
 
       this.loading = true;
 
       try {
-        const response = (await (await fetch(this.state.input.options.uploadurl, {
+        let response = (await (await fetch(this.state.input.options.uploadurl, {
           method:  'POST',
           headers: { Accept: 'application/json' },
           body
-        })).json())[this.state.name];
-        if (response) {
-          this.state.value = response;
+        })).json());
+
+        //@since 4.0.5 in case 
+        if (response?.[this.state.name]) {
+          this.state.value = response?.[this.state.name];
+        }
+        
+        //@since 4.0.5
+        if (false === response?.result) {
+          GUI.showUserMessage({ type: 'alert', message: response.error || this.$t("info.server_error") });
         }
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: this.$t("info.server_error") });
+        GUI.notify.error(this.$t("info.server_error"));
       }
 
       this.loading = false;
