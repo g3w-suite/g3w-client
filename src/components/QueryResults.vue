@@ -707,11 +707,11 @@
       },
 
       showLayerDownloadFormats(layer) {
-        showDownloadFormats(layer);
+        downloadFeatures({ layer, with_polygon: 'polygon' === this.state.query.type });
       },
 
       saveLayerResult(layer, type = "csv") {
-        downloadFeatures(type, layer, layer.features);
+        downloadFeatures({ type, layer, features: layer.features });
       },
 
       hasLayerOneFeature(layer) {

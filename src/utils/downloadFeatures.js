@@ -104,7 +104,7 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
         },
         cbk: (layer, feature, action, index) => {
           action.state.toggled[index] = !action.state.toggled[index];
-          GUI.setCurrentActionLayerFeatureTool({ layer, index, action, component: (action.state.toggled[index] ? DownloadFormats : null) });
+          downloadFeatures({ layer, features: [feature], action, index, with_polygon: 'polygon' === GUI.state.query.type });
         }
       });
       GUI.state.actiontools.downloadformats = GUI.state.actiontools.downloadformats || {};
@@ -117,7 +117,7 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
           hint:     `download_types.${format}`,
           cbk: (layer, feature, action, index, html, down_with_relations) => {
             // un-toggle downloads action
-            downloadFeatures(format, layer, feature, action, index, html, down_with_relations);
+            downloadFeatures({type: format, layer, feature, action, index, html, down_with_relations });
             if ('polygon' !== GUI.state.query.type) {
               const downloadsaction = actions[layer.id].find(a => 'downloads' === a.id);
               downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
@@ -131,7 +131,7 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
 /**
  * @TODO simplify, always make use of <dialog> element
  */
-export async function downloadFeatures(type, layer, features = [], action, index, html, down_with_relations = 0) {
+export async function downloadFeatures( { type, layer, features = [], action, index, html, down_with_relations = 0, with_poligon = false } = opts) {
   const catalog_layer = getCatalogLayerById(layer.id);
 
   // download started from CONTEXT MENU
@@ -146,7 +146,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
             <div class="form-group">
               <label>${ _('Layer') }</label>
               <select name="layer" class="form-control" disabled>
-                <option value="${layer.id}" selected>${ layer.name }</option>
+                <option value="${layer.id}" selected>${ layer.name || layer.title }</option>
                 ${
                   getCatalogLayers()
                   .filter(l => layer.id !== l.getId())
@@ -180,6 +180,23 @@ export async function downloadFeatures(type, layer, features = [], action, index
                 <option value="0">${ _('no') }</option>
               </select>
             </div>
+
+            ${with_poligon ? /* html */` <select
+              ref       = "g3w_select_feature_featurepolygon"
+              style     = "width: 100%"
+              v-select2 = "'type'"
+              class     = "form-control"
+              :search   = "false"
+            >
+              <option
+                v-for  = "choice in config.choices"
+                :key   = "choice.type"
+                :value = "choice.type"
+                :ref   = "choice.type"
+                v-t    = "choice.label">
+              </option>
+            </select> ` : '' 
+          }
 
             <menu style="display: flex; justify-content: space-between;">
               <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">Download</button>

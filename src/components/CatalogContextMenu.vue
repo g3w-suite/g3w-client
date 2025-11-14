@@ -484,7 +484,7 @@
       },
 
       showDownloadMenu(layer) {
-        downloadFeatures(undefined, layer);
+        downloadFeatures({ layer });
         this.closeMenu();
       },
 
