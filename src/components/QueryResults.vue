@@ -638,7 +638,7 @@
           !layer.filter.active //@since 4.0.4 In case of filter active, doen't show select action
           && GUI.getService('queryresults').getActionLayerById({ layer, id: 'selection' })
           && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
-          && layer.features.length > 1
+          && layer.features.length > 0
         );
       },
 
