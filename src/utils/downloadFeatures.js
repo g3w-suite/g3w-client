@@ -19,73 +19,6 @@ import DownloadFormats         from 'components/QueryResultsActionDownloadFormat
 
 import shpwrite                from '@mapbox/shp-write';
 
-/**
- * ORIGINAL SOURCE: src/components/QueryResultsActionQueryPolygonCSVAttributes.vue@v4.0.0
- */
-const CsvAttributes = Vue.extend({
-  template: /* html */ `
-  <div style = "width:100%">
-    <h5
-      class = "skin-background-color"
-      style = "font-weight: bold; padding: 3px; color: white; margin: 0 0 5px 0;"
-    >{{ $t('mapcontrols.querybypolygon.download.title') }}</h5>
-    <div style = "display: flex; justify-content: space-between; padding: 3px; border-radius: 3px; border: 1px solid #f4f4f4;">
-      <select
-        ref       = "g3w_select_feature_featurepolygon"
-        style     = "width: 100%"
-        v-select2 = "'type'"
-        class     = "form-control"
-        :search   = "false"
-      >
-        <option
-          v-for  = "choice in config.choices"
-          :key   = "choice.type"
-          :value = "choice.type"
-          :ref   = "choice.type"
-          v-t    = "choice.label">
-        </option>
-      </select>
-      <button
-        style       = "border-radius: 0 3px 3px 0;"
-        class       = "btn skin-button"
-        @click.stop = config.download(type)
-      >
-        <span :class = "$fa('download')"></span>
-      </button>
-    </div>
-  </div>`,
-
-  /** @since 3.8.6 */
-  name: "queryresults-querypolygonaddattributes",
-
-  props: {
-    layer: {
-      type: Object
-    },
-    config: {
-      type:    Object,
-      default: null
-    },
-  },
-  data() {
-    return {
-      type: this.config.choices[0].type
-    }
-  },
-  created() {
-    this.unwatch = this.$watch(
-      () => ApplicationState.language,
-      () => {
-        this.config.choices.forEach(c => $(this.$refs[c.type]).text(_(c.label)));
-        $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
-      }
-    )
-  },
-  beforeDestroy() {
-    this.unwatch && this.unwatch();
-    this.unwatch = null;
-  }
-});
 
 // set download action tool
 GUI.onafter('addActionsForLayers', (actions, layers) => {
@@ -104,36 +37,17 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
         },
         cbk: (layer, feature, action, index) => {
           action.state.toggled[index] = !action.state.toggled[index];
-          downloadFeatures({ layer, features: [feature], action, index, with_polygon: 'polygon' === GUI.state.query.type });
+          downloadFeatures({ layer, features: [feature], action, index, down_with_polygon: 'polygon' === GUI.state.query.type });
         }
       });
-      GUI.state.actiontools.downloadformats = GUI.state.actiontools.downloadformats || {};
-      GUI.state.actiontools.downloadformats[layer.id] = {
-        downloads: layer.downloads.map(format => ({
-          id:       `download_${format}_feature`,
-          download: true,
-          format,
-          class:    GUI.getFontClass(format),
-          hint:     `download_types.${format}`,
-          cbk: (layer, feature, action, index, html, down_with_relations) => {
-            // un-toggle downloads action
-            downloadFeatures({type: format, layer, feature, action, index, html, down_with_relations });
-            if ('polygon' !== GUI.state.query.type) {
-              const downloadsaction = actions[layer.id].find(a => 'downloads' === a.id);
-              downloadsaction.cbk(layer, feature, downloadsaction, index, html, down_with_relations);
-            }
-          }
-        }))
-      };
     });
 });
 
 /**
  * @TODO simplify, always make use of <dialog> element
  */
-export async function downloadFeatures( { type, layer, features = [], action, index, html, down_with_relations = 0, with_poligon = false } = opts) {
+export async function downloadFeatures( { type, layer, features = [], action, index, html, down_with_relations = 0, down_with_polygon = false } = opts) {
   const catalog_layer = getCatalogLayerById(layer.id);
-
   // download started from CONTEXT MENU
   if (undefined === type && layer) {
     const external_layer = !catalog_layer && layer;
@@ -175,28 +89,19 @@ export async function downloadFeatures( { type, layer, features = [], action, in
 
             <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() ? '' : 'hidden' }>
               <label>${ _('Include relations in exported file?') }</label>
-              <select name="down_with_relations" class="form-control">
+              <select name = "down_with_relations" class="form-control">
                 <option value="1">${ _('yes') }</option>
                 <option value="0">${ _('no') }</option>
               </select>
             </div>
 
-            ${with_poligon ? /* html */` <select
-              ref       = "g3w_select_feature_featurepolygon"
-              style     = "width: 100%"
-              v-select2 = "'type'"
-              class     = "form-control"
-              :search   = "false"
-            >
-              <option
-                v-for  = "choice in config.choices"
-                :key   = "choice.type"
-                :value = "choice.type"
-                :ref   = "choice.type"
-                v-t    = "choice.label">
-              </option>
-            </select> ` : '' 
-          }
+            ${down_with_polygon ? /* html */` 
+              <label>${ _('Layer') }</label>
+              <select name = "down_with_polygon" style = "width: 100%" class = "form-control">
+                <option value = "feature">${ _('mapcontrols.querybypolygon.download.choiches.feature.label') } </option>
+                <option value = "polygon">${ _('mapcontrols.querybypolygon.download.choiches.feature_polygon.label') }</option>
+              </select> ` : '' 
+            }
 
             <menu style="display: flex; justify-content: space-between;">
               <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">Download</button>
@@ -219,6 +124,7 @@ export async function downloadFeatures( { type, layer, features = [], action, in
         try {
           const format              = dialog.querySelector('[name="format"]').value;
           const down_with_relations = Number(dialog.querySelector('[name="down_with_relations"]').value);
+          const down_with_polygon   = dialog.querySelector('[name="down_with_polygon"]').value;
           let blob, filename;
 
           if ('external-url' === format) {
@@ -260,6 +166,7 @@ export async function downloadFeatures( { type, layer, features = [], action, in
           else {
             const data = {
               down_with_relations,
+              down_with_polygon,
               filtertoken: catalog_layer.getToken(),
               ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {})
             };
@@ -283,6 +190,7 @@ export async function downloadFeatures( { type, layer, features = [], action, in
         }
         ApplicationState.download = false;
       }
+      if (action) action.state.toggled[index] = false;
       dialog.remove();
     });
 
