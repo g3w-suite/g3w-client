@@ -20,6 +20,7 @@
             :data-url = "state.input.options.uploadurl"
             :class    = "{'input-error-validation' : notvalid}"
             type      = "file"
+            :accept   = "accept"
             @change   = "onChangeFile"
           >
         </i>
@@ -55,6 +56,8 @@ export default {
         value:     null,
         mime_type: null
       },
+      //@since 4.0.5 take in account allowed types from g3w-admin settings.py G3WFILE_FORM_UPLOAD_FORMATS
+      accept: (this.state.input?.options?.allowed_types || []).map(a => `${a.startsWith('.') ? a : `.${a}`}` ).join(','),
       mediaid: `media_${getUniqueDomId()}`,
       loading: false
     }
@@ -88,8 +91,8 @@ export default {
         })).json());
 
         //@since 4.0.5 in case 
-        if (response?.[this.state.name]) {
-          this.state.value = response?.[this.state.name];
+        if (response?.result) {
+          this.state.value = response?.data;
         }
         
         //@since 4.0.5
