@@ -515,7 +515,7 @@
   import { toRawType }                             from 'utils/toRawType';
   import { throttle }                              from 'utils/throttle';
   import { getCatalogLayerById }                   from 'utils/getCatalogLayerById';
-  import { downloadFeatures, showDownloadFormats } from 'utils/downloadFeatures';
+  import { downloadFeatures }                      from 'utils/downloadFeatures';
   import GUI                                       from 'g3w-app';
 
   import { Layer }                from 'g3w-layer';
@@ -707,7 +707,7 @@
       },
 
       showLayerDownloadFormats(layer) {
-        downloadFeatures({ layer, down_with_polygon: 'polygon' === this.state.query.type });
+        downloadFeatures({ layer, down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }` });
       },
 
       saveLayerResult(layer, type = "csv") {

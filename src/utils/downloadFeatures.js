@@ -37,7 +37,7 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
         },
         cbk: (layer, feature, action, index) => {
           action.state.toggled[index] = !action.state.toggled[index];
-          downloadFeatures({ layer, features: [feature], action, index, down_with_polygon: 'polygon' === GUI.state.query.type });
+          downloadFeatures({ layer, features: [feature], action, index, down_with_polygon: 'polygon' === GUI.state.query.type && `${ GUI.state.query.fid }` });
         }
       });
     });
@@ -98,8 +98,8 @@ export async function downloadFeatures( { type, layer, features = [], action, in
             ${down_with_polygon ? /* html */` 
               <label>${ _('Layer') }</label>
               <select name = "down_with_polygon" style = "width: 100%" class = "form-control">
-                <option value = "feature">${ _('mapcontrols.querybypolygon.download.choiches.feature.label') } </option>
-                <option value = "polygon">${ _('mapcontrols.querybypolygon.download.choiches.feature_polygon.label') }</option>
+                <option value = "0">${ _('mapcontrols.querybypolygon.download.choiches.feature.label') } </option>
+                <option value = "1">${ _('mapcontrols.querybypolygon.download.choiches.feature_polygon.label') }</option>
               </select> ` : '' 
             }
 
@@ -164,9 +164,11 @@ export async function downloadFeatures( { type, layer, features = [], action, in
           }
 
           else {
+            console.log(typeof down_with_polygon)
             const data = {
               down_with_relations,
-              down_with_polygon,
+              ...(down_with_polygon ? { sbp_qgs_layer_id: layer.id, sbp_fid: down_with_polygon } : {}),
+              fids: features?.map(f => f.attributes[G3W_FID]).join(','),
               filtertoken: catalog_layer.getToken(),
               ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {})
             };
