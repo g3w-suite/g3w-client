@@ -437,11 +437,13 @@
                           </template>
                           <tr v-else>
                             <td class = "attr-label">{{ attribute.label }}</td>
+                            <!-- ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@v4.0.0 -->
                             <td class = "attr-value" :attribute = "attribute.name">
-                              <table-attribute-field-value
-                                :feature = "feature"
-                                :field   = "getLayerField({layer, feature, fieldName: attribute.name})"
-                              />
+                              <g3w-vue   v-if      = "isVue(getLayerField({    layer, feature, fieldName: attribute.name}))" :feature = "feature" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
+                              <span      v-else-if = "isSimple(getLayerField({ layer, feature, fieldName: attribute.name}))" v-html = "getLayerField({ layer, feature, fieldName: attribute.name }).value"></span>
+                              <g3w-image v-else-if = "isPhoto(getLayerField({  layer, feature, fieldName: attribute.name}))" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
+                              <g3w-image v-else-if = "isImage(getLayerField({  layer, feature, fieldName: attribute.name}))" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
+                              <g3w-link  v-else-if = "isLink(getLayerField({   layer, feature, fieldName: attribute.name}))" :state = "{ value: getLayerField({ layer, feature, fieldName: attribute.name }).value }" />
                             </td>
                           </tr>
                         </template>
@@ -506,9 +508,10 @@
 <script>
   import ApplicationState                          from 'g3w-state';
   import { fieldsMixin }                           from 'mixins';
-  import TableAttributeFieldValue                  from 'components/QueryResultsTableAttributeFieldValue.vue';
-  import Action                                    from 'components/QueryResultsAction.vue';
+  import Link                                      from 'components/FieldLink.vue';
+  import VueField                                  from 'components/FieldVue.vue';
   import Image                                     from 'components/FieldImage.vue'
+  import Action                                    from 'components/QueryResultsAction.vue';
   import { toRawType }                             from 'utils/toRawType';
   import { throttle }                              from 'utils/throttle';
   import { getCatalogLayerById }                   from 'utils/getCatalogLayerById';
@@ -544,9 +547,10 @@
     mixins: [fieldsMixin],
 
     components: {
-      TableAttributeFieldValue,
       action:      Action,
-      'g3w-image': Image
+      'g3w-link':  Link,
+      'g3w-vue':   VueField,
+      'g3w-image': Image,
     },
 
     computed: {
