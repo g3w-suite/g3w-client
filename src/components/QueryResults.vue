@@ -303,14 +303,14 @@
               ></div>
 
               <table v-else class = "table" :class = "{'mobile': isMobile()}">
-                <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key  = "feature.id"> 
+                <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key = "feature.id">
 
                   <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@v4.0.0 -->
                   <tr
                     @mouseover.stop = "feature.geometry && trigger({ id: 'highlightgeometry'}, layer, feature, index)"
                     @mouseout.stop  = "feature.geometry && trigger({ id: 'clearHighlightGeometry'}, layer, feature, index)"
                     class           = "featurebox-header"
-                  > 
+                  >
                     <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
                     <td
                       v-if     = "state.layersactions[layer.id].length"

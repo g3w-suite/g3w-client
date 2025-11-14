@@ -172,7 +172,7 @@ globalThis.moment = require('moment/min/moment-with-locales');
 /**
  * Based on bootstrap/js/dropdown.js@v3.3.7
  */
-document.addEventListener('click', function (e) {
+document.addEventListener('click', function(e) {
   const target = e.target.closest('[data-toggle="dropdown"]');
   if (3 !== e.button) {
     document
@@ -191,7 +191,7 @@ document.addEventListener('click', function (e) {
 /**
  * Based on bootstrap/js/dropdown.js@v3.3.7
  */
-document.addEventListener('keydown', function (e) {
+document.addEventListener('keydown', function(e) {
   const target = e.target.closest('[data-toggle="dropdown"]');
   if (target && 'Escape' === e.key) {
     target.click();
