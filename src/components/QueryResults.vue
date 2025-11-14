@@ -664,11 +664,11 @@
       },
 
       /**
-       * @param layerId
-       * @param type feature or layer
-       * @param position
+       * @param { string }              layerId
+       * @param { 'feature' | 'layer' } type
+       * @param { 'before' | 'after' }  position
        */
-      getLayerCustomComponents(layerId, type = 'feature', position = 'after') {
+      getLayerCustomComponents(layerId, type, position) {
         return this.state?.layerscustomcomponents?.[layerId]?.[type]?.[position] || [];
       },
 
