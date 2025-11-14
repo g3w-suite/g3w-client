@@ -124,7 +124,7 @@ export async function downloadFeatures( { type, layer, features = [], action, in
         try {
           const format              = dialog.querySelector('[name="format"]').value;
           const down_with_relations = Number(dialog.querySelector('[name="down_with_relations"]').value);
-          const down_with_polygon   = dialog.querySelector('[name="down_with_polygon"]').value;
+          const down_with_polygon   = dialog.querySelector('[name="down_with_polygon"]')?.value;
           let blob, filename;
 
           if ('external-url' === format) {
@@ -164,7 +164,6 @@ export async function downloadFeatures( { type, layer, features = [], action, in
           }
 
           else {
-            console.log(typeof down_with_polygon)
             const data = {
               down_with_relations,
               ...(down_with_polygon ? { sbp_qgs_layer_id: layer.id, sbp_fid: down_with_polygon } : {}),
