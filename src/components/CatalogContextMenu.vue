@@ -596,7 +596,7 @@
       zoomToLayer(layer) {
         try {
           let bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy];
-          let epsg = layer.epsg;
+          let epsg = layer.epsg || GUI.getEpsg();
           bbox = epsg === GUI.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, GUI.getEpsg());
           const geometry = ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent;
           const view = GUI.getMap().getView();
