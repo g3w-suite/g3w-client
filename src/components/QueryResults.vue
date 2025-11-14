@@ -83,7 +83,7 @@
 
                 <!-- ZOOM TO LAYER -->
                 <span
-                  v-if           = "layer.features.length > 0 && layer.hasgeometry"
+                  v-if           = "layer.hasgeometry"
                   @click.stop    = "zoomToLayer(layer)"
                   :class         = "$fa('marker')"
                   class          = "action-button action-button-icon"
@@ -93,7 +93,7 @@
 
                 <!-- PRINT LAYER -->
                 <span
-                  v-if           = "layer.features.length > 0 && layer.atlas.length"
+                  v-if           = "layer.atlas.length"
                   @click.stop    = "printAtlas(layer)"
                   :class         = "$fa('print')"
                   class          = "action-button action-button-icon"
@@ -104,7 +104,7 @@
 
                 <!-- DOWNLOAD LAYER -->
                 <span
-                  v-if           = "layer.features.length > 0 && (layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
+                  v-if           = "(layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
                   @click.stop    = "showLayerDownloadFormats(layer)"
                   class          = "action-button action-button-icon"
                   :class         = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
@@ -638,7 +638,6 @@
           !layer.filter.active //@since 4.0.4 In case of filter active, doen't show select action
           && GUI.getService('queryresults').getActionLayerById({ layer, id: 'selection' })
           && (!this.canPaginate(layer) || (layer.selection.active && layer.filter.active))
-          && layer.features.length > 0
         );
       },
 
