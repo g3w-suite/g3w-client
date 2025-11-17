@@ -105,7 +105,7 @@ export async function downloadFeatures({
             </select>
           </div>
 
-          <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() && !catalog_layer?.isPdfDownloadable?.() ? '' : 'hidden' }>
+          <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() ? '' : 'hidden' }>
             <label>${ _('Include relations in exported file?') }</label>
             <select name = "down_with_relations" class="form-control">
               <option value="1">${ _('yes') }</option>
@@ -133,6 +133,13 @@ export async function downloadFeatures({
   dialog.addEventListener("click", e => {
     if (e.target === dialog) {
       dialog.close();
+    }
+  });
+
+  dialog.querySelector('form').addEventListener('input', e => {
+    // disable "down_with_relations" in case of PDF format
+    if ('format' === e.target.name) {
+      e.target.form.querySelector('[name="down_with_relations"]').value = Number('Pdf' !== e.target.value);
     }
   });
 
