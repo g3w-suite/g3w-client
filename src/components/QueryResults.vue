@@ -49,7 +49,7 @@
                   @click.stop    = "openAttributeTable(layer)"
                   :class         = "$fa('list')"
                   class          = "action-button action-button-icon"
-                  title          = "'Open Attribute Table'"
+                  title          = "Open Attribute Table"
                   data-placement = "left"
                 ></span>
                 {{ layer.title }}
