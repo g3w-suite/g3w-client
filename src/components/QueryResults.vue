@@ -105,7 +105,7 @@
                 <!-- DOWNLOAD LAYER -->
                 <span
                   v-if           = "(layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
-                  @click.stop    = "showLayerDownloadFormats(layer)"
+                  @click.stop    = "showDownloadModal(layer)"
                   class          = "action-button action-button-icon"
                   :class         = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
                   title          = "Downloads"
@@ -706,12 +706,8 @@
         GUI.printAtlas(layer);
       },
 
-      showLayerDownloadFormats(layer) {
+      showDownloadModal(layer) {
         downloadFeatures({ layer, down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }` });
-      },
-
-      saveLayerResult(layer, type = "csv") {
-        downloadFeatures({ type, layer, features: layer.features });
       },
 
       hasLayerOneFeature(layer) {
