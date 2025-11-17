@@ -138,8 +138,9 @@ export async function downloadFeatures({
 
   dialog.querySelector('form').addEventListener('input', e => {
     // disable "down_with_relations" in case of PDF format
-    if ('format' === e.target.name) {
-      e.target.form.querySelector('[name="down_with_relations"]').value = Number('Pdf' !== e.target.value);
+    if ('format' === e.target.name && catalog_layer?.hasDowloadableRelations?.()) {
+      e.target.form.querySelector('[name="down_with_relations"]').value    = Number('Pdf' !== e.target.value);
+      e.target.form.querySelector('[name="down_with_relations"]').disabled = 'Pdf' === e.target.value;
     }
   });
 
