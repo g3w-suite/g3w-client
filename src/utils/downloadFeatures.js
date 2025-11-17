@@ -15,8 +15,6 @@ import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 import { getCatalogLayers }    from 'utils/getCatalogLayers';
 import { getUniqueDomId }      from 'utils/getUniqueDomId';
 
-import DownloadFormats         from 'components/QueryResultsActionDownloadFormats.vue';
-
 import shpwrite                from '@mapbox/shp-write';
 
 
@@ -37,7 +35,13 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
         },
         cbk: (layer, feature, action, index) => {
           action.state.toggled[index] = !action.state.toggled[index];
-          downloadFeatures({ layer, features: [feature], action, index, down_with_polygon: 'polygon' === GUI.state.query.type && `${ GUI.state.query.fid }` });
+          downloadFeatures({
+            layer,
+            features: [feature],
+            action,
+            index,
+            down_with_polygon: 'polygon' === GUI.state.query.type && `${ GUI.state.query.fid }`
+          });
         }
       });
     });
@@ -385,24 +389,4 @@ export async function downloadFeatures({
     }
   }
 
-}
-
-/**
- * @FIXME add description
- *
- * @param layer
- */
-export function showDownloadFormats(layer) {
-  layer.downloadformats.active = !layer.downloadformats.active;
-  GUI.setLayerActionTool({
-    layer,
-    component: layer.downloadformats.active ? DownloadFormats : null,
-    config: layer.downloadformats.active
-      ? {
-          ...GUI.state.actiontools.downloadformats[layer.id],
-          //for download layer need to filter pdf format because it works only for a single feature
-          downloads: GUI.state.actiontools.downloadformats[layer.id].downloads.filter(d => 'pdf' !== d.format)
-        }
-      : null
-  })
 }
