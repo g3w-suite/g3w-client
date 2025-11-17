@@ -46,7 +46,16 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
 /**
  * @TODO simplify, always make use of <dialog> element
  */
-export async function downloadFeatures( { type, layer, features = [], action, index, html, down_with_relations = 0, down_with_polygon = false } = opts) {
+export async function downloadFeatures({
+  type,
+  layer,
+  features = [],
+  action,
+  index,
+  html,
+  down_with_relations = 0,
+  down_with_polygon = false,
+} = opts) {
   const catalog_layer = getCatalogLayerById(layer.id);
   // download started from CONTEXT MENU
   if (undefined === type && layer) {
