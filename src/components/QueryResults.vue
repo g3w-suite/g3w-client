@@ -707,7 +707,11 @@
       },
 
       showDownloadModal(layer) {
-        downloadFeatures({ layer, down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }` });
+        downloadFeatures({
+          layer,
+          features: layer.features,
+          down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }`,
+        });
       },
 
       hasLayerOneFeature(layer) {
