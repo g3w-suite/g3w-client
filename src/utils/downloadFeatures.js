@@ -59,6 +59,12 @@ export async function downloadFeatures({
   down_with_relations = 0,
   down_with_polygon = false,
 } = opts) {
+
+  // sanity check
+  if (features && !Array.isArray(features)) {
+    features = [features];
+  }
+
   const catalog_layer = getCatalogLayerById(layer.id);
 
   // download started from CONTEXT MENU
@@ -215,10 +221,6 @@ export async function downloadFeatures({
   // download started from QUERY RESULTS
   else {
 
-    if (features && !Array.isArray(features)) {
-      features = [features];
-    }
-
     const { query = {} } = GUI.state;
 
     // filter out undefined properties
@@ -241,15 +243,10 @@ export async function downloadFeatures({
 
     }).filter(([_, v]) => v !== undefined));
 
-    /**
-     * A function that che be called in case of querybypolygon
-     *
-     * @param active
-     */
-    const runDownload = async (active = false) => {
-
+    // run download
+    if ('polygon' !== query.type) {
       if (features.length > 1) {
-        layer.downloadformats.active = active;
+        layer.downloadformats.active = false;
         GUI.setLayerActionTool({ layer });
       }
 
@@ -319,11 +316,6 @@ export async function downloadFeatures({
       if (features.length <= 1) {
         GUI.setCurrentActionLayerFeatureTool({ index, action, layer });
       }
-    };
-
-    /** @FIXME add description */
-    if ('polygon' !== query.type) {
-      await runDownload();
     }
   }
 
