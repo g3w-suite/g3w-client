@@ -62,6 +62,11 @@ export async function downloadFeatures({
     features = [features];
   }
 
+  //in case of downlowad all layer feaures 
+  if (0 === features.length) {
+    features = layer.features;
+  }
+
   if (!layer) {
     throw 'no layer';
   }
@@ -105,7 +110,7 @@ export async function downloadFeatures({
             </select>
           </div>
 
-          <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() ? '' : 'hidden' }>
+          <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() && !catalog_layer?.isPdfDownloadable?.() ? '' : 'hidden' }>
             <label>${ _('Include relations in exported file?') }</label>
             <select name = "down_with_relations" class="form-control">
               <option value="1">${ _('yes') }</option>
@@ -136,19 +141,12 @@ export async function downloadFeatures({
     }
   });
 
-  dialog.querySelector('form').addEventListener('input', e => {
-    // disable "down_with_relations" in case of PDF format
-    if ('format' === e.target.name) {
-      e.target.form.querySelector('[name="down_with_relations"]').value = Number('Pdf' !== e.target.value);
-    }
-  });
-
   dialog.addEventListener('close', async () => {
     if ('confirm' === dialog.returnValue) {
       ApplicationState.download = true;
       try {
         const format              = dialog.querySelector('[name="format"]').value;
-        const down_with_relations = Number(dialog.querySelector('[name="down_with_relations"]').value);
+        const down_with_relations = Number(!catalog_layer?.isPdfDownloadable?.() && dialog.querySelector('[name="down_with_relations"]').value);
         const down_with_polygon   = dialog.querySelector('[name="down_with_polygon"]')?.value;
         let blob, filename;
 
