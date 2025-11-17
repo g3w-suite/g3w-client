@@ -90,14 +90,14 @@ export async function downloadFeatures({
             <label>${ _('Data Format') }</label>
             <select name="format" class="form-control">
               ${[
-                  catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
-                  catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff-at-map-extent">${ _('GeoTiff (current view)') }</option>` : '',
-                  catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
-                  catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
-                  catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
-                  catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
-                  catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
-                  catalog_layer?.isPdfDownloadable?.()     ? /* html */`<option value="Pdf">${ _('PDF') }</option>` : '',
+                  catalog_layer?.isGeoTIFFDownloadable?.()                        ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
+                  catalog_layer?.isGeoTIFFDownloadable?.()                        ? /* html */`<option value="GeoTiff-at-map-extent">${ _('GeoTiff (current view)') }</option>` : '',
+                  catalog_layer?.isShpDownloadable?.()                            ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
+                  catalog_layer?.isGpxDownloadable?.()                            ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
+                  catalog_layer?.isGpkgDownloadable?.()                           ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
+                  catalog_layer?.isCsvDownloadable?.()                            ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
+                  catalog_layer?.isXlsDownloadable?.()                            ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
+                  1 === features.length && catalog_layer?.state?.download_pdf     ? /* html */`<option value="Pdf">${ _('PDF') }</option>` : '',
                   external_layer && 'wms' !== external_layer._type && external_layer.downloadUrl  ? /* html */`<option value="external-url">External URL</option>` : '',
                   external_layer && 'wms' !== external_layer._type && !external_layer.downloadUrl ? /* html */`<option value="external-shp">${ _('Shapefile') }</option>` : '',
                 ].filter(Boolean).join('')
@@ -116,7 +116,7 @@ export async function downloadFeatures({
           ${down_with_polygon ? /* html */` 
             <label>${ _('mapcontrols.querybypolygon.download.title') }</label>
             <select name = "down_with_polygon" style = "width: 100%" class = "form-control">
-              <option value = "0">${ _('mapcontrols.querybypolygon.download.choiches.feature.label') } </option>
+              <option value = "0">${ _('mapcontrols.querybypolygon.download.choiches.feature.label') }</option>
               <option value = "1">${ _('mapcontrols.querybypolygon.download.choiches.feature_polygon.label') }</option>
             </select> ` : '' 
           }
@@ -194,7 +194,8 @@ export async function downloadFeatures({
             ...(down_with_polygon ? { sbp_qgs_layer_id: layer.id, sbp_fid: down_with_polygon } : {}),
             fids: features?.map(f => f.attributes[G3W_FID]).join(','),
             filtertoken: catalog_layer.getToken(),
-            ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {})
+            ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {}),
+            ...('Pdf' === format ? { html:  document.querySelector(`[feature-html-content="${layer.id}_${index}"]`).innerHTML } : {})
           };
           url       = catalog_layer.getUrl(format.replace('-at-map-extent', '').toLowerCase());
           response  = url && await fetch(url, {
