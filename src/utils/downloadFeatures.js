@@ -77,7 +77,7 @@ export async function downloadFeatures({
           <div class="form-group">
             <label>${ _('Layer') }</label>
             <select name="layer" class="form-control" disabled>
-              <option value="${layer.id}" selected>${ layer.name || layer.title }</option>
+              <option value="${layer.id}" selected>${ layer.name || layer.title } ${ features.length ? `(${features.length})` : ''}</option>
               ${
                 getCatalogLayers()
                 .filter(l => layer.id !== l.getId())
