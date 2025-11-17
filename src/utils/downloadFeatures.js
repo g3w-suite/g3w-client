@@ -97,6 +97,7 @@ export async function downloadFeatures({
                   catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
                   catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
                   catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
+                  catalog_layer?.isPdfDownloadable?.()     ? /* html */`<option value="Pdf">${ _('PDF') }</option>` : '',
                   external_layer && 'wms' !== external_layer._type && external_layer.downloadUrl  ? /* html */`<option value="external-url">External URL</option>` : '',
                   external_layer && 'wms' !== external_layer._type && !external_layer.downloadUrl ? /* html */`<option value="external-shp">${ _('Shapefile') }</option>` : '',
                 ].filter(Boolean).join('')
@@ -104,7 +105,7 @@ export async function downloadFeatures({
             </select>
           </div>
 
-          <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() ? '' : 'hidden' }>
+          <div class="form-group" ${ catalog_layer?.hasDowloadableRelations?.() && !catalog_layer?.isPdfDownloadable?.() ? '' : 'hidden' }>
             <label>${ _('Include relations in exported file?') }</label>
             <select name = "down_with_relations" class="form-control">
               <option value="1">${ _('yes') }</option>
@@ -140,7 +141,7 @@ export async function downloadFeatures({
       ApplicationState.download = true;
       try {
         const format              = dialog.querySelector('[name="format"]').value;
-        const down_with_relations = Number(dialog.querySelector('[name="down_with_relations"]').value);
+        const down_with_relations = Number(!catalog_layer?.isPdfDownloadable?.() && dialog.querySelector('[name="down_with_relations"]').value);
         const down_with_polygon   = dialog.querySelector('[name="down_with_polygon"]')?.value;
         let blob, filename;
 
