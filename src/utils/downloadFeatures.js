@@ -13,7 +13,6 @@ import GUI                     from 'g3w-app';
 import { saveBlob }            from 'utils/saveBlob';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 import { getCatalogLayers }    from 'utils/getCatalogLayers';
-import { getUniqueDomId }      from 'utils/getUniqueDomId';
 
 import shpwrite                from '@mapbox/shp-write';
 
@@ -61,6 +60,7 @@ export async function downloadFeatures({
   down_with_polygon = false,
 } = opts) {
   const catalog_layer = getCatalogLayerById(layer.id);
+
   // download started from CONTEXT MENU
   if (undefined === type && layer) {
     const external_layer = !catalog_layer && layer;
@@ -324,68 +324,6 @@ export async function downloadFeatures({
     /** @FIXME add description */
     if ('polygon' !== query.type) {
       await runDownload();
-      return;
-    }
-
-    // check if multi-download if present
-    const downloadsactions = GUI.state.layersactions[layer.id].find(action => 'downloads' === action.id);
-
-    const config = {
-      choices: [
-        {
-          id: getUniqueDomId(),
-          type: 'feature',
-          label: 'mapcontrols.querybypolygon.download.choiches.feature.label',
-        },
-        {
-          id: getUniqueDomId(),
-          type: 'polygon',
-          label: 'mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
-        },
-      ],
-      // choose between only feature attribute or also polygon attribute
-      download: (type) => {
-        if ('polygon' === type) { // id type polygon add parameters to api download
-          data.sbp_qgs_layer_id = layer.id;
-          data.sbp_fid          = query.fid;
-        } else {                  // force to remove
-          delete data.sbp_fid;
-          delete data.sbp_qgs_layer_id;
-        }
-        runDownload(true)
-      }
-    };
-
-    /** @FIXME add description */
-    if (1 === features.length && undefined === downloadsactions) {
-      action.state.toggled[index] = true;
-    }
-
-    /** @FIXME add description */
-    if (1 === features.length) {
-      GUI.state.actiontools[CsvAttributes.name] = GUI.state.actiontools[layer.id] || {};
-      GUI.state.actiontools[CsvAttributes.name][layer.id] = config;
-      GUI.setCurrentActionLayerFeatureTool({
-        layer,
-        index,
-        action,
-        component: CsvAttributes,
-      });
-    }
-
-    /** @FIXME add description */
-    if (undefined === downloadsactions && 1 !== features.length) {
-      layer[type].active = !layer[type].active;
-    }
-
-    /** @FIXME add description */
-    if (1 !== features.length) {
-      const has_config = (downloadsactions || (layer[type].active && undefined === downloadsactions));
-      GUI.setLayerActionTool({
-        layer,
-        component: has_config ? CsvAttributes : null,
-        config:    has_config ? config : null,
-      });
     }
   }
 
