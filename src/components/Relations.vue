@@ -55,16 +55,13 @@
 
         <!-- DOWNLOAD BUTTON -->
         <span
-          v-if                    = "download_formats.length"
-          v-disabled              = "ApplicationState.download"
-          class                   = "action-button-icon action-button"
-          :class                  = "[
-            $fa('download'),
-            { 'toggled-white': download.toggled },
-          ]"
-          @click.stop      = "onDownload"
-          v-t-tooltip:left = "download_formats.length > 1 ? 'Downloads' : `download_types.${this.download_formats[0]}`">
-        </span>
+          v-if             = "download_formats.length"
+          v-disabled       = "ApplicationState.download"
+          class            = "action-button-icon action-button"
+          :class           = "[{ 'toggled-white': download.toggled }, $fa('download')]"
+          @click.stop      = "onDownload(download.layer)"
+          v-t-tooltip:left = "download_formats.length > 1 ? 'Downloads' : `download_types.${this.download_formats[0]}`"
+        ></span>
 
         <!-- CHART BUTTON -->
         <span
@@ -93,13 +90,6 @@
           position:    'relative',
         }"
       >
-        <!-- DOWNLOAD BUTTON -->
-        <downloadformats
-          v-if    = "download.toggled"
-          class   = "header-component"
-          :layer  = "download.layer"
-          :config = "download.config"
-        />
 
         <!-- TOTAL ELEMENTS -->
         <span>{{ table.rows.length }} {{ $t('entries') }}</span>
@@ -231,7 +221,6 @@
   import ApplicationState                  from 'g3w-state';
   import Component                         from 'g3w-component';
   import Field                             from 'components/FieldG3W.vue';
-  import DownloadFormats                   from 'components/QueryResultsActionDownloadFormats.vue';
   import { FieldsService }                 from 'components/g3w-fields';
   import GUI                               from 'g3w-app';
   import { debounce }                      from 'utils/debounce';
@@ -239,6 +228,7 @@
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
   import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
   import { saveBlob }                      from 'utils/saveBlob';
+  import { downloadFeatures }              from 'utils/downloadFeatures';
 
   export default {
 
@@ -247,7 +237,6 @@
 
     components: {
       Field,
-      'downloadformats': DownloadFormats,
     },
 
     data() {
@@ -712,12 +701,19 @@
       /**
        * @since 4.1.0
        */
-      async onDownload() {
+      async onDownload(layer) {
         if (1 == this.download_formats.length) {
           const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
           this.saveRelation(layer.getDownloadUrl(this.download_formats[0]));
         } else {
           this.download.toggled = !this.download.toggled;
+          downloadFeatures({
+            layer,
+            features: [layer.features],
+            // action,
+            // index,
+            // down_with_polygon: 'polygon' === GUI.state.query.type && `${ GUI.state.query.fid }`
+          });
         }
       },
 
