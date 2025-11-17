@@ -148,7 +148,7 @@ export async function downloadFeatures({
       ApplicationState.download = true;
       try {
         const format              = dialog.querySelector('[name="format"]').value;
-        const down_with_relations = Number(!catalog_layer?.isPdfDownloadable?.() && dialog.querySelector('[name="down_with_relations"]').value);
+        const down_with_relations = Number(dialog.querySelector('[name="down_with_relations"]').value);
         const down_with_polygon   = dialog.querySelector('[name="down_with_polygon"]')?.value;
         let blob, filename;
 
