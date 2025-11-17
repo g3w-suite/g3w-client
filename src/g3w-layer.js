@@ -650,7 +650,6 @@ export class Layer extends Emitter {
   isGpxDownloadable()     { return !this.isBaseLayer() && !!this.state.download_gpx; }
   isGpkgDownloadable()    { return !this.isBaseLayer() && !!this.state.download_gpkg; }
   isCsvDownloadable()     { return !this.isBaseLayer() && !!this.state.download_csv; }
-  isPdfDownloadable()     { return !this.isBaseLayer() && !!this.state.download_pdf; }
 
   /******************************************************************************************
    * LAYER RELATIONS
