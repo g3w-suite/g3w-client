@@ -711,7 +711,7 @@
           layer,
           features: layer.features,
           down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }`,
-          filter: {
+          filter: this.state.query?.pagination?.getData?.params?.[layer.id] && {
             ...('search' === this.state.query.type 
               ? { field: this.state.query?.pagination?.getData?.params?.[layer.id]?.filter } 
               : this.state.query?.pagination?.getData?.params?.[layer.id]?.download 
