@@ -25,7 +25,11 @@
       class = "g3wform_body"
       ref   = "g3wform_body"
     >
-      <component :fields = "state.fields" v-for = "component in body.components.before" :is = "component"/>
+      <component
+        v-for   = "component in body.components.before"  
+        :fields = "state.fields"
+        :is     = "component"
+      />
       <keep-alive>
         <component
           :handleRelation   = "handleRelation"
@@ -33,12 +37,14 @@
           @removetovalidate = "removeToValidate"
           @changeinput      = "changeInput"
           :state            = "state"
-          :is               = "state.component"/>
+          :is               = "state.component"
+        />
       </keep-alive>
       <component
         v-for   = "component in body.components.after"
         :fields = "state.fields"
-        :is     = "component"/>
+        :is     = "component"
+      />
     </div>
 
     <!-- FORM FOOTER  -->
@@ -46,7 +52,8 @@
       ref              = "g3w_form_footer"
       :isRootComponent = "isRootComponent"
       :backToRoot      = "backToRoot"
-      :state           = "state"/>
+      :state           = "state"
+    />
   </div>
 </template>
 
