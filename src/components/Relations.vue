@@ -709,7 +709,7 @@
           this.download.toggled = !this.download.toggled;
           downloadFeatures({
             layer,
-            features: [layer.features],
+            features: this.table.features,
             // action,
             // index,
             // down_with_polygon: 'polygon' === GUI.state.query.type && `${ GUI.state.query.fid }`
