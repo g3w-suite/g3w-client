@@ -59,7 +59,7 @@
           v-disabled       = "ApplicationState.download"
           class            = "action-button-icon action-button"
           :class           = "$fa('download')"
-          @click.stop      = "onDownload"
+          @click.stop      = "showDownloadModal"
           v-t-tooltip:left = "'Downloads'"
         ></span>
 
@@ -679,27 +679,18 @@
       /**
        * @since 4.1.0
        */
-      async onDownload() {
-        if (1 == this.download_formats.length) {
-          const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-          this.saveRelation(layer.getDownloadUrl(this.download_formats[0]));
-        } else if (this.download_formats.length) {
-          /** @FIXME add description */
-          const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-          // const config = this.download_formats.map(format => ({
-          //   id: format,
-          //   format,
-          //   cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
-          //   download: true,
-          // }));
-          downloadFeatures({
-            layer:    layer.state,
-            features: this.table.features,
-            // action,
-            // index,
-            // down_with_polygon: 'polygon' === GUI.state.query.type && `${ GUI.state.query.fid }`
-          });
-        }
+      async showDownloadModal() {
+        const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
+        // const config = this.download_formats.map(format => ({
+        //   id: format,
+        //   format,
+        //   cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
+        //   download: true,
+        // }));
+        downloadFeatures({
+          layer:    layer.state,
+          features: this.table.features,
+        });
       },
 
       /**
