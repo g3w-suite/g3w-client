@@ -58,9 +58,9 @@
           v-if             = "download_formats.length"
           v-disabled       = "ApplicationState.download"
           class            = "action-button-icon action-button"
-          :class           = "[{ 'toggled-white': download.toggled }, $fa('download')]"
-          @click.stop      = "onDownload(download.layer)"
-          v-t-tooltip:left = "download_formats.length > 1 ? 'Downloads' : `download_types.${this.download_formats[0]}`"
+          :class           = "$fa('download')"
+          @click.stop      = "onDownload"
+          v-t-tooltip:left = "'Downloads'"
         ></span>
 
         <!-- CHART BUTTON -->
@@ -72,8 +72,8 @@
             chart.toggled ? 'toggled-white' : '',
           ]"
           @click.stop        = "toggleChart"
-          v-t-tooltip:bottom = "'Show Chart'">
-        </span>
+          v-t-tooltip:bottom = "'Show Chart'"
+        ></span>
 
       </div>
     </div>
@@ -258,15 +258,6 @@
         },
 
         /**
-         * @since 4.0.0 download state (action button)
-         */
-        download: {
-          layer:   null,
-          toggled: false,
-          config:  { downloads: [] }
-        },
-
-        /**
          * @since 3.11.2 table state
          */
         table: {
@@ -430,18 +421,6 @@
          
           this.relation.title = this.relation.name;
 
-          /** @FIXME add description */
-          if (this.download_formats.length) {
-            const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-            this.download.layer = layer.state;
-            this.download.config.downloads = this.download_formats.map(format => ({
-              id: format,
-              format,
-              cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
-              download: true,
-            }));
-          }
-
           if ('ONE' !== this.relation.type) {
             this.getData();
           }
@@ -587,17 +566,16 @@
 
           saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
 
-          } catch(e) {
-            console.warn(e);
-            GUI.showUserMessage({
-              type:     'alert',
-              message:  e || 'info.server_error',
-              closable: true,
-            });
-          }
+        } catch(e) {
+          console.warn(e);
+          GUI.showUserMessage({
+            type:     'alert',
+            message:  e || 'info.server_error',
+            closable: true,
+          });
+        }
 
-          ApplicationState.download = false;
-          this.download.toggled     = false;
+        ApplicationState.download = false;
       },
 
       /**
@@ -701,14 +679,21 @@
       /**
        * @since 4.1.0
        */
-      async onDownload(layer) {
+      async onDownload() {
         if (1 == this.download_formats.length) {
           const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
           this.saveRelation(layer.getDownloadUrl(this.download_formats[0]));
-        } else {
-          this.download.toggled = !this.download.toggled;
+        } else if (this.download_formats.length) {
+          /** @FIXME add description */
+          const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
+          // const config = this.download_formats.map(format => ({
+          //   id: format,
+          //   format,
+          //   cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
+          //   download: true,
+          // }));
           downloadFeatures({
-            layer,
+            layer:    layer.state,
             features: this.table.features,
             // action,
             // index,
