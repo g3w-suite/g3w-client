@@ -714,7 +714,7 @@
           filter: {
             ...('search' === this.state.query.type 
               ? { field: this.state.query?.pagination?.getData?.params?.[layer.id]?.filter } 
-              : this.state.query?.pagination?.getData?.params?.[layer.id]?.filter 
+              : this.state.query?.pagination?.getData?.params?.[layer.id]?.download 
             ),
           },
         });
@@ -953,7 +953,9 @@
           // whehter layer has filter
           const has_filtertoken = !!layer.getToken();
 
-          // get layer pagination data
+          if ('search' === query.type) {
+            query.pagination.getData.params[id].field =  this.state.query?.pagination?.getData?.params?.[id]?.filter;
+          }
           const data = await layer[query.pagination.getData.method]({ ...query.pagination.getData.params[id], page });
           
           // set response data
