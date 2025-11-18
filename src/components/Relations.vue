@@ -654,7 +654,7 @@
                 <div class="form-group">
                   <label>${ _('Layer') }</label>
                   <select name="layer" class="form-control" disabled>
-                    <option value="${layer.id}" selected>${ layer.name || layer.title }</option>
+                    <option value="${layer.id}" selected>${ layer.name || layer.title } (${ this.layerId })</option>
                   </select>
                 </div>
 
