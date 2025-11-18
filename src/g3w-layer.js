@@ -2035,7 +2035,7 @@ export class Layer extends Emitter {
       console.warn(e);
     }
 
-    return { count, data }
+    return { count, data, params }
   }
 
   #queryWMS(opts = {}) {

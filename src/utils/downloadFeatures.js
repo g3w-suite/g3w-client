@@ -55,6 +55,7 @@ export async function downloadFeatures({
   action,
   index,
   down_with_polygon = false,
+  filter
 } = opts) {
 
   // sanity check
@@ -193,8 +194,9 @@ export async function downloadFeatures({
           const data = {
             down_with_relations,
             ...(down_with_polygon ? { sbp_qgs_layer_id: layer.id, sbp_fid: down_with_polygon } : {}),
-            fids: features?.map(f => f.attributes[G3W_FID]).join(','),
+            ...( !filter ? { fids: features?.map(f => f.attributes[G3W_FID]).join(',') } : {} ),
             filtertoken: catalog_layer.getToken(),
+            ...(filter || {}),
             ...('GeoTiff-at-map-extent' === format ? { map_extent: GUI.getMapExtent().toString() } : {}),
             ...('Pdf' === format ? { html:  document.querySelector(`[feature-html-content="${layer.id}_${index}"]`).innerHTML } : {})
           };
