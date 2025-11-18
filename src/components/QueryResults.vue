@@ -247,7 +247,7 @@
                 <li>
                   <template v-if = "state.query.pagination[layer.id].pages > 1 && state.query.pagination[layer.id].count > layer.features.length">
                     <button
-                      v-for= "page in (
+                      v-for = "page in (
                       (state.query.pagination[layer.id].pages < 4 || state.query.pagination[layer.id].current < 3)
                         ? Array.from(Array(state.query.pagination[layer.id].pages - 2).keys()).slice(0, 2).map(i => i + 2)
                         : (state.query.pagination[layer.id].pages - state.query.pagination[layer.id].current) > 2
@@ -282,7 +282,7 @@
                 <!-- GOTO: NEXT PAGE -->
                 <li>
                   <button
-                    v-if="state.query.pagination[layer.id].count > layer.features.length"
+                    v-if        = "state.query.pagination[layer.id].count > layer.features.length"
                     :disabled   = "state.query.pagination[layer.id].pages === state.query.pagination[layer.id].current"
                     class       = "btn fas fa-angle-right"
                     @click.stop = "changePage(layer.id, state.query.pagination[layer.id].current + 1)"
@@ -927,6 +927,7 @@
         const { query, queried_layers } = this.state;
         const index                     = queried_layers.findIndex(l => l.id === id);
         queried_layers[index].loading   = true;
+        GUI.disableContent(true);
 
         try {
           // set current features count shown by selection 
@@ -997,6 +998,7 @@
           console.warn(e);
         }
 
+        GUI.disableContent(false);
         queried_layers[index].loading = false;
       },
 
