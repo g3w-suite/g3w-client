@@ -65,12 +65,9 @@
 
         <!-- CHART BUTTON -->
         <span
-          v-if                      = "has_charts"
-          class                     = "action-button-icon action-button"
-          :class                    = "[
-            $fa('chart'),
-            chart.toggled ? 'toggled-white' : '',
-          ]"
+          v-if               = "has_charts"
+          class              = "action-button-icon action-button"
+          :class             = "[ $fa('chart'), chart.toggled ? 'toggled-white' : '',]"
           @click.stop        = "toggleChart"
           v-t-tooltip:bottom = "'Show Chart'"
         ></span>
@@ -160,7 +157,7 @@
                 ></span>
               </td>
               <td v-for = "value in row">
-                <field :state = "{ value }"/>
+                <field :state = "{ value }" />
               </td>
             </tr>
           </tbody>
@@ -210,9 +207,6 @@
     </div>
     <div v-else><span v-t = "'No relations found'"></span></div>
   </div>
-
-  <div v-else></div>
-
 </template>
 
 <script>
@@ -228,7 +222,6 @@
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
   import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
   import { saveBlob }                      from 'utils/saveBlob';
-  import { downloadFeatures }              from 'utils/downloadFeatures';
 
   export default {
 
@@ -409,8 +402,8 @@
        * @since 4.1.0
        */
       async showRelation(relation) {
-        this.loading        = true;
-        this.relation       = relation;
+        this.loading  = true;
+        this.relation = relation;
         try {
           GUI.setCurrentContentOptions({ title: relation.name, crumb: { title: relation.name, text: true } });
           this.view = 'relation';
@@ -540,45 +533,6 @@
       },
 
       /**
-       * @param type
-       */
-       async saveRelation(type) {
-        ApplicationState.download = true;
-        try {
-          const response = await fetch(createRelationsUrl({
-              layerId:  this.layerId,
-              fid:      this.featureId,
-              relation: this.relation,
-              type
-            }), {
-            method:  'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
-            },
-            body: JSON.stringify({ formatter: 1 }),
-            signal: AbortSignal.timeout(TIMEOUT),
-          });
-
-          if (!response?.ok) {
-            throw (await response.json()).message;
-          }
-
-          saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
-
-        } catch(e) {
-          console.warn(e);
-          GUI.showUserMessage({
-            type:     'alert',
-            message:  e || 'info.server_error',
-            closable: true,
-          });
-        }
-
-        ApplicationState.download = false;
-      },
-
-      /**
        * @param i index
        */
       async showForm(i) {
@@ -680,17 +634,105 @@
        * @since 4.1.0
        */
       async showDownloadModal() {
-        const layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-        // const config = this.download_formats.map(format => ({
-        //   id: format,
-        //   format,
-        //   cbk: () => { this.saveRelation(layer.getDownloadUrl(format)); },
-        //   download: true,
-        // }));
-        downloadFeatures({
-          layer:    layer.state,
-          features: this.table.features,
+        const _ = g3w.gettext;
+
+        let layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
+        layer    = layer.state;
+
+        if (!layer) {
+          throw 'no layer';
+        }
+
+        const catalog_layer  = getCatalogLayerById(layer.id);
+
+        const dialog = Object.assign(document.createElement('template'), {
+          innerHTML: /* html */`
+            <dialog>
+              <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ _('Export features') }</h4>
+              <form method="dialog">
+
+                <div class="form-group">
+                  <label>${ _('Layer') }</label>
+                  <select name="layer" class="form-control" disabled>
+                    <option value="${layer.id}" selected>${ layer.name || layer.title }</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>${ _('Data Format') }</label>
+                  <select name="format" class="form-control">
+                    ${[
+                        catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
+                        // catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff-at-map-extent">${ _('GeoTiff (current view)') }</option>` : '',
+                        catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
+                        catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
+                        catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
+                        catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
+                        catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
+                      ].filter(Boolean).join('')
+                    }
+                  </select>
+                </div>
+
+                <menu style="display: flex; justify-content: space-between;">
+                  <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">Download</button>
+                </menu>
+              </form>
+
+            </dialog>
+          `.trim()
+        }).content.firstChild;
+
+        dialog.addEventListener("click", e => {
+          if (e.target === dialog) {
+            dialog.close();
+          }
         });
+
+        dialog.addEventListener('close', async () => {
+          if ('confirm' === dialog.returnValue) {
+
+            ApplicationState.download = true;
+            try {
+              const format = dialog.querySelector('[name="format"]').value.toLowerCase();
+
+              const response = await fetch(createRelationsUrl({
+                  layerId:  this.layerId,
+                  fid:      this.featureId,
+                  relation: this.relation,
+                  type:     format
+                }), {
+                method:  'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
+                },
+                body: JSON.stringify({ formatter: 1 }),
+                signal: AbortSignal.timeout(TIMEOUT),
+              });
+
+              if (!response?.ok) {
+                throw (await response.json()).message;
+              }
+
+              saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
+
+            } catch(e) {
+              console.warn(e);
+              GUI.showUserMessage({
+                type:     'alert',
+                message:  e || 'info.server_error',
+                closable: true,
+              });
+            }
+
+            ApplicationState.download = false;
+          }
+          dialog.remove();
+        });
+
+        document.body.appendChild(dialog);
+        dialog.showModal();
       },
 
       /**
