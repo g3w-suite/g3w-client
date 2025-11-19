@@ -366,9 +366,9 @@
                       style       = "text-align: end"
                       :class      = "{noAttributes: attributesSubset(layer).length === 0}">
                       <span
-                        class  = "fa link morelink skin-color"
-                        :class = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')">
-                      </span>
+                        class          = "fa link morelink skin-color"
+                        :class         = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')"
+                      ></span>
                     </td>
                   </tr>
 

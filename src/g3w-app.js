@@ -1393,40 +1393,6 @@ export default new (class GUI extends Emitter {
     return ApplicationState.content.contentsdata.at(-1) || null;
   }
 
-  /**
-   * used by the following plugins: "archiweb"
-   * 
-   * ORIGINAL SOURCE: src/components/g3w-projectsmenu.js@v3.10.2
-   */
-  getProjectMenuDOM({ projects = [], host, cbk } = {}) {
-    const opts = {
-      projects: projects && Array.isArray(projects) && projects,
-      cbk,
-      host
-    };
-    return (new Component({
-      ...opts,
-      id: 'projectsmenu',
-      title: opts.title || 'menu',
-      internalComponent: new (Vue.extend(require('components/ProjectsMenu.vue').default))({
-        host: opts.host,
-        state: {
-          menuitems: (opts.projects || getListableProjects()).map(p => ({
-            title:       p.title,
-            description: p.description,
-            thumbnail:   p.thumbnail,
-            gid:         p.gid,
-            cbk:         opts.cbk || ((o = {}) => async () => {
-              const url = await this.addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
-              try { history.replaceState(null, null, url); }
-              catch (e) { console.warn(e); } location.replace(url);
-            }),
-          }))
-        },
-      }),
-    })).getInternalComponent().$mount().$el;
-  }
-
   toggleUserMessage(bool = true) {
     this.#closeUserMessage = bool;
   }

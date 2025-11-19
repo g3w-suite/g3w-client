@@ -580,3 +580,121 @@ g3wsdk.core.geoutils.getQueryLayersPromisesByCoordinates = async function(layers
   // show all errors
   return Promise.reject(responses.filter(r => 'rejected' === r.status).map(r => r.reason));
 };
+
+/**
+ * used by the following plugins: "archiweb"
+ * 
+ * ORIGINAL SOURCE: src/components/g3w-projectsmenu.js@v3.10.2
+ * ORIGINAL SOURCE: src/components/ProjectsMenu.vue@v4.0.0
+ */
+g3wsdk.gui.GUI.getProjectMenuDOM = ({ projects = [], host, cbk } = {}) => {
+  const _   = g3w.gettext;
+  const GUI = g3w.app;
+
+  GUI.showUserMessage({ type: 'alert', message: 'g3wsdk.gui.GUI.getProjectMenuDOM is deprecated' });
+
+  const opts = {
+    projects: projects && Array.isArray(projects) && projects,
+    cbk,
+    host
+  };
+  return (new Component({
+    ...opts,
+    id: 'projectsmenu',
+    title: opts.title || 'menu',
+    internalComponent: new (Vue.extend({
+      template: /*html*/`
+        <div id = "menu-projects" class = "container" style="width: 100%; overflow-y: auto;">
+          <div class = "row row-equal" style="display: flex; flex-wrap: wrap;">
+            <!-- item -->
+            <div
+              v-for  = "menuitem in state.menuitems"
+              :key   = "menuitem.title"
+              @click = "trigger(menuitem)"
+              class  = "col-sm-4 project-menu"
+              style  = "cursor: pointer; margin-bottom: 20px; margin-top: 20px;"
+            >
+              <div class = "project-menu-item-image" style="position: relative; overflow: hidden; padding-bottom: 50%;">
+                <img :src = "logoSrc(menuitem.thumbnail)" class = "img-responsive" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto;" >
+              </div>
+              <div class = "project-menu-item-content"  style="padding: 15px; background: rgba(255,255,255,0.3);">
+                <div class = "project-menu-item-text"   style="position: relative; overflow: hidden; height: 100%; text-align: justify;">
+                  <h4 class = "project-menu-item-title" style="text-align: center; font-weight: bold; background: rgba(255,255,255,0.5); padding: 5px;">{{ menuitem.title }}</h4>
+                  <div v-html = "menuitem.description"></div>
+                </div>
+              </div>
+            </div>
+            <div v-if = "!state.menuitems.length" style = "margin-left:15px;">
+              <h2 v-t = "'No more project for this group'"></h2>
+            </div>
+          </div>
+        </div>`,
+
+        data: () => ({ state: null, loading: false }),
+
+        methods: {
+
+          trigger(item) {
+            // init callback
+            if (item.cbk)        {
+              GUI.showFullModal({ show: true });
+              GUI.setLoadingContent(true);
+              item.cbk
+                .call(item, { gid: item.gid })
+                .then(promise => { // changeProject is a setter so it returns a promise
+                  promise
+                    .then(project => {
+                      if (project) {
+                        document.title = project.state.html_page_title;
+                      }
+                    })
+                    .fail(() => {
+                      GUI.showUserMessage({ type: 'alert', message: "<h4>" + _('Error occurs loading map') + "</h4>" + "<h5>"+ _('Check internet connection or contact admin') + "</h5>" });
+                    })
+                    .always(() => {
+                      GUI.showFullModal({ show: false });
+                      GUI.setLoadingContent(false);
+                    })
+                });
+            } else if (item.href) {
+              window.open(item.href, '_blank');
+            } else if (item.route) {
+              GUI.getMap().getView().animate({ duration: 300, center: coordinates }, { zoom: 6, duration: 300 });
+            } else {
+              console.log("No action for "+item.title);
+            }
+          },
+
+          logoSrc(src) {
+            let imageSrc;
+            const host = this.$options.host || '';
+            if (!src) {
+              imageSrc = '/static/client/images/FakeProjectThumb.png';
+            } else if (src && (src.includes(window.initConfig.mediaurl))) { // has media
+              imageSrc = src;
+            } else if (src && (!src.includes('static') && !src.includes('media'))) { // not static
+              imageSrc = `${window.initConfig.mediaurl}${src}`;
+            } else {
+              imageSrc = '/static/client/images/FakeProjectThumb.png';
+            }
+            return `${host}${imageSrc}`;
+          },
+        }
+    }))({
+      host: opts.host,
+      state: {
+        menuitems: (opts.projects || getListableProjects()).map(p => ({
+          title:       p.title,
+          description: p.description,
+          thumbnail:   p.thumbnail,
+          gid:         p.gid,
+          cbk:         opts.cbk || ((o = {}) => async () => {
+            const url = await GUI.addMapExtentUrlParameterToUrl(getProjectUrl(o.gid));
+            try { history.replaceState(null, null, url); }
+            catch (e) { console.warn(e); } location.replace(url);
+          }),
+        }))
+      },
+    }),
+  })).getInternalComponent().$mount().$el;
+};
