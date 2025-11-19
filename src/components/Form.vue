@@ -8,7 +8,7 @@
     class = "g3wform_content"
     style = "position: relative"
   >
-    <bar-loader :loading="state.loading"/>
+    <bar-loader :loading="state.loading" />
 
     <!-- FORM HEADER  -->
     <g3wformheader
@@ -18,7 +18,8 @@
       :update      = "state.update"
       :valid       = "state.valid"
       @resize-form = "resizeForm"
-      @clickheader = "switchComponent"/>
+      @clickheader = "switchComponent"
+    />
 
     <!-- FORM BODY  -->
     <div

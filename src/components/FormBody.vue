@@ -18,7 +18,8 @@
             :changeInput      = "changeInput"
             :removeToValidate = "removeToValidate"
             :tabs             = "state.formstructure"
-            :fields           = "state.fields"/>
+            :fields           = "state.fields"
+          />
         </template>
         <template v-else>
           <g3w-form-inputs
@@ -28,7 +29,8 @@
             :changeInput      = "changeInput"
             @changeinput      = "changeInput"
             @addinput         = "addToValidate"
-            @removeinput      = "removeToValidate"/>
+            @removeinput      = "removeToValidate"
+          />
         </template>
       </div>
     </div>
