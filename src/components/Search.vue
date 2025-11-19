@@ -7,7 +7,7 @@
   <ul
     v-if  = "show"
     id    = "g3w-search"
-    class ="treeview-menu g3w-search g3w-tools menu-items"
+    class = "treeview-menu g3w-search g3w-tools menu-items"
   >
 
     <!-- SAVED SEARCHES (from g3w-admin) -->
@@ -105,15 +105,15 @@ export default {
         return;
       }
 
-      const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
-      const items = item ? JSON.parse(item) : undefined;
-      const projectId = ApplicationState.project.getId();
-      const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
+      const item     = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      const items    = item ? JSON.parse(item) : undefined;
+      const pid      = ApplicationState.project.getId();
+      const searches = (items ? items[pid] || [] : []).filter(item => item.id !== search.id);
 
       if (searches.length) {
-        items[projectId] = searches;
+        items[pid] = searches;
       } else {
-        delete items[projectId];
+        delete items[pid];
       }
 
       try {
