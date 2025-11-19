@@ -7,9 +7,10 @@
   <baseinput :state = "state">
     <div slot = "body" v-disabled = "!editable">
       <div
-        class  = "g3w_input_button skin-border-color"
-        @click = "onClick"
-        style  = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+        class           = "g3w_input_button skin-border-color"
+        @click          = "onClick"
+        style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+        v-t-tooltip:top = "accept"
       >
         <i :class = "$fa('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
           <input
@@ -89,7 +90,6 @@ export default {
           headers: { Accept: 'application/json' },
           body
         })).json());
-
         //@since 4.0.5 in case 
         if (response?.result) {
           this.state.value = response?.data;
