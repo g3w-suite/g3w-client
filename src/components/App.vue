@@ -38,7 +38,7 @@
         <h1>{{ project_title }}</h1>
       </hgroup>
 
-      <ul class="nav-links" style = "display: flex; text-align: center;  white-space: nowrap; list-style: none; padding: 0; margin: 0;">
+      <ul class = "nav-links" style = "display: flex; text-align: center;  white-space: nowrap; list-style: none; padding: 0; margin: 0;">
 
         <!-- CUSTOM LINKS -->
         <li
@@ -163,21 +163,34 @@
           v-if  = "languages" 
           class ="nav-lang"
         >
-          <button type="button" commandfor="nav-lang-dialog" command="show-modal" style="display: flex; gap:5px;">
-            <img :src="urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width="24" height="16" alt="" />
+          <button type = "button" commandfor = "nav-lang-dialog" command = "show-modal" style = "display: flex; gap:5px;">
+            <img :src = "urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width = "24" height = "16" alt = "" />
             {{ languages.find(l => l[0] === language).at(1) }}
-            <i class="triangle" style="margin-top: 8px;"></i>
+            <i class = "triangle" style = "margin-top: 8px;"></i>
           </button>
-          <dialog id="nav-lang-dialog" @click="$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()">
-            <form method="dialog" style=" display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
+          <dialog 
+            id     = "nav-lang-dialog" 
+            @click = "$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()"
+          >
+            <form method = "dialog" style = " display: grid;grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; user-select: none;">
               <label
                 v-for     = "lang in languages"
                 :key      = "lang[0]"
                 style     = "cursor:pointer; text-align: left;"
               >
-                <input type="radio" :value="lang[0]" v-model="language" @click="$event.target.closest('dialog').close()" style="pointer-events:none;margin-right: 8px;">
-                <img :src="urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" width="24" height="16" :alt="lang[0].toLowerCase()" />
-                <span style="margin-left: 5px;">{{ lang[1] }}</span> 
+                <input 
+                  type    = "radio" 
+                  :value  = "lang[0]" 
+                  v-model = "language" 
+                  @click  = "$event.target.closest('dialog').close()" 
+                  style   = "pointer-events:none;margin-right: 8px;"
+                >
+                <img 
+                  :src   = "urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" 
+                  width  = "24" 
+                  height = "16" 
+                  :alt   = "lang[0].toLowerCase()" />
+                <span style = "margin-left: 5px;">{{ lang[1] }}</span> 
               </label>
             </form>
           </dialog>
@@ -200,7 +213,7 @@
           :hidden = "panels.length <= 0"
           class   = "g3w-sidebarpanel"
         >
-          <div id="g3w-sidebarpanel-header-placeholder">
+          <div id = "g3w-sidebarpanel-header-placeholder">
             <div
               style  = "display: flex; margin-bottom: 5px;"
               :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
@@ -259,8 +272,8 @@
             data-toggle    = "modal"
             data-target    = "#modal-metadata"
           >
-            <i :class="$fa('file')" style="color: #fff;"></i>
-            <span class="treeview-label" v-t="'Metadata'"></span>
+            <i :class = "$fa('file')" style = "color: #fff;"></i>
+            <span class = "treeview-label" v-t = "'Metadata'"></span>
           </a>
         </li>
 
@@ -324,7 +337,7 @@
           :class       = "`split-${state.split}`"
         ></div>
 
-        <div id="application-notifications">
+        <div id = "application-notifications">
           <!-- OFFLINE -->
           <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
             <i :class = "$fa('wifi')"></i>
@@ -354,9 +367,9 @@
             class = "g3w-map hidemap"
           ></div>
 
-          <div :id = "GUI.target" class = "g3w-map" @drop.prevent="onDrop" @dragenter.prevent="onDrop" @dragleave.prevent="onDrop" @dragover.prevent>
+          <div :id = "GUI.target" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
 
-            <div class="drop-area" hidden>
+            <div class = "drop-area" hidden>
               Upload Files
             </div>
 
@@ -381,7 +394,7 @@
             <div style = "display: none;"><div id = "marker"></div></div>
 
             <!-- @since 3.8.0   -->
-            <div class="g3w-map-controls-left-bottom"></div>
+            <div class = "g3w-map-controls-left-bottom"></div>
 
           </div>
 
@@ -511,7 +524,7 @@
                 class  = "action-button"
                 :class = "$fa('back')">
               </span>
-              <span v-t="'back'"></span>
+              <span v-t = "'back'"></span>
             </div>
             <div
               v-else
@@ -587,9 +600,9 @@
     <catalog-context-menu />
 
     <!-- COOKIE BANNER -->
-    <div class="cookie-banner" v-if="!state.cookie_accepted">
-      <div v-t="'This website uses cookies to ensure you get the best experience on our website.'"></div>
-      <button class="cookie-button" v-t="'Got It!'" @click="acceptCookie"></button>
+    <div v-if = "!state.cookie_accepted" class = "cookie-banner">
+      <div v-t = "'This website uses cookies to ensure you get the best experience on our website.'"></div>
+      <button class = "cookie-button" v-t = "'Got It!'" @click = "acceptCookie"></button>
     </div>
 
     <!-- MODAL (FULL SCREEN) -->
@@ -695,11 +708,11 @@ export default {
     },
 
     user() {
-      return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
+      return this.appconfig?.user?.username ? this.appconfig.user : null;
     },
 
     login_url() {
-      return this.appconfig.user.login_url
+      return this.appconfig.user.login_url;
     },
 
     /**
@@ -725,9 +738,7 @@ export default {
     },
 
     breadcrumb() {
-      return this.state.content.contentsdata
-        .filter(c => c.options.crumb)
-        .map(c => c.options.crumb);
+      return this.state.content.contentsdata.filter(c => c.options.crumb).map(c => c.options.crumb);
     },
 
     has_panel() {
@@ -1007,7 +1018,7 @@ export default {
 
       const li        = e.target.closest('.sidebaritem');
       const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
-      const open      = component && component.getOpen();
+      const open      = component?.getOpen();
       const menu      = li.querySelector('.treeview-menu');
 
       // skip toggling element
