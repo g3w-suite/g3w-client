@@ -48,11 +48,8 @@ export default {
      * @since 3.11.0
      */
     'state.value'(value) {
-      if (this.changed) {
-        this.changed = false
-      } else {
-        this.stateValueChanged(value);
-      }
+      if (this.changed) { this.changed = false } 
+      else { this.stateValueChanged(value); }
     },
 
   },
@@ -89,7 +86,7 @@ export default {
       const { value, label } = this.getValuesItem(this.value);
       this.label             = label;
       this.state.value       = value;
-      this.changed = true;
+      this.changed           = true;
       this.change();
     },
 
