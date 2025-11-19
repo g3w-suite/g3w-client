@@ -16,20 +16,16 @@
         class       = "title"
         :style      = "{fontSize: isMobile() && '1em !important'}"
         :class      = "[{item_selected: currentid === header.id && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
-        @click.stop = "click(header.id)">
-      <span
-        v-if  = "header.icon"
-        style = "margin-right: 5px"
+        @click.stop = "click(header.id)"
       >
-        <i :class = "header.icon"></i>
+        <span v-if = "header.icon" style = "margin-right: 5px"><i :class = "header.icon"></i></span>
+        <span v-t:pre = "header.title" class = "g3w-long-text">{{ header.name }}</span>
+        <component
+          :valid  = "valid"
+          :update = "update"
+          :is     = "header.component"
+        />
       </span>
-
-      <span v-t:pre = "header.title" class = "g3w-long-text">{{ header.name }}</span>
-     <component
-      :valid  = "valid"
-      :update = "update"
-      :is     = "header.component"/>
-    </span>
     </section>
   </div>
 </template>
