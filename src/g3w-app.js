@@ -20,8 +20,6 @@ import MapControl                               from 'g3w-control';
 
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { toRawType }                            from 'utils/toRawType';
-import { getListableProjects }                  from 'utils/getListableProjects';
-import { getProjectUrl }                        from 'utils/getProjectUrl';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 import { getAlphanumericProps }                 from 'utils/getAlphanumericProps';
 import { intersects }                           from 'utils/intersects';
