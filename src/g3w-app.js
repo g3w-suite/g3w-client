@@ -4617,7 +4617,7 @@ export default new (class GUI extends Emitter {
       });
       const start    = +new Date();
       const duration = 1700;
-      const interval = circle.on('postcompose', ({ frameState }) => {
+      const interval = this.#map.on('postcompose', ({ frameState }) => {
         const elapsed  = frameState.time - start;
         const ratio   = ol.easing.easeOut(elapsed / duration);
         circle.setStyle(
