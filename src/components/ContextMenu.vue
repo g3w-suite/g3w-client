@@ -1004,13 +1004,15 @@
     max-width: 250px;
     cursor: move !important;
     color: #000 !important;
+    border-bottom-color: var(--skin-color) !important;
   }
   .context-menu li:last-child {
     border-bottom: none;
   }
   .context-menu li:hover {
-    color: #FAFAFA;
+    color: #fafafa;
     cursor: pointer;
+    background: hsl(from var(--skin-color) h s calc(l + 10));
   }
   .context-menu li .layer-menu-metadata-info {
     background-color: #FFF ;
@@ -1055,5 +1057,10 @@
   }
   .context-menu li li {
     font-weight: normal;
+  }
+  
+  .context-menu .sub-contex-menu {
+    border: 1px solid #eee;
+    border-left: 0;
   }
 </style>
