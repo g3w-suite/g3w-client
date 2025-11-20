@@ -22,8 +22,8 @@
       <!-- LOGO -->
       <a
         v-if    = "logo_url"
-        :href   = "appconfig.header_logo_link || urls.frontendurl || '#'"
-        :target = "appconfig.header_logo_link ? '_blank' : ''"
+        :href   = "initConfig.header_logo_link || urls.frontendurl || '#'"
+        :target = "initConfig.header_logo_link ? '_blank' : ''"
         style   = "padding: 4px; display: inline-block; height: 50px;"
       >
         <img style="height: 100%;" alt = "" :src = "logo_url" />
@@ -599,6 +599,14 @@
 
     <catalog-context-menu />
 
+    <ul ref = "context-menu" class="catalog-context-menu" style="display: none;">
+      <li @click="queryCoords">{{ $t('Query layer') }}</li>
+      <li @click="zoomIn">{{ $t('Zoom in') }}</li>
+      <li @click="zoomOut">{{ $t('Zoom out') }}</li>
+      <li @click="zoomHome">{{ $t('Fit map extent') }}</li>
+      <li v-if="initConfig.mapcontrols.streetview" @click="showStreetView">{{ $t('StreetView') }}</li>
+    </ul>
+
     <!-- COOKIE BANNER -->
     <div v-if = "!state.cookie_accepted" class = "cookie-banner">
       <div v-t = "'This website uses cookies to ensure you get the best experience on our website.'"></div>
@@ -679,7 +687,7 @@ export default {
   computed: {
 
     languages() {
-      const languages = (Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || []).sort((a, b) => a[0].localeCompare(b[0]));
+      const languages = (Array.isArray(this.initConfig.i18n) && this.initConfig.i18n || []).sort((a, b) => a[0].localeCompare(b[0]));
       return languages.length > 1 && languages;
     },
 
@@ -687,7 +695,7 @@ export default {
       return window.innerWidth >= 768;
     },
 
-    appconfig() {
+    initConfig() {
       return window.initConfig;
     },
 
@@ -696,11 +704,11 @@ export default {
     },
 
     urls() {
-      return this.appconfig.urls;
+      return this.initConfig.urls;
     },
 
     logo_url() {
-      return ApplicationState.project.state.thumbnail || `${this.appconfig.mediaurl}${window.initConfig.header_logo_img}`;
+      return ApplicationState.project.state.thumbnail || `${this.initConfig.mediaurl}${window.initConfig.header_logo_img}`;
     },
 
     project_title() {
@@ -708,11 +716,11 @@ export default {
     },
 
     user() {
-      return this.appconfig?.user?.username ? this.appconfig.user : null;
+      return this.initConfig?.user?.username ? this.initConfig.user : null;
     },
 
     login_url() {
-      return this.appconfig.user.login_url;
+      return this.initConfig.user.login_url;
     },
 
     /**
@@ -728,12 +736,12 @@ export default {
      * @since 3.8.0
      */
     hasRelatedMaps() {
-      return this.appconfig.macrogroups.length + this.appconfig.groups.length + this.appconfig.projects.length > 1;
+      return this.initConfig.macrogroups.length + this.initConfig.groups.length + this.initConfig.projects.length > 1;
     },
 
     main_title() {
-      const main_title = this.appconfig.main_map_title;
-      const group_name = this.appconfig.title || this.appconfig.slug;
+      const main_title = this.initConfig.main_map_title;
+      const group_name = this.initConfig.title || this.initConfig.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
 
@@ -1090,6 +1098,65 @@ export default {
       this.state.cookie_accepted = true;
     },
 
+    /**
+     * @since 4.1.0
+     */
+    async queryCoords() {
+      try {
+        const menu   = this.$refs['context-menu'];
+        const coords = JSON.parse(menu.getAttribute('data-coords'));
+        const project = ApplicationState.project;
+        await GUI.getData('query:coordinates', {
+          inputs: {
+            coordinates:           coords,
+            feature_count:         project.state.feature_count || 5,
+            query_point_tolerance: project.getQueryPointTolerance(),
+            multilayers:           [].concat(project.state.querymultilayers).includes(this.name),
+          }
+        });
+      } catch(e) {
+        console.warn('Error running spatial query: ', e)
+      }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    zoomIn() {
+      const map = GUI.getMap();
+      const view = map.getView();
+      view.animate({ zoom: view.getZoom() + 1, duration: 200 });
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    zoomOut() {
+      const map = GUI.getMap();
+      const view = map.getView();
+      view.animate({ zoom: view.getZoom() - 1, duration: 200 });
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    zoomHome() {
+      const map = GUI.getMap();
+      const view = map.getView();
+      const extent = GUI.project.state.extent;
+      view.fit(extent, { duration: 200 });
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showStreetView() {
+      const menu   = this.$refs['context-menu'];
+      const coords = JSON.parse(menu.getAttribute('data-coords'));
+      const sv     = GUI.getMapControlByType('streetview');
+      sv.showStreetView(coords);
+    },
+
   },
 
   watch: {
@@ -1138,14 +1205,14 @@ export default {
   },
 
   created() {
-    this.language = this.appconfig.user.i18n;
+    this.language = this.initConfig.user.i18n;
   },
 
   async mounted() {
 
     document.body.appendChild(this.$el.querySelector('#modal-fullscreen'));
 
-    this.language = this.appconfig.user.i18n;
+    this.language = this.initConfig.user.i18n;
 
     await this.$nextTick();
 
@@ -1173,6 +1240,24 @@ export default {
         this.mouse.visible = false;
       }
     });
+
+    const menu = this.$refs['context-menu'];
+    const map  = GUI.getMap();
+
+    map.on(['singleclick', 'contextmenu'], function(e) {
+      if (!GUI.getCurrentToggledMapControl() && !GUI.getPlugin('editing').getLayers().some(l => l.isInEditing())) {
+        if ('contextmenu' == e.type) {
+          e.preventDefault();
+        }
+
+        menu.style.display = 'block';
+        menu.style.left    = e.originalEvent.clientX + 'px';
+        menu.style.top     = e.originalEvent.clientY + 'px';
+        menu.setAttribute('data-coords', JSON.stringify(map.getCoordinateFromPixel([e.pixel[0], e.pixel[1]])))
+      }
+    });
+    map.on('pointerdrag',              () => menu.style.display = 'none'); // hide context menu on map click
+    document.addEventListener('click', () => menu.style.display = 'none'); // hide context menu on document click
   },
 
 };
