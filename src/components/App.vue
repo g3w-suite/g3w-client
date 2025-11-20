@@ -1103,8 +1103,7 @@ export default {
      */
     async queryCoords() {
       try {
-        const menu   = this.$refs['context-menu'];
-        const coords = JSON.parse(menu.getAttribute('data-coords'));
+        const coords = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
         const project = ApplicationState.project;
         await GUI.getData('query:coordinates', {
           inputs: {
@@ -1123,18 +1122,20 @@ export default {
      * @since 4.1.0
      */
     zoomIn() {
-      const map = GUI.getMap();
-      const view = map.getView();
-      view.animate({ zoom: view.getZoom() + 1, duration: 200 });
+      const map    = GUI.getMap();
+      const view   = map.getView();
+      const center = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
+      view.animate({ center, zoom: view.getZoom() + 1, duration: 200 });
     },
 
     /**
      * @since 4.1.0
      */
     zoomOut() {
-      const map = GUI.getMap();
-      const view = map.getView();
-      view.animate({ zoom: view.getZoom() - 1, duration: 200 });
+      const map    = GUI.getMap();
+      const view   = map.getView();
+      const center = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
+      view.animate({ center, zoom: view.getZoom() - 1, duration: 200 });
     },
 
     /**
@@ -1151,8 +1152,7 @@ export default {
      * @since 4.1.0
      */
     showStreetView() {
-      const menu   = this.$refs['context-menu'];
-      const coords = JSON.parse(menu.getAttribute('data-coords'));
+      const coords = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
       const sv     = GUI.getMapControlByType('streetview');
       sv.showStreetView(coords);
     },
@@ -1245,7 +1245,7 @@ export default {
     const map  = GUI.getMap();
 
     map.on(['singleclick', 'contextmenu'], function(e) {
-      if (!GUI.getCurrentToggledMapControl() && !GUI.getPlugin('editing').getLayers().some(l => l.isInEditing())) {
+      if (!GUI.getCurrentToggledMapControl() && !GUI.getPlugin('editing')?.getLayers?.()?.some?.(l => l.isInEditing())) {
         if ('contextmenu' == e.type) {
           e.preventDefault();
         }
