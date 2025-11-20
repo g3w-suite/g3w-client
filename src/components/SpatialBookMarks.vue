@@ -29,20 +29,16 @@
         <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
       </div>
 
-      <div
-        class = "container add-bookmark-input"
-        style = "padding: 5px; width: 100%"
+      <form
+        class   = "container add-bookmark-input"
+        style   = "padding: 5px; width: 100%"
+        @submit = "addBookMark"
       >
-        <input-text ref="add_bookmark_input" :state="addbookmarkinput" />
-      </div>
-      <div style = "margin-top: 5px;">
-        <button
-          @click.stop = "addBookMark"
-          class       = "sidebar-button-run btn btn-block"
-          v-t         = "'add'"
-          v-disabled  = "!addbookmarkinput.validate.valid"
-        ></button>
-      </div>
+        <label for="add-bokmark">{{ $t('Name') }} *</label>
+        <input id="add-bookmark" type="text" required class="form-control" ref="add_bookmark_input" v-model="addbookmarkinput" />
+        <button type = "submit" style = "margin-top: 20px;" class = "sidebar-button-run btn btn-block">{{ $t('add') }}</button>
+      </form>
+      
     </li>
 
     <!-- BOOKMARS LIST -->
@@ -184,17 +180,7 @@
           bookmarks: SAVED_BOOKMARKS[gid]
         },
 
-        addbookmarkinput: {
-          name:     'add-bookmark',
-          label:    _('Name'),
-          i18nLabel:true,
-          value:    null,
-          editable: true,
-          type:     'varchar',
-          input:    { type: 'text', options: {} },
-          visible:  true,
-          validate: { valid:    false, required: true }
-        }
+        addbookmarkinput: null,
       }
     },
 
@@ -222,7 +208,7 @@
       addBookMark() {
         this.user.bookmarks.push({
           id:        getUniqueDomId(),
-          name:      this.addbookmarkinput.value,
+          name:      this.addbookmarkinput,
           extent:    GUI.getMapExtent(),
           removable: true,
           crs:       { epsg: 1 * GUI.getCrs().split('EPSG:')[1] }
@@ -245,8 +231,8 @@
       },
 
       showAddForm() {
-        this.addbookmarkinput.value = null;
-        this.showaddform            = true;
+        this.addbookmarkinput = null;
+        this.showaddform      = true;
       },
 
       async gotoSpatialBookmark({ extent, crs }) {
@@ -262,18 +248,6 @@
         GUI.zoomToExtent(extent, { force: true });
       },
 
-    },
-
-    watch: {
-      async showaddform(bool) {
-        if (bool) {
-          await this.$nextTick();
-          //need to remove all class so input is adapted to 100% width
-          for (let i = 0; i < this.$refs.add_bookmark_input.$el.children.length; i++) {
-            this.$refs.add_bookmark_input.$el.children[i].classList.remove('col-sm-12')
-          }
-        }
-      }
     },
 
     created() {
@@ -297,5 +271,9 @@
     align-items: baseline;
     justify-content: space-between;
     padding: 5px !important;
+  }
+
+  #add-bookmark:user-invalid {
+    outline: 2px solid red;
   }
 </style>
