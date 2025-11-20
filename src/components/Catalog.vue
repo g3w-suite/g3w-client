@@ -841,7 +841,7 @@ export default {
   .tabbable-line > .nav-tabs > li.active { border-bottom: 4px solid var(--skin-color); }
   .catalog .tree-item.selected,
   .catalog #legend div.selected          { background-color: var(--skin-color); }
-  .catalog-context-menu li.title         { border-bottom-color: var(--skin-color) !important; }
+  .context-menu li.title                 { border-bottom-color: var(--skin-color) !important; }
 
   .skin-blue .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #6abbea; }
   .skin-blue .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #6abbea; }

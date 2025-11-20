@@ -597,15 +597,7 @@
       </div>
     </div>
 
-    <catalog-context-menu />
-
-    <ul ref = "context-menu" class="catalog-context-menu" style="display: none;">
-      <li @click="queryCoords">{{ $t('Query layer') }}</li>
-      <li @click="zoomIn">{{ $t('Zoom in') }}</li>
-      <li @click="zoomOut">{{ $t('Zoom out') }}</li>
-      <li @click="zoomHome">{{ $t('Fit map extent') }}</li>
-      <li v-if="initConfig.mapcontrols.streetview" @click="showStreetView">{{ $t('StreetView') }}</li>
-    </ul>
+    <context-menu />
 
     <!-- COOKIE BANNER -->
     <div v-if = "!state.cookie_accepted" class = "cookie-banner">
@@ -644,7 +636,7 @@ import { sameOrigin }     from 'utils/sameOrigin';
 import { waitFor }        from 'utils/waitFor';
 
 import userMessage        from 'components/UserMessage.vue';
-import CatalogContextMenu from 'components/CatalogContextMenu.vue';
+import ContextMenu        from 'components/ContextMenu.vue';
 import ModalLogin         from 'components/ModalLogin.vue';
 import ModalAddlayer      from 'components/ModalAddLayer.vue';
 import ModalChangemap     from 'components/ModalChangeMap.vue';
@@ -677,7 +669,7 @@ export default {
 
   components: {
     userMessage,
-    CatalogContextMenu,
+    ContextMenu,
     ModalLogin,
     ModalAddlayer,
     ModalChangemap,
@@ -1098,65 +1090,6 @@ export default {
       this.state.cookie_accepted = true;
     },
 
-    /**
-     * @since 4.1.0
-     */
-    async queryCoords() {
-      try {
-        const coords = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
-        const project = ApplicationState.project;
-        await GUI.getData('query:coordinates', {
-          inputs: {
-            coordinates:           coords,
-            feature_count:         project.state.feature_count || 5,
-            query_point_tolerance: project.getQueryPointTolerance(),
-            multilayers:           [].concat(project.state.querymultilayers).includes(this.name),
-          }
-        });
-      } catch(e) {
-        console.warn('Error running spatial query: ', e)
-      }
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    zoomIn() {
-      const map    = GUI.getMap();
-      const view   = map.getView();
-      const center = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
-      view.animate({ center, zoom: view.getZoom() + 1, duration: 200 });
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    zoomOut() {
-      const map    = GUI.getMap();
-      const view   = map.getView();
-      const center = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
-      view.animate({ center, zoom: view.getZoom() - 1, duration: 200 });
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    zoomHome() {
-      const map = GUI.getMap();
-      const view = map.getView();
-      const extent = GUI.project.state.extent;
-      view.fit(extent, { duration: 200 });
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    showStreetView() {
-      const coords = JSON.parse(this.$refs['context-menu'].getAttribute('data-coords'));
-      const sv     = GUI.getMapControlByType('streetview');
-      sv.showStreetView(coords);
-    },
-
   },
 
   watch: {
@@ -1240,24 +1173,6 @@ export default {
         this.mouse.visible = false;
       }
     });
-
-    const menu = this.$refs['context-menu'];
-    const map  = GUI.getMap();
-
-    map.on(['singleclick', 'contextmenu'], function(e) {
-      if (!GUI.getCurrentToggledMapControl() && !GUI.getPlugin('editing')?.getLayers?.()?.some?.(l => l.isInEditing())) {
-        if ('contextmenu' == e.type) {
-          e.preventDefault();
-        }
-
-        menu.style.display = 'block';
-        menu.style.left    = e.originalEvent.clientX + 'px';
-        menu.style.top     = e.originalEvent.clientY + 'px';
-        menu.setAttribute('data-coords', JSON.stringify(map.getCoordinateFromPixel([e.pixel[0], e.pixel[1]])))
-      }
-    });
-    map.on('pointerdrag',              () => menu.style.display = 'none'); // hide context menu on map click
-    document.addEventListener('click', () => menu.style.display = 'none'); // hide context menu on document click
   },
 
 };
