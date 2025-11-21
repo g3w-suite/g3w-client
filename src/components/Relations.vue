@@ -755,6 +755,11 @@
         this.columns[i].search = e.target.value.trim();
         this.getData();
       });
+
+      // autoload selected relation
+      if (this.relation) {
+        this.showRelation(this.relation);
+      }
     },
 
     /**
