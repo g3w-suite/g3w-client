@@ -515,6 +515,18 @@
         [this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
 
         dragElement(this.$refs.menu);
+
+        const rect = this.$refs.menu.getBoundingClientRect();
+
+        // prevent right overflow (page) 
+        if (rect.right > window.innerWidth) {
+          this.left = window.innerWidth - rect.width;
+        }
+
+        // prevent bottom overflow (page) 
+        if (rect.bottom > window.innerHeight) {
+          this.top = window.innerHeight - rect.height;
+        }
       },
 
       showDownloadMenu(layer) {
