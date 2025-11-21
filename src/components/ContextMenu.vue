@@ -229,7 +229,7 @@
 
       <!-- Click to Download -->
       <li
-        v-if      = "canDownload('', layer.id) || isExternalVectorLayer(layer)"
+        v-if      = "canDownload(layer.id) || isExternalVectorLayer(layer)"
         :disabled = "ApplicationState.download"
         @click.prevent.stop = "showDownloadMenu(layer)"
       >
@@ -557,10 +557,9 @@
        * 
        * @since 3.11.0
        */
-      canDownload(format, layerId) {
-        const layer = getCatalogLayerById(layerId);
-        //exclude pdf format. It is used only for single feature download
-        return layer && layer.getDownloadFormats().filter(f => 'pdf' !== f).length && layer['is' + format + 'Downloadable']();
+      canDownload(layerId) {
+        // exclude pdf format. It is used only for single feature download
+        return getCatalogLayerById(layerId)?.getDownloadFormats()?.filter(f => 'pdf' !== f)?.length;
       },
 
       getWmsUrl(layerId) {
