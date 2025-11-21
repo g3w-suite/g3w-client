@@ -477,9 +477,11 @@
 
         await this.$nextTick();
 
-        this.left         = e.x;
-        const layer       = !layerstree?.nodes && layerstree; // check for "layer" or "group"
-        this.layer        = layer || null;
+        this.left   = e.x;
+        this.top    = e.y;
+
+        const layer = !layerstree?.nodes && layerstree; // check for "layer" or "group"
+        this.layer  = layer || null;
 
         // click on catalog tree (node)
         if (!!layer) {
@@ -498,12 +500,15 @@
 
         await this.$nextTick();
 
-        this.top = e.target.getBoundingClientRect().top - this.$refs['menu'].clientHeight + (e.target.clientHeight / 2);
+        // open menu at catalog entry
+        if (['layer','project'].includes(this.context)) {
+          this.top = e.target.getBoundingClientRect().top - this.$refs.menu.clientHeight + (e.target.clientHeight / 2);
+        }
 
         // handle context menu on mobile
         if (window.innerWidth < 767) {
-          this.left = (window.innerWidth / 2) - (this.$refs['menu'].clientWidth / 2);
-          this.top  = (window.innerHeight / 2) - (this.$refs['menu'].clientHeight / 2);
+          this.left = (window.innerWidth / 2) - (this.$refs.menu.clientWidth / 2);
+          this.top  = (window.innerHeight / 2) - (this.$refs.menu.clientHeight / 2);
         }
 
         // conditionally inline "ogc_menu" when they contain a single item
@@ -758,10 +763,10 @@
         const li = e.target.closest('li');
         const ul = li && li.querySelector('ul');
         if (ul) {
-          const overflowY    = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs['menu'].offsetHeight + this.$refs['menu'].getBoundingClientRect().top);
-          ul.style.top       = ul.offsetHeight > this.$refs['menu'].offsetHeight ? 0 : undefined;
-          ul.style.left      = this.$refs['menu'].offsetWidth -2 + 'px';
-          ul.style.maxHeight = this.$refs['menu'].offsetHeight + 'px';
+          const overflowY    = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs.menu.offsetHeight + this.$refs.menu.getBoundingClientRect().top);
+          ul.style.top       = ul.offsetHeight > this.$refs.menu.offsetHeight ? 0 : undefined;
+          ul.style.left      = this.$refs.menu.offsetWidth -2 + 'px';
+          ul.style.maxHeight = this.$refs.menu.offsetHeight + 'px';
           ul.style.bottom    = overflowY ? 0         : undefined;
           ul.style.marginTop = overflowY ? undefined : '-5px';
           ul.style.overflowY = 'auto';
