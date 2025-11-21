@@ -229,8 +229,8 @@
 
       <!-- Click to Download -->
       <li
-        v-if      = "canDownload(layer.id) || isExternalVectorLayer(layer)"
-        :disabled = "ApplicationState.download"
+        v-if                = "canDownload(layer.id) || isExternalVectorLayer(layer)"
+        :disabled           = "ApplicationState.download"
         @click.prevent.stop = "showDownloadMenu(layer)"
       >
         <i :class = "$fa('download')"></i>
