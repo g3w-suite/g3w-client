@@ -931,7 +931,7 @@
        */
       takeScreenshot() {
         this.closeMenu();
-        GUI.getMapControl('screenshot').toggle();
+        GUI.getMapControl('screenshot').toggle(true);
       },
 
     },
