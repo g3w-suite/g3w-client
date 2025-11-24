@@ -939,10 +939,18 @@
 
       // handle click on map
       GUI.getMap().on(['singleclick', 'contextmenu'], e => {
-        if (!GUI.getCurrentToggledMapControl() && !GUI.getPlugin('editing')?.getLayers?.()?.some?.(l => l.isInEditing())) {
-          if ('contextmenu' == e.type) {
-            e.preventDefault();
-          }
+        const ctx  = 'contextmenu' == e.type;
+        const ctrl = GUI.getCurrentToggledMapControl();
+        // avoid conflict with measure control (right click to undo last added vertex)
+        if ('measure' === ctrl?.name) {
+          return;
+        }
+        // suppress built-in context menu (from browser)
+        if (ctx) {
+          e.preventDefault();
+        }
+        // show our custom context menu
+        if (ctx || !GUI.getPlugin('editing')?.getLayers?.()?.some?.(l => l.isInEditing())) {
           this.map_coords = GUI.getMap().getCoordinateFromPixel([e.pixel[0], e.pixel[1]]);
           GUI.emit('context-menu', e.originalEvent);
         }

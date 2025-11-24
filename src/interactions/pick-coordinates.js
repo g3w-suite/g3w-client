@@ -7,6 +7,10 @@ export default class PickCoordinatesInteraction extends ol.interaction.Pointer {
   constructor(opts = {}) {
     super({
       handleDownEvent(e) {
+        // skip on context menu
+        if (2 === e.originalEvent.button) {
+          return false;
+        }
         this._centerMap = e.map.getView().getCenter();
         // set timeout to avoid blocking pan
         setTimeout(() => {
