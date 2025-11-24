@@ -334,8 +334,15 @@
       </a>
     </li>
 
+    <li v-if="'map' === context" @click="queryCoords">{{ $t('Query layer') }}</li>
+    <li v-if="'map' === context" @click="zoomIn">{{ $t('Zoom in') }}</li>
+    <li v-if="'map' === context" @click="zoomOut">{{ $t('Zoom out') }}</li>
+    <li v-if="'map' === context" @click="zoomHome">{{ $t('Fit map extent') }}</li>
+    <li v-if="'map' === context && initConfig.mapcontrols.screenshot" @click="takeScreenshot">{{ $t('Screen capture') }}</li>
+    <li v-if="'map' === context && initConfig.mapcontrols.streetview" @click="showStreetView">{{ $t('StreetView') }}</li>
+
     <!-- Click to open G3W-ADMIN's project page -->
-    <li v-if = "edit_url && 'project' === context">
+    <li v-if = "edit_url && ['project', 'map'].includes(context)">
       <a :href = "edit_url" @click.stop = "closeMenu" target = "_blank" style = "color: initial">
         <!-- TODO: g3wtemplate.getFontClass('qgis') -->
         <i>
@@ -348,14 +355,7 @@
         Project settings
         <i :class = "$fa('external-link')" style = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
-  </li>
-
-  <li v-if="'map' === context" @click="queryCoords">{{ $t('Query layer') }}</li>
-  <li v-if="'map' === context" @click="zoomIn">{{ $t('Zoom in') }}</li>
-  <li v-if="'map' === context" @click="zoomOut">{{ $t('Zoom out') }}</li>
-  <li v-if="'map' === context" @click="zoomHome">{{ $t('Fit map extent') }}</li>
-  <li v-if="'map' === context && initConfig.mapcontrols.screenshot" @click="takeScreenshot">{{ $t('Screen capture') }}</li>
-  <li v-if="'map' === context && initConfig.mapcontrols.streetview" @click="showStreetView">{{ $t('StreetView') }}</li>
+    </li>
 
   </ul>
 </template>
