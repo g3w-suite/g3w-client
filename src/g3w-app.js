@@ -349,6 +349,7 @@ export default new (class GUI extends Emitter {
     this.zoomToLayerFeaturesExtent = this.zoomToLayer.bind(this);
     this.highlightGeometry         = this.highlight.bind(this);
     this.showRelation              = this.showRelations.bind(this);
+    this.getMapControlByType       = this.getMapControl.bind(this);
     this.clearHighlightGeometry    = () => this.highlight(false);
 
     this.notify = {
@@ -3714,7 +3715,7 @@ export default new (class GUI extends Emitter {
    *
    * @since 4.1.0
    */
-  getMapControlByType(type) {
+  getMapControl(type) {
     // BACKOMP v3.x
     if ("string" !== typeof type) {
       type = type.type;

@@ -105,7 +105,7 @@ export class IframeApp extends Emitter {
    */
   async 'app:screenshot'(params = {}) {
     if (params.capture ?? true) {
-      GUI.getMapControlByType('screenshot').overwriteOnClickEvent(blob => {
+      GUI.getMapControl('screenshot').overwriteOnClickEvent(blob => {
         try {
           window.parent?.postMessage?.({ id: null, action: 'app:screenshot', response: { result: true, data: blob } }, '*');
         } catch(e) {
@@ -114,7 +114,7 @@ export class IframeApp extends Emitter {
         }
       });
     } else {
-      GUI.getMapControlByType('screenshot').resetOriginalOnClickEvent();
+      GUI.getMapControl('screenshot').resetOriginalOnClickEvent();
     }
   }
 

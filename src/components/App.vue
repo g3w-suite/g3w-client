@@ -1076,7 +1076,7 @@ export default {
      */
     switchMapsCoordinateTo4326() {
       this.mouse.epsg_4326 = !this.mouse.epsg_4326;
-      GUI.getMapControlByType('mouseposition').dispatchEvent({
+      GUI.getMapControl('mouseposition').dispatchEvent({
         type: 'change:epsg',
         epsg: this.mouse.epsg_4326 ? 'EPSG:4326' : GUI.getEpsg(),
       })
@@ -1163,9 +1163,9 @@ export default {
     await this.$nextTick();
 
     GUI.once('after:setupControls', () => {
-      if (GUI.getMapControlByType('mouseposition')) {
+      if (GUI.getMapControl('mouseposition')) {
         this.mouse.switch_icon = (
-          GUI.getMapControlByType('mouseposition')
+          GUI.getMapControl('mouseposition')
           && 'EPSG:4326' !== GUI.getEpsg()
         );
         this.mouse.tooltip = `ESPG ${GUI.getCrs().split(':')[1]} ↔ WGS84`;
