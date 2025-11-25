@@ -208,6 +208,7 @@ globalThis.g3wsdk = {
       cloneDeep
     },
     geoutils: {
+      /** used by the following plugins: "bforest" */
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       getAlphanumericPropertiesFromFeature: getAlphanumericProps,
       getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
