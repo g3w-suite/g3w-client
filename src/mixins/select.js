@@ -25,7 +25,6 @@ export default {
     autocomplete() {
       return 'select_autocomplete' === this.state.input.type && this.state.input.options.usecompleter;
     },
-
   },
   watch:{
     async notvalid(value) {

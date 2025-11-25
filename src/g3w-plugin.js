@@ -419,7 +419,9 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @TODO it could be depecrated after v3.4 ?
+   * @TODO depecrate?
+   * 
+   * used by the following plugins: "processing"
    */
   getProject() {
     return ApplicationState.project;
