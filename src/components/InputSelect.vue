@@ -557,7 +557,7 @@
       await this.$nextTick();
 
       const selectElement  = $(this.$refs.select);
-      const language       =  this.getLanguage();
+      const language       = window.initConfig.user.i18n || "en";
       const dropdownParent = undefined === this.state.dropdownParent && $('#g3w-view-content');
       if (this.autocomplete) {
         this.select2 = selectElement.select2({

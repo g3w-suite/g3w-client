@@ -39,8 +39,8 @@ export default {
     await this.$nextTick();
     this.select2 = $(`#${this.id}`).select2({
       dropdownParent: $('#g3w-view-content'),
-      tags: this.state.input.options.editable,
-      language: this.getLanguage()
+      tags:           this.state.input.options.editable,
+      language:       window.initConfig.user.i18n || "en"
     });
     if (null !== this.state.value) {
       this.select2.val(this.state.value).trigger('change');
