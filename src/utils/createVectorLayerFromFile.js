@@ -22,12 +22,12 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
 
   // SHAPE FILE
   if ('zip' === type) {
-    data = JSON.stringify(await shp(await data.arrayBuffer(data))); // un-zip folder data 
+    data = JSON.stringify(await shp(await data.arrayBuffer())); // un-zip folder data 
   }
 
   // KMZ FILE
   if ('kmz' === type) {
-    const zip = await (new JSZip()).loadAsync(data.arrayBuffer(data));
+    const zip = await JSZip.loadAsync(data.arrayBuffer());
     data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
   }
 

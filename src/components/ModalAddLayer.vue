@@ -665,19 +665,18 @@ export default {
 
         // KMZ file
         if ('kmz' === this.file_type) {
-          const zip = await (new JSZip()).loadAsync(input.files[0].arrayBuffer(input.files[0]));
+          const zip = await JSZip.loadAsync(input.files[0]);
           data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
         }
 
         // SHAPE FILE
         if ('zip' === this.file_type) {
-          const zip = await input.files[0].arrayBuffer();
           const out = {}; // un-zip folder data
-          const unzipped = await JSZip.loadAsync(input.files[0]);
-          for (const f in unzipped.files) {
+          const zip = await JSZip.loadAsync(input.files[0]);
+          for (const f in zip.files) {
             if (/.+\.(shp|dbf|json|prj|cpg)$/i.test(f)) {
               const ext = (f.split('.').at(-1) || '').toLowerCase();
-              out[ext] = await unzipped.files[f].async(['shp', 'dbf'].includes(ext) ?  'arraybuffer': 'text');
+              out[ext] = await zip.files[f].async(['shp', 'dbf'].includes(ext) ?  'arraybuffer': 'text');
             }
           }
           data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
