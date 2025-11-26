@@ -27,9 +27,8 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
 
   // KMZ FILE
   if ('kmz' === type) {
-    const zip = new JSZip();
-    zip.load(await data.arrayBuffer(data));
-    data = zip.file(/.kml$/i).at(-1).asText(); // get last kml file within folder
+    const zip = await (new JSZip()).loadAsync(data.arrayBuffer(data));
+    data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
   }
 
   // CSV FILE

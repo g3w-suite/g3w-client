@@ -665,9 +665,8 @@ export default {
 
         // KMZ file
         if ('kmz' === this.file_type) {
-          const zip = new JSZip();
-          zip.load(await input.files[0].arrayBuffer(input.files[0]));
-          data = zip.file(/.kml$/i).at(-1).asText(); // get last kml file within folder
+          const zip = await (new JSZip()).loadAsync(input.files[0].arrayBuffer(input.files[0]));
+          data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
         }
 
         // SHAPE FILE
