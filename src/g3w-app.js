@@ -3851,6 +3851,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   disableClickMapControls(bool = true) {
+    this.getMap().set('can_show_context_menu', !bool);
     this.#controls
       .filter(c => c.control?.isClickMap?.())
       .forEach(c => {

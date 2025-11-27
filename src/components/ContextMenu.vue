@@ -951,7 +951,7 @@
         const ctx  = 'contextmenu' == e.type;
         const ctrl = GUI.getCurrentToggledMapControl();
         // avoid conflict with measure control (right click to undo last added vertex)
-        if ('measure' === ctrl?.name) {
+        if ('measure' === ctrl?.name || false === GUI.getMap().get('can_show_context_menu')) {
           return;
         }
         // suppress built-in context menu (from browser)
