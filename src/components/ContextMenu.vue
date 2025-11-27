@@ -931,7 +931,7 @@
 
       // auto-close context menu when clicking outside
       document.addEventListener('click', e => {
-        if (this.context && this.$el !== e.target && !this.$el.contains(e.target)) {
+        if (this.context && !this.$el.contains(e.target)) {
           this.closeMenu();
         }
       }, true);
