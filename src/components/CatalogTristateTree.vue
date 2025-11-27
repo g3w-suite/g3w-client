@@ -54,14 +54,21 @@
 
     <template v-else>
 
+      <!-- EXTERNAL LAYER  -->
+       <span
+        v-if            = "layerstree.external "
+        style           = "color: #ffff; padding-left: 1px;"
+        :class          = "$fa('vector' === layerstree._type ? 'draw' : 'image')"
+        v-t-tooltip:top = "layerstree._type.toUpperCase()"
+      ></span>
       <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
-      <span
+      <span 
         v-if        = "layerstree.external && layerstree.removable"
         style       = "color: red; padding-left: 1px;"
         :class      = "$fa('trash')"
         @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
-
+      
       <!-- HIDDEN NODE (LAYER) -->
       <span
         v-show = "!layerstree.hidden"

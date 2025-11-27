@@ -28,19 +28,6 @@
             data-toggle   = "tab"
           >{{ $t('data') }}</a>
         </li>
-        <!-- TAB EXTERNAL WMS LAYERS -->
-        <li
-          v-if   = "state.external.wms.length"
-          role   = "presentation"
-          :class = "{ active: ('externalwms' === activeTab) }"
-        >
-          <a
-            href          = "#externalwms"
-            aria-controls = "externalwms"
-            role          = "tab"
-            data-toggle   = "tab"
-          >{{ $t('externalwms') }}</a>
-        </li>
         <!-- TAB BASE LAYERS -->
         <li
           v-if   = "hasBaseLayers"
@@ -129,6 +116,17 @@
             />
           </ul>
 
+          <!-- EXTERNAL WMS LAYER -->
+          <ul class = "g3w-external_wms_layers-group">
+            <catalog-tristate-tree
+              v-for           = "wms in state.external.wms"
+              :key            = "wms.id"
+              :externallayers = "state.external.wms"
+              :layerstree     = "wms"
+              class           = "item"
+            />
+          </ul>
+
           <!-- GROUP OF LAYERS -->
           <!-- ORIGINAL SOURCE: src/components/CatalogLayersGroup.vue@v3.9.3 -->
           <ul
@@ -145,25 +143,6 @@
             </div>
           </ul>
 
-        </div>
-
-        <!-- EXTERNAL WMS LAYER -->
-        <div
-          v-if   = "state.external.wms.length"
-          id     = "externalwms"
-          role   = "tabpanel"
-          class  = "tab-pane"
-          :class = "{ active: ('externalwms' === activeTab) }"
-        >
-          <ul class="g3w-external_wms_layers-group">
-            <catalog-tristate-tree
-              v-for           = "wms in state.external.wms"
-              :key            = "wms.id"
-              :externallayers = "state.external.wms"
-              :layerstree     = "wms"
-              class           = "item"
-            />
-          </ul>
         </div>
 
         <!-- BASE LAYERS -->
@@ -1101,7 +1080,7 @@ export default {
     cursor: not-allowed;
   }
   .catalog .g3w-external_wms_layers-group {
-    padding: 5px;
+    padding: 0;
   }
   .catalog .baselayers .radio {
     margin: 0;
