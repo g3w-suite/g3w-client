@@ -5166,11 +5166,15 @@ export default new (class GUI extends Emitter {
     externalLayer.setSelected         = externalLayer.setSelected         || (s => externalLayer.selected = s);
     externalLayer.isQueryable         = externalLayer.isQueryable         || (() => !!vectorLayer);
     externalLayer.isVisible           = externalLayer.isVisible           || (() => {
-      if (vectorLayer) { externalLayer.visible = vectorLayer.getVisible(); }
+      if (vectorLayer) {
+        externalLayer.visible = vectorLayer.getVisible();
+      }
       return externalLayer.visible;
     });
     externalLayer.setVisible          = externalLayer.setVisible          || (v => {
-      if (vectorLayer) { vectorLayer.setVisible(v); }
+      if (vectorLayer) {
+        vectorLayer.setVisible(v);
+      }
       externalLayer.visible = v;
     });
 
