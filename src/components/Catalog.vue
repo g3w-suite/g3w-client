@@ -103,7 +103,7 @@
           </ul>
 
           <!-- EXTERNAL LAYERS -->
-          <ul class = "g3w-external_layers-group">
+          <ul v-if="state.external.wms.length || state.external.vector.length" class = "g3w-external_layers-group">
             <catalog-tristate-tree
               v-for           = "wms in state.external.wms"
               :key            = "wms.id"
