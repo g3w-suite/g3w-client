@@ -996,7 +996,7 @@ export default new (class GUI extends Emitter {
   }
 
   disableElement({element, disable}) {
-    $(element)[disable ? 'addClass' : 'removeClass']('g3w-disabled');
+    document.querySelectorAll(element).forEach(el => el.classList.toggle('g3w-disabled', disable));
   }
 
   disableContent(disable) {
@@ -1004,10 +1004,7 @@ export default new (class GUI extends Emitter {
   }
 
   disablePanel(disable=false) {
-    this.disableElement({
-      element: "#g3w-sidebarpanel-placeholder",
-      disable
-    })
+    this.disableElement({ disable, element: "#g3w-sidebarpanel-placeholder" });
   }
 
   /**
