@@ -37,7 +37,7 @@
             <select id="add-layer-type" class = "form-control" v-model="layer_type">
               <option disabled :value="undefined" v-t="'Choose type'"></option>
               <option value="wms"  v-t="'WMS (URL)'"></option>
-              <option value="tms"  v-t="'TMS (URL)'" :hidden="!is_localhost"></option>
+              <option value="tms"  v-t="'TMS (URL)'"></option>
               <option value="file" v-t="'Local file'"></option>
             </select>
           </div>
