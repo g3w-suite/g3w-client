@@ -1100,8 +1100,6 @@ export default {
   }
   #catalog #layers ul.g3w-external_layers-group {
     padding-left: 0 !important;
-    position: sticky;
-    bottom: 0;
     background: var(--bgcolor);
     border-top: 2px solid var(--skin-color);
     padding-top: 12px;
