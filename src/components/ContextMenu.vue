@@ -5,11 +5,10 @@
 
 <template>
   <ul
-    v-if            = "context"
-    ref             = "menu"
-    class           = "context-menu"
-    @mouseover      = "showMenu"
-    v-click-outside = "closeMenu"
+    v-if       = "context"
+    ref        = "menu"
+    class      = "context-menu"
+    @mouseover = "showMenu"
     tabindex   = "-1"
     :style     = "{
       top:  top + 'px',
@@ -447,25 +446,6 @@
 
     components: {
       'chrome-picker': ChromeComponent,
-    },
-
-    directives: {
-      'click-outside': {
-        bind(el, binding, vnode) {
-          this.event = e => {
-            // skip if a clicked element is a child of element
-            if (el === e.target || el.contains(e.target)) {
-              return;
-            }
-            e.stopPropagation();
-            vnode.context[binding.expression](e);
-          }
-          document.body.addEventListener('click', this.event, true);
-        },
-        unbind() {
-          document.body.removeEventListener('click', this.event, true);
-        }
-      }
     },
 
     methods: {
@@ -941,7 +921,20 @@
      */
     async created() {
       GUI.on('context-menu', this.onShowContextMenu);
-      document.addEventListener('keyup', e => 'Escape' === e.key && this.closeMenu());
+      
+      // auto-close context menu on Esc key
+      document.addEventListener('keyup', e => {
+        if ('Escape' === e.key) {
+          this.closeMenu();
+        }
+      });
+
+      // auto-close context menu when clicking outside
+      document.addEventListener('click', e => {
+        if (this.context && this.$el !== e.target && !this.$el.contains(e.target)) {
+          this.closeMenu();
+        }
+      }, true);
 
       await GUI.isReady();
       await GUI.isMapReady()
