@@ -224,6 +224,12 @@ C,"POINT (11.2474811 43.7910709)"`],
     url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
   });
 
+  // OpenStreetMap
+  await setTMS({
+    name: 'OSM',
+    url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  });
+
   // ORTOFOTO
   await setWms({
     id: 'ORTOFOTO',
