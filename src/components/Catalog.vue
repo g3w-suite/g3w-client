@@ -102,27 +102,20 @@
             />
           </ul>
 
-          <!-- EXTERNAL VECTOR LAYER -->
-          <ul
-            v-if  = "state.external.vector.length"
-            class = "g3w-external_layers-group"
-          >
-            <catalog-tristate-tree
-              v-for           = "vector in state.external.vector"
-              :key            = "vector.id"
-              :externallayers = "state.external.vector"
-              :layerstree     = "vector"
-              class           = "item"
-            />
-          </ul>
-
-          <!-- EXTERNAL WMS LAYER -->
-          <ul class = "g3w-external_wms_layers-group">
+          <!-- EXTERNAL LAYERS -->
+          <ul class = "g3w-external_layers-group">
             <catalog-tristate-tree
               v-for           = "wms in state.external.wms"
               :key            = "wms.id"
               :externallayers = "state.external.wms"
               :layerstree     = "wms"
+              class           = "item"
+            />
+            <catalog-tristate-tree
+              v-for           = "vector in state.external.vector"
+              :key            = "vector.id"
+              :externallayers = "state.external.vector"
+              :layerstree     = "vector"
               class           = "item"
             />
           </ul>
@@ -1079,9 +1072,6 @@ export default {
     color: #999;
     cursor: not-allowed;
   }
-  .catalog .g3w-external_wms_layers-group {
-    padding: 0;
-  }
   .catalog .baselayers .radio {
     margin: 0;
   }
@@ -1110,6 +1100,9 @@ export default {
   }
   #catalog #layers ul.g3w-external_layers-group {
     padding-left: 0 !important;
+    position: sticky;
+    bottom: 0;
+    background: var(--bgcolor);
   }
   #catalog #layers ul.g3w-external_layers-group li {
     padding-left: 2px !important;
