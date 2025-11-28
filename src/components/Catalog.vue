@@ -117,7 +117,7 @@
                   style       = "padding-right: 5px; cursor: pointer;"
                   :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
                 ></span>
-                <span style = "font-weight: bold">EXTERNAL LAYERS</span>
+                <span style = "font-weight: bold" v-t = "'externallayers'"></span>
                 <span 
                   style       = "color: red; padding-right: 3px; margin-left: auto; cursor: pointer;"
                   :class      = "$fa('trash')"
