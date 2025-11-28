@@ -341,7 +341,7 @@ export default {
     },
 
     hasBaseLayers() {
-      return this.project.state.baselayers.length > 0;
+      return false; // this.project.state.baselayers.length > 0;
     },
 
     hasLayers() {

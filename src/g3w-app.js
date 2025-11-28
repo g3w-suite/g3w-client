@@ -4878,6 +4878,11 @@ export default new (class GUI extends Emitter {
       }
     }
 
+    if (ApplicationState.project.state.baselayers.length > 0) {
+      await import(`${initConfig.staticurl}${initConfig.client}map-controls/baselayers.js`);
+      await this.setupControl.baselayers('baselayers'); // TODO: make use dynamic of imports instead of firing a custom event 
+    }
+
     this.emit('after:setupControls');
 
     this.emit('after:setupViewer');
