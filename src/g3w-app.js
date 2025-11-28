@@ -4857,6 +4857,7 @@ export default new (class GUI extends Emitter {
       'geolocation',
       'measure',
       'mouseposition',
+      'baselayers',
       'overview',
       'query',
       'queryby',
@@ -4876,11 +4877,6 @@ export default new (class GUI extends Emitter {
       } catch (e) {
         console.warn(e);
       }
-    }
-
-    if (ApplicationState.project.state.baselayers.length > 0) {
-      await import(`${initConfig.staticurl}${initConfig.client}map-controls/baselayers.js`);
-      await this.setupControl.baselayers('baselayers'); // TODO: make use dynamic of imports instead of firing a custom event 
     }
 
     this.emit('after:setupControls');
