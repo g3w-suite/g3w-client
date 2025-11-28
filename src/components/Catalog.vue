@@ -103,8 +103,30 @@
           </ul>
 
           <!-- EXTERNAL LAYERS -->
-          <ul v-if="state.external.wms.length || state.external.vector.length" class = "g3w-external_layers-group">
+          <ul v-if = "state.external.wms.length || state.external.vector.length" class = "g3w-external_layers-group">
+            <li>
+              <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
+                <span
+                  style       = "padding-right: 5px; cursor: pointer;"
+                  :class      = "$fa(externalayers.collapsed ? 'caret-up' : 'caret-down')"
+                  @click.stop = "expandCollapseExternaLayers"
+                  class       = "collapse-expande-collapse-icon"
+                ></span>
+                <span
+                  @click.stop = "toggleExternalLayers"
+                  style       = "padding-right: 5px; cursor: pointer;"
+                  :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
+                ></span>
+                <span style = "font-weight: bold">EXTERNAL LAYERS</span>
+                <span 
+                  style       = "color: red; padding-right: 3px; margin-left: auto; cursor: pointer;"
+                  :class      = "$fa('trash')"
+                  @click.stop = "removeExternalLayers"
+                ></span>
+              </div>
+            </li>
             <catalog-tristate-tree
+              v-show          = "!externalayers.collapsed"
               v-for           = "wms in state.external.wms"
               :key            = "wms.id"
               :externallayers = "state.external.wms"
@@ -112,6 +134,7 @@
               class           = "item"
             />
             <catalog-tristate-tree
+              v-show          = "!externalayers.collapsed"
               v-for           = "vector in state.external.vector"
               :key            = "vector.id"
               :externallayers = "state.external.vector"
@@ -288,6 +311,11 @@ export default {
       currentBaseLayer: null,
       activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
+      //@since 4.1.0
+      externalayers:    {
+        checked:   false,
+        collapsed: false,
+      },
     }
   },
 
@@ -316,7 +344,8 @@ export default {
 
     hasLayers() {
       return (
-        this.state.external.vector.length > 0 //has external layers
+        (this.state.external?.vector || []).length > 0 //has vector external layers
+        || (this.state.external?.wms || []).length > 0 //has wms external layers
         || this.state.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
         || this.state.layersgroups.length > 0
       );
@@ -334,6 +363,34 @@ export default {
   },
 
   methods: {
+
+    /**
+     * @since 4.1.0
+     */
+    expandCollapseExternaLayers() {
+      this.externalayers.collapsed = !this.externalayers.collapsed;
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    toggleExternalLayers() {
+      this.externalayers.checked = !this.externalayers.checked;
+      [
+        ...(this.state.external?.vector || []),
+        ...(this.state.external?.wms || []),
+      ].forEach(l => l.checked = this.externalayers.checked);
+    },
+
+    /**
+     * @since 4.1.0 Remove external layers
+     */
+    removeExternalLayers() {
+      [
+        ...(this.state.external?.vector || []),
+        ...(this.state.external?.wms || []),
+      ].forEach(l =>  GUI.removeExternalLayer(l.name));
+    },
 
     onLegendError(url) {
       url.error   = true;
@@ -368,7 +425,7 @@ export default {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
             }
             tree.legendurls = await this._getLegendSrc(layers);
-          } catch (e) {
+          } catch(e) {
             console.warn(e);
           }
         });
@@ -738,21 +795,37 @@ export default {
       }
       $('#modal-changemap').modal('show');
     },
-    
+    /**
+     * @since 4.1.0
+     */
+    _setExternalChecked() {
+      this.externalayers.checked = [
+        ...(this.$options.service.state.external?.vector || []),
+        ...(this.$options.service.state.external?.wms || []),
+      ].every(l => l.checked)
+    }
 
   },
 
   watch: {
-
     /**
-     * Listen to external wms change. If remove all layers need to set active the project or default tab
+     * 
      */
-    'state.external.wms'(newlayers, oldlayers) {
-      if (oldlayers && 0 === newlayers.length) {
-        this.activeTab = this.project.state.catalog_tab || 'layers';
+    'state.external.vector': {
+      immediante: true,
+      handler() {
+        this._setExternalChecked();
       }
     },
-
+    /**
+     * 
+     */
+    'state.external.wms': {
+      immediante: true,
+      handler() {
+        this._setExternalChecked();
+      }
+    },
     project: {
       async handler(project) {
         const activeTab = project.state.catalog_tab || 'layers';
