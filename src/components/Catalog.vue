@@ -108,7 +108,7 @@
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
                 <span
                   style       = "padding-right: 5px; cursor: pointer;"
-                  :class      = "$fa(externalayers.collapsed ? 'caret-up' : 'caret-down')"
+                  :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
                   @click.stop = "expandCollapseExternaLayers"
                   class       = "collapse-expande-collapse-icon"
                 ></span>
@@ -117,7 +117,7 @@
                   style       = "padding-right: 5px; cursor: pointer;"
                   :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
                 ></span>
-                <span style = "font-weight: bold" v-t = "'externallayers'"></span>
+                <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
                 <span 
                   style       = "color: red; padding-right: 3px; margin-left: auto; cursor: pointer;"
                   :class      = "$fa('trash')"

@@ -22,7 +22,6 @@ export default {
   catalog: "Map",
   data: "Data",
   externalwms: "WMS",
-  externallayers: "EXTERNAL LAYERS",
   baselayers: "Base",
   tools: "Tools",
   tree: "Layers",

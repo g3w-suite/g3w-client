@@ -30,7 +30,7 @@ export default {
   catalog: "Mappa",
   data: "Dati",
   externalwms: "WMS",
-  externallayers: "LAYER ESTERNI",
+  'EXTERNAL LAYERS': "LIVELLI ESTERNI",
   baselayers: "Basi",
   tools: "Strumenti",
   tree: "Strati",
