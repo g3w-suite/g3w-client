@@ -107,10 +107,10 @@
             <li>
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
                 <span
-                  style       = "padding-right: 5px; cursor: pointer;"
+                  style       = "padding-right: 2px; padding-left: 4px; width: 20px; cursor: pointer;"
                   :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
                   @click.stop = "expandCollapseExternaLayers"
-                  class       = "collapse-expande-collapse-icon"
+                  class       = "collapse-expande-collapse-icon bold"
                 ></span>
                 <span
                   @click.stop = "toggleExternalLayers"
