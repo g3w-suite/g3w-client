@@ -124,7 +124,7 @@
         {{ $t('Opacity') }} ({{ (layer.opacity / 100) }})
         <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
-          <li style="display: list-item;">
+          <li style = "display: list-item;">
             <input
               type    = "range"
               @change = "onLayerOpacity"
@@ -134,12 +134,12 @@
               step   = "1"
               list   = "opacity-markers"
             >
-            <datalist id="opacity-markers" style="  display: flex; justify-content: space-between;">
-              <option value="0">0</option>
-              <option value="25">0.25</option>
-              <option value="50">0.50</option>
-              <option value="75">0.75</option>
-              <option value="100">1</option>
+            <datalist id ="opacity-markers" style ="display: flex; justify-content: space-between;">
+              <option value = "0">0</option>
+              <option value = "25">0.25</option>
+              <option value = "50">0.50</option>
+              <option value = "75">0.75</option>
+              <option value = "100">1</option>
             </datalist>
           </li>
         </ul>
@@ -153,17 +153,17 @@
         {{ $t('Opacity') }} ({{ layer.opacity }})
         <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul class = "sub-contex-menu">
-          <li style="display: list-item;">
+          <li style = "display: list-item;">
             <input
               type    = "range"
               @change = "onLayerOpacity"
               v-model = "layer.opacity"
-              min    = "0"
-              max    = "1"
-              step   = "0.01"
-              list   = "opacity-markers"
+              min     = "0"
+              max     = "1"
+              step    = "0.01"
+              list    = "opacity-markers"
             >
-            <datalist id="opacity-markers" style="  display: flex; justify-content: space-between;">
+            <datalist id = "opacity-markers" style = "display: flex; justify-content: space-between;">
               <option>0</option>
               <option>0.25</option>
               <option>0.50</option>
