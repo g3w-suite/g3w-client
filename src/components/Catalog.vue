@@ -107,7 +107,7 @@
             <li>
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
                 <span
-                  style       = "padding-right: 2px; padding-left: 4px; width: 20px; cursor: pointer;"
+                  style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
                   :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
                   @click.stop = "expandCollapseExternaLayers"
                   class       = "collapse-expande-collapse-icon bold"
