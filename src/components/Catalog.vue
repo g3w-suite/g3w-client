@@ -28,19 +28,6 @@
             data-toggle   = "tab"
           >{{ $t('data') }}</a>
         </li>
-        <!-- TAB BASE LAYERS -->
-        <li
-          v-if   = "hasBaseLayers"
-          role   = "presentation"
-          :class = "{ active: ('baselayers' === activeTab) }"
-        >
-          <a
-            href          = "#baselayers"
-            aria-controls = "baselayers"
-            role          = "tab"
-            data-toggle   = "tab"
-          >{{ $t('baselayers') }}</a>
-        </li>
         <!-- TAB LEGEND LAYERS -->
         <li
           v-if   = "'tab' === legend_position && showlegend"
@@ -163,50 +150,6 @@
 
         </div>
 
-        <!-- BASE LAYERS -->
-        <div
-          v-if   = "hasBaseLayers"
-          id     = "baselayers"
-          role   = "tabpanel"
-          class  = "tab-pane baselayers"
-          :class = "{ active: ('baselayers' === activeTab || !hasLayers) }"
-        >
-          <ul
-            id     = "baselayers-content"
-            :class = "{'mobile': isMobile()}"
-            :style = "{ gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))` }"
-          >
-            <li
-              v-if  = "!base.fixed"
-              v-for = "base in baselayers"
-              :key  = "base.title"
-            >
-              <img
-                :src        = "getSrcBaseLayerImage(base)"
-                @click.stop = "setBaseLayer(base.id)"
-                class       = "img-responsive img-thumbnail baselayer"
-                :style      = "{ opacity: currentBaseLayer === base.id ? 1 : 0.5, height: baselayers.length > 4 ? '108px' : null  }"
-              >
-              <div class = "baseselayer-text text-center g3w-long-text">{{ base.title }}</div>
-            </li>
-
-            <li @click.stop="setBaseLayer(null)">
-              <img
-                :src   = "getSrcBaseLayerImage(null)"
-                class  = "img-responsive img-thumbnail baselayer"
-                :style = "{ opacity: currentBaseLayer === null ? 1 : 0.5 }"
-              >
-              <div
-                class = "baseselayer-text text-center g3w-long-text"
-                v-t   = "'nobaselayer'">
-              </div>
-
-            </li>
-
-          </ul>
-
-        </div>
-
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
         <div
@@ -310,7 +253,6 @@ export default {
       iframe:           ApplicationState.iframe,
       showlegend:       false,
       backgroundLegend: ApplicationState.layout.app.legend && ApplicationState.layout.app.legend.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
-      currentBaseLayer: null,
       activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
       //@since 4.1.0
@@ -334,14 +276,6 @@ export default {
 
     title() {
       return this.project.state.name;
-    },
-
-    baselayers() {
-      return this.project.state.baselayers;
-    },
-
-    hasBaseLayers() {
-      return false; // this.project.state.baselayers.length > 0;
     },
 
     hasLayers() {
@@ -690,23 +624,6 @@ export default {
       }
     },
 
-    setBaseLayer(id) {
-      this.currentBaseLayer = id;
-      this.project.setBaseLayer(id);
-      ApplicationState.baseLayerId = id;
-    },
-
-    getSrcBaseLayerImage(baseLayer) {
-      let image = 'nobaselayer.png';
-      switch (baseLayer && baseLayer.servertype || baseLayer) {
-        case 'OSM':  image = 'osm.png';                                    break;
-        case 'Bing': image = `bing${baseLayer.source.subtype}.png`;        break;
-        case 'TMS':  image = baseLayer.icon ? baseLayer.icon : image;      break;
-        case 'WMTS': image = baseLayer.icon ? baseLayer.icon : image;      break;
-      }
-      return (baseLayer || {}).icon ? image : `${GUI.getResourcesUrl()}images/${image}`;
-    },
-
     /**
      * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js::removeFromSelection
      * 
@@ -831,12 +748,12 @@ export default {
     project: {
       async handler(project) {
         const activeTab = project.state.catalog_tab || 'layers';
-        this.loading    = 'baselayers' === activeTab;
+        this.loading    = false;
         await this.$nextTick();
         setTimeout(() => {
           this.loading   = false;
           this.activeTab = activeTab;
-        }, ('baselayers' === activeTab) ? 500 : 0)
+        })
       },
       immediate: false
     },
@@ -865,10 +782,6 @@ export default {
     GUI.on('treenodevisible',        this.onTreeNodeVisible);
     GUI.on('treenodeselected',       this.onTreeNodeSelected);
     GUI.on('layer-change-style',     this.getLegendSrc);
-  },
-
-  beforeMount() {
-    this.currentBaseLayer = this.project.state.initbaselayer;
   },
 
   async mounted() {
@@ -1146,32 +1059,6 @@ export default {
   .catalog .tree.disabled {
     color: #999;
     cursor: not-allowed;
-  }
-  .catalog .baselayers .radio {
-    margin: 0;
-  }
-
-  #baselayers-content {
-    display: grid;
-    justify-content: center;
-    grid-gap: 5px;
-    padding: 0;
-    margin: 5px;
-  }
-  #baselayers-content.mobile {
-    grid-template-columns: repeat(auto-fill,minmax(80px,110px));
-  }
-  #baselayers-content .baseselayer-text {
-    white-space: pre-line;
-    font-weight: bold;
-  }
-  #baselayers-content .baselayer {
-    cursor: pointer;
-  }
-  #baselayers-content .baselayer .baselayer-name {
-    font-weight: bold;
-    white-space: pre-line;
-    text-align: center;
   }
   #catalog #layers ul.g3w-external_layers-group {
     padding-left: 0 !important;

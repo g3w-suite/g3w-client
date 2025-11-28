@@ -26,7 +26,7 @@ class WMSControl extends ol.control.Control {
   // keep browser storage in sync
   set #activeLayer(layer) {
     this.__activeLayer = layer;
-    localStorage.setItem('baselayer', [(this.#opacityLayer?.getOpacity?.() ?? 0) / 100, layer?.getId()].join('+').replace(/\+$/, ''));
+    localStorage.setItem('baselayer', [(this.#activeLayer?.getOpacity?.() ?? 0) / 100, layer?.getId()].join('+').replace(/\+$/, ''));
   };
 
   constructor(layers) {
@@ -41,7 +41,7 @@ class WMSControl extends ol.control.Control {
     // base layers
     this.layers = layers.map(l => ApplicationState.project.getLayerById(l.id)).filter(Boolean);
 
-    this.#opacityLayer = ApplicationState.project.getLayerById(layers.find(l => l.fixed)?.id);
+    // this.#opacityLayer = ApplicationState.project.getLayerById(layers.find(l => l.fixed)?.id);
 
     // retrieve current baselayer from: URL search params or browser storage
     const [base_opacity, base_id] = (new URLSearchParams(window.location.search).get('baselayer') || localStorage.getItem('baselayer'))?.split?.('+') || [0, null];
@@ -113,8 +113,8 @@ class WMSControl extends ol.control.Control {
                       : /* html */`<input type="radio" name="activeLayer" ${ layer.isVisible() ? 'checked' : '' } />`
                   }
                   ${
-                    layers.find(l => layer.getId() === l.id).thumbnail
-                      ? /* html */ `<img loading="lazy" src="${layers.find(l => layer.getId() === l.id).thumbnail}" style="width: 51px;height: 28px;object-fit: cover; margin: 0 4px 0 8px" />`
+                    this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/
+                      ? /* html */ `<img loading="lazy" src="${this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/}" style="width: 51px;height: 28px;object-fit: cover; margin: 0 4px 0 8px" />`
                       : /* html */ `<i class="fas fa-layer-group" style="margin: 0 10px;"></i>`
                   }
                   ${ layer.getName() }
@@ -174,8 +174,25 @@ class WMSControl extends ol.control.Control {
 
   }
 
+  #getSrcBaseLayerImage(baseLayer) {
+    let image;
+    if ('OSM' === baseLayer?.servertype) {
+      image = 'osm.png';
+    }
+    if ('Bing' === baseLayer?.servertype) {
+      image = `bing${baseLayer.source.subtype}.png`;
+    }
+    if (baseLayer.icon) {
+      image = baseLayer.icon;
+    }
+    if (image) {
+      return `${GUI.getResourcesUrl()}images/${image}`;
+    }
+  }
+
   /** Keep layer visibility/checked status in sync */
   #toggleLayer(layer, visible) {
+    ApplicationState.baseLayerId = layer.getId();
     layer?.setChecked?.(visible);
     layer?.setVisible?.(visible);
     layer?.change?.();
