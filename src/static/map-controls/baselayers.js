@@ -8,9 +8,11 @@ const GUI               = g3w.app;
 const { XHR, debounce } = g3w.utils;
 
 // wait for map ready
-GUI.setupControl.baselayers = function () {
-  new WMSControl(ApplicationState.project.state.baselayers);
-};
+GUI.on('after:setupControls', () => {
+  if (ApplicationState.project.state.baselayers.length) {
+    new WMSControl(ApplicationState.project.state.baselayers);
+  }
+});
 
 /**
  * CUSTOM MAP CONTROL: "baselayers"
