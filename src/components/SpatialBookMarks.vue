@@ -6,43 +6,10 @@
 <template>
   <ul
     id     = "g3w-spatial-bookmarks"
-    class  = "treeview-menu g3w-spatial-bookmarks menu-items"
-    :class = "{'g3w-tools': !showaddform}"
+    class  = "treeview-menu g3w-spatial-bookmarks menu-items g3w-tools"
   >
-
-    <!-- ADD NEW BOOKMARK (FORM) -->
-    <li v-if = "showaddform">
-      <div style = "display: flex; justify-content: end">
-        <span
-          v-t-tooltip:left = "'close'"
-          @click.stop      = "showaddform = false"
-          :class           = "$fa('close')"
-          class            = "sidebar-button sidebar-button-icon"
-          style            = "padding: 5px; margin: 3px;"
-        ></span>
-      </div>
-      
-
-      <!-- HELP DIV -->
-      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
-        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
-        <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
-      </div>
-
-      <form
-        class   = "container add-bookmark-input"
-        style   = "padding: 5px; width: 100%"
-        @submit = "addBookMark"
-      >
-        <label for="add-bokmark">{{ $t('Name') }} *</label>
-        <input id="add-bookmark" type="text" required class="form-control" ref="add_bookmark_input" v-model="addbookmarkinput" />
-        <button type = "submit" style = "margin-top: 20px;" class = "sidebar-button-run btn btn-block">{{ $t('add') }}</button>
-      </form>
-      
-    </li>
-
     <!-- BOOKMARS LIST -->
-    <template v-else>
+    <template>
 
       <div v-if = "is_staff" class = "content-bookmarks">
         <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
@@ -92,14 +59,14 @@
             <span class = "g3w-long-text">{{ bookmark.name }}</span>
           </div>
         </li>
-        <spatial-book-mark-item  v-else :bookmark="bookmark" />
+        <spatial-book-mark-item  v-else :bookmark = "bookmark" />
       </template>
 
       <div
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span :hidden = "is_mobile" v-t="'User Bookmarks'"></span>
+        <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
         <span
           :hidden          = "is_mobile"
           v-t-tooltip:left = "'add'"
@@ -117,7 +84,7 @@
       >
         <div>
           <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-          <span class = "g3w-long-text">{{bookmark.name}}</span>
+          <span class = "g3w-long-text">{{ bookmark.name }}</span>
         </div>
         <span
           @click.stop = "removeBookMark(bookmark.id)"
@@ -139,6 +106,14 @@
   import { getUniqueDomId } from 'utils/getUniqueDomId';
   import { gettext as _ }   from 'g3w-i18n';
 
+  const gid              = ApplicationState.project.getId();
+  const SAVED_BOOKMARKS  = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
+
+  function setUserBookMarks() {
+    SAVED_BOOKMARKS[gid] = SAVED_BOOKMARKS[gid] || [];
+    window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
+  }
+
     export default {
 
     /** @since 3.8.6 */
@@ -149,18 +124,9 @@
     },
 
     data() {
-      const gid             = ApplicationState.project.getId();
-      const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
-      SAVED_BOOKMARKS[gid]  = SAVED_BOOKMARKS[gid] || [];
-      window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
+      setUserBookMarks();
 
       return {
-
-        /**
-         * true = show add dialog menu
-         */
-        showaddform: false,
-
         /**
          * spatial bookmarks saved on current QGIS project
          * 
@@ -175,12 +141,9 @@
         project: {
           bookmarks: ApplicationState.project.state.bookmarks || []
         },
-
         user: {
           bookmarks: SAVED_BOOKMARKS[gid]
-        },
-
-        addbookmarkinput: null,
+        }
       }
     },
 
@@ -200,39 +163,71 @@
       is_mobile() {
         return window.innerWidth < 767;
       }
-
     },
 
     methods: {
 
-      addBookMark() {
-        this.user.bookmarks.push({
-          id:        getUniqueDomId(),
-          name:      this.addbookmarkinput,
-          extent:    GUI.getMapExtent(),
-          removable: true,
-          crs:       { epsg: 1 * GUI.getCrs().split('EPSG:')[1] }
-        });
-
-        this.saveUserBookMarks();
-        this.showaddform = false;
-      },
-
       removeBookMark(id) {
-        this.user.bookmarks = this.user.bookmarks.filter(b => id !== b.id);
-        this.saveUserBookMarks();
-      },
-
-      saveUserBookMarks() {
-        const gid             = ApplicationState.project.getId();
-        const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
-        SAVED_BOOKMARKS[gid]  = this.user.bookmarks || [];
-        window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
+        this.user.bookmarks = SAVED_BOOKMARKS[gid] = SAVED_BOOKMARKS[gid].filter(b => id !== b.id);
+        setUserBookMarks();
       },
 
       showAddForm() {
-        this.addbookmarkinput = null;
-        this.showaddform      = true;
+        GUI.showUserMessage({
+          type:      'tool',
+          size:      'small',
+          title:     'User Bookmarks',
+          iconClass: 'bookmark',
+          hooks: {
+            body: Vue.extend({
+              template: /*html */`
+                <div style = "padding: 5px;">
+                  <!-- HELP DIV -->
+                  <section style = "color: #000; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #eee !important;">
+                    <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: #eee; font-weight: bold; color: #000; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
+                    <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
+                  </section>
+                  <section>
+                    <label for = "add-bokmark">{{ $t('Name') }} *</label>
+                    <input 
+                      id      = "add-bookmark" 
+                      type    = "text" 
+                      class   = "form-control" 
+                      v-model = "addbookmarkinput" 
+                      required/>
+                    <button 
+                      v-disabled  = "!addbookmarkinput"
+                      style       = "color: #fff; margin-top: 20px; background-color: var(--skin-color)" 
+                      class       = "btn btn-block"
+                      @click.stop = "addBookMark">{{ $t('add') }}
+                    </button>
+                  </section>  
+                </div>
+              `,
+              data() {
+                return {
+                  addbookmarkinput: null,
+                }
+              },
+              methods: {
+                addBookMark() {
+                  SAVED_BOOKMARKS[gid].push({
+                    id:        getUniqueDomId(),
+                    name:      this.addbookmarkinput,
+                    extent:    GUI.getMapExtent(),
+                    removable: true,
+                    crs:       { epsg: 1 * GUI.getCrs().split('EPSG:')[1] }
+                  });
+
+                  setUserBookMarks();
+                  GUI.closeUserMessage();
+                },
+              },
+
+            })
+          }
+        })
+        
       },
 
       async gotoSpatialBookmark({ extent, crs }) {
@@ -250,9 +245,6 @@
 
     },
 
-    created() {
-      this.$on('close', () => this.showaddform = false);
-    },
 
   };
 </script>
