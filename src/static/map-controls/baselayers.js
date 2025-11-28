@@ -21,15 +21,7 @@ class WMSControl extends ol.control.Control {
 
   #opacityLayer
   
-  get #activeLayer() {
-    return this.__activeLayer || null;
-  };
-
-  // keep browser storage in sync
-  set #activeLayer(layer) {
-    this.__activeLayer = layer;
-    localStorage.setItem('baselayer', [(this.#activeLayer?.getOpacity?.() ?? 0) / 100, layer?.getId()].join('+').replace(/\+$/, ''));
-  };
+  #activeLayer = null;
 
   constructor(layers) {
     super({
@@ -38,36 +30,16 @@ class WMSControl extends ol.control.Control {
     });
 
     // retrieve global map instance (open layers)
-    const map = GUI.getService('map').getMap();
+    const map   = GUI.getService('map').getMap();
 
     // base layers
-    this.layers = layers.map(l => ApplicationState.project.getLayerById(l.id)).filter(Boolean);
-
-    // this.#opacityLayer = ApplicationState.project.getLayerById(layers.find(l => l.fixed)?.id);
-
-    // retrieve current baselayer from: URL search params or browser storage
-    const [base_opacity, base_id] = (new URLSearchParams(window.location.search).get('baselayer') || localStorage.getItem('baselayer'))?.split?.('+') || [0, null];
-
-    // remove "baselayer" param from URL
-    const url = new URL(window.location);
-    url.searchParams.delete('baselayer');
-    window.history.replaceState(null, null, url);
-
-    this.layers.forEach(l => {
-      l.config.toc = false;
-      this.#toggleLayer(l, false);
-    });
-
-    if (this.#opacityLayer) {
-      this.#opacityLayer.getState().opacity = parseFloat(base_opacity) * 100;
-      this.#toggleLayer(this.#opacityLayer, true);
-    }
+    this.layers = GUI.getBaseLayers();
 
     // activate base layer (if any)
-    this.#activeLayer = ApplicationState.project.getLayerById(base_id);
+    this.#activeLayer = this.layers.find(l => l.visible);
 
     if (this.#activeLayer) {
-      this.#toggleLayer(this.#activeLayer, true);
+      this.#toggleLayer();
     }
 
     this.element.style.order = -1;
@@ -154,16 +126,16 @@ class WMSControl extends ol.control.Control {
         return;
       }
       const li    = e.target.closest('li');
+      //get layer
       const layer = li && ApplicationState.project.getLayerById(li.getAttribute('data-mapTypeId'));
+      //if
       if (layer?.isVisible()) {
-        this.#toggleLayer(layer, false);
         this.#activeLayer = null;
         e.target.checked = false;
       } else if (layer) {
-        this.#toggleLayer(this.#activeLayer, false);
         this.#activeLayer = layer;
-        this.#toggleLayer(this.#activeLayer, true);
       }
+      this.#toggleLayer();
     });
 
     this.element.querySelector('input[type="range"]').addEventListener('input', debounce(e => {
@@ -171,19 +143,10 @@ class WMSControl extends ol.control.Control {
         this.#opacityLayer.getState().opacity = parseFloat(e.target.value) * 100;
         this.#opacityLayer.change();
       }
-      localStorage.setItem('baselayer', [(this.#opacityLayer?.getOpacity?.() ?? 0) / 100, this.#activeLayer?.getId()].join('+').replace(/\+$/, ''));
     }));
 
     // automatically attach current control to map
     map.addControl(this);
-
-    // custom URL param
-    GUI.onbefore('getPermalink', (url, data) => {
-      const baselayer = localStorage.getItem('baselayer');
-      if (baselayer) {
-        url.searchParams.set('baselayer', localStorage.getItem('baselayer'));
-      }
-    });
 
   }
 
@@ -204,11 +167,9 @@ class WMSControl extends ol.control.Control {
   }
 
   /** Keep layer visibility/checked status in sync */
-  #toggleLayer(layer, visible) {
-    ApplicationState.baseLayerId = layer.getId();
-    layer?.setChecked?.(visible);
-    layer?.setVisible?.(visible);
-    layer?.change?.();
+  #toggleLayer() {
+    ApplicationState.baseLayerId = this.#activeLayer?.getId();
+    ApplicationState.project.setBaseLayer(ApplicationState.baseLayerId);
   }
 
 }
