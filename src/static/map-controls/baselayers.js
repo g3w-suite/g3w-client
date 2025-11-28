@@ -36,11 +36,7 @@ class WMSControl extends ol.control.Control {
     this.layers = GUI.getBaseLayers();
 
     // activate base layer (if any)
-    this.#activeLayer = this.layers.find(l => l.visible);
-
-    if (this.#activeLayer) {
-      this.#toggleLayer();
-    }
+    this.#activeLayer = this.layers.find(l => l.state.visible);
 
     this.element.style.order = -1;
 
@@ -70,28 +66,25 @@ class WMSControl extends ol.control.Control {
           padding:    10px;
           min-width:  200px;
       ">
-        <ul style = "
-          list-style: none;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          overflow-y: auto;
+        <ul 
+          class = "baselayers"
+          style = "
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
         ">
           ${
             this.layers.map(layer => /* html */`
               <li data-mapTypeId = "${layer.getId()}" style="${layer === this.#opacityLayer ? 'border-top: thin solid;margin-top: auto;padding-top: 1em;' : ''}">
                 <label style = "width: 100%; cursor: ${layer === this.#opacityLayer ? 'default' : 'pointer'};">
                   ${
-                    layer === this.#opacityLayer
-                      ? /* html */`<i class = "fa fa-check"></i>`
-                      : /* html */`<input type = "radio" name = "activeLayer" ${ layer.isVisible() ? 'checked' : '' } />`
-                  }
-                  ${
                     this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/
-                      ? /* html */ `<img loading = "lazy" src = "${this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/}" style = "width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin: 0 4px 0 8px" />`
-                      : /* html */ `<i class="fas fa-layer-group" style = "margin: 0 10px;"></i>`
+                      ? /* html */ `<img data-mapTypeId = "${layer.getId()}" class = "base-layer-img"  loading = "lazy" src = "${this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/}" style = "width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin: 0 4px 0 8px" />`
+                      : /* html */ `<i class = "fas fa-layer-group" style = "margin: 0 10px;"></i>`
                   }
                   ${ layer.getName() }
                 </label>
@@ -122,16 +115,12 @@ class WMSControl extends ol.control.Control {
 
     // toggle base layers on click
     this.element.querySelector('ul').addEventListener('click', e => {
-      if ('activeLayer' !== e.target.name) {
-        return;
-      }
       const li    = e.target.closest('li');
       //get layer
       const layer = li && ApplicationState.project.getLayerById(li.getAttribute('data-mapTypeId'));
       //if
       if (layer?.isVisible()) {
         this.#activeLayer = null;
-        e.target.checked = false;
       } else if (layer) {
         this.#activeLayer = layer;
       }
@@ -147,6 +136,11 @@ class WMSControl extends ol.control.Control {
 
     // automatically attach current control to map
     map.addControl(this);
+
+    //Check if base layer is active
+    if (this.#activeLayer) {
+      this.#toggleLayer();
+    }
 
   }
 
@@ -169,6 +163,10 @@ class WMSControl extends ol.control.Control {
   /** Keep layer visibility/checked status in sync */
   #toggleLayer() {
     ApplicationState.baseLayerId = this.#activeLayer?.getId();
+    const images = document.querySelectorAll('ul.baselayers img');
+    for (const img of images) {
+      img.style.border = (null === this.#activeLayer || ApplicationState.baseLayerId != img.getAttribute('data-mapTypeId')) ? 'none' : `2px solid #000`;
+    }
     ApplicationState.project.setBaseLayer(ApplicationState.baseLayerId);
   }
 
