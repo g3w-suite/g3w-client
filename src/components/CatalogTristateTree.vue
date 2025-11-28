@@ -478,6 +478,8 @@ export default {
 
     toggle() {
       this.layerstree.checked = !this.layerstree.checked;
+      //@since 4.1.0 Emite layer checked event
+      this.$emit('layerchecked', this.layerstree);
     },
 
     expandCollapse() {

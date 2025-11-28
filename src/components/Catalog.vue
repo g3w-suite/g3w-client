@@ -131,6 +131,7 @@
               :key            = "wms.id"
               :externallayers = "state.external.wms"
               :layerstree     = "wms"
+              @layerchecked   = "updateExternalLayersChecked"
               class           = "item"
             />
             <catalog-tristate-tree
@@ -138,6 +139,7 @@
               v-for           = "vector in state.external.vector"
               :key            = "vector.id"
               :externallayers = "state.external.vector"
+              @layerchecked   = "updateExternalLayersChecked"
               :layerstree     = "vector"
               class           = "item"
             />
@@ -798,7 +800,7 @@ export default {
     /**
      * @since 4.1.0
      */
-    _setExternalChecked() {
+    updateExternalLayersChecked() {
       this.externalayers.checked = [
         ...(this.$options.service.state.external?.vector || []),
         ...(this.$options.service.state.external?.wms || []),
@@ -814,8 +816,8 @@ export default {
     'state.external.vector': {
       immediante: true,
       handler() {
-        this._setExternalChecked();
-      }
+        this.updateExternalLayersChecked();
+      },
     },
     /**
      * 
@@ -823,8 +825,8 @@ export default {
     'state.external.wms': {
       immediante: true,
       handler() {
-        this._setExternalChecked();
-      }
+        this.updateExternalLayersChecked();
+      },
     },
     project: {
       async handler(project) {
