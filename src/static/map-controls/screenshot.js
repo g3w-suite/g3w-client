@@ -280,10 +280,10 @@ template: /*html*/`
   <!-- PREVIEW MODAL -->
   <dialog
     ref    = "dialog"
-    style  = "max-width: max(70vw, 800px);"
+    :style = "'max-width: max(70vw, 800px);' + (['pdf', 'geopdf'].includes(format) ? 'width: 100vw; height:100vh;' : '')"
     @click = "$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()"
   >
-    <form method="dialog">
+    <form method="dialog" style="display:block;">
       <div v-show = "loading && layers" class = "bar-loader"></div>
       <h4 v-if = "!layers"><b>{{ $t('No Layer to print') }}</b></h4>
       <menu style="position: sticky;top: 0;">
@@ -296,7 +296,6 @@ template: /*html*/`
           title      = "Download Image"
         ><i :class = "$fa('download')"></i> {{ $t('Download') }}</a>
         <button
-          v-if   = "!(layers && ['pdf', 'geopdf'].includes(format))"
           value = "cancel"
           style = "border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;"
           title = 'close'
@@ -306,7 +305,7 @@ template: /*html*/`
       <iframe
         v-if   = "layers && ['pdf', 'geopdf'].includes(format)"
         :src   = "url"
-        style  = "border:0; width:100vw; height:100vh; overflow: none;"
+        style  = "border:0; width:100%; height:70vh; margin-top: 20px;"
       ></iframe>
 
       <!-- PRINT as PNG, JPG, SVG -->
