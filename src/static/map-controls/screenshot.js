@@ -296,6 +296,7 @@ template: /*html*/`
           title      = "Download Image"
         ><i :class = "$fa('download')"></i> {{ $t('Download') }}</a>
         <button
+          v-if   = "!(layers && ['pdf', 'geopdf'].includes(format))"
           value = "cancel"
           style = "border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;"
           title = 'close'
@@ -305,7 +306,7 @@ template: /*html*/`
       <iframe
         v-if   = "layers && ['pdf', 'geopdf'].includes(format)"
         :src   = "url"
-        style  = "border:0; width:100%; height:100%;"
+        style  = "border:0; width:100vw; height:100vh; overflow: none;"
       ></iframe>
 
       <!-- PRINT as PNG, JPG, SVG -->
