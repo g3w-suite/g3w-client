@@ -4857,7 +4857,7 @@ export default new (class GUI extends Emitter {
       'geolocation',
       'measure',
       'mouseposition',
-      'baselayers',
+      'baselayer',
       'overview',
       'query',
       'queryby',
