@@ -280,10 +280,10 @@ template: /*html*/`
   <!-- PREVIEW MODAL -->
   <dialog
     ref    = "dialog"
-    :style = "'max-width: max(70vw, 800px);' + (['pdf', 'geopdf'].includes(format) ? 'width: 100vw; height:100vh;' : '')"
+    :style = "'max-width: max(70vw, 800px);' + (['pdf', 'geopdf'].includes(format) ? 'width: 100vw;' : '')"
     @click = "$event.target === $event.target.closest('dialog') && $event.target.closest('dialog').close()"
   >
-    <form method="dialog" style="display:block;">
+    <form method="dialog">
       <div v-show = "loading && layers" class = "bar-loader"></div>
       <h4 v-if = "!layers"><b>{{ $t('No Layer to print') }}</b></h4>
       <menu style="position: sticky;top: 0;">
@@ -305,7 +305,7 @@ template: /*html*/`
       <iframe
         v-if   = "layers && ['pdf', 'geopdf'].includes(format)"
         :src   = "url"
-        style  = "border:0; width:100%; height:70vh; margin-top: 20px;"
+        style  = "border:0; width:100%; height:100vh; margin-top: 20px;"
       ></iframe>
 
       <!-- PRINT as PNG, JPG, SVG -->
