@@ -18,8 +18,6 @@ GUI.on('after:setupControls', () => {
  * CUSTOM MAP CONTROL: "baselayers"
  */
 class WMSControl extends ol.control.Control {
-
-  #opacityLayer
   
   #activeLayer = null;
 
@@ -59,7 +57,7 @@ class WMSControl extends ol.control.Control {
         id    = "ol-wms-control-popover" 
         style = "
           position-area: top span-right;
-          margin-top: ${-145 - (30 * (this.layers.length-1) ) }px;
+          margin-top: ${-80 - (30 * (this.layers.length-1) ) }px;
           ${'position-area' in document.body.style ? ' margin' : 'inset'}:unset;
           background: #fff;
           border:     1px solid #ccc;
@@ -79,8 +77,8 @@ class WMSControl extends ol.control.Control {
         ">
           ${
             this.layers.map(layer => /* html */`
-              <li data-mapTypeId = "${layer.getId()}" style="${layer === this.#opacityLayer ? 'border-top: thin solid;margin-top: auto;padding-top: 1em;' : ''}">
-                <label style = "width: 100%; cursor: ${layer === this.#opacityLayer ? 'default' : 'pointer'};">
+              <li data-mapTypeId = "${layer.getId()}">
+                <label style = "width: 100%; cursor: pointer;">
                   ${
                     this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/
                       ? /* html */ `<img data-mapTypeId = "${layer.getId()}" class = "base-layer-img"  loading = "lazy" src = "${this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id)) /*layers.find(l => layer.getId() === l.id).thumbnail*/}" style = "width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin: 0 4px 0 8px" />`
@@ -92,24 +90,6 @@ class WMSControl extends ol.control.Control {
             ).join('')
           }
         </ul>
-        <hr style = "margin: 10px 0;">
-        <input 
-          list  = "ol-wms-control-opacity-markers" 
-          type  = "range" 
-          min   = "0" 
-          max   = "1" 
-          step  = "0.01" 
-          value = "${(this.#opacityLayer?.getOpacity?.() ?? 0) / 100}" ${this.#opacityLayer ? '' : 'disabled'} />
-        <datalist 
-          id    = "ol-wms-control-opacity-markers" 
-          style = "display: flex; justify-content: space-between; font-size: small;"
-        >
-          <option>0</option>
-          <option>0.25</option>
-          <option>0.50</option>
-          <option>0.75</option>
-          <option>1</option>
-        </datalist>
       </form>
     `;
 
@@ -126,13 +106,6 @@ class WMSControl extends ol.control.Control {
       }
       this.#toggleLayer();
     });
-
-    this.element.querySelector('input[type="range"]').addEventListener('input', debounce(e => {
-      if (this.#opacityLayer) {
-        this.#opacityLayer.getState().opacity = parseFloat(e.target.value) * 100;
-        this.#opacityLayer.change();
-      }
-    }));
 
     // automatically attach current control to map
     map.addControl(this);
