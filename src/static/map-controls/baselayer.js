@@ -23,7 +23,7 @@ class BaseLayerControl extends ol.control.Control {
 
   constructor(layers) {
     super({
-      element: Object.assign(document.createElement('div'), { className: 'ol-baselayer-control ol-unselectable ol-control' }),
+      element: Object.assign(document.createElement('div'), { className: 'ol-baselayer-control ol-unselectable ol-control ol-control-tl' }),
       target: document.querySelector('.g3w-map-controls-left-bottom'),
     });
 
