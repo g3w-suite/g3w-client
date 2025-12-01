@@ -122,7 +122,7 @@ class BaseLayerControl extends ol.control.Control {
     if (baseLayer?.icon) {
       image = baseLayer.icon;
     }
-    return `${GUI.getResourcesUrl()}images/${image || 'nobaselayer.png'}`;
+    return `${GUI.getResourcesUrl()}images/${image || 'no-image.svg'}`;
   }
 
   /** Keep layer visibility/checked status in sync */
