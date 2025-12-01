@@ -43,11 +43,11 @@ class BaseLayerControl extends ol.control.Control {
       <button
         type           = "button"
         popovertarget  = "ol-baselayer-control-popover"
-        data-placement = "top"
+        data-placement = "right"
         title          = "Choose a base layer"
         style          = "
-          width:      90px;
-          height:     90px;
+          width:      80px;
+          height:     80px;
           background: white var(--img-url) no-repeat center;
           border:     1px solid rgba(0,0,0,.8);
           cursor:     pointer;
