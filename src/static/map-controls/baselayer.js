@@ -48,8 +48,8 @@ class BaseLayerControl extends ol.control.Control {
         style          = "
           width:      90px;
           height:     90px;
-          background: white url(${window.initConfig.staticurl}client/images/ol-baselayer-control.png) no-repeat center;
-          border:     1px solid #ccc;
+          background: white var(--img-url) no-repeat center;
+          border:     1px solid rgba(0,0,0,.8);
           cursor:     pointer;
         "
       ></button>
@@ -78,7 +78,7 @@ class BaseLayerControl extends ol.control.Control {
             this.layers.map(layer => /* html */`
               <li data-mapTypeId = "${layer.getId()}">
                 <label>
-                  <img loading = "lazy" src = "${this.#getSrcBaseLayerImage(layers.find(l => layer.getId() === l.id))}" style = "width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin: 0 4px; border: 2px solid #000" />
+                  <img loading = "lazy" src = "${this.#getImgURL(layer.getId())}" style = "width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin: 0 4px; border: 2px solid #000" />
                   ${ layer.getName() }
                 </label>
               </li>`
@@ -110,7 +110,8 @@ class BaseLayerControl extends ol.control.Control {
 
   }
 
-  #getSrcBaseLayerImage(baseLayer) {
+  #getImgURL(layerId) {
+    const baseLayer = this.layers.find(l => l.getId() === layerId)?.state;
     let image;
     if ('OSM' === baseLayer?.servertype) {
       image = 'osm.png';
@@ -118,7 +119,7 @@ class BaseLayerControl extends ol.control.Control {
     if ('Bing' === baseLayer?.servertype) {
       image = `bing${baseLayer.source.subtype}.png`;
     }
-    if (baseLayer.icon) {
+    if (baseLayer?.icon) {
       image = baseLayer.icon;
     }
     return `${GUI.getResourcesUrl()}images/${image || 'nobaselayer.png'}`;
@@ -129,9 +130,10 @@ class BaseLayerControl extends ol.control.Control {
     ApplicationState.baseLayerId = this.#activeLayer?.getId();
     const bases = this.element.querySelectorAll('li[data-mapTypeId]');
     for (const base of bases) {
-      base.querySelector('img').style.borderColor = (null === this.#activeLayer || ApplicationState.baseLayerId != base.getAttribute('data-mapTypeId')) ? null : `var(--skin-color)`;
+      base.querySelector('img').style.borderColor = ApplicationState.baseLayerId == base.getAttribute('data-mapTypeId') ? `var(--skin-color)` : null;
     }
     ApplicationState.project.setBaseLayer(ApplicationState.baseLayerId);
+    this.element.style.setProperty('--img-url', `url(${this.#getImgURL(this.#activeLayer?.getId())})`)
   }
 
 }
