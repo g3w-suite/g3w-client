@@ -130,7 +130,8 @@ class BaseLayerControl extends ol.control.Control {
     ApplicationState.baseLayerId = this.#activeLayer?.getId();
     const bases = this.element.querySelectorAll('li[data-mapTypeId]');
     for (const base of bases) {
-      base.querySelector('img').style.borderColor = ApplicationState.baseLayerId == base.getAttribute('data-mapTypeId') ? `var(--skin-color)` : null;
+      base.classList.toggle('skin-color', ApplicationState.baseLayerId == base.getAttribute('data-mapTypeId'));
+      base.querySelector('img').classList.toggle('skin-border-color', ApplicationState.baseLayerId == base.getAttribute('data-mapTypeId'));
     }
     ApplicationState.project.setBaseLayer(ApplicationState.baseLayerId);
     this.element.style.setProperty('--img-url', `url(${this.#getImgURL(this.#activeLayer?.getId())})`)
