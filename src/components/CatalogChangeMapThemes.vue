@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <ul class = "sidebar-menu">
+  <ul class = "sidebar-menu" :hidden="!logged && !(map_themes.project || []).length">
     <li
       id    = "g3w-catalog-toc-views"
       class = "treeview sidebaritem skin-border-color"
