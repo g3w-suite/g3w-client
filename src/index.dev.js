@@ -362,6 +362,9 @@ g3w.app.once('before:setupControls', () => {
       filter: invert(.8);
       opacity: .7;
     }
+    .ol-mapcontrols ~ .ol-control:has(.g3w-ol-toggled) {
+      order: -1;
+    }
     .ol-mapcontrols ~ .ol-zoom {
       order: -1;
     }
