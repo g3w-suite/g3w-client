@@ -11,7 +11,7 @@
 
       <!-- TAB MENU (header) -->
       <ul
-        class          = "nav nav-tabs catalalog-nav-tabs"
+        class          = "nav nav-tabs catalog-nav-tabs"
         role           = "tablist"
         @click.capture = "onTabClick"
       >
@@ -1036,18 +1036,21 @@ export default {
     padding: 3px 0 0 35px;
     background-color: var(--bgcolor);
   }
-  .catalog .catalalog-nav-tabs {
+  .catalog .catalog-nav-tabs {
     display: flex;
     flex: 1 1 0;
   }
-  .catalog .catalalog-nav-tabs > li {
+  .catalog .catalog-nav-tabs:has(> li:only-child) {
+    display: none;
+  }
+  .catalog .catalog-nav-tabs > li {
     font-size: 1em;
     white-space: initial;
     display: flex;
     flex: 1 1 0;
     align-items: stretch;
   }
-  .catalog .catalalog-nav-tabs > li a {
+  .catalog .catalog-nav-tabs > li a {
     padding: 10px 0;
     text-align: center;
     height: 100%;
