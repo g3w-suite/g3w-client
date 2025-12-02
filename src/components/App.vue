@@ -742,8 +742,7 @@ export default {
     },
 
     has_panel() {
-      const panel = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
-      return (panel.width_100 || panel.height_100) ? false : ('h' === this.state.split ? panel.width : panel.height) > 0;
+      return this.state.content.contentsdata.length > 0;
     },
 
     usermessage() {
