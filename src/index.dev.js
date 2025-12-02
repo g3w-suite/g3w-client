@@ -348,6 +348,40 @@ g3w.app.once('after:setupControls', () => {
 });
 
 /**
+ * Custom map control: “Map controls”
+ */
+g3w.app.once('before:setupControls', () => {
+  // if (!isMobile.any) {
+  //   return;
+  // }
+  document.head.insertAdjacentHTML('beforeend', `<style>
+    .ol-mapcontrols:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled)) {
+      display: none !important;
+    }
+    .ol-mapcontrols.ungroup {
+      filter: invert(.8);
+      opacity: .7;
+    }
+  </style>
+  `);
+  g3w.app.on('mapcontrol:toggled', () => {
+    g3w.app.getMapControl('MAPCONTROLS').element.classList.remove('ungroup');
+  });
+  g3w.app.createMapControl({
+    id:            "MAPCONTROLS",
+    options: {
+      add:         true,
+      clickmap:    false,
+      tipLabel:    'Map controls',
+      customClass: 'fas fa-grip-vertical',
+      onclick() {
+        g3w.app.getMapControl('MAPCONTROLS').element.classList.toggle('ungroup');
+      }
+    },
+  });
+});
+
+/**
  * Custom map control: “Iframe editor”
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/855
