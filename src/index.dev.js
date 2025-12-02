@@ -355,12 +355,15 @@ g3w.app.once('before:setupControls', () => {
   //   return;
   // }
   document.head.insertAdjacentHTML('beforeend', `<style>
-    .ol-mapcontrols:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled)) {
+    .ol-mapcontrols:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled)):not(.ol-zoom) {
       display: none !important;
     }
     .ol-mapcontrols.ungroup {
       filter: invert(.8);
       opacity: .7;
+    }
+    .ol-mapcontrols ~ .ol-zoom {
+      order: -1;
     }
   </style>
   `);
