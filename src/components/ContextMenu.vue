@@ -45,11 +45,11 @@
     <!-- Edit Layer -->
     <li
       v-if                = "canEdit(layer)"
-      @click.prevent.stop = "startEditing(layer)"
+      @click.prevent.stop = "0 === map_coords.length && startEditing(layer)"
     >
       <i :class = "$fa('pencil')"></i> {{ $t('Edit Layer') }} 
-      <i v-if = "map_coords.length" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-      <ul v-if = "map_coords.length" class = "sub-contex-menu">
+      <i v-if = "'map' === context" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+      <ul v-if = "'map' === context" class = "sub-contex-menu">
         <li
           v-for       = "layer in editableGeometryLayers()"
           @click.stop = "startEditing({ id: layer.getId() })"
@@ -531,7 +531,8 @@
        * @param { string } menu
        */
       closeMenu() {
-        this.context = null;
+        this.context    = null;
+        this.map_coords = []; //reset coordinates
       },
 
       onChangeColor(val) {
