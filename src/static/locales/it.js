@@ -160,7 +160,7 @@ export default {
   'Geolocation': 'Mostra la mia posizione',
   'The result in the map is partial due to the presence of the below incorrect records list:': "Il risultato in mappa è parziale a causa della presenza dei seguenti records non corretti:",
   'Add Layer': 'Aggiungi livello',
-  'Query layer': 'Interrogazione puntuale',
+  'Query layer': 'Identifica elementi',
   'Add/Remove Selection': "Aggiungi/Rimuovi Selezione",
   'Zoom to features extent': "Zoom sulle geometrie",
   'Add/Remove features to results': "Aggiungi elementi ai risultati",
