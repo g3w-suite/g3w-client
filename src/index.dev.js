@@ -355,6 +355,9 @@ g3w.app.once('before:setupControls', () => {
   //   return;
   // }
   document.head.insertAdjacentHTML('beforeend', `<style>
+    .ol-mapcontrols:not(:has(+.ol-control+.ol-control+.ol-control)) {
+      display: none !important;
+    }
     .ol-mapcontrols:has(+.ol-control+.ol-control+.ol-control) {
       &:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled), .ol-zoom) {
         display: none !important;
