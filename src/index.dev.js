@@ -359,7 +359,7 @@ g3w.app.once('before:setupControls', () => {
       &:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled), .ol-zoom) {
         display: none !important;
       }
-      .ungroup {
+      &.ungroup {
         filter: invert(.8);
         opacity: .7;
       }
