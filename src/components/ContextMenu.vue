@@ -652,13 +652,50 @@
       /**
        * @since 3.11.0
        */
-       startEditing(layer) {
+      async startEditing(layer) {
         this.closeMenu();
         const editing = GUI.getPlugin('editing');
-        editing.showPanel(layer ? { toolboxes: [layer.id] } : undefined);
-        if (layer) {
-          editing.startEditing(layer.id);
+        //check if has coordinate
+        if (this.map_coords) {
+          try {
+            const project  = ApplicationState.project;
+            const response = await GUI.getData('query:coordinates', {
+              inputs: {
+                coordinates:           this.map_coords,
+                feature_count:         project.state.feature_count || 5,
+                query_point_tolerance: project.getQueryPointTolerance(),
+                layerIds:              Object.keys(editing.getEditableLayers()), //get layerId of editibale layers          
+              },
+              outputs: false //no content is show
+            });
+            if (response?.result && response?.data?.length) {
+              const layers = response.data.filter(d => d.features.length).map(d => ({ layer: d.layer, features: d.features }));
+              let layerId;
+              if (layers.length > 1) {
+                //@TODO NEED TO SHOW a dialog choice
+              } else {
+                layerId = layers[0]?.layer.getId();
+                //showPanel 
+                editing.showPanel({ toolboxes: [ layerId ] });
+                editing.getToolBoxById(layerId).start({
+                  filter: { fids: layers[0].features.map(f => f.getId()).join(',') }
+                })
+              }
+            }
+          } catch(e) {
+            console.warn('Error running spatial query: ', e)
+          }
+          editing.showPanel();
+          return;
+
         }
+        if (layer) {
+          editing.showPanel({ toolboxes: [layer.id] });
+          editing.startEditing(layer.id);
+          return;
+        }
+
+        editing.showPanel();
       },
 
       /**
