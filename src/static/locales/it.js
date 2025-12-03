@@ -36,7 +36,7 @@ export default {
   tree: "Strati",
   legend: "Legenda",
   nobaselayer: "Nessuna mappa di base",
-  'Choose a base layer': 'Scegli una mappa di base',
+  'Choose a base layer': 'Immagine di sfondo',
   'Find Address': "Cerca indirizzo",
   'Submit search': 'Invia',
   'Reset search': 'Reimposta',

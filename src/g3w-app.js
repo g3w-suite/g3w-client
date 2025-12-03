@@ -4850,6 +4850,7 @@ export default new (class GUI extends Emitter {
     this.emit('before:setupControls');
 
     await Promise.all([
+      'toggler',
       'addlayer',
       'annotation',
       'attribution',
