@@ -47,7 +47,18 @@
       v-if                = "canEdit(layer)"
       @click.prevent.stop = "startEditing(layer)"
     >
-      <i :class = "$fa('pencil')"></i> {{ $t('Edit Layer') }}
+      <i :class = "$fa('pencil')"></i> {{ $t('Edit Layer') }} 
+      <i v-if = "map_coords.length" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+      <ul v-if = "map_coords.length" class = "sub-contex-menu">
+        <li
+          v-for       = "layer in editableGeometryLayers()"
+          @click.stop = "startEditing({ id: layer.getId() })"
+          :key        = "layer.getId()"
+          style       = "display: list-item;"
+        >
+          <span style = "font-weight: bold">{{  layer.getName() }} </span>
+        </li>
+      </ul>
     </li>
 
     <!-- LAYER MENU -->
@@ -650,6 +661,13 @@
       },
 
       /**
+       * @since 4.1.0
+       */
+      editableGeometryLayers() {
+        return Object.values(GUI.getPlugin('editing').getEditableLayers()).filter(l => l.isGeoLayer())
+      },
+
+      /**
        * @since 3.11.0
        */
       async startEditing(layer) {
@@ -664,38 +682,38 @@
                 coordinates:           this.map_coords,
                 feature_count:         project.state.feature_count || 5,
                 query_point_tolerance: project.getQueryPointTolerance(),
-                layerIds:              Object.keys(editing.getEditableLayers()), //get layerId of editibale layers          
+                layerIds:              [layer.id], //get layerId of editibale layers          
               },
               outputs: false //no content is show
             });
             if (response?.result && response?.data?.length) {
-              const layers = response.data.filter(d => d.features.length).map(d => ({ layer: d.layer, features: d.features }));
-              let layerId;
-              if (layers.length > 1) {
-                //@TODO NEED TO SHOW a dialog choice
-              } else {
-                layerId = layers[0]?.layer.getId();
-                //showPanel 
-                editing.showPanel({ toolboxes: [ layerId ] });
-                editing.getToolBoxById(layerId).start({
-                  filter: { fids: layers[0].features.map(f => f.getId()).join(',') }
-                })
-              }
+
+              if (response?.data[0]?.features?.length) {
+                
+                editing.getToolBoxById(layer.id).start({
+                  filter: { fids: response?.data[0]?.features.map(f => f.getId()).join(',') }
+                });
+                
+              } 
             }
           } catch(e) {
-            console.warn('Error running spatial query: ', e)
+            console.warn('Error running spatial query: ', e);
           }
-          editing.showPanel();
+          editing.showPanel({ toolboxes: [layer.id] });
           return;
 
         }
+
         if (layer) {
           editing.showPanel({ toolboxes: [layer.id] });
           editing.startEditing(layer.id);
           return;
         }
 
+
         editing.showPanel();
+
+        
       },
 
       /**
