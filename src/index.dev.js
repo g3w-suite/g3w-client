@@ -355,16 +355,18 @@ g3w.app.once('before:setupControls', () => {
   //   return;
   // }
   document.head.insertAdjacentHTML('beforeend', `<style>
-    .ol-mapcontrols:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled), .ol-zoom) {
-      display: none !important;
-    }
-    .ol-mapcontrols.ungroup {
-      filter: invert(.8);
-      opacity: .7;
-    }
-    .ol-mapcontrols ~ .ol-control:has(.g3w-ol-toggled),
-    .ol-mapcontrols ~ .ol-zoom {
-      order: -1;
+    .ol-mapcontrols:has(+.ol-control+.ol-control+.ol-control) {
+      &:not(.ungroup) ~ .ol-control:not(:has(.g3w-ol-toggled), .ol-zoom) {
+        display: none !important;
+      }
+      .ungroup {
+        filter: invert(.8);
+        opacity: .7;
+      }
+      ~ .ol-control:has(.g3w-ol-toggled),
+      ~ .ol-zoom {
+        order: -1;
+      }
     }
   </style>
   `);
