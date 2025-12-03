@@ -333,7 +333,7 @@
       </a>
     </li>
 
-    <li v-if = "'map' === context" @click = "queryCoords">{{ $t('Query layer') }}</li>
+    <li v-if = "'map' === context" @click = "queryCoords">{{ $t("What's here?") }}</li>
     <li v-if = "'map' === context" @click = "zoomIn">{{ $t('Zoom in') }}</li>
     <li v-if = "'map' === context" @click = "zoomOut">{{ $t('Zoom out') }}</li>
     <li v-if = "'map' === context" @click = "zoomHome">{{ $t('Fit map extent') }}</li>
