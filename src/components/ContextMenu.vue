@@ -532,7 +532,6 @@
        */
       closeMenu() {
         this.context    = null;
-        this.map_coords = []; //reset coordinates
       },
 
       onChangeColor(val) {
