@@ -338,6 +338,7 @@
     <li v-if = "'map' === context" @click = "zoomOut">{{ $t('Zoom out') }}</li>
     <li v-if = "'map' === context" @click = "zoomHome">{{ $t('Fit map extent') }}</li>
     <li v-if = "'map' === context && initConfig.mapcontrols.screenshot" @click="takeScreenshot">{{ $t('Screen capture') }}</li>
+    <li v-if = "'map' === context" @click="showEmbedModal">{{ $t('Embed map') }}</li>
     <li v-if = "'map' === context && initConfig.mapcontrols.streetview" @click="showStreetView">{{ $t('StreetView') }}</li>
 
     <!-- Click to open G3W-ADMIN's project page -->
@@ -949,6 +950,14 @@
       takeScreenshot() {
         this.closeMenu();
         GUI.getMapControl('screenshot').toggle(true);
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      async showEmbedModal() {
+        this.closeMenu();
+        await GUI.getPermalink(new URL(window.location.href), {});
       },
 
     },
