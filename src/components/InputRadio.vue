@@ -6,7 +6,7 @@
 <template>
   <baseinput :state = "state">
     <div slot = "body">
-      <span v-for = "(value, index) in state.input.options.values" :key = "value.key">
+      <span v-for = "(value, index) in state.input.options.values" :key = "value.key || value.value">
         <input
           :id        = "ids[index]"
           :name      = "name"
@@ -17,7 +17,7 @@
           v-model    = "radio_value"
           type       = "radio"
         />
-        <label :for = "ids[index]">{{ value.key }}</label>
+        <label :for = "ids[index]" style = "padding: 5px">{{ value.key || value.value }}</label>
       </span>
     </div>
   </baseinput>
