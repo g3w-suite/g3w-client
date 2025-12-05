@@ -32,11 +32,10 @@ export default {
   mixins: [Input],
 
   data() {
-    const { value, label } = this.getValuesItem(this.state.value);
     return {
-      value:   value ?? null,
-      label:   label ?? value ?? null,
-      id:      getUniqueDomId(), // new id
+      value:  null,
+      label:  null,
+      id:     getUniqueDomId(), // new id
     }
   },
 
@@ -75,6 +74,12 @@ export default {
       this.change();
     },
   },
+  mounted() {
+    //@since 4.0.6 Check after created (set default value eventualy)
+    const { value, label } = this.getValuesItem(this.state.value);
+    this.value = value ?? null;
+    this.label = label ?? value ?? null;
+  }
 
 };
 </script>
