@@ -32,30 +32,12 @@ export default {
   mixins: [Input],
 
   data() {
+    const { value, label } = this.getValuesItem(this.state.value);
     return {
-      value:   null,
-      label:   null,
+      value:   value ?? null,
+      label:   label ?? value ?? null,
       id:      getUniqueDomId(), // new id
-      /** @since 3.11.0 */
-      changed: false,
     }
-  },
-
-  watch: {
-
-    /**
-     * ORIGINAL SOURCE: src/mixins/widget.js@3.10.4
-     * 
-     * @since 3.11.0
-     */
-    'state.value'(value) {
-      if (this.changed) {
-        this.changed = false
-      } else {
-        this.stateValueChanged(value);
-      }
-    },
-
   },
 
   methods: {
@@ -65,8 +47,8 @@ export default {
      * 
      * @since 3.11.0
      */
-    getValuesItem(checked = false) {
-      return (this.service.state.input.options.values.find(v => !!checked === v.checked) || {});
+    getValuesItem(checked) {
+      return (this.state.input.options.values.find(v => checked === v.checked) || {});
     },
 
     /**
@@ -78,34 +60,20 @@ export default {
       if ([null, undefined].includes(this.service.state.value)) {
         return false;
       }
-      let option = this.service.state.input.options.values.find(v => this.service.state.value == v.value);
+      let option = this.state.input.options.values.find(v => this.state.value == v.value);
       if (undefined === option) {
-        option = this.service.state.input.options.values.find(v => false === v.checked);
-        this.service.state.value = option.value;
+        option = this.state.input.options.values.find(v => false === v.checked);
+        this.state.value = option.value;
       }
       return option.checked;
     },
 
     changeCheckBox() {
       const { value, label } = this.getValuesItem(this.value);
-      this.label             = label;
+      this.label             = label ?? value;
       this.state.value       = value;
-      this.changed = true;
       this.change();
     },
-
-    stateValueChanged() {
-      this.value             = this.convertValueToChecked();
-      const { value, label } = this.getValuesItem(this.value);
-      this.label             = label;
-      this.state.value       = value;
-    },
-
-  },
-
-  mounted() {
-    //Need to set label and value
-    this.stateValueChanged();
   },
 
 };
