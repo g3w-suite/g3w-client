@@ -88,6 +88,14 @@ class BaseLayerControl extends ol.control.Control {
       </form>
     `;
 
+    // cycle base layer (when there's only one)
+    this.element.querySelector('button').addEventListener('click', e => {
+      if (1 === this.layers.length) {
+        e.preventDefault();
+        this.element.querySelector('ul > li:last-child').click();
+      }
+    })
+
     // toggle base layers on click
     this.element.querySelector('ul').addEventListener('click', e => {
       const li    = e.target.closest('li');
