@@ -876,7 +876,7 @@ export default new (class GUI extends Emitter {
     });
 
     // if request doesn't need to add to a current query result
-    if (!output.add) {
+    if (!output.add && ApplicationState.contentsdata.length > 0) {
       this.#clearState();
       this.setContent({
         content:    new Component({

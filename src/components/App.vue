@@ -299,7 +299,8 @@
     <div
       class  = "content-wrapper"
       :style = "{ paddingTop: isIframe ? 0 : null }"
-    >
+    > 
+      <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
       <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
         <user-message
           v-if               = "usermessage.show"
