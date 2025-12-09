@@ -344,6 +344,7 @@
       </a>
     </li>
 
+    <li v-if = "'map' === context" @click = "copyCoords">{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
     <li v-if = "'map' === context" @click = "queryCoords">{{ $t("What's here?") }}</li>
     <li v-if = "'map' === context" @click = "zoomIn">{{ $t('Zoom in') }}</li>
     <li v-if = "'map' === context" @click = "zoomOut">{{ $t('Zoom out') }}</li>
@@ -378,6 +379,7 @@
   import GUI                     from 'g3w-app';
   import { getCatalogLayerById } from 'utils/getCatalogLayerById';
   import { downloadFeatures }    from 'utils/downloadFeatures';
+  import { copyUrl }             from 'utils/copyUrl';
   import { gettext as _ }        from 'g3w-i18n';
 
   /**
@@ -901,6 +903,14 @@
           }
         }
 
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      async copyCoords() {
+        this.closeMenu();
+        copyUrl(this.map_coords.join(', '));
       },
 
       /**
