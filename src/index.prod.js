@@ -883,7 +883,7 @@ $.ajaxSetup({
 } catch(error) {
   console.error(error);
   error = error.responseJSON?.error?.data ?? error?.statusText ?? error
-  $('#startingspinner').remove();
+  document.getElementById('startingspinner')?.remove();
   const wrapper = document.querySelector('.error-page');
   if (!wrapper) {
     document.body.insertAdjacentHTML('beforeend', /* html */`
