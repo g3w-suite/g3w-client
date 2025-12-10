@@ -823,7 +823,7 @@ $.ajaxSetup({
   GUI.emit('app-ready');
 
   if (isMobile.any || (window.initConfig.layout || {}).iframe) {
-    $('body').addClass('sidebar-collapse');
+    document.querySelector('body').classList.add('sidebar-collapse');
   }
 
   Vue.component('app', App);
