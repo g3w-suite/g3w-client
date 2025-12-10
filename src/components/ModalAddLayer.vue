@@ -1188,7 +1188,7 @@ export default {
     this.unloadFile();
     this.unloadWMS();
     $('#modal-addlayer').modal('hide')
-    $('#modal-addlayer').remove();
+    document.querySelector('#modal-addlayer').remove();
 
     GUI.off('remove-external-layer', this.deleteWMS);
     this.$data = null;

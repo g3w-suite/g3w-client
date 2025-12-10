@@ -851,7 +851,7 @@ export default {
         document.querySelector('#modal-metadata a[href="' + item.target + '"]').click();
         return;
       }
-      $('body').append(/* html */`
+      document.querySelector('body').append(/* html */`
         <div id = "custom_modal" class = "modal fade" tabindex="-1">
           <div class = "modal-dialog">
             <div class  = "modal-content">${ item.content }</div>
@@ -859,7 +859,7 @@ export default {
         </div>
       `);
       $('#custom_modal').modal('show');
-      $('#custom_modal').on('hidden.bs.modal', () => $('#custom_modal').remove());
+      $('#custom_modal').on('hidden.bs.modal', () => document.querySelector('#custom_modal')?.remove());
     },
 
     async showEmbedModal() {

@@ -471,7 +471,7 @@
         const select2 = $(`#${input.id}`).select2({
           ajax,
           width:              '100%',
-          dropdownParent:     $('.g3w-search-form:visible'),
+          dropdownParent:     document.querySelector('.g3w-search-form:visible'),
           minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
           allowClear:         has_autocomplete,
           placeholder:        has_autocomplete ? '' : null,

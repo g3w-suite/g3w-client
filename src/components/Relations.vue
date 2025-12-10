@@ -740,7 +740,7 @@
       async toggleChart() {
         this.chart.toggled = !this.chart.toggled;
         await this.$nextTick();
-        this.chart.container = this.chart.container ||  $('#chart_content');
+        this.chart.container = this.chart.container || document.querySelector('#chart_content');
         if (this.chart.toggled) {
           GUI.showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.featureId });
         } else {

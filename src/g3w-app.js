@@ -742,9 +742,9 @@ export default new (class GUI extends Emitter {
       panel.style.padding = contents.children[0] ? '15px' : null;
 
       const viewH = $(window).height() - $(".navbar").height();
-      $(".content-wrapper") .css('height', viewH);
-      $(".main-sidebar")    .css('height', viewH);
-      $('.g3w-sidebarpanel').css('height', viewH);
+      document.querySelector(".content-wrapper").style.height  = `${viewH}px`;
+      document.querySelector(".main-sidebar").style.height     = `${viewH}px`;
+      document.querySelector(".g3w-sidebarpanel").style.height = `${viewH}px`;
 
       requestAnimationFrame(sidebarFix);
     };

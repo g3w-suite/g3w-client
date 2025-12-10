@@ -38,7 +38,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.select2 = $(`#${this.id}`).select2({
-      dropdownParent: $('#g3w-view-content'),
+      dropdownParent: document.querySelector('#g3w-view-content'),
       tags:           this.state.input.options.editable,
       language:       window.initConfig.user.i18n || "en"
     });
