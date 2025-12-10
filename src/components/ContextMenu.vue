@@ -516,7 +516,7 @@
        * 
        * Example: Single item addition
        * ```js
-       * GUI.once('map:context-menu', menu => {
+       * GUI.on('map:context-menu', menu => {
        *   menu.items.push({
        *     id: 'test',
        *     icon: 'pencil',
@@ -527,7 +527,7 @@
        * ```
        * Example : Item with children (sub menu)
        * ```js
-       * GUI.once('layer:context-menu', menu => {
+       * GUI.on('layer:context-menu', menu => {
        *   menu.items.push({
        *     id: 'testsubmenu',
        *     icon: 'pencil',
@@ -579,7 +579,8 @@
        * @param { string } menu
        */
       closeMenu() {
-        this.context    = null;
+        this.context = null;
+        this.items.length = 0;
       },
 
       onChangeColor(val) {

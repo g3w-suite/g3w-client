@@ -53,6 +53,15 @@ g3w.app.once('initconfig', () => {
   ];
 });
 
+g3w.app.once('layer:context-menu', menu => {
+  menu.items.push({
+    id: 'testsubmenu',
+    // icon: 'pencil',
+    label: 'Custom entry',
+    children: [{ id: 'child1', label: 'Child 1', cbk: () => alert('child 1') }]
+  });
+});
+
 // dev layers (from local storage)
 g3w.app.once('initconfig', () => {
 
