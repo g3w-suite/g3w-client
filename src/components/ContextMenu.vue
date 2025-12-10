@@ -15,7 +15,22 @@
       left: left + 'px',
     }"
   >
-
+    <!--ÒSINCE 4.1.0 CUSTOM CONTENT MENU ITEM-->
+    <li v-for = "item in items" :key = "item.id"  @click.prevent.stop = "item.cbk">
+      <i v-if = "item.children" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+      <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
+      <!--SUB MENU-->
+      <ul v-if = "item.children" class = "sub-contex-menu">
+        <li
+          v-for       = "child in item.children"
+          @click.stop = "child.cbk"
+          :key        = "child"
+          style       = "display: list-item;"
+        >
+          <span style = "font-weight: bold">{{ $t(child.label) }}</span>
+        </li>
+      </ul>
+    </li>
     <!-- MENU NAME -->
     <li v-if="['project', 'layer'].includes(context)" class = "title">
       <div v-if = "'project' === context">G3W-ADMIN {{ ApplicationState.project.getName() }}</div>
@@ -439,6 +454,7 @@
         left:             0,
         context:          null,
         map_coords:       [],
+        items:            [], /**@since 4.1.0 store custom items add from plugins/custom.js */
       };
     },
 
@@ -1031,7 +1047,30 @@
           GUI.emit('context-menu', e.originalEvent);
         }
       });
+
+      /**
+       * @since 4.1.0 Add remove custom context menu item
+       * 
+       * Example : Single item addition
+       * GUI.emit('content-menu-item', { actions: 'add', item: { id: 'test', icon: 'pencil', label: 'TEST', cbk: () => alert('Test')} })
+       * 
+       * Example : Item with children (sub menu)
+       * GUI.emit('content-menu-item', { actions: 'add', item: { id: 'testsubmenu', icon: 'pencil', label: 'TEST CHILDREN', children: [{ id: 'child1', labe: 'Child 1', cbk: () => alert('chaild 1') }]} })
+       */
+      GUI.on('content-menu-item', ({ action = "add", item = {} }) => {
+        //add new Item
+        if ('add' === action) {
+          this.items.push(item);
+        }
+        //remove item
+        if ('delete' === action) {
+          this.items = this.items.filter(i => item.id !== i.id);
+        }
+        
+      });
+    
     },
+
 
   };
 </script>
