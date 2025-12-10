@@ -16,7 +16,7 @@
     }"
   >
 
-    <!-- SINCE 4.1.0 CUSTOM CONTENT MENU ITEM-->
+    <!-- CUSTOM ITEMS -->
     <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk || (() => {})" :style="{ order: item.position }">
       <i v-if = "item.children" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
