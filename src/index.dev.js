@@ -53,7 +53,7 @@ g3w.app.once('initconfig', () => {
   ];
 });
 
-g3w.app.once('layer:context-menu', menu => {
+g3w.app.on('layer:context-menu', menu => {
   menu.items.push({
     id: 'testsubmenu',
     // icon: 'pencil',
