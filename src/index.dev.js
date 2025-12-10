@@ -53,7 +53,7 @@ g3w.app.once('initconfig', () => {
   ];
 });
 
-g3w.app.on('layer:context-menu', menu => {
+g3w.app.on('map:context-menu', menu => {
   menu.items.push({
     id: 'testsubmenu',
     label: 'Custom entry',
