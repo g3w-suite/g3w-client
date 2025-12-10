@@ -17,15 +17,15 @@
   >
 
     <!-- SINCE 4.1.0 CUSTOM CONTENT MENU ITEM-->
-    <li v-for = "item in items" :key = "item.id"  @click.prevent.stop = "item.cbk" :style="{ order: item.position }">
+    <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk || (() => {})" :style="{ order: item.position }">
       <i v-if = "item.children" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
       <!--SUB MENU-->
       <ul v-if = "item.children" class = "sub-contex-menu">
         <li
-          v-for       = "child in item.children"
+          v-for       = "(child, j) in item.children"
           @click.stop = "child.cbk"
-          :key        = "child"
+          :key        = "j"
           style       = "display: list-item;"
         >
           <span style = "font-weight: bold">{{ $t(child.label) }}</span>
@@ -518,7 +518,6 @@
        * ```js
        * GUI.on('map:context-menu', menu => {
        *   menu.items.push({
-       *     id: 'test',
        *     icon: 'pencil',
        *     label: 'TEST',
        *     cbk: () => alert('Test'),
@@ -530,10 +529,9 @@
        * ```js
        * GUI.on('layer:context-menu', menu => {
        *   menu.items.push({
-       *     id: 'testsubmenu',
        *     icon: 'pencil',
        *     label: 'TEST CHILDREN',
-       *     children: [{ id: 'child1', labe: 'Child 1', cbk: () => alert('child 1') }],
+       *     children: [{ label: 'Child 1', cbk: () => alert('child 1') }],
        *     position: 100,
        *   });
        * });

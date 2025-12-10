@@ -55,9 +55,8 @@ g3w.app.once('initconfig', () => {
 
 g3w.app.on('map:context-menu', menu => {
   menu.items.push({
-    id: 'testsubmenu',
     label: 'Custom entry',
-    children: [{ id: 'child1', label: 'Child 1', cbk: () => alert('child 1') }],
+    children: [{ label: 'Child 1', cbk: () => alert('child 1') }],
     position: 100,
   });
 });
