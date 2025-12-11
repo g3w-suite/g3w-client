@@ -146,7 +146,7 @@ g3w.app.once('after:setupControls', async () => {
     await setOption('#add_wms_name', wms.id);
     await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
     q('.modal-content .btn.btn-success').click();
-    await waitFor(() => q('#g3w-wms-layers'), 5000);
+    await waitFor(() => q('#g3w-wms-layers'), 10000);
     $('#g3w-wms-layers').select2('open');
     $('#select2-g3w-wms-layers-results li:nth-child(1)').trigger('mouseup');
     await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
