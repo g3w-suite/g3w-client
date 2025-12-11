@@ -851,7 +851,7 @@ export default {
         document.querySelector('#modal-metadata a[href="' + item.target + '"]').click();
         return;
       }
-      document.querySelector('body').append(/* html */`
+      document.body.append(/* html */`
         <div id = "custom_modal" class = "modal fade" tabindex="-1">
           <div class = "modal-dialog">
             <div class  = "modal-content">${ item.content }</div>
