@@ -48,7 +48,7 @@
       <!-- TAB MENU (content) -->
       <div class = "tab-content catalog-tab-content">
 
-        <bar-loader :loading="loading" />
+        <bar-loader :loading = "loading" />
 
         <div
           id     = "layers"
@@ -163,8 +163,8 @@
           :class = "{ active: 'legend' === activeTab }"
         >
           <div v-for = "t in tree.tree" class = "legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
-            <figure v-for = "url in t.legendurls" :key ="url.url">
-              <bar-loader :loading="url.loading" />
+            <figure v-for = "url in t.legendurls" :key = "url.url">
+              <bar-loader :loading = "url.loading" />
               <img
                 v-show = "!url.loading && !url.error"
                 :src   = "url.url"
@@ -186,7 +186,7 @@
     </div>
 
     <div
-      v-if="hasRelatedMaps || 'legend' !== activeTab"
+      v-if = "hasRelatedMaps || 'legend' !== activeTab"
       style  = "
         position: sticky;
         bottom: 0;
@@ -205,14 +205,14 @@
         href           = "#"
         @click.stop = "showaddLayerModal"
       >
-        <i :class="$fa('layers')"></i> <b v-t="'Add Layer'"></b>
+        <i :class = "$fa('layers')"></i> <b v-t = "'Add Layer'"></b>
       </a>
       <a
         v-if           = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
         href           = "#"
         @click.stop = "openChangeMapMenu"
       >
-        <i :class = "$fa('refresh')"></i> <b v-t="'changemap'"></b>
+        <i :class = "$fa('refresh')"></i> <b v-t = "'changemap'"></b>
       </a>
     </div>
 
@@ -347,7 +347,7 @@ export default {
       if ('tab' !== this.legend_position) { return }
 
       this.state.layerstrees.forEach(t => {
-        let layers = this._traverseVisibleLayers(t.tree);
+        let layers      = this._traverseVisibleLayers(t.tree);
         this.showlegend = this.showlegend || layers.length > 0;
         t.tree.forEach(async tree => {
           try {
@@ -370,10 +370,10 @@ export default {
 
     _traverseVisibleLayers(obj, _layers = []) {
       for (const layer of obj) {
-        if (null !== layer.id && undefined !== layer.id && layer.visible && layer.geolayer && !layer.exclude_from_legend) {
+        if (![null, undefined].includes(layer.id) && layer.visible && layer.geolayer && !layer.exclude_from_legend) {
           _layers.push(layer);
         }
-        if (null !== layer.nodes && undefined !== layer.nodes) {
+        if (![null, undefined].includes(layer.nodes)) {
           this._traverseVisibleLayers(layer.nodes, _layers);
         }
       }
@@ -391,12 +391,12 @@ export default {
       const legendurls = [];
 
       // filter geolayer
-      const layers = visiblelayers.filter(l => l.geolayer);
+      const layers     = visiblelayers.filter(l => l.geolayer);
 
-      const http = { GET: {}, POST: {} };
+      const http       = { GET: {}, POST: {} };
 
       layers.forEach(layer => {
-        const name         = http[(layer.source && layer.source.url) || layer.external ? 'GET' : layer.ows_method];
+        const name         = http[(layer?.source?.url) || layer.external ? 'GET' : layer.ows_method];
         const catalogLayer = getCatalogLayerById(layer.id);
 
         const url          = catalogLayer ? catalogLayer.getLegendUrl((window.initConfig.layout || {}).legend, {
@@ -409,7 +409,7 @@ export default {
         // no url is set
         if (undefined === catalogLayer) { return }
 
-        if (layer.source && layer.source.url) {
+        if (layer?.source?.url) {
           name[url] = [];
           return
         }
@@ -421,7 +421,7 @@ export default {
 
         name[prefix].unshift({
           layerName:  url.split('LAYER=')[1],
-          style:      (Array.isArray(layer.styles) && layer.styles.find(style => style.current) || ({ name: false })).name,
+          style:      (Array.isArray(layer.styles) && layer.styles.find(s => s.current) || ({ name: false })).name,
           legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
           legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
         });
@@ -447,16 +447,16 @@ export default {
           (http[method][url] || []).reduce((_, layer) => {
               params.LAYERS.push(layer.layerName);
               params.STYLES.push(layer.style);
-              if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on); }
+              if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on);   }
               if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
               return params;
             }, params);
 
           let url_params = [
-            __('LAYERS=',     params.LAYERS.join(',')),
-            __('STYLES=',     params.STYLES.join(',')),
-            __('LEGEND_ON=',  params.LEGEND_ON.join(',')),
-            __('LEGEND_OFF=', params.LEGEND_OFF.join(',')),
+            __('LAYERS=',      params.LAYERS.join(',')),
+            __('STYLES=',      params.STYLES.join(',')),
+            __('LEGEND_ON=',   params.LEGEND_ON.join(',')),
+            __('LEGEND_OFF=',  params.LEGEND_OFF.join(',')),
             __('filtertoken=', ApplicationState.tokens.filtertoken),
           ]
           .filter(p => p) // discard nullish parameters (without a value)
@@ -494,7 +494,7 @@ export default {
     async getMapThemeFromThemeName(theme) {
       const project = ApplicationState.project;
       // get map theme configuration from map_themes project config
-      const config = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
+      const config  = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
       if (config && undefined === config.layerstree) {
         try {
           const response = await XHR.get({ url: `${project.urls.map_themes}${theme}/` });
@@ -519,10 +519,10 @@ export default {
      * @since 3.11.0
      */
     async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
-      const project = ApplicationState.project;
-      layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
+      const project  = ApplicationState.project;
+      layerstree     = undefined !== layerstree ? layerstree : project.state.layerstree;
       /** map theme config */
-      const theme = await this.getMapThemeFromThemeName(map_theme);
+      const theme    = await this.getMapThemeFromThemeName(map_theme);
       // create a chages need to apply map_theme changes to map and TOC
       const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
       const promises = [];
@@ -555,10 +555,12 @@ export default {
               if (node.style) {
                 const promise = new Promise(resolve => {
                   const setCurrentStyleAndResolvePromise = node => {
-                    if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                      visibility: false,
-                      style:      false
-                    };
+                    if (undefined === changes.layers[node.id]) {
+                      changes.layers[node.id] = {
+                        visibility: false,
+                        style:      false
+                      }
+                    }
                     changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
                     resolve();
                   };
@@ -636,7 +638,7 @@ export default {
         return console.warn('undefined layer');;
       }
 
-      const action   = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
+      const action = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
 
       // PROJECT LAYER
       if (!layer.external && storeid) {
