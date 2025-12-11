@@ -6,7 +6,7 @@ const ApplicationState = g3w.state;
 const GUI              = g3w.app;
 const idb              = g3w.idb;
 const MapControl       = g3w.Control;
-const { t }            = g3wsdk.core.i18n;
+const _                = g3w.gettext;
 
 const {
   createMeasureTooltip,
@@ -1384,8 +1384,8 @@ class AnnotationControl extends MapControl {
             <input id = "file_input" type = "file" accept = "application/json" style = "margin: 1em 0;" />
             <pre id = "file_preview" hidden style = "margin-top: 1em;" contenteditable></pre>
             <menu style = "display: flex; justify-content: space-between;">
-              <button type = "submit" value = "cancel" class = "btn btn-secondary">${t('cancel')}</button>
-              <button id = "confirm_button" disabled type ="submit" value = "confirm" class = "btn btn-success">${t('confirm')}</button>
+              <button type = "submit" value = "cancel" class = "btn btn-secondary">${_('cancel')}</button>
+              <button id = "confirm_button" disabled type ="submit" value = "confirm" class = "btn btn-success">${_('confirm')}</button>
             </menu>
           </form>
         </dialog>
