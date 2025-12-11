@@ -361,7 +361,25 @@ For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.
 
 <details>
 
-<summary>5. How can I change the default colors?</summary>
+<summary>5. How can I add a custom context menu item?</summary>
+
+```js
+/* Custom context menu item (v4.1.0) */
+
+g3w.app.on('map:context-menu', menu => {
+  menu.items.push({
+    label: 'Custom map entry',
+    children: [{ label: 'Child 1', cbk: () => alert('child 1') }],
+    position: 100,
+  });
+});
+```
+
+</details>
+
+<details>
+
+<summary>6. How can I change the default colors?</summary>
 
 There are several options (depending on your coding skills 👨‍💻), but our basic advice is almost always the same 👉 [`G3WSUITE_CUSTOM_CSS`](https://g3w-suite.readthedocs.io/en/v3.10.x/branding.html#g3wsuite-custom-css).
 
@@ -403,7 +421,7 @@ Here is a foundation you can use for create a your own custom theme:
 
 <details>
 
-<summary>6. How can I translate this project?</summary>
+<summary>7. How can I translate this project?</summary>
 
 Language files are stored into the [`src/assets/locales`](https://github.com/g3w-suite/g3w-client/blob/dev/src/assets/locales) folder.
 
