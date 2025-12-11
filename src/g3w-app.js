@@ -710,7 +710,7 @@ export default new (class GUI extends Emitter {
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
-    ApplicationState.sidebar.width = $('.main-sidebar').width();
+    ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
     // resize della window
     $(window).resize(() => { requestAnimationFrame(() => { this._layout(); }); });
