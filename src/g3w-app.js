@@ -1035,7 +1035,7 @@ export default new (class GUI extends Emitter {
     const current = ApplicationState.sidebar.contentsdata.at(-1);
 
     if (current) {
-      $(current.content.internalPanel.$el).hide();
+      current.content.internalPanel.$el.style.display = 'none';
     } 
 
     const options = { parent: '#g3w-sidebarpanel-placeholder', ...opts };
