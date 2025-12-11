@@ -24,7 +24,7 @@ export default class MapControl extends ol.control.Control {
       this._control     = options.ol;
       this.positionCode = options.position || 'tl';
       this.offline      = true;
-      $(this._control.element).addClass("ol-control-" + this.positionCode);
+      this._control.element.classList.add("ol-control-" + this.positionCode);
       return this;
     }
 
