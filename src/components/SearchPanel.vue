@@ -433,7 +433,7 @@
         });
 
         if (ApplicationState.ismobile) {
-          setTimeout(() => { $('#' + input.id).blur(); });
+          setTimeout(() => { document.getElementById(input.id)?.blur(); });
         }
       },
 
