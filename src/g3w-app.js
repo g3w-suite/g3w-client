@@ -712,11 +712,11 @@ export default new (class GUI extends Emitter {
 
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
-    // resize della window
-    $(window).resize(() => { requestAnimationFrame(() => { this._layout(); }); });
+    // handle main window resize
+    window.addEventListener('resize', () => { requestAnimationFrame(() => { this._layout(); }); });
 
-     // resize on main siedemar open close sidebar
-    $('.main-sidebar').on('transitionend', () => { requestAnimationFrame(() => { this._layout(); }); });
+    // handle main sidebar resize
+    document.querySelector('.main-sidebar').addEventListener('transitionend', () => { requestAnimationFrame(() => { this._layout(); }); });
 
     this._layout();
 
