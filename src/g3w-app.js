@@ -4709,7 +4709,10 @@ export default new (class GUI extends Emitter {
       document.getElementById(this.target).style.backgroundColor = window.initConfig.background_color;
     }
 
-    $(this.#map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>');
+    this.#map.getViewport().insertAdjacentHTML(
+      'afterbegin',
+      /* html */`<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>`
+    );
 
     this.#map.getInteractions().forEach(int => this.#watchInteraction(int));
     this.#map.getInteractions().on('add', int => this.#watchInteraction(int.element));
