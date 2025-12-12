@@ -24,7 +24,7 @@
       
 
       <!-- HELP DIV -->
-      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+      <div style = "color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
         <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
         <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
       </div>
@@ -34,8 +34,8 @@
         style   = "padding: 5px; width: 100%"
         @submit = "addBookMark"
       >
-        <label for="add-bokmark">{{ $t('Name') }} *</label>
-        <input id="add-bookmark" type="text" required class="form-control" ref="add_bookmark_input" v-model="addbookmarkinput" />
+        <label for = "add-bokmark">{{ $t('Name') }} *</label>
+        <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
         <button type = "submit" style = "margin-top: 20px;" class = "sidebar-button-run btn btn-block">{{ $t('add') }}</button>
       </form>
       
@@ -72,7 +72,7 @@
             <span>{{ bookmark.name }}</span>
           </div>
           <ul v-show = "bookmark.expanded" style = "margin-left: 10px;">
-            <li v-for="node in bookmark.nodes"
+            <li v-for = "node in bookmark.nodes"
               @click.stop = "gotoSpatialBookmark(node)"
               class       = "spatial-bookmark"
             >
@@ -92,7 +92,7 @@
             <span class = "g3w-long-text">{{ bookmark.name }}</span>
           </div>
         </li>
-        <spatial-book-mark-item  v-else :bookmark="bookmark" />
+        <spatial-book-mark-item  v-else :bookmark = "bookmark" />
       </template>
 
       <div
@@ -117,7 +117,7 @@
       >
         <div>
           <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-          <span class = "g3w-long-text">{{bookmark.name}}</span>
+          <span class = "g3w-long-text">{{ bookmark.name }}</span>
         </div>
         <span
           @click.stop = "removeBookMark(bookmark.id)"

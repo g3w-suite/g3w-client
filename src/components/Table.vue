@@ -117,7 +117,7 @@
     <div v-else id = "noheaders" v-t = "'No data'"></div>
 
     <!-- TABLE TOOLBAR -->
-    <div class="table-toolbar" style="display: flex; gap: 1ch; margin-top: 1ch;">
+    <div class = "table-toolbar" style = "display: flex; gap: 1ch; margin-top: 1ch;">
 
       <!-- FETCH DATA FROM BBOX -->
       <button
@@ -153,9 +153,11 @@
       ><i class = "fas fa-filter"></i></button>
 
       <!-- PAGE SIZE -->
-      <label style="margin-top: 5px;"><select style = "border: 1px solid #aaa;" v-model = "search.page_size">
-        <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
-      </select> {{ $t('values per page') }}</label>
+      <label style = "margin-top: 5px;">
+        <select style = "border: 1px solid #aaa;" v-model = "search.page_size">
+          <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
+        </select> {{ $t('values per page') }}
+      </label>
 
       <!-- PAGINATION BUTTONS -->
       <div style = "margin-left: auto;" >
@@ -168,8 +170,8 @@
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
         </select>
         {{ $t(' of ') + pages }}
-        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "search.page = Number(search.page) - 1" class="btn" v-disabled = "1 == search.page">🞀</button>
-        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "search.page = Number(search.page) + 1" class="btn" v-disabled = "pages == search.page">🞂</button>
+        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "search.page = Number(search.page) - 1" class = "btn" v-disabled = "1 == search.page">🞀</button>
+        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "search.page = Number(search.page) + 1" class = "btn" v-disabled = "pages == search.page">🞂</button>
       </div>
 
     </div>
@@ -273,7 +275,7 @@ export default {
      * @since 3.10.0
      */
     editFeature(feature) {
-      GUI.editFeature({ layer: { id: this.layer.getId() }, feature })
+      GUI.editFeature({ layer: { id: this.layer.getId() }, feature });
     },
 
     /**
@@ -302,7 +304,7 @@ export default {
             '':             ol.geom.Point, // fallback
           }).find(o => feature.geometry.type.startsWith(o[0])))[1](feature.geometry.coordinates))?.getExtent());
         }
-      } catch (e) {
+      } catch(e) {
        console.warn(e); 
       }
     },
@@ -313,7 +315,7 @@ export default {
      * @since 4.1.0
      */
     showRelations(feature) {
-      GUI.showRelations({ feature, layerId: this.layer.getId(), push: false })
+      GUI.showRelations({ feature, layerId: this.layer.getId(), push: false });
     },
 
     async getDataFromBBOX() {
@@ -355,7 +357,7 @@ export default {
 
       this.async_highlight = () => {
         GUI.highlight(false);
-        GUI.highlight(feature.geometry, { zoom, duration: Infinity })
+        GUI.highlight(feature.geometry, { zoom, duration: Infinity });
       };
 
       // sync highlight
@@ -545,9 +547,7 @@ export default {
      * @since 4.1.0
      */
     async reload(opts = {}) {
-      this.getData(opts).then(() => {
-        this.disableSelectAll = 0 === this.state.features.length;
-      });
+      this.getData(opts).then(() => this.disableSelectAll = 0 === this.state.features.length);
     },
 
   },
