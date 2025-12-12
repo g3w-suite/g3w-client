@@ -272,6 +272,10 @@
     justify-content: space-between;
     padding: 5px !important;
   }
+  
+  .spatial-bookmark:hover {
+    background-color: var(--bgcolor) !important;
+  }
 
   #add-bookmark:user-invalid {
     outline: 2px solid red;
