@@ -372,25 +372,6 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/gui/map/mapservice.js#3152@v3.10.0
-   *
-   * layout handler
-   *
-   * @since 3.11.0
-   */
-  layout(map) {
-    const previusControls = $(map.getViewport()).find(`.ol-control-${this.positionCode}`);
-    if (previusControls.length) {
-      const position     =  this.getPosition();
-      let previusControl = previusControls.last();
-      const offset       = position.left ? previusControl.position().left : previusControl.position().right;
-      const hWhere       = position.left ? 'left' : 'right';
-      const hOffset      = $(this.element).position()[hWhere] + offset + previusControl[0].offsetWidth + 2;
-      $(this.element).css(hWhere, `${hOffset}px`);
-    }
-  }
-
-  /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
    *
    * Called when a control is added ore removed to map
@@ -407,9 +388,6 @@ export default class MapControl extends ol.control.Control {
     if (this._options.onSetMap) {
       this._options.onSetMap.call(this, { setter: 'before', map });
     }
-
-    // update GUI
-    this.layout(map);
 
     if (this._control) {
       this._control.setMap(map);
