@@ -1310,19 +1310,35 @@ export default new (class GUI extends Emitter {
   }
 
   showSpinner(options = {}) {
-    const container   = options.container                                      || 'body';
+    // jquery element
+    if (options?.container?.jquery) {
+      options.container = options.container[0];
+    }
+    // css selector
+    if ('string' === typeof options?.container) {
+      options.container = document.querySelector(options.container);
+    }
+    // fallback
+    if (!options?.container) {
+      options.container = document.body;
+    }
+    const container   = options.container;
     const id          = options.id                                             || 'loadspinner';
     const where       = options.where                                          || 'prepend'; // append | prepend
     const style       = options.style                                          || '';
     const transparent = options.transparent && 'background-color: transparent' || '';
     const center      = options.center      && 'margin: auto'                  || '';
-    if (!$(`#${id}`).length) {
-      $(container)[where].call($(container),`<div id="${id}" class="spinner-wrapper ${style}" style="${transparent}"><div class="spinner ${style}" style="${center}"></div></div>`);
+    if (!document.getElementById(id)) {
+      container.insertAdjacentHTML('prepend' === where ? 'afterbegin' : 'beforeend', /* html */`
+        <div id="${id}" class="spinner-wrapper ${style}" style="${transparent}">
+            <div class="spinner ${style}" style="${center}"></div>
+        </div>`
+      );
     }
   }
 
   hideSpinner(id = 'loadspinner') {
-    $(`#${id}`).remove();
+    document.getElementById(id)?.remove();
   }
 
   /** @since 3.11.0*/
@@ -3380,7 +3396,7 @@ export default new (class GUI extends Emitter {
   onLayerLoadStart() {
     if (0 === this.#loading) {
       this.emit('loadstart');
-      this.showSpinner({ container: $('#map-spinner'), id: 'maploadspinner', style: 'transparent' });
+      this.showSpinner({ container: '#map-spinner', id: 'maploadspinner', style: 'transparent' });
     }
     this.#loading += 1;
     }
