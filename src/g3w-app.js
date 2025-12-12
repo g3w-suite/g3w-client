@@ -1311,7 +1311,7 @@ export default new (class GUI extends Emitter {
 
   showSpinner(options = {}) {
     // jquery element
-    if (options?.container?.jquery) {
+    if ( options?.container instanceof jQuery) {
       options.container = options.container[0];
     }
     // css selector
