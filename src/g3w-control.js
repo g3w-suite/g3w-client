@@ -756,7 +756,7 @@ export default class MapControl extends ol.control.Control {
    */
   showHide() {
     if (this.element) {
-      $(this.element).toggle();
+      this.element.style.display = 'none' !== this.element.style.display ? 'none' : 'block';
     }
   }
 
