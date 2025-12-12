@@ -78,7 +78,7 @@
             >
               <div>
                 <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-                <span class = "g3w-long-text">{{ node.name }}</span>
+                <span class  = "g3w-long-text">{{ node.name }}</span>
               </div>
             </li>
           </ul>
@@ -89,17 +89,17 @@
         >
           <div>
             <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-            <span class = "g3w-long-text">{{ bookmark.name }}</span>
+            <span class  = "g3w-long-text">{{ bookmark.name }}</span>
           </div>
         </li>
-        <spatial-book-mark-item  v-else :bookmark = "bookmark" />
+        <spatial-book-mark-item v-else :bookmark = "bookmark" />
       </template>
 
       <div
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
-        <span :hidden = "is_mobile" v-t="'User Bookmarks'"></span>
+        <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
         <span
           :hidden          = "is_mobile"
           v-t-tooltip:left = "'add'"
@@ -272,7 +272,7 @@
     justify-content: space-between;
     padding: 5px !important;
   }
-  
+
   .spatial-bookmark:hover {
     background-color: var(--bgcolor) !important;
   }
