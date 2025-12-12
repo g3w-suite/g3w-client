@@ -129,7 +129,7 @@ export default class MapControl extends ol.control.Control {
      *
      * button click handler
      */
-    $(options.element).on('click', e => this._handleClick(e));
+    this.element.addEventListener('click', e => this._handleClick(e));
 
     this.setVisible(options.visible);
 
