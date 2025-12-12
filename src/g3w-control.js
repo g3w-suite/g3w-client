@@ -689,7 +689,10 @@ export default class MapControl extends ol.control.Control {
     }
 
     /** Add or remove g3w-ol-toggled class to control button */
-    $(this.element).find('button').first()[toggled ? 'addClass' : 'removeClass']('g3w-ol-toggled')
+    const btn = this.element.querySelector('button');
+    if (btn) {
+        btn.classList.toggle('g3w-ol-toggled', toggled);
+    }
 
     /** @TODO Deprecated */
     if (toggled && this._toolButton) {
