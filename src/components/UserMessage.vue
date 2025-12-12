@@ -8,7 +8,7 @@
     class   = "usermessage-content"
     :id     = "id"
     :style  = "style"
-    :class  = "{ ['usermessage-' + type]: true}"
+    :class  = "{ ['usermessage-' + type]: true }"
     popover = "manual"
   >
     <div
@@ -88,7 +88,7 @@
       y1 = e.clientY;
       if (el.style.marginLeft) { x2 -= parseInt(el.style.marginLeft); el.style.marginLeft = null; }
       if (el.style.marginTop)  { y2 -= parseInt(el.style.marginTop);  el.style.marginTop  = null; }
-      el.style.top  = (el.offsetTop - y2)    + "px";
+      el.style.top  = (el.offsetTop - y2)  + "px";
       el.style.left = (el.offsetLeft - x2) + "px";
     }
   }
@@ -144,7 +144,7 @@
         style: {
           top:        'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : null,
           left:       'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : null,
-          width:      'small' === this.size ? '325px' : (g3wsdk.core.ApplicationState.map.sizes.width + 'px'),
+          width:      'small' === this.size ? '325px' : (`${g3wsdk.core.ApplicationState.map.sizes.width}px`),
           marginLeft: 'small' === this.size ? (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px') : null,
         }
       }
@@ -159,7 +159,7 @@
         if (this.$el.popover) {
           this.$el.hidePopover();
         }
-        this.$emit('close-usermessage')
+        this.$emit('close-usermessage');
       },
     },
     
