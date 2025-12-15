@@ -158,7 +158,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   setMouseCursor(toggled, className = this.cursorClass) {
-    this.getMap().getViewport().classList[toggled ? 'add' : 'remove'](className);
+    this.getMap().getViewport().classList.toggle(className, toggled);
   }
 
   initInteraction(options = {}) {
@@ -465,7 +465,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   setEnable(bool) {
-    $(this.element).find('button').first().toggleClass('g3w-ol-disabled', !bool);
+    this.element.querySelector('button')?.classList?.toggle('g3w-ol-disabled', !bool);
     if (!bool && this._interaction) {
       this._interaction.setActive(false);
     }
