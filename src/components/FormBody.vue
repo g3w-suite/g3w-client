@@ -8,7 +8,7 @@
   <form class = "form-horizontal g3w-form">
     <div class = "box-primary">
       <div class = "box-body">
-        <template v-if="hasFormStructure">
+        <template v-if = "hasFormStructure">
           <tabs
             :layerid          = "state.layerid"
             :feature          = "state.feature"
@@ -40,6 +40,7 @@
 
 <script>
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
+import { type } from 'jquery';
 
 /**
  * @TODO remove "Vue.extend" from module export
@@ -49,10 +50,19 @@ export default Vue.extend({
   /** @since 3.8.6 */
   name: 'form-body',
 
-  props: ['state', 'handleRelation'],
+  props: { 
+    state: {
+      type:     Object,
+      required: true,  
+    },
+    handleRelation: {
+      type:     Function,
+      required: true,
+    } 
+  },
   data() {
     return {
-      show: true
+      show: true,
     }
   },
   components: {

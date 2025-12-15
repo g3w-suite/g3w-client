@@ -60,7 +60,7 @@ export default Vue.extend({
        * @deprecated since 3.6.2
        * This was used when form headers has more than one (case relation)
        */
-      if (id !== this.currentid  && this.headers.length > 1) {
+      if (id !== this.currentid && this.headers.length > 1) {
         this.$emit('clickheader', id);
       }
     },

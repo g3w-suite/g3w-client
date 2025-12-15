@@ -8,7 +8,7 @@
     class = "g3wform_content"
     style = "position: relative"
   >
-    <bar-loader :loading="state.loading" />
+    <bar-loader :loading = "state.loading" />
 
     <!-- FORM HEADER  -->
     <g3wformheader
@@ -59,6 +59,7 @@
 </template>
 
 <script>
+  
 import HeaderFormComponent from 'components/FormHeader.vue';
 import G3wFormFooter       from 'components/FormFooter.vue';
 
@@ -101,7 +102,7 @@ export default {
        });
      },
     resizeForm(perc) {
-      this.$options.service.setCurrentFormPercentage(perc)
+      this.$options.service.setCurrentFormPercentage(perc);
     },
     switchComponent(id) {
       this.switchcomponent = true;
@@ -140,4 +141,5 @@ export default {
     this.$options.service.clearAll();
   }
 };
+
 </script>

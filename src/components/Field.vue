@@ -22,7 +22,12 @@
 <script>
 export default {
   name: "field",
-  props: ['state']
+  props: {
+    state: {
+      required: true,
+      type: Object,
+    }
+  }
 }
 </script>
 

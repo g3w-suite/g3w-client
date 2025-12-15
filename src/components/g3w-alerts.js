@@ -36,35 +36,35 @@ async function _showAlertsManager() {
   const edit_url = ApplicationState.project.getState()?.edit_url || '';
   const dialog = Object.assign(document.createElement('template'), {
     innerHTML: /* html */`
-      <dialog id="project-messages" popover="manual">
-        <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${_('alerts')}</h4>
-        <form method="dialog">
-          <table style="user-select:none;width:100%;">
+      <dialog id = "project-messages" popover = "manual">
+        <h4 style = "margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${_('alerts')}</h4>
+        <form method = "dialog">
+          <table style = "user-select:none;width:100%;">
             <thead>
               <tr>
-                <th><i class="fa fa-check"></i> ${ _('Marked as read') }</th>
+                <th><i class = "fa fa-check"></i> ${ _('Marked as read') }</th>
               </tr>
             </thead>
             <tbody>
               ${messages.items.map(message => /* html */`
                 <tr>
                   <td>
-                    <label style="display: flex;justify-content: space-between; font-weight:${data[pid].some(id => id === message.id) ? 'normal' : 'bold'};" title="${ _('Mark as read/unread') }">
+                    <label style = "display: flex;justify-content: space-between; font-weight:${data[pid].some(id => message.id === id) ? 'normal' : 'bold'};" title = "${ _('Mark as read/unread') }">
                       &bull; ${message.title}
-                      <input name="dont_show_again_${message.id}" type="checkbox" ${data[pid].some(id => id === message.id) ? 'checked' : ''}>
+                      <input name = "dont_show_again_${message.id}" type = "checkbox" ${data[pid].some(id => message.id === id) ? 'checked' : ''}>
                     </label>
                   </td>
-                  <td style="width: 20px;" ${edit_url ? '' : 'hidden'}>
-                    <a href="${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" data-i18n-title="Edit in admin">
-                      <i class="far fa-edit"></i>
+                  <td style = "width: 20px;" ${edit_url ? '' : 'hidden'}>
+                    <a href = "${edit_url.replace('/projects/update/', '/projects/')}messages/update/${message.id}/" target = "_blank" data-i18n-title = "Edit in admin">
+                      <i class = "far fa-edit"></i>
                     </a>
                   </td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
-          <menu style="display: flex; justify-content: end;">
-            <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-messages">${messages.items.find(message => !data[pid].some(id => id === message.id)) ? _('show') : _('close')}</button>
+          <menu style = "display: flex; justify-content: end;">
+            <button type = "button" value = "close" class = "btn btn-secondary" popovertargetaction = "hide" popovertarget = "project-messages">${messages.items.find(message => !data[pid].some(id => message.id === id)) ? _('show') : _('close')}</button>
           </menu>
         </form>
       </dialog>
@@ -117,16 +117,16 @@ async function _showAlerts() {
     return;
   }
 
-  const pid = ApplicationState.project.getId();
+  const pid  = ApplicationState.project.getId();
   const data = JSON.parse(window.localStorage.getItem('MESSAGES') || '{}');
-  data[pid] = data[pid] || [];
+  data[pid]  = data[pid] || [];
   window.localStorage.setItem('MESSAGES', JSON.stringify(data));
 
   // show message count beside nav icon
   if (!document.querySelector('.nav-alerts a sup')) {
     document.querySelector('.nav-alerts a').insertAdjacentHTML(
       'beforeend',
-      /* html */`<sup style="font-weight: bold;margin-top: -6px;">${ messages.items.length > 10 ? '10+' : messages.items.length }</sup>`
+      /* html */`<sup style = "font-weight: bold;margin-top: -6px;">${ messages.items.length > 10 ? '10+' : messages.items.length }</sup>`
     );
   }
 
@@ -140,15 +140,15 @@ async function _showAlerts() {
 
     const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
-        <dialog id="project-message" popover="manual">
-          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: ${({ Info: '#0073b7', Warning: '#e99611', Error: '#605ca8', Critical: '#605ca8', })[Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]]};">${message.title}</h4>
-          <form method="dialog">
+        <dialog id = "project-message" popover = "manual">
+          <h4 style = "margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: ${({ Info: '#0073b7', Warning: '#e99611', Error: '#605ca8', Critical: '#605ca8', })[Object.entries(messages.levels).find(([key, value]) => value === message.level)[0]]};">${message.title}</h4>
+          <form method = "dialog">
             ${message.body}
-            <menu style="display: flex;justify-content: space-between;">
-              <label style="display: block; width: fit-content;">
-                <input type="checkbox" name="dont_show_again" /> ${_('Don\'t show again')}
+            <menu style = "display: flex;justify-content: space-between;">
+              <label style = "display: block; width: fit-content;">
+                <input type = "checkbox" name = "dont_show_again" /> ${_('Don\'t show again')}
               </label>
-              <button type="button" value="close" class="btn btn-secondary" popovertargetaction="hide" popovertarget="project-message">${_('close')}</button>
+              <button type = "button" value = "close" class = "btn btn-secondary" popovertargetaction = "hide" popovertarget = "project-message">${_('close')}</button>
             </menu>
           </form>
         </dialog>
@@ -228,8 +228,8 @@ function _makeDraggable(dialog) {
     const mousemove = ({ clientX, clientY }) => {
       Object.assign(dialog.style, {
         margin: 0,
-        left: `${clientX - e.clientX + rect.left}px`,
-        top: `${clientY - e.clientY + rect.top}px`,
+        left:   `${clientX - e.clientX + rect.left}px`,
+        top:    `${clientY - e.clientY + rect.top}px`,
       })
     };
     const mouseup = () => {

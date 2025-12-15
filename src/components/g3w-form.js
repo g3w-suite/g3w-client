@@ -71,7 +71,7 @@ async function getDefaultExpression({
     return response.value;
   } catch(e) {
     if (undefined !== default_value) {
-      field.value = default_value
+      field.value = default_value;
     }
     console.warn(e);
     return Promise.reject(e);

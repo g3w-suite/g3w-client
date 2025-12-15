@@ -143,8 +143,7 @@ export class Service {
     // check if the default value is set
     const get_default_value = (
       this.state.get_default_value && // ref: core/layers/tablelayer.js::getFieldsWithValues()
-      undefined !== default_value &&
-      null !== default_value
+      ![null, undefined].includes(default_value) 
     );
 
     // check if we can state.check get_default_value from input.options.default is set
@@ -157,7 +156,7 @@ export class Service {
   };
 
   addValueToValues(value) {
-    this.state.input.options.values.unshift(value)
+    this.state.input.options.values.unshift(value);
   };
 
   _getValidatorType() {
@@ -197,7 +196,7 @@ export class Service {
           this.state.validate.empty      = true;
           this.state.validate.valid      = !this.state.validate.required;
         } else {
-          this.state.validate.valid = this._validator.validate(this.state.value);
+          this.state.validate.valid      = this._validator.validate(this.state.value);
         }
       }
       //check exclude_values state.validate.unique (QGIS field property [x] Enforce unique constraint)
@@ -418,10 +417,7 @@ export class SelectService extends Service {
         search
       }).then(values => {
         values.forEach(({ $value : key, text: value }) => {
-          this.addValue({
-            key,
-            value
-          })
+          this.addValue({ key,value })
         })
         this.sortValues();
         resolve(this.state.input.options.values);

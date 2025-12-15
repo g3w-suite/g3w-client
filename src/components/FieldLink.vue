@@ -23,7 +23,13 @@ export default {
   /** @since 3.8.6 */
   name: "field-link",
 
-  props: ['state'],
+ props: {
+    state: { 
+      required: true, 
+      type: Object 
+    }
+  },
+  
   data() {
     return {
       value: null
