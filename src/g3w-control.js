@@ -577,11 +577,11 @@ export default class MapControl extends ol.control.Control {
    * Enable map control dom
    */
   enable() {
-    $(this.element).removeClass('g3w-disabled');
+    this.element.classList.remove('g3w-disabled');
   }
 
   disable() {
-    $(this.element).addClass('g3w-disabled');
+    this.element.classList.add('g3w-disabled');
   }
 
   /**
