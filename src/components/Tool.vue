@@ -62,7 +62,11 @@ import GUI                from 'g3w-app';
 
 export default {
   name: "g3w-tool",
-  props: ['tool'],
+  props: {
+    tool: {
+      required: true,
+      type:     Object,
+  },
   methods: {
     showToolStateMessage() {
       GUI.dialog({
