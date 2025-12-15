@@ -491,8 +491,8 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   setVisible(visible = true) {
-    this._visible = visible;
-    $(this.element)[visible ? 'show': 'hide']();
+    this._visible              = visible;
+    this.element.style.display = visible ? 'block' : 'none';
   }
 
   /**
