@@ -799,6 +799,10 @@
             document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
             setTimeout(() => {
               const dom = document.querySelector(`summary:has(+ ul a[href="#layer_general_${layerId}"])`);
+              //skin wehn no layer is found on layers metadata tab
+              if (!dom) {
+                return;
+              }
               dom.scrollIntoView();
               //click if only is no open tab
               if (!dom.parentElement.hasAttribute('open')) {
