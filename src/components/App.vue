@@ -266,7 +266,7 @@
           @click  = "toggleSidebarItem"
         >
 
-        <li id="metadata" class="treeview sidebaritem">
+        <li id = "metadata" class = "treeview sidebaritem">
           <a
             href           = "#"
             data-toggle    = "modal"
