@@ -84,12 +84,12 @@
 
                     <!-- LAYER GENERAL TAB -->
                     <li role = "presentation" class = "active spatial-tab">
-                      <a v-t="'metadata.layers.groups.general'" :href="`#layer_general_${layer.id}`" aria-controls="general" role="tab" data-toggle="tab"></a>
+                      <a v-t = "'metadata.layers.groups.general'" :href = "`#layer_general_${layer.id}`" aria-controls = "general" role = "tab" data-toggle="tab"></a>
                     </li>
 
                     <!-- LAYER SPATIAL TAB -->
-                    <li v-if="'NoGeometry' !== layer.geometrytype" role="presentation" class="spatial-tab">
-                      <a v-t="'metadata.layers.groups.spatial'" :href="`#layer_spatial_${layer.id}`" aria-controls="profile" role="tab" data-toggle="tab"></a>
+                    <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "spatial-tab">
+                      <a v-t = "'metadata.layers.groups.spatial'" :href = "`#layer_spatial_${layer.id}`" aria-controls = "profile" role = "tab" data-toggle = "tab"></a>
                     </li>
 
                   </ul>
@@ -101,27 +101,27 @@
                       :id   = "`layer_general_${layer.id}`"
                     >
                       <div class="container-fluid">
-                        <template v-for="attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes']">
-                          <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class="row layer-row">
+                        <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes']">
+                          <div v-if = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
                             <div v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
                             <!-- LAYER TITLE -->
-                            <div v-if="'metadata.title' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.title }}</div>
+                            <div v-if = "'metadata.title' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.title }}</div>
 
                             <!-- LAYER NAME -->
-                            <div v-if="'name' === attr" class = "col-md-10 col-sm-12 value">{{ layer.name }}</div>
+                            <div v-if = "'name' === attr" class = "col-md-10 col-sm-12 value">{{ layer.name }}</div>
 
                             <!-- LAYER SOURCE -->
-                            <div v-if="'source' === attr" class = "col-md-10 col-sm-12 value">{{ layer.source.type }}</div>
+                            <div v-if = "'source' === attr" class = "col-md-10 col-sm-12 value">{{ layer.source.type }}</div>
 
                             <!-- LAYER ABSTRACT -->
-                            <div v-if="'metadata.abstract' === attr" class = "col-md-10 col-sm-12 value" v-html = "layer.metadata.abstract"></div>
+                            <div v-if = "'metadata.abstract' === attr" class = "col-md-10 col-sm-12 value" v-html = "layer.metadata.abstract"></div>
 
                             <!-- LAYER KEYWORDS -->
-                            <div v-else-if="'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
+                            <div v-else-if = "'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
 
                             <!-- LAYER METADATA URL -->
-                            <div v-else-if="'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
+                            <div v-else-if = "'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
                               <a :href = "layer.metadata.metadataurl.onlineresources">{{ layer.metadata.metadataurl.onlineresources }}</a>
                             </div>
 
@@ -155,18 +155,18 @@
                     >
                       <div class = "container-fluid">
                         <template v-for="attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
-                          <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class="row layer-row">
+                          <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
                             <div v-if="'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
                             <div v-else v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
                             <!-- LAYER EPSG -->
-                            <div v-if="'crs' === attr" class = "col-sm-10 value">{{ layer.crs.epsg }}</div>
+                            <div v-if = "'crs' === attr" class = "col-sm-10 value">{{ layer.crs.epsg }}</div>
 
                             <!-- LAYER TYPE -->
-                            <div v-else-if="'geometrytype' === attr" class = "col-sm-10 value">{{ layer.geometrytype }}</div>
+                            <div v-else-if = "'geometrytype' === attr" class = "col-sm-10 value">{{ layer.geometrytype }}</div>
 
                             <!-- LAYER BBOX -->
-                            <div v-else-if="'bbox' === attr" class = "col-sm-10 value">
+                            <div v-else-if = "'bbox' === attr" class = "col-sm-10 value">
                               <p v-for = "(value, key) in layer.bbox">
                                 <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
                                 <span>{{ value }}</span>
@@ -174,7 +174,7 @@
                             </div>
 
                             <!-- LAYER CRS -->
-                            <div v-else-if="'metadata.crs' === attr" class = "col-sm-10 value">
+                            <div v-else-if = "'metadata.crs' === attr" class = "col-sm-10 value">
                               <div v-for = "crs in layer.metadata.crs">
                                 <span>{{ crs }}</span>
                               </div>
@@ -257,14 +257,14 @@
                 v-if  = "powered_by"
                 style = "display: flex;justify-content: center;gap: 20px;"
               >
-                <a :href="docs_url" rel="nofollow" target="_blank">📖 Docs</a>
-                <a href="mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
-                <a href="https://github.com/g3w-suite" target="_blank">🐞 Report a bug</a>
+                <a :href = "docs_url" rel = "nofollow" target = "_blank">📖 Docs</a>
+                <a href = "mailto:info@gis3w.it?subject=Sponsoring%20G3W-SUITE%20development&amp;body=Hi%20there,%20I'd%20like%20to%20fund%20some%20code%20changes:">❤️ Sponsor</a>
+                <a href = "https://github.com/g3w-suite" target = "_blank">🐞 Report a bug</a>
               </div>
 
               <hr>
 
-              <pre v-if="powered_by && g3wsdk_info" @click="copy_g3wsdk_info" style="cursor: pointer;" title="click to copy">{{ g3wsdk_info }}</pre>
+              <pre v-if = "powered_by && g3wsdk_info" @click = "copy_g3wsdk_info" style = "cursor: pointer;" title = "click to copy">{{ g3wsdk_info }}</pre>
 
             </div>
         
@@ -272,7 +272,7 @@
 
         </div>
 
-        <div class = "modal-footer" style="position: relative; background: #fff;">
+        <div class = "modal-footer" style = "position: relative; background: #fff;">
           <button
             v-t          = "'close'"
             type         = "button"
@@ -347,7 +347,7 @@
     async created() {
       if (!!window.initConfig.credits) {
         try {
-          const credits = await XHR.get({ url: window.initConfig.credits });
+          const credits      = await XHR.get({ url: window.initConfig.credits });
           this.customcredits = 'None' !== credits && credits;
         } catch (e) {
           console.warn(e);
