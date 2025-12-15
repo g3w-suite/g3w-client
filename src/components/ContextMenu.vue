@@ -796,8 +796,10 @@
         $('#modal-metadata').modal('show');
         if (layerId) {
           setTimeout(() => {
-            document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
-            document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').click();
+            const layer =document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
+            setTimeout(() => {
+              document.querySelector(`a[href="#layer_general_${layerId}"]`).click();
+            }, 600);
           });
         }
       },
