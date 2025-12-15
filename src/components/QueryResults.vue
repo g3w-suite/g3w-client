@@ -784,16 +784,7 @@
       getLayerFeatureBox(layer, feature, relation_index) {
         const boxid = GUI.getBoxId(layer, feature, relation_index);
         if (undefined === this.state.layersFeaturesBoxes[boxid] ) {
-          this.state.layersFeaturesBoxes[boxid] = Vue.observable({
-            collapsed: true
-          });
-          this.$watch(
-            () => this.state.layersFeaturesBoxes[boxid].collapsed,
-            collapsed => {
-              const index     = layer.features.findIndex(_feature => feature.id === _feature.id);
-              const container = $(`#${layer.id}_${index} > td`);
-            }
-          );
+          this.state.layersFeaturesBoxes[boxid] = Vue.observable({ collapsed: true });
           this.state.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
         }
         return this.state.layersFeaturesBoxes[boxid];
