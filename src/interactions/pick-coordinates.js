@@ -35,9 +35,9 @@ export default class PickCoordinatesInteraction extends ol.interaction.Pointer {
       },
       ...opts
     });
-    this._cursor = opts.cursor || 'ol-pointer';
+    this._cursor    = opts.cursor || 'ol-pointer';
     // this.previousCursor_ = null;
-    this._centerMap      = null;
+    this._centerMap = null;
   }
 
   shouldStopEvent() { return false }
