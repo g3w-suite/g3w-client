@@ -32,13 +32,13 @@
         <div class = "modal-body">
 
           <!-- LAYER TYPE -->
-          <div class="form-group">
-            <label v-t="'Layer type'"></label>
-            <select id="add-layer-type" class = "form-control" v-model="layer_type">
-              <option disabled :value="undefined" v-t="'Choose type'"></option>
-              <option value="wms"  v-t="'WMS (URL)'"></option>
-              <option value="tms"  v-t="'TMS (URL)'"></option>
-              <option value="file" v-t="'Local file'"></option>
+          <div class = "form-group">
+            <label v-t = "'Layer type'"></label>
+            <select id = "add-layer-type" class = "form-control" v-model="layer_type">
+              <option disabled :value = "undefined" v-t = "'Choose type'"></option>
+              <option value = "wms"  v-t = "'WMS (URL)'"></option>
+              <option value = "tms"  v-t = "'TMS (URL)'"></option>
+              <option value = "file" v-t = "'Local file'"></option>
             </select>
           </div>
 
@@ -61,7 +61,7 @@
             </a>
 
             <!-- WMS URL -->
-            <fieldset class = "form-group" :disabled="wms_config">
+            <fieldset class = "form-group" :disabled = "wms_config">
               <label for = "add_wms_url">URL</label>
               <input
                 id           = "add_wms_url"
@@ -72,14 +72,14 @@
                 list         = "wms_urls"
                 required
               />
-              <small v-if="!wms_config" v-t="'Search through saved connections or add a new server'"></small>
-              <datalist id="wms_urls">
-                <option v-for = "wms in wms_urls" :key  = "wms.id" :value="wms.url">{{ wms.id }}</option>
+              <small v-if = "!wms_config" v-t = "'Search through saved connections or add a new server'"></small>
+              <datalist id = "wms_urls">
+                <option v-for = "wms in wms_urls" :key = "wms.id" :value = "wms.url">{{ wms.id }}</option>
               </datalist>
             </fieldset>
 
             <!-- WMS NAME -->
-            <fieldset v-if="url && !wms_config && !loading" class = "form-group" :disabled="wms_config || wms_urls.some(l => l.url == url)">
+            <fieldset v-if = "url && !wms_config && !loading" class = "form-group" :disabled = "wms_config || wms_urls.some(l => url == l.url)">
               <label for = "add_wms_name" title = "required">
                 <span v-t = "'Name'"></span>
                 <i style = "font-family: Monospace;color: var(--skin-color);">*</i>
@@ -90,7 +90,7 @@
                 class        = "form-control"
                 required
               />
-              <p v-if = "null !== id && wms_urls.some(l => l.id === id) && wms_urls.every(l => l.url !== url)" style = "color: red; margin: 10px 0;">
+              <p v-if = "null !== id && wms_urls.some(l => id === l.id) && wms_urls.every(l => url !== l.url)" style = "color: red; margin: 10px 0;">
                 ⚠️ <b v-t = "'A WMS connection with this name already exists'"></b>
               </p>
             </fieldset>
@@ -98,22 +98,22 @@
             <!-- SUBMIT BUTTON -->
             <button
               v-if                = "!wms_config"
-              :disabled           = "!(id || '').trim() || wms_urls.some(l => l.id === id && l.url !== url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
+              :disabled           = "!(id || '').trim() || wms_urls.some(l => id === l.id && url !== l.url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
               @click.prevent.stop = "addWmsURL"
               class               = "btn btn-block btn-success"
-            ><i :class = "$fa('plus-square')"></i> <span v-t="'Connect'"></span></button>
+            ><i :class = "$fa('plus-square')"></i> <span v-t = "'Connect'"></span></button>
 
             <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
-            <div v-if="!wms_config" class="form-group">
+            <div v-if = "!wms_config" class="form-group">
               <hr>
-              <p v-if="wms_urls.length" style="text-align: center; font-weight: bold;" v-t="'Saved connections:'"></p>
+              <p v-if = "wms_urls.length" style = "text-align: center; font-weight: bold;" v-t = "'Saved connections:'"></p>
               <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
                 <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
                   <b @click = "fetchWMS(wms.url)"    :title = "$t('Connect')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
                   <i @click = "fetchWMS(wms.url)"    v-t-tooltip:top = "'Connect'" :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
                   <i @click = "deleteWmsUrl(wms.id)" v-t-tooltip:top = "'Remove'"  :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
                 </div>
-                <small @click = "fetchWMS(wms.url)" :title = "$t('Connect')" style="cursor: pointer;">{{ wms.url }}</small>
+                <small @click = "fetchWMS(wms.url)" :title = "$t('Connect')" style = "cursor: pointer;">{{ wms.url }}</small>
               </div>
             </div>
 
@@ -130,8 +130,8 @@
               <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
 
               <!-- LAYER INFO -->
-              <fieldset v-if="wms_config.abstract" class="form-group" style="border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
-                <legend style="width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: var(--bgcolor);font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
+              <fieldset v-if = "wms_config.abstract" class = "form-group" style = "border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
+                <legend style = "width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: var(--bgcolor);font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
                 {{ wms_config.abstract }}
               </fieldset>
 
@@ -162,8 +162,8 @@
 
               <!-- LAYER VISIBILITY -->
               <select id = "g3w-wms-visible" v-model = "wms_visible" hidden>
-                <option :value="false"></option>
-                <option :value="true"></option>
+                <option :value = "false"></option>
+                <option :value = "true"></option>
               </select>
 
               <!-- LAYER OPACITY -->
@@ -178,12 +178,12 @@
                   step    = "0.01"
                   list    = "wms-opacity-markers"
                 >
-                <datalist id="wms-opacity-markers" style="  display: flex; justify-content: space-between;">
-                  <option value="0">0</option>
-                  <option value="0.25">0.25</option>
-                  <option value="0.50">0.50</option>
-                  <option value="0.75">0.75</option>
-                  <option value="1">1</option>
+                <datalist id = "wms-opacity-markers" style="display: flex; justify-content: space-between;">
+                  <option value = "0">0</option>
+                  <option value = "0.25">0.25</option>
+                  <option value = "0.50">0.50</option>
+                  <option value = "0.75">0.75</option>
+                  <option value = "1">1</option>
                 </datalist>
               </div>
 
@@ -219,7 +219,7 @@
                 type         = "url"
                 required
               />
-              <small v-t="'Inserisci l\'URL del servizio TMS (XYZ)'" />
+              <small v-t = "'Inserisci l\'URL del servizio TMS (XYZ)'" />
             </fieldset>
             <!-- TMS NAME -->
             <fieldset class = "form-group">
@@ -267,12 +267,12 @@
                 step    = "0.01"
                 list    = "tms-opacity-markers"
               >
-              <datalist id="tms-opacity-markers" style="  display: flex; justify-content: space-between;">
-                <option value="0">0</option>
-                <option value="0.25">0.25</option>
-                <option value="0.50">0.50</option>
-                <option value="0.75">0.75</option>
-                <option value="1">1</option>
+              <datalist id = "tms-opacity-markers" style = "display: flex; justify-content: space-between;">
+                <option value = "0">0</option>
+                <option value = "0.25">0.25</option>
+                <option value = "0.50">0.50</option>
+                <option value = "0.75">0.75</option>
+                <option value = "1">1</option>
               </datalist>
             </div>
           </div>
@@ -289,7 +289,7 @@
             >&times;</button>
 
             <!-- FILE UPLOAD -->
-            <form id = "addcustomlayer" :style="{ padding: layer_data ? '0' : '20px 0' }">
+            <form id = "addcustomlayer" :style = "{ padding: layer_data ? '0' : '20px 0' }">
               <input
                 ref     = "input_file"
                 type    = "file"
@@ -297,11 +297,11 @@
                 accept  = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
               />
               <h4 class = "skin-color">
-                <b v-if="!layer_data" v-t="'Add your file here'"></b>
+                <b v-if = "!layer_data" v-t = "'Add your file here'"></b>
                 <b v-else-if = "layer_name">{{ layer_name }}</b>
               </h4>
-              <i v-if="!layer_data" :class = "$fa('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
-              <span v-if="!layer_data" style="font-family: Monospace;">.gml, .geojson, .kml, .kmz, .gpx, .csv, .zip (shapefile)</span>
+              <i v-if = "!layer_data" :class = "$fa('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
+              <span v-if = "!layer_data" style="font-family: Monospace;">.gml, .geojson, .kml, .kmz, .gpx, .csv, .zip (shapefile)</span>
             </form>
 
             <!-- CSV FILE (parsing options) -->
@@ -316,12 +316,12 @@
 
               <template v-if = "fields.length > 1 && !csv_wkt">
                 <label v-t = "'X field'" for = "g3w-select-x-field"></label>
-                <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(fields || []).length" @change="parseFile">
+                <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(fields || []).length" @change = "parseFile">
                   <option v-for = "h in fields">{{ h }}</option>
                 </select>
 
                 <label v-t = "'Y field'" for = "g3w-select-y-field"></label>
-                <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(fields || []).length" @change="parseFile">
+                <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(fields || []).length" @change = "parseFile">
                   <option v-for = "h in fields">{{ h }}</option>
                 </select>
               </template>
@@ -333,9 +333,9 @@
                 </select>
               </template>
 
-              <div v-if = "0 === fields.length" v-t="'No valid fields'"></div>
+              <div v-if = "0 === fields.length" v-t = "'No valid fields'"></div>
 
-              <small v-if="olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t="'Features found:'"></span> {{ feature_count }}</small>
+              <small v-if = "olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t = "'Features found:'"></span> {{ feature_count }}</small>
 
             </div>
 
@@ -352,22 +352,22 @@
 
             <!-- LAYER PROJECTION -->
             <fieldset class = "form-group" :disabled = "layer_data || ['kml','kmz'].includes(file_type)">
-              <label for="projection-layer" v-t = "'Projection'"></label>
+              <label for = "projection-layer" v-t = "'Projection'"></label>
               <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
                 <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
               </select>
             </fieldset>
 
-            <div v-if = "parse_errors.length" class="form-group">
-              <label for="csv_parse_errors">⚠️ Parse errors:</label>
-              <select id="csv_parse_errors" class="form-control" style="background-color: gold;font-family: Monospace;">
-                <option v-for="({ value, row }) in parse_errors">[{{ row }}] {{ value }}</option>
+            <div v-if = "parse_errors.length" class = "form-group">
+              <label for = "csv_parse_errors">⚠️ Parse errors:</label>
+              <select id = "csv_parse_errors" class="form-control" style = "background-color: gold;font-family: Monospace;">
+                <option v-for = "({ value, row }) in parse_errors">[{{ row }}] {{ value }}</option>
               </select>
             </div>
 
             <!-- LAYER POSITION -->
-            <div v-if="layer_data" class = "form-group">
-              <label for="position-layer" v-t = "'layer_position.message'"></label>
+            <div v-if = "layer_data" class = "form-group">
+              <label for = "position-layer" v-t = "'layer_position.message'"></label>
               <select class = "form-control" id = "position-layer" v-model = "position">
                 <option :value = "'top'"    v-t = "'layer_position.top'"></option>
                 <option :value = "'bottom'" v-t = "'layer_position.bottom'"></option>
@@ -375,17 +375,17 @@
             </div>
 
             <!-- PERSISTENT LAYER  -->
-            <div v-if="layer_data" class = "form-group">
-              <label for="persistent-layer" v-t = "'Persistent data'"></label>
+            <div v-if = "layer_data" class = "form-group">
+              <label for = "persistent-layer" v-t = "'Persistent data'"></label>
               <select class = "form-control" id = "persistent-layer" v-model = "persistent">
                 <option :value = "false" v-t = "'no'"></option>
-                <option :value = "true" v-t = "'yes'"></option>
+                <option :value = "true"  v-t = "'yes'"></option>
               </select>
               <small v-t = "'save layer into browser storage'"></small>
             </div>
 
             <!-- LAYER LABEL (visible field) -->
-            <div v-if="(fields || []).length" class="form-group">
+            <div v-if = "(fields || []).length" class = "form-group">
               <label v-t = "'label'" for = "g3w-select-field-layer"></label>
               <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
                 <option :value = "null">---</option>
@@ -395,12 +395,12 @@
             </div>
 
             <!-- LAYER COLOR  -->
-            <div v-if="layer_data">
+            <div v-if = "layer_data">
               <p v-t = "'Layer Color'" style = "font-weight: 700;"></p>
               <chrome-picker
                 v-model = "layer_color"
                 @input  = "onChangeColor"
-                style   ="width:100%;"
+                style   = "width:100%;"
               />
             </div>
 
@@ -554,7 +554,7 @@ export default {
 
   computed: {
     feature_count() {
-      return this.olLayer && this.olLayer.getSource().getFeatures().length || 0;
+      return this.olLayer?.getSource().getFeatures().length || 0;
     },
   },
 
@@ -571,7 +571,7 @@ export default {
 
       if (0 === layers.length) {        // Reset epsg and projections to initial values
         this.wms_projection = null;
-        this.projections = [];
+        this.projections    = [];
       } else if (1 === layers.length) { // take first layer selected supported crss
         this.wms_projection = projections[0];
         this.projections    = projections;
@@ -620,9 +620,9 @@ export default {
     },
 
     url() {
-      if (this.url && !this.wms_config && this.wms_urls.some(l => l.url == this.url)) {
-        this.id = this.wms_urls.find(l => l.url == this.url).id
-      } else if(!this.url) {
+      if (this.url && !this.wms_config && this.wms_urls.some(l => this.url == l.url)) {
+        this.id = this.wms_urls.find(l => this.url == l.url).id;
+      } else if (!this.url) {
         this.id = '';
       }
     },
@@ -714,7 +714,7 @@ export default {
               });
               feat.setId(i);
               features.push(feat);
-            } catch (e) {
+            } catch(e) {
               console.warn(e);
             }
           });
@@ -828,8 +828,8 @@ export default {
           GUI.addExternalLayer(
             new ol.layer.Tile({
               source:  new ol.source.XYZ({
-                  url: this.tms_url,
-                  projection: ol.proj.get(this.tms_projection),
+                  url:         this.tms_url,
+                  projection:  ol.proj.get(this.tms_projection),
                   crossOrigin: 'anonymous',
                 }),
               opacity: +this.tms_opacity,
@@ -838,19 +838,19 @@ export default {
               name:    this.tms_name,
             }), {
               position: this.position,
-              opacity: +this.tms_opacity,
-              visible: this.tms_visible,
-              crs: this.tms_projection,
-              type: 'tms',
+              opacity:  +this.tms_opacity,
+              visible:  this.tms_visible,
+              crs:      this.tms_projection,
+              type:     'tms',
             }
           );
           $(this.$refs.modal_addlayer).modal('hide');
           // reset tms fields
-          this.tms_url = '';
-          this.tms_name = '';
+          this.tms_url        = '';
+          this.tms_name       = '';
           this.tms_projection = 'EPSG:3857';
-          this.tms_visible = true;
-          this.tms_opacity = 1;
+          this.tms_visible    = true;
+          this.tms_opacity    = 1;
         } catch(e) {
           console.warn(e);
           this.error_message = `${e}`;
@@ -919,7 +919,7 @@ export default {
     async addWmsURL() {
       this.loading = true;
       const wms    = { url: this.url, id: this.id, show: true };
-      const found  = this.wms_urls.find(l => l.url === this.url);
+      const found  = this.wms_urls.find(l => this.url === l.url);
       try {
         await this.fetchWMS(this.url);
         if (!found) {
@@ -1068,7 +1068,7 @@ export default {
     deleteWMS(name) {
       const data = this.getLocalWMSData();
       Object.keys(data.wms || {}).forEach(url => {
-        const i = data.wms[url].findIndex(w => w.name == name);
+        const i = data.wms[url].findIndex(w => name == w.name);
         // remove WMS entry
         if (i >= 0) {
           data.wms[url].splice(i, 1);
@@ -1089,7 +1089,7 @@ export default {
       Object
         .keys(data.wms)
         .find(url => {
-          const i = data.wms[url].findIndex(l => l.name == name);
+          const i = data.wms[url].findIndex(l => name == l.name);
           if (-1 !== i) {
             data.wms[url][i][attr.key] = attr.value;
             return true;
@@ -1114,7 +1114,7 @@ export default {
      * @param data
      */
     updateLocalWMSData(data) {
-      const item = window.localStorage.getItem('externalwms');
+      const item    = window.localStorage.getItem('externalwms');
       const alldata = (item ? JSON.parse(item) : undefined) || {};
       alldata[ApplicationState.project.getId()] = data;
       try {
