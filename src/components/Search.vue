@@ -108,7 +108,7 @@ export default {
       const item     = window.localStorage.getItem('QUERYBUILDERSEARCHES');
       const items    = item ? JSON.parse(item) : undefined;
       const pid      = ApplicationState.project.getId();
-      const searches = (items ? items[pid] || [] : []).filter(item => item.id !== search.id);
+      const searches = (items ? items[pid] || [] : []).filter(item => search.id !== item.id);
 
       if (searches.length) {
         items[pid] = searches;

@@ -23,7 +23,7 @@
         class            = "btn skin-border-color"
         style            = "background-color: transparent; margin: 5px 0"
       >
-        <i class = "skin-color" :class="$fa('clear')"></i>
+        <i class = "skin-color" :class = "$fa('clear')"></i>
       </button>
     </section>
     <!-- SEARCH TOOLS -->
@@ -90,7 +90,7 @@
               <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
 
-              <bar-loader
+            <bar-loader
               v-if     = "input.dependance"
               :loading = "state.loading[input.dependance] || input.loading"
             />
@@ -132,7 +132,7 @@
           <sub>{{ input.options.description }}</sub>
 
           <!-- DEBUG INFO -->
-          <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
+          <details v-if = "is_staff" style = "cursor: pointer; user-select: none; margin-top: .5em;">
             <ul style = "font-size: 80%;padding-left: 15px; font-family: monospace; white-space: nowrap; overflow-x: auto; scrollbar-width: thin;">
               <li><b class = "skin-color">{{ input.type }}</b></li>
               <li><b class = "skin-color">{{ input.widget_type }}</b><span v-if = "input.options.value">: {<br>  key: "{{ input.options.key }}",<br>  value: "{{ input.options.value }}"<br>}</span></li>
@@ -270,7 +270,7 @@
        * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
        */
       getLabelOperator(operator) {
-        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`
+        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`;
       },
 
       async onFocus(e) {
@@ -391,7 +391,7 @@
         } catch(e) {
           console.warn(e);
         } finally {
-          this.state.searching            = false;
+          this.state.searching = false;
         }
       },
 
