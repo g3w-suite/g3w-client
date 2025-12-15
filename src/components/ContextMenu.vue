@@ -797,7 +797,14 @@
         if (layerId) {
           setTimeout(() => {
             document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
-            setTimeout(() => document.querySelector(`summary:has(+ ul a[href="#layer_general_${layerId}"])`).click());
+            setTimeout(() => {
+              const dom = document.querySelector(`summary:has(+ ul a[href="#layer_general_${layerId}"])`);
+              dom.scrollIntoView();
+              //click if only is no open tab
+              if (!dom.parentElement.hasAttribute('open')) {
+                dom.click();
+              }
+            });
           });
         }
       },
