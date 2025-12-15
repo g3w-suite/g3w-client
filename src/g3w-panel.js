@@ -75,7 +75,7 @@ export default class Panel extends Emitter {
   async unmount() {
     const panel = this.internalPanel;
     panel.$destroy(true);
-    $(panel.$el).remove();
+    panel.$el?.remove();
     if (panel.onClose) { panel.onClose();}
     this.internalComponent = null;
     if (this.service && this.service.clear) {
