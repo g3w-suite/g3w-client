@@ -796,7 +796,7 @@
         $('#modal-metadata').modal('show');
         if (layerId) {
           setTimeout(() => {
-            document.querySelector('#project-catalog [href="#metadata_layers"]').click();
+            document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
             document.querySelector('#metadata_layers [data-target="#' + layerId + '"]').click();
           });
         }
