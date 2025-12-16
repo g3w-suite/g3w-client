@@ -916,17 +916,19 @@ export default {
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
 
+        const wrapper = document.querySelector('.content-wrapper');
+
         panel.width  = Math.min(Math.max(
-          Math.round((200               / $('.content-wrapper').width())  * 100),
-          Math.round(((rect.width  -dx) / $('.content-wrapper').width())  * 100),
+          Math.round((200               / wrapper.clientWidth)  * 100),
+          Math.round(((rect.width  -dx) / wrapper.clientWidth)  * 100),
         ), 90);
 
         panel.height = Math.min(Math.max(
-          Math.round((200               / $('.content-wrapper').height()) * 100),
-          Math.round(((rect.height -dy) / $('.content-wrapper').height()) * 100),
+          Math.round((200               / wrapper.clientHeight) * 100),
+          Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const viewW = $('#app')[0].getBoundingClientRect().width - $(".main-sidebar")[0].getBoundingClientRect().width - $(".main-sidebar").offset().left;
+        const viewW = document.querySelector('#app').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - $(".main-sidebar").offset().left;
         const viewH = $(window).height() - $(".navbar").height();
 
         const h_split = 'h' === this.state.split;
