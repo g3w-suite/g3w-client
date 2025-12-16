@@ -266,7 +266,6 @@ export default class Component extends Emitter {
    * @fires unmount
    */
   async unmount() {
-   
     if (!this.internalComponent) {
       return;
     }
@@ -274,11 +273,10 @@ export default class Component extends Emitter {
       this.internalComponent.$off('resize-component', this.internalComponent.layout);
     }
     this.state.open = false;
-    this.internalComponent.$destroy(true);  // destroy vue component
-    $(this.internalComponent.$el).remove(); // remove dom element
-    this.internalComponent = null;          // set internal componet to null (for GC)
-    this.emit('unmount');                   // emit unmount event
-    
+    this.internalComponent.$destroy(true); // destroy vue component
+    this.internalComponent.$el?.remove();  // remove dom element
+    this.internalComponent = null;         // set internal componet to null (for GC)
+    this.emit('unmount');                  // emit unmount event
   }
 
   /**
