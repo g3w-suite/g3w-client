@@ -617,7 +617,7 @@
 
       onChartResize() {
         const move = e => {
-          const perc                     =  (Math.abs(e.x -  window.innerWidth) * 100 / $(this.$refs.wrapper).width()); // percentage
+          const perc                     =  (Math.abs(e.x - window.innerWidth) * 100 / this.$refs.wrapper.clientWidth); // percentage
           this.$refs.content.style.width = `${100 - perc}%`;
           this.$refs.chart.style.width   = `${perc}%`;
         };
