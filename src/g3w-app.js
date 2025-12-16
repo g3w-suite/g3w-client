@@ -3768,7 +3768,7 @@ export default new (class GUI extends Emitter {
       this.controlClick(mapcontrol, { clickmap })
     });
 
-    $(control.element).find('button')[0]?.setAttribute('data-placement', 'left');
+    control.element?.querySelector('button')?.setAttribute('data-placement', 'left');
 
     if (addToMapControls && !visible) {
       control.element.style.display = "none";
