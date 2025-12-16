@@ -310,7 +310,7 @@ const STATE = {
           constructor(config = {}) {
             super();
             this.config       = {
-              id:         config.id || property || Date.now(),
+              id:         config.id ?? property ?? Date.now(),
               projection: config.projection,
               extent:     config.extent,
               initextent: config.initextent,
@@ -376,7 +376,7 @@ const STATE = {
   
             if (filter.IDS) {
               const ids = [].concat(filter.IDS);
-              layers = layers.filter(l => ids.includes(l.getId()));
+              layers    = layers.filter(l => ids.includes(l.getId()));
             }
   
             // check if there are `selected` layers otherwise get all `layers`
