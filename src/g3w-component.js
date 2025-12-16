@@ -237,17 +237,17 @@ export default class Component extends Emitter {
    * @param { Element | 'string' } parent DOM element
    * @param { boolean } append
    * 
-   * @fires internalComponent~ready
-   * @fires mount event
+   * @fires ready
+   * @fires mount
    */
   async mount(parent, append) {
-   
+
     if (!this.internalComponent) {
       this.setInternalComponent();
     }
 
     if (append) {
-      $(parent).append(this.internalComponent.$mount().$el);
+      ('string' === typeof parent ? document.querySelector(parent) : parent).append(this.internalComponent.$mount().$el);
     }
 
     if (!append){
@@ -255,12 +255,11 @@ export default class Component extends Emitter {
     }
 
     await this.internalComponent.$nextTick();
-  
+
     this.emit('ready');
-    // emit mount event
     this.emit('mount');
+
     return true;
-    
   }
 
   /**
