@@ -3793,61 +3793,8 @@ export default new (class GUI extends Emitter {
    *
    * @since 4.1.0
    */
-  showControls(types) {
-    this.#controls.forEach(c => this.#map.removeControl(c.control));
-    this.#controls.forEach(c => {
-      c.visible = !types || types.indexOf(c.type) > -1 ? true : c.visible;
-      if (c.visible) {
-        this.#map.addControl(c.control);
-      }
-    });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   *
-   * @since 4.1.0
-   */
   getMapControls() {
     return this.#controls;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   *
-   * Used by the following plugins: "archiweb"
-   * 
-   * @since 4.1.0
-   */
-  removeControlById(id) {
-    this.#controls.find((c, i) => {
-      if (id === c.id) {
-        this.#controls.splice(i, 1);
-        this.#map.removeControl(c.control);
-        if (c.control.hideControl) {
-          c.control.hideControl();
-        }
-        return true;
-      }
-    })
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   *
-   * @since 4.1.0
-   */
-  removeControl(type) {
-    this.#controls.find((c, i) => {
-      if (type === c.type) {
-        this.#controls.splice(i, 1);
-        this.#map.removeControl(c.control);
-        if (c.control.hideControl) {
-          c.control.hideControl();
-        }
-        return true;
-      }
-    })
   }
 
   /**

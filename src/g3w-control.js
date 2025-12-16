@@ -432,32 +432,6 @@ export default class MapControl extends ol.control.Control {
   /**
    * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
    *
-   * Hide control and move all controls that sit on his right position
-   *
-   * @since 3.11.0
-   */
-  hideControl() {
-    let position     = $(this.element).position().left;
-    let controlWidth = $(this.element).outerWidth();
-    let newPosition  = position;
-    const controls   = $(this.element).siblings('.ol-control-tl');
-    controls.each(function() {
-      if ($(this).position().left > position) {
-        newPosition = $(this).position().left;
-        if (controlWidth > $(this).outerWidth()) {
-          position = position + (controlWidth - $(this).outerWidth())
-        }
-        $(this).css('left', `${position}px`);
-        position     = newPosition;
-        controlWidth = $(this).outerWidth();
-      }
-    });
-    $(this.element).hide();
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
    * Toggle pointer events and `g3w-ol-disabled` class on map control button
    * 
    * @param { Boolean } bool whether the map control button is clickable
