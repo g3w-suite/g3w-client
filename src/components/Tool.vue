@@ -66,6 +66,7 @@ export default {
     tool: {
       required: true,
       type:     Object,
+    }
   },
   methods: {
     showToolStateMessage() {
