@@ -47,7 +47,7 @@ export class Plugin extends Emitter {
       Vue.watch(() => ApplicationState.language, async lang => {
         try {
           this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
-        } catch (e) {
+        } catch(e) {
           console.warn(e);
         }
       }, { immediate: true });
@@ -72,7 +72,7 @@ export class Plugin extends Emitter {
       ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
       // remove layout
       if (this.name) {
-        delete ApplicationState.layout[this.name]
+        delete ApplicationState.layout[this.name];
       }
     }, TIMEOUT);
 
@@ -150,7 +150,7 @@ export class Plugin extends Emitter {
    * @FIXME add description
    */
   getService() {
-    return this.service
+    return this.service;
   }
 
   /**
@@ -199,7 +199,7 @@ export class Plugin extends Emitter {
    * @see g3wsdk.core.ApplicationState.layout
    */
   setLayout(config) {
-    config = undefined !== config ? config : cloneDeep(ApplicationState.layout.app);
+    config = config ?? cloneDeep(ApplicationState.layout.app);
 
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%
@@ -347,14 +347,14 @@ export class Plugin extends Emitter {
           return {
           icon:     tool.icon,
           type:     tool.type,
-          name:     config.name || tool.name,
+          name:     config?.name ?? tool.name,
           html:     tool.html,
           options:  tool.options || {},
-          action:   tool.action && tool.action.bind(this, config),
-          loading:  undefined !== tool.loading  ? tool.loading  : false,
-          disabled: undefined !== tool.disabled ? tool.disabled : false,
-          offline:  undefined !== tool.offline  ? tool.offline  : true,
-          state:    undefined !== tool.state    ? tool.state    : ({ type: null, message: null })
+          action:   tool?.action?.bind?.(this, config),
+          loading:  tool?.loading ?? false,
+          disabled: tool?.disabled ?? false,
+          offline:  tool?.offline ?? true,
+          state:    tool?.state ?? ({ type: null, message: null })
         };
       });
       this.getHookService(hook).addTools(tools, group);
@@ -493,7 +493,7 @@ export class PluginService extends Emitter {
     this.currentLayout = ApplicationState.layout.__current;
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
-      () => ApplicationState.layout.__current,
+      () =>         ApplicationState.layout.__current,
       layoutName => this.currentLayout = layoutName === this.name ? this.currentLayout : layoutName
     )
   }
@@ -530,7 +530,7 @@ export class PluginService extends Emitter {
   }
 
   getGid() {
-    return this.config.gid && this.config.gid.split(':')[1];
+    return this.config?.gid?.split?.(':')[1];
   }
 
   getConfig() {
