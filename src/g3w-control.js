@@ -407,14 +407,14 @@ export default class MapControl extends ol.control.Control {
 
     /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
     if (this._onclick) {
-      const btn = $(this.element).children('button');
+      const buttons = Array.from(this.element.querySelectorAll('button'));
       let loading = false; // whether already clicked (waiting for async "_onclick" method)
-      $(this.element).on('click', async () => {
+      this.element.addEventListener('click', async () => {
         if (!loading) {
           loading = true;
-          btn.addClass('g3w-ol-disabled');
+          buttons.forEach(btn => btn.classList.add('g3w-ol-disabled'));
           await this._onclick();
-          btn.removeClass('g3w-ol-disabled');
+          buttons.forEach(btn => btn.classList.remove('g3w-ol-disabled'));
           loading = false;
         }
       });
