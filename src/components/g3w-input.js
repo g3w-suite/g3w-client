@@ -115,11 +115,11 @@ export class Service {
 
   getState() {
     return this.state;
-  };
+  }
 
   getValue() {
     return this.state.value;
-  };
+  }
 
   /**
    * @param value
@@ -153,37 +153,37 @@ export class Service {
 
     this.state.value_from_default_value = get_default_value;
 
-  };
+  }
 
   addValueToValues(value) {
     this.state.input.options.values.unshift(value);
-  };
+  }
 
   _getValidatorType() {
     return this.state.type;
-  };
+  }
 
   setState(state = {}) {
     this.state = 'Object' === toRawType(state) ? state : {};
-  };
+  }
 
-// return validator
+  // return validator
   getValidator() {
     return this._validator;
-  };
+  }
 
   setValidator(validator) {
     this._validator = validator;
-  };
+  }
 
   /**
    * set input empty '', null, undefined or []
    */
   setEmpty() {
     this.state.validate.empty = (null === this.state.value || '' === `${this.state.value}`.trim());
-  };
+  }
 
-// the general method to check the value of the state is valid or not
+  // the general method to check the value of the state is valid or not
   validate() {
     if (this.state.validate.empty) {
       this.state.value           = null; //force to null
@@ -209,7 +209,7 @@ export class Service {
     }
 
     return this.state.validate.valid;
-  };
+  }
 
   setErrorMessage() {
     //in vase of
@@ -241,7 +241,8 @@ export class Service {
       // in case of state.validate.valid false and not required need to show a right message (info or type)
       this.state.validate.message = this.state.info || `${_("sdk.form.inputs.input_validation_error_type")} ( ${_("sdk.form.inputs." + this.state.type)} )`;
     }
-  };
+  }
+
   /**
    * Method to set update
    */
@@ -255,7 +256,7 @@ export class Service {
     } else {
       this.state.update = value != _value;
     }
-  };
+  }
 }
 
 /**
@@ -288,7 +289,7 @@ export class RangeService extends Service {
   }
   isValueInRange(value, min, max) {
     return value <= max && value >= min;
-  };
+  }
 };
 
 /**
@@ -303,15 +304,15 @@ export class DateTimePickerService extends Service {
 
   getLocale() {
     return window.initConfig.user.i18n ? window.initConfig.user.i18n : 'en';
-  };
+  }
 
   convertQGISDateTimeFormatToMoment(datetimeformat) {
     return convertQGISDateTimeFormatToMoment(datetimeformat);
-  };
+  }
 
   setValidatorOptions(opts = {}) {
     this.validatorOptions = opts;
-  };
+  }
 };
 
 /**
@@ -336,7 +337,7 @@ export class LonLatService extends Service {
 
   setCoordinateButtonReactiveObject(coordinatebutton) {
     this.coordinatebutton = coordinatebutton;
-  };
+  }
 
   validate() {
     if (this.state.values.lon < -180) { this.state.values.lon = -180}
@@ -345,12 +346,12 @@ export class LonLatService extends Service {
     else if (this.state.values.lat > 90) { this.state.values.lon = 90 }
 
     this.state.validate.valid = !Number.isNaN(1*this.state.values.lon);
-  };
+  }
 
   toggleGetCoordinate() {
     this.coordinatebutton.active = !this.coordinatebutton.active;
     this.coordinatebutton.active ? this.startToGetCoordinates() : this.stopToGetCoordinates();
-  };
+  }
 
   startToGetCoordinates() {
     GUI.deactiveMapControls();
@@ -364,16 +365,16 @@ export class LonLatService extends Service {
       this.state.values.lon = lon;
       this.state.values.lat = lat;
     })
-  };
+  }
 
   stopToGetCoordinates() {
     ol.Observable.unByKey(this.eventMapKey);
     GUI.off('mapcontrol:toggled', this.mapControlToggleEventHandler)
-  };
+  }
 
   clear() {
     this.stopToGetCoordinates();
-  };
+  }
 };
 
 /**
@@ -387,11 +388,11 @@ export class SelectService extends Service {
 
   _getLayerById(layer_id) {
     return getCatalogLayerById(layer_id);
-  };
+  }
 
   addValue(value) {
     this.state.input.options.values.push(value);
-  };
+  }
 
   sortValues() {
     const { orderbyvalue } = this.state.input.options;
@@ -423,7 +424,7 @@ export class SelectService extends Service {
         resolve(this.state.input.options.values);
       }).catch(e => { console.warn(e); reject(e); });
     })
-  };
+  }
 
   /**
    *
@@ -458,7 +459,7 @@ export class SelectService extends Service {
         resolve(values);
       }).catch(e => { console.warn(e); reject(e) });
     });
-  };
+  }
 };
 
 /**
@@ -484,12 +485,12 @@ export class SliderRangeService extends Service {
 
   changeInfoMessage() {
     this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
-  };
+  }
 }
 
 /**
-* ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@v4.0.0 
-*/
+ * ORIGINAL SOURCE: src/app/gui/inputs/picklayer/service.js@v4.0.0 
+ */
 export class PickLayerService {
   constructor(opts = {}) {
     this.pick_type   = opts.pick_type || 'wms';
@@ -502,38 +503,22 @@ export class PickLayerService {
     }) : new PickCoordinatesInteraction();
     //@since 4.0.1 set id. It used on editing plugin
     this.interaction.set('id', 'picklayer');
+    this.escKeyUpHandler = this.escKeyUpHandler.bind(this);
   }
 
-  /**
-   *
-   * @return {boolean|*}
-   */
   isPicked() {
     return this.ispicked;
-  };
+  }
 
-  /**
-   *  bind interrupt event
-   */
-  escKeyUpHandler({ keyCode, data : { owner } }) {
-    if (27 === keyCode) { owner.unpick() }
-  };
+  escKeyUpHandler(event) {
+    if ('Escape' === event.key) {
+      this.unpick();
+    }
+  }
 
-  unbindEscKeyUp() {
-    $(document).unbind('keyup', this.escKeyUpHandler);
-  };
-
-  bindEscKeyUp() {
-    $(document).on('keyup', { owner: this }, this.escKeyUpHandler);
-  };
-
-  /**
-   *
-   * @return {Promise<unknown>}
-   */
   pick() {
     return new Promise((resolve, reject) => {
-      this.bindEscKeyUp();
+      document.addEventListener('keyup', this.escKeyUpHandler);
       const values = {};
       this.ispicked = true;
       const afterPick = feature => {
@@ -572,25 +557,21 @@ export class PickLayerService {
         }
       })
     })
-  };
+  }
 
-  /**
-   *
-   */
   unpick() {
     GUI.removeInteraction(this.interaction);
     GUI.setModal(true);
-    this.unbindEscKeyUp();
+    document.removeEventListener(this.escKeyUpHandler);
     this.ispicked = false;
-  };
+  }
 
-  /**
-   *
-   */
   clear() {
-    if (this.isPicked()) { this.unpick() }
+    if (this.isPicked()) {
+      this.unpick();
+    }
     this.interaction = this.field = null;
-  };
+  }
 };
 
 /**
