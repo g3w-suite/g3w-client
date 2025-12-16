@@ -66,9 +66,11 @@ export default class Panel extends Emitter {
   async mount(parent) {
     const panel   = this.internalPanel;
     const vueComp = panel.$mount();
-    $(parent).append(vueComp.$el);
+    ('string' === typeof parent ? document.querySelector(parent) : parent).append(vueComp.$el);
     await vueComp.$nextTick();
-    if (panel.onShow) { panel.onShow();}
+    if (panel.onShow) {
+      panel.onShow();
+    }
     return true;
   }
 
@@ -76,7 +78,9 @@ export default class Panel extends Emitter {
     const panel = this.internalPanel;
     panel.$destroy(true);
     panel.$el?.remove();
-    if (panel.onClose) { panel.onClose();}
+    if (panel.onClose) {
+      panel.onClose();
+    }
     this.internalComponent = null;
     if (this.service && this.service.clear) {
       this.service.clear();
