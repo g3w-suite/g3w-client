@@ -578,8 +578,13 @@
             delay: 250,
             transport: (params, success, failure) => {
               const search = params.data.term;
-              // hide a previous result if present
-              $('.select2-results__option.loading-results').siblings().hide();
+              // hide siblings (previous result if present)
+              const el = document.querySelector('.select2-results__option.loading-results');
+              [...(el?.parentNode?.children || {})].filter(sibling => {
+                if (sibling !== el) {
+                  sibling.style.display = 'none';
+                }
+              });
               this.service.getData({
                 key:   this.state.input.options.value,
                 value: this.state.input.options.key,

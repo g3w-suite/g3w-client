@@ -828,7 +828,7 @@
       },
 
       async trigger(action, layer, feature, index) {
-        if (action.opened && this.state.layersFeaturesBoxes[GUI.getBoxId(layer, feature)].collapsed) {
+        if (action.opened && 'none' === document.getElementById(`${layer.id}_${index}`)?.style?.display) {
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
         }
