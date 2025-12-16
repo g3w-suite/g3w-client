@@ -3773,8 +3773,9 @@ export default new (class GUI extends Emitter {
     if (addToMapControls && !visible) {
       control.element.style.display = "none";
     }
+
     if (addToMapControls) {
-      $('.g3w-map-controls').append(control.element);
+      document.querySelector('.g3w-map-controls').append(control.element);
     }
 
     this.#controls_[type] = control;
