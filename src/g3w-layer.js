@@ -228,7 +228,7 @@ export class Layer extends Emitter {
     const project = options.project || ApplicationState.project;
 
     // default layer style (layerstree)
-    const defaultstyle = config.styles && config.styles.find(s => s.current).name;
+    const defaultstyle = config?.styles?.find(s => s.current).name;
 
     /**
      * Global state
@@ -277,14 +277,14 @@ export class Layer extends Emitter {
       multilayerid:       config.multilayer, //it used to check if a layer can be grouped with other layers (get map tiles, get feature info)
       projection:         config.projection && config?.projection?.getCode() === config?.crs?.epsg ? config.projection : (config.crs ? ApplicationState.projections.get(config.crs) : undefined),
       attributions:       config.attributions,
-      selected:           config.selected || false,
-      disabled:           config.disabled || false,
+      selected:           config?.selected ?? false,
+      disabled:           config?.disabled ?? false,
       metadata:           config.metadata,
-      removable:          config.removable || false,
+      removable:          config?.removable ?? false,
       source:             config.source,
       styles:             config.styles,
       defaultstyle,
-      infoformats:        config.infoformats || [],
+      infoformats:        config?.infoformats ?? [],
       projectLayer:       true,
       geolayer:           "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
@@ -296,8 +296,8 @@ export class Layer extends Emitter {
 
       /** Reactive selection attribute */
       selection:          {
-        active: false,
-        fids:   new Set(),
+        active:   false,
+        fids:     new Set(),
         features: {},      // ol features
       },
 
@@ -311,7 +311,7 @@ export class Layer extends Emitter {
       },
 
       /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
-      filters:            config.filters || [],
+      filters:            config?.filters ?? [],
 
       /** @type {number} since 3.8.0 */
       featurecount:       config.featurecount,
@@ -326,31 +326,31 @@ export class Layer extends Emitter {
       expanded:           config.expanded,
 
       /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
-      toc:                config.toc ?? true,
+      toc:                config?.toc ?? true,
 
       /** @since 4.0.0 */
-      legend: config.legend ?? {
-        url:     null,
-        loading: false,
-        error:   false,
+      legend: config?.legend ?? {
+        url:        null,
+        loading:    false,
+        error:      false,
         /** @deprecated since 3.8. Will be removed in 4.x. Use `expanded` attribute instead */
-        show:    true,
+        show:       true,
         /** used when categories changed (checkbox on TOC) and legend is on TAB */
-        change:  false,
+        change:     false,
         categories: {},
       },
 
       /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
-      categories: config.categories ?? false,
+      categories: config?.categories ?? false,
 
       /** @type { boolean } since 4.0.0 */
-      exclude_from_legend: config.exclude_from_legend ?? true,
+      exclude_from_legend: config?.exclude_from_legend ?? true,
 
       /** @since 4.0.0 */
       external: config?.source?.external,
 
       /** @since 4.0.0 */
-      bbox: config.bbox,
+      bbox: config?.bbox,
 
       /** @since 4.0.0 checked config attribute is passed by vector layer on editing */
       checked: config.checked ?? !!config.visible,
@@ -359,10 +359,10 @@ export class Layer extends Emitter {
       epsg: config?.crs?.epsg,
 
       /** @since 4.0.0 */
-      hidden: !!config.hidden,
+      hidden: !!config?.hidden,
 
       /** @since 4.0.0 */
-      scalebasedvisibility: !!config.scalebasedvisibility,
+      scalebasedvisibility: !!config?.scalebasedvisibility,
 
       /** @since 4.0.0 */
       minscale: config.minscale,
@@ -389,7 +389,7 @@ export class Layer extends Emitter {
       http_params: config.http_params ?? {},
     });
     
-    this.layers          = (this.state.layers || []); // store enabled layers (wms)
+    this.layers          = this.state?.layers ?? []; // store enabled layers (wms)
     this.showSpinner     = !!this.state.visible;
     this.extent          = this.state.extent;
     this.projection      = this.state.projection;
@@ -678,7 +678,7 @@ export class Layer extends Emitter {
    */
   getRelationAttributes(relationName) {
     const relation = this.#relations.find(r => relationName === r.name);
-    return relation ? relation.fields : [];
+    return relation?.fields ?? [];
   }
 
   /**
@@ -802,7 +802,7 @@ export class Layer extends Emitter {
             } else {
               GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
             }          
-          } catch (e) {
+          } catch(e) {
             console.warn(e);
           }
         });
@@ -1056,7 +1056,7 @@ export class Layer extends Emitter {
             f.selected          = true
             f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
             GUI.defaultsLayers.selectionLayer.getSource().addFeature(f.feature);
-          } catch (e) {
+          } catch(e) {
             console.warn(e);
           }
         });
@@ -1175,7 +1175,7 @@ export class Layer extends Emitter {
             f.selected          = false
             f.feature.__layerId = this.getId(); //@since 4.0.1 need to add layerId. It used to reconize feature selected by layer id
             GUI.defaultsLayers.selectionLayer.getSource().removeFeature(f.feature);
-          } catch (e) {
+          } catch(e) {
             console.warn(e);
           }
         });
@@ -1302,7 +1302,7 @@ export class Layer extends Emitter {
    * @param pageLength
    */
   setAttributeTablePageLength(pageLength) {
-    this.state.attributetable.pageLength = pageLength
+    this.state.attributetable.pageLength = pageLength;
   }
 
   /**
@@ -1318,7 +1318,7 @@ export class Layer extends Emitter {
    * @returns {*|null} source type of layer
    */
   getSourceType() {
-    return this.state.source ? this.state.source.type : null;
+    return this.state?.source?.type ?? null;
   }
 
   /**
@@ -1384,7 +1384,7 @@ export class Layer extends Emitter {
         formatter,
         suggest,
         in_bbox,
-        filtertoken: this.getToken()
+        filtertoken: this.getToken(),
       });
     }
 
@@ -1546,7 +1546,7 @@ export class Layer extends Emitter {
    * @returns { * | {} } layer fields
    */
   getFields() {
-    return this.state.fields
+    return this.state.fields;
   }
 
   /**
@@ -1646,7 +1646,7 @@ export class Layer extends Emitter {
    * @returns {*} metadata
    */
   getMetadata() {
-    return this.state.metadata
+    return this.state.metadata;
   }
 
   /**
@@ -1676,7 +1676,7 @@ export class Layer extends Emitter {
    * @returns { string } Server type
    */
   getServerType() {
-    return this.state.servertype || 'QGIS';
+    return this.state?.servertype ?? 'QGIS';
   }
 
   /**
@@ -1742,7 +1742,7 @@ export class Layer extends Emitter {
    * 
    * @returns { boolean } whether layer is filterable
    */
-  isFilterable(conditions=null) {
+  isFilterable(conditions = null) {
     let isFiltrable = !!(this.state?.capabilities & 2);
     if (isFiltrable && conditions) {
       isFiltrable = Object.keys(conditions).reduce((bool, attribute) => {
@@ -1904,9 +1904,9 @@ export class Layer extends Emitter {
    * @param opts.J                         wms request parameter 
    */
   async #queryQGIS(opts = {}) {
-    const projections      = { map: null, layer: null };
+    const projections = { map: null, layer: null };
   
-    const is_table = 'table' === this.getType();
+    const is_table    = 'table' === this.getType();
 
     // in case not alphanumeric layer set projection
     if (!is_table) {
@@ -1979,7 +1979,7 @@ export class Layer extends Emitter {
     });
 
     return {
-      data: response.vector.data,
+      data:  response.vector.data,
       count: response.vector.count
     };
   }
@@ -2410,7 +2410,7 @@ export class Layer extends Emitter {
    */
   clearCategories() {
     this.state.legend.categories = {};
-    this.state.categories = false;
+    this.state.categories        = false;
   }
 
   /**
@@ -2539,7 +2539,7 @@ export class Layer extends Emitter {
       this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
       // needed to check if call setVisible is change disable property
       // looping through parentfolter checked
-      let setVisible = true;
+      let setVisible  = true;
       let parentGroup = this.state.parentGroup;
       while (parentGroup) {
         setVisible  = setVisible && parentGroup.checked;
@@ -2677,9 +2677,8 @@ export class Layer extends Emitter {
         return source_layer;
       }
 
-      return this.state.wms_use_layer_ids ? this.getId() : this.getName();
     }
-    return this.state.wms_use_layer_ids ? this.getId() : this.getName()
+    return this.state.wms_use_layer_ids ? this.getId() : this.getName();
   }
 
   /**
@@ -2786,7 +2785,7 @@ export class Layer extends Emitter {
     return (
         this.isRaster() &&
         this.state.source && (
-        ('map' !== type || (this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs)) &&
+        ('map'    !== type || (this.isExternalWMS() && this.state.crs.epsg === this.state.map_crs)) &&
         ('legend' !== type || this.state.source.external)
       )
     );
@@ -3042,7 +3041,7 @@ export class Layer extends Emitter {
     }
     
     if (this.isRaster() && this.isWMS()) {
-      this.update(mapState, params)
+      this.update(mapState, params);
     }
   }
 
@@ -3179,7 +3178,7 @@ export class Layer extends Emitter {
           tileGrid: new ol.tilegrid.WMTS({
             origin: ol.extent.getTopLeft(this.state.matrixSet ? projection.getExtent() : this.state.grid_extent),
             resolutions,
-            matrixIds: resolutions.map((_, z) => z)
+            matrixIds: resolutions.map((_, z) => z),
           }),
         })
       });
@@ -3211,7 +3210,7 @@ export class Layer extends Emitter {
         source:        new ol.source.TileWMS({
           ratio:      1,
           url:        this.layers[0]?.getWmsUrl ? this.layers[0].getWmsUrl() : this.state.url,
-          projection: this.state.projection ? this.state.projection.getCode() : null,
+          projection: this.state?.projection?.getCode?.() ?? null,
           params:     {
             ...Object.fromEntries(
               Object.entries({
@@ -3376,7 +3375,7 @@ export class Layer extends Emitter {
 
   #fetchTile(tile, url) {
     fetch('POST' === this.state.http_method ? (url || '').split('?')[0] : url, {
-      method: this.state.http_method || 'GET',
+      method:  this.state.http_method || 'GET',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
       body:    'POST' === this.state.http_method ? url.split('?')[1] : undefined,
     })
@@ -3479,7 +3478,7 @@ Layer._parse = function(type, params, opts) {
           geometryName:      'geometry',
           dataProjection:    options.crs,
           featureProjection: options.mapCrs || options.crs,
-        })).readFeatures('string' === typeof data ? JSON.parse(data) : data)
+        })).readFeatures('string' === typeof data ? JSON.parse(data) : data);
       } catch (e) {
         console.warn(e);
         return [];
