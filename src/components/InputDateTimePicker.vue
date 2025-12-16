@@ -179,7 +179,7 @@ export default {
     $(`#${this.iddatetimepicker}`).on("dp.hide",   this.onDatePickerHide);
 
     if (ApplicationState.ismobile) {
-      setTimeout(() => { $(`#${this.idinputdatetimepiker}`).blur(); });
+      setTimeout(() => { document.getElementById(this.idinputdatetimepiker)?.blur(); });
     }
 
   }
