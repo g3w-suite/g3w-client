@@ -151,9 +151,326 @@ globalThis.ol = Object.assign({}, ol, {
 globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 
 /**
- * Based on Bootstrap v3.3.7
+ * Based on bootstrap/js/modal.js@v3.3.7
  */
-require('bootstrap/js/modal');
+class Modal {
+  
+  $backdrop           = null;
+  isShown             = null;
+  originalBodyPad     = null;
+  scrollbarWidth      = 0;
+  ignoreBackdropClick = false;
+  fixedContent        = '.navbar-fixed-top, .navbar-fixed-bottom';
+
+  constructor(element, options) {
+    this.options             = options;
+    this.$element            = $(element);
+    this.$dialog             = this.$element.find('.modal-dialog');
+
+    if (this.options.remote) {
+      this.$element
+        .find('.modal-content')
+        .load(this.options.remote, $.proxy(function () { this.$element.trigger('loaded.bs.modal') }, this))
+    }
+  }
+
+  toggle(relatedTarget) {
+    return this.isShown ? this.hide() : this.show(relatedTarget)
+  }
+
+  show(relatedTarget) {
+    const evt1 = $.Event('show.bs.modal', { relatedTarget });
+
+    this.$element.trigger(evt1);
+
+    if (this.isShown || evt1.isDefaultPrevented()) {
+      return;
+    }
+
+    this.isShown = true;
+
+    // check scrollbar
+
+    this.bodyIsOverflowing = document.body.clientWidth < window.innerWidth
+
+    // measure scrollbar
+    const scrollDiv = document.createElement('div')
+    scrollDiv.className = 'modal-scrollbar-measure'
+    $(document.body).append(scrollDiv)
+    const scrollbarWidth_ = scrollDiv.offsetWidth - scrollDiv.clientWidth
+    $(document.body)[0].removeChild(scrollDiv)
+    this.scrollbarWidth = scrollbarWidth_; 
+
+    // set scrollbar
+
+    const bodyPad        = parseInt(($(document.body).css('padding-right') || 0), 10);
+
+    this.originalBodyPad = document.body.style.paddingRight || '';
+
+    const scrollbarWidth = this.scrollbarWidth;
+    
+    if (this.bodyIsOverflowing) {
+      $(document.body).css('padding-right', bodyPad + scrollbarWidth);
+      $(this.fixedContent).each((index, element) => {
+        const actualPadding = element.style.paddingRight;
+        const calculatedPadding = $(element).css('padding-right');
+        $(element)
+          .data('padding-right', actualPadding)
+          .css('padding-right', parseFloat(calculatedPadding) + scrollbarWidth + 'px');
+      });
+    }
+
+    $(document.body).addClass('modal-open');
+
+    this.escape();
+    this.resize();
+
+    this.$element.on('click.dismiss.bs.modal', '[data-dismiss="modal"]', $.proxy(this.hide, this));
+
+    this.$dialog.on('mousedown.dismiss.bs.modal', () => {
+      this.$element.one('mouseup.dismiss.bs.modal', e => {
+        if ($(e.target).is(this.$element)) {
+          this.ignoreBackdropClick = true;
+        }
+      });
+    });
+
+    this.backdrop(() => {
+      const transition = $.support.transition && this.$element.hasClass('fade')
+
+      if (!this.$element.parent().length) {
+        this.$element.appendTo($(document.body)); // don't move modals dom position
+      }
+
+      this.$element.show().scrollTop(0);
+
+      this.adjustDialog();
+
+      if (transition) {
+        this.$element[0].offsetWidth; // force reflow
+      }
+
+      this.$element.addClass('in');
+
+      // enforce focus
+      $(document)
+        .off('focusin.bs.modal') // guard against infinite focus loop
+        .on('focusin.bs.modal', $.proxy(function (e) {
+          if (document !== e.target &&
+            this.$element[0] !== e.target &&
+            !this.$element.has(e.target).length) {
+            this.$element.trigger('focus')
+          }
+        }, this));
+
+      const evt2 = $.Event('shown.bs.modal', { relatedTarget })
+
+      if (transition) {
+        this.$dialog
+          .one('bsTransitionEnd', () => { this.$element.trigger('focus').trigger(evt2) }) // wait for modal to slide in
+          .emulateTransitionEnd(300);
+      } else {
+        this.$element.trigger('focus').trigger(evt2);
+      }
+    });
+  }
+
+  hide(e) {
+    if (e) {
+      e.preventDefault();
+    }
+
+    e = $.Event('hide.bs.modal');
+
+    this.$element.trigger(e);
+
+    if (!this.isShown || e.isDefaultPrevented()) { 
+      return;
+    }
+
+    this.isShown = false;
+
+    this.escape();
+    this.resize();
+
+    $(document).off('focusin.bs.modal');
+
+    this.$element
+      .removeClass('in')
+      .off('click.dismiss.bs.modal')
+      .off('mouseup.dismiss.bs.modal');
+
+    this.$dialog.off('mousedown.dismiss.bs.modal');
+
+    if ($.support.transition && this.$element.hasClass('fade')) {
+      this.$element
+        .one('bsTransitionEnd', $.proxy(this.hideModal, this))
+        .emulateTransitionEnd(300);
+    } else {
+      this.hideModal();
+    }
+  }
+
+  escape() {
+    if (this.isShown && this.options.keyboard) {
+      this.$element.on('keydown.dismiss.bs.modal', $.proxy(function (e) { e.which == 27 && this.hide() }, this));
+    } else if (!this.isShown) {
+      this.$element.off('keydown.dismiss.bs.modal')
+    }
+  }
+
+  resize() {
+    if (this.isShown) {
+      $(window).on('resize.bs.modal', $.proxy(() => { this.adjustDialog(); }, this));
+    } else {
+      $(window).off('resize.bs.modal');
+    }
+  }
+
+  hideModal() {
+    this.$element.hide();
+    this.backdrop(() => {
+      $(document.body).removeClass('modal-open');
+      // reset adjustments
+      this.$element.css({ paddingLeft: '', paddingRight: '' });
+      //reset scrollbar
+      $(document.body).css('padding-right', this.originalBodyPad);
+      $(this.fixedContent).each((index, element) => {
+        const padding = $(element).data('padding-right');
+        $(element).removeData('padding-right');
+        element.style.paddingRight = padding ? padding : '';
+      });
+      this.$element.trigger('hidden.bs.modal');
+    });
+  }
+
+  removeBackdrop() {
+    this.$backdrop?.remove();
+    this.$backdrop = null;
+  }
+
+  backdrop(callback) {
+    const animate = this.$element.hasClass('fade') ? 'fade' : '';
+
+    if (this.isShown && this.options.backdrop) {
+
+      this.$backdrop = $(document.createElement('div'))
+        .addClass('modal-backdrop ' + animate)
+        .appendTo($(document.body));
+
+      this.$element.on('click.dismiss.bs.modal', $.proxy(function (e) {
+        if (this.ignoreBackdropClick) {
+          this.ignoreBackdropClick = false;
+          return;
+        }
+        if (e.target !== e.currentTarget) {
+          return;
+        }
+        if ('static' === this.options.backdrop) {
+          this.$element[0].focus();
+        } else {
+          this.hide();
+        }
+      }, this))
+
+      if ($.support.transition && animate) {
+        this.$backdrop[0].offsetWidth; // force reflow
+      }
+
+      this.$backdrop.addClass('in');
+
+      if (!callback) {
+        return;
+      }
+
+      if ($.support.transition && animate) {
+        this.$backdrop
+          .one('bsTransitionEnd', callback)
+          .emulateTransitionEnd(150);
+      } else {
+        callback();
+      }
+
+    } else if (!this.isShown && this.$backdrop) {
+      this.$backdrop.removeClass('in');
+
+      const callbackRemove = () => { this.removeBackdrop(); callback && callback(); };
+
+      if ($.support.transition && this.$element.hasClass('fade')) {
+        this.$backdrop
+          .one('bsTransitionEnd', callbackRemove)
+          .emulateTransitionEnd(150);
+      } else {
+        callbackRemove();
+      }
+
+    } else if (callback) {
+      callback()
+    }
+  }
+
+  // handle overflowing modals
+  adjustDialog() {
+    const modalIsOverflowing = this.$element[0].scrollHeight > document.documentElement.clientHeight
+
+    this.$element.css({
+      paddingLeft: !this.bodyIsOverflowing && modalIsOverflowing  ? this.scrollbarWidth : '',
+      paddingRight: this.bodyIsOverflowing && !modalIsOverflowing ? this.scrollbarWidth : ''
+    })
+  }
+
+}
+
+/**
+ * Based on bootstrap/js/modal.js@v3.3.7
+ */
+$.fn.modal = function(option, relatedTarget) {
+  return this.each(function () {
+    const $this = $(this);
+    const data = $this.data('bs.modal');
+    const options = $.extend({}, { backdrop: true, keyboard: true, show: true }, $this.data(), typeof option == 'object' && option);
+    if (!data) {
+      $this.data('bs.modal', (data = new Modal(this, options)));
+    }
+    if ('string' === typeof option) {
+      data[option](relatedTarget);
+    }
+    if ('string' !== typeof option && options.show) {
+      data.show(relatedTarget);
+    }
+  })
+};
+
+/**
+ * Based on bootstrap/js/modal.js@v3.3.7
+ */
+$(document).on('click.bs.modal.data-api', '[data-toggle="modal"]', function(e) {
+  const $this  = $(this);
+  const target = $this.attr('data-target') || $this.attr('href');
+
+  const $target = $(document).find(target);
+  const option = $target.data('bs.modal')
+    ? 'toggle'
+    : $.extend({ remote: !/#/.test($this.attr('href')) && $this.attr('href') }, $target.data(), $this.data());
+
+  if ($this.is('a')) {
+    e.preventDefault();
+  }
+
+  $target.one('show.bs.modal', function (e) {
+    // only register focus restorer if modal will actually get shown
+    if (!e.isDefaultPrevented()) {
+      $target.one('hidden.bs.modal', () => {
+        if ($this.is(':visible')) {
+          $this.trigger('focus');
+        }
+      });
+    }
+  });
+
+  $.fn.modal.call($target, option, this)
+});
+
 
 /**
  * Based on bootstrap/js/tooltip.js@v3.3.7

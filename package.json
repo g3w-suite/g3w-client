@@ -30,7 +30,6 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@mapbox/shp-write": "^0.4.3",
     "@ungap/with-resolvers": "^0.1.0",
-    "bootstrap": "^3.3.7",
     "eonasdan-bootstrap-datetimepicker": "^4.17.49",
     "invokers-polyfill": "^0.5.5",
     "jquery": "^2.2.1",
