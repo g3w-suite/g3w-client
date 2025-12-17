@@ -160,7 +160,6 @@ class Modal {
   originalBodyPad     = null;
   scrollbarWidth      = 0;
   ignoreBackdropClick = false;
-  fixedContent        = '.navbar-fixed-top, .navbar-fixed-bottom';
 
   constructor(element, options) {
     this.options             = options;
@@ -211,13 +210,6 @@ class Modal {
     
     if (this.bodyIsOverflowing) {
       $(document.body).css('padding-right', bodyPad + scrollbarWidth);
-      $(this.fixedContent).each((index, element) => {
-        const actualPadding = element.style.paddingRight;
-        const calculatedPadding = $(element).css('padding-right');
-        $(element)
-          .data('padding-right', actualPadding)
-          .css('padding-right', parseFloat(calculatedPadding) + scrollbarWidth + 'px');
-      });
     }
 
     $(document.body).addClass('modal-open');
@@ -335,11 +327,6 @@ class Modal {
       this.$element.css({ paddingLeft: '', paddingRight: '' });
       //reset scrollbar
       $(document.body).css('padding-right', this.originalBodyPad);
-      $(this.fixedContent).each((index, element) => {
-        const padding = $(element).data('padding-right');
-        $(element).removeData('padding-right');
-        element.style.paddingRight = padding ? padding : '';
-      });
       this.$element.trigger('hidden.bs.modal');
     });
   }
