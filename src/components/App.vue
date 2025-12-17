@@ -752,7 +752,7 @@ export default {
 
     showtitle() {
       if (this.state.content.contentsdata.length > 0) {
-        const options = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+        const options = this.state.content.contentsdata.at(-1).options;
         if ( [true, false].includes(options.showtitle) ) { return options.showtitle }
       }
       return true;
@@ -773,14 +773,14 @@ export default {
 
     contentTitle() {
       if (this.state.content.contentsdata.length) {
-        const { title, post_title, text = false } = this.state.content.contentsdata[this.state.content.contentsdata.length - 1].options;
+        const { title, post_title, text = false } = this.state.content.contentsdata.at(-1).options;
         return { title, post_title, text };
       }
     },
 
     backOrBackTo() {
       return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? !(this.state.content.contentsdata[this.state.content.contentsdata.length - 2].options.title)
+        ? !(this.state.content.contentsdata.at(-2).options.title)
           ? 'back'
           : 'backto'
         : false;
@@ -788,7 +788,7 @@ export default {
 
     previousTitle() {
       const title = (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? this.state.content.contentsdata[this.state.content.contentsdata.length - 2].options.title
+        ? this.state.content.contentsdata.at(-2).options.title
         : null;
       this.updatePreviousTitle = true;
       this.$nextTick(() => this.updatePreviousTitle = false);
@@ -985,14 +985,7 @@ export default {
       ApplicationState.sidebar.title = null;
       const data = ApplicationState.sidebar.contentsdata;
       if (data.length) {
-        await Promise.allSettled(data.map(async d => {
-          if (d.content instanceof Component || d.content instanceof Panel) {
-            await d.content.unmount();
-          } else {
-            $(ApplicationState.sidebar.parent).empty();
-          }
-
-        }));
+        await Promise.allSettled(data.map(async d => await d.content.unmount()));
         data.splice(0, data.length);
       }
     },
