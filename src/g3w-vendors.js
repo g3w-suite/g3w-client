@@ -222,8 +222,6 @@ class Modal {
     });
 
     this.backdrop(() => {
-      const transition = $.support.transition && this.$element.hasClass('fade')
-
       if (!this.$element.parent().length) {
         this.$element.appendTo($(document.body)); // don't move modals dom position
       }
@@ -231,10 +229,6 @@ class Modal {
       this.$element.show().scrollTop(0);
 
       this.adjustDialog();
-
-      if (transition) {
-        this.$element[0].offsetWidth; // force reflow
-      }
 
       this.$element.addClass('in');
 
@@ -250,14 +244,7 @@ class Modal {
         });
 
       const evt2 = $.Event('shown.bs.modal', { relatedTarget })
-
-      if (transition) {
-        this.$dialog
-          .one('bsTransitionEnd', () => { this.$element.trigger('focus').trigger(evt2) }) // wait for modal to slide in
-          .emulateTransitionEnd(300);
-      } else {
-        this.$element.trigger('focus').trigger(evt2);
-      }
+      this.$element.trigger('focus').trigger(evt2);
     });
   }
 
@@ -287,14 +274,7 @@ class Modal {
       .off('mouseup.dismiss.bs.modal');
 
     this.$dialog.off('mousedown.dismiss.bs.modal');
-
-    if ($.support.transition && this.$element.hasClass('fade')) {
-      this.$element
-        .one('bsTransitionEnd', this.hideModal.bind(this))
-        .emulateTransitionEnd(300);
-    } else {
-      this.hideModal();
-    }
+    this.hideModal();
   }
 
   escape() {
@@ -329,7 +309,6 @@ class Modal {
     const animate = this.$element.hasClass('fade') ? 'fade' : '';
 
     if (this.isShown && this.options.backdrop) {
-
       this.$backdrop = $(document.createElement('div'))
         .addClass('modal-backdrop ' + animate)
         .appendTo($(document.body));
@@ -348,47 +327,18 @@ class Modal {
           this.hide();
         }
       });
-
-      if ($.support.transition && animate) {
-        this.$backdrop[0].offsetWidth; // force reflow
-      }
-
       this.$backdrop.addClass('in');
+    }
 
-      if (!callback) {
-        return;
-      }
-
-      if ($.support.transition && animate) {
-        this.$backdrop
-          .one('bsTransitionEnd', callback)
-          .emulateTransitionEnd(150);
-      } else {
-        callback();
-      }
-
-    } else if (!this.isShown && this.$backdrop) {
+    if (!this.isShown && this.$backdrop) {
       this.$backdrop.removeClass('in');
+      // remove backdrop
+      this.$backdrop?.remove();
+      this.$backdrop = null;
+    }
 
-      const cb = () => {
-        // remove backdrop
-        this.$backdrop?.remove();
-        this.$backdrop = null;
-        if (callback) {
-          callback();
-        }
-      };
-
-      if ($.support.transition && this.$element.hasClass('fade')) {
-        this.$backdrop
-          .one('bsTransitionEnd', cb)
-          .emulateTransitionEnd(150);
-      } else {
-        cb();
-      }
-
-    } else if (callback) {
-      callback()
+    if (callback) {
+      callback();
     }
   }
 
