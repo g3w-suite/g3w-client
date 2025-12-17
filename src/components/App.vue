@@ -929,7 +929,7 @@ export default {
         ), 90);
 
         const viewW = document.querySelector('#app').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - $(".main-sidebar").offset().left;
-        const viewH = $(window).height() - $(".navbar").height();
+        const viewH = window.innerHeight - $(".navbar").height();
 
         const h_split = 'h' === this.state.split;
         const v_split = 'v' === this.state.split;
