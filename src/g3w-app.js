@@ -741,7 +741,7 @@ export default new (class GUI extends Emitter {
 
       panel.style.padding = contents.children[0] ? '15px' : null;
 
-      const viewH = window.innerHeight - $(".navbar").height();
+      const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
       document.querySelector(".content-wrapper").style.height  = `${viewH}px`;
       document.querySelector(".main-sidebar").style.height     = `${viewH}px`;
       document.querySelector(".g3w-sidebarpanel").style.height = `${viewH}px`;
@@ -1088,8 +1088,8 @@ export default new (class GUI extends Emitter {
     content     = null;
     const current = ApplicationState.sidebar.contentsdata.at(-1);
     if (current) {
-      $(current.content.internalPanel.$el).show();
-      ApplicationState.sidebar.title = current.content.title;
+      current.content.internalPanel.$el.style.display = 'block';
+      ApplicationState.sidebar.title                  = current.content.title;
     }
   }
 
