@@ -1970,7 +1970,8 @@ export default new (class GUI extends Emitter {
       if (d.content instanceof Component || d.content instanceof Panel) {
         await d.content.unmount();
       } else {
-        $(this.getComponent('contents').parent).empty();
+        let parent = this.getComponent('contents').parent;
+        ('string' === typeof parent ? document.querySelector(parent) : parent)?.replaceChildren(); // removes all children
       }
     }));
     ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
