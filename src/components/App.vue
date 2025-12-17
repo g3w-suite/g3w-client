@@ -928,7 +928,7 @@ export default {
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const viewW = document.querySelector('#app').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - $(".main-sidebar").offset().left;
+        const viewW = document.querySelector('#app').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
         const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
 
         const h_split = 'h' === this.state.split;
