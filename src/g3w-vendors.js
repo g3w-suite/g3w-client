@@ -427,7 +427,7 @@ class Modal {
 $.fn.modal = function(option, relatedTarget) {
   return this.each(function () {
     const $this = $(this);
-    const data = $this.data('bs.modal');
+    let data = $this.data('bs.modal');
     const options = $.extend({}, { backdrop: true, keyboard: true, show: true }, $this.data(), typeof option == 'object' && option);
     if (!data) {
       $this.data('bs.modal', (data = new Modal(this, options)));
