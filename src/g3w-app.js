@@ -1028,7 +1028,7 @@ export default new (class GUI extends Emitter {
     return layersId;
   }
 
-  async showPanel(content, opts = {}) {
+  async showPanel(content) {
     ApplicationState.sidebar.title  = content.title;
     ApplicationState.sidebar.parent = '#g3w-sidebarpanel-placeholder'
 
@@ -1038,39 +1038,21 @@ export default new (class GUI extends Emitter {
       current.content.internalPanel.$el.style.display = 'none';
     } 
 
-    const options = { parent: '#g3w-sidebarpanel-placeholder', ...opts };
     const parent = ApplicationState.sidebar.parent;
     const data   = ApplicationState.sidebar.contentsdata;
 
-    // check the type of content:
+    // Check a duplicate element by component id (if already exist)
+    let id = data.findIndex(d => content.getId() === d.content.getId());
 
-    // String or JQuery
-    if (content instanceof jQuery || 'string' === typeof content) {
-      let el = 'string' === typeof content ? ($(content).length ? $(`<div> ${content} </div>`) : $(content)) : content
-      $(parent).append(el);
-      data.push({ content: el, options });
-      console.warn('[G3W-CLIENT] jQuery components will be discontinued, please update your code as soon as possible', data.at(-1));
+    if (-1 !== id) {
+      await data[id].content.unmount();
+      data.splice(id, 1);
     }
 
-    // Vue element
-    else if (content.mount && 'function' === typeof content.mount) {
-      // Check a duplicate element by component id (if already exist)
-      let id = data.findIndex(d => d.content.getId && (content.getId() === d.content.getId()));
-      if (-1 !== id) {
-        await data[id].content.unmount();
-        data.splice(id, 1);
-      }
-      // Mount vue component
-      await content.mount(parent, options.append || false);
-      data.push({ content, options });
-    }
+    // Mount vue component
+    await content.mount(parent);
 
-    // DOM element
-    else {
-      parent.appendChild(content);
-      data.push({ content, options });
-    }
-
+    data.push({ content, options: { parent: '#g3w-sidebarpanel-placeholder' } });
   }
 
   async closePanel() {
@@ -1079,11 +1061,7 @@ export default new (class GUI extends Emitter {
       return;
     }
     const panel = data.slice(-1)[0].content;
-    if (panel instanceof Component || panel instanceof Panel) {
-      await panel.unmount();
-    } else {
-      $(ApplicationState.sidebar.parent).empty();
-    }
+    await panel.unmount();
     let content = data.pop();
     content     = null;
     const current = ApplicationState.sidebar.contentsdata.at(-1);
