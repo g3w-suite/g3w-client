@@ -357,7 +357,7 @@
 
     mounted() {
       document.body.appendChild(this.$el);
-      $('#modal-metadata').on('show.bs.modal', async () => {
+      $('#modal-metadata').on('shown.bs.modal', async () => {
       await Promise
         .allSettled([
           new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),

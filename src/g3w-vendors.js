@@ -184,42 +184,29 @@ class Modal {
 
   }
 
-  toggle(target) {
-    return this.dialog.open ? this.hide() : this.show(target)
+  toggle() {
+    return this.dialog.open ? this.hide() : this.show()
   }
 
-  show(relatedTarget) {
-    const evt1 = $.Event('show.bs.modal', { relatedTarget });
-
-    this.$element.trigger(evt1);
-
-    if (!this.dialog.open && !evt1.isDefaultPrevented()) {
-      this.dialog.showModal();
-
-      setTimeout(() => {
-        this.$element.find('.modal-dialog').trigger('shown.bs.modal');
-        const evt2 = $.Event('shown.bs.modal', { relatedTarget })
-        this.$element.trigger('focus').trigger(evt2);
-      }, 500);
+  show() {
+    if (this.dialog.open) {
+      return;
     }
+    this.dialog.showModal();
+    setTimeout(() => {
+      this.$element.find('.modal-dialog').trigger('shown.bs.modal');
+      this.$element.trigger('focus').trigger('shown.bs.modal');
+    }, 500);
   }
 
-  hide(e) {
-    if (e) {
-      e.preventDefault();
+  hide() {
+    if(!this.dialog.open) {
+      return;
     }
-
-    e = $.Event('hide.bs.modal');
-
-    this.$element.trigger(e);
-
-    if (this.dialog.open && !e.isDefaultPrevented()) { 
-      this.dialog.close();
-
-      setTimeout(() => {
-        this.$element.trigger('hidden.bs.modal');
-      }, 500);
-    }
+    this.dialog.close();
+    setTimeout(() => {
+      this.$element.trigger('hidden.bs.modal');
+    }, 500);
   }
 }
 
@@ -245,24 +232,12 @@ document.addEventListener('click', function(e) {
 
   const modal  = document.querySelector(target.getAttribute('data-target') || target.getAttribute('href'));
   const $modal = $(document).find(modal);
-  const option = $modal.data('bs.modal') ? 'toggle' : $.extend({}, $modal.data(), $(target).data());
 
   if ('A' === target.tagName) {
     e.preventDefault();
   }
 
-  $modal.one('show.bs.modal', e => {
-    // only register focus restorer if modal will actually get shown
-    if (!e.isDefaultPrevented()) {
-      $modal.one('hidden.bs.modal', () => {
-        if ($(target).is(':visible')) {
-          $(target).trigger('focus');
-        }
-      });
-    }
-  });
-
-  $.fn.modal.call($modal, option, target);
+  $.fn.modal.call($modal, 'show', target);
 });
 
 

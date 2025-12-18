@@ -1148,7 +1148,7 @@ export default {
   async mounted() {
     document.body.appendChild(this.$el);
     $('#modal-addlayer').modal('hide');
-    $('#modal-addlayer').on('hide.bs.modal',  () => {
+    $('#modal-addlayer').on('hidden.bs.modal',  () => {
       this.layer_type = undefined;
       this.unloadFile();
       this.unloadWMS();
