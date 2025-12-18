@@ -374,26 +374,32 @@ $.fn.modal = function(option, target) {
 /**
  * Based on bootstrap/js/modal.js@v3.3.7
  */
-$(document).on('click.bs.modal.data-api', '[data-toggle="modal"]', function(e) {
-  const $target = $(document).find($(this).attr('data-target') || $(this).attr('href'));
-  const option  = $target.data('bs.modal') ? 'toggle' : $.extend({}, $target.data(), $(this).data());
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('[data-toggle="modal"]');
+  if (!target) {
+    return;
+  }
 
-  if ($(this).is('a')) {
+  const modal  = document.querySelector(target.getAttribute('data-target') || target.getAttribute('href'));
+  const $modal = $(document).find(modal);
+  const option = $modal.data('bs.modal') ? 'toggle' : $.extend({}, $modal.data(), $(target).data());
+
+  if ('A' === target.tagName) {
     e.preventDefault();
   }
 
-  $target.one('show.bs.modal', e => {
+  $modal.one('show.bs.modal', e => {
     // only register focus restorer if modal will actually get shown
     if (!e.isDefaultPrevented()) {
-      $target.one('hidden.bs.modal', () => {
-        if ($(this).is(':visible')) {
-          $(this).trigger('focus');
+      $modal.one('hidden.bs.modal', () => {
+        if ($(target).is(':visible')) {
+          $(target).trigger('focus');
         }
       });
     }
   });
 
-  $.fn.modal.call($target, option, this)
+  $.fn.modal.call($modal, option, target);
 });
 
 
