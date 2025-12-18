@@ -154,21 +154,38 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
  * Based on bootstrap/js/modal.js@v3.3.7
  */
 class Modal {
-  
-  $backdrop           = null;
-  isShown             = null;
-  originalBodyPad     = null;
-  scrollbarWidth      = 0;
-  ignoreBackdropClick = false;
 
-  constructor(element, options) {
-    this.options  = options;
+  constructor(element) {
     this.$element = $(element);
-    this.$dialog  = this.$element.find('.modal-dialog');
+
+    // wrap jquery modal into a native <dialog> element
+    this.dialog = 'DIALOG' === element.tagName ? element : document.createElement('dialog');
+    
+    if ('DIALOG' !== element.tagName) {
+      this.dialog.append(element)
+    }
+
+    document.body.appendChild(this.dialog);
+
+    // handle click on "backdrop" and "data-dismiss" buttons
+    this.dialog.addEventListener('mousedown', e => {
+      const rect          = this.dialog.getBoundingClientRect();
+      const is_backdrop = (
+        e.clientY < rect.top - 20 ||
+        e.clientY > rect.top + rect.height ||
+        e.clientX < rect.left ||
+        e.clientX > rect.left + rect.width - 20
+      );
+      const is_interactive = ['label', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i));
+      if ((is_backdrop && !is_interactive) || e.target.closest('[data-dismiss="modal"]')) {
+        this.dialog.close();
+      }
+    });
+
   }
 
   toggle(target) {
-    return this.isShown ? this.hide() : this.show(target)
+    return this.dialog.open ? this.hide() : this.show(target)
   }
 
   show(relatedTarget) {
@@ -176,76 +193,15 @@ class Modal {
 
     this.$element.trigger(evt1);
 
-    if (this.isShown || evt1.isDefaultPrevented()) {
-      return;
+    if (!this.dialog.open && !evt1.isDefaultPrevented()) {
+      this.dialog.showModal();
+
+      setTimeout(() => {
+        this.$element.find('.modal-dialog').trigger('shown.bs.modal');
+        const evt2 = $.Event('shown.bs.modal', { relatedTarget })
+        this.$element.trigger('focus').trigger(evt2);
+      }, 500);
     }
-
-    this.isShown = true;
-
-    // check scrollbar
-
-    this.bodyIsOverflowing = document.body.clientWidth < window.innerWidth
-
-    // measure scrollbar
-    const scrollDiv = document.createElement('div');
-    scrollDiv.className = 'modal-scrollbar-measure';
-    $(document.body).append(scrollDiv);
-    const scrollbarWidth_ = scrollDiv.offsetWidth - scrollDiv.clientWidth;
-    $(document.body)[0].removeChild(scrollDiv);
-    this.scrollbarWidth = scrollbarWidth_; 
-
-    // set scrollbar
-
-    const bodyPad        = parseInt(($(document.body).css('padding-right') || 0), 10);
-
-    this.originalBodyPad = document.body.style.paddingRight || '';
-
-    const scrollbarWidth = this.scrollbarWidth;
-    
-    if (this.bodyIsOverflowing) {
-      $(document.body).css('padding-right', bodyPad + scrollbarWidth);
-    }
-
-    $(document.body).addClass('modal-open');
-
-    this.escape();
-    this.resize();
-
-    this.$element.on('click.dismiss.bs.modal', '[data-dismiss="modal"]', this.hide.bind(this));
-
-    this.$dialog.on('mousedown.dismiss.bs.modal', () => {
-      this.$element.one('mouseup.dismiss.bs.modal', e => {
-        if ($(e.target).is(this.$element)) {
-          this.ignoreBackdropClick = true;
-        }
-      });
-    });
-
-    this.backdrop(() => {
-      if (!this.$element.parent().length) {
-        this.$element.appendTo($(document.body)); // don't move modals dom position
-      }
-
-      this.$element.show().scrollTop(0);
-
-      this.adjustDialog();
-
-      this.$element.addClass('in');
-
-      // enforce focus
-      $(document)
-        .off('focusin.bs.modal') // guard against infinite focus loop
-        .on('focusin.bs.modal', e => {
-          if (document !== e.target &&
-            this.$element[0] !== e.target &&
-            !this.$element.has(e.target).length) {
-            this.$element.trigger('focus')
-          }
-        });
-
-      const evt2 = $.Event('shown.bs.modal', { relatedTarget })
-      this.$element.trigger('focus').trigger(evt2);
-    });
   }
 
   hide(e) {
@@ -257,118 +213,25 @@ class Modal {
 
     this.$element.trigger(e);
 
-    if (!this.isShown || e.isDefaultPrevented()) { 
-      return;
-    }
+    if (this.dialog.open && !e.isDefaultPrevented()) { 
+      this.dialog.close();
 
-    this.isShown = false;
-
-    this.escape();
-    this.resize();
-
-    $(document).off('focusin.bs.modal');
-
-    this.$element
-      .removeClass('in')
-      .off('click.dismiss.bs.modal')
-      .off('mouseup.dismiss.bs.modal');
-
-    this.$dialog.off('mousedown.dismiss.bs.modal');
-    this.hideModal();
-  }
-
-  escape() {
-    if (this.isShown && this.options.keyboard) {
-      this.$element.on('keydown.dismiss.bs.modal', e => { if (27 === e.which) { this.hide(); } });
-    } else if (!this.isShown) {
-      this.$element.off('keydown.dismiss.bs.modal')
+      setTimeout(() => {
+        this.$element.trigger('hidden.bs.modal');
+      }, 500);
     }
   }
-
-  resize() {
-    if (this.isShown) {
-      $(window).on('resize.bs.modal', this.adjustDialog.bind(this));
-    } else {
-      $(window).off('resize.bs.modal');
-    }
-  }
-
-  hideModal() {
-    this.$element.hide();
-    this.backdrop(() => {
-      $(document.body).removeClass('modal-open');
-      // reset adjustments
-      this.$element.css({ paddingLeft: '', paddingRight: '' });
-      //reset scrollbar
-      $(document.body).css('padding-right', this.originalBodyPad);
-      this.$element.trigger('hidden.bs.modal');
-    });
-  }
-
-  backdrop(callback) {
-    const animate = this.$element.hasClass('fade') ? 'fade' : '';
-
-    if (this.isShown && this.options.backdrop) {
-      this.$backdrop = $(document.createElement('div'))
-        .addClass('modal-backdrop ' + animate)
-        .appendTo($(document.body));
-
-      this.$element.on('click.dismiss.bs.modal', e => {
-        if (this.ignoreBackdropClick) {
-          this.ignoreBackdropClick = false;
-          return;
-        }
-        if (e.target !== e.currentTarget) {
-          return;
-        }
-        if ('static' === this.options.backdrop) {
-          this.$element[0].focus();
-        } else {
-          this.hide();
-        }
-      });
-      this.$backdrop.addClass('in');
-    }
-
-    if (!this.isShown && this.$backdrop) {
-      this.$backdrop.removeClass('in');
-      // remove backdrop
-      this.$backdrop?.remove();
-      this.$backdrop = null;
-    }
-
-    if (callback) {
-      callback();
-    }
-  }
-
-  // handle overflowing modals
-  adjustDialog() {
-    const modalIsOverflowing = this.$element[0].scrollHeight > document.documentElement.clientHeight
-
-    this.$element.css({
-      paddingLeft: !this.bodyIsOverflowing && modalIsOverflowing  ? this.scrollbarWidth : '',
-      paddingRight: this.bodyIsOverflowing && !modalIsOverflowing ? this.scrollbarWidth : ''
-    })
-  }
-
 }
 
 /**
  * Based on bootstrap/js/modal.js@v3.3.7
  */
 $.fn.modal = function(option, target) {
-  let data = $(this).data('bs.modal');
-  const options = $.extend({}, { backdrop: true, keyboard: true, show: true }, $(this).data(), 'object' === typeof option && option);
-  if (!data) {
-    $(this).data('bs.modal', (data = new Modal(this, options)));
+  let modal = $(this).data('bs.modal');
+  if (!modal) {
+    $(this).data('bs.modal', (modal = new Modal(this[0])));
   }
-  if ('string' === typeof option) {
-    data[option](target);
-  }
-  if ('string' !== typeof option && options.show) {
-    data.show(target);
-  }
+  modal['string' === typeof option ? option : 'show'](target);
 };
 
 /**

@@ -12,7 +12,7 @@
     tabindex = "-1"
     role     = "document"
   >
-    <div class = "modal-dialog" style = "height: 60%; width: 60%;">
+    <div class = "modal-dialog" style="height: 60vh;">
       <div class = "modal-content" style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
         <button
           type         = "button"
