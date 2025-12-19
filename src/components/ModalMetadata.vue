@@ -5,7 +5,8 @@
 
 <template>
   <dialog
-    id = "modal-metadata"
+    id            = "modal-metadata"
+    @beforetoggle = "onBeforetoggle"
   >
     <form method="dialog" style="width: 80vw;">
 
@@ -336,6 +337,31 @@
         alert('Copied to clipboard!');
       },
 
+      /**
+       * @since 4.1.0
+       */
+      async onBeforetoggle(e) {
+        if ('open' === e.newState) {
+          await Promise
+                  .allSettled([
+                    new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+                    new Promise((resolve) => g3wsdk.core.ApplicationService.complete ? resolve() : g3wsdk.core.ApplicationService.on('complete', resolve))
+                  ]);
+
+                  /** @since 3.8.0 */
+                  const platform = window.platform || {};
+
+                  this.g3wsdk_info = `
+          [g3wsdk.info]\n
+          - g3w-admin: __${initConfig.version}__
+          - g3w-client: __${process.env.g3w_client_rev}__
+          ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
+          - browser: __${platform.name} ${platform.version}__
+          - operating system: __${platform.os.toString()}__
+          `.trim();
+        }
+      },
+
     },
 
     async created() {
@@ -351,26 +377,6 @@
 
     mounted() {
       document.body.appendChild(this.$el);
-      $('#modal-metadata').on('shown.bs.modal', async () => {
-      await Promise
-        .allSettled([
-          new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
-          new Promise((resolve) => g3wsdk.core.ApplicationService.complete ? resolve() : g3wsdk.core.ApplicationService.on('complete', resolve))
-        ]);
-
-        /** @since 3.8.0 */
-        const platform = window.platform || {};
-
-        this.g3wsdk_info = `
-[g3wsdk.info]\n
-- g3w-admin: __${initConfig.version}__
-- g3w-client: __${process.env.g3w_client_rev}__
-${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
-- browser: __${platform.name} ${platform.version}__
-- operating system: __${platform.os.toString()}__
-`.trim();
-      });
-
     },
 
   }

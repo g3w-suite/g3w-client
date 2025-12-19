@@ -191,7 +191,7 @@ class Modal {
       } else {
         this.$element.trigger('hidden.bs.modal');
       }
-    })
+    });
   }
 
   toggle() {

@@ -5,7 +5,8 @@
 
 <template>
   <dialog
-    id = "modal-addlayer"
+    id            = "modal-addlayer"
+    @beforetoggle = "onBeforetoggle"
   >
     <div style = "width: min(85vw, 600px); padding: 15px;">
 
@@ -1136,16 +1137,25 @@ export default {
       `);
     },
 
+    /**
+     * @since 4.1.0
+     */
+    async onBeforetoggle(e) {
+      if ('closed' === e.newState) {
+        this.layer_type = undefined;
+        this.unloadFile();
+        this.unloadWMS();
+      }
+    },
+
   },
 
   async mounted() {
     document.body.appendChild(this.$el);
-    $('#modal-addlayer').modal('hide');
-    $('#modal-addlayer').on('hidden.bs.modal',  () => {
-      this.layer_type = undefined;
-      this.unloadFile();
-      this.unloadWMS();
-    });
+
+    this.layer_type = undefined;
+    this.unloadFile();
+    this.unloadWMS();
 
     await GUI.isMapReady();
 
