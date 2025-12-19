@@ -176,8 +176,9 @@ class Modal {
         e.clientX < rect.left ||
         e.clientX > rect.left + rect.width - 20
       );
+      console.log(e);
       const is_interactive = ['label', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i));
-      if ((is_backdrop && !is_interactive) || e.target.closest('[data-dismiss="modal"]')) {
+      if ((is_backdrop && !is_interactive) || (0 === e.button && e.target.closest('[data-dismiss="modal"]'))) {
         this.dialog.close();
       }
     });
