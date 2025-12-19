@@ -387,19 +387,6 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .modal-footer                                    { padding: 15px; text-align: right; border-top: 1px solid #f4f4f4; }
 .modal-footer .btn + .btn                        { margin-bottom: 0; margin-left: 5px; }
 
-/* Modal variants */
-.modal-primary .modal-body                       { color: #fff !important; background-color: #3c8dbc !important; }
-.modal-warning .modal-body                       { color: #fff !important; background-color: var(--skin-warning) !important; }
-.modal-info    .modal-body                       { color: #fff !important; background-color: #00c0ef !important; }
-.modal-success .modal-body                       { color: #fff !important; background-color: var(--skin-success) !important; }
-.modal-danger  .modal-body                       { color: #fff !important; background-color: var(--skin-danger) !important; }
-
-.modal-primary :is(.modal-header, .modal-footer) { color: #fff !important; background-color: #357ca5 !important;                                     border-color: hsl(202, 50%, 40%); }
-.modal-warning :is(.modal-header, .modal-footer) { color: #fff !important; background-color: hsl(from var(--skin-warning) h s calc(l - 5)) !important; border-color: hsl(37, 87%, 39%); }
-.modal-info    :is(.modal-header, .modal-footer) { color: #fff !important; background-color: #00a7d0 !important;                                     border-color: #0097bc; }
-.modal-success :is(.modal-header, .modal-footer) { color: #fff !important; background-color: hsl(from var(--skin-success) h s calc(l - 5)) !important; border-color: hsl(152, 100%, 23%); }
-.modal-danger  :is(.modal-header, .modal-footer) { color: #fff !important; background-color: hsl(from var(--skin-danger) h s calc(l - 5)) !important;  border-color: hsl(7, 71%, 45%); }
-
 @media (min-width: 768px) {
   .modal-dialog {
     width: 600px;
