@@ -760,10 +760,8 @@
           return;
         }
 
-
         editing.showPanel();
 
-        
       },
 
       /**
@@ -798,8 +796,10 @@
           setTimeout(() => {
             document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
             setTimeout(() => {
+              //close all open details eventually
+              document.querySelectorAll('#metadata_layers summary').forEach(s => s.parentElement.removeAttribute('open'));
               const dom = document.querySelector(`summary:has(+ ul a[href="#layer_general_${layerId}"])`);
-              //skin wehn no layer is found on layers metadata tab
+              //skin when no layer is found on layers metadata tab
               if (!dom) {
                 return;
               }
