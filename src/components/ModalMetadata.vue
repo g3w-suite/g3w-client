@@ -501,7 +501,12 @@
     margin: 10px 0 3px 0;
     &::marker { content: ""; }
     &::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
-    [open] &::after { content: '-' }
+  }
+
+  details[open]  {
+    summary.layer_header {
+      &::after { content: '-' }
+    }
   }
 
   .layer-name {
