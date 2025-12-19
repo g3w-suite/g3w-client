@@ -12,9 +12,9 @@
 
       <!-- METADATA TABS -->
       <ul role = "tablist" class = "nav nav-tabs">
-        <li v-for="tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
-          <a data-toggle="tab" :href="'#metadata_' + tab" :class="'metadata-item-tab '+ tab">
-            <i class="action-button" :class="$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden="true"></i>
+        <li v-for = "tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
+          <a data-toggle = "tab" :href="'#metadata_' + tab" :class = "'metadata-item-tab '+ tab">
+            <i class = "action-button" :class = "$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden = "true"></i>
             <b v-t = "'metadata.'+ tab +'.title'"></b>
           </a>
         </li>
@@ -25,22 +25,22 @@
         <div class = "tab-content">
 
           <!-- GENERAL METADATA | SPATIAL METADATA -->
-          <div v-for="item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ in: 'general' === item, active: 'general' === item }">
+          <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ in: 'general' === item, active: 'general' === item }">
             <div v-for = "(data, field) in groups[item]" class = "row row-info">
-              <div class="wrap-content-tab">
-                <div class="col-sm-2 metadata-label" v-t="data.label"></div>
+              <div class = "wrap-content-tab">
+                <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
 
-                <div v-if="'keywords' === field || 'wms_url'=== field" class="col-sm-10 value">
+                <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
                   <span>{{ [].concat(data.value).join(', ') }}</span>
                 </div>
                 
-                <div v-else-if="'abstract' === field || (!Array.isArray(data.value) && typeof data.value !== 'object')" class="col-sm-10 value">
-                  <span v-html="data.value"></span>
+                <div v-else-if = "'abstract' === field || (!Array.isArray(data.value) && typeof data.value !== 'object')" class = "col-sm-10 value">
+                  <span v-html = "data.value"></span>
                 </div>
                 
-                <div v-else-if="'contactinformation' !== field" class="col-sm-10 value">
+                <div v-else-if = "'contactinformation' !== field" class = "col-sm-10 value">
                   <div v-for = "(value, index) in data.value">
-                    <b v-if="'extent' === field">{{ (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] }}</b>
+                    <b v-if = "'extent' === field">{{ (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] }}</b>
                     <span>{{ value }}</span>
                   </div>
                 </div>
@@ -50,11 +50,11 @@
                     <div class = "row metadata-contact-row">
                       <div class = "col-sm-2 metadata-contact-label">
                         <i class = "contact-icon" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                        <span v-t="`metadata.general.fields.subfields.contactinformation.${info}`"></span>
+                        <span v-t = "`metadata.general.fields.subfields.contactinformation.${info}`"></span>
                       </div>
                       <div v-if = "'personprimary' === info" class = "col-sm-10">
                         <div v-for = "(subvalue, key) in value">
-                          <span v-t="`metadata.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
+                          <span v-t = "`metadata.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
                           <span>{{ subvalue }}</span>
                         </div>
                       </div>
@@ -69,7 +69,7 @@
           </div>
 
           <!-- LAYERS METADATA -->
-          <div id="metadata_layers" class = "tab-pane">
+          <div id = "metadata_layers" class = "tab-pane">
             <div v-for = "layer in groups.layers.layers.value" class = "row-info">
               <details>
                 <summary class = "layer_header">
@@ -123,12 +123,12 @@
                           </div>
 
                           <!-- LAYER DATA URL -->
-                          <div v-else-if="'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
+                          <div v-else-if = "'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
                             <a :href = "layer.metadata.dataurl.onlineresources">{{ layer.metadata.dataurl.onlineresources }}</a>
                           </div>
 
                           <!-- LAYER ATTRIBUTES -->
-                          <div v-else-if="'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
+                          <div v-else-if = "'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
                             <table class = "table table-striped" style = "background-color: #eee !important">
                               <thead>
                                 <tr><th v-for = "(value, header) in layer.metadata.attributes[0]">{{ header }}</th></tr>
@@ -151,9 +151,9 @@
                     :id   ="`layer_spatial_${layer.id}`"
                   >
                     <div class = "container-fluid">
-                      <template v-for="attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
+                      <template v-for = "attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
                         <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
-                          <div v-if="'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
+                          <div v-if = "'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
                           <div v-else v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
                           <!-- LAYER EPSG -->
@@ -241,7 +241,7 @@
             </div>
 
             <address
-            v-if    = "powered_by"
+              v-if    = "powered_by"
               id    = "address-credits"
               style = "line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center; gap: 5px;"
             >
@@ -500,12 +500,12 @@
     padding: 4px 0;
     margin: 10px 0 3px 0;
     &::marker { content: ""; }
-    &::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
+    &::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; };
   }
 
   details[open]  {
     summary.layer_header {
-      &::after { content: '-' }
+      &::after { content: '-' };
     }
   }
 
