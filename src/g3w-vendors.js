@@ -154,9 +154,9 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
  * Based on bootstrap/js/modal.js@v3.3.7
  */
 $.fn.modal = function(option) {
-  if (!$(this).data('bs.modal')) {
-    const element = this[0];
-    
+  const element = this[0];
+
+  if (!element['__g3w_dialog']) {
     // wrap jquery modal into a native <dialog> element
     const dialog = element instanceof HTMLDialogElement ? element : document.createElement('dialog');
     if (dialog !== element) {
@@ -191,13 +191,14 @@ $.fn.modal = function(option) {
       }
     });
 
-    $(this).data('bs.modal', {
+    element['__g3w_dialog'] = ({
       show:   () => dialog.showModal(),
       hide:   () => dialog.close(),
       toggle: () => dialog.open ? dialog.close() : dialog.showModal(),
     });
   }
-  $(this).data('bs.modal')['string' === typeof option ? option : 'show']();
+
+  element['__g3w_dialog']['string' === typeof option ? option : 'show']();
   return this;
 };
 
