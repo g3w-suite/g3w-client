@@ -194,7 +194,7 @@ $.fn.modal = function(option) {
     $(this).data('bs.modal', {
       show:   () => dialog.showModal(),
       hide:   () => dialog.close(),
-      toggle: () => dialog.open ? dialog.showModal() : dialog.close(),
+      toggle: () => dialog.open ? dialog.close() : dialog.showModal(),
     });
   }
   $(this).data('bs.modal')['string' === typeof option ? option : 'show']();
