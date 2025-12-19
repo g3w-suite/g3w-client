@@ -133,8 +133,8 @@ g3w.app.once('after:setupControls', async () => {
     data.items.add(file);
     q('#addcustomlayer input[type="file"]').files = data.files;
     q('#addcustomlayer input[type="file"]').dispatchEvent(new Event('change'));
-    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
-    q('.modal-footer .btn.btn-success').click();
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
+    q('#modal-addlayer menu .btn.btn-success').click();
     window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(file.name) && g3w.app.removeExternalLayer(file.name); });
   }
 
@@ -144,18 +144,18 @@ g3w.app.once('after:setupControls', async () => {
     await setOption('#add-layer-type', 'wms');
     await setOption('#add_wms_url', wms.url);
     await setOption('#add_wms_name', wms.id);
-    await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
-    q('.modal-content .btn.btn-success').click();
+    await waitFor(() => q('#modal-addlayer .btn.btn-block.btn-success') && !q('#modal-addlayer .btn.btn-block.btn-success').disabled, 1000);
+    q('#modal-addlayer .btn.btn-block.btn-success').click();
     await waitFor(() => q('#g3w-wms-layers'), 10000);
     $('#g3w-wms-layers').select2('open');
     $('#select2-g3w-wms-layers-results li:nth-child(1)').trigger('mouseup');
-    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
     await setOption('#position-layer', 'bottom');
     await setOption('#g3w-wms-visible', false);
     await setOption('#g3w-wms-opacity', 0.85);
     const wms_name = q('#g3w-wms-layer-name').value;
-    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
-    q('.modal-footer .btn.btn-success').click();
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
+    q('#modal-addlayer menu .btn.btn-success').click();
     window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(wms_name) && g3w.app.removeExternalLayer(wms_name); });
   };
 
@@ -165,12 +165,12 @@ g3w.app.once('after:setupControls', async () => {
     await setOption('#add-layer-type', 'tms');
     await setOption('#add_tms_url', tms.url);
     await setOption('#add_tms_name', tms.name);
-    await waitFor(() => q('.modal-content .btn.btn-success') && !q('.modal-content .btn.btn-success').disabled, 1000);
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
     await setOption('#position-layer-tms', 'bottom');
     await setOption('#g3w-tms-visible', false);
     await setOption('#g3w-tms-opacity', 0.85);
-    await waitFor(() => q('.modal-footer .btn.btn-success') && !q('.modal-footer .btn.btn-success').disabled, 1000);
-    q('.modal-footer .btn.btn-success').click();
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
+    q('#modal-addlayer menu .btn.btn-success').click();
     window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(tms.name) && g3w.app.removeExternalLayer(tms.name); });
   };
 

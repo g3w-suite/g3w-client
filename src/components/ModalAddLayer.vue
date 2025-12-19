@@ -405,7 +405,7 @@
       </div>
 
       <!-- MODAL FOOTER -->
-      <div style="padding: 15px; text-align: right; border-top: 1px solid #f4f4f4;">
+      <menu style="padding: 15px; text-align: right; border-top: 1px solid #f4f4f4;">
 
         <!-- ERROR NOTICE -->
         <div
@@ -433,7 +433,7 @@
           style       = "font-weight: bold; min-width: 70px; margin-bottom: 0; margin-left: 5px;"
         ></button>
 
-      </div>
+      </menu>
 
     </div>
   </dialog>
