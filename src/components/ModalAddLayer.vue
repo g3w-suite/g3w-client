@@ -5,8 +5,7 @@
 
 <template>
   <dialog
-    id  = "modal-addlayer"
-    ref = "modal_addlayer"
+    id = "modal-addlayer"
   >
     <div style = "width: min(85vw, 600px);">
 
@@ -838,7 +837,7 @@ export default {
               type:     'tms',
             }
           );
-          $(this.$refs.modal_addlayer).modal('hide');
+          $('#modal-addlayer').modal('hide');
           // reset tms fields
           this.tms_url        = '';
           this.tms_name       = '';
@@ -861,7 +860,7 @@ export default {
             persistent: !!this.persistent,
             type:       this.file_type,
           });
-          $(this.$refs.modal_addlayer).modal('hide');
+          $('#modal-addlayer').modal('hide');
           this.unloadFile();
         } catch(e) {
           console.warn(e);
