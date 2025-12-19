@@ -181,6 +181,19 @@ class Modal {
         this.dialog.close();
       }
     });
+
+    this.dialog.addEventListener('beforetoggle', e => {
+      if ('open' === e.newState) {
+        setTimeout(() => {
+          this.$element.find('.modal-dialog').trigger('shown.bs.modal');
+          this.$element.trigger('shown.bs.modal');
+        }, 500);
+      } else {
+        setTimeout(() => {
+          this.$element.trigger('hidden.bs.modal');
+        }, 500);
+      }
+    })
   }
 
   toggle() {
@@ -189,17 +202,10 @@ class Modal {
 
   show() {
     this.dialog.showModal();
-    setTimeout(() => {
-      this.$element.find('.modal-dialog').trigger('shown.bs.modal');
-      this.$element.trigger('shown.bs.modal');
-    }, 500);
   }
 
   hide() {
     this.dialog.close();
-    setTimeout(() => {
-      this.$element.trigger('hidden.bs.modal');
-    }, 500);
   }
 }
 
