@@ -9,14 +9,9 @@
     v-if     = "show"
     id       = "modal-login"
   >
-    <div class = "modal-dialog" style="height: 60vh;">
-      <div class = "modal-content" style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
-        <button
-          type         = "button"
-          class        = "close"
-          data-dismiss = "modal"
-          style        = "position: absolute;inset: 0 0 auto auto;padding: 10px 15px;"
-        >&times;</button>
+    <form method="dialog" style="height: 60vh; width: min(85vw, 600px); padding: 0;">
+      <button value="cancel" style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;">&times;</button>
+      <div style = "height: 100%; background: #d2d6de; display: grid; grid-template-areas: 'iframe'; place-items: center;">
         <span style="grid-area: iframe;">Loading..</span>
         <iframe
           loading = "lazy"
@@ -26,7 +21,7 @@
           ref     = "login_iframe"
         ></iframe>
       </div>
-    </div>
+    </form>
   </dialog>
 </template>
 
