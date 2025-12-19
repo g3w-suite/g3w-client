@@ -10,11 +10,13 @@
     <div style = "width: min(85vw, 600px);">
 
       <!-- MODAL HEADER -->
-      <div class = "modal-header">
+      <div style="padding: 15px; border-bottom: 1px solid #f4f4f4;">
         <button
           type         = "button"
           class        = "close"
-          data-dismiss = "modal">&times;</button>
+          data-dismiss = "modal"
+          style        = "margin-top: -2px;"
+        >&times;</button>
         <h4
           style = "font-weight: bold"
           v-t   = "'Add Layer'"
@@ -23,7 +25,7 @@
       </div>
 
       <!-- MODAL BODY -->
-      <div class = "modal-body">
+      <div style = "padding: 15px;">
 
         <!-- LAYER TYPE -->
         <div class = "form-group">
@@ -403,7 +405,7 @@
       </div>
 
       <!-- MODAL FOOTER -->
-      <div class = "modal-footer">
+      <div style="padding: 15px; text-align: right; border-top: 1px solid #f4f4f4;">
 
         <!-- ERROR NOTICE -->
         <div
@@ -418,6 +420,7 @@
           type         = "button"
           class        = "btn btn-default"
           data-dismiss = "modal"
+          style        = "font-weight: bold; min-width: 70px;"
         ></button>
 
         <!-- SUBMIT BUTTON -->
@@ -427,6 +430,7 @@
           class       = "btn btn-success"
           @click.stop = "addLayer"
           :disabled   = "('wms' === layer_type ? !wms_layers.length : ('tms' === layer_type ? !(tms_url && tms_name) : !layer_data))"
+          style       = "font-weight: bold; min-width: 70px; margin-bottom: 0; margin-left: 5px;"
         ></button>
 
       </div>

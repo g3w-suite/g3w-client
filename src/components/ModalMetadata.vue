@@ -10,7 +10,7 @@
     <form method="dialog" style="width: 80vw;">
 
       <!-- METADATA TABS -->
-      <ul role = "tablist" class = "modal-header nav nav-tabs">
+      <ul role = "tablist" class = "nav nav-tabs">
         <li v-for="tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
           <a data-toggle="tab" :href="'#metadata_' + tab" :class="'metadata-item-tab '+ tab">
             <i class="action-button" :class="$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden="true"></i>
@@ -19,7 +19,7 @@
         </li>
       </ul>
 
-      <div id = "project-catalog" class="modal-body" style="min-height: 65vh; max-height: 70vh;">
+      <div id = "project-catalog" style="min-height: 65vh; max-height: 70vh; padding: 15px;">
 
         <div class = "tab-content">
 
@@ -391,29 +391,29 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
     background: transparent;
   }
 
-  .modal-header.nav {
+  .nav[role="tablist"] {
     display: flex;
     gap: 1px;
     justify-content: space-between;
   }
 
-  .modal-header.nav li {
+  .nav[role="tablist"] li {
     background-color: #e4e4e4;
     width: 100%;
   }
 
-  .modal-header.nav li.active {
+  .nav[role="tablist"] li.active {
     background-color: #FFF;
   }
 
-  .modal-header.nav li.active a.metadata-item-tab {
+  .nav[role="tablist"] li.active a.metadata-item-tab {
     border-bottom-color: var(--bgcolor) !important;
     border-bottom-width: 4px;
     background-color: transparent !important;
     color: #2c3b41 !important;
   }
 
-  .modal-header.nav li a.metadata-item-tab {
+  .nav[role="tablist"] li a.metadata-item-tab {
     height: 100%;
     margin:0;
     font-size: 1.1em;
@@ -423,11 +423,11 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
     border-bottom: 4px solid #e2e2e2;
   }
 
-  .modal-header.nav li a {
+  .nav[role="tablist"] li a {
     text-align: center;
   }
 
-  .modal-header.nav li a i {
+  .nav[role="tablist"] li a i {
     margin-right: 5px;
   }
 
@@ -568,7 +568,7 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
     background: var(--skin-color);
   }
 
-  .modal-header.nav .action-button:hover {
+  .nav[role="tablist"] .action-button:hover {
     background-color: transparent;
   }
 
