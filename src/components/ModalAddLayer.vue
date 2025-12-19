@@ -812,8 +812,7 @@ export default {
           console.warn(e);
         }
         if (this.wms_config) {
-          this.unloadWMS();
-          $('#modal-addlayer').modal('hide');
+          this.close();
         }
       }
 
@@ -838,13 +837,7 @@ export default {
               type:     'tms',
             }
           );
-          $('#modal-addlayer').modal('hide');
-          // reset tms fields
-          this.tms_url        = '';
-          this.tms_name       = '';
-          this.tms_projection = 'EPSG:3857';
-          this.tms_visible    = true;
-          this.tms_opacity    = 1;
+          this.close();
         } catch(e) {
           console.warn(e);
           this.error_message = `${e}`;
@@ -861,8 +854,7 @@ export default {
             persistent: !!this.persistent,
             type:       this.file_type,
           });
-          $('#modal-addlayer').modal('hide');
-          this.unloadFile();
+          this.close();
         } catch(e) {
           console.warn(e);
           this.error_message = `${e}`;
@@ -1142,20 +1134,32 @@ export default {
      */
     async onBeforetoggle(e) {
       if ('closed' === e.newState) {
-        this.layer_type = undefined;
-        this.unloadFile();
-        this.unloadWMS();
+        this.close(false);
       }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    close(hide = true) {
+      if (hide) {
+        $('#modal-addlayer').modal('hide');
+      }
+      this.layer_type = undefined;
+      this.unloadFile();
+      this.unloadWMS();
+      // reset tms fields
+      this.tms_url        = '';
+      this.tms_name       = '';
+      this.tms_projection = 'EPSG:3857';
+      this.tms_visible    = true;
+      this.tms_opacity    = 1;
     },
 
   },
 
   async mounted() {
     document.body.appendChild(this.$el);
-
-    this.layer_type = undefined;
-    this.unloadFile();
-    this.unloadWMS();
 
     await GUI.isMapReady();
 
@@ -1185,16 +1189,6 @@ export default {
     });
 
     this.wms_urls = data.urls;
-  },
-
-  beforeDestroy() {
-    this.unloadFile();
-    this.unloadWMS();
-    $('#modal-addlayer').modal('hide')
-    document.querySelector('#modal-addlayer').remove();
-
-    GUI.off('remove-external-layer', this.deleteWMS);
-    this.$data = null;
   },
 
 };
