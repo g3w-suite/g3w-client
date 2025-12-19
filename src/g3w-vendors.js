@@ -191,7 +191,7 @@ class Modal {
     this.dialog.showModal();
     setTimeout(() => {
       this.$element.find('.modal-dialog').trigger('shown.bs.modal');
-      this.$element.trigger('focus').trigger('shown.bs.modal');
+      this.$element.trigger('shown.bs.modal');
     }, 500);
   }
 
@@ -212,6 +212,7 @@ $.fn.modal = function(option, target) {
     $(this).data('bs.modal', (modal = new Modal(this[0])));
   }
   modal['string' === typeof option ? option : 'show'](target);
+  return this;
 };
 
 /**
@@ -220,16 +221,10 @@ $.fn.modal = function(option, target) {
 document.addEventListener('click', function(e) {
   const target = e.target.closest('[data-toggle="modal"]');
   const modal  = target && document.querySelector(target.getAttribute('data-target') || target.getAttribute('href'));
-
-  if (!modal) {
-    return;
-  }
-
-  if ('A' === target.tagName) {
+  if (modal) {
     e.preventDefault();
+    $.fn.modal.call($(modal), 'show', target);
   }
-
-  $.fn.modal.call($(modal), 'show', target);
 });
 
 
