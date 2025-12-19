@@ -7,25 +7,21 @@
   <dialog
     id = "modal-addlayer"
   >
-    <div style = "width: min(85vw, 600px);">
+    <div style = "width: min(85vw, 600px); padding: 15px;">
 
-      <!-- MODAL HEADER -->
-      <div style="padding: 15px; border-bottom: 1px solid #f4f4f4;">
-        <button
-          type         = "button"
-          class        = "close"
-          data-dismiss = "modal"
-          style        = "margin-top: -2px;"
-        >&times;</button>
-        <h4
-          style = "font-weight: bold"
-          v-t   = "'Add Layer'"
-          class = "modal-title"
-        ></h4>
-      </div>
+      <form method="dialog" style="padding: 0;">
+        <button value="cancel" style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 15px 15px auto auto;width: 40px;height: 40px;">&times;</button>
+      </form>
+
+      <h4
+        style = "font-weight: bold"
+        v-t   = "'Add Layer'"
+      ></h4>
+
+      <hr>
 
       <!-- MODAL BODY -->
-      <div style = "padding: 15px;">
+      <div>
 
         <!-- LAYER TYPE -->
         <div class = "form-group">
@@ -405,7 +401,7 @@
       </div>
 
       <!-- MODAL FOOTER -->
-      <menu style="padding: 15px; text-align: right; border-top: 1px solid #f4f4f4;">
+      <menu style="text-align: right; border-top: 1px solid #f4f4f4;">
 
         <!-- ERROR NOTICE -->
         <div
