@@ -166,7 +166,7 @@ $.fn.modal = function(option) {
 
     // handle click on "backdrop" and "data-dismiss" buttons
     dialog.addEventListener('mousedown', e => {
-      const rect          = dialog.getBoundingClientRect();
+      const rect        = dialog.getBoundingClientRect();
       const is_backdrop = (
         e.clientY < rect.top - 20 ||
         e.clientY > rect.top + rect.height ||
@@ -192,8 +192,8 @@ $.fn.modal = function(option) {
     });
 
     $(this).data('bs.modal', {
-      show:   dialog.showModal.bind(dialog),
-      hide:   dialog.close.bind(dialog),
+      show:   () => dialog.showModal(),
+      hide:   () => dialog.close(),
       toggle: () => dialog.open ? dialog.showModal() : dialog.close(),
     });
   }
