@@ -189,9 +189,7 @@ class Modal {
           this.$element.trigger('shown.bs.modal');
         }, 500);
       } else {
-        setTimeout(() => {
-          this.$element.trigger('hidden.bs.modal');
-        }, 500);
+        this.$element.trigger('hidden.bs.modal');
       }
     })
   }
