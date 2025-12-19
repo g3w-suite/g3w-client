@@ -153,23 +153,20 @@ globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 /**
  * Based on bootstrap/js/modal.js@v3.3.7
  */
-class Modal {
-
-  constructor(element) {
-    this.$element = $(element);
-
-    // wrap jquery modal into a native <dialog> element
-    this.dialog = 'DIALOG' === element.tagName ? element : document.createElement('dialog');
+$.fn.modal = function(option) {
+  if (!$(this).data('bs.modal')) {
+    const element = this[0];
     
-    if ('DIALOG' !== element.tagName) {
-      this.dialog.append(element)
+    // wrap jquery modal into a native <dialog> element
+    const dialog = element instanceof HTMLDialogElement ? element : document.createElement('dialog');
+    if (dialog !== element) {
+      dialog.append(element)
     }
-
-    document.body.appendChild(this.dialog);
+    document.body.appendChild(dialog);
 
     // handle click on "backdrop" and "data-dismiss" buttons
-    this.dialog.addEventListener('mousedown', e => {
-      const rect          = this.dialog.getBoundingClientRect();
+    dialog.addEventListener('mousedown', e => {
+      const rect          = dialog.getBoundingClientRect();
       const is_backdrop = (
         e.clientY < rect.top - 20 ||
         e.clientY > rect.top + rect.height ||
@@ -178,44 +175,29 @@ class Modal {
       );
       const is_interactive = ['label', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i));
       if ((is_backdrop && !is_interactive) || (0 === e.button && e.target.closest('[data-dismiss="modal"]'))) {
-        this.dialog.close();
+        dialog.close();
       }
     });
 
-    this.dialog.addEventListener('beforetoggle', e => {
+    // BACKOMP for "shown.bs.modal" and "hidden.bs.modal" events
+    dialog.addEventListener('beforetoggle', e => {
       if ('open' === e.newState) {
         setTimeout(() => {
-          this.$element.find('.modal-dialog').trigger('shown.bs.modal');
-          this.$element.trigger('shown.bs.modal');
+          $(element).find('.modal-dialog').trigger('shown.bs.modal');
+          $(element).trigger('shown.bs.modal');
         }, 500);
       } else {
-        this.$element.trigger('hidden.bs.modal');
+        $(element).trigger('hidden.bs.modal');
       }
     });
-  }
 
-  toggle() {
-    return this.dialog.open ? this.hide() : this.show()
+    $(this).data('bs.modal', {
+      show:   dialog.showModal.bind(dialog),
+      hide:   dialog.close.bind(dialog),
+      toggle: () => dialog.open ? dialog.showModal() : dialog.close(),
+    });
   }
-
-  show() {
-    this.dialog.showModal();
-  }
-
-  hide() {
-    this.dialog.close();
-  }
-}
-
-/**
- * Based on bootstrap/js/modal.js@v3.3.7
- */
-$.fn.modal = function(option, target) {
-  let modal = $(this).data('bs.modal');
-  if (!modal) {
-    $(this).data('bs.modal', (modal = new Modal(this[0])));
-  }
-  modal['string' === typeof option ? option : 'show'](target);
+  $(this).data('bs.modal')['string' === typeof option ? option : 'show']();
   return this;
 };
 
@@ -227,7 +209,7 @@ document.addEventListener('click', function(e) {
   const modal  = target && document.querySelector(target.getAttribute('data-target') || target.getAttribute('href'));
   if (modal) {
     e.preventDefault();
-    $.fn.modal.call($(modal), 'show', target);
+    $.fn.modal.call($(modal));
   }
 });
 
