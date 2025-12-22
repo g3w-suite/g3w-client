@@ -187,7 +187,7 @@
         const timer = setTimeout(() => {
           this.closeUserMessage();
           clearTimeout(timer)
-        }, this.duration)
+        }, this.duration);
       }
     },
     beforeDestroy() {
