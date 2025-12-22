@@ -1181,6 +1181,10 @@ export default {
   .usermessage-info      { background-color: #44a0bb; }
   .usermessage-warning   { background-color: #f29e1d; }
   .usermessage-alert     { background-color: #c34943; }
+
+  dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)::backdrop {
+    opacity: 0;
+  }
 </style>
 
 <style scoped>

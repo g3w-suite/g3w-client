@@ -1089,7 +1089,7 @@ export default new (class GUI extends Emitter {
     if ('tool' !== type) {
       const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */ `
-        <dialog class="usermessage-${type} nobackdrop" popover="manual" style = "
+        <dialog class="usermessage-${type}" popover="manual" style = "
           color: #FFF;
           line-height: normal;
           padding: 3px;

@@ -112,7 +112,6 @@ address                                     { margin-bottom: 20px; font-style: n
 dialog                                      { border-width: 0; animation: slide-down 0.3s ease-out; min-width: min(50vw, 350px); box-shadow: 0 0 1px; }
 dialog::backdrop                            { background-color: rgb(0, 0, 0, .5); }
 dialog[popover=manual]::backdrop            { opacity: .25; }
-dialog.nobackdrop::backdrop                 { opacity: 0; }
 dialog.modal-gallery::backdrop              { background-color: rgb(0, 0, 0); }
 dialog.modal-left                           { width: 350px; margin-left: 2px; margin-top: 3px; }
 dialog > form > menu                        { background: #fff; position:sticky; bottom:0; margin: 0; padding: 10px 0; }
