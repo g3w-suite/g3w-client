@@ -1115,7 +1115,7 @@ export default new (class GUI extends Emitter {
                 <h4> ${ type.toUpperCase() }</h4>
                 <h5>${subtitle ? _(subtitle): ''}</h5>
               </div>
-              <button value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
             </div>
             <div>${ textMessage ? message : _(message) }</div>
           </form>
