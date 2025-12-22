@@ -1086,43 +1086,6 @@ export default new (class GUI extends Emitter {
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
-    if ('alert' === type) {
-      const dialog = Object.assign(document.createElement('template'), {
-      innerHTML: /* html */ `
-        <dialog style = "background-color: red; color: #fff; border-radius: 5px; padding: 5px;">
-          <div>
-            <div  style = "
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                width: 100%;
-                border-bottom: 2px solid #eee;
-              ">
-              <i class = "fas fa-exclamation-triangle"></i>
-              <div>
-                <h4>${title ? _(title): ''}</h4>
-                <h4> ${ type.toUpperCase() }</h4>
-                <h5>${subtitle ? _(subtitle): ''}</h5>
-              </div>
-              <div id = "close-alert-dialog" style = "align-self: flex-start;"><i style = "cursor: pointer; padding: 5px;" class = "fas fa-times"></i></div>
-            </div>
-            <div>${ textMessage ? message : _(message) }</div>
-          </div>
-        </dialog>
-      `.trim()
-      }).content.firstChild;
-
-
-      document.body.appendChild(dialog);
-      dialog.showModal();
-      //close dialog on x icon
-      document.getElementById('close-alert-dialog').addEventListener('click', () => {
-        dialog.close();
-        dialog.remove();
-      });
-
-      return;
-    }
 
     this.closeUserMessage();
 
