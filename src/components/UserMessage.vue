@@ -5,19 +5,17 @@
 
 <template>
   <div
-    class   = "usermessage-content"
+    class   = "usermessage-content usermessage-tool"
     :id     = "id"
     :style  = "style"
-    :class  = "{ ['usermessage-' + type]: true }"
     popover = "manual"
   >
     <div
-      v-if  = "showheader"
       class = "usermessage-header-content"
     >
       <i
         class  = "usermessage-header-icontype"
-        :class = "$fa(iconClass || type)">
+        :class = "$fa(iconClass || 'tool')">
       </i>
       <div class = "usermessage-header-title">
         <slot name = "header">
@@ -25,7 +23,7 @@
             v-if = "title"
             v-t  = "title">
           </h4>
-          <h4  v-else> {{ type.toUpperCase() }}</h4>
+          <h4  v-else> TOOL</h4>
           <h5
             v-if  = "subtitle"
             class = "usermessage-header-subtitle"
@@ -97,10 +95,6 @@
     name: "usermessage",
     props: {
       id: {},
-      type: {
-        type:    String,
-        default: "info" // info, warning, alert, tool
-      },
       title: {
         type:    String,
         default: null,
@@ -149,11 +143,6 @@
         }
       }
     },
-    computed: {
-      showheader() {
-        return 'loading'!== this.type ;
-      }
-    },
     methods: {
       closeUserMessage() {
         if (this.$el.popover) {
@@ -165,9 +154,7 @@
     
     async mounted() {
       this.$el.showPopover();
-      if ('tool' === this.type) {
-        _makeDraggable(this.$el);
-      }
+      _makeDraggable(this.$el);
       if (this.size === 'fullpage') {
         this.uw = this.$watch(
           ()    => g3wsdk.core.ApplicationState.map.sizes.width, 
