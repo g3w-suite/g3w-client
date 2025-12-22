@@ -1081,7 +1081,7 @@ export default new (class GUI extends Emitter {
     draggable,
     duration,
     textMessage = false,
-    closable,
+    closable = true,
     autoclose,
     hooks = {},
     iconClass = null, //@since 3.11.0
@@ -1099,7 +1099,7 @@ export default new (class GUI extends Emitter {
           ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          width: ${g3wsdk.core.ApplicationState.map.sizes.width}px;
+          width: ${ApplicationState.map.sizes.width}px;
           /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
           animation: none;
           ">
@@ -1117,7 +1117,7 @@ export default new (class GUI extends Emitter {
                 <h4> ${ type.toUpperCase() }</h4>
                 <h5>${subtitle ? _(subtitle): ''}</h5>
               </div>
-              <button value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;">&times;</button>
+              <button value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
             </div>
             <div>${ textMessage ? message : _(message) }</div>
           </form>
@@ -1125,13 +1125,28 @@ export default new (class GUI extends Emitter {
       `.trim()
       }).content.firstChild;
 
+      const unwatch = Vue.watch(
+          ()    => ApplicationState.map.sizes.width, 
+          width => { dialog.style.width = `${width}px` }
+      );
+
+      dialog.addEventListener('close', () => {
+        dialog.remove();
+        unwatch();
+      });
+
       document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
       dialog.showPopover();
-      //close dialog on x icon
+      // close dialog on x icon
       dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
         dialog.hidePopover();
-        dialog.remove();
       });
+      if (autoclose) {
+        const timer = setTimeout(() => {
+          dialog.hidePopover();
+          clearTimeout(timer)
+        }, duration);
+      }
 
       return;
     }
