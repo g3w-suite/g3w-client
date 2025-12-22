@@ -992,7 +992,6 @@ const toggleUserMessage = (toggle, type) => {
     GUI.showUserMessage({
       title:     'print',
       type:      'tool',
-      size:      'small',
       iconClass: 'print',
       closable:  true,
       hooks: {

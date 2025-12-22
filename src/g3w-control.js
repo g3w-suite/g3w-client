@@ -618,7 +618,6 @@ export default class MapControl extends ol.control.Control {
       GUI.showUserMessage({
         title:     this.toggledTool.__title,
         type:      'tool',
-        size:      'small',
         iconClass: this.toggledTool.__iconClass,
         closable:  this._toolButton ? true : false,
         hooks:     { body: this.toggledTool }
