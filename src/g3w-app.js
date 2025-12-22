@@ -1089,7 +1089,7 @@ export default new (class GUI extends Emitter {
     if ('alert' === type) {
       const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */ `
-        <dialog popover="manual" style = "
+        <dialog class="nobackdrop" popover="manual" style = "
           color: #FFF;
           line-height: normal;
           padding: 3px;
@@ -1099,10 +1099,11 @@ export default new (class GUI extends Emitter {
           background-color: red;
           ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          /*width: ${g3wsdk.core.ApplicationState.map.sizes.width}px;*/
-          margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};
+          width: ${g3wsdk.core.ApplicationState.map.sizes.width}px;
+          /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
+          animation: none;
           ">
-          <div>
+          <form>
             <div  style = "
                 display: flex;
                 align-items: baseline;
@@ -1119,7 +1120,7 @@ export default new (class GUI extends Emitter {
               <div id = "close-alert-dialog" style = "align-self: flex-start;"><i style = "cursor: pointer; padding: 5px;" class = "fas fa-times"></i></div>
             </div>
             <div>${ textMessage ? message : _(message) }</div>
-          </div>
+          </form>
         </dialog>
       `.trim()
       }).content.firstChild;
