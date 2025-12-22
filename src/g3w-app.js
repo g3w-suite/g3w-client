@@ -1101,7 +1101,6 @@ export default new (class GUI extends Emitter {
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
           width: ${ApplicationState.map.sizes.width}px;
           /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
-          animation: none;
           ">
           <form>
             <div style = "

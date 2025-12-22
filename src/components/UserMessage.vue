@@ -111,14 +111,6 @@
         type:    Boolean,
         default: false
       },
-      autoclose: {
-        type:    Boolean,
-        default: false
-      },
-      duration: {
-        type:    Number,
-        default: 3000
-      },
       closable: {
         type:    Boolean,
         default: true
@@ -151,12 +143,6 @@
     async mounted() {
       this.$el.showPopover();
       _makeDraggable(this.$el);
-      if (this.size === 'fullpage') {
-        this.uw = this.$watch(
-          ()    => g3wsdk.core.ApplicationState.map.sizes.width, 
-          width => this.style.width = 'fullpage' === this.size ? `${width}px`: this.style.width
-        );
-      }
       this.observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
           if ("class" === mutation.attributeName) {
@@ -165,19 +151,8 @@
         });
       });
       this.observer.observe(document.body, { attributes: true });
-      if (this.autoclose) {
-        await this.$nextTick();
-        const timer = setTimeout(() => {
-          this.closeUserMessage();
-          clearTimeout(timer)
-        }, this.duration);
-      }
     },
     beforeDestroy() {
-      if (this.uw) {
-        this.uw();
-        this.uw = null;
-      }
       if (this.observer) {
         this.observer.disconnect();
         this.observer = null;
