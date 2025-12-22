@@ -1086,18 +1086,18 @@ export default new (class GUI extends Emitter {
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
-    if ('alert' === type) {
+    if ('tool' !== type) {
       const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */ `
-        <dialog class="nobackdrop" popover="manual" style = "
+        <dialog class="usermessage-${type} nobackdrop" popover="manual" style = "
           color: #FFF;
           line-height: normal;
           padding: 3px;
           border: unset;
           inset: unset;
           margin: unset;
-          background-color: red;
           ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
+          ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
           width: ${g3wsdk.core.ApplicationState.map.sizes.width}px;
           /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
@@ -1111,7 +1111,7 @@ export default new (class GUI extends Emitter {
                 width: 100%;
                 border-bottom: 2px solid #eee;
               ">
-              <i class = "fas fa-exclamation-triangle"></i>
+              <i class = "${g3w.app.getFontClass(type)}"></i>
               <div>
                 <h4>${title ? _(title): ''}</h4>
                 <h4> ${ type.toUpperCase() }</h4>
@@ -1124,7 +1124,6 @@ export default new (class GUI extends Emitter {
         </dialog>
       `.trim()
       }).content.firstChild;
-
 
       document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
       dialog.showPopover();

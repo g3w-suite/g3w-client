@@ -1173,6 +1173,16 @@ export default {
 };
 </script>
 
+<style>
+  #g3w-view-map {
+    anchor-name: --g3w-view-map; 
+  }
+  .usermessage-success   { background-color: #62ac62; }
+  .usermessage-info      { background-color: #44a0bb; }
+  .usermessage-warning   { background-color: #f29e1d; }
+  .usermessage-alert     { background-color: #c34943; }
+</style>
+
 <style scoped>
   .project_title     { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
   .project_title > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }

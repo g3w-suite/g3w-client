@@ -202,13 +202,6 @@
     }
   }
 </script>
-
-<style>
-  #g3w-view-map {
-    anchor-name: --g3w-view-map; 
-  }
-</style>
-
 <style scoped>
 
   .usermessage-content {
@@ -221,12 +214,12 @@
     margin: unset;
   }
 
-  .usermessage-success   { background-color: #62ac62; }
-  .usermessage-info      { background-color: #44a0bb; }
-  .usermessage-warning   { background-color: #f29e1d; }
-  .usermessage-alert     { background-color: #c34943; }
-  .usermessage-tool      { background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; }
-  .usermessage-loading   { background-color: #FFF; color: #222d32;  font-weight: bold; }
+  .usermessage-tool {
+    background-color: #FFF;
+    color: #222d32;
+    cursor: move;
+    border: thin solid #ccc;
+  }
 
   .usermessage-header-content {
     display: flex;
