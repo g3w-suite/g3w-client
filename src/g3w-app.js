@@ -1079,7 +1079,7 @@ export default new (class GUI extends Emitter {
     position,
     size,
     draggable,
-    duration,
+    duration = 3000,
     textMessage = false,
     closable = true,
     autoclose,
