@@ -40,7 +40,6 @@ import * as xml             from 'ol/xml';
 
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
-import $script              from 'scriptjs';
 import Vue                  from 'vue/dist/vue.js';
 
 /**
@@ -84,7 +83,12 @@ Object.assign(globalThis, {
     get any() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
   },
   /** @deprecated since 3.11.0 */
-  $script,
+  $script(url, callback) {
+    const script = document.createElement('script');
+    script.src = url;
+    script.onload = callback;
+    document.head.appendChild(script);
+  },
   /** @deprecated since 3.11.0 */
   shp,
   /** @deprecated since 3.11.0 */
