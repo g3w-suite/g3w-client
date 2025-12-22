@@ -1097,7 +1097,7 @@ export default new (class GUI extends Emitter {
           ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          width: ${ApplicationState.map.sizes.width}px;
+          width: ${ApplicationState.map.sizes.width + (document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size') ? ApplicationState.content.sizes.width : 0)}px;
           /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
           animation: fade 0.3s ease-in;
         ">
@@ -1125,7 +1125,9 @@ export default new (class GUI extends Emitter {
 
       const unwatch = Vue.watch(
           ()    => ApplicationState.map.sizes.width, 
-          width => { dialog.style.width = `${width}px` }
+          width => {
+            dialog.style.width = `${width + (document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size') ? ApplicationState.content.sizes.width : 0)}px`
+          }
       );
 
       dialog.addEventListener('close', () => {
