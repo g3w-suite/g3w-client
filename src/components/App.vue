@@ -309,13 +309,8 @@
           :subtitle          = "usermessage.subtitle"
           :id                = "usermessage.id"
           :message           = "usermessage.message"
-          :draggable         = "usermessage.draggable"
           :closable          = "usermessage.closable"
-          :duration          = "usermessage.duration"
-          :autoclose         = "usermessage.autoclose"
           :textMessage       = "usermessage.textMessage"
-          :size              = "usermessage.size"
-          :type              = "usermessage.type"
           :icon-class        = "usermessage.iconClass"
         >
           <template v-if = "usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
