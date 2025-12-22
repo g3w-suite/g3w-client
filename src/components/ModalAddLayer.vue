@@ -8,11 +8,9 @@
     id            = "modal-addlayer"
     @beforetoggle = "onBeforetoggle"
   >
-    <div style = "width: min(85vw, 600px); padding: 15px;">
+    <form method="dialog" style = "width: min(85vw, 600px); padding: 15px;">
 
-      <form method="dialog" style="padding: 0;">
-        <button value="cancel" style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 15px 15px auto auto;width: 40px;height: 40px;">&times;</button>
-      </form>
+      <button value="cancel" formnovalidate style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 15px 15px auto auto;width: 40px;height: 40px;">&times;</button>
 
       <h4
         style = "font-weight: bold"
@@ -38,7 +36,7 @@
         <hr>
 
         <!-- LOADING INDICATOR -->
-        <bar-loader :loading = "loading"/>
+        <div v-show = "loading" class = "bar-loader"></div>
 
         <div v-if = "'wms' === layer_type" class = "form-group">
 
@@ -81,6 +79,7 @@
               id           = "add_wms_name"
               v-model.trim = "id"
               class        = "form-control"
+              type         = "text"
               required
             />
             <p v-if = "null !== id && wms_urls.some(l => id === l.id) && wms_urls.every(l => url !== l.url)" style = "color: red; margin: 10px 0;">
@@ -183,7 +182,7 @@
             <!-- NAME OF LAYER TO SAVE -->
             <div class = "form-group">
               <label for = "g3w-wms-layer-name" v-t = "'Name'"></label>
-              <input id  = "g3w-wms-layer-name" class = "form-control" v-model = "name">
+              <input id  = "g3w-wms-layer-name" class = "form-control" type="text" v-model = "name">
             </div>
 
           </fieldset>
@@ -224,6 +223,7 @@
               id           = "add_tms_name"
               v-model.trim = "tms_name"
               class        = "form-control"
+              type         = "text"
               required
             />
           </fieldset>
@@ -299,7 +299,7 @@
 
           <!-- CSV FILE (parsing options) -->
           <div v-if = "'csv' === file_type" class = "form-group" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
-            <bar-loader :loading = "csv_loading"/>
+            <div v-show = "csv_loading" class = "bar-loader"></div>
 
             <label v-t = "'Delimiter'" for = "g3w-select-field-layer"></label>
             <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator" @change="parseFile">
@@ -413,11 +413,11 @@
 
         <!-- CLOSE BUTTON -->
         <button
-          v-t          = "'close'"
-          type         = "button"
-          class        = "btn btn-default"
-          data-dismiss = "modal"
-          style        = "font-weight: bold; min-width: 70px;"
+          v-t            = "'close'"
+          value          = "cancel"
+          class          = "btn btn-default"
+          style          = "font-weight: bold; min-width: 70px;"
+          formnovalidate
         ></button>
 
         <!-- SUBMIT BUTTON -->
@@ -432,7 +432,7 @@
 
       </menu>
 
-    </div>
+    </form>
   </dialog>
 </template>
 
