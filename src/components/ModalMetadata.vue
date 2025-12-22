@@ -307,7 +307,9 @@
             let value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
             if (value) {
               //In case of layers that has geometry and no epsg, filter according to filter of project layers
-              if ('layers' === field) { value = value.filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg) ) } 
+              if ('layers' === field) {
+                value = value.filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg) )
+              }
               f[field] = { value, label: `metadata.${name}.fields.${field}` };
             }
             return f;
