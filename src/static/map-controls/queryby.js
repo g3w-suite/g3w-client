@@ -226,7 +226,7 @@ export class QueryBy extends MapControl {
                     const select = document.querySelector('#add-layer-type');
                     select.value = 'file';
                     select.dispatchEvent(new Event('change'));
-                    $('#modal-addlayer').one('hidden.bs.modal', () => GUI.un('loadExternalLayer', listener));
+                    document.getElementById('modal-addlayer').addEventListener('hidden.bs.modal', () => GUI.un('loadExternalLayer', listener), { once: true });
                     GUI.showAddLayerModal();
                   }
 
