@@ -209,6 +209,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .bar-loader:before                    { background-color: hsl(from var(--skin-color) h s calc(l - 20)); display: block; position: absolute; content: ''; left: -200px; width: 200px; height: 4px; animation: loading 1s linear infinite; }
 
 /* Animation */
+@keyframes fade      { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes circle    { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
 @keyframes loading   { from { left: -200px; width: 30%; } 50% { width: 30%; } 70% { width: 70%; } 80% { left: 50%; } 95% { left: 120%; } to { left: 100%; } }
 
