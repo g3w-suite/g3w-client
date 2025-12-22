@@ -1104,7 +1104,7 @@ export default new (class GUI extends Emitter {
           animation: none;
           ">
           <form>
-            <div  style = "
+            <div style = "
                 display: flex;
                 align-items: baseline;
                 justify-content: space-between;
@@ -1117,7 +1117,7 @@ export default new (class GUI extends Emitter {
                 <h4> ${ type.toUpperCase() }</h4>
                 <h5>${subtitle ? _(subtitle): ''}</h5>
               </div>
-              <div id = "close-alert-dialog" style = "align-self: flex-start;"><i style = "cursor: pointer; padding: 5px;" class = "fas fa-times"></i></div>
+              <button value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;">&times;</button>
             </div>
             <div>${ textMessage ? message : _(message) }</div>
           </form>
@@ -1128,7 +1128,7 @@ export default new (class GUI extends Emitter {
       document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
       dialog.showPopover();
       //close dialog on x icon
-      document.getElementById('close-alert-dialog').addEventListener('click', () => {
+      dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
         dialog.hidePopover();
         dialog.remove();
       });
