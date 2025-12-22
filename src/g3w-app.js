@@ -1111,7 +1111,7 @@ export default new (class GUI extends Emitter {
                 width: 100%;
                 border-bottom: 2px solid #eee;
               ">
-              <i class = "${g3w.app.getFontClass(type)}"></i>
+              <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
               <div>
                 <h4>${title ? _(title): ''}</h4>
                 <h4> ${ type.toUpperCase() }</h4>
