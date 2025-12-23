@@ -1112,7 +1112,7 @@ export default new (class GUI extends Emitter {
               ">
               <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
               <div>
-                <h4 style="font-weight: bold;">${title ? _(title): ''}</h4>
+                <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
                 <h5>${subtitle ? _(subtitle): ''}</h5>
               </div>
               <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
