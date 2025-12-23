@@ -1108,11 +1108,11 @@ export default new (class GUI extends Emitter {
                 justify-content: space-between;
                 width: 100%;
                 border-bottom: 2px solid #eee;
+                margin-bottom: 14px;
               ">
               <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
               <div>
-                <h4>${title ? _(title): ''}</h4>
-                <h4> ${ type.toUpperCase() }</h4>
+                <h4 style="font-weight: bold;">${title ? _(title): ''}</h4>
                 <h5>${subtitle ? _(subtitle): ''}</h5>
               </div>
               <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
@@ -1137,15 +1137,24 @@ export default new (class GUI extends Emitter {
 
       document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
       dialog.showPopover();
+
       // close dialog on x icon
       dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
         dialog.hidePopover();
       });
+
       if (autoclose) {
         const timer = setTimeout(() => {
           dialog.hidePopover();
           clearTimeout(timer)
         }, duration);
+      }
+
+      if (autoclose || closable) {
+        dialog.style.cursor = 'pointer';
+        dialog.addEventListener('click', () => {
+          dialog.hidePopover();
+        });
       }
 
       return;
