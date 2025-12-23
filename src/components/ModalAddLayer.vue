@@ -7,8 +7,9 @@
   <dialog
     id            = "modal-addlayer"
     @beforetoggle = "onBeforetoggle"
+    style         = "width: min(85vw, 600px);"
   >
-    <form method="dialog" style = "width: min(85vw, 600px); padding: 15px;">
+    <form method="dialog" style="padding: 15px;">
 
       <button value="cancel" formnovalidate style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 15px 15px auto auto;width: 40px;height: 40px;">&times;</button>
 
