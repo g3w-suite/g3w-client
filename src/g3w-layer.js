@@ -2869,7 +2869,7 @@ export class Layer extends Emitter {
    * 
    * @since 4.1.0
    */
-  getLegendUrl(params = {}, opts = { categories:false,  all:false,format:'image/png',}) {
+  getLegendUrl(params = {}, opts = { categories: false,  all: false, format: 'image/png', }) {
     if (!this.isRaster()) {
       return;
     }
