@@ -5,9 +5,10 @@
 
 <template>
   <dialog
-    id = "modal-changemap"
+    id    = "modal-changemap"
+    style = "width: 80vw;"
   >
-    <form method="dialog" style = "width: 80vw;">
+    <form method="dialog">
 
       <div style="height: 80vh;">
 

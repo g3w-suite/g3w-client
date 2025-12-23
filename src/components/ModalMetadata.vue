@@ -7,8 +7,9 @@
   <dialog
     id            = "modal-metadata"
     @beforetoggle = "onBeforetoggle"
+    style         = "width: 80vw;"
   >
-    <form method="dialog" style="width: 80vw;">
+    <form method="dialog">
 
       <!-- METADATA TABS -->
       <ul role = "tablist" class = "nav nav-tabs">

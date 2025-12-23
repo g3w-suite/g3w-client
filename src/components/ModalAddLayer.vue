@@ -7,8 +7,9 @@
   <dialog
     id            = "modal-addlayer"
     @beforetoggle = "onBeforetoggle"
+    style         = "width: min(85vw, 600px);"
   >
-    <form method="dialog" style = "width: min(85vw, 600px); padding: 15px;">
+    <form method="dialog" style="padding: 15px;">
 
       <button value="cancel" formnovalidate style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 15px 15px auto auto;width: 40px;height: 40px;">&times;</button>
 
@@ -123,14 +124,14 @@
 
             <!-- LAYER INFO -->
             <fieldset v-if = "wms_config.abstract" class = "form-group" style = "border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
-              <legend style = "width: 15px;height: 15px;border: none;border-radius: 50%;background-color: #212c31;font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -18px;user-select: none;">i</legend>
+              <legend style = "width: 15px; height: 15px; border: none; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex; justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
               {{ wms_config.abstract }}
             </fieldset>
 
             <!-- LAYERS NAME -->
             <div class = "form-group">
               <label for = "g3w-wms-layers"><span v-t = "'Layers'"></span></label>
-              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
+              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :dropdownParent = "true" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
                 <option v-for = "(l, i) in layers" :value = "i">{{ l.title }}</option>
               </select>
             </div>
