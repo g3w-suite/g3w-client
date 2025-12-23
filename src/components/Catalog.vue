@@ -360,6 +360,8 @@ export default {
             ) {
               layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
             }
+            tree.legendurls = [];
+            await this.$nextTick();
             tree.legendurls = await this._getLegendSrc(layers);
           } catch(e) {
             console.warn(e);
@@ -479,7 +481,6 @@ export default {
                 })).blob());
           } catch (e) {
             console.warn(e);
-          } finally {
             //set loading to false
             obj.loading = false;
           }
