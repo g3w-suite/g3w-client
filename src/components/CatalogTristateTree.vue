@@ -140,7 +140,7 @@
         <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
         <!-- LAYER FEATURES COUNT-->
-        <span v-if="!isGroup && showfeaturecount" style="font-weight: bold">
+        <span v-if = "!isGroup && showfeaturecount" style = "font-weight: bold">
           [{{getFeatureCount}}]
         </span>
 
