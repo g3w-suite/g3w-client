@@ -6,83 +6,79 @@
 <template>
   <dialog
     id    = "modal-changemap"
-    style = "width: 80vw;"
+    style = "width: 80vw; height: 80vh;"
   >
     <form method="dialog">
 
-      <div style="height: 80vh;">
-
-        <!-- CHILD NODE -->
-        <div
-          v-if  = "'root' !== this.current"
-          style = "
-            display: flex;
-            align-items: center;
-            color: #fff
+      <!-- CHILD NODE -->
+      <div
+        v-if  = "'root' !== this.current"
+        style = "
+          display: flex;
+          align-items: center;
+          color: #fff
+        "
+        class = "skin-background-color"
+      >
+        <span
+          v-t-tooltip:bottom = "'Change Session'"
+          v-disabled         = "loading"
+          @click.stop        = "back"
+          style              = "
+            font-size: 2em;
+            margin: 5px;
+            cursor: pointer;
+            padding: 3px;
+            border: 2px solid #fff;
+            border-radius: 3px;
           "
-          class = "skin-background-color"
         >
-          <span
-            v-t-tooltip:bottom = "'Change Session'"
-            v-disabled         = "loading"
-            @click.stop        = "back"
-            style              = "
-              font-size: 2em;
-              margin: 5px;
-              cursor: pointer;
-              padding: 3px;
-              border: 2px solid #fff;
-              border-radius: 3px;
-            "
-          >
-            <i style  = "color: #FFF" :class = "$fa('reply')"></i>
-          </span>
+          <i style  = "color: #FFF" :class = "$fa('reply')"></i>
+        </span>
 
-            <div v-if = "parent" style = "margin: auto">
-              <h3 style = "font-weight: bold">{{ parent.title || parent.name }}</h3>
-            </div>
-          </div>
-
-        <div
-          v-if  = "items.length"
-          class = "g3w-change-map-menu-container"
-        >
-          <div
-            v-for = "item in items"
-            :key  = "item.name"
-            class = "menu-item"
-          >
-
-          <!-- ITEM IMAGE -->
-            <div
-              class       = "menu-item-image"
-              @click.stop = "trigger(item)"
-            >
-              <img
-                :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
-                @error = "setItemImageSrc({ item, type: 'net_error' })"
-                alt    = "logo"
-                class  = "img-responsive"
-              />
-            </div>
-
-            <!-- ITEM CONTENT -->
-            <div class = "menu-item-content">
-              <div class = "menu-item-text">
-                <h4 class = "menu-item-title">{{ item.title }}</h4>
-                <div v-html = "item.description"></div>
-              </div>
-            </div>
-
+          <div v-if = "parent" style = "margin: auto">
+            <h3 style = "font-weight: bold">{{ parent.title || parent.name }}</h3>
           </div>
         </div>
 
-        <h3 v-else
-          style = "font-weight: bold"
-          v-t   = "`No other ${current}`">
-        </h3>
+      <div
+        v-if  = "items.length"
+        class = "g3w-change-map-menu-container"
+      >
+        <div
+          v-for = "item in items"
+          :key  = "item.name"
+          class = "menu-item"
+        >
 
+        <!-- ITEM IMAGE -->
+          <div
+            class       = "menu-item-image"
+            @click.stop = "trigger(item)"
+          >
+            <img
+              :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
+              @error = "setItemImageSrc({ item, type: 'net_error' })"
+              alt    = "logo"
+              class  = "img-responsive"
+            />
+          </div>
+
+          <!-- ITEM CONTENT -->
+          <div class = "menu-item-content">
+            <div class = "menu-item-text">
+              <h4 class = "menu-item-title">{{ item.title }}</h4>
+              <div v-html = "item.description"></div>
+            </div>
+          </div>
+
+        </div>
       </div>
+
+      <h3 v-else
+        style = "font-weight: bold"
+        v-t   = "`No other ${current}`">
+      </h3>
 
       <menu style = "display: flex; justify-content: end;">
         <button
