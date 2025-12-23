@@ -131,7 +131,7 @@
             <!-- LAYERS NAME -->
             <div class = "form-group">
               <label for = "g3w-wms-layers"><span v-t = "'Layers'"></span></label>
-              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
+              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :dropdownParent = "true" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
                 <option v-for = "(l, i) in layers" :value = "i">{{ l.title }}</option>
               </select>
             </div>
