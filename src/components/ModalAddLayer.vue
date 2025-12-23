@@ -123,7 +123,7 @@
 
             <!-- LAYER INFO -->
             <fieldset v-if = "wms_config.abstract" class = "form-group" style = "border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
-              <legend style = "width: 15px;height: 15px;border: 1px solid;border-radius: 50%;background-color: var(--bgcolor);font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -14px;user-select: none;">i</legend>
+              <legend style = "width: 15px;height: 15px;border: none;border-radius: 50%;background-color: #212c31;font-weight: bold;color: #fff;font-size: 0.7em; text-align: center; margin: 0 -18px;user-select: none;">i</legend>
               {{ wms_config.abstract }}
             </fieldset>
 
