@@ -9,7 +9,7 @@
     @beforetoggle = "onBeforetoggle"
     style         = "width: 80vw;"
   >
-    <form method="dialog">
+    <form method = "dialog">
 
       <!-- METADATA TABS -->
       <ul role = "tablist" class = "nav nav-tabs">
@@ -74,7 +74,7 @@
             <div v-for = "layer in groups.layers.layers.value" class = "row-info">
               <details>
                 <summary class = "layer_header">
-                  <i :class="'layer-header-icon action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" aria-hidden="true"></i>
+                  <i :class ="'layer-header-icon action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" aria-hidden = "true"></i>
                   <span class = "layer-name">{{ layer.name }}</span>
                 </summary>
 
@@ -82,14 +82,17 @@
 
                   <!-- LAYER GENERAL TAB -->
                   <li role = "presentation" class = "active spatial-tab">
-                    <a v-t = "'metadata.layers.groups.general'" :href = "`#layer_general_${layer.id}`" aria-controls = "general" role = "tab" data-toggle="tab"></a>
+                    <a v-t = "'metadata.layers.groups.general'" :href = "`#layer_general_${layer.id}`" aria-controls = "general" role = "tab" data-toggle = "tab"></a>
                   </li>
 
                   <!-- LAYER SPATIAL TAB -->
                   <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "spatial-tab">
                     <a v-t = "'metadata.layers.groups.spatial'" :href = "`#layer_spatial_${layer.id}`" aria-controls = "profile" role = "tab" data-toggle = "tab"></a>
                   </li>
-
+                  <!-- LAYER SPATIAL TAB -->
+                  <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "legend-tab">
+                    <a :href = "`#layer_legend_${layer.id}`" aria-controls = "legend" role = "tab" data-toggle = "tab"> {{ ($t('legend')).toUpperCase() }}</a>
+                  </li>
                 </ul>
 
                 <div class = "tab-content layer-tab-content">
@@ -146,6 +149,7 @@
                       </template>
                     </div>
                   </div>
+                  <!-- LAYER SPATIAL TAB --> 
                   <div
                     role  = "tabpanel"
                     class = "tab-pane"
@@ -181,6 +185,15 @@
 
                       </template>
                     </div>
+                  </div>
+                  <!-- LAYER LEGEND TAB -->
+                  <div  
+                    v-show  = "'NoGeometry' !== layer.geometrytype && open" 
+                    role  = "tabpanel"
+                    class = "tab-pane"
+                    :id   = "`layer_legend_${layer.id}`"
+                  >
+                    <img :src = "getLegendUrl(layer.id)"/>
                   </div>
                 </div>
               </details>
@@ -284,8 +297,10 @@
 
 <script>
 
-  import ApplicationState from 'g3w-state';
-  import { XHR }          from 'utils/XHR';
+  import ApplicationState        from 'g3w-state';
+  import { XHR }                 from 'utils/XHR';
+  import { getCatalogLayerById } from 'utils/getCatalogLayerById';
+
 
   export default {
 
@@ -295,6 +310,7 @@
       const project = ApplicationState.project.getState();
       const version = window.initConfig.version.split('-')[0].split('.');
       return {
+        open:          false, //@since 4.1.0 modal state
         customcredits: false,
         powered_by:    window.initConfig.powered_by,
         urls:          window.initConfig.urls,
@@ -323,6 +339,12 @@
 
     methods: {
 
+      /** @since 4.1.0  Show Layer legend */
+      getLegendUrl(id) {
+        const layer = getCatalogLayerById(id);
+        return `${layer.getLegendUrl((window.initConfig.layout || {}).legend, { all: true })}&STYLES=${layer.getCurrentStyle()?.name || ''}`;     
+      },
+
       sanitizeValue(value) {
         if (Array.isArray(value) || ('object' === typeof value && null !== value)) {
           value = Object.values(value).length ? value : '';
@@ -344,7 +366,8 @@
        * @since 4.1.0
        */
       async onBeforetoggle(e) {
-        if ('open' === e.newState) {
+        this.open = 'open' === e.newState;
+        if (this.open) {
           await Promise
                   .allSettled([
                     new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
@@ -372,7 +395,7 @@
         try {
           const credits      = await XHR.get({ url: window.initConfig.credits });
           this.customcredits = 'None' !== credits && credits;
-        } catch (e) {
+        } catch(e) {
           console.warn(e);
         }
       }
@@ -569,7 +592,7 @@
     overflow: auto;
   }
 
-  .spatial-tab {
+  .spatial-tab, .legend-tab {
     font-weight: bold;
   }
 
