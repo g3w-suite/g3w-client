@@ -350,8 +350,11 @@
           const url = new URL(layer.getLegendUrl((window.initConfig.layout || {}).legend, { all: true }));
           url.searchParams.set('STYLES', layer.getCurrentStyle()?.name || '');
           // force black color for text
-          if ('true' === url.searchParams.get('TRANSPARENT')) {
+          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('ITEMFONTCOLOR')) {
             url.searchParams.delete('ITEMFONTCOLOR');
+          }
+          // force black color for text
+          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
             url.searchParams.delete('LAYERFONTCOLOR');
           }
           return url.toString();
