@@ -349,8 +349,10 @@
           const layer = getCatalogLayerById(id);
           const url = new URL(layer.getLegendUrl((window.initConfig.layout || {}).legend, { all: true }));
           url.searchParams.set('STYLES', layer.getCurrentStyle()?.name || '');
-          if (url.searchParams.get('ITEMFONTCOLOR')) {
-            url.searchParams.set('ITEMFONTCOLOR', 'black'); // force black color for text
+          // force black color for text
+          if ('true' === url.searchParams.get('TRANSPARENT')) {
+            url.searchParams.delete('ITEMFONTCOLOR');
+            url.searchParams.delete('LAYERFONTCOLOR');
           }
           return url.toString();
         } catch (e) {
