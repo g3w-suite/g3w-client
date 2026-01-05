@@ -546,13 +546,8 @@
   }
 
   summary.layer_header::marker { content: ""; }
-  summary.layer_header::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; };
-
-  details[open]  {
-    summary.layer_header {
-      &::after { content: '-' };
-    }
-  }
+  summary.layer_header::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
+  details[open] summary.layer_header::after { content: '-' }
 
   .layer-name {
     font-weight: bold;
