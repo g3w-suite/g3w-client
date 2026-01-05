@@ -40,9 +40,9 @@
                 </div>
                 
                 <div v-else-if = "'contactinformation' !== field" class = "col-sm-10 value">
-                  <div v-for = "(value, index) in data.value">
+                  <div v-for = "(key, index) in Object.keys(data.value)">
                     <b v-if = "'extent' === field">{{ (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] }}</b>
-                    <span>{{ value }}</span>
+                    <b style = "margin-right: 10px;">{{ key }}</b><span>{{ data.value[key] }}</span>
                   </div>
                 </div>
 
