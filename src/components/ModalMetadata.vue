@@ -339,10 +339,23 @@
 
     methods: {
 
-      /** @since 4.1.0  Show Layer legend */
+      /**
+       * @returns layer legend url
+       * 
+       * @since 4.1.0
+       */
       getLegendUrl(id) {
-        const layer = getCatalogLayerById(id);
-        return `${layer.getLegendUrl((window.initConfig.layout || {}).legend, { all: true })}&STYLES=${layer.getCurrentStyle()?.name || ''}`;     
+        try {
+          const layer = getCatalogLayerById(id);
+          const url = new URL(layer.getLegendUrl((window.initConfig.layout || {}).legend, { all: true }));
+          url.searchParams.set('STYLES', layer.getCurrentStyle()?.name || '');
+          if (url.searchParams.get('ITEMFONTCOLOR')) {
+            url.searchParams.set('ITEMFONTCOLOR', 'black'); // force black color for text
+          }
+          return url.toString();
+        } catch (e) {
+          return ''; // fails silently
+        }
       },
 
       sanitizeValue(value) {
