@@ -543,9 +543,10 @@
     position: relative;
     padding: 4px 0;
     margin: 10px 0 3px 0;
-    &::marker { content: ""; }
-    &::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; };
   }
+
+  summary.layer_header::marker { content: ""; }
+  summary.layer_header::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; };
 
   details[open]  {
     summary.layer_header {
