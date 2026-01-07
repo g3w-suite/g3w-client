@@ -84,6 +84,7 @@
                 <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "spatial-tab">
                   <a v-t = "'metadata.layers.groups.spatial'" :href = "`#layer_spatial_${layer.id}`" aria-controls = "profile" role = "tab" data-toggle = "tab"></a>
                 </li>
+
                 <!-- LAYER SPATIAL TAB -->
                 <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "legend-tab">
                   <a :href = "`#layer_legend_${layer.id}`" aria-controls = "legend" role = "tab" data-toggle = "tab"> {{ ($t('legend')).toUpperCase() }}</a>
