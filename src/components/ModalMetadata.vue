@@ -13,7 +13,7 @@
 
       <!-- METADATA TABS -->
       <ul role = "tablist" class = "nav nav-tabs">
-        <li v-for = "tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
+        <li v-for = "tab in ['general', 'spatial', 'layers', 'credits']">
           <a data-toggle = "tab" :href="'#metadata_' + tab" :class = "'metadata-item-tab '+ tab">
             <i class = "action-button" :class = "$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden = "true"></i>
             <b v-t = "'metadata.'+ tab +'.title'"></b>
@@ -26,7 +26,7 @@
         <div class = "tab-content">
 
           <!-- GENERAL METADATA | SPATIAL METADATA -->
-          <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ in: 'general' === item, active: 'general' === item }">
+          <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane">
             <div v-for = "(data, field) in groups[item]" class = "row row-info">
               <div class = "wrap-content-tab">
                 <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
@@ -493,7 +493,7 @@
     margin: 0 !important;
     padding-top: 10px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #eeeeee;
+    border-bottom: 1px solid #eee;
   }
 
   .row-info .label {
@@ -555,7 +555,7 @@
   }
 
   .layer-nav-tabs {
-    border-bottom: 0 solid #DDD;
+    border-bottom: 0 solid #ddd;
   }
 
   .layer-nav-tabs > li.active > a,
@@ -592,8 +592,8 @@
   }
 
   .layer-tab-content {
-    margin: 10px;
-    background-color: #eeeeee;
+    margin-top: 10px;
+    background-color: #eee;
     overflow: auto;
   }
 

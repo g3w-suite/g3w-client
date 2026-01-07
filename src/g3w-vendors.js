@@ -285,7 +285,10 @@ document.addEventListener('click', function(e) {
       active.querySelectorAll('[data-toggle="tab"]').forEach(tab => tab.setAttribute('aria-expanded', false));
     }
     element.classList.add('active');
-    element.querySelectorAll('[data-toggle="tab"]').forEach(tab => tab.setAttribute('aria-expanded', true));
+    element.querySelectorAll('[data-toggle="tab"]').forEach(tab => {
+      tab.setAttribute('aria-expanded', true);
+      tab.focus();
+    });
   });
 });
 
