@@ -72,9 +72,9 @@
           <!-- LAYERS METADATA -->
           <div id = "metadata_layers" class = "tab-pane">
             <details v-for = "layer in groups.layers.layers.value" class = "row-info">
-              <summary class = "layer_header">
-                <i :class ="'layer-header-icon action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" aria-hidden = "true"></i>
-                <span class = "layer-name">{{ layer.name }}</span>
+              <summary>
+                <i :class ="'action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
+                <b>{{ layer.name }}</b>
               </summary>
 
               <ul class = "metadata-nav-tabs nav nav-tabs layer-nav-tabs" role = "tablist">
@@ -428,9 +428,11 @@
   .metadata-item-tab.general {
     color: var(--skin-primary);
   }
+
   .metadata-item-tab.layers  {
     color: var(--skin-warning);
   }
+
   .metadata-item-tab.spatial {
     color: var(--skin-success);
   }
@@ -498,10 +500,6 @@
     font-weight: bold;
   }
 
-  .h_100 {
-    height: 100%;
-  }
-
   .nav-tabs {
     border-bottom: 0 none;
   }
@@ -523,25 +521,16 @@
     margin-bottom: 5px;
   }
 
-  summary.layer_header {
+  #metadata_layers > details > summary {
     cursor: pointer;
     font-size: 18px;
     position: relative;
     padding: 20px 0;
   }
 
-  summary.layer_header::marker { content: ""; }
-  summary.layer_header::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
-  details[open] summary.layer_header::after { content: '-' }
-
-  .layer-name {
-    font-weight: bold;
-  }
-
-  .layer-header-icon {
-    margin-right: 10px;
-    color: #999;
-  }
+  #metadata_layers > details > summary::marker { content: ""; }
+  #metadata_layers > details > summary::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
+  #metadata_layers > details[open] > summary::after { content: '-' }
 
   .layer-row {
     padding: 10px;
@@ -613,13 +602,16 @@
     font-size: 1.2em;
     margin-bottom: 15px;
   }
+
   .g3w-credits-block {
     text-align: center!important;
     margin-bottom: 20px;
   }
+
   .g3w-suite-logo {
     width: 50% !important;
   }
+
   .customcredits {
     margin-bottom : 10px;
     margin-top: 5px;
