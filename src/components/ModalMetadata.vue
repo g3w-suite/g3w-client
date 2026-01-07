@@ -47,8 +47,7 @@
                     </b>
                     <div v-if = "'personprimary' === info" class = "col-sm-10">
                       <div v-for = "(subvalue, key) in value">
-                        <b>{{ $t(`metadata.general.fields.subfields.contactinformation.${key}`) }}</b>
-                        {{ subvalue }}
+                        <b>{{ $t(`metadata.general.fields.subfields.contactinformation.${key}`) }}</b> {{ subvalue }}
                       </div>
                     </div>
                     <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
