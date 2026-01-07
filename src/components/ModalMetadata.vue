@@ -40,15 +40,15 @@
               
               <div v-else-if ="'contactinformation' == field" class = "col-sm-10 value">
                 <div v-for = "(value, info) in data.value">
-                  <div class = "row metadata-contact-row">
-                    <div class = "col-sm-2 metadata-contact-label">
-                      <i class = "contact-icon" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                      <span v-t = "`metadata.general.fields.subfields.contactinformation.${info}`"></span>
-                    </div>
+                  <div class = "row" style = "margin-bottom: 5px;">
+                    <b class = "col-sm-2">
+                      <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
+                      {{ $t(`metadata.general.fields.subfields.contactinformation.${info}`) }}
+                    </b>
                     <div v-if = "'personprimary' === info" class = "col-sm-10">
                       <div v-for = "(subvalue, key) in value">
-                        <span v-t = "`metadata.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
-                        <span>{{ subvalue }}</span>
+                        <b>{{ $t(`metadata.general.fields.subfields.contactinformation.${key}`) }}</b>
+                        {{ subvalue }}
                       </div>
                     </div>
                     <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
@@ -516,18 +516,6 @@
   .metadata-label {
     font-weight: bold;
     font-size: 1.1em;
-  }
-
-  .metadata-contact-label {
-    font-weight: bold;
-  }
-
-  .contact-icon {
-    margin-right: 3px;
-  }
-
-  .metadata-contact-row {
-    margin-bottom: 5px;
   }
 
   #metadata_layers > details > summary {
