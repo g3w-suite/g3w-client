@@ -21,7 +21,7 @@
         </li>
       </ul>
 
-      <div id = "project-catalog" style="min-height: 65vh; max-height: 70vh; padding: 15px;">
+      <div style="min-height: 65vh; max-height: 70vh; padding: 15px;overflow: auto;">
 
         <div class = "tab-content">
 
@@ -437,10 +437,6 @@
     color: var(--skin-success);
   }
 
-  #project-catalog {
-    background: transparent;
-  }
-
   .nav[role="tablist"] {
     display: flex;
     gap: 1px;
@@ -506,11 +502,6 @@
 
   .h_100 {
     height: 100%;
-  }
-
-  #project-catalog {
-    position: relative;
-    overflow: auto;
   }
 
   .nav-tabs {
