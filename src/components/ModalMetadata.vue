@@ -28,42 +28,39 @@
           <!-- GENERAL METADATA | SPATIAL METADATA -->
           <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ active: 'general' === item }">
             <div v-for = "(data, field) in groups[item]" class = "row row-info">
-              <div class = "wrap-content-tab">
-                <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
+              <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
 
-                <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
-                  <span>{{ [].concat(data.value).join(', ') }}</span>
+              <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
+                <span>{{ [].concat(data.value).join(', ') }}</span>
+              </div>
+              
+              <div v-else-if = "'abstract' === field || (!Array.isArray(data.value) && typeof data.value !== 'object')" class = "col-sm-10 value">
+                <span v-html = "data.value"></span>
+              </div>
+              
+              <div v-else-if = "'contactinformation' !== field" class = "col-sm-10 value">
+                <div v-for = "(key, index) in Object.keys(data.value)">
+                  <b style = "margin-right: 10px;">{{ 'extent' === field ? (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] : key }}</b><span>{{ data.value[key] }}</span>
                 </div>
-                
-                <div v-else-if = "'abstract' === field || (!Array.isArray(data.value) && typeof data.value !== 'object')" class = "col-sm-10 value">
-                  <span v-html = "data.value"></span>
-                </div>
-                
-                <div v-else-if = "'contactinformation' !== field" class = "col-sm-10 value">
-                  <div v-for = "(key, index) in Object.keys(data.value)">
-                    <b style = "margin-right: 10px;">{{ 'extent' === field ? (['MINX', 'MINY', 'MAXX', 'MAXY'])[index] : key }}</b><span>{{ data.value[key] }}</span>
-                  </div>
-                </div>
+              </div>
 
-                <div v-else class = "col-sm-10 value">
-                  <div v-for = "(value, info) in data.value">
-                    <div class = "row metadata-contact-row">
-                      <div class = "col-sm-2 metadata-contact-label">
-                        <i class = "contact-icon" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                        <span v-t = "`metadata.general.fields.subfields.contactinformation.${info}`"></span>
-                      </div>
-                      <div v-if = "'personprimary' === info" class = "col-sm-10">
-                        <div v-for = "(subvalue, key) in value">
-                          <span v-t = "`metadata.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
-                          <span>{{ subvalue }}</span>
-                        </div>
-                      </div>
-                      <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
-                      <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
+              <div v-else class = "col-sm-10 value">
+                <div v-for = "(value, info) in data.value">
+                  <div class = "row metadata-contact-row">
+                    <div class = "col-sm-2 metadata-contact-label">
+                      <i class = "contact-icon" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
+                      <span v-t = "`metadata.general.fields.subfields.contactinformation.${info}`"></span>
                     </div>
+                    <div v-if = "'personprimary' === info" class = "col-sm-10">
+                      <div v-for = "(subvalue, key) in value">
+                        <span v-t = "`metadata.general.fields.subfields.contactinformation.${key}`" class="metadata-contact-label"> </span>
+                        <span>{{ subvalue }}</span>
+                      </div>
+                    </div>
+                    <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
+                    <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
