@@ -25,9 +25,9 @@
 
         <div class = "tab-content">
 
-          <!-- GENERAL METADATA | SPATIAL METADATA -->
-          <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ active: 'general' === item }">
-            <div v-for = "(data, field) in groups[item]" class = "row row-info">
+          <!-- GENERAL METADATA -->
+          <div id = "metadata_general" class = "tab-pane active">
+            <div v-for = "(data, field) in groups.general" class = "row row-info">
               <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
 
               <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
@@ -40,7 +40,7 @@
               
               <div v-else-if = "'contactinformation' !== field" class = "col-sm-10 value">
                 <div v-for = "(key, index) in Object.keys(data.value)">
-                  <b style = "margin-right: 10px;">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</b><span>{{ data.value[key] }}</span>
+                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ data.value[key] }}</span>
                 </div>
               </div>
 
@@ -62,6 +62,20 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- SPATIAL METADATA -->
+          <div id = "metadata_spatial" class = "tab-pane">
+            <div v-for = "(data, field) in groups.spatial" class = "row row-info">
+              <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
+              
+              <div class = "col-sm-10 value">
+                <div v-for = "(key, index) in Object.keys(data.value)">
+                  <b style = "margin-right: 10px;">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</b><span>{{ data.value[key] }}</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
