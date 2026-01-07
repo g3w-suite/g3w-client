@@ -13,7 +13,7 @@
 
       <!-- METADATA TABS -->
       <ul role = "tablist" class = "nav nav-tabs">
-        <li v-for = "tab in ['general', 'spatial', 'layers', 'credits']">
+        <li v-for = "tab in ['general', 'spatial', 'layers', 'credits']" :class = "{ active: 'general' === tab }">
           <a data-toggle = "tab" :href="'#metadata_' + tab" :class = "'metadata-item-tab '+ tab">
             <i class = "action-button" :class = "$fa(({ general: 'info', spatial: 'globe', layers: 'bars', credits: 'copyright' })[tab])" aria-hidden = "true"></i>
             <b v-t = "'metadata.'+ tab +'.title'"></b>
@@ -26,7 +26,7 @@
         <div class = "tab-content">
 
           <!-- GENERAL METADATA | SPATIAL METADATA -->
-          <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane">
+          <div v-for = "item in ['general', 'spatial']" :id = "'metadata_' + item" class = "tab-pane" :class="{ active: 'general' === item }">
             <div v-for = "(data, field) in groups[item]" class = "row row-info">
               <div class = "wrap-content-tab">
                 <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
