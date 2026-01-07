@@ -810,6 +810,10 @@
               }
             });
           });
+        } else {
+          setTimeout(() => {
+            document.querySelector('#modal-metadata [href="#metadata_general"]').click();
+          });
         }
       },
 
