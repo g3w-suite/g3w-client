@@ -38,13 +38,7 @@
                 <span v-html = "data.value"></span>
               </div>
               
-              <div v-else-if = "'contactinformation' !== field" class = "col-sm-10 value">
-                <div v-for = "(key, index) in Object.keys(data.value)">
-                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ data.value[key] }}</span>
-                </div>
-              </div>
-
-              <div v-else class = "col-sm-10 value">
+              <div v-else-if ="'contactinformation' == field" class = "col-sm-10 value">
                 <div v-for = "(value, info) in data.value">
                   <div class = "row metadata-contact-row">
                     <div class = "col-sm-2 metadata-contact-label">
@@ -62,6 +56,13 @@
                   </div>
                 </div>
               </div>
+
+              <div v-else class = "col-sm-10 value">
+                <div v-for = "(key, index) in Object.keys(data.value)">
+                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ data.value[key] }}</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -327,7 +328,7 @@
           layers:  [ 'layers' ],
         }).reduce((g, [name, fields]) => {
           g[name] = fields.reduce((f, field) => {
-            let value = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
+            let value = project?.metadata?.[field] || project[field];
             if (value) {
               //In case of layers that has geometry and no epsg, filter according to filter of project layers
               if ('layers' === field) {
