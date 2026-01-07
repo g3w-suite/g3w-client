@@ -76,7 +76,7 @@
                 <b>{{ layer.name }}</b>
               </summary>
 
-              <ul class = "metadata-nav-tabs nav nav-tabs layer-nav-tabs" role = "tablist">
+              <ul class = "nav nav-tabs layer-nav-tabs" role = "tablist">
 
                 <!-- LAYER GENERAL TAB -->
                 <li role = "presentation" class = "active spatial-tab">
@@ -580,12 +580,12 @@
     font-weight: bold;
   }
 
-  .metadata-nav-tabs > li.active > a,
-  .metadata-nav-tabs > li > a:hover {
+  .layer-nav-tabs > li.active > a,
+  .layer-nav-tabs > li > a:hover {
     color: var(--skin-color) !important;
   }
   
-  .metadata-nav-tabs > li > a::after {
+  .layer-nav-tabs > li > a::after {
     background: var(--skin-color);
   }
 
