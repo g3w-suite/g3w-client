@@ -98,91 +98,88 @@
                   role  = "tabpanel"
                   class = "tab-pane active"
                   :id   = "`layer_general_${layer.id}`"
+                  style = "padding: 0 15px;"
                 >
-                  <div class="container-fluid">
-                    <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes']">
-                      <div v-if = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
-                        <div v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
+                  <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes']">
+                    <div v-if = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
+                      <div v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
-                        <!-- LAYER TITLE -->
-                        <div v-if = "'metadata.title' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.title }}</div>
+                      <!-- LAYER TITLE -->
+                      <div v-if = "'metadata.title' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.title }}</div>
 
-                        <!-- LAYER NAME -->
-                        <div v-if = "'name' === attr" class = "col-md-10 col-sm-12 value">{{ layer.name }}</div>
+                      <!-- LAYER NAME -->
+                      <div v-if = "'name' === attr" class = "col-md-10 col-sm-12 value">{{ layer.name }}</div>
 
-                        <!-- LAYER SOURCE -->
-                        <div v-if = "'source' === attr" class = "col-md-10 col-sm-12 value">{{ layer.source.type }}</div>
+                      <!-- LAYER SOURCE -->
+                      <div v-if = "'source' === attr" class = "col-md-10 col-sm-12 value">{{ layer.source.type }}</div>
 
-                        <!-- LAYER ABSTRACT -->
-                        <div v-if = "'metadata.abstract' === attr" class = "col-md-10 col-sm-12 value" v-html = "layer.metadata.abstract"></div>
+                      <!-- LAYER ABSTRACT -->
+                      <div v-if = "'metadata.abstract' === attr" class = "col-md-10 col-sm-12 value" v-html = "layer.metadata.abstract"></div>
 
-                        <!-- LAYER KEYWORDS -->
-                        <div v-else-if = "'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
+                      <!-- LAYER KEYWORDS -->
+                      <div v-else-if = "'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
 
-                        <!-- LAYER METADATA URL -->
-                        <div v-else-if = "'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
-                          <a :href = "layer.metadata.metadataurl.onlineresources">{{ layer.metadata.metadataurl.onlineresources }}</a>
-                        </div>
-
-                        <!-- LAYER DATA URL -->
-                        <div v-else-if = "'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
-                          <a :href = "layer.metadata.dataurl.onlineresources">{{ layer.metadata.dataurl.onlineresources }}</a>
-                        </div>
-
-                        <!-- LAYER ATTRIBUTES -->
-                        <div v-else-if = "'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
-                          <table class = "table table-striped" style = "background-color: #eee !important">
-                            <thead>
-                              <tr><th v-for = "(value, header) in layer.metadata.attributes[0]">{{ header }}</th></tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for = "a in layer.metadata.attributes">
-                                <td v-for = "(value, header) in a">{{ value }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-
+                      <!-- LAYER METADATA URL -->
+                      <div v-else-if = "'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
+                        <a :href = "layer.metadata.metadataurl.onlineresources">{{ layer.metadata.metadataurl.onlineresources }}</a>
                       </div>
-                    </template>
-                  </div>
+
+                      <!-- LAYER DATA URL -->
+                      <div v-else-if = "'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
+                        <a :href = "layer.metadata.dataurl.onlineresources">{{ layer.metadata.dataurl.onlineresources }}</a>
+                      </div>
+
+                      <!-- LAYER ATTRIBUTES -->
+                      <div v-else-if = "'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
+                        <table class = "table table-striped" style = "background-color: #eee !important">
+                          <thead>
+                            <tr><th v-for = "(value, header) in layer.metadata.attributes[0]">{{ header }}</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for = "a in layer.metadata.attributes">
+                              <td v-for = "(value, header) in a">{{ value }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                    </div>
+                  </template>
                 </div>
                 <!-- LAYER SPATIAL TAB --> 
                 <div
                   role  = "tabpanel"
                   class = "tab-pane"
-                  :id   ="`layer_spatial_${layer.id}`"
+                  :id   = "`layer_spatial_${layer.id}`"
+                  style = "padding: 0 15px;"
                 >
-                  <div class = "container-fluid">
-                    <template v-for = "attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
-                      <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
-                        <div v-if = "'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
-                        <div v-else v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
+                  <template v-for = "attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
+                    <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
+                      <div v-if = "'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
+                      <div v-else v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
-                        <!-- LAYER EPSG -->
-                        <div v-if = "'crs' === attr" class = "col-sm-10 value">{{ layer.crs.epsg }}</div>
+                      <!-- LAYER EPSG -->
+                      <div v-if = "'crs' === attr" class = "col-sm-10 value">{{ layer.crs.epsg }}</div>
 
-                        <!-- LAYER TYPE -->
-                        <div v-else-if = "'geometrytype' === attr" class = "col-sm-10 value">{{ layer.geometrytype }}</div>
+                      <!-- LAYER TYPE -->
+                      <div v-else-if = "'geometrytype' === attr" class = "col-sm-10 value">{{ layer.geometrytype }}</div>
 
-                        <!-- LAYER BBOX -->
-                        <div v-else-if = "'bbox' === attr" class = "col-sm-10 value">
-                          <p v-for = "(value, key) in layer.bbox">
-                            <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
-                            <span>{{ value }}</span>
-                          </p>
-                        </div>
-
-                        <!-- LAYER CRS -->
-                        <div v-else-if = "'metadata.crs' === attr" class = "col-sm-10 value">
-                          <div v-for = "crs in layer.metadata.crs">
-                            <span>{{ crs }}</span>
-                          </div>
-                        </div>
+                      <!-- LAYER BBOX -->
+                      <div v-else-if = "'bbox' === attr" class = "col-sm-10 value">
+                        <p v-for = "(value, key) in layer.bbox">
+                          <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
+                          <span>{{ value }}</span>
+                        </p>
                       </div>
 
-                    </template>
-                  </div>
+                      <!-- LAYER CRS -->
+                      <div v-else-if = "'metadata.crs' === attr" class = "col-sm-10 value">
+                        <div v-for = "crs in layer.metadata.crs">
+                          <span>{{ crs }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
                 </div>
                 <!-- LAYER LEGEND TAB -->
                 <div  
