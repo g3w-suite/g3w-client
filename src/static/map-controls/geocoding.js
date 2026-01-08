@@ -107,7 +107,7 @@ class GeocodingControl extends ol.control.Control {
             <form>
               <input  type = "search" autocomplete = "off" style = "font-weight: bold;" placeholder = "${_('Search')}" />
               <button type = "reset"                         data-i18n-title = "Reset search"    data-placement = "bottom"                                 hidden></button>
-              <button type = "submit" value="search"         data-i18n-title = "Submit search"   data-placement = "bottom" class = "btn fas fa-search"></button>
+              <button type = "submit" value="search"         data-i18n-title = "Submit search"   data-placement = "bottom" class = "btn fas fa-search" disabled></button>
               <button type = "submit" value="trash"          data-i18n-title = "Clear selection" data-placement = "bottom" class = "btn fas fa-trash"     hidden style = "color:red;"></button>
               <button type = "submit" value="toggle-layer"   data-i18n-title = "Toggle layer"    data-placement = "bottom" class = "btn far fa-eye-slash" hidden></button>
               <button type = "submit" value="toggle-sidebar" data-i18n-title = "Toggle sidebar"  data-placement = "bottom" class = "btn"                  hidden><code></code></button>
@@ -475,6 +475,7 @@ class GeocodingControl extends ol.control.Control {
 
   #onValue(e) {
     this.element.querySelector('button[type="reset"]').hidden = 0 === e.target.value.trim().length;
+    this.element.querySelector('button[value="search"]').disabled = 0 === e.target.value.trim().length;
   }
 
   async #onItemClick(e) {
