@@ -623,8 +623,6 @@
 
 <script>
 import ApplicationState   from 'g3w-state';
-import Panel              from 'g3w-panel';
-import Component          from 'g3w-component';
 import GUI                from 'g3w-app';
 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
