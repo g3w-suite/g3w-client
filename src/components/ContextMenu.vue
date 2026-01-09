@@ -361,14 +361,14 @@
       </a>
     </li>
 
-    <li v-if = "'map' === context" @click = "copyCoords">{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
-    <li v-if = "'map' === context" @click = "queryCoords">{{ $t("What's here?") }}</li>
-    <li v-if = "'map' === context" @click = "zoomIn">{{ $t('Zoom in') }}</li>
-    <li v-if = "'map' === context" @click = "zoomOut">{{ $t('Zoom out') }}</li>
-    <li v-if = "'map' === context" @click = "zoomHome">{{ $t('Fit map extent') }}</li>
-    <li v-if = "'map' === context && initConfig.mapcontrols.screenshot" @click="takeScreenshot">{{ $t('Screen capture') }}</li>
-    <li v-if = "'map' === context" @click="showEmbedModal">{{ $t('Embed map') }}</li>
-    <li v-if = "'map' === context && initConfig.mapcontrols.streetview" @click="showStreetView">{{ $t('StreetView') }}</li>
+    <li v-if = "'map' === context" @click = "copyCoords"><i :class = "$fa('pin')"></i>{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
+    <li v-if = "'map' === context" @click = "queryCoords"><i :class = "$fa('unknow')"></i>{{ $t("What's here?") }}</li>
+    <li v-if = "'map' === context" @click = "zoomIn"><i class = "fas fa-search-plus"></i>{{ $t('Zoom in') }}</li>
+    <li v-if = "'map' === context" @click = "zoomOut"><i class = "fas fa-search-minus"></i>{{ $t('Zoom out') }}</li>
+    <li v-if = "'map' === context" @click = "zoomHome"><i :class = "$fa('home')"></i>{{ $t('Fit map extent') }}</li>
+    <li v-if = "'map' === context && initConfig.mapcontrols.screenshot" @click="takeScreenshot"><i :class = "$fa('camera')"></i>{{ $t('Screen capture') }}</li>
+    <li v-if = "'map' === context" @click="showEmbedModal"><i :class = "$fa('share-alt')"></i>{{ $t('Embed map') }}</li>
+    <li v-if = "'map' === context && initConfig.mapcontrols.streetview" @click="showStreetView"><i class = "fas fa-street-view"></i>{{ $t('StreetView') }}</li>
 
     <!-- Click to open G3W-ADMIN's project page -->
     <li v-if = "edit_url && ['project', 'map'].includes(context)">
