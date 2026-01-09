@@ -623,8 +623,6 @@
 
 <script>
 import ApplicationState   from 'g3w-state';
-import Panel              from 'g3w-panel';
-import Component          from 'g3w-component';
 import GUI                from 'g3w-app';
 
 import { getUniqueDomId } from 'utils/getUniqueDomId';
@@ -1001,13 +999,15 @@ export default {
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
-      // open sidebar
-      if (mini && collapsed) {
+      const li        = e.target.closest('.sidebaritem');
+      const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
+      console.log(component?.state)
+
+      // open sidebar only in case of mini/collapsed sidebar and has a component that has a li id collapsible
+      if (mini && collapsed && component?.collapsible) {
         GUI.showSidebar();
       }
 
-      const li        = e.target.closest('.sidebaritem');
-      const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
       const open      = component?.getOpen();
       const menu      = li.querySelector('.treeview-menu');
 
