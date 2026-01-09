@@ -1001,9 +1001,10 @@ export default {
 
       const li        = e.target.closest('.sidebaritem');
       const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
+      console.log(component?.state)
 
-      // open sidebar only in case of mini/collabsed sidebar and has a component that has a li id
-      if (mini && collapsed && component) {
+      // open sidebar only in case of mini/collapsed sidebar and has a component that has a li id collapsible
+      if (mini && collapsed && component?.collapsible) {
         GUI.showSidebar();
       }
 
