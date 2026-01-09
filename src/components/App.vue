@@ -999,13 +999,14 @@ export default {
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
-      // open sidebar
-      if (mini && collapsed) {
+      const li        = e.target.closest('.sidebaritem');
+      const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
+
+      // open sidebar only in case of mini/collabsed sidebar and has a component that has a li id
+      if (mini && collapsed && component) {
         GUI.showSidebar();
       }
 
-      const li        = e.target.closest('.sidebaritem');
-      const component = ApplicationState.sidebar.components.find(comp => comp.id === li.id);
       const open      = component?.getOpen();
       const menu      = li.querySelector('.treeview-menu');
 
