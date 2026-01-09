@@ -202,6 +202,7 @@ class GeocodingControl extends ol.control.Control {
       this.element.querySelector('input[type="search"]').focus();
       this.element.querySelector('input[type="search"]').value = '';
       this.element.querySelector('button[type="reset"]').hidden = true;
+      this.element.querySelector('button[value="search"]').disabled = true;
       this.element.querySelector('ul').innerHTML = '';
       this.element.querySelector('ul').hidePopover();
       this.RESULTS.splice(0);
