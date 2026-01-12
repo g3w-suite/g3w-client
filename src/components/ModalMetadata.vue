@@ -27,19 +27,23 @@
 
           <!-- GENERAL METADATA -->
           <div id = "metadata_general" class = "tab-pane active">
-            <div v-for = "(data, field) in groups.general" class = "row row-info">
+            <div
+              v-for = "field in [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url' ]"
+              v-if  = "project.metadata[field]"
+              class = "row row-info"
+            >
               <div class = "col-sm-2 metadata-label" v-t = "`metadata.general.fields.${field}`"></div>
 
               <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
-                <span>{{ [].concat(data.value).join(', ') }}</span>
+                <span>{{ [].concat(project.metadata[field]).join(', ') }}</span>
               </div>
-              
-              <div v-else-if = "'abstract' === field || (!Array.isArray(data.value) && typeof data.value !== 'object')" class = "col-sm-10 value">
-                <span v-html = "data.value"></span>
+
+              <div v-else-if = "'abstract' === field || (!Array.isArray(project.metadata[field]) && typeof project.metadata[field] !== 'object')" class = "col-sm-10 value">
+                <span v-html = "project.metadata[field]"></span>
               </div>
-              
+
               <div v-else-if ="'contactinformation' == field" class = "col-sm-10 value">
-                <div v-for = "(value, info) in data.value">
+                <div v-for = "(value, info) in project.metadata[field]">
                   <div class = "row" style = "margin-bottom: 5px;">
                     <b class = "col-sm-2">
                       <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
@@ -57,22 +61,25 @@
               </div>
 
               <div v-else class = "col-sm-10 value">
-                <div v-for = "(key, index) in Object.keys(data.value)">
-                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ data.value[key] }}</span>
+                <div v-for = "(key, index) in Object.keys(project.metadata[field])">
+                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ project.metadata[field][key] }}</span>
                 </div>
               </div>
-
             </div>
           </div>
 
           <!-- SPATIAL METADATA -->
           <div id = "metadata_spatial" class = "tab-pane">
-            <div v-for = "(data, field) in groups.spatial" class = "row row-info">
+            <div
+              v-for = "field in [ 'crs', 'extent' ]"
+              v-if  = "project[field]"
+              class = "row row-info"
+            >
               <div class = "col-sm-2 metadata-label" v-t = "`metadata.spatial.fields.${field}`"></div>
               
               <div class = "col-sm-10 value">
-                <div v-for = "(key, index) in Object.keys(data.value)">
-                  <b style = "margin-right: 10px;">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</b><span>{{ data.value[key] }}</span>
+                <div v-for = "(key, index) in Object.keys(project[field])">
+                  <b style = "margin-right: 10px;">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</b><span>{{ project[field][key] }}</span>
                 </div>
               </div>
 
@@ -81,7 +88,7 @@
 
           <!-- LAYERS METADATA -->
           <div id = "metadata_layers" class = "tab-pane">
-            <details v-for = "layer in groups.layers.layers.value" class = "row-info">
+            <details v-for = "layer in layers" class = "row-info">
               <summary>
                 <i :class ="'action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
                 <b>{{ layer.name }}</b>
@@ -321,24 +328,9 @@
         powered_by:    window.initConfig.powered_by,
         urls:          window.initConfig.urls,
         docs_url:      `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`,
-        groups: Object.entries({
-          general: [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url' ],
-          spatial: [ 'crs', 'extent' ],
-          layers:  [ 'layers' ],
-        }).reduce((g, [name, fields]) => {
-          g[name] = fields.reduce((f, field) => {
-            let value = project?.metadata?.[field] || project[field];
-            if (value) {
-              //In case of layers that has geometry and no epsg, filter according to filter of project layers
-              if ('layers' === field) {
-                value = value.filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg) )
-              }
-              f[field] = { value };
-            }
-            return f;
-          }, {});
-          return g;
-        }, {}),
+        project,
+        // In case of layers that has geometry and no epsg, filter according to filter of project layers
+        layers: (project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg) ),
         g3wsdk_info: '',
       };
     },
