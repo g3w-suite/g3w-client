@@ -34,7 +34,7 @@
                 <span>{{ [].concat(data.value).join(', ') }}</span>
               </div>
               
-              <div v-else-if = "['abstract', 'title', 'name', 'fees'].includes(field)" class = "col-sm-10 value">
+              <div v-else-if = "'abstract' === field || (!Array.isArray(data.value) && typeof data.value !== 'object')" class = "col-sm-10 value">
                 <span v-html = "data.value"></span>
               </div>
               
