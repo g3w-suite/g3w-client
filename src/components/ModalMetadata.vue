@@ -120,8 +120,8 @@
                   :id   = "`layer_general_${layer.id}`"
                   style = "padding: 0 15px;"
                 >
-                  <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes']">
-                    <div v-if = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
+                  <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes', 'relations']">
+                    <div v-if = "'relations' === attr || undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
                       <div v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
                       <!-- LAYER TITLE -->
@@ -137,20 +137,20 @@
                       <div v-if = "'metadata.abstract' === attr" class = "col-md-10 col-sm-12 value" v-html = "layer.metadata.abstract"></div>
 
                       <!-- LAYER KEYWORDS -->
-                      <div v-else-if = "'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
+                      <div v-if = "'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
 
                       <!-- LAYER METADATA URL -->
-                      <div v-else-if = "'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
+                      <div v-if = "'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
                         <a :href = "layer.metadata.metadataurl.onlineresources">{{ layer.metadata.metadataurl.onlineresources }}</a>
                       </div>
 
                       <!-- LAYER DATA URL -->
-                      <div v-else-if = "'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
+                      <div v-if = "'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
                         <a :href = "layer.metadata.dataurl.onlineresources">{{ layer.metadata.dataurl.onlineresources }}</a>
                       </div>
 
                       <!-- LAYER ATTRIBUTES -->
-                      <div v-else-if = "'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
+                      <div v-if = "'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
                         <table class = "table table-striped" style = "background-color: #eee !important">
                           <thead>
                             <tr><th v-for = "(value, header) in layer.metadata.attributes[0]">{{ header }}</th></tr>
@@ -162,6 +162,9 @@
                           </tbody>
                         </table>
                       </div>
+
+                      <!-- LAYER RELATIONS -->
+                      <div v-if = "'relations' === attr" class = "col-md-10 col-sm-12 value">{{ layer.project.getRelations().map(l => l.name).join(', ') }}</div>
 
                     </div>
                   </template>
@@ -420,6 +423,7 @@
 
     mounted() {
       document.body.appendChild(this.$el);
+      console.log(this);
     },
 
   }

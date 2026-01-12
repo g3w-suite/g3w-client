@@ -341,6 +341,7 @@ export default {
   'metadata.layers.fields.subfields.name': 'NOME',
   'metadata.layers.fields.subfields.geometrytype': 'GEOMETRIA',
   'metadata.layers.fields.subfields.source': 'SORGENTE',
+  'metadata.layers.fields.subfields.relations': 'RELAZIONI',
   'metadata.layers.fields.subfields.attributes': 'ATTRIBUTI',
   'metadata.layers.fields.subfields.abstract': 'ABSTRACT',
   'metadata.layers.fields.subfields.attribution': 'ATTRIBUTION',
