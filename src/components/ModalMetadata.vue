@@ -28,7 +28,7 @@
           <!-- GENERAL METADATA -->
           <div id = "metadata_general" class = "tab-pane active">
             <div v-for = "(data, field) in groups.general" class = "row row-info">
-              <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
+              <div class = "col-sm-2 metadata-label" v-t = "`metadata.general.fields.${field}`"></div>
 
               <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
                 <span>{{ [].concat(data.value).join(', ') }}</span>
@@ -68,7 +68,7 @@
           <!-- SPATIAL METADATA -->
           <div id = "metadata_spatial" class = "tab-pane">
             <div v-for = "(data, field) in groups.spatial" class = "row row-info">
-              <div class = "col-sm-2 metadata-label" v-t = "data.label"></div>
+              <div class = "col-sm-2 metadata-label" v-t = "`metadata.spatial.fields.${field}`"></div>
               
               <div class = "col-sm-10 value">
                 <div v-for = "(key, index) in Object.keys(data.value)">
@@ -284,7 +284,7 @@
             <pre v-if = "powered_by && g3wsdk_info" @click = "copy_g3wsdk_info" style = "cursor: pointer;" title = "click to copy">{{ g3wsdk_info }}</pre>
 
           </div>
-      
+
         </div>
 
       </div>
@@ -333,7 +333,7 @@
               if ('layers' === field) {
                 value = value.filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg) )
               }
-              f[field] = { value, label: `metadata.${name}.fields.${field}` };
+              f[field] = { value };
             }
             return f;
           }, {});
