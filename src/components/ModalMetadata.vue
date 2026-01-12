@@ -75,12 +75,12 @@
               v-if  = "project[field]"
               class = "row row-info"
             >
-              <div class = "col-sm-2 metadata-label" v-t = "`metadata.spatial.fields.${field}`"></div>
+              <div class = "col-sm-12 metadata-label" v-t = "`metadata.spatial.fields.${field}`"></div>
               
-              <dl class = "col-sm-10 value">
+              <dl class = "col-sm-12 value" style="gap: 0;">
                 <template v-for = "(key, index) in Object.keys(project[field])">
-                  <dt>{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</dt>
-                  <dd>{{ project[field][key] }}</dd>
+                  <dt class="col-sm-2">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</dt>
+                  <dd class="col-sm-10">{{ project[field][key] }}</dd>
                 </template>
               </dl>
 
@@ -497,10 +497,6 @@
     border-bottom: 1px solid #eee;
   }
 
-  .row-info .label {
-    font-weight: bold;
-  }
-
   .nav-tabs {
     border-bottom: 0 none;
   }
@@ -607,7 +603,6 @@
     text-align: center;
   }
 
-  #metadata_spatial dl          { display: grid; grid-template: auto / .25fr 1fr; margin-bottom: 0; word-break: break-all; }
   #metadata_spatial dt          { background: #fee; font-weight: bold;}
   #metadata_spatial dd          { background: hsl(220, 10%, 95%); }
   #metadata_spatial :is(dt, dd) { margin: 0; padding: .3em .5em; border-top: 1px solid #fff; }
