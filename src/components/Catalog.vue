@@ -20,13 +20,14 @@
           v-if   = "hasLayers"
           role   = "presentation"
           :class = "{ active: ('layers' === activeTab) }"
-        >
+        > 
+          
           <a
             href          = "#layers"
             aria-controls = "layers"
             role          = "tab"
             data-toggle   = "tab"
-          >{{ $t('data') }}</a>
+          ><i :class = "$fa('layers')"></i> {{ $t('data') }}</a>
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
@@ -40,7 +41,7 @@
             role          = "tab"
             data-toggle   = "tab"
             data-i18n     = "legend"
-          >{{ $t('legend') }}</a>
+          ><i class="fas fa-list"></i> {{ $t('legend') }}</a>
         </li>
 
       </ul>
