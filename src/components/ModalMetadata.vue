@@ -77,11 +77,12 @@
             >
               <div class = "col-sm-2 metadata-label" v-t = "`metadata.spatial.fields.${field}`"></div>
               
-              <div class = "col-sm-10 value">
-                <div v-for = "(key, index) in Object.keys(project[field])">
-                  <b style = "margin-right: 10px;">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</b><span>{{ project[field][key] }}</span>
-                </div>
-              </div>
+              <dl class = "col-sm-10 value">
+                <template v-for = "(key, index) in Object.keys(project[field])">
+                  <dt>{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</dt>
+                  <dd>{{ project[field][key] }}</dd>
+                </template>
+              </dl>
 
             </div>
           </div>
@@ -605,4 +606,9 @@
     margin-top: 5px;
     text-align: center;
   }
+
+  #metadata_spatial dl          { display: grid; grid-template: auto / .25fr 1fr; margin-bottom: 0; word-break: break-all; }
+  #metadata_spatial dt          { background: #fee; font-weight: bold;}
+  #metadata_spatial dd          { background: hsl(220, 10%, 95%); }
+  #metadata_spatial :is(dt, dd) { margin: 0; padding: .3em .5em; border-top: 1px solid #fff; }
 </style>
