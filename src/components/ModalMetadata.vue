@@ -605,5 +605,5 @@
 
   #metadata_spatial dt          { background: #fee; font-weight: bold;}
   #metadata_spatial dd          { background: hsl(220, 10%, 95%); }
-  #metadata_spatial :is(dt, dd) { margin: 0; padding: .3em .5em; border-top: 1px solid #fff; }
+  #metadata_spatial :is(dt, dd) { margin: 0; padding: .5em; border-top: 1px solid #fff; }
 </style>
