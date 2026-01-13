@@ -120,7 +120,7 @@
                   :id   = "`layer_general_${layer.id}`"
                   style = "padding: 0 15px;"
                 >
-                  <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes', 'relations']">
+                  <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes', 'id', 'relations']">
                     <div v-if = "'relations' === attr || undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
                       <div v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
 
@@ -129,7 +129,7 @@
 
                       <!-- LAYER NAME -->
                       <div v-if = "'name' === attr" class = "col-md-10 col-sm-12 value">{{ layer.name }}</div>
-
+                      
                       <!-- LAYER SOURCE -->
                       <div v-if = "'source' === attr" class = "col-md-10 col-sm-12 value">{{ layer.source.type }}</div>
 
@@ -162,6 +162,9 @@
                           </tbody>
                         </table>
                       </div>
+
+                      <!-- LAYER ID -->
+                      <div v-if = "'id' === attr" class = "col-md-10 col-sm-12 value">{{ layer.id }}</div>
 
                       <!-- LAYER RELATIONS -->
                       <div v-if = "'relations' === attr" class = "col-md-10 col-sm-12 value">{{ layer.project.getRelations().map(l => l.name).join(', ') }}</div>
