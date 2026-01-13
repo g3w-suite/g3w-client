@@ -167,7 +167,7 @@
                       <div v-if = "'id' === attr" class = "col-md-10 col-sm-12 value">{{ layer.id }}</div>
 
                       <!-- LAYER RELATIONS -->
-                      <div v-if = "'relations' === attr" class = "col-md-10 col-sm-12 value">{{ layer.project.getRelations().map(l => l.name).join(', ') }}</div>
+                      <div v-if = "'relations' === attr" class = "col-md-10 col-sm-12 value">{{ getRelations(layer.id).map(r => r.state.name).join(' - ') }}</div>
 
                     </div>
                   </template>
@@ -343,6 +343,15 @@
     },
 
     methods: {
+      /**
+       * @returns layer relations
+       * 
+       * @since 4.1.0
+       */
+      getRelations(id) {
+        console.log(getCatalogLayerById(id).getRelations().getArray())
+        return getCatalogLayerById(id).getRelations().getArray();
+      },
 
       /**
        * @returns layer legend url
