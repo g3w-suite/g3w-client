@@ -14,19 +14,19 @@
       <!-- METADATA TABS -->
       <ul role = "tablist" class = "nav nav-tabs">
         <li class = "active">
-          <a data-toggle = "tab" href="#metadata_general" class = "metadata-item-tab general">
+          <a data-toggle = "tab" href="#metadata_general" class = "metadata-item-tab general" style="color: var(--skin-primary);">
             <i class = "action-button" :class = "$fa('info')" aria-hidden = "true"></i>
             <b>{{ $t('GENERAL') }}</b>
           </a>
         </li>
         <li>
-          <a data-toggle = "tab" href="#metadata_spatial" class = "metadata-item-tab spatial">
+          <a data-toggle = "tab" href="#metadata_spatial" class = "metadata-item-tab spatial" style="color: var(--skin-success);">
             <i class = "action-button" :class = "$fa('globe')" aria-hidden = "true"></i>
             <b>{{ $t('SPATIAL') }}</b>
           </a>
         </li>
         <li>
-          <a data-toggle = "tab" href="#metadata_layers" class = "metadata-item-tab layers">
+          <a data-toggle = "tab" href="#metadata_layers" class = "metadata-item-tab layers" style="color: var(--skin-warning);">
             <i class = "action-button" :class = "$fa('bars')" aria-hidden = "true"></i>
             <b>{{ $t('LAYERS') }}</b>
           </a>
@@ -45,7 +45,7 @@
 
           <!-- GENERAL METADATA -->
           <div id = "metadata_general" class = "tab-pane active">
-            <table>
+            <table style="width: 100%;">
               <tbody>
                 <!-- PROJECT TITLE -->
                 <tr v-if  = "project.metadata.title">
@@ -141,7 +141,7 @@
 
           <!-- SPATIAL METADATA -->
           <div id = "metadata_spatial" class = "tab-pane">
-            <table>
+            <table style="width: 100%;">
               <tbody>
                 <!-- PROJECT CRS -->
                 <tr v-if  = "project.crs">
@@ -174,7 +174,7 @@
 
           <!-- LAYERS METADATA -->
           <div id = "metadata_layers" class = "tab-pane">
-            <details v-for = "layer in layers" class = "row-info" :hidden="layer.isBaseLayer()">
+            <details v-for = "layer in layers" :hidden="layer.isBaseLayer()">
               <summary>
                 <i :class ="'action-button ' + g3wtemplate.font['NoGeometry' === layer.getGeometryType() ? 'table' : 'map']" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
                 <b>{{ layer.getName() }}</b>
@@ -206,37 +206,37 @@
                   style = "padding: 0 15px;"
                 >
                   <!-- LAYER TITLE -->
-                  <div v-if="layer.config.metadata && layer.config.metadata.title" class = "row layer-row">
+                  <div v-if="layer.config.metadata && layer.config.metadata.title" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('TITLE') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.metadata.title }}</div>
                   </div>
 
                   <!-- LAYER NAME -->
-                  <div v-if="layer.config.name" class = "row layer-row">
+                  <div v-if="layer.config.name" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('NAME') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.name }}</div>
                   </div>
 
                   <!-- LAYER SOURCE -->
-                  <div v-if="layer.config.source" class = "row layer-row">
+                  <div v-if="layer.config.source" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('SOURCE') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.source.type }}</div>
                   </div>
 
                   <!-- LAYER ABSTRACT -->
-                  <div v-if="layer.config.metadata" class = "row layer-row">
+                  <div v-if="layer.config.metadata" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('ABSTRACT') }}</div>
                     <div class = "col-md-10 col-sm-12 value" v-html = "layer.config.metadata.abstract"></div>
                   </div>
 
                   <!-- LAYER KEYWORDS -->
-                  <div v-if="layer.config.metadata && layer.config.metadata.keywords" class = "row layer-row">
+                  <div v-if="layer.config.metadata && layer.config.metadata.keywords" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('KEYWORDS') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.metadata.keywords.join(', ') }}</div>
                   </div>
 
                   <!-- LAYER ATTRIBUTES -->
-                  <div v-if="layer.config.metadata" class = "row layer-row">
+                  <div v-if="layer.config.metadata" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('ATTRIBUTES') }}</div>
                     <div class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
                       <table class = "table table-striped" style = "background-color: #eee !important">
@@ -253,13 +253,13 @@
                   </div>
 
                   <!-- LAYER ID -->
-                  <div v-if="layer.config.metadata" class = "row layer-row">
+                  <div v-if="layer.config.metadata" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('ID') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.getId() }}</div>
                   </div>
 
                   <!-- LAYER RELATIONS -->
-                  <div v-if="layer.getRelations().getArray().length" class = "row layer-row">
+                  <div v-if="layer.getRelations().getArray().length" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('RELATIONS') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.getRelations().getArray().map(r => r.state.name).join(' - ') }}</div>
                   </div>
@@ -274,19 +274,19 @@
                   style = "padding: 0 15px;"
                 >
                   <!-- LAYER EPSG -->
-                  <div v-if = "layer.config.crs" class = "row layer-row">
+                  <div v-if = "layer.config.crs" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('EPSG') }}</div>
                     <div class = "col-sm-10 value">{{ layer.config.crs.epsg }}</div>
                   </div>
 
                   <!-- LAYER TYPE -->
-                  <div v-if = "layer.getGeometryType()" class = "row layer-row">
+                  <div v-if = "layer.getGeometryType()" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('GEOMETRY') }}</div>
                     <div class = "col-sm-10 value">{{ layer.getGeometryType() }}</div>
                   </div>
 
                   <!-- LAYER BBOX -->
-                  <div v-if = "layer.config.bbox" class = "row layer-row">
+                  <div v-if = "layer.config.bbox" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('BBOX') }}</div>
                     <div class = "col-sm-10 value">
                       <p v-for = "(value, key) in layer.config.bbox">
@@ -297,7 +297,7 @@
                   </div>
 
                   <!-- LAYER CRS -->
-                  <div v-if = "layer.config.metadata" class = "row layer-row">
+                  <div v-if = "layer.config.metadata" class = "layer-row">
                     <div class = "col-md-2 col-sm-12 label">{{ $t('CRS') }}</div>
                     <div  class = "col-sm-10 value">
                       <div v-for = "crs in layer.config.metadata.crs">
@@ -540,18 +540,6 @@
 </script>
 
 <style scoped>
-  .metadata-item-tab.general {
-    color: var(--skin-primary);
-  }
-
-  .metadata-item-tab.layers  {
-    color: var(--skin-warning);
-  }
-
-  .metadata-item-tab.spatial {
-    color: var(--skin-success);
-  }
-
   .nav[role="tablist"] {
     display: flex;
     gap: 1px;
@@ -604,8 +592,7 @@
     right: auto;
   }
 
-  .tab-pane > table > tbody > tr,
-  .row-info {
+  .tab-pane > table > tbody > tr {
     margin: 0 !important;
     padding-top: 10px;
     padding-bottom: 10px;
