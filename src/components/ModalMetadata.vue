@@ -93,20 +93,18 @@
                 <tr v-if  = "project.metadata.contactinformation">
                   <td class = "col-sm-2 label">{{ $t('CONTACTS') }}</td>
                   <td class = "col-sm-10 value">
-                    <div v-for = "(value, info) in project.metadata.contactinformation">
-                      <div class = "row" style = "margin-bottom: 5px;">
-                        <b class = "col-sm-2">
-                          <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                          {{ $t(`metadata.${info}`) }}
-                        </b>
-                        <div v-if = "'personprimary' === info" class = "col-sm-10">
-                          <div v-for = "(subvalue, key) in value">
-                            <b>{{ $t(`metadata.${key}`) }}</b> {{ subvalue }}
-                          </div>
+                    <div v-for = "(value, info) in project.metadata.contactinformation" style = "margin-bottom: 5px;">
+                      <b class = "col-sm-2">
+                        <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
+                        {{ $t(`metadata.${info}`) }}
+                      </b>
+                      <div v-if = "'personprimary' === info" class = "col-sm-10">
+                        <div v-for = "(subvalue, key) in value">
+                          <b>{{ $t(`metadata.${key}`) }}</b> {{ subvalue }}
                         </div>
-                        <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
-                        <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
                       </div>
+                      <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
+                      <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
                     </div>
                   </td>
                 </tr>
