@@ -30,65 +30,49 @@
 
             <!-- PROJECT TITLE -->
             <div v-if  = "project.metadata.title" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.title') }}</div>
-              <div class = "col-sm-10 value">
-                <span v-html = "project.metadata.title"></span>
-              </div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.title') }}</div>
+              <div class = "col-sm-10 value" v-html = "project.metadata.title"></div>
             </div>
 
             <!-- PROJECT NAME -->
             <div v-if  = "project.metadata.name" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.title') }}</div>
-              <div class = "col-sm-10 value">
-                <span v-html = "project.metadata.name"></span>
-              </div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.title') }}</div>
+              <div class = "col-sm-10 value" v-html = "project.metadata.name"></div>
             </div>
 
             <!-- PROJECT DESCRIPTION -->
             <div v-if  = "project.metadata.description" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.description') }}</div>
-              <div class = "col-sm-10 value">
-                <span v-html = "project.metadata.description"></span>
-              </div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.description') }}</div>
+              <div class = "col-sm-10 value" v-html = "project.metadata.description"></div>
             </div>
 
             <!-- PROJECT ABSTRACT -->
             <div v-if  = "project.metadata.abstract" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.abstract') }}</div>
-              <div class = "col-sm-10 value">
-                <span v-html = "project.metadata.abstract"></span>
-              </div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.abstract') }}</div>
+              <div class = "col-sm-10 value" v-html = "project.metadata.abstract"></div>
             </div>
 
             <!-- PROJECT KEYWORDS -->
             <div v-if  = "project.metadata.keywords" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.keywords') }}</div>
-              <div class = "col-sm-10 value">
-                <span>{{ [].concat(project.metadata.keywords).join(', ') }}</span>
-              </div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.keywords') }}</div>
+              <div class = "col-sm-10 value" v-html="[].concat(project.metadata.keywords).join(', ')"></div>
             </div>
 
-            <div
-              v-for = "field in [ 'fees', 'accessconstraints' ]"
-              v-if  = "project.metadata[field]"
-              class = "row row-info"
-            >
-              <div class = "col-sm-2 metadata-label" v-t = "`metadata.general.fields.${field}`"></div>
+            <!-- PROJECT FEES -->
+            <div v-if  = "project.metadata && project.metadata.fees" class = "row row-info">
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.fees') }}</div>
+              <div class = "col-sm-10 value" v-html = "project.metadata.fees"></div>
+            </div>
 
-              <div v-if = "(!Array.isArray(project.metadata[field]) && typeof project.metadata[field] !== 'object')" class = "col-sm-10 value">
-                <span v-html = "project.metadata[field]"></span>
-              </div>
-
-              <div v-else class = "col-sm-10 value">
-                <div v-for = "(key, index) in Object.keys(project.metadata[field])">
-                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ project.metadata[field][key] }}</span>
-                </div>
-              </div>
+            <!-- PROJECT ACCESS CONSTRAINTS -->
+             <div v-if  = "project.metadata && project.metadata.accessconstraints" class = "row row-info">
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.accessconstraints') }}</div>
+              <div class = "col-sm-10 value" v-html = "project.metadata.accessconstraints"></div>
             </div>
 
             <!-- PROJECT CONTACTS -->
             <div v-if  = "project.metadata.contactinformation" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.contactinformation') }}</div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.contactinformation') }}</div>
               <div class = "col-sm-10 value">
                 <div v-for = "(value, info) in project.metadata.contactinformation">
                   <div class = "row" style = "margin-bottom: 5px;">
@@ -110,26 +94,26 @@
 
             <!-- PROJECT WMS (URL) -->
             <div v-if  = "project.metadata.wms_url" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wms_url') }}</div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.wms_url') }}</div>
               <div class = "col-sm-10 value">
-                <a :href = "project.metadata.wms_url" >{{ project.metadata.wms_url }}</a>
+                <a :href = "project.metadata.wms_url" target="_blank">{{ project.metadata.wms_url }}</a>
               </div>
             </div>
 
             <!-- PROJECT WFS (URL) -->
             <div v-if  = "project.metadata.wfs_url" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wfs_url') }}</div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.wfs_url') }}</div>
               <div class = "col-sm-10 value">
-                <a :href = "project.metadata.wfs_url" >{{ project.metadata.wfs_url }}</a>
+                <a :href = "project.metadata.wfs_url" target="_blank">{{ project.metadata.wfs_url }}</a>
                 <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
               </div>
             </div>
 
             <!-- PROJECT WFS3 (URL) -->
             <div v-if  = "project.metadata.wfs_url" class = "row row-info">
-              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wfs3_url') }}</div>
+              <div class = "col-sm-2 label">{{ $t('metadata.general.fields.wfs3_url') }}</div>
               <div class = "col-sm-10 value">
-                <a :href = "project.metadata.wfs3_url" >{{ project.metadata.wfs3_url }}</a>
+                <a :href = "project.metadata.wfs3_url" target="_blank">{{ project.metadata.wfs3_url }}</a>
                 <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
               </div> 
             </div>
@@ -141,7 +125,7 @@
 
             <!-- PROJECT CRS -->
             <div v-if  = "project.crs" class = "row row-info">
-              <div class = "col-sm-12 metadata-label" v-t = "`metadata.spatial.fields.crs`"></div>
+              <div class = "col-sm-12 label" v-t = "`metadata.spatial.fields.crs`"></div>
               <dl class = "col-sm-12 value" style="gap: 0;">
                 <template v-for = "(key, index) in Object.keys(project.crs)">
                   <dt class="col-sm-2">{{ key }}</dt>
@@ -152,7 +136,7 @@
 
             <!-- PROJECT EXTENT -->
             <div v-if  = "project.extent" class = "row row-info">
-              <div class = "col-sm-12 metadata-label" v-t = "`metadata.spatial.fields.extent`"></div>
+              <div class = "col-sm-12 label" v-t = "`metadata.spatial.fields.extent`"></div>
               <dl class = "col-sm-12 value" style="gap: 0;">
                 <template v-for = "(key, index) in Object.keys(project.extent)">
                   <dt class="col-sm-2">{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</dt>
@@ -197,53 +181,37 @@
                 >
                   <!-- LAYER TITLE -->
                   <div v-if="layer.config.metadata && layer.config.metadata.title" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.title') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.title') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.metadata.title }}</div>
                   </div>
 
                   <!-- LAYER NAME -->
                   <div v-if="layer.config.name" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.name') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.name') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.name }}</div>
                   </div>
 
                   <!-- LAYER SOURCE -->
                   <div v-if="layer.config.source" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.source') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.source') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.source.type }}</div>
                   </div>
 
                   <!-- LAYER ABSTRACT -->
                   <div v-if="layer.config.metadata" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.abstract') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.abstract') }}</div>
                     <div class = "col-md-10 col-sm-12 value" v-html = "layer.config.metadata.abstract"></div>
                   </div>
 
                   <!-- LAYER KEYWORDS -->
                   <div v-if="layer.config.metadata && layer.config.metadata.keywords" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.keywords') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.keywords') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.config.metadata.keywords.join(', ') }}</div>
-                  </div>
-
-                  <!-- LAYER METADATA URL -->
-                  <div v-if="layer.config.metadata && layer.config.metadata.metadataurl && layer.config.metadata.metadataurl.onlineresources" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.metadataurl.onlineresource') }}</div>
-                    <div class = "col-md-10 col-sm-12 value">
-                      <a :href = "layer.config.metadata.metadataurl.onlineresources">{{ layer.config.metadata.metadataurl.onlineresources }}</a>
-                    </div>
-                  </div>
-
-                  <!-- LAYER DATA URL -->
-                  <div v-if="layer.config.metadata && layer.config.metadata.dataurl && layer.config.metadata.dataurl.onlineresources" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.dataurl.onlineresources') }}</div>
-                    <div class = "col-md-10 col-sm-12 value">
-                      <a :href = "layer.config.metadata.dataurl.onlineresources">{{ layer.config.metadata.dataurl.onlineresources }}</a>
-                    </div>
                   </div>
 
                   <!-- LAYER ATTRIBUTES -->
                   <div v-if="layer.config.metadata" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.attributes') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.attributes') }}</div>
                     <div class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
                       <table class = "table table-striped" style = "background-color: #eee !important">
                         <thead>
@@ -260,13 +228,13 @@
 
                   <!-- LAYER ID -->
                   <div v-if="layer.config.metadata" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.id') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.id') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.getId() }}</div>
                   </div>
 
                   <!-- LAYER RELATIONS -->
                   <div v-if="layer.getRelations().getArray().length" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.relations') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.relations') }}</div>
                     <div class = "col-md-10 col-sm-12 value">{{ layer.getRelations().getArray().map(r => r.state.name).join(' - ') }}</div>
                   </div>
 
@@ -281,19 +249,19 @@
                 >
                   <!-- LAYER EPSG -->
                   <div v-if = "layer.config.crs" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.crs') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.crs') }}</div>
                     <div class = "col-sm-10 value">{{ layer.config.crs.epsg }}</div>
                   </div>
 
                   <!-- LAYER TYPE -->
                   <div v-if = "layer.getGeometryType()" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.geometrytype') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.geometrytype') }}</div>
                     <div class = "col-sm-10 value">{{ layer.getGeometryType() }}</div>
                   </div>
 
                   <!-- LAYER BBOX -->
                   <div v-if = "layer.config.bbox" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.bbox') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('metadata.layers.fields.subfields.bbox') }}</div>
                     <div class = "col-sm-10 value">
                       <p v-for = "(value, key) in layer.config.bbox">
                         <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
@@ -304,7 +272,7 @@
 
                   <!-- LAYER CRS -->
                   <div v-if = "layer.config.metadata" class = "row layer-row">
-                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('CRS') }}</div>
+                    <div class = "col-md-2 col-sm-12 label">{{ $t('CRS') }}</div>
                     <div  class = "col-sm-10 value">
                       <div v-for = "crs in layer.config.metadata.crs">
                         <span>{{ crs }}</span>
@@ -621,9 +589,14 @@
     border-bottom: 0 none;
   }
 
-  .metadata-label {
+  .label {
     font-weight: bold;
     font-size: 1.1em;
+    color: unset;
+    text-align: unset;
+    line-height: unset;
+    padding: unset;
+    white-space: unset;
   }
 
   #metadata_layers > details > summary {
