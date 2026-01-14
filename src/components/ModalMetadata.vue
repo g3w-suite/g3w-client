@@ -121,6 +121,7 @@
               <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wfs_url') }}</div>
               <div class = "col-sm-10 value">
                 <a :href = "project.metadata.wfs_url" >{{ project.metadata.wfs_url }}</a>
+                <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
               </div>
             </div>
 
@@ -129,7 +130,8 @@
               <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wfs3_url') }}</div>
               <div class = "col-sm-10 value">
                 <a :href = "project.metadata.wfs3_url" >{{ project.metadata.wfs3_url }}</a>
-              </div>
+                <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
+              </div> 
             </div>
 
           </div>
