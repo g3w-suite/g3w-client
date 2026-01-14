@@ -70,46 +70,53 @@
 
           <!-- SPATIAL METADATA -->
           <div id = "metadata_spatial" class = "tab-pane">
-            <div
-              v-for = "field in [ 'crs', 'extent' ]"
-              v-if  = "project[field]"
-              class = "row row-info"
-            >
-              <div class = "col-sm-12 metadata-label" v-t = "`metadata.spatial.fields.${field}`"></div>
-              
+
+            <!-- PROJECT CRS -->
+            <div v-if  = "project.crs" class = "row row-info">
+              <div class = "col-sm-12 metadata-label" v-t = "`metadata.spatial.fields.crs`"></div>
               <dl class = "col-sm-12 value" style="gap: 0;">
-                <template v-for = "(key, index) in Object.keys(project[field])">
-                  <dt class="col-sm-2">{{ 'extent' === field ? (['minx', 'miny', 'maxx', 'maxy'])[index] : key }}</dt>
-                  <dd class="col-sm-10">{{ project[field][key] }}</dd>
+                <template v-for = "(key, index) in Object.keys(project.crs)">
+                  <dt class="col-sm-2">{{ key }}</dt>
+                  <dd class="col-sm-10">{{ project.crs[key] }}</dd>
                 </template>
               </dl>
+            </div>
 
+            <!-- PROJECT EXTENT -->
+            <div v-if  = "project.extent" class = "row row-info">
+              <div class = "col-sm-12 metadata-label" v-t = "`metadata.spatial.fields.extent`"></div>
+              <dl class = "col-sm-12 value" style="gap: 0;">
+                <template v-for = "(key, index) in Object.keys(project.extent)">
+                  <dt class="col-sm-2">{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</dt>
+                  <dd class="col-sm-10">{{ project.extent[key] }}</dd>
+                </template>
+              </dl>
             </div>
           </div>
 
           <!-- LAYERS METADATA -->
           <div id = "metadata_layers" class = "tab-pane">
-            <details v-for = "layer in layers" class = "row-info">
+            <details v-for = "layer in layers" class = "row-info" :hidden="layer.isBaseLayer()">
               <summary>
-                <i :class ="'action-button ' + g3wtemplate.font['NoGeometry' === layer.geometrytype ? 'table' : 'map']" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
-                <b>{{ layer.name }}</b>
+                <i :class ="'action-button ' + g3wtemplate.font['NoGeometry' === layer.getGeometryType() ? 'table' : 'map']" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
+                <b>{{ layer.getName() }}</b>
               </summary>
 
               <ul class = "nav nav-tabs layer-nav-tabs" role = "tablist">
 
                 <!-- LAYER GENERAL TAB -->
                 <li role = "presentation" class = "active spatial-tab">
-                  <a v-t = "'metadata.layers.groups.general'" :href = "`#layer_general_${layer.id}`" aria-controls = "general" role = "tab" data-toggle = "tab"></a>
+                  <a v-t = "'metadata.layers.groups.general'" :href = "`#layer_general_${layer.getId()}`" aria-controls = "general" role = "tab" data-toggle = "tab"></a>
                 </li>
 
                 <!-- LAYER SPATIAL TAB -->
-                <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "spatial-tab">
-                  <a v-t = "'metadata.layers.groups.spatial'" :href = "`#layer_spatial_${layer.id}`" aria-controls = "profile" role = "tab" data-toggle = "tab"></a>
+                <li v-if = "'NoGeometry' !== layer.getGeometryType()" role = "presentation" class = "spatial-tab">
+                  <a v-t = "'metadata.layers.groups.spatial'" :href = "`#layer_spatial_${layer.getId()}`" aria-controls = "profile" role = "tab" data-toggle = "tab"></a>
                 </li>
 
                 <!-- LAYER SPATIAL TAB -->
-                <li v-if = "'NoGeometry' !== layer.geometrytype" role = "presentation" class = "legend-tab">
-                  <a :href = "`#layer_legend_${layer.id}`" aria-controls = "legend" role = "tab" data-toggle = "tab"> {{ ($t('legend')).toUpperCase() }}</a>
+                <li v-if = "'NoGeometry' !== layer.getGeometryType()" role = "presentation" class = "legend-tab">
+                  <a :href = "`#layer_legend_${layer.getId()}`" aria-controls = "legend" role = "tab" data-toggle = "tab"> {{ ($t('legend')).toUpperCase() }}</a>
                 </li>
               </ul>
 
@@ -117,104 +124,135 @@
                 <div
                   role  = "tabpanel"
                   class = "tab-pane active"
-                  :id   = "`layer_general_${layer.id}`"
+                  :id   = "`layer_general_${layer.getId()}`"
                   style = "padding: 0 15px;"
                 >
-                  <template v-for = "attr in ['metadata.title', 'name', 'source', 'metadata.abstract', 'metadata.keywords', 'metadata.metadataurl.onlineresource', 'metadata.dataurl.onlineresources', 'metadata.attributes', 'id', 'relations']">
-                    <div v-if = "'relations' === attr || undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
-                      <div v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
+                  <!-- LAYER TITLE -->
+                  <div v-if="layer.config.metadata && layer.config.metadata.title" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.title') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">{{ layer.config.metadata.title }}</div>
+                  </div>
 
-                      <!-- LAYER TITLE -->
-                      <div v-if = "'metadata.title' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.title }}</div>
+                  <!-- LAYER NAME -->
+                  <div v-if="layer.config.name" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.name') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">{{ layer.config.name }}</div>
+                  </div>
 
-                      <!-- LAYER NAME -->
-                      <div v-if = "'name' === attr" class = "col-md-10 col-sm-12 value">{{ layer.name }}</div>
-                      
-                      <!-- LAYER SOURCE -->
-                      <div v-if = "'source' === attr" class = "col-md-10 col-sm-12 value">{{ layer.source.type }}</div>
+                  <!-- LAYER SOURCE -->
+                  <div v-if="layer.config.source" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.source') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">{{ layer.config.source.type }}</div>
+                  </div>
 
-                      <!-- LAYER ABSTRACT -->
-                      <div v-if = "'metadata.abstract' === attr" class = "col-md-10 col-sm-12 value" v-html = "layer.metadata.abstract"></div>
+                  <!-- LAYER ABSTRACT -->
+                  <div v-if="layer.config.metadata" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.abstract') }}</div>
+                    <div class = "col-md-10 col-sm-12 value" v-html = "layer.config.metadata.abstract"></div>
+                  </div>
 
-                      <!-- LAYER KEYWORDS -->
-                      <div v-if = "'metadata.keywords' === attr" class = "col-md-10 col-sm-12 value">{{ layer.metadata.keywords.join(', ') }}</div>
+                  <!-- LAYER KEYWORDS -->
+                  <div v-if="layer.config.metadata && layer.config.metadata.keywords" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.keywords') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">{{ layer.config.metadata.keywords.join(', ') }}</div>
+                  </div>
 
-                      <!-- LAYER METADATA URL -->
-                      <div v-if = "'metadata.metadataurl.onlineresource' === attr" class = "col-md-10 col-sm-12 value">
-                        <a :href = "layer.metadata.metadataurl.onlineresources">{{ layer.metadata.metadataurl.onlineresources }}</a>
-                      </div>
-
-                      <!-- LAYER DATA URL -->
-                      <div v-if = "'metadata.dataurl.onlineresources' === attr" class = "col-md-10 col-sm-12 value">
-                        <a :href = "layer.metadata.dataurl.onlineresources">{{ layer.metadata.dataurl.onlineresources }}</a>
-                      </div>
-
-                      <!-- LAYER ATTRIBUTES -->
-                      <div v-if = "'metadata.attributes' === attr" class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
-                        <table class = "table table-striped" style = "background-color: #eee !important">
-                          <thead>
-                            <tr><th v-for = "(value, header) in layer.metadata.attributes[0]">{{ header }}</th></tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for = "a in layer.metadata.attributes">
-                              <td v-for = "(value, header) in a">{{ value }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <!-- LAYER ID -->
-                      <div v-if = "'id' === attr" class = "col-md-10 col-sm-12 value">{{ layer.id }}</div>
-
-                      <!-- LAYER RELATIONS -->
-                      <div v-if = "'relations' === attr" class = "col-md-10 col-sm-12 value">{{ getRelations(layer.id).map(r => r.state.name).join(' - ') }}</div>
-
+                  <!-- LAYER METADATA URL -->
+                  <div v-if="layer.config.metadata && layer.config.metadata.metadataurl && layer.config.metadata.metadataurl.onlineresources" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.metadataurl.onlineresource') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">
+                      <a :href = "layer.config.metadata.metadataurl.onlineresources">{{ layer.config.metadata.metadataurl.onlineresources }}</a>
                     </div>
-                  </template>
+                  </div>
+
+                  <!-- LAYER DATA URL -->
+                  <div v-if="layer.config.metadata && layer.config.metadata.dataurl && layer.config.metadata.dataurl.onlineresources" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.dataurl.onlineresources') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">
+                      <a :href = "layer.config.metadata.dataurl.onlineresources">{{ layer.config.metadata.dataurl.onlineresources }}</a>
+                    </div>
+                  </div>
+
+                  <!-- LAYER ATTRIBUTES -->
+                  <div v-if="layer.config.metadata" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.attributes') }}</div>
+                    <div class = "col-md-10 col-sm-12 value" style = "overflow: auto;">
+                      <table class = "table table-striped" style = "background-color: #eee !important">
+                        <thead>
+                          <tr><th v-for = "(value, header) in layer.config.metadata.attributes[0]">{{ header }}</th></tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for = "a in layer.config.metadata.attributes">
+                            <td v-for = "(value, header) in a">{{ value }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- LAYER ID -->
+                  <div v-if="layer.config.metadata" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.id') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">{{ layer.getId() }}</div>
+                  </div>
+
+                  <!-- LAYER RELATIONS -->
+                  <div v-if="layer.getRelations().getArray().length" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.relations') }}</div>
+                    <div class = "col-md-10 col-sm-12 value">{{ layer.getRelations().getArray().map(r => r.state.name).join(' - ') }}</div>
+                  </div>
+
                 </div>
+
                 <!-- LAYER SPATIAL TAB --> 
                 <div
                   role  = "tabpanel"
                   class = "tab-pane"
-                  :id   = "`layer_spatial_${layer.id}`"
+                  :id   = "`layer_spatial_${layer.getId()}`"
                   style = "padding: 0 15px;"
                 >
-                  <template v-for = "attr in ['crs', 'geometrytype', 'bbox', 'metadata.crs']">
-                    <div v-if  = "undefined !== attr.split('.').reduce((a, b) => a[b], layer)" class = "row layer-row">
-                      <div v-if = "'metadata.crs' === attr" class = "col-md-2 col-sm-12 metadata-label">CRS</div>
-                      <div v-else v-t = "'metadata.layers.fields.subfields.' + attr.replace('metadata.', '').split('.')[0]" class = "col-md-2 col-sm-12 metadata-label"></div>
+                  <!-- LAYER EPSG -->
+                  <div v-if = "layer.config.crs" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.crs') }}</div>
+                    <div class = "col-sm-10 value">{{ layer.config.crs.epsg }}</div>
+                  </div>
 
-                      <!-- LAYER EPSG -->
-                      <div v-if = "'crs' === attr" class = "col-sm-10 value">{{ layer.crs.epsg }}</div>
+                  <!-- LAYER TYPE -->
+                  <div v-if = "layer.getGeometryType()" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.geometrytype') }}</div>
+                    <div class = "col-sm-10 value">{{ layer.getGeometryType() }}</div>
+                  </div>
 
-                      <!-- LAYER TYPE -->
-                      <div v-else-if = "'geometrytype' === attr" class = "col-sm-10 value">{{ layer.geometrytype }}</div>
+                  <!-- LAYER BBOX -->
+                  <div v-if = "layer.config.bbox" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('metadata.layers.fields.subfields.bbox') }}</div>
+                    <div class = "col-sm-10 value">
+                      <p v-for = "(value, key) in layer.config.bbox">
+                        <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
+                        <span>{{ value }}</span>
+                      </p>
+                    </div>
+                  </div>
 
-                      <!-- LAYER BBOX -->
-                      <div v-else-if = "'bbox' === attr" class = "col-sm-10 value">
-                        <p v-for = "(value, key) in layer.bbox">
-                          <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
-                          <span>{{ value }}</span>
-                        </p>
-                      </div>
-
-                      <!-- LAYER CRS -->
-                      <div v-else-if = "'metadata.crs' === attr" class = "col-sm-10 value">
-                        <div v-for = "crs in layer.metadata.crs">
-                          <span>{{ crs }}</span>
-                        </div>
+                  <!-- LAYER CRS -->
+                  <div v-if = "layer.config.metadata" class = "row layer-row">
+                    <div class = "col-md-2 col-sm-12 metadata-label">{{ $t('CRS') }}</div>
+                    <div  class = "col-sm-10 value">
+                      <div v-for = "crs in layer.config.metadata.crs">
+                        <span>{{ crs }}</span>
                       </div>
                     </div>
-                  </template>
+                  </div>
+
                 </div>
                 <!-- LAYER LEGEND TAB -->
                 <div  
-                  v-show  = "'NoGeometry' !== layer.geometrytype && open" 
+                  v-show  = "'NoGeometry' !== layer.getGeometryType() && open" 
                   role  = "tabpanel"
                   class = "tab-pane"
-                  :id   = "`layer_legend_${layer.id}`"
+                  :id   = "`layer_legend_${layer.getId()}`"
                 >
-                  <img :src = "getLegendUrl(layer.id)"/>
+                  <img :src = "getLegendUrl(layer.getId())"/>
                 </div>
               </div>
             </details>
@@ -337,7 +375,7 @@
         docs_url:      `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`,
         project,
         // In case of layers that has geometry and no epsg, filter according to filter of project layers
-        layers: (project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg) ),
+        layers: Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s.getLayers() : []).filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg)), //(project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg)),
         g3wsdk_info: '',
       };
     },
