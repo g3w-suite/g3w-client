@@ -27,27 +27,70 @@
 
           <!-- GENERAL METADATA -->
           <div id = "metadata_general" class = "tab-pane active">
+
+            <!-- PROJECT TITLE -->
+            <div v-if  = "project.metadata.title" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.title') }}</div>
+              <div class = "col-sm-10 value">
+                <span v-html = "project.metadata.title"></span>
+              </div>
+            </div>
+
+            <!-- PROJECT NAME -->
+            <div v-if  = "project.metadata.name" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.title') }}</div>
+              <div class = "col-sm-10 value">
+                <span v-html = "project.metadata.name"></span>
+              </div>
+            </div>
+
+            <!-- PROJECT DESCRIPTION -->
+            <div v-if  = "project.metadata.description" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.description') }}</div>
+              <div class = "col-sm-10 value">
+                <span v-html = "project.metadata.description"></span>
+              </div>
+            </div>
+
+            <!-- PROJECT ABSTRACT -->
+            <div v-if  = "project.metadata.abstract" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.abstract') }}</div>
+              <div class = "col-sm-10 value">
+                <span v-html = "project.metadata.abstract"></span>
+              </div>
+            </div>
+
+            <!-- PROJECT KEYWORDS -->
+            <div v-if  = "project.metadata.keywords" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.keywords') }}</div>
+              <div class = "col-sm-10 value">
+                <span>{{ [].concat(project.metadata.keywords).join(', ') }}</span>
+              </div>
+            </div>
+
             <div
-              v-for = "field in [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url', 'wfs_url', 'wfs3_url' ]"
+              v-for = "field in [ 'fees', 'accessconstraints' ]"
               v-if  = "project.metadata[field]"
               class = "row row-info"
             >
               <div class = "col-sm-2 metadata-label" v-t = "`metadata.general.fields.${field}`"></div>
 
-              <div v-if = "'keywords' === field" class = "col-sm-10 value">
-                <span>{{ [].concat(project.metadata[field]).join(', ')}}</span>
-              </div>
-
-              <div v-else-if = "['wms_url', 'wfs_url', 'wfs3_url'].includes(field)" class = "col-sm-10 value">
-                <a :href = "project.metadata[field]" >{{ project.metadata[field] }}</a>
-              </div>
-
-              <div v-else-if = "'abstract' === field || (!Array.isArray(project.metadata[field]) && typeof project.metadata[field] !== 'object')" class = "col-sm-10 value">
+              <div v-if = "(!Array.isArray(project.metadata[field]) && typeof project.metadata[field] !== 'object')" class = "col-sm-10 value">
                 <span v-html = "project.metadata[field]"></span>
               </div>
 
-              <div v-else-if ="'contactinformation' == field" class = "col-sm-10 value">
-                <div v-for = "(value, info) in project.metadata[field]">
+              <div v-else class = "col-sm-10 value">
+                <div v-for = "(key, index) in Object.keys(project.metadata[field])">
+                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ project.metadata[field][key] }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PROJECT CONTACTS -->
+            <div v-if  = "project.metadata.contactinformation" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.contactinformation') }}</div>
+              <div class = "col-sm-10 value">
+                <div v-for = "(value, info) in project.metadata.contactinformation">
                   <div class = "row" style = "margin-bottom: 5px;">
                     <b class = "col-sm-2">
                       <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
@@ -63,13 +106,32 @@
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div v-else class = "col-sm-10 value">
-                <div v-for = "(key, index) in Object.keys(project.metadata[field])">
-                  <b style = "margin-right: 10px;">{{ key }}</b><span>{{ project.metadata[field][key] }}</span>
-                </div>
+            <!-- PROJECT WMS (URL) -->
+            <div v-if  = "project.metadata.wms_url" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wms_url') }}</div>
+              <div class = "col-sm-10 value">
+                <a :href = "project.metadata.wms_url" >{{ project.metadata.wms_url }}</a>
               </div>
             </div>
+
+            <!-- PROJECT WFS (URL) -->
+            <div v-if  = "project.metadata.wfs_url" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wfs_url') }}</div>
+              <div class = "col-sm-10 value">
+                <a :href = "project.metadata.wfs_url" >{{ project.metadata.wfs_url }}</a>
+              </div>
+            </div>
+
+            <!-- PROJECT WFS3 (URL) -->
+            <div v-if  = "project.metadata.wfs_url" class = "row row-info">
+              <div class = "col-sm-2 metadata-label">{{ $t('metadata.general.fields.wfs3_url') }}</div>
+              <div class = "col-sm-10 value">
+                <a :href = "project.metadata.wfs3_url" >{{ project.metadata.wfs3_url }}</a>
+              </div>
+            </div>
+
           </div>
 
           <!-- SPATIAL METADATA -->
