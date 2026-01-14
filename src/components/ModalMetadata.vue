@@ -454,14 +454,6 @@
     },
 
     methods: {
-      /**
-       * @returns layer relations
-       * 
-       * @since 4.1.0
-       */
-      getRelations(id) {
-        return getCatalogLayerById(id).getRelations().getArray();
-      },
 
       /**
        * @returns layer legend url
