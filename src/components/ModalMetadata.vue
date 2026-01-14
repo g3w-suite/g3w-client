@@ -34,8 +34,12 @@
             >
               <div class = "col-sm-2 metadata-label" v-t = "`metadata.general.fields.${field}`"></div>
 
-              <div v-if = "'keywords' === field || 'wms_url'=== field" class = "col-sm-10 value">
-                <span>{{ [].concat(project.metadata[field]).join(', ') }}</span>
+              <div v-if = "'keywords' === field" class = "col-sm-10 value">
+                <span>{{ [].concat(project.metadata[field]).join(', ')}}</span>
+              </div>
+              
+              <div v-else-if = "'wms_url'=== field" class = "col-sm-10 value">
+                <a :href = "project.metadata[field]" >{{ project.metadata[field] }}</a>
               </div>
 
               <div v-else-if = "'abstract' === field || (!Array.isArray(project.metadata[field]) && typeof project.metadata[field] !== 'object')" class = "col-sm-10 value">
