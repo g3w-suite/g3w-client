@@ -45,123 +45,133 @@
 
           <!-- GENERAL METADATA -->
           <div id = "metadata_general" class = "tab-pane active">
+            <table>
+              <tbody>
+                <!-- PROJECT TITLE -->
+                <tr v-if  = "project.metadata.title">
+                  <td class = "col-sm-2 label">{{ $t('TITLE') }}</td>
+                  <td class = "col-sm-10 value" v-html = "project.metadata.title"></td>
+                </tr>
 
-            <!-- PROJECT TITLE -->
-            <div v-if  = "project.metadata.title" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('TITLE') }}</div>
-              <div class = "col-sm-10 value" v-html = "project.metadata.title"></div>
-            </div>
+                <!-- PROJECT NAME -->
+                <tr v-if  = "project.metadata.name">
+                  <td class = "col-sm-2 label">{{ $t('NAME') }}</td>
+                  <td class = "col-sm-10 value" v-html = "project.metadata.name"></td>
+                </tr>
 
-            <!-- PROJECT NAME -->
-            <div v-if  = "project.metadata.name" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('NAME') }}</div>
-              <div class = "col-sm-10 value" v-html = "project.metadata.name"></div>
-            </div>
+                <!-- PROJECT DESCRIPTION -->
+                <tr v-if  = "project.metadata.description">
+                  <td class = "col-sm-2 label">{{ $t('DESCRIPTION') }}</td>
+                  <td class = "col-sm-10 value" v-html = "project.metadata.description"></td>
+                </tr>
 
-            <!-- PROJECT DESCRIPTION -->
-            <div v-if  = "project.metadata.description" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('DESCRIPTION') }}</div>
-              <div class = "col-sm-10 value" v-html = "project.metadata.description"></div>
-            </div>
+                <!-- PROJECT ABSTRACT -->
+                <tr v-if  = "project.metadata.abstract">
+                  <td class = "col-sm-2 label">{{ $t('ABSTRACT') }}</td>
+                  <td class = "col-sm-10 value" v-html = "project.metadata.abstract"></td>
+                </tr>
 
-            <!-- PROJECT ABSTRACT -->
-            <div v-if  = "project.metadata.abstract" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('ABSTRACT') }}</div>
-              <div class = "col-sm-10 value" v-html = "project.metadata.abstract"></div>
-            </div>
+                <!-- PROJECT KEYWORDS -->
+                <tr v-if  = "project.metadata.keywords">
+                  <td class = "col-sm-2 label">{{ $t('KEYWORDS') }}</td>
+                  <td class = "col-sm-10 value" v-html="[].concat(project.metadata.keywords).join(', ')"></td>
+                </tr>
 
-            <!-- PROJECT KEYWORDS -->
-            <div v-if  = "project.metadata.keywords" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('KEYWORDS') }}</div>
-              <div class = "col-sm-10 value" v-html="[].concat(project.metadata.keywords).join(', ')"></div>
-            </div>
+                <!-- PROJECT FEES -->
+                <tr v-if  = "project.metadata && project.metadata.fees">
+                  <td class = "col-sm-2 label">{{ $t('FEES') }}</td>
+                  <td class = "col-sm-10 value" v-html = "project.metadata.fees"></td>
+                </tr>
 
-            <!-- PROJECT FEES -->
-            <div v-if  = "project.metadata && project.metadata.fees" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('FEES') }}</div>
-              <div class = "col-sm-10 value" v-html = "project.metadata.fees"></div>
-            </div>
+                <!-- PROJECT ACCESS CONSTRAINTS -->
+                <tr v-if  = "project.metadata && project.metadata.accessconstraints">
+                  <td class = "col-sm-2 label">{{ $t('ACCESS CONSTRAINT') }}</td>
+                  <td class = "col-sm-10 value" v-html = "project.metadata.accessconstraints"></td>
+                </tr>
 
-            <!-- PROJECT ACCESS CONSTRAINTS -->
-             <div v-if  = "project.metadata && project.metadata.accessconstraints" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('ACCESS CONSTRAINT') }}</div>
-              <div class = "col-sm-10 value" v-html = "project.metadata.accessconstraints"></div>
-            </div>
-
-            <!-- PROJECT CONTACTS -->
-            <div v-if  = "project.metadata.contactinformation" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('CONTACTS') }}</div>
-              <div class = "col-sm-10 value">
-                <div v-for = "(value, info) in project.metadata.contactinformation">
-                  <div class = "row" style = "margin-bottom: 5px;">
-                    <b class = "col-sm-2">
-                      <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                      {{ $t(`metadata.${info}`) }}
-                    </b>
-                    <div v-if = "'personprimary' === info" class = "col-sm-10">
-                      <div v-for = "(subvalue, key) in value">
-                        <b>{{ $t(`metadata.${key}`) }}</b> {{ subvalue }}
+                <!-- PROJECT CONTACTS -->
+                <tr v-if  = "project.metadata.contactinformation">
+                  <td class = "col-sm-2 label">{{ $t('CONTACTS') }}</td>
+                  <td class = "col-sm-10 value">
+                    <div v-for = "(value, info) in project.metadata.contactinformation">
+                      <div class = "row" style = "margin-bottom: 5px;">
+                        <b class = "col-sm-2">
+                          <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
+                          {{ $t(`metadata.${info}`) }}
+                        </b>
+                        <div v-if = "'personprimary' === info" class = "col-sm-10">
+                          <div v-for = "(subvalue, key) in value">
+                            <b>{{ $t(`metadata.${key}`) }}</b> {{ subvalue }}
+                          </div>
+                        </div>
+                        <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
+                        <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
                       </div>
                     </div>
-                    <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
-                    <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  </td>
+                </tr>
 
-            <!-- PROJECT WMS (URL) -->
-            <div v-if  = "project.metadata.wms_url" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('WMS') }}</div>
-              <div class = "col-sm-10 value">
-                <a :href = "project.metadata.wms_url" target="_blank">{{ project.metadata.wms_url }}</a>
-              </div>
-            </div>
+                <!-- PROJECT WMS (URL) -->
+                <tr v-if  = "project.metadata.wms_url">
+                  <td class = "col-sm-2 label">{{ $t('WMS') }}</td>
+                  <td class = "col-sm-10 value">
+                    <a :href = "project.metadata.wms_url" target="_blank">{{ project.metadata.wms_url }}</a>
+                  </td>
+                </tr>
 
-            <!-- PROJECT WFS (URL) -->
-            <div v-if  = "project.metadata.wfs_url" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('WFS') }}</div>
-              <div class = "col-sm-10 value">
-                <a :href = "project.metadata.wfs_url" target="_blank">{{ project.metadata.wfs_url }}</a>
-                <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
-              </div>
-            </div>
+                <!-- PROJECT WFS (URL) -->
+                <tr v-if  = "project.metadata.wfs_url">
+                  <td class = "col-sm-2 label">{{ $t('WFS') }}</td>
+                  <td class = "col-sm-10 value">
+                    <a :href = "project.metadata.wfs_url" target="_blank">{{ project.metadata.wfs_url }}</a>
+                    <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
+                  </td>
+                </tr>
 
-            <!-- PROJECT WFS3 (URL) -->
-            <div v-if  = "project.metadata.wfs_url" class = "row row-info">
-              <div class = "col-sm-2 label">{{ $t('WFS3') }}</div>
-              <div class = "col-sm-10 value">
-                <a :href = "project.metadata.wfs3_url" target="_blank">{{ project.metadata.wfs3_url }}</a>
-                <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
-              </div> 
-            </div>
+                <!-- PROJECT WFS3 (URL) -->
+                <tr v-if  = "project.metadata.wfs_url">
+                  <td class = "col-sm-2 label">{{ $t('WFS3') }}</td>
+                  <td class = "col-sm-10 value">
+                    <a :href = "project.metadata.wfs3_url" target="_blank">{{ project.metadata.wfs3_url }}</a>
+                    <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
+                  </td> 
+                </tr>
 
+              </tbody>
+            </table>
           </div>
 
           <!-- SPATIAL METADATA -->
           <div id = "metadata_spatial" class = "tab-pane">
+            <table>
+              <tbody>
+                <!-- PROJECT CRS -->
+                <tr v-if  = "project.crs">
+                  <td class = "col-sm-12 label" v-t = "'EPSG'"></td>
+                  <td class = "col-sm-12 value">
+                    <dl style="gap: 0;">
+                      <template v-for = "(key, index) in Object.keys(project.crs)">
+                        <dt class="col-sm-2">{{ key }}</dt>
+                        <dd class="col-sm-10">{{ project.crs[key] }}</dd>
+                      </template>
+                    </dl>
+                  </td>
+                </tr>
 
-            <!-- PROJECT CRS -->
-            <div v-if  = "project.crs" class = "row row-info">
-              <div class = "col-sm-12 label" v-t = "'EPSG'"></div>
-              <dl class = "col-sm-12 value" style="gap: 0;">
-                <template v-for = "(key, index) in Object.keys(project.crs)">
-                  <dt class="col-sm-2">{{ key }}</dt>
-                  <dd class="col-sm-10">{{ project.crs[key] }}</dd>
-                </template>
-              </dl>
-            </div>
-
-            <!-- PROJECT EXTENT -->
-            <div v-if  = "project.extent" class = "row row-info">
-              <div class = "col-sm-12 label" v-t = "'BBOX'"></div>
-              <dl class = "col-sm-12 value" style="gap: 0;">
-                <template v-for = "(key, index) in Object.keys(project.extent)">
-                  <dt class="col-sm-2">{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</dt>
-                  <dd class="col-sm-10">{{ project.extent[key] }}</dd>
-                </template>
-              </dl>
-            </div>
+                <!-- PROJECT EXTENT -->
+                <tr v-if  = "project.extent">
+                  <td class = "col-sm-12 label" v-t = "'BBOX'"></td>
+                  <td class = "col-sm-12 value">
+                    <dl style="gap: 0;">
+                      <template v-for = "(key, index) in Object.keys(project.extent)">
+                        <dt class="col-sm-2">{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</dt>
+                        <dd class="col-sm-10">{{ project.extent[key] }}</dd>
+                      </template>
+                    </dl>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <!-- LAYERS METADATA -->
@@ -596,6 +606,7 @@
     right: auto;
   }
 
+  .tab-pane > table > tbody > tr,
   .row-info {
     margin: 0 !important;
     padding-top: 10px;
