@@ -125,6 +125,8 @@ export default {
   'metadata.general.fields.subfields.contactinformation.contactperson': 'Person',
   'metadata.general.fields.subfields.contactinformation.ContactPerson': 'Person',
   'metadata.general.fields.wms_url': 'WMS',
+  'metadata.general.fields.wfs_url': 'WFS',
+  'metadata.general.fields.wfs3_url': 'WFS3',
   'metadata.spatial.title': 'SPATIAL',
   'metadata.spatial.fields.crs': 'EPSG',
   'metadata.spatial.fields.extent': 'BBOX',

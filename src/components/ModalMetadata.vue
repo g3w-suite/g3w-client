@@ -28,7 +28,7 @@
           <!-- GENERAL METADATA -->
           <div id = "metadata_general" class = "tab-pane active">
             <div
-              v-for = "field in [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url' ]"
+              v-for = "field in [ 'title', 'name', 'description', 'abstract', 'keywords', 'fees', 'accessconstraints', 'contactinformation', 'wms_url', 'wfs_url', 'wfs3_url' ]"
               v-if  = "project.metadata[field]"
               class = "row row-info"
             >
@@ -37,8 +37,8 @@
               <div v-if = "'keywords' === field" class = "col-sm-10 value">
                 <span>{{ [].concat(project.metadata[field]).join(', ')}}</span>
               </div>
-              
-              <div v-else-if = "'wms_url'=== field" class = "col-sm-10 value">
+
+              <div v-else-if = "['wms_url', 'wfs_url', 'wfs3_url'].includes(field)" class = "col-sm-10 value">
                 <a :href = "project.metadata[field]" >{{ project.metadata[field] }}</a>
               </div>
 
@@ -370,6 +370,13 @@
 
     data() {
       const project = ApplicationState.project.getState();
+      const layers  = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s.getLayers() : []).filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg)); //(project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg)),
+      //@since 4.1.0 check if exist a layer with wfs capability
+      const wfs_layer = layers.find(l => l.isWfsActive?.());
+      if (wfs_layer) {
+        project.metadata.wfs_url  = wfs_layer.getWfsUrl();
+        project.metadata.wfs3_url = `${wfs_layer.getWfsUrl()}wfs3/`;
+      }
       const version = window.initConfig.version.split('-')[0].split('.');
       return {
         open:          false, //@since 4.1.0 modal state
@@ -378,8 +385,8 @@
         urls:          window.initConfig.urls,
         docs_url:      `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`,
         project,
+        layers,
         // In case of layers that has geometry and no epsg, filter according to filter of project layers
-        layers: Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s.getLayers() : []).filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg)), //(project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg)),
         g3wsdk_info: '',
       };
     },
@@ -391,7 +398,6 @@
        * @since 4.1.0
        */
       getRelations(id) {
-        console.log(getCatalogLayerById(id).getRelations().getArray())
         return getCatalogLayerById(id).getRelations().getArray();
       },
 
