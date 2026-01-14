@@ -16,7 +16,7 @@
         <li class = "active">
           <a data-toggle = "tab" href="#metadata_general" class = "metadata-item-tab general">
             <i class = "action-button" :class = "$fa('info')" aria-hidden = "true"></i>
-            <b v-t = "'metadata.general.title'"></b>
+            <b>{{ $t('GENERAL') }}</b>
           </a>
         </li>
         <li>
@@ -96,11 +96,11 @@
                   <div class = "row" style = "margin-bottom: 5px;">
                     <b class = "col-sm-2">
                       <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                      {{ $t(`metadata_contact.${info}`) }}
+                      {{ $t(`metadata.${info}`) }}
                     </b>
                     <div v-if = "'personprimary' === info" class = "col-sm-10">
                       <div v-for = "(subvalue, key) in value">
-                        <b>{{ $t(`metadata_contact.${key}`) }}</b> {{ subvalue }}
+                        <b>{{ $t(`metadata.${key}`) }}</b> {{ subvalue }}
                       </div>
                     </div>
                     <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
