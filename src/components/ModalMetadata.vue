@@ -406,7 +406,7 @@
       //@since 4.1.0 check if exist a layer with wfs capability
       const wfs_layer = layers.find(l => l.isWfsActive?.());
       if (wfs_layer) {
-        project.metadata.wfs_url  = wfs_layer.getWfsUrl();
+        project.metadata.wfs_url  = `${wfs_layer.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
         project.metadata.wfs3_url = `${wfs_layer.getWfsUrl()}wfs3/`;
       }
       const version = window.initConfig.version.split('-')[0].split('.');
