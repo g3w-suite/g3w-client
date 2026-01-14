@@ -264,85 +264,6 @@
         {{ $t('Download') }}
       </li>
 
-      <!-- OGC Service URLs -->
-      <li
-        v-if = "[
-          this.canShowWmsUrl(this.layer.id),
-          this.canShowWfsUrl(this.layer.id),
-          this.canShowWfsUrl(this.layer.id)
-        ].filter(Boolean).length"
-        ref  = "ogc_menu"
-      >
-        <i :class = "$fa('map')"></i> {{ $t('OGC Services') }}
-        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px" ></i>
-        <ul class = "sub-contex-menu">
-
-          <!-- Click to Copy WMS URL -->
-          <li
-            v-if   = "canShowWmsUrl(layer.id)"
-            @click = "copyUrl('Wms', $event.target)"
-            style = "display: flex; justify-content: space-between;align-items: baseline;"
-          >
-            <a
-              :href  = "getWmsUrl(layer.id)"
-              target = "_blank"
-              style  = "color:#000"
-            >
-              <i :class = "$fa('map')"></i> WMS
-            </a>
-            <b
-              class           = "click-to-copy skin-color-dark"
-              :class          ="$fa('eye')"
-              data-placement  = "top"
-              :title          = "getWmsUrl(layer.id)"
-            ></b>
-          </li>
-
-          <!-- Click to Copy WFS URL -->
-          <li
-            v-if   = "canShowWfsUrl(layer.id)"
-            @click = "copyUrl('Wfs', $event.target)"
-            style = "display: flex; justify-content: space-between;align-items: baseline;"
-          >
-            <a
-              :href  = "getWfsUrl(layer.id)"
-              target = "_blank"
-              style  = "color:#000"
-            >
-              <i :class = "$fa('map')"></i> WFS
-            </a>
-            <b
-              class           = "click-to-copy skin-color-dark"
-              :class          ="$fa('eye')"
-              data-placement  = "top"
-              :title          = "getWfsUrl(layer.id)"
-            ></b>
-          </li>
-
-          <!-- Click to Copy WFS 3 URL -->
-          <li
-            v-if   = "canShowWfsUrl(layer.id)"
-            @click = "copyUrl('Wfs3', $event.target)"
-            style  = "display: flex; justify-content: space-between;align-items: baseline;"
-          >
-            <a
-              :href  = "getWfs3Url(layer.id)"
-              target = "_blank"
-              style  = "color:#000"
-            >
-              <i :class = "$fa('map')"></i> WFS 3
-            </a>
-            <b
-              class           = "click-to-copy skin-color-dark"
-              :class          ="$fa('eye')"
-              data-placement  = "top"
-              :title          = "getWfs3Url(layer.id)"
-            ></b>
-          </li>
-
-        </ul>
-      </li>
-
     </template>
 
     <!-- Click to open G3W-ADMIN's project layers page -->
@@ -614,50 +535,6 @@
       canDownload(layerId) {
         // exclude pdf format. It is used only for single feature download
         return getCatalogLayerById(layerId)?.getDownloadFormats()?.filter(f => 'pdf' !== f)?.length;
-      },
-
-      getWmsUrl(layerId) {
-        const wms_url = ApplicationState.project.state.metadata.wms_url;
-        const layer = getCatalogLayerById(layerId);
-        return wms_url && !layer.isExternalWMS()
-          ? wms_url
-          : `${layer.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities`;
-      },
-
-      getWfsUrl(layerId) {
-        return `${getCatalogLayerById(layerId).getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
-      },
-
-      /**
-       * @param layerId
-       * @returns { String } wfs3 url
-       * 
-       * @since 3.10.0
-       */
-      getWfs3Url(layerId) {
-        return `${getCatalogLayerById(layerId).getWfsUrl()}wfs3/`;
-      },
-
-      /**
-       * @param { 'Wms', 'Wfs', 'Wfs3' } format
-       * @param { HTMLElement } el
-       */
-      copyUrl(format, el) {
-        const url   = this[`get${format}Url`](this.layer.id);
-        const a     = document.createElement('a');
-        const input = document.createElement('input');
-        a.href      = url;
-        input.value = a.href;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand("copy");
-        el.setAttribute('title', _('Copied'));
-        el.setAttribute('data-i18n-title', _('Copied'));
-        input.remove();
-        a.remove();
-        setTimeout(() => {
-          this.closeMenu();
-        }, 600);
       },
 
       /**
