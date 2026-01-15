@@ -78,13 +78,13 @@
                 </tr>
 
                 <!-- PROJECT FEES -->
-                <tr v-if  = "project.metadata && project.metadata.fees">
+                <tr v-if  = "project.metadata.fees">
                   <td class = "col-sm-2 label">{{ $t('FEES') }}</td>
                   <td class = "col-sm-10 value" v-html = "project.metadata.fees"></td>
                 </tr>
 
                 <!-- PROJECT ACCESS CONSTRAINTS -->
-                <tr v-if  = "project.metadata && project.metadata.accessconstraints">
+                <tr v-if  = "project.metadata.accessconstraints">
                   <td class = "col-sm-2 label">{{ $t('ACCESS CONSTRAINT') }}</td>
                   <td class = "col-sm-10 value" v-html = "project.metadata.accessconstraints"></td>
                 </tr>
@@ -93,18 +93,44 @@
                 <tr v-if  = "project.metadata.contactinformation">
                   <td class = "col-sm-2 label">{{ $t('CONTACTS') }}</td>
                   <td class = "col-sm-10 value">
-                    <div v-for = "(value, info) in project.metadata.contactinformation" style = "margin-bottom: 5px;">
-                      <b class = "col-sm-2">
-                        <i style = "margin-right: 3px;" :class = "$fa(({ contactelectronicmailaddress: 'mail', personprimary: 'user', contactvoicetelephone: 'mobile' })[info])" aria-hidden = "true"></i>
-                        {{ $t(`metadata.${info}`) }}
-                      </b>
-                      <div v-if = "'personprimary' === info" class = "col-sm-10">
-                        <div v-for = "(subvalue, key) in value">
-                          <b>{{ $t(`metadata.${key}`) }}</b> {{ subvalue }}
-                        </div>
-                      </div>
-                      <div v-else-if = "'contactelectronicmailaddress' === info " class = "col-sm-10"><a :href = "`mailto: ${sanitizeValue(value)}`"><b>{{sanitizeValue(value)}}</b></a></div>
-                      <div v-else class = "col-sm-10">{{ sanitizeValue(value) }}</div>
+
+                    <!-- CONTACT NAME -->
+                    <div v-if="(project.metadata.contactinformation.personprimary || {}).contactperson || (project.metadata.contactinformation.personprimary || {}).ContactPerson" style = "margin-bottom: 5px;">
+                      <i style = "margin-right: 3px;" class = "fas fa-user-tie" aria-hidden = "true"></i>
+                      <b hidden>{{ $t('Person') }}</b>
+                      {{ (project.metadata.contactinformation.personprimary || {}).contactperson || (project.metadata.contactinformation.personprimary || {}).ContactPerson }}
+                    </div>
+
+                    <!-- CONTACT ORGANIZATION -->
+                    <div v-if="(project.metadata.contactinformation.personprimary || {}).contactorganization || (project.metadata.contactinformation.personprimary || {}).ContactOrganization" style = "margin-bottom: 5px;">
+                      <i style = "margin-right: 3px;" class = "fa fa-building" aria-hidden = "true"></i>
+                      <b hidden>{{ $t('Organization') }}</b>
+                      {{ (project.metadata.contactinformation.personprimary || {}).contactorganization || (project.metadata.contactinformation.personprimary || {}).ContactOrganization }}
+                    </div>
+
+                    <!-- CONTACT ROLE -->
+                    <div v-if="(project.metadata.contactinformation.personprimary || {}).contactposition || (project.metadata.contactinformation.personprimary || {}).ContactPosition" style = "margin-bottom: 5px;">
+                      <i style = "margin-right: 3px;" class = "fas fa-sitemap" aria-hidden = "true"></i>
+                      <b hidden>{{ $t('Role') }}</b>
+                      {{ (project.metadata.contactinformation.personprimary || {}).contactposition || (project.metadata.contactinformation.personprimary || {}).ContactPosition }}
+                    </div>
+
+                    <!-- CONTACT EMAIL -->
+                    <div v-if="project.metadata.contactinformation.contactelectronicmailaddress" style = "margin-bottom: 5px;">
+                      <i style = "margin-right: 3px;" :class = "$fa('mail')" aria-hidden = "true"></i>
+                      <b hidden>{{ $t('Email') }}</b>
+                      <a :href = "`mailto: ${sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress)}`">
+                        <b>{{sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress)}}</b>
+                      </a>
+                    </div>
+
+                    <!-- CONTACT PHONE -->
+                    <div v-if="project.metadata.contactinformation.contactvoicetelephone" style = "margin-bottom: 5px;">
+                      <i style = "margin-right: 3px;" :class = "$fa('mobile')" aria-hidden = "true"></i>
+                      <b hidden>{{ $t('Phone') }}</b>
+                      <a :href = "`tel: ${sanitizeValue(project.metadata.contactinformation.contactvoicetelephone)}`">
+                        <b>{{sanitizeValue(project.metadata.contactinformation.contactvoicetelephone)}}</b>
+                      </a>
                     </div>
                   </td>
                 </tr>
