@@ -96,7 +96,7 @@
 
       <!-- EXTERNAL LAYER  -->
       <span
-        v-if   = "layerstree.external "
+        v-if   = "layerstree.external && !layerstree.toc"
         style  = "color: #ffff; padding-left: 5px;"
         :class = "$fa('vector' === layerstree._type ? 'draw' : 'image')"
       ></span>
