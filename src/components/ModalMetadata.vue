@@ -121,8 +121,8 @@
                 <tr v-if  = "project.metadata.wfs_url">
                   <td class = "col-sm-2 label">{{ $t('WFS') }}</td>
                   <td class = "col-sm-10 value">
-                    <a :href = "project.metadata.wfs_url" target="_blank">{{ project.metadata.wfs_url }}</a>
-                    <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
+                    <i class="fas fa-layer-group" style="margin-right: 3px;"></i>
+                    <a :href = "project.metadata.wfs_url" target="_blank" :title="layers.filter(l => l.isWfsActive()).map(l => l.getName()).join('<br>')">{{ project.metadata.wfs_url }} </a>
                   </td>
                 </tr>
 
@@ -130,8 +130,8 @@
                 <tr v-if  = "project.metadata.wfs_url">
                   <td class = "col-sm-2 label">{{ $t('WFS3') }}</td>
                   <td class = "col-sm-10 value">
-                    <a :href = "project.metadata.wfs3_url" target="_blank">{{ project.metadata.wfs3_url }}</a>
-                    <span>{{ layers.filter(l => l.isWfsActive()).map(l => l.getName()) }}</span>
+                    <i class="fas fa-layer-group" style="margin-right: 3px;"></i>
+                    <a :href = "project.metadata.wfs3_url" target="_blank" :title="layers.filter(l => l.isWfsActive()).map(l => l.getName()).join('<br>')">{{ project.metadata.wfs3_url }} </a>
                   </td> 
                 </tr>
 
@@ -145,7 +145,7 @@
               <tbody>
                 <!-- PROJECT CRS -->
                 <tr v-if  = "project.crs">
-                  <td class = "col-sm-12 label" v-t = "'EPSG'"></td>
+                  <td class = "col-sm-12 label">{{ $t('EPSG') }}</td>
                   <td class = "col-sm-12 value">
                     <dl style="gap: 0;">
                       <template v-for = "(key, index) in Object.keys(project.crs)">
@@ -158,7 +158,7 @@
 
                 <!-- PROJECT EXTENT -->
                 <tr v-if  = "project.extent">
-                  <td class = "col-sm-12 label" v-t = "'BBOX'"></td>
+                  <td class = "col-sm-12 label">{{ $t('BBOX') }}</td>
                   <td class = "col-sm-12 value">
                     <dl style="gap: 0;">
                       <template v-for = "(key, index) in Object.keys(project.extent)">
