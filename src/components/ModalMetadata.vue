@@ -429,6 +429,10 @@
     data() {
       const project = ApplicationState.project.getState();
       const layers  = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s.getLayers() : []).filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg)); //(project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg)),
+      //@since 4.1.0 set WMS URL if not set by QGIS project
+      if (!project.metadata.wms_url) {
+        project.metadata.wms_url = `${project.WMSUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;
+      } 
       //@since 4.1.0 check if exist a layer with wfs capability
       const wfs_layer = layers.find(l => l.isWfsActive?.());
       if (wfs_layer) {
