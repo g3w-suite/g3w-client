@@ -113,6 +113,7 @@
                 <tr v-if  = "project.metadata.wms_url">
                   <td class = "col-sm-2 label">{{ $t('WMS') }}</td>
                   <td class = "col-sm-10 value">
+                    <i class="far fa-image" style="margin-right: 3px;"></i>
                     <a :href = "project.metadata.wms_url" target="_blank">{{ project.metadata.wms_url }}</a>
                   </td>
                 </tr>
