@@ -8,6 +8,7 @@
     id            = "modal-metadata"
     @beforetoggle = "onBeforetoggle"
     style         = "width: 80vw;"
+    :aria-label    = "$t('Metadata')"
   >
     <form method = "dialog">
 
