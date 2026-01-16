@@ -72,7 +72,7 @@
             class       = "dropdown-toggle"
             data-toggle = "dropdown"
           >
-            <i :class = "$fa('user')"></i>
+            <i :class = "$fa('user')" aria-hidden="true"></i>
             <span v-if = "user">{{ user.username }}</span>
             <span v-else v-t = "'sign_in'"></span>
             <i class="triangle"></i>

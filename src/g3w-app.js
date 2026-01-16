@@ -396,7 +396,7 @@ export default new (class GUI extends Emitter {
             >
               <div>
                 <span v-if = "!sidebar.open"><i :class = "component.icon" :style = "{ color: component.iconColor }"></i></span>
-                <i v-else :class = "component.icon" :style = "{ color: component.iconColor }"></i>
+                <i v-else :class = "component.icon" :style = "{ color: component.iconColor }" aria-hidden="true"></i>
                 <span class = "treeview-label" v-t = "(component.title || '')"></span>
               </div>
               <div>
