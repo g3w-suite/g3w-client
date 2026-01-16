@@ -21,10 +21,11 @@
 
       <!-- LOGO -->
       <a
-        v-if    = "logo_url"
-        :href   = "initConfig.header_logo_link || urls.frontendurl || '#'"
-        :target = "initConfig.header_logo_link ? '_blank' : ''"
-        style   = "padding: 4px; display: inline-block; height: 50px;"
+        v-if       = "logo_url"
+        :href      = "initConfig.header_logo_link || urls.frontendurl || '#'"
+        :target    = "initConfig.header_logo_link ? '_blank' : ''"
+        style      = "padding: 4px; display: inline-block; height: 50px;"
+        aria-label = "logo"
       >
         <img style="height: 100%;" alt = "" :src = "logo_url" />
       </a>
