@@ -15,7 +15,6 @@
       v-if  = "!isIframe"
       ref   = "navbar"
       class = "navbar no-print"
-      role  = "navigation"
       style = "display: flex;justify-content: start; height: 50px;"
     >
 

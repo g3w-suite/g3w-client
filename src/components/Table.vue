@@ -61,7 +61,6 @@
       <tbody @mouseleave = "highlight()">
         <tr
           v-for       = "(feature, i) in state.features" :key = "feature.id"
-          role        = "row"
           @mouseover  = "highlight(feature, false)"
           @click.stop = "highlight(feature, true)"
           :class      = "[
