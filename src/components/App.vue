@@ -52,10 +52,10 @@
             :href          = "item.url || '#'"
             @click         = "onCustomItemClick($event, item)"
             :target        = "item.target"
+            :title         = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
             data-placement = "bottom"
-            v-t-tooltip    = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
           >
-            <i v-if     = "item.icon" :class = "item.icon"></i>
+            <i v-if     = "item.icon" :class = "item.icon" aria-hidden="true"></i>
             <img v-if   = "item.img" height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
             <span v-if  = "item.i18n"  v-t    = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
             <span v-if  = "!item.i18n" v-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
