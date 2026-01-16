@@ -177,6 +177,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .g3w-icon-toggled,
 .g3w-panel button.run_button { background-color: var(--skin-color); }
 *:focus                      { outline: none; }
+:root :focus-visible         { outline: 3px solid #007bff; outline-offset: 4px; }
 
 /**************************************************************************************
  * 0. Fonts
