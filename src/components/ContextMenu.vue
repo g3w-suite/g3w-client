@@ -290,6 +290,7 @@
     <li v-if = "'map' === context && initConfig.mapcontrols.screenshot" @click="takeScreenshot"><i :class = "$fa('camera')"></i>{{ $t('Screen capture') }}</li>
     <li v-if = "'map' === context" @click="showEmbedModal"><i :class = "$fa('share-alt')"></i>{{ $t('Embed map') }}</li>
     <li v-if = "'map' === context && initConfig.mapcontrols.streetview" @click="showStreetView"><i class = "fas fa-street-view"></i>{{ $t('StreetView') }}</li>
+    <li v-if = "'map' === context" @click="showLegend"><i class = "fas fa-list"></i>{{ $t('legend') }}</li>
 
     <!-- Click to open G3W-ADMIN's project page -->
     <li v-if = "edit_url && ['project', 'map'].includes(context)">
@@ -909,6 +910,17 @@
       showStreetView() {
         this.closeMenu();
         GUI.getMapControl('streetview').showStreetView(this.map_coords);
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      showLegend() {
+        this.closeMenu();
+        $('#modal-metadata').modal('show');
+        setTimeout(() => {
+          document.querySelector('#modal-metadata [href="#metadata_legend"]').click();
+        });
       },
 
       /**

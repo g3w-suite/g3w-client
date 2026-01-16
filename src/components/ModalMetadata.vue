@@ -33,6 +33,12 @@
           </a>
         </li>
         <li>
+          <a data-toggle = "tab" href="#metadata_legend" class = "metadata-item-tab legend" style="color: purple;">
+            <i class = "action-button fas fa-list" aria-hidden = "true"></i>
+            <b>{{ $t('legend').toUpperCase() }}</b>
+          </a>
+        </li>
+        <li>
           <a data-toggle = "tab" href="#metadata_credits" class = "metadata-item-tab credits">
             <i class = "action-button" :class = "$fa('copyright')" aria-hidden = "true"></i>
             <b>{{ $t('Credits') }}</b>
@@ -231,7 +237,7 @@
 
                 <!-- LAYER SPATIAL TAB -->
                 <li v-if = "'NoGeometry' !== layer.getGeometryType()" role = "presentation" class = "legend-tab">
-                  <a :href = "`#layer_legend_${layer.getId()}`" aria-controls = "legend" role = "tab" data-toggle = "tab"> {{ ($t('legend')).toUpperCase() }}</a>
+                  <a :href = "`#layer_legend_${layer.getId()}`" aria-controls = "legend" role = "tab" data-toggle = "tab"> {{ $t('legend').toUpperCase() }}</a>
                 </li>
               </ul>
 
@@ -351,10 +357,24 @@
                   class = "tab-pane"
                   :id   = "`layer_legend_${layer.getId()}`"
                 >
-                  <img :src = "getLegendUrl(layer.getId())"/>
+                  <img :src = "getLegendUrlById(layer.getId())"/>
                 </div>
               </div>
             </details>
+          </div>
+
+          <!-- LAYERS LEGEND -->
+          <div id = "metadata_legend" class = "tab-pane">
+            <b style="display: block;">{{ $t('legend').toUpperCase() }}</b>
+            <template v-for = "t in tree.flatMap(t => t.getLayersTree())"> <!-- TODO: check if such nesting level really necessary.. -->
+              <img
+                v-for   = "url in t.legendurls" :key = "url.url"
+                :src    = "getLegendUrl(url.url)"
+                loading = "lazy"
+                alt     = ""
+              />
+              <hr>
+            </template>
           </div>
 
           <!-- MODAL CREDITS -->
@@ -465,17 +485,24 @@
 
     data() {
       const project = ApplicationState.project.getState();
-      const layers  = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s.getLayers() : []).filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg)); //(project.layers || []).filter(l => 'NoGeometry' === l.geometrytype || ('NoGeometry' !== l.geometrytype && l.crs && l.crs.epsg)),
-      //@since 4.1.0 set WMS URL if not set by QGIS project
+      const tree    = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s : []);
+      const layers  = tree
+        .flatMap(s => s.showOnCatalog() ? s.getLayers() : [])
+        // In case of layers that has geometry and no epsg, filter according to filter of project layers
+        .filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg));
+
+      // @since 4.1.0 set WMS URL if not set by QGIS project
       if (!project.metadata.wms_url) {
         project.metadata.wms_url = `${project.WMSUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;
       } 
-      //@since 4.1.0 check if exist a layer with wfs capability
+
+      // @since 4.1.0 check if exist a layer with wfs capability
       const wfs_layer = layers.find(l => l.isWfsActive?.());
       if (wfs_layer) {
         project.metadata.wfs_url  = `${wfs_layer.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
         project.metadata.wfs3_url = `${wfs_layer.getWfsUrl()}wfs3/`;
       }
+
       const version = window.initConfig.version.split('-')[0].split('.');
       return {
         open:          false, //@since 4.1.0 modal state
@@ -483,10 +510,10 @@
         powered_by:    window.initConfig.powered_by,
         urls:          window.initConfig.urls,
         docs_url:      `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`,
+        g3wsdk_info:  '',
         project,
+        tree,
         layers,
-        // In case of layers that has geometry and no epsg, filter according to filter of project layers
-        g3wsdk_info: '',
       };
     },
 
@@ -497,11 +524,29 @@
        * 
        * @since 4.1.0
        */
-      getLegendUrl(id) {
+      getLegendUrlById(id) {
         try {
           const layer = getCatalogLayerById(id);
           const url = new URL(layer.getLegendUrl((window.initConfig.layout || {}).legend, { all: true }));
           url.searchParams.set('STYLES', layer.getCurrentStyle()?.name || '');
+          // force black color for text
+          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('ITEMFONTCOLOR')) {
+            url.searchParams.delete('ITEMFONTCOLOR');
+          }
+          // force black color for text
+          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
+            url.searchParams.delete('LAYERFONTCOLOR');
+          }
+          return url.toString();
+        } catch (e) {
+          return ''; // fails silently
+        }
+      },
+
+      getLegendUrl(url) {
+        try {
+          url = new URL(url);
+          // url.searchParams.set('STYLES', layer.getCurrentStyle()?.name || '');
           // force black color for text
           if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('ITEMFONTCOLOR')) {
             url.searchParams.delete('ITEMFONTCOLOR');
