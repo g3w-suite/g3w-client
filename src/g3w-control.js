@@ -38,8 +38,8 @@ export default class MapControl extends ol.control.Control {
     /** ORIGINAL SOURCE: src/components/MapControlButton.js@v3.10.0 */
     options.element = options.element || (new (Vue.extend({
       template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
-        <button type="button" v-t-tooltip="'${options.tipLabel || name}'" ${ options.label ? '' : `aria-label="${options.tipLabel || name}"` }>
-          ${ options.label || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }
+        <button type="button" v-t-tooltip="'${options.tipLabel || name}'">
+          ${ options.label || options.tipLabel || name || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }
         </button>
       </div>`,
     }))()).$mount().$el;
