@@ -73,7 +73,6 @@ export default {
   'scaleline_units.metric': 'Meters',
   'scaleline_units.nautical': 'Nautical Mile',
   'mapcontrols.query.input_relation': "Click to show relations",
-  'mapcontrols.queryby.title': 'Query area',
   'mapcontrols.queryby.layer': 'Selected layer:',
   'mapcontrols.queryby.none': 'NONE',
   'mapcontrols.queryby.new': 'TEMPORARY LAYER',

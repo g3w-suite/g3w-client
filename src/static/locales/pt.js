@@ -229,7 +229,7 @@ export default {
   'scaleline_units.metric': 'Metros',
   'scaleline_units.nautical': 'Milhas náuticas',
   'mapcontrols.query.input_relation': "Clique para mostrar as relações",
-  'mapcontrols.queryby.title': 'Consultar área',
+  'Query area': 'Consultar área',
   'mapcontrols.queryby.layer': 'Selecionar camadas:',
   'mapcontrols.queryby.none': 'NENHUM',
   'mapcontrols.queryby.new': 'CAMADA TEMPORÁRIA',

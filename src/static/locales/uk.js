@@ -227,7 +227,7 @@ export default {
   'scaleline_units.metric': 'Метри',
   'scaleline_units.nautical': 'Морські милі',
   'mapcontrols.query.input_relation': "Показати відношення",
-  'mapcontrols.queryby.title': "Вибрати полігоном",
+  'Query area': "Вибрати полігоном",
   'mapcontrols.queryby.layer': "Шар:",
   'mapcontrols.queryby.none': "НІЧОГО",
   'mapcontrols.queryby.new': "ТИМЧАСОВИЙ ШАР",

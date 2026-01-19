@@ -265,7 +265,7 @@ export default {
   'annotation_types.Rectangle': 'Правоъгълник',
   'annotation_types.Circle': 'Кръг',
   'mapcontrols.query.input_relation': 'Кликни за преглед на релациите',
-  'mapcontrols.queryby.title': 'Задай зона за заявка',
+  'Query area': 'Задай зона за заявка',
   'mapcontrols.queryby.layer': 'Избран слой:',
   'mapcontrols.queryby.none': 'НЯМА',
   'mapcontrols.queryby.new': 'ВРЕМЕНЕН СЛОЙ',

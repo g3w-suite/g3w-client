@@ -274,7 +274,7 @@ export default {
   'annotation_types.Rectangle': 'Rettangolo',
   'annotation_types.Circle': 'Cerchio',
   'mapcontrols.query.input_relation': "Clicca per consultare le relazioni",
-  'mapcontrols.queryby.title': 'Interroga un area',
+  'Query area': 'Interroga un area',
   'mapcontrols.queryby.layer': 'Livello selezionato:',
   'mapcontrols.queryby.none': 'NESSUNO',
   'mapcontrols.queryby.new': 'LIVELLO TEMPORANEO',
