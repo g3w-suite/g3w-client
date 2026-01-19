@@ -20,10 +20,10 @@ GUI.setupControl.zoomhistory = function() {
               innerHTML: /* html */ `
                 <div class = "ol-zoom-history ol-unselectable ol-control" style = "display:flex; gap: 5px;">
                   <div title = "Zoom Last" data-placement = "top">
-                    <button type = "button" value = "last" class = "g3w-disabled" style = "font-weight: 900;"><i class="fas fa-reply" aria-hidden="true"></i> Zoom Last</button>
+                    <button type = "button" value = "last" class = "g3w-disabled" style = "font-weight: 900;"><i class="fas fa-reply" aria-hidden="true"></i><span hidden>Zoom Last</span></button>
                   </div>
                   <div title = "Zoom Next" data-placement = "top">
-                    <button type = "button" value = "next" class = "g3w-disabled" style = "font-weight: 900;"><i class="fas fa-share" aria-hidden="true"></i> Zoom Next</button>
+                    <button type = "button" value = "next" class = "g3w-disabled" style = "font-weight: 900;"><i class="fas fa-share" aria-hidden="true"></i><span hidden>Zoom Next</span></button>
                   </div>
                 </div>
               `.trim()
