@@ -39,7 +39,8 @@ export default class MapControl extends ol.control.Control {
     options.element = options.element || (new (Vue.extend({
       template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
         <button type="button" v-t-tooltip="'${options.tipLabel || name}'">
-          ${ options.label || options.tipLabel || name || '' }${ options.customClass ? '<i class="' + options.customClass + '"></i>' : '' }
+          ${ options.customClass ? '<i class="' + options.customClass + '" aria-hidden="true"></i>' : '' }
+          ${ options.label || options.tipLabel || name || '' }
         </button>
       </div>`,
     }))()).$mount().$el;
@@ -129,7 +130,7 @@ export default class MapControl extends ol.control.Control {
      *
      * button click handler
      */
-    this.element.addEventListener('click', e => this._handleClick(e));
+    this.element.querySelector('button').addEventListener('click', e => this._handleClick(e));
 
     this.setVisible(options.visible);
 
