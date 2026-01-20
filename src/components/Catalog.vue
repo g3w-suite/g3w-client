@@ -1085,6 +1085,7 @@ export default {
   }
 
   #catalog .tree-item > .toggle-context-menu {
+    background-color: unset;
     opacity: 0;
     position: absolute;
     inset: 0 4px auto auto;

@@ -215,13 +215,14 @@
       </span>
     </ul>
 
-    <a
-      v-if                    = "!isGroup"
-      :class                  = "'toggle-context-menu ' + $fa('ellips-v')"
-      @click.prevent.stop     = "showContextMenu"
-      href                    = "#"
-      v-t-tooltip:left        = "'Open menu'"
-    ></a>
+    <button
+      v-if           = "!isGroup"
+      type           = "button"
+      class          = "toggle-context-menu fas fa-ellipsis-v"
+      data-placement = "left"
+      :title         = "'Open menu'"
+      @click.stop    = "showContextMenu"
+    ></button>
 
   </li>
 
