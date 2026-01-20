@@ -160,6 +160,15 @@
                   </td>
                 </tr>
 
+                <!-- PROJECT WMTS (URL) -->
+                <tr v-if  = "project.metadata.wmts_url">
+                  <td class = "col-sm-2 label">{{ $t('WMTS') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i class="far fa-image" style="margin-right: 3px;"></i>
+                    <a :href = "project.metadata.wmts_url" target="_blank">{{ project.metadata.wmts_url }}</a>
+                  </td>
+                </tr>
+
                 <!-- PROJECT WFS (URL) -->
                 <tr v-if  = "project.metadata.wfs_url">
                   <td class = "col-sm-2 label">{{ $t('WFS') }}</td>
@@ -496,11 +505,16 @@
         project.metadata.wms_url = `${project.WMSUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;
       } 
 
+      // @since 4.1.0 set WMTS URL if not set by QGIS project
+      if (!project.metadata.wmts_url) {
+        project.metadata.wmts_url = `${project.WMSUrl}?service=WMTS&version=1.3.0&request=GetCapabilities`;
+      } 
+
       // @since 4.1.0 check if exist a layer with wfs capability
       const wfs_layer = layers.find(l => l.isWfsActive?.());
       if (wfs_layer) {
-        project.metadata.wfs_url  = `${wfs_layer.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
-        project.metadata.wfs3_url = `${wfs_layer.getWfsUrl()}wfs3/`;
+        project.metadata.wfs_url  = `${project.WMSUrl}?service=WFS&version=1.3.0&request=GetCapabilities`;
+        project.metadata.wfs3_url = `${project.WMSUrl}wfs3/`;
       }
 
       const version = window.initConfig.version.split('-')[0].split('.');
