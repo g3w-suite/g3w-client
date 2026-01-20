@@ -939,7 +939,7 @@ export default {
   .catalog #legend div div.tree-node-title.disabled {
     color: #999;
   }
-  .catalog button.action-button {
+  .catalog button[type="button"] {
     border: unset;
     background-color: unset;
     box-shadow: rgba(0,0,0,0.3) 0 2px 5px;
@@ -949,7 +949,7 @@ export default {
     font-weight: bold;
     color: #fff !important;
   }
-  .catalog button.action-button.active {
+  .catalog button[type="button"].active {
     box-shadow: none;
     background-color: #384247;
   }
@@ -1085,11 +1085,9 @@ export default {
   }
 
   #catalog .tree-item > .toggle-context-menu {
-    background-color: unset;
     opacity: 0;
     position: absolute;
     inset: 0 4px auto auto;
-    color: #fff;
     padding: 4px 8px;
     border: 1px solid;
     border-radius: 3px;
