@@ -474,9 +474,6 @@
           this.top  = (window.innerHeight / 2) - (this.$refs.menu.clientHeight / 2);
         }
 
-        // conditionally inline "ogc_menu" when they contain a single item
-        [this.$refs.ogc_menu].forEach(li => li && li.classList.toggle('inline-submenu', 1 === li.querySelector('ul').children.length));
-
         dragElement(this.$refs.menu);
 
         const rect = this.$refs.menu.getBoundingClientRect();
@@ -512,19 +509,6 @@
         const style              = layer.getStyle();
         style._g3w_options.color = val;
         layer.setStyle(style);
-      },
-
-      canShowWmsUrl(layerId) {
-        const layer   = getCatalogLayerById(layerId);
-        const wms_url = ApplicationState.project.state.metadata.wms_url;
-        return layer && !layer.isType('table') && !!(wms_url && !layer.isExternalWMS()
-          ? wms_url
-          : layer.getWmsUrl());
-      },
-
-      canShowWfsUrl(layerId) {
-        const layer = getCatalogLayerById(layerId);
-        return layer && !layer.isType('table') && layer.isWfsActive();
       },
 
       /**
