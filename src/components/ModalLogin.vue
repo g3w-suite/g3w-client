@@ -5,9 +5,10 @@
 
 <template>
   <dialog
-    v-if  = "show"
-    id    = "modal-login"
-    style = "width: min(85vw, 600px);"
+    v-if        = "show"
+    id          = "modal-login"
+    style       = "width: min(85vw, 600px);"
+    :aria-label = "$t('sign_in')"
   >
     <form method="dialog" style="height: 60vh; padding: 0;">
       <button value="cancel" style="border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;">&times;</button>
@@ -19,6 +20,7 @@
           :src    = "login_url"
           @load   = "onIframeLoaded"
           ref     = "login_iframe"
+          title   = "login form"
         ></iframe>
       </div>
     </form>

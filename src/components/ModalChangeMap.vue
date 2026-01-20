@@ -5,8 +5,9 @@
 
 <template>
   <dialog
-    id    = "modal-changemap"
-    style = "width: 80vw;"
+    id          = "modal-changemap"
+    style       = "width: 80vw;"
+    :aria-label = "$t('changemap')"
   >
     <form method="dialog">
 

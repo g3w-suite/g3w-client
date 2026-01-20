@@ -8,6 +8,7 @@
     id            = "modal-addlayer"
     @beforetoggle = "onBeforetoggle"
     style         = "width: min(85vw, 600px);"
+    :aria-label   = "$t('Add Layer')"
   >
     <form method="dialog" style="padding: 15px;">
 
