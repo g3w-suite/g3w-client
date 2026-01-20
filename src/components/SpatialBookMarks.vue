@@ -92,7 +92,6 @@
             <span class  = "g3w-long-text">{{ bookmark.name }}</span>
           </div>
         </li>
-        <spatial-book-mark-item v-else :bookmark = "bookmark" />
       </template>
 
       <div
