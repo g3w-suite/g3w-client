@@ -207,8 +207,6 @@
         :class = "{ iframe: iframe, 'g3w-disabled': disabled }"
       >
         <!-- SIDEBAR CONTENT -->
-        <div id="disable-sidebar"></div>
-
         <div
           :hidden = "panels.length <= 0"
           class   = "g3w-sidebarpanel"
@@ -1194,14 +1192,6 @@ export default {
     min-height: 35px;
     border-bottom: 1px solid #FFF;
     margin-bottom: 5px;
-  }
-  #disable-sidebar {
-    display: none;
-    position: absolute;
-    background-color: rgba(0,0,0,.3);
-    height: 100%;
-    width: 100%;
-    z-index: 10;
   }
   .content_breadcrumb {
     font-size: 1.2em;
