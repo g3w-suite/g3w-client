@@ -148,7 +148,7 @@ async function _showAlerts() {
               <label style = "display: block; width: fit-content;">
                 <input type = "checkbox" name = "dont_show_again" /> ${_('Don\'t show again')}
               </label>
-              <button type = "button" value = "close" class = "btn btn-secondary" popovertargetaction = "hide" popovertarget = "project-message">${_('close')}</button>
+              <button type = "button" value = "close" class = "btn btn-secondary" autofocus popovertargetaction = "hide" popovertarget = "project-message">${_('close')}</button>
             </menu>
           </form>
         </dialog>
