@@ -150,37 +150,35 @@
       <div v-if = "(!isGroup && layerstree.selection)">
 
         <!-- CLEAR SELECTION -->
-        <span
-          v-if                         = "layerstree.selection.active"
-          class                        = "action-button selection-filter-icon"
-          data-placement               = "left"
-          :class                       = "$fa('clear')"
-          @click.caputure.prevent.stop = "clearSelection"
-          v-t-tooltip                  = "'Clear Selection'"
-        ></span>
+        <button
+          v-if           = "layerstree.selection.active"
+          type           = "button"
+          class          = "action-button selection-filter-icon fas fa-broom"
+          data-placement = "left"
+          :title         = "'Clear Selection'"
+          @click.stop    = "clearSelection"
+        ></button>
 
         <!-- TOGGLE FILTER  -->
-        <span
-          v-if                         = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
-          class                        = "action-button selection-filter-icon"
-          data-placement               = "left"
-          :class                       = "[
-            $fa('filter'),
-            layerstree.filter.active  ? 'active' : '',
-          ]"
-          @click.caputure.prevent.stop = "toggleFilterLayer"
-          v-t-tooltip                  = "'Enable/Disable filter'"
-        ></span>
+        <button
+          v-if           = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
+          type           = "button"
+          class          = "action-button selection-filter-icon fas fa-filter"
+          data-placement = "left"
+          :class         = "layerstree.filter.active ? 'active' : ''"
+          :title         = "'Enable/Disable filter'"
+          @click.stop    = "toggleFilterLayer"
+        ></button>
 
         <!-- SAVE FILTER  -->
-        <span
-          v-if                         = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
-          class                        = "action-button selection-filter-icon"
-          data-placement               = "left"
-          :class                       = "$fa('save')"
-          @click.caputure.prevent.stop = "saveFilter(layerstree)"
-          v-t-tooltip                  = "'Save Filter'"
-        ></span>
+        <button
+          v-if           = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
+          type           = "button"
+          class          = "action-button selection-filter-icon far fa-save"
+          data-placement = "left"
+          :title         = "'Save Filter'"
+          @click.stop    = "saveFilter(layerstree)"
+        ></button>
 
       </div>
 

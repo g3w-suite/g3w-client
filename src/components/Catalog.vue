@@ -948,6 +948,10 @@ export default {
     font-weight: bold;
     color: #fff !important;
   }
+  .catalog button.action-button {
+    border: unset;
+    background-color: unset;
+  }
   .catalog .tree-item div.tree-node-title .selection-filter-icon.active,
   .catalog #legend div div.tree-node-title .selection-filter-icon.active {
     box-shadow: none;
