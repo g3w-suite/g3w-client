@@ -153,7 +153,7 @@
         <button
           v-if           = "layerstree.selection.active"
           type           = "button"
-          class          = "action-button selection-filter-icon fas fa-broom"
+          class          = "action-button fas fa-broom"
           data-placement = "left"
           :title         = "'Clear Selection'"
           @click.stop    = "clearSelection"
@@ -163,7 +163,7 @@
         <button
           v-if           = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
           type           = "button"
-          class          = "action-button selection-filter-icon fas fa-filter"
+          class          = "action-button fas fa-filter"
           data-placement = "left"
           :class         = "layerstree.filter.active ? 'active' : ''"
           :title         = "'Enable/Disable filter'"
@@ -174,7 +174,7 @@
         <button
           v-if           = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           type           = "button"
-          class          = "action-button selection-filter-icon far fa-save"
+          class          = "action-button far fa-save"
           data-placement = "left"
           :title         = "'Save Filter'"
           @click.stop    = "saveFilter(layerstree)"

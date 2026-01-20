@@ -939,8 +939,9 @@ export default {
   .catalog #legend div div.tree-node-title.disabled {
     color: #999;
   }
-  .catalog .tree-item div.tree-node-title .selection-filter-icon,
-  .catalog #legend div div.tree-node-title .selection-filter-icon {
+  .catalog button.action-button {
+    border: unset;
+    background-color: unset;
     box-shadow: rgba(0,0,0,0.3) 0 2px 5px;
     padding: 5px;
     border-radius: 3px;
@@ -948,12 +949,7 @@ export default {
     font-weight: bold;
     color: #fff !important;
   }
-  .catalog button.action-button {
-    border: unset;
-    background-color: unset;
-  }
-  .catalog .tree-item div.tree-node-title .selection-filter-icon.active,
-  .catalog #legend div div.tree-node-title .selection-filter-icon.active {
+  .catalog button.action-button.active {
     box-shadow: none;
     background-color: #384247;
   }
