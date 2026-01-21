@@ -822,7 +822,7 @@ $.ajaxSetup({
   /** @since 4.1.0 */
   GUI.emit('app-ready');
 
-  if (isMobile.any || (window.initConfig.layout || {}).iframe) {
+  if (isMobile.any || window.initConfig?.layout?.iframe || window.innerWidth <= 767) {
     document.body.classList.add('sidebar-collapse');
   }
 
