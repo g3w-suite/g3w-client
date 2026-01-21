@@ -6,6 +6,19 @@
 <template>
   <div id = "open_attribute_table">
 
+    <!-- TABLE METADATA -->
+    <button
+      ref            = "table_metadata"
+      type           = "button"
+      style          = "margin-right: 8px; font-size: 1.5rem;order:-1;"
+      class          = "btn btn-default"
+      @click         = "showMetadata"
+      data-placement = "top"
+      title          = "Metadata"
+    >
+      <i data-v-5685d65c="" aria-hidden="true" class="fas fa-info-circle"></i>
+    </button>
+
     <!-- TOTAL ELEMENTS -->
     <span
       ref   = "table_info"
@@ -159,7 +172,7 @@
       </label>
 
       <!-- PAGINATION BUTTONS -->
-      <div style = "margin-left: auto;" >
+      <div style="margin-left: auto;">
         <select
           v-model         = "search.page"
           style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
@@ -315,6 +328,16 @@ export default {
      */
     showRelations(feature) {
       GUI.showRelations({ feature, layerId: this.layer.getId(), push: false });
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showMetadata() {
+      $('#modal-metadata').modal('show');
+      setTimeout(() => {
+        document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
+      });
     },
 
     async getDataFromBBOX() {
@@ -600,7 +623,8 @@ export default {
       this.getData({ columns });
     });
 
-    // move "table_info" and "table_search" before header action tools
+    // move "table_metadata", "table_info" and "table_search" before header action tools
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_metadata']);
     document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
     document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
   },
@@ -633,6 +657,7 @@ export default {
       });
     }
 
+    this.$refs['table_metadata'].remove();
     this.$refs['table_info'].remove();
     this.$refs['table_search'].remove();
   },
