@@ -813,4 +813,10 @@
   #metadata_spatial dt          { background: #fee; font-weight: bold;}
   #metadata_spatial dd          { background: hsl(220, 10%, 95%); }
   #metadata_spatial :is(dt, dd) { margin: 0; padding: .5em; border-top: 1px solid #fff; }
+
+  @media (max-width: 767px) {
+    #modal-metadata > form > .nav-tabs {
+      display: none;
+    }
+  }
 </style>
