@@ -31,7 +31,7 @@
         </li>
         <!-- TAB LEGEND LAYERS -->
         <li
-          v-if   = "'tab' === legend_position && showlegend"
+          v-if   = "'tab' === legend_position"
           role   = "presentation"
           :class = "{ active: ('legend' === activeTab) }"
         >
@@ -163,8 +163,8 @@
           :style = "{ backgroundColor: backgroundLegend }"
           :class = "{ active: 'legend' === activeTab }"
         >
-          <div v-for = "t in tree.tree" class = "legend-item"> <!-- TODO: check if such nesting level really necessary.. -->
-            <figure v-for = "url in t.legendurls" :key = "url.url">
+          <div class = "legend-item">
+            <figure v-for = "url in legendurls" :key = "url.url">
               <bar-loader :loading = "url.loading" />
               <img
                 v-show = "!url.loading && !url.error"
@@ -230,18 +230,6 @@ import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 import CatalogChangeMapThemes  from 'components/CatalogChangeMapThemes.vue';
 import CatalogTristateTree     from 'components/CatalogTristateTree.vue';
 
-/**
- * Stringify a query URL param (eg. `&WIDTH=700`)
- *
- * @param name
- * @param value
- *
- * @returns { string | null } a string if value is set or null
- */
- function __(name, value) {
-  return (value || 0 === value) ? `${name}${value}` : null;
-}
-
 export default {
 
   /** @since 3.8.6 */
@@ -251,9 +239,9 @@ export default {
     return {
       state:            this.$options.service.state || {},
       legend_position:  ApplicationState.project.state.legend_position || 'tab',
+      legendurls:       [],
       iframe:           ApplicationState.iframe,
-      showlegend:       false,
-      backgroundLegend: ApplicationState.layout.app.legend && ApplicationState.layout.app.legend.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
+      backgroundLegend: ApplicationState.layout.app?.legend?.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
       activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
       //@since 4.1.0
@@ -336,158 +324,6 @@ export default {
 
     onLegendLoad(url) {
       url.loading = false;
-    },
-
-    /**
-     * Get legend src for visible layers
-     *
-     * @returns {Promise<void>}
-     */
-    getLegendSrc(change = false) {
-      // skip if not active
-      if ('tab' !== this.legend_position) { return }
-
-      this.state.layerstrees.forEach(t => {
-        let layers      = this._traverseVisibleLayers(t.tree);
-        this.showlegend = this.showlegend || layers.length > 0;
-        t.tree.forEach(async tree => {
-          try {
-            if (
-              change && (
-                (tree.legendurls && 0 === tree.legendurls.length)
-                || layers.some(l => l.legend.change)
-                || ApplicationState.project.state.context_base_legend
-              )
-            ) {
-              layers.filter(l => l.legend.change).forEach(l => l.legend.change = false);
-            }
-            tree.legendurls = [];
-            await this.$nextTick();
-            tree.legendurls = await this._getLegendSrc(layers);
-          } catch(e) {
-            console.warn(e);
-          }
-        });
-      });
-    },
-
-    _traverseVisibleLayers(obj, _layers = []) {
-      for (const layer of obj) {
-        if (![null, undefined].includes(layer.id) && layer.visible && layer.geolayer && !layer.exclude_from_legend) {
-          _layers.push(layer);
-        }
-        if (![null, undefined].includes(layer.nodes)) {
-          this._traverseVisibleLayers(layer.nodes, _layers);
-        }
-      }
-      return _layers;
-    },
-
-    /**
-     * Get legend src for visible layers
-     *
-     * @returns {Promise<void>}
-     */
-    async _getLegendSrc(visiblelayers) {
-
-      // reset layers url
-      const legendurls = [];
-
-      // filter geolayer
-      const layers     = visiblelayers.filter(l => l.geolayer);
-
-      const http       = { GET: {}, POST: {} };
-
-      layers.forEach(layer => {
-        const name         = http[(layer?.source?.url) || layer.external ? 'GET' : layer.ows_method];
-        const catalogLayer = getCatalogLayerById(layer.id);
-
-        const url          = catalogLayer ? catalogLayer.getLegendUrl((window.initConfig.layout || {}).legend, {
-          all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
-          format:     'image/png',
-          categories: layer.categories
-        }) : undefined;
-
-
-        // no url is set
-        if (undefined === catalogLayer) { return }
-
-        if (layer?.source?.url) {
-          name[url] = [];
-          return
-        }
-
-        // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
-        let prefix = url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
-
-        if (!name[prefix]) { name[prefix] = [] }
-
-        name[prefix].unshift({
-          layerName:  url.split('LAYER=')[1],
-          style:      (Array.isArray(layer.styles) && layer.styles.find(s => s.current) || ({ name: false })).name,
-          legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
-          legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
-        });
-      });
-
-      for (const method in http) {
-        for (const url in http[method]) {
-          const obj = {
-            loading : true,
-            url     : null,
-            error   : false
-          };
-
-          legendurls.push(obj);
-
-          const params = {
-            LAYERS     : [],
-            STYLES     : [],
-            LEGEND_ON  : [],
-            LEGEND_OFF : []
-          };
-
-          (http[method][url] || []).reduce((_, layer) => {
-              params.LAYERS.push(layer.layerName);
-              params.STYLES.push(layer.style);
-              if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on);   }
-              if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
-              return params;
-            }, params);
-
-          let url_params = [
-            __('LAYERS=',      params.LAYERS.join(',')),
-            __('STYLES=',      params.STYLES.join(',')),
-            __('LEGEND_ON=',   params.LEGEND_ON.join(',')),
-            __('LEGEND_OFF=',  params.LEGEND_OFF.join(',')),
-            __('filtertoken=', ApplicationState.tokens.filtertoken),
-          ]
-          .filter(p => p) // discard nullish parameters (without a value)
-          .join('&');
-
-          try {
-            obj.url = 'GET' === method
-              ? url + (http[method][url].length ? url_params : '')
-              : URL.createObjectURL(await (await fetch(url.split('?')[0], {
-                  method:  'POST',
-                  headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                  // send encoded params
-                  body: // new URLSearchParams(url.split('?')[1])
-                    url
-                      .split('?')[1]
-                      .split('&')
-                      .filter(p => p.split('=')[0]).map(p => `${p.split('=')[0]}=${encodeURIComponent(p.split('=')[1])}`)
-                      .join('&')
-                      + '&' + url_params
-                })).blob());
-          } catch (e) {
-            console.warn(e);
-            //set loading to false
-            obj.loading = false;
-          }
-        }
-      }
-      return legendurls;
     },
 
     /**
@@ -762,16 +598,18 @@ export default {
       immediate: false
     },
 
-    activeTab(activeTab, oldTab) {
-      if ('legend' === activeTab) {
-        this.getLegendSrc(true);
-      }
-      if (this.$el) {
-        this.$el.parentElement.classList.remove(`tab-${oldTab}`);
-        this.$el.parentElement.classList.add(`tab-${activeTab}`);
-      }
-    },
-
+     activeTab: {
+      async handler(activeTab, oldTab) {
+        if ('legend' === activeTab) {
+          this.legendurls = await g3w.app.getLegendSrc({ change: true });
+        }
+        if (this.$el) {
+          this.$el.parentElement.classList.remove(`tab-${oldTab}`);
+          this.$el.parentElement.classList.add(`tab-${activeTab}`);
+        }
+      },
+      immediate: true
+    }
   },
 
   /**
@@ -785,16 +623,14 @@ export default {
     GUI.on('activefiltertokenlayer', this.onActiveToken);
     GUI.on('treenodevisible',        this.onTreeNodeVisible);
     GUI.on('treenodeselected',       this.onTreeNodeSelected);
-    GUI.on('layer-change-style',     this.getLegendSrc);
+    GUI.on('layer-change-style',     async () => this.legendurls = (await g3w.app.getLegendSrc()).flat());
   },
 
   async mounted() {
     await this.$nextTick();
     // in case of dynamic legend
     if (ApplicationState.project.state.context_base_legend) {
-      GUI.on('change-map-legend-params', () => { this.getLegendSrc(); });
-    } else {
-      this.getLegendSrc();
+      GUI.on('change-map-legend-params', () => { g3w.app.getLegendSrc(); });
     }
   },
 

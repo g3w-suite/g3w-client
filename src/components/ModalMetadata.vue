@@ -374,16 +374,18 @@
 
           <!-- LAYERS LEGEND -->
           <div id = "metadata_legend" class = "tab-pane">
-            <b style="display: block;">{{ $t('legend').toUpperCase() }}</b>
-            <template v-for = "t in tree.flatMap(t => t.getLayersTree())"> <!-- TODO: check if such nesting level really necessary.. -->
-              <img
-                v-for   = "url in t.legendurls" :key = "url.url"
-                :src    = "getLegendUrl(url.url)"
-                loading = "lazy"
-                alt     = ""
-              />
-              <hr>
-            </template>
+            <b style="display: block;">{{ $t('legend').toUpperCase() }}</b> 
+              <div v-for = "url in legendurls" :key = "url.url">
+                <bar-loader :loading = "url.loading"/>
+                <img
+                  :src       = "url.url"
+                  loading    = "lazy"
+                  alt        = ""
+                  @load      = "url.loading = false"
+                  @loaderror = "url.loading = false"
+                />
+                <hr>
+              </div>
           </div>
 
           <!-- MODAL CREDITS -->
@@ -528,6 +530,7 @@
         project,
         tree,
         layers,
+        legendurls:   [],
       };
     },
 
@@ -552,25 +555,7 @@
             url.searchParams.delete('LAYERFONTCOLOR');
           }
           return url.toString();
-        } catch (e) {
-          return ''; // fails silently
-        }
-      },
-
-      getLegendUrl(url) {
-        try {
-          url = new URL(url);
-          // url.searchParams.set('STYLES', layer.getCurrentStyle()?.name || '');
-          // force black color for text
-          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('ITEMFONTCOLOR')) {
-            url.searchParams.delete('ITEMFONTCOLOR');
-          }
-          // force black color for text
-          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
-            url.searchParams.delete('LAYERFONTCOLOR');
-          }
-          return url.toString();
-        } catch (e) {
+        } catch(e) {
           return ''; // fails silently
         }
       },
@@ -621,6 +606,7 @@
     },
 
     async created() {
+      this.legendurls = await g3w.app.getLegendSrc({ all: true });
       if (!!window.initConfig.credits) {
         try {
           const credits      = await XHR.get({ url: window.initConfig.credits });
