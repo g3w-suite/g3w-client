@@ -5399,18 +5399,18 @@ export default new (class GUI extends Emitter {
       return layers;
     };
 
-    const LEGEND_URLS = []; 
+    const LEGEND_URLS = [];
 
     const TREE = Object
       .values(ApplicationState.layers)
-      .flatMap(s => s.showOnCatalog() ? s.getLayersTree() : []);  
+      .flatMap(s => s.showOnCatalog() ? s.getLayersTree() : []);
 
     for (const tree of TREE) {
       try {
         //Create object containing urls to fetch and relative layers
         const URLS = _traverse([].concat(tree))
           .filter(l => l.geolayer && getCatalogLayerById(l.id)) // filter geolayer && catalog layer
-          .reduce((a, layer) => {
+          .reduce((urls, layer) => {
             if (change && (0 === tree?.legendurls?.length || ApplicationState.project.state.context_base_legend)) {
               layer.legend.change = false;
             }
@@ -5422,24 +5422,23 @@ export default new (class GUI extends Emitter {
               categories: layer.categories
             });
 
-            if (layer?.source?.url) {
-              a[url] = { method, layers: [] };
-              return a;
-            }
-
             // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
-            let prefix = url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
+            const prefix = layer?.source?.url
+              ? url
+              : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-            if (!a[prefix]) {
-              a[prefix] = { method, layers : [] };
+            urls[prefix] = urls[prefix] ?? { method, layers : [] };
+
+            if (!layer?.source?.url) {
+              urls[prefix].layers.unshift({
+                layerName:  url.split('LAYER=')[1],
+                style:      layer?.styles?.find(s => s.current)?.name ?? false,
+                legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
+                legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
+              });
             }
-            a[prefix].layers.unshift({
-              layerName:  url.split('LAYER=')[1],
-              style:      layer?.styles?.find(s => s.current)?.name ?? false,
-              legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
-              legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
-            });
-            return a;
+
+            return urls;
           }, {});
 
         for (const url in URLS) {
