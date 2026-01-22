@@ -5414,9 +5414,8 @@ export default new (class GUI extends Emitter {
             if (change && (0 === tree?.legendurls?.length || ApplicationState.project.state.context_base_legend)) {
               layer.legend.change = false;
             }
-            const method = layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method;
 
-            const url  = getCatalogLayerById(layer.id).getLegendUrl((window.initConfig.layout || {}).legend, {
+            const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
               all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
               format:     'image/png',
               categories: layer.categories
@@ -5427,7 +5426,10 @@ export default new (class GUI extends Emitter {
               ? url
               : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-            urls[prefix] = urls[prefix] ?? { method, layers : [] };
+            urls[prefix] = urls[prefix] ?? {
+              layers: [],
+              method: layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method
+            };
 
             if (!layer?.source?.url) {
               urls[prefix].layers.unshift({
