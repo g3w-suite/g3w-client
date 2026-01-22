@@ -567,24 +567,21 @@ export default {
   },
 
   watch: {
-    /**
-     * 
-     */
+
     'state.external.vector': {
       immediante: true,
       handler() {
         this.updateExternalLayersChecked();
       },
     },
-    /**
-     * 
-     */
+
     'state.external.wms': {
       immediante: true,
       handler() {
         this.updateExternalLayersChecked();
       },
     },
+
     project: {
       async handler(project) {
         const activeTab = project.state.catalog_tab || 'layers';
@@ -609,7 +606,8 @@ export default {
         }
       },
       immediate: true
-    }
+    },
+
   },
 
   /**
@@ -617,6 +615,7 @@ export default {
    * @listens GUI~activefiltertokenlayer
    * @listens GUI~treenodevisible
    * @listens GUI~treenodeselected
+   * @listens GUI~layer-change-style
    */
   created() {
     GUI.on('unselectionlayer',       this.onUnSelectionLayer);
