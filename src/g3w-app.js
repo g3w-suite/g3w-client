@@ -5384,65 +5384,44 @@ export default new (class GUI extends Emitter {
      */
     const __ = (name, value) => (value || 0 === value) ? `${name}${value}` : null;
 
-    /**
-     * traverse layers
-     */
-    const _traverse = (tree, layers = []) => {
-      for (const layer of tree) {
-        if (![null, undefined].includes(layer.id) && (all || layer.visible) && layer.geolayer && !layer.exclude_from_legend) {
-          layers.push(layer);
-        }
-        if (![null, undefined].includes(layer.nodes)) {
-          _traverse(layer.nodes, layers);
-        }
-      }
-      return layers;
-    };
-
     const LEGEND_URLS = [];
 
     // create object containing urls to fetch and relative layers
-    const URLS = Object
-      .values(ApplicationState.layers)
-      .flatMap(s => s.showOnCatalog() ? s.getLayersTree() : [])
-      .map(tree => _traverse([].concat(tree)))
-      .reduce((layers, l) => {
-        return Object.assign(
-          layers,
-          l
-            .filter(l => l.geolayer && getCatalogLayerById(l.id)) // filter geolayer && catalog layer
-            .reduce((urls, layer) => {
-              if (change && ApplicationState.project.state.context_base_legend) {
-                layer.legend.change = false;
-              }
+    const URLS = Object.values(ApplicationState.layers)
+      .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
+      .map(l => l.state)
+      .reduce((urls, layer) => {
+        if (change && ApplicationState.project.state.context_base_legend) {
+          layer.legend.change = false;
+        }
+        
+        const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
+          all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
+          format:     'image/png',
+          categories: layer.categories
+        });
 
-              const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
-                all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
-                format:     'image/png',
-                categories: layer.categories
-              });
+        // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
+        const prefix = layer?.source?.url
+          ? url
+          : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-              // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
-              const prefix = layer?.source?.url
-                ? url
-                : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
+        urls[prefix] = urls[prefix] ?? {
+          layers: [],
+          method: layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method
+        };
 
-              urls[prefix] = urls[prefix] ?? {
-                layers: [],
-                method: layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method
-              };
-
-              if (!layer?.source?.url) {
-                urls[prefix].layers.unshift({
-                  layerName:  url.split('LAYER=')[1],
-                  style:      layer?.styles?.find(s => s.current)?.name ?? false,
-                  legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
-                  legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
-                });
-              }
-              return urls;
-            }, {}));
+        if (!layer?.source?.url) {
+          urls[prefix].layers.unshift({
+            layerName:  url.split('LAYER=')[1],
+            style:      layer?.styles?.find(s => s.current)?.name ?? false,
+            legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
+            legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
+          });
+        }
+        return urls;
       }, {});
+
 
     for (const url in URLS) {
       try {
