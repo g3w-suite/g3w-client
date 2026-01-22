@@ -624,7 +624,6 @@
     },
 
     async created() {
-      this.legendurls = await g3w.app.getLegendSrc({ all: true });
       if (!!window.initConfig.credits) {
         try {
           const credits      = await XHR.get({ url: window.initConfig.credits });
@@ -637,7 +636,12 @@
 
     mounted() {
       document.body.appendChild(this.$el);
-      console.log(this);
+      //Load legend layers url one time
+      this.$el.querySelector('li a[href="#metadata_legend"]').addEventListener('click', () => {
+        if (0 === this.legendurls.length) {
+          g3w.app.getLegendSrc({ all: true }).then(async () => this.legendurls = await g3w.app.getLegendSrc({ all: true }));
+        }
+      })
     },
 
   }
