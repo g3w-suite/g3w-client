@@ -378,7 +378,7 @@
               <div v-for = "url in legendurls" :key = "url.url">
                 <bar-loader :loading = "url.loading"/>
                 <img
-                  :src       = "url.url"
+                  :src       = "getLegendUrl(url.url)"
                   loading    = "lazy"
                   alt        = ""
                   @load      = "url.loading = false"
@@ -556,6 +556,26 @@
           }
           return url.toString();
         } catch(e) {
+          return ''; // fails silently
+        }
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      getLegendUrl(url) {
+        try {
+          url = new URL(url);
+          // force black color for text
+          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('ITEMFONTCOLOR')) {
+            url.searchParams.delete('ITEMFONTCOLOR');
+          }
+          // force black color for text
+          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
+            url.searchParams.delete('LAYERFONTCOLOR');
+          }
+          return url.toString();
+        } catch (e) {
           return ''; // fails silently
         }
       },
