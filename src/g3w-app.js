@@ -5387,14 +5387,14 @@ export default new (class GUI extends Emitter {
     const LEGEND_URLS = [];
 
     // create object containing urls to fetch and relative layers
-    const URLS = Object.values(ApplicationState.layers)
+    Object.entries(Object.values(ApplicationState.layers)
       .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
       .map(l => l.state)
       .reduce((urls, layer) => {
         if (change && ApplicationState.project.state.context_base_legend) {
           layer.legend.change = false;
         }
-        
+
         const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
           all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
           format:     'image/png',
@@ -5420,68 +5420,67 @@ export default new (class GUI extends Emitter {
           });
         }
         return urls;
-      }, {});
-
-
-    for (const url in URLS) {
-      try {
-        const obj = {
-          loading : true,
-          url     : null,
-          error   : false
-        };
-
-        LEGEND_URLS.push(obj);
-
-        const params = {
-          LAYERS     : [],
-          STYLES     : [],
-          LEGEND_ON  : [],
-          LEGEND_OFF : []
-        };
-
-        (URLS[url].layers || []).reduce((_, layer) => {
-            params.LAYERS.push(layer.layerName);
-            params.STYLES.push(layer.style);
-            if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on);   }
-            if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
-            return params;
-          }, params);
-
-        let url_params = [
-          __('LAYERS=',      params.LAYERS.join(',')),
-          __('STYLES=',      params.STYLES.join(',')),
-          __('LEGEND_ON=',   params.LEGEND_ON.join(',')),
-          __('LEGEND_OFF=',  params.LEGEND_OFF.join(',')),
-          __('filtertoken=', ApplicationState.tokens.filtertoken),
-        ]
-        .filter(p => p) // discard nullish parameters (without a value)
-        .join('&');
-
+      }, {})
+    )
+    .forEach(async ([url, { method, layers }]) => {
         try {
-          obj.url = 'GET' === URLS[url].method
-            ? url + (URLS[url].layers.length ? url_params : '')
-            : URL.createObjectURL(await (await fetch(url.split('?')[0], {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                // send encoded params
-                body: // new URLSearchParams(url.split('?')[1])
-                  url
-                    .split('?')[1]
-                    .split('&')
-                    .filter(p => p.split('=')[0]).map(p => `${p.split('=')[0]}=${encodeURIComponent(p.split('=')[1])}`)
-                    .join('&')
-                    + '&' + url_params
-              })).blob());
+          const obj = {
+            loading : true,
+            url     : null,
+            error   : false
+          };
+
+          LEGEND_URLS.push(obj);
+
+          const params = {
+            LAYERS     : [],
+            STYLES     : [],
+            LEGEND_ON  : [],
+            LEGEND_OFF : []
+          };
+
+          (layers || []).reduce((_, layer) => {
+              params.LAYERS.push(layer.layerName);
+              params.STYLES.push(layer.style);
+              if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on);   }
+              if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
+              return params;
+            }, params);
+
+          let url_params = [
+            __('LAYERS=',      params.LAYERS.join(',')),
+            __('STYLES=',      params.STYLES.join(',')),
+            __('LEGEND_ON=',   params.LEGEND_ON.join(',')),
+            __('LEGEND_OFF=',  params.LEGEND_OFF.join(',')),
+            __('filtertoken=', ApplicationState.tokens.filtertoken),
+          ]
+          .filter(p => p) // discard nullish parameters (without a value)
+          .join('&');
+
+          try {
+            obj.url = 'GET' === method
+              ? url + (layers.length ? url_params : '')
+              : URL.createObjectURL(await (await fetch(url.split('?')[0], {
+                  method:  'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                  // send encoded params
+                  body: // new URLSearchParams(url.split('?')[1])
+                    url
+                      .split('?')[1]
+                      .split('&')
+                      .filter(p => p.split('=')[0]).map(p => `${p.split('=')[0]}=${encodeURIComponent(p.split('=')[1])}`)
+                      .join('&')
+                      + '&' + url_params
+                })).blob());
+          } catch(e) {
+            console.warn(e);
+            //set loading to false
+            obj.loading = false;
+          }
         } catch(e) {
           console.warn(e);
-          //set loading to false
-          obj.loading = false;
         }
-      } catch(e) {
-        console.warn(e);
-      }
-    }
+      })
 
     return LEGEND_URLS;
   }
