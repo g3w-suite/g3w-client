@@ -175,7 +175,7 @@
   
       getWmsSourceLayerLegendUrl() {
         return getCatalogLayerById(this.layer.id).getLegendUrl({
-          ...(window.initConfig.layout || {}).legend,
+          ...window.initConfig?.layout?.legend,
           width:  16,
           height: 16,
         });
@@ -246,7 +246,7 @@
           } else {
             const { nodes = [] } = await XHR.get({
               url: projectLayer.getLegendUrl(
-                window.initConfig.layout?.legend,
+                window.initConfig?.layout?.legend,
                 {
                   categories: true,
                   format:     'application/json', // request format (icon and label of each category)
