@@ -640,7 +640,6 @@ export default new (class GUI extends Emitter {
           vector: []  // added to map controls for the moment
         },
         layerstrees:  Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : []),
-        layersgroups: [],
       };
     
       const service = new Emitter({

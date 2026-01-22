@@ -133,22 +133,6 @@
             />
           </ul>
 
-          <!-- GROUP OF LAYERS -->
-          <!-- ORIGINAL SOURCE: src/components/CatalogLayersGroup.vue@v3.9.3 -->
-          <ul
-            v-for = "group in state.layersgroups"
-            class = "g3w-catalog-layers-group"
-          >
-            <div>
-              <h4>{{ group.title }}</h4>
-              <catalog-tristate-tree
-                v-for       = "node in group.nodes"
-                :layerstree = "node"
-                class       = "item"
-              />
-            </div>
-          </ul>
-
         </div>
 
         <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
@@ -272,7 +256,6 @@ export default {
         (this.state.external?.vector || []).length > 0 //has vector external layers
         || (this.state.external?.wms || []).length > 0 //has wms external layers
         || this.state.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
-        || this.state.layersgroups.length > 0
       );
     },
 
@@ -950,14 +933,5 @@ export default {
   .legend-item {
     width: 100%;
     position: relative;
-  }
-
-  .g3w-catalog-layers-group > div {
-    border: 1px solid #ffffff33;
-    margin: 5px;
-  }
-  .g3w-catalog-layers-group > div > h4 {
-    margin: 5px;
-    font-weight: bold;
   }
 </style>
