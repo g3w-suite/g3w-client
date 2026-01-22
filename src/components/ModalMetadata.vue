@@ -496,8 +496,7 @@
 
     data() {
       const project = ApplicationState.project.getState();
-      const tree    = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s : []);
-      const layers  = tree
+      const layers  = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s : [])
         .flatMap(s => s.showOnCatalog() ? s.getLayers() : [])
         // In case of layers that has geometry and no epsg, filter according to filter of project layers
         .filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg));
@@ -528,7 +527,6 @@
         docs_url:      `https://g3w-suite.readthedocs.io/en/v${version[0].replace('v','')}.${version[1]}.x/`,
         g3wsdk_info:  '',
         project,
-        tree,
         layers,
         legendurls:   [],
       };
