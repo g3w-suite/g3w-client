@@ -5401,105 +5401,104 @@ export default new (class GUI extends Emitter {
 
     const LEGEND_URLS = [];
 
-    const TREE = Object
+    // create object containing urls to fetch and relative layers
+    const URLS = Object
       .values(ApplicationState.layers)
-      .flatMap(s => s.showOnCatalog() ? s.getLayersTree() : []);
+      .flatMap(s => s.showOnCatalog() ? s.getLayersTree() : [])
+      .map(tree => _traverse([].concat(tree)))
+      .reduce((layers, l) => {
+        return Object.assign(
+          layers,
+          l
+            .filter(l => l.geolayer && getCatalogLayerById(l.id)) // filter geolayer && catalog layer
+            .reduce((urls, layer) => {
+              if (change && ApplicationState.project.state.context_base_legend) {
+                layer.legend.change = false;
+              }
 
-    for (const tree of TREE) {
-      try {
-        //Create object containing urls to fetch and relative layers
-        const URLS = _traverse([].concat(tree))
-          .filter(l => l.geolayer && getCatalogLayerById(l.id)) // filter geolayer && catalog layer
-          .reduce((urls, layer) => {
-            if (change && (0 === tree?.legendurls?.length || ApplicationState.project.state.context_base_legend)) {
-              layer.legend.change = false;
-            }
-
-            const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
-              all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
-              format:     'image/png',
-              categories: layer.categories
-            });
-
-            // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
-            const prefix = layer?.source?.url
-              ? url
-              : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
-
-            urls[prefix] = urls[prefix] ?? {
-              layers: [],
-              method: layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method
-            };
-
-            if (!layer?.source?.url) {
-              urls[prefix].layers.unshift({
-                layerName:  url.split('LAYER=')[1],
-                style:      layer?.styles?.find(s => s.current)?.name ?? false,
-                legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
-                legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
+              const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
+                all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
+                format:     'image/png',
+                categories: layer.categories
               });
-            }
 
-            return urls;
-          }, {});
+              // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
+              const prefix = layer?.source?.url
+                ? url
+                : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-        for (const url in URLS) {
+              urls[prefix] = urls[prefix] ?? {
+                layers: [],
+                method: layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method
+              };
 
-          const obj = {
-            loading : true,
-            url     : null,
-            error   : false
-          };
+              if (!layer?.source?.url) {
+                urls[prefix].layers.unshift({
+                  layerName:  url.split('LAYER=')[1],
+                  style:      layer?.styles?.find(s => s.current)?.name ?? false,
+                  legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
+                  legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
+                });
+              }
+              return urls;
+            }, {}));
+      }, {});
 
-          LEGEND_URLS.push(obj);
+    for (const url in URLS) {
+      try {
+        const obj = {
+          loading : true,
+          url     : null,
+          error   : false
+        };
 
-          const params = {
-            LAYERS     : [],
-            STYLES     : [],
-            LEGEND_ON  : [],
-            LEGEND_OFF : []
-          };
+        LEGEND_URLS.push(obj);
 
-          (URLS[url].layers || []).reduce((_, layer) => {
-              params.LAYERS.push(layer.layerName);
-              params.STYLES.push(layer.style);
-              if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on);   }
-              if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
-              return params;
-            }, params);
+        const params = {
+          LAYERS     : [],
+          STYLES     : [],
+          LEGEND_ON  : [],
+          LEGEND_OFF : []
+        };
 
-          let url_params = [
-            __('LAYERS=',      params.LAYERS.join(',')),
-            __('STYLES=',      params.STYLES.join(',')),
-            __('LEGEND_ON=',   params.LEGEND_ON.join(',')),
-            __('LEGEND_OFF=',  params.LEGEND_OFF.join(',')),
-            __('filtertoken=', ApplicationState.tokens.filtertoken),
-          ]
-          .filter(p => p) // discard nullish parameters (without a value)
-          .join('&');
+        (URLS[url].layers || []).reduce((_, layer) => {
+            params.LAYERS.push(layer.layerName);
+            params.STYLES.push(layer.style);
+            if (layer.legend_on)  { params.LEGEND_ON.push(layer.legend_on);   }
+            if (layer.legend_off) { params.LEGEND_OFF.push(layer.legend_off); }
+            return params;
+          }, params);
 
-          try {
-            obj.url = 'GET' === URLS[url].method
-              ? url + (URLS[url].layers.length ? url_params : '')
-              : URL.createObjectURL(await (await fetch(url.split('?')[0], {
-                  method:  'POST',
-                  headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                  // send encoded params
-                  body: // new URLSearchParams(url.split('?')[1])
-                    url
-                      .split('?')[1]
-                      .split('&')
-                      .filter(p => p.split('=')[0]).map(p => `${p.split('=')[0]}=${encodeURIComponent(p.split('=')[1])}`)
-                      .join('&')
-                      + '&' + url_params
-                })).blob());
-          } catch(e) {
-            console.warn(e);
-            //set loading to false
-            obj.loading = false;
-          }
+        let url_params = [
+          __('LAYERS=',      params.LAYERS.join(',')),
+          __('STYLES=',      params.STYLES.join(',')),
+          __('LEGEND_ON=',   params.LEGEND_ON.join(',')),
+          __('LEGEND_OFF=',  params.LEGEND_OFF.join(',')),
+          __('filtertoken=', ApplicationState.tokens.filtertoken),
+        ]
+        .filter(p => p) // discard nullish parameters (without a value)
+        .join('&');
+
+        try {
+          obj.url = 'GET' === URLS[url].method
+            ? url + (URLS[url].layers.length ? url_params : '')
+            : URL.createObjectURL(await (await fetch(url.split('?')[0], {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                // send encoded params
+                body: // new URLSearchParams(url.split('?')[1])
+                  url
+                    .split('?')[1]
+                    .split('&')
+                    .filter(p => p.split('=')[0]).map(p => `${p.split('=')[0]}=${encodeURIComponent(p.split('=')[1])}`)
+                    .join('&')
+                    + '&' + url_params
+              })).blob());
+        } catch(e) {
+          console.warn(e);
+          //set loading to false
+          obj.loading = false;
         }
-
       } catch(e) {
         console.warn(e);
       }
