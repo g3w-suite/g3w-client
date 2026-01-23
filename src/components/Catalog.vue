@@ -581,7 +581,7 @@ export default {
      activeTab: {
       async handler(activeTab, oldTab) {
         if ('legend' === activeTab) {
-          this.legendurls = await g3w.app.getLegendSrc({ change: true });
+          this.legendurls = await GUI.getLegendSrc({ change: true });
         }
         if (this.$el) {
           this.$el.parentElement.classList.remove(`tab-${oldTab}`);
@@ -605,14 +605,14 @@ export default {
     GUI.on('activefiltertokenlayer', this.onActiveToken);
     GUI.on('treenodevisible',        this.onTreeNodeVisible);
     GUI.on('treenodeselected',       this.onTreeNodeSelected);
-    GUI.on('layer-change-style',     async () => this.legendurls = (await g3w.app.getLegendSrc()).flat());
+    GUI.on('layer-change-style',     async () => this.legendurls = (await GUI.getLegendSrc()).flat());
   },
 
   async mounted() {
     await this.$nextTick();
     // in case of dynamic legend
     if (ApplicationState.project.state.context_base_legend) {
-      GUI.on('change-map-legend-params', () => { g3w.app.getLegendSrc(); });
+      GUI.on('change-map-legend-params', () => { GUI.getLegendSrc(); });
     }
   },
 

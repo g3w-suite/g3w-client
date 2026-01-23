@@ -486,6 +486,7 @@
 <script>
 
   import ApplicationState        from 'g3w-state';
+  import GUI                     from 'g3w-app';
   import { XHR }                 from 'utils/XHR';
   import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
@@ -637,9 +638,10 @@
     mounted() {
       document.body.appendChild(this.$el);
       //Load legend layers url one time
-      this.$el.querySelector('li a[href="#metadata_legend"]').addEventListener('click', () => {
+      this.$el.querySelector('li a[href="#metadata_legend"]').addEventListener('click', async () => {
         if (0 === this.legendurls.length) {
-          g3w.app.getLegendSrc({ all: true }).then(async () => this.legendurls = await g3w.app.getLegendSrc({ all: true }));
+          await GUI.getLegendSrc({ all: true });
+          this.legendurls = await GUI.getLegendSrc({ all: true });
         }
       })
     },
