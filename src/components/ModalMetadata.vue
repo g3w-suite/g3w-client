@@ -33,15 +33,15 @@
           </a>
         </li>
         <li>
-          <a data-toggle = "tab" href="#metadata_credits" class = "metadata-item-tab credits">
-            <i class = "action-button" :class = "$fa('copyright')" aria-hidden = "true"></i>
-            <b>{{ $t('Credits') }}</b>
-          </a>
-        </li>
-        <li>
           <a data-toggle = "tab" href="#metadata_legend" class = "metadata-item-tab legend" style="color: purple;">
             <i class = "action-button fas fa-list" aria-hidden = "true"></i>
             <b>{{ $t('legend').toUpperCase() }}</b>
+          </a>
+        </li>
+        <li>
+          <a data-toggle = "tab" href="#metadata_credits" class = "metadata-item-tab credits">
+            <i class = "action-button" :class = "$fa('copyright')" aria-hidden = "true"></i>
+            <b>{{ $t('Credits') }}</b>
           </a>
         </li>
       </ul>
@@ -372,6 +372,22 @@
             </details>
           </div>
 
+          <!-- LAYERS LEGEND -->
+          <div id = "metadata_legend" class = "tab-pane">
+            <b style="display: block;">{{ $t('legend').toUpperCase() }}</b> 
+              <div v-for = "url in legendurls" :key = "url.url">
+                <bar-loader :loading = "url.loading"/>
+                <img
+                  :src       = "getLegendUrl(url.url)"
+                  loading    = "lazy"
+                  alt        = ""
+                  @load      = "url.loading = false"
+                  @loaderror = "url.loading = false"
+                />
+                <hr>
+              </div>
+          </div>
+
           <!-- MODAL CREDITS -->
           <div
             id       = "metadata_credits"
@@ -449,22 +465,6 @@
 
             <pre v-if = "powered_by && g3wsdk_info" @click = "copy_g3wsdk_info" style = "cursor: pointer;" title = "click to copy">{{ g3wsdk_info }}</pre>
 
-          </div>
-
-          <!-- LAYERS LEGEND -->
-          <div id = "metadata_legend" class = "tab-pane">
-            <b style="display: block;">{{ $t('legend').toUpperCase() }}</b> 
-              <div v-for = "url in legendurls" :key = "url.url">
-                <bar-loader :loading = "url.loading"/>
-                <img
-                  :src       = "getLegendUrl(url.url)"
-                  loading    = "lazy"
-                  alt        = ""
-                  @load      = "url.loading = false"
-                  @loaderror = "url.loading = false"
-                />
-                <hr>
-              </div>
           </div>
 
         </div>
