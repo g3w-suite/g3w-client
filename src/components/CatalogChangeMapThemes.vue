@@ -111,9 +111,9 @@
                 <span
                   v-t-tooltip:left = "'add'"
                   @click.stop      = "show_form = !show_form"
-                  :class           = "$fa('plus')"
+                  :class           = "$fa('plus-square')"
                   class            = "action sidebar-button sidebar-button-icon"
-                  style            = "margin-left: auto; padding: 5px;"
+                  style            = "margin-left: auto; padding: 5px; font-size: 1.2em;"
                 >
                 </span>
               </div>
