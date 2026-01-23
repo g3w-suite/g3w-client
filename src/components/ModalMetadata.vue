@@ -640,7 +640,6 @@
       //Load legend layers url one time
       this.$el.querySelector('li a[href="#metadata_legend"]').addEventListener('click', async () => {
         if (0 === this.legendurls.length) {
-          await GUI.getLegendSrc({ all: true });
           this.legendurls = await GUI.getLegendSrc({ all: true });
         }
       })
