@@ -359,6 +359,16 @@ initConfig.header_custom_links.unshift({
   i18n:    true,
 });
 
+// navbar help (legend)
+initConfig.header_custom_links.push({
+  id:     'legend',
+  type:   'metadata',
+  target: '#metadata_legend',
+  icon:   'fas fa-list',
+  text:   'legend',
+  i18n:    true,
+});
+
 initConfig.layout.iframe  = window.top !== window.self;
 ApplicationState.language = initConfig.user.i18n || 'en';
 
