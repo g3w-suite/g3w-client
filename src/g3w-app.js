@@ -5384,10 +5384,8 @@ export default new (class GUI extends Emitter {
      */
     const __ = (name, value) => (value || 0 === value) ? `${name}${value}` : null;
 
-    const LEGEND_URLS = [];
-
     // create object containing urls to fetch and relative layers
-    Object.entries(
+    return (await Promise.allSettled(Object.entries(
       Object
         .values(ApplicationState.layers)
         .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
@@ -5424,16 +5422,16 @@ export default new (class GUI extends Emitter {
           return urls;
         }, {})
     )
-    .forEach(async ([url, { method, layers }]) => {
+    .map(async ([url, { method, layers }]) => {
+
+      const obj = {
+        loading : true,
+        url     : null,
+        error   : false
+      };
+
       try {
-        const obj = {
-          loading : true,
-          url     : null,
-          error   : false
-        };
-
-        LEGEND_URLS.push(obj);
-
+      
         const params = {
           LAYERS     : [],
           STYLES     : [],
@@ -5482,9 +5480,9 @@ export default new (class GUI extends Emitter {
       } catch(e) {
         console.warn(e);
       }
-    })
-
-    return LEGEND_URLS;
+      return obj;
+    })))
+    .map(({ value }) => value);
   }
 
   /**
