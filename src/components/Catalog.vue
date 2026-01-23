@@ -913,6 +913,11 @@ export default {
   #catalog .tree-item:not(.group):hover > .toggle-context-menu {
     opacity: 1;
   }
+
+  /** Hide theme selector for anonymous user when there is only one option */
+  #g3w-catalog-toc-layers-toolbar:has(ul#g3w-catalog-views > li#g3w-catalog-views-project:nth-child(1):last-child > ul > li:nth-child(2):last-child) {
+    display: none;
+  }
 </style>
 
 <style scoped>
