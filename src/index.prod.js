@@ -748,7 +748,6 @@ $.ajaxSetup({
         maxy: project.state.initextent.at(3)
       },
       nodes:       layerstree,
-      legendurls:  [],
     };
     const _traverseBBox =(group, { bbox, epsg } = {}) => {
       const project_epsg = project._projection.getCode();
