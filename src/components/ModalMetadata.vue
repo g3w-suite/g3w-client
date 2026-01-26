@@ -16,20 +16,14 @@
       <ul role = "tablist" class = "nav nav-tabs">
         <li class = "active">
           <a data-toggle = "tab" href="#metadata_general" class = "metadata-item-tab general" style="color: var(--skin-primary);">
-            <i class = "action-button" :class = "$fa('info')" aria-hidden = "true"></i>
+            <i class = "action-button fas fa-info-circle" aria-hidden = "true"></i>
             <b>{{ $t('GENERAL') }}</b>
           </a>
         </li>
         <li>
-          <a data-toggle = "tab" href="#metadata_spatial" class = "metadata-item-tab spatial" style="color: var(--skin-success);">
-            <i class = "action-button" :class = "$fa('globe')" aria-hidden = "true"></i>
-            <b>{{ $t('SPATIAL') }}</b>
-          </a>
-        </li>
-        <li>
           <a data-toggle = "tab" href="#metadata_layers" class = "metadata-item-tab layers" style="color: var(--skin-warning);">
-            <i class = "action-button" :class = "$fa('bars')" aria-hidden = "true"></i>
-            <b>{{ $t('LAYERS') }}</b>
+            <i class = "action-button fas fa-layer-group" aria-hidden = "true"></i>
+            <b>{{ $t('data').toUpperCase() }}</b>
           </a>
         </li>
         <li>
@@ -40,7 +34,7 @@
         </li>
         <li>
           <a data-toggle = "tab" href="#metadata_credits" class = "metadata-item-tab credits">
-            <i class = "action-button" :class = "$fa('copyright')" aria-hidden = "true"></i>
+            <i class = "action-button fa fa-copyright" aria-hidden = "true"></i>
             <b>{{ $t('Credits') }}</b>
           </a>
         </li>
@@ -55,7 +49,7 @@
             <table style="width: 100%;">
               <tbody>
                 <!-- PROJECT TITLE -->
-                <tr v-if  = "project.metadata.title">
+                <tr v-if  = "project.metadata.title && project.metadata.title !== project.metadata.name">
                   <td class = "col-sm-2 label">{{ $t('TITLE') }}</td>
                   <td class = "col-sm-10 value" v-html = "project.metadata.title"></td>
                 </tr>
@@ -136,7 +130,7 @@
                       <i style = "margin-right: 3px;" :class = "$fa('mail')" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Email') }}</b>
                       <a :href = "`mailto: ${sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress)}`">
-                        <b>{{sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress)}}</b>
+                        {{ sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress) }}
                       </a>
                     </div>
 
@@ -145,7 +139,7 @@
                       <i style = "margin-right: 3px;" :class = "$fa('mobile')" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Phone') }}</b>
                       <a :href = "`tel: ${sanitizeValue(project.metadata.contactinformation.contactvoicetelephone)}`">
-                        <b>{{sanitizeValue(project.metadata.contactinformation.contactvoicetelephone)}}</b>
+                        {{ sanitizeValue(project.metadata.contactinformation.contactvoicetelephone) }}
                       </a>
                     </div>
                   </td>
@@ -187,14 +181,6 @@
                   </td> 
                 </tr>
 
-              </tbody>
-            </table>
-          </div>
-
-          <!-- SPATIAL METADATA -->
-          <div id = "metadata_spatial" class = "tab-pane">
-            <table style="width: 100%;">
-              <tbody>
                 <!-- PROJECT CRS -->
                 <tr v-if  = "project.crs">
                   <td class = "col-sm-12 label">{{ $t('EPSG') }}</td>
@@ -220,6 +206,7 @@
                     </dl>
                   </td>
                 </tr>
+
               </tbody>
             </table>
           </div>
@@ -228,7 +215,7 @@
           <div id = "metadata_layers" class = "tab-pane">
             <details v-for = "layer in layers" :hidden="layer.isBaseLayer()">
               <summary>
-                <i :class ="'action-button ' + g3wtemplate.font['NoGeometry' === layer.getGeometryType() ? 'table' : 'map']" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
+                <i :class ="'action-button ' + ('NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'far fa-image')" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
                 <b>{{ layer.getName() }}</b>
               </summary>
 
@@ -819,9 +806,8 @@
     text-align: center;
   }
 
-  #metadata_spatial dt          { background: #fee; font-weight: bold;}
-  #metadata_spatial dd          { background: hsl(220, 10%, 95%); }
-  #metadata_spatial :is(dt, dd) { margin: 0; padding: .5em; border-top: 1px solid #fff; }
+  #metadata_general dt          { font-weight: bold;}
+  #metadata_general :is(dt, dd) { margin: 0; padding: .5em; }
 
   @media (max-width: 767px) {
     #modal-metadata > form > .nav-tabs {
