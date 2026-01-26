@@ -788,7 +788,6 @@
 
   .layer-tab-content {
     margin-top: 10px;
-    background-color: #eee;
     overflow: auto;
   }
 
