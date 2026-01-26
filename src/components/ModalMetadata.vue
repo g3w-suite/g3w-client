@@ -587,6 +587,7 @@
           if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
             url.searchParams.delete('LAYERFONTCOLOR');
           }
+          url.searchParams.set('LAYERTITLE', 'true');
           return url.toString();
         } catch (e) {
           return ''; // fails silently
