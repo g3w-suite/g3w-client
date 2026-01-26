@@ -192,10 +192,9 @@
                           <template v-if="'epsg' === key">
                             <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
                             <a
-                              :href          = "`https://epsg.io/${(project.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
-                              target         = "_blank"
-                              title          = "Docs"
-                              data-placement = "bottom"
+                              :href  = "`https://epsg.io/${(project.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                              target = "_blank"
+                              title  = "Docs"
                             >
                               <b>{{ project.crs.epsg }}</b>
                             </a>
@@ -315,10 +314,9 @@
                         <td class = "col-sm-10 value">
                           <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
                           <a
-                            :href          = "`https://epsg.io/${(layer.config.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
-                            target         = "_blank"
-                            title          = "Docs"
-                            data-placement = "bottom"
+                            :href  = "`https://epsg.io/${(layer.config.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                            target = "_blank"
+                            title  = "Docs"
                           >
                             <b>{{ layer.config.crs.epsg }}</b>
                           </a>
