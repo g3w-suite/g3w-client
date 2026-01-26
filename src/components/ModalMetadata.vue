@@ -192,8 +192,10 @@
                           <template v-if="'epsg' === key">
                             <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
                             <a
-                              :href           = "`https://epsg.io/${(project.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
-                              target          = "_blank"
+                              :href          = "`https://epsg.io/${(project.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                              target         = "_blank"
+                              title          = "Docs"
+                              data-placement = "bottom"
                             >
                               <b>{{ project.crs.epsg }}</b>
                             </a>
@@ -310,7 +312,17 @@
                       <!-- LAYER EPSG -->
                       <tr v-if = "layer.config.crs && 'NoGeometry' !== layer.getGeometryType()">
                         <td class = "col-md-2 col-sm-12 label">{{ $t('EPSG') }}</td>
-                        <td class = "col-sm-10 value"><i class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i> {{ layer.config.crs.epsg }}</td>
+                        <td class = "col-sm-10 value">
+                          <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
+                          <a
+                            :href          = "`https://epsg.io/${(layer.config.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                            target         = "_blank"
+                            title          = "Docs"
+                            data-placement = "bottom"
+                          >
+                            <b>{{ layer.config.crs.epsg }}</b>
+                          </a>
+                        </td>
                       </tr>
 
                       <!-- LAYER CRS -->
@@ -556,6 +568,7 @@
           if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
             url.searchParams.delete('LAYERFONTCOLOR');
           }
+          url.searchParams.set('LAYERTITLE', 'false');
           return url.toString();
         } catch(e) {
           return ''; // fails silently

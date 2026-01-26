@@ -336,11 +336,11 @@
 
           <!-- DOCS -->
           <a
-            :href           = "`https://epsg.io/${(layer_crs || '').toLowerCase().replace('epsg:', '')}`"
-            target          = "_blank"
-            style           = "float: right;"
-            data-i18n-title = "Docs"
-            data-placement  = "bottom"
+            :href          = "`https://epsg.io/${(layer_crs || '').toLowerCase().replace('epsg:', '')}`"
+            target         = "_blank"
+            style          = "float: right;"
+            title          = "Docs"
+            data-placement = "bottom"
           >
             <i :class = "$fa('external-link')"></i>
           </a>
