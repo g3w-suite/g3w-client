@@ -257,7 +257,7 @@
                   style = "padding: 0 15px;"
                 >
 
-                  <table class="table" style="width: 100%;">
+                  <table style="width: 100%;">
                     <tbody>
 
                       <!-- LAYER NAME -->
