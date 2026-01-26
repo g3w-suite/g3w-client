@@ -244,7 +244,7 @@
                 </li>
 
                 <!-- LAYER ATTRIBUTES TAB -->
-                <li v-if  = "layer.config.metadata" role = "presentation" class = "attributes-tab">
+                <li v-if  = "layer.config.metadata && layer.config.metadata.attributes && layer.config.metadata.attributes.length" role = "presentation" class = "attributes-tab">
                   <a :href = "`#layer_attributes_${layer.getId()}`" aria-controls = "attributes" role = "tab" data-toggle = "tab"> {{ $t('ATTRIBUTES') }}</a>
                 </li>
               </ul>
@@ -362,7 +362,7 @@
 
                 <!-- LAYER ATTRIBUTES TAB --> 
                 <div
-                  v-if  = "layer.config.metadata"
+                  v-if  = "layer.config.metadata && layer.config.metadata.attributes && layer.config.metadata.attributes.length"
                   role  = "tabpanel"
                   class = "tab-pane"
                   :id   = "`layer_attributes_${layer.getId()}`"
