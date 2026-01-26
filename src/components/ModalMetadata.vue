@@ -188,7 +188,18 @@
                     <dl style="gap: 0;">
                       <template v-for = "(key, index) in Object.keys(project.crs)">
                         <dt class="col-sm-2">{{ key }}</dt>
-                        <dd class="col-sm-10">{{ project.crs[key] }}</dd>
+                        <dd class="col-sm-10">
+                          <template v-if="'epsg' === key">
+                            <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
+                            <a
+                              :href           = "`https://epsg.io/${(project.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                              target          = "_blank"
+                            >
+                              <b>{{ project.crs.epsg }}</b>
+                            </a>
+                          </template>
+                          <template v-else>{{ project.crs[key] }}</template>
+                        </dd>
                       </template>
                     </dl>
                   </td>
