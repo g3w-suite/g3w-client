@@ -626,6 +626,8 @@ class AnnotationControl extends MapControl {
               //remove cursor change event
               ol.Observable.unByKey(this.cursorKey);
               this.cursorKey = null;
+              //reset cursor
+              CONTROL.getMap().getTargetElement().style.cursor = '';
             }
           }
         }
