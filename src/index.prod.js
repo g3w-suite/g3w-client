@@ -355,7 +355,7 @@ initConfig.header_custom_links.unshift({
   type:   'metadata',
   target: '#metadata_credits',
   icon:   'far fa-question-circle',
-  title:  'help',
+  title:  'Credits',
   i18n:    true,
 });
 
