@@ -602,18 +602,8 @@
        */
       getLegendUrl(url) {
         try {
-          url = new URL(url);
-          // force black color for text
-          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('ITEMFONTCOLOR')) {
-            url.searchParams.delete('ITEMFONTCOLOR');
-          }
-          // force black color for text
-          if ('true' === url.searchParams.get('TRANSPARENT') && 'white' === url.searchParams.get('LAYERFONTCOLOR')) {
-            url.searchParams.delete('LAYERFONTCOLOR');
-          }
-          url.searchParams.set('LAYERTITLE', 'true');
-          return url.toString();
-        } catch (e) {
+          return (new URL(url)).toString();
+        } catch(e) {
           return ''; // fails silently
         }
       },
@@ -679,7 +669,17 @@
       //Load legend layers url one time
       this.$el.querySelector('li a[href="#metadata_legend"]').addEventListener('click', async () => {
         if (0 === this.legendurls.length) {
+          //clone legend config
+          const olegend = { ...(window.initConfig?.layout?.legend || {}) };
+          // force black color for text
+          if (olegend.transparent && 'white' === olegend.color) {
+            window.initConfig.layout.legend.color = 'black'; //set black
+          }
+          if (!olegend.layertitle) {
+            window.initConfig.layout.legend.layertitle = true;
+          }
           this.legendurls = await GUI.getLegendSrc({ all: true });
+          window.initConfig.layout.legend = olgend; // restore legend config
         }
       })
     },
