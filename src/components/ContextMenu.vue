@@ -902,12 +902,7 @@
        */
       showAnnotation() {
         this.closeMenu();
-        const control = GUI.getMapControl('annotation');
-        const feature = new ol.Feature({ geometry: new ol.geom.Point(this.map_coords), type: 'Point' });
-        control?._annotation?.layer?.getSource().addFeature(feature);
-        if (!control.isToggled()) { control.toggle(true); }
-        control._annotation.feature = feature;
-        setTimeout(() => control.editFeature(feature));
+        GUI.getMapControl('annotation').toggle(true);
       },
 
       /**
