@@ -103,9 +103,9 @@
           :hidden          = "is_mobile"
           v-t-tooltip:left = "'add'"
           @click.stop      = "showAddForm"
-          style            = "padding: 5px; cursor: pointer;"
+          style            = "padding: 5px; font-size: 1.2em; cursor: pointer;"
           class            = "sidebar-button sidebar-button-icon"
-          :class           = "$fa('plus')"
+          :class           = "$fa('plus-square')"
         ></span>
       </div>
 
