@@ -219,6 +219,30 @@
                   </td>
                 </tr>
 
+                <!-- PROJECT VERSION (QGIS) -->
+                <tr v-if  = "project.qgis_version">
+                  <td class = "col-sm-2 label">{{ $t('QGIS VERSION') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i class="fas fa-code-branch" aria-hidden="true" style="margin-right: 3px;"></i>
+                    <a
+                      :href  = "'https://docs.qgis.org/'+project.qgis_version.split('.').slice(0, 2).join('.')"
+                      target = "_blank"
+                      title  = "Docs"
+                    >
+                      {{ project.qgis_version }}
+                    </a>
+                  </td>
+                </tr>
+
+                <!-- PROJECT VERSION (LAST MODIFIED) -->
+                <tr v-if  = "project.modified">
+                  <td class = "col-sm-2 label">{{ $t('LAST MODIFIED') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i class="far fa-clock" aria-hidden="true" style="margin-right: 3px;"></i>
+                    {{ (new Date(project.modified * 1000)).toISOString() }}
+                  </td>
+                </tr>
+
               </tbody>
             </table>
           </div>
