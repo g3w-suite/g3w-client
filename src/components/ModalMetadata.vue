@@ -219,12 +219,6 @@
                   </td>
                 </tr>
 
-                <!-- USER -->
-                <tr v-if  = "user.username">
-                  <td class = "col-sm-2 label">{{ $t('USERNAME') }}</td>
-                  <td class = "col-sm-10 value"> {{ user.username }}</td>
-                </tr>
-
                 <!-- PROJECT VERSION (QGIS) -->
                 <tr v-if  = "project.qgis_version">
                   <td class = "col-sm-2 label">{{ $t('QGIS VERSION') }}</td>
@@ -635,7 +629,6 @@
         project,
         layers,
         legendurls:   [],
-        user:         window.initConfig.user ?? {}, //@since 4.1.0
       };
     },
 
