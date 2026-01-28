@@ -171,7 +171,7 @@
           v-if  = "languages" 
           class ="nav-lang"
         >
-          <button type = "button" commandfor = "nav-lang-dialog" command = "show-modal" style = "display: flex; gap:5px;">
+          <button type = "button" commandfor = "nav-lang-dialog" command = "show-modal" style = "display: flex; gap:5px; align-items: center;">
             <img :src = "urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width = "24" height = "16" alt = "" />
             {{ languages.find(l => l[0] === language).at(1) }}
           </button>
