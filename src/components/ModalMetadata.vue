@@ -219,6 +219,12 @@
                   </td>
                 </tr>
 
+                <!-- USER -->
+                <tr v-if  = "user.username">
+                  <td class = "col-sm-2 label">{{ $t('USERNAME') }}</td>
+                  <td class = "col-sm-10 value"> {{ user.username }}</td>
+                </tr>
+
                 <!-- PROJECT VERSION (QGIS) -->
                 <tr v-if  = "project.qgis_version">
                   <td class = "col-sm-2 label">{{ $t('QGIS VERSION') }}</td>
@@ -365,6 +371,46 @@
                             <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
                             <span>{{ value }}</span>
                           </p>
+                        </td>
+                      </tr>
+
+                      <!-- LAYER MINSCALE -->
+                      <tr v-if = "layer.state.geolayer">
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('MAXSCALE') }}</td>
+                        <td class = "col-sm-10 value">
+                         <span>{{ layer.config.maxscale }}</span>
+                        </td>
+                      </tr>
+
+                      <!-- LAYER MINSCALE -->
+                      <tr v-if = "layer.state.geolayer">
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('MINSCALE') }}</td>
+                        <td class = "col-sm-10 value">
+                         <span>{{ layer.config.minscale }}</span>
+                        </td>
+                      </tr>
+
+                      <!-- LAYER QUERYABLE -->
+                      <tr>
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('QUERYABLE') }}</td>
+                        <td class = "col-sm-10 value">
+                          <span>{{ layer.isQueryable() }}</span>
+                        </td>
+                      </tr>
+
+                      <!-- LAYER EDITABLE -->
+                      <tr>
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('FILTERABLE') }}</td>
+                        <td class = "col-sm-10 value">
+                          <span>{{ layer.isFilterable() }}</span>
+                        </td>
+                      </tr>
+
+                      <!-- LAYER EDITABLE -->
+                      <tr>
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('EDITABLE') }}</td>
+                        <td class = "col-sm-10 value">
+                          <span>{{ layer.isEditable() }}</span>
                         </td>
                       </tr>
 
@@ -567,6 +613,7 @@
         project,
         layers,
         legendurls:   [],
+        user:         window.initConfig.user ?? {}, //@since 4.1.0
       };
     },
 
