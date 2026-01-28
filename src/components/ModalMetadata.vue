@@ -414,6 +414,14 @@
                         </td>
                       </tr>
 
+                       <!-- LAYER STYLES -->
+                      <tr v-if = "layer.config.styles">
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('STYLES') }}</td>
+                        <td class = "col-sm-10 value">
+                          <span>{{ (layer.config.styles || []).map(s => s.name) }}</span>
+                        </td>
+                      </tr>
+
                     </tbody>
                   </table>
 
