@@ -1314,7 +1314,6 @@ export default {
     font-size: 1.2em;
     padding: 8px 5px 0 5px;
     cursor: pointer;
-    background-color: #eee;
   }
 
   #map_footer_right {
