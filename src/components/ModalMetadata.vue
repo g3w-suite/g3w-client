@@ -417,7 +417,7 @@
                         </td>
                       </tr>
 
-                       <!-- LAYER STYLES -->
+                      <!-- LAYER STYLES -->
                       <tr v-if = "layer.config.styles">
                         <td class = "col-md-2 col-sm-12 label">{{ $t('STYLES') }}</td>
                         <td class = "col-sm-10 value">
@@ -425,6 +425,16 @@
                           <span>{{ (layer.config.styles || []).map(s => s.name) }}</span>
                         </td>
                       </tr>
+
+                      <!-- LAYER DOWNLOADS -->
+                      <tr v-if = "layer.getDownloadFormats().length > 0">
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('DOWNLOADS') }}</td>
+                        <td class = "col-sm-10 value">
+                          <i :class = "$fa('download')" aria-hidden="true" style="margin-right: 3px;"></i>
+                          <span>{{ layer.getDownloadFormats() }}</span>
+                        </td>
+                      </tr>
+                      
 
                     </tbody>
                   </table>
