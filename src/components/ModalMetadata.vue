@@ -394,6 +394,7 @@
                       <tr>
                         <td class = "col-md-2 col-sm-12 label">{{ $t('QUERYABLE') }}</td>
                         <td class = "col-sm-10 value">
+                          <i  class="fas fa-info" aria-hidden="true" style="margin-right: 3px;"></i>
                           <span>{{ layer.isQueryable() }}</span>
                         </td>
                       </tr>
@@ -402,6 +403,7 @@
                       <tr>
                         <td class = "col-md-2 col-sm-12 label">{{ $t('FILTERABLE') }}</td>
                         <td class = "col-sm-10 value">
+                          <i :class="$fa('search')" aria-hidden="true" style="margin-right: 3px;"></i>
                           <span>{{ layer.isFilterable() }}</span>
                         </td>
                       </tr>
@@ -410,6 +412,7 @@
                       <tr>
                         <td class = "col-md-2 col-sm-12 label">{{ $t('EDITABLE') }}</td>
                         <td class = "col-sm-10 value">
+                          <i :class="$fa('pencil')" aria-hidden="true" style="margin-right: 3px;"></i>
                           <span>{{ layer.isEditable() }}</span>
                         </td>
                       </tr>
@@ -418,6 +421,7 @@
                       <tr v-if = "layer.config.styles">
                         <td class = "col-md-2 col-sm-12 label">{{ $t('STYLES') }}</td>
                         <td class = "col-sm-10 value">
+                          <i class="fas fa-paint-brush" aria-hidden="true" style="margin-right: 3px;"></i>
                           <span>{{ (layer.config.styles || []).map(s => s.name) }}</span>
                         </td>
                       </tr>
