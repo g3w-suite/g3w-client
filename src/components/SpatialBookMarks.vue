@@ -76,9 +76,15 @@
               @click.stop = "gotoSpatialBookmark(node)"
               class       = "spatial-bookmark"
             >
-              <div>
+              <div style = "display: flex; width: 100%; align-items: baseline;">
                 <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
                 <span class  = "g3w-long-text">{{ node.name }}</span>
+                <span 
+                  @click.stop     = "shareBookmark(node)" 
+                  v-t-tooltip:top = "'Copy share URL'" 
+                  :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
+                  class           = "sidebar-button sidebar-button-icon">
+                </span>
               </div>
             </li>
           </ul>
@@ -87,9 +93,15 @@
           @click.stop = "gotoSpatialBookmark(bookmark)"
           class       = "spatial-bookmark"
         >
-          <div>
+          <div style = "display: flex; width: 100%; align-items: baseline;">
             <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
             <span class  = "g3w-long-text">{{ bookmark.name }}</span>
+            <span 
+              @click.stop     = "shareBookmark(bookmark)" 
+              v-t-tooltip:top = "'Copy share URL'" 
+              :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
+              class           = "sidebar-button sidebar-button-icon">
+            </span>
           </div>
         </li>
       </template>
@@ -117,14 +129,25 @@
         <div>
           <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
           <span class = "g3w-long-text">{{ bookmark.name }}</span>
+          
         </div>
-        <span
-          @click.stop = "removeBookMark(bookmark.id)"
-          class       = "sidebar-button sidebar-button-icon"
-          style       = "color: red; margin: 5px; cursor: pointer"
-        >
-          <i :class = "$fa('trash')"></i>
-        </span>
+        <div style = "cursor: pointer">
+          <span 
+            @click.stop     = "shareBookmark(bookmark)"     
+            v-t-tooltip:top = "'Copy share URL'" 
+            :class          = "$fa('share-alt')" 
+            class           = "sidebar-button sidebar-button-icon" 
+            style           = "margin-right: 5px; padding: 5px;">
+          </span>
+
+          <span 
+            @click.stop     = "removeBookMark(bookmark.id)" 
+            v-t-tooltip:top = "'Delete'" 
+            :class          = "$fa('trash')" 
+            class           = "sidebar-button sidebar-button-icon" 
+            style           = "color: red; padding: 5px;">
+          </span>
+      </div>
       </li>
     </template>
 
@@ -203,6 +226,20 @@
     },
 
     methods: {
+
+      /**
+       * 
+       * @param bookmark @since 4.1.0
+       */
+      async shareBookmark({ extent, crs }) {
+        if (crs.epsg !== GUI.getEpsg().split('EPSG:')[1]) {
+          const projection = await ApplicationState.projections.set(`EPSG:${crs.epsg}`);
+          extent           = ol.proj.transformExtent(extent, projection, GUI.getProjection())
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.set('map_extent', extent.join(','));
+        await GUI.getPermalink(url, {});
+      },
 
       addBookMark() {
         this.user.bookmarks.push({
