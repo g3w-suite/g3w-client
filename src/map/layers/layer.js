@@ -1013,7 +1013,10 @@ class Layer extends G3WObject {
    * @since 3.11.7  
    */
   hasDowloadableRelations() { 
-    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
+    return !!this.getRelations().getArray()
+      .filter(r => 'MANY' === r.getType()) //@since 4.0.6 filter onlye MANY (1:N) relation type. Exclude Join (ONE) relation type
+      .find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); 
+  }
 
   /**
    * @param download url
