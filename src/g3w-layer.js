@@ -631,7 +631,7 @@ export class Layer extends Emitter {
   hasDowloadableRelations() { 
      return !!this.getRelations().getArray()
       .filter(r => 'MANY' === r.getType()) //@since 4.0.6 filter onlye MANY (1:N) relation type. Exclude Join (ONE) relation type
-      .find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); 
+      .find(r => getCatalogLayerById(r.getChild()).getDownloadFormats().filter(f => 'pdf' !== f).length > 0); 
   }
   /**
    * @param download url
