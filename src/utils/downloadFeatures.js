@@ -128,7 +128,7 @@ export async function downloadFeatures(type, layer, features = [], action, index
 
         </dialog>
       `.trim()
-    }).content.firstChild;down_with_relations
+    }).content.firstChild;
 
     dialog.addEventListener("click", e => {
       if (e.target === dialog) {
