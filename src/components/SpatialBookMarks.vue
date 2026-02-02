@@ -81,7 +81,7 @@
                 <span class  = "g3w-long-text">{{ node.name }}</span>
                 <span 
                   @click.stop     = "shareBookmark(node)" 
-                  v-t-tooltip:top = "'Copy share URL'" 
+                  v-t-tooltip:top = "'Share via link'" 
                   :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
                   class           = "sidebar-button sidebar-button-icon">
                 </span>
@@ -98,7 +98,7 @@
             <span class  = "g3w-long-text">{{ bookmark.name }}</span>
             <span 
               @click.stop     = "shareBookmark(bookmark)" 
-              v-t-tooltip:top = "'Copy share URL'" 
+              v-t-tooltip:top = "'Share via link'" 
               :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
               class           = "sidebar-button sidebar-button-icon">
             </span>
@@ -134,7 +134,7 @@
         <div style = "cursor: pointer">
           <span 
             @click.stop     = "shareBookmark(bookmark)"     
-            v-t-tooltip:top = "'Copy share URL'" 
+            v-t-tooltip:top = "'Share via link'" 
             :class          = "$fa('share-alt')" 
             class           = "sidebar-button sidebar-button-icon" 
             style           = "margin-right: 5px; padding: 5px;">
