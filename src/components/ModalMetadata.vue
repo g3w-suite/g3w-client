@@ -72,33 +72,6 @@
                   <td class = "col-sm-10 value" v-html = "project.metadata.abstract"></td>
                 </tr>
 
-                <!-- PROJECT KEYWORDS -->
-                <tr v-if  = "project.metadata.keywords">
-                  <td class = "col-sm-2 label">{{ $t('KEYWORDS') }}</td>
-                  <td class = "col-sm-10 value">
-                    <i style = "margin-right: 3px;" class = "fas fa-tags" aria-hidden = "true"></i>
-                    <span>{{ [].concat(project.metadata.keywords).join(', ') }}</span>
-                  </td>
-                </tr>
-
-                <!-- PROJECT FEES -->
-                <tr v-if  = "project.metadata.fees">
-                  <td class = "col-sm-2 label">{{ $t('FEES') }}</td>
-                  <td class = "col-sm-10 value">
-                    <i style = "margin-right: 3px;" class = "fas fa-shopping-cart" aria-hidden = "true"></i>
-                    <span>{{ project.metadata.fees }}</span>
-                  </td>
-                </tr>
-
-                <!-- PROJECT ACCESS CONSTRAINTS -->
-                <tr v-if  = "project.metadata.accessconstraints">
-                  <td class = "col-sm-2 label">{{ $t('ACCESS CONSTRAINT') }}</td>
-                  <td class = "col-sm-10 value">
-                    <i style = "margin-right: 3px;" class = "far fa-copyright" aria-hidden = "true"></i>
-                    <span>{{ project.metadata.accessconstraints }}</span>
-                  </td>
-                </tr>
-
                 <!-- PROJECT CONTACTS -->
                 <tr v-if  = "project.metadata.contactinformation">
                   <td class = "col-sm-2 label">{{ $t('CONTACTS') }}</td>
@@ -142,6 +115,33 @@
                         {{ sanitizeValue(project.metadata.contactinformation.contactvoicetelephone) }}
                       </a>
                     </div>
+                  </td>
+                </tr>
+
+                <!-- PROJECT KEYWORDS -->
+                <tr v-if  = "project.metadata.keywords">
+                  <td class = "col-sm-2 label">{{ $t('KEYWORDS') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i style = "margin-right: 3px;" class = "fas fa-tags" aria-hidden = "true"></i>
+                    <span>{{ [].concat(project.metadata.keywords).join(', ') }}</span>
+                  </td>
+                </tr>
+
+                <!-- PROJECT FEES -->
+                <tr v-if  = "project.metadata.fees">
+                  <td class = "col-sm-2 label">{{ $t('FEES') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i style = "margin-right: 3px;" class = "fas fa-shopping-cart" aria-hidden = "true"></i>
+                    <span>{{ project.metadata.fees }}</span>
+                  </td>
+                </tr>
+
+                <!-- PROJECT ACCESS CONSTRAINTS -->
+                <tr v-if  = "project.metadata.accessconstraints">
+                  <td class = "col-sm-2 label">{{ $t('ACCESS CONSTRAINT') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i style = "margin-right: 3px;" class = "far fa-copyright" aria-hidden = "true"></i>
+                    <span>{{ project.metadata.accessconstraints }}</span>
                   </td>
                 </tr>
 
