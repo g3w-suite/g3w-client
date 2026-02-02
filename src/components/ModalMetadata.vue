@@ -374,36 +374,29 @@
                         <td class = "col-sm-10 value">
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('VISIBILITY RANGE') + ': ' + layer.config.maxscale + ' ÷ ' + layer.config.minscale">
                             <i class="fas fa-eye fa-stack-1x" :aria-label="layer.state.geolayer"></i>
-                            <i v-if="!layer.state.geolayer" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                            <i v-if="!layer.state.geolayer" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('EDITABLE')">
                             <i class="fas fa-pencil-alt fa-stack-1x" :aria-label="layer.isEditable()"></i>
-                            <i v-if="!layer.isEditable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                            <i v-if="!layer.isEditable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('FILTERABLE')">
                             <i class="fas fa-filter fa-stack-1x" :aria-label="layer.isFilterable()"></i>
-                            <i v-if="!layer.isFilterable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                            <i v-if="!layer.isFilterable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('QUERYABLE')">
                             <i class="fas fa-info fa-stack-1x" :aria-label="layer.isQueryable()"></i>
-                            <i v-if="!layer.isQueryable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                            <i v-if="!layer.isQueryable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('STYLES') + ': ' + (layer.config.styles || []).map(s => s.name).join(', ')">
                             <i class="fas fa-paint-brush fa-stack-1x" :aria-label="layer.config.styles && layer.config.styles.length > 1"></i>
-                            <i v-if="!(layer.config.styles && layer.config.styles.length > 1)" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                            <i v-if="!(layer.config.styles && layer.config.styles.length > 1)" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('DOWNLOAD FORMATS') + ': ' + layer.getDownloadFormats().join(', ')">
                             <i class="fas fa-download fa-stack-1x" :aria-label="layer.getDownloadFormats().length > 0"></i>
-                            <i v-if="!layer.getDownloadFormats().length" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                            <i v-if="!layer.getDownloadFormats().length" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
-                        </td>
-                      </tr>
-
-                      <!-- CURRENT USER -->
-                      <tr>
-                        <td class = "col-md-2 col-sm-12 label">{{ $t('CURRENT USER') }}</td>
-                        <td class = "col-sm-10 value">
-                          {{ username }}
+                          <p style="margin-top: 1em;"><b style="color: rgba(255, 99, 71, 1);">{{ $t('Permissions applied to user') }}:</b> <span>{{ username }}</span></p>
                         </td>
                       </tr>
 
