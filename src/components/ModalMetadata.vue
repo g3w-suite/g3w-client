@@ -741,7 +741,7 @@
             window.initConfig.layout.legend.layertitle = true;
           }
           this.legendurls = await GUI.getLegendSrc({ all: true });
-          window.initConfig.layout.legend = olgend; // restore legend config
+          window.initConfig.layout.legend = olegend; // restore legend config
         }
       })
     },
