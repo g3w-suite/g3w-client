@@ -139,7 +139,7 @@
                   title:   table.title,
                   layerid: table.layerId,
                   feature: table.features[index],
-                  fields:  table.fields.map((field, i) => Object.assign(field, { value: row[i]})).map(field => Object.assign(field, { query: true, input: { type: `${getFieldType(field)}` } })),
+                  fields:  table.fields.map((field, i) => Object.assign(field, { value: row[i], query: true, input: { type: `${getFieldType(field)}` } })),
                   tabs:    table.formStructure
                   })"
                 v-t-tooltip:right.create = "`sdk.tooltips.relations.row_to_form`"
