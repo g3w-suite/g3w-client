@@ -335,6 +335,7 @@ export default {
   'QUERYABLE': 'INTERROGABILE',
   'FILTERABLE': 'FILTRABILE',
   'CAPABILITIES': 'PERMESSI',
+  'VISIBILITY RANGE': 'INTERVALLO  DI VISILITÀ',
   'download_types.shapefile': 'Scarica Shapefile',
   'download_types.gpx': 'Scarica GPX',
   'download_types.gpkg': 'Scarica GPKG',
