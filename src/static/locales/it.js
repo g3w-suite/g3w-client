@@ -334,6 +334,7 @@ export default {
   'EDITABLE': 'MODIFICABILE',
   'QUERYABLE': 'INTERROGABILE',
   'FILTERABLE': 'FILTRABILE',
+  'CAPABILITIES': 'PERMESSI',
   'download_types.shapefile': 'Scarica Shapefile',
   'download_types.gpx': 'Scarica GPX',
   'download_types.gpkg': 'Scarica GPKG',
