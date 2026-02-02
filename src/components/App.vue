@@ -174,6 +174,7 @@
           <button type = "button" commandfor = "nav-lang-dialog" command = "show-modal" style = "display: flex; gap:5px; align-items: center;">
             <img :src = "urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width = "24" height = "16" alt = "" />
             {{ languages.find(l => l[0] === language).at(1) }}
+            <i class = "triangle" aria-hidden="true" style = "margin-top: 8px;"></i>
           </button>
           <dialog 
             id     = "nav-lang-dialog" 
