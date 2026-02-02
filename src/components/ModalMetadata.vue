@@ -221,7 +221,7 @@
 
                 <!-- PROJECT VERSION (QGIS) -->
                 <tr v-if  = "project.qgis_version">
-                  <td class = "col-sm-2 label">{{ $t('QGIS VERSION') }}</td>
+                  <td class = "col-sm-2 label">{{ $t('QGIS') }}</td>
                   <td class = "col-sm-10 value">
                     <i class="fas fa-code-branch" aria-hidden="true" style="margin-right: 3px;"></i>
                     <a
