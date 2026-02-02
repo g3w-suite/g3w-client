@@ -331,7 +331,7 @@ export default {
   'SOURCE': 'SORGENTE',
   'RELATIONS': 'RELAZIONI',
   'ATTRIBUTES': 'ATTRIBUTI',
-  'EDITABLE': 'EDITABILE',
+  'EDITABLE': 'MODIFICABILE',
   'QUERYABLE': 'INTERROGABILE',
   'FILTERABLE': 'FILTRABILE',
   'download_types.shapefile': 'Scarica Shapefile',
