@@ -368,20 +368,14 @@
                         </td>
                       </tr>
 
-                      <!-- LAYER VISIBILITY RANGE -->
-                      <tr v-if = "layer.state.geolayer">
-                        <td class = "col-md-2 col-sm-12 label">{{ $t('VISIBILITY RANGE') }}</td>
-                        <td class = "col-sm-10 value">
-                          <span style="font-family: Monospace;" title="maxscale ÷ minscale">
-                            {{ layer.config.maxscale }} ÷ {{ layer.config.minscale }}
-                          </span>
-                        </td>
-                      </tr>
-
                       <!-- LAYER CAPABILITIES -->
                       <tr>
                         <td class = "col-md-2 col-sm-12 label">{{ $t('CAPABILITIES') }}</td>
                         <td class = "col-sm-10 value">
+                          <span class="fa-stack" style="vertical-align: top;" :title="$t('VISIBILITY RANGE') + ': ' + layer.config.maxscale + ' ÷ ' + layer.config.minscale">
+                            <i class="fas fa-eye fa-stack-1x" :aria-label="layer.state.geolayer"></i>
+                            <i v-if="!layer.state.geolayer" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                          </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('EDITABLE')">
                             <i class="fas fa-pencil-alt fa-stack-1x" :aria-label="layer.isEditable()"></i>
                             <i v-if="!layer.isEditable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
