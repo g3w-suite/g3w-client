@@ -387,7 +387,7 @@
                             <i v-if="!layer.isEditable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('FILTERABLE')">
-                            <i class="fas fa-search fa-stack-1x" :aria-label="layer.isFilterable()"></i>
+                            <i class="fas fa-filter fa-stack-1x" :aria-label="layer.isFilterable()"></i>
                             <i v-if="!layer.isFilterable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
                           </span>
                           <span class="fa-stack" style="vertical-align: top;" :title="$t('QUERYABLE')">
