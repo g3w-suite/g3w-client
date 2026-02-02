@@ -42,7 +42,7 @@ export default {
   computed: {
 
     login_url() {
-      return 'localhost' === window.location.hostname
+      return 'localhost:3000' === window.location.host
         ? (new URL(`/#/${window.g3w.state.language}/login`, initConfig.baseurl)).toString()
         : window.initConfig.user.login_url;
     },
