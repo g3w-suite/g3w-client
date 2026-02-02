@@ -733,8 +733,9 @@
         if (0 === this.legendurls.length) {
           //clone legend config
           const olegend = { ...(window.initConfig?.layout?.legend || {}) };
+          console.log(olegend)
           // force black color for text
-          if (olegend.transparent && 'white' === olegend.color) {
+          if (olegend.transparent && (!olegend.color || 'white' === olegend.color)) {
             window.initConfig.layout.legend.color = 'black'; //set black
           }
           if (!olegend.layertitle) {
