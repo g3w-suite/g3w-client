@@ -49,13 +49,13 @@
             <table style="width: 100%;">
               <tbody>
                 <!-- PROJECT TITLE -->
-                <tr v-if  = "project.metadata.title && project.metadata.title !== project.metadata.name">
+                <tr v-if  = "project.metadata.title">
                   <td class = "col-sm-2 label">{{ $t('TITLE') }}</td>
                   <td class = "col-sm-10 value" v-html = "project.metadata.title"></td>
                 </tr>
 
                 <!-- PROJECT NAME -->
-                <tr v-if  = "project.metadata.name">
+                <tr v-if  = "project.metadata.name" style="display:none !important;">
                   <td class = "col-sm-2 label">{{ $t('NAME') }}</td>
                   <td class = "col-sm-10 value" v-html = "project.metadata.name"></td>
                 </tr>
