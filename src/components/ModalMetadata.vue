@@ -386,28 +386,20 @@
 
                       <!-- LAYER QUERYABLE -->
                       <tr>
-                        <td class = "col-md-2 col-sm-12 label">{{ $t('QUERYABLE') }}</td>
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('CAPABILITIES') }}</td>
                         <td class = "col-sm-10 value">
-                          <i  class="fas fa-info" aria-hidden="true" style="margin-right: 3px;"></i>
-                          <span>{{ layer.isQueryable() }}</span>
-                        </td>
-                      </tr>
-
-                      <!-- LAYER EDITABLE -->
-                      <tr>
-                        <td class = "col-md-2 col-sm-12 label">{{ $t('FILTERABLE') }}</td>
-                        <td class = "col-sm-10 value">
-                          <i :class="$fa('search')" aria-hidden="true" style="margin-right: 3px;"></i>
-                          <span>{{ layer.isFilterable() }}</span>
-                        </td>
-                      </tr>
-
-                      <!-- LAYER EDITABLE -->
-                      <tr>
-                        <td class = "col-md-2 col-sm-12 label">{{ $t('EDITABLE') }}</td>
-                        <td class = "col-sm-10 value">
-                          <i :class="$fa('pencil')" aria-hidden="true" style="margin-right: 3px;"></i>
-                          <span>{{ layer.isEditable() }}</span>
+                          <span class="fa-stack" style="vertical-align: top;" :title="$t('EDITABLE')">
+                            <i class="fas fa-pencil-alt fa-stack-1x"></i>
+                            <i v-if="!layer.isEditable()" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                          </span>
+                          <span class="fa-stack" style="vertical-align: top;" :title="$t('FILTERABLE')">
+                            <i class="fas fa-search fa-stack-1x"></i>
+                            <i v-if="!layer.isFilterable()" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                          </span>
+                          <span class="fa-stack" style="vertical-align: top;" :title="$t('QUERYABLE')">
+                            <i class="fas fa-info fa-stack-1x"></i>
+                            <i v-if="!layer.isQueryable()" class="fas fa-ban fa-stack-2x" style="color: tomato; opacity: 0.7;"></i>
+                          </span>
                         </td>
                       </tr>
 
