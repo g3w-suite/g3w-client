@@ -405,6 +405,14 @@
                         </td>
                       </tr>
 
+                      <!-- CURRENT USER -->
+                      <tr>
+                        <td class = "col-md-2 col-sm-12 label">{{ $t('CURRENT USER') }}</td>
+                        <td class = "col-sm-10 value">
+                          {{ username }}
+                        </td>
+                      </tr>
+
                     </tbody>
                   </table>
 
@@ -605,6 +613,12 @@
         layers,
         legendurls:   [],
       };
+    },
+
+    computed: {
+      username() {
+        return (window.initConfig?.user?.username ?? 'anonymous');
+      },
     },
 
     methods: {
