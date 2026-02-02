@@ -725,15 +725,16 @@
         if (0 === this.legendurls.length) {
           //clone legend config
           const olegend = { ...(window.initConfig?.layout?.legend || {}) };
+          console.log(olegend)
           // force black color for text
-          if (olegend.transparent && 'white' === olegend.color) {
+          if (olegend.transparent && (!olegend.color || 'white' === olegend.color)) {
             window.initConfig.layout.legend.color = 'black'; //set black
           }
           if (!olegend.layertitle) {
             window.initConfig.layout.legend.layertitle = true;
           }
           this.legendurls = await GUI.getLegendSrc({ all: true });
-          window.initConfig.layout.legend = olgend; // restore legend config
+          window.initConfig.layout.legend = olegend; // restore legend config
         }
       })
     },
