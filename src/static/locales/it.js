@@ -337,7 +337,7 @@ export default {
   'CAPABILITIES': 'PERMESSI',
   'VISIBILITY RANGE': 'INTERVALLO  DI VISIBILITÀ',
   'LAST MODIFIED': 'ULTIMA REVISIONE',
-  'Permissions applied to user': 'Permessi applicati all’utente',
+  'Restrictions applied to user': 'Restrizioni applicate all’utente',
   'download_types.shapefile': 'Scarica Shapefile',
   'download_types.gpx': 'Scarica GPX',
   'download_types.gpkg': 'Scarica GPKG',

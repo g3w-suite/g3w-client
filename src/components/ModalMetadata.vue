@@ -396,7 +396,7 @@
                             <i class="fas fa-download fa-stack-1x" :aria-label="layer.getDownloadFormats().length > 0"></i>
                             <i v-if="!layer.getDownloadFormats().length" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
                           </span>
-                          <p style="margin-top: 1em;"><b style="color: rgba(255, 99, 71, 1);">{{ $t('Permissions applied to user') }}:</b> <span>{{ username }}</span></p>
+                          <p style="margin-top: 1em;"><b style="color: rgba(255, 99, 71, 1);">{{ $t('Restrictions applied to user') }}:</b> <span>{{ username }}</span></p>
                         </td>
                       </tr>
 
