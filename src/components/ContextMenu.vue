@@ -773,7 +773,7 @@
        * @since 3.8.3
        */
       isExternalVectorLayer(layer) {
-        return !layer.projectLayer && 'wms' !== layer._type;
+        return !layer.projectLayer && 'vector' === layer._type;
       },
 
       /**
