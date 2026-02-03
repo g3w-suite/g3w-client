@@ -530,7 +530,7 @@
         if (position !== this.layer.position) {
           this.layer.position = position;
           GUI.getLayerById(this.layer.id).setZIndex(({ top: GUI.layersCount, bottom: 0 })[position]);
-          GUI.emit('change-layer-position-map', { id: this.layer.id, position });
+          GUI.emit('change-layer-position-map', { id: this.layer.id, position, type: this.layer._type });
           this.closeMenu();
         }
       },
@@ -818,7 +818,7 @@
           const layer = GUI.getLayerById(this.layer.id);
           if (layer) {
             layer.setOpacity(Number(this.layer.opacity));
-            GUI.emit('change-layer-opacity', { id: this.layer.id, opacity: Number(this.layer.opacity) });
+            GUI.emit('change-layer-opacity', { id: this.layer.id, opacity: Number(this.layer.opacity), type: this.layer._type });
           }
         } else {
           const layer = getCatalogLayerById(this.layer.id);
