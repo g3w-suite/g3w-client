@@ -827,6 +827,7 @@ export default {
             visible:  this.tms_visible,
             crs:      this.tms_projection,
             type:     'tms',
+            name:     this.tms_name,
           };
           await GUI.addExternalLayer(
             new ol.layer.Tile({

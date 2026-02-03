@@ -5338,9 +5338,9 @@ export default new (class GUI extends Emitter {
     }
 
     /**
-     * @since 4.1.0 remove wws esternal layer from storage
+     * @since 4.1.0 remove wms/tms esternal layer from storage
      */
-    if ('wms' === type) {
+    if (['tms','wms'].includes(type)) {
       this.deleteLocalExternaLayer({ type, name: layer.id });
     }
 
