@@ -173,9 +173,9 @@
         </ul>
       </li>
 
-      <!-- Change opacity (external wms layer) -->
+      <!-- Change opacity (external wms/tms layer) -->
       <li
-        v-if = "isExternalWMSLayer(layer)"
+        v-if = "isExternalImageLayer(layer)"
       >
         <i :class = "$fa('slider')"></i>
         {{ $t('Opacity') }} ({{ layer.opacity }})
@@ -763,10 +763,10 @@
       },
 
       /**
-       * @since 3.8.3
+       * @since 4.1.0
        */
-      isExternalWMSLayer(layer) {
-        return !layer.projectLayer && 'wms' === layer._type;
+      isExternalImageLayer(layer) {
+        return !layer.projectLayer && ['wms', 'tms'].includes(layer._type);
       },
 
       /**
@@ -814,7 +814,7 @@
        * @since 3.11.0
        */
       onLayerOpacity() {
-        if (this.isExternalWMSLayer(this.layer)) {
+        if (this.isExternalImageLayer(this.layer)) {
           const layer = GUI.getLayerById(this.layer.id);
           if (layer) {
             layer.setOpacity(Number(this.layer.opacity));
