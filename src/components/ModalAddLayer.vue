@@ -1060,17 +1060,6 @@ export default {
       this.loading = false;
     },
 
-    /**
-     * @since 4.1.0
-     * Delete External by name and type
-     * 
-     * @param name
-     * @param type (tms, wms)
-     */
-    deleteExternalLayer({type, name }) {
-      GUI.deleteLocalExternaLayer({ type, name });
-    },
-
     templateResultLayers(state) {
       const layer = this.layers[state.id];
       if (!layer) { return state.text }
@@ -1123,10 +1112,6 @@ export default {
     document.body.appendChild(this.$el);
 
     await GUI.isMapReady();
-
-    this.deleteExternalLayer = this.deleteExternalLayer.bind(this);
-
-    GUI.on('remove-external-layer', this.deleteExternalLayer);
 
     // Load WMS urls from local storage
 
