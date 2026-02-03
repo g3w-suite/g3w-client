@@ -228,15 +228,11 @@
     methods: {
 
       /**
-       * 
        * @param bookmark @since 4.1.0
        */
       async shareBookmark({ extent, crs }) {
-        if (crs.epsg !== GUI.getEpsg().split('EPSG:')[1]) {
-          const projection = await ApplicationState.projections.set(`EPSG:${crs.epsg}`);
-          extent           = ol.proj.transformExtent(extent, projection, GUI.getProjection())
-        }
-        await GUI.getPermalink(new URL(window.location.href), { initextent: extent });
+        await this.gotoSpatialBookmark({ extent, crs });
+        GUI.getPermalink(new URL(window.location.href), {});
       },
 
       addBookMark() {
@@ -279,7 +275,7 @@
           extent = ol.proj.transformExtent(extent, projection, GUI.getProjection())
         }
         // make use of `force: true` parameter to get resolution from computed `extent`
-        GUI.zoomToExtent(extent, { force: true });
+        await GUI.zoomToExtent(extent, { force: true });
       },
 
     },
