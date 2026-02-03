@@ -208,14 +208,11 @@
 
                 <!-- PROJECT EXTENT -->
                 <tr v-if  = "project.extent">
-                  <td class = "col-sm-12 label">{{ $t('BBOX') }}</td>
-                  <td class = "col-sm-12 value">
-                    <dl style="gap: 0;">
-                      <template v-for = "(key, index) in Object.keys(project.extent)">
-                        <dt class="col-sm-2">{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</dt>
-                        <dd class="col-sm-10">{{ project.extent[key] }}</dd>
-                      </template>
-                    </dl>
+                  <td class = "col-md-2 col-sm-12 label">{{ $t('BBOX') }}</td>
+                  <td class = "col-sm-10 value" style="display: flex; gap: 20px;">
+                    <span v-for = "(key, index) in Object.keys(project.extent)">
+                      <b>{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</b> {{ project.extent[key] }}
+                    </span>
                   </td>
                 </tr>
 
