@@ -1798,8 +1798,8 @@ export default new (class GUI extends Emitter {
       body:    JSON.stringify({
         url,
         data: {
+          initextent:      this.getMapExtent(),                              // current map extent
           ...data,
-          initextent:      this.getMapExtent(),            // current map extent
           lng:             ApplicationState.language,                        // current launguage
           initbaselayer:   ApplicationState.baseLayerId || undefined,        // current base layer
           toc_tab_default: ['baselayers', 'layers', 'legend'].find(tab => tab === this.getComponent('catalog').getInternalComponent().activeTab), // take in account change tab

@@ -236,9 +236,7 @@
           const projection = await ApplicationState.projections.set(`EPSG:${crs.epsg}`);
           extent           = ol.proj.transformExtent(extent, projection, GUI.getProjection())
         }
-        const url = new URL(window.location.href);
-        url.searchParams.set('map_extent', extent.join(','));
-        await GUI.getPermalink(url, {});
+        await GUI.getPermalink(new URL(window.location.href), { initextent: extent });
       },
 
       addBookMark() {
