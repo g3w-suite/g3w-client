@@ -53,7 +53,6 @@
     ></span>
 
     <template v-else>
-
       <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
       <span 
         v-if        = "layerstree.external && layerstree.removable"

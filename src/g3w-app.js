@@ -637,6 +637,7 @@ export default new (class GUI extends Emitter {
       const state = {
         external: {   // external layers
           wms:    [], // added by wms sidebar component
+          tms:    [], // @since 4.1.0 tms layer type 
           vector: []  // added to map controls for the moment
         },
         layerstrees:  Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : []),
@@ -651,7 +652,7 @@ export default new (class GUI extends Emitter {
            *
            * @since 3.8.0
            */
-          addExternalLayer({ layer, type='vector' } = {}) {
+          addExternalLayer({ layer, type = 'vector' } = {}) {
             layer.removable = true;
             state.external[type].push(layer);
           },
@@ -4998,6 +4999,70 @@ export default new (class GUI extends Emitter {
   }
 
   /**
+   * Delete WMS by name
+   * 
+   * @param name
+   * @param type (wms, tms)
+   */
+  deleteLocalExternaLayer({ type , name } = {}) {
+    const data = this.getLocalExternalLayersData();
+    Object.keys(data[type] || {}).forEach(url => {
+      const i = data[type][url].findIndex(w => name == w.name);
+      // remove WMS entry
+      if (i >= 0) {
+        data[type][url].splice(i, 1);
+      }
+      // remove empty groups
+      if (!data[type][url].length) {
+        delete data[type][url];
+      }
+    });
+    this.updateLocalExternalLayersData(data);
+  }
+
+  /**
+   * Change config of storage layer options as position, opacity
+   */
+  changeLayerData({ type, name, attr = {} } = {}) {
+    const data = this.getLocalExternalLayersData();
+    Object
+      .keys(data[type])
+      .find(url => {
+        const i = data[type][url].findIndex(l => name == l.name);
+        if (-1 !== i) {
+          data[type][url][i][attr.key] = attr.value;
+          return true;
+        }
+      });
+    this.updateLocalExternalLayersData(data);
+  }
+
+  /**
+   * @since 4.1.0 Get all esternal layers data stored on loacal storage
+   * @returns 
+   */
+  getLocalExternalLayersData() {
+    const item = window.localStorage.getItem('externallayers');
+    return ((item ? JSON.parse(item) : undefined) || {})[ApplicationState.project.getId()];
+  }
+
+  /**
+   * Update local storage data based on changes
+   * 
+   * @param data
+   */
+  updateLocalExternalLayersData(data) {
+    const item    = window.localStorage.getItem('externallayers');
+    const alldata = (item ? JSON.parse(item) : undefined) || {};
+    alldata[ApplicationState.project.getId()] = data;
+    try {
+      window.localStorage.setItem('externallayers', JSON.stringify(alldata));
+    } catch(e) {
+      console.warn(e);
+    }
+  }
+
+  /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * Add an external layer to the map (eg. ZIP, KMZ, GPX, ...)
@@ -5129,7 +5194,7 @@ export default new (class GUI extends Emitter {
         removable:    true,
         projectLayer: false,
         title:        externalLayer.get('name'),
-        _type:        'wms',
+        _type:        options.type ?? 'wms', //@since 4.1.0 take in account also tms layer
         opacity:      options.opacity  ??  1,
         position:     options.position ?? 'top',
         external:     true,
@@ -5242,10 +5307,10 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   removeExternalLayer(name) {
+    const pid = ApplicationState.project.state.id;
     const layer = this.getLayerByName(name);
     const type = layer._type || 'vector';
     
-
     this.unregisterVectorLayer(layer);
     this.getService('catalog').removeExternalLayer({ name, type });
 
@@ -5270,6 +5335,13 @@ export default new (class GUI extends Emitter {
         }
         idb.setItem('externalLayers', externalLayers);
       });
+    }
+
+    /**
+     * @since 4.1.0 remove wws esternal layer from storage
+     */
+    if ('wms' === type) {
+      this.deleteLocalExternaLayer({ type, name: layer.id });
     }
 
     this.#layers.external = this.#layers.external.filter(l => {

@@ -68,7 +68,7 @@ g3w.app.once('initconfig', () => {
 
   // DBTM Multiscala
   const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
-  const wms = JSON.parse(localStorage.getItem('externalwms') || '{}');
+  const wms = JSON.parse(localStorage.getItem('externallayers') || '{}');
   wms[pid]  = wms[pid] || { urls: [], wms: {} };
   wms[pid]  = {
     urls: wms[pid].urls.length ? wms[pid].urls : [{ url, id: "DBTM" }],
@@ -82,7 +82,7 @@ g3w.app.once('initconfig', () => {
       "opacity":  1
     }]}
   };
-  localStorage.setItem('externalwms', JSON.stringify(wms));
+  localStorage.setItem('externallayers', JSON.stringify(wms));
 
   // piazza-leopoldo.kml
   idb.getItem('externalLayers').then(externalLayers => {

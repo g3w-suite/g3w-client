@@ -773,14 +773,13 @@ export default {
 
     async addLayer() {
       this.loading = true;
-
+      // check if WMS already added (by name)
+      const data  = GUI.getLocalExternalLayersData();
       if ('wms' === this.layer_type) {
         const name = (this.name || `wms_${getUniqueDomId()}`).trim();
 
         try {
-          // check if WMS already added (by name)
-          const data  = this.getLocalWMSData();
-
+      
           const found = this.wms_config && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l.name)));
 
           if (found) {
@@ -797,17 +796,19 @@ export default {
             opacity:  +this.wms_opacity,
           };
 
+          data.wms = data.wms ?? {};
+
           data.wms[this.url] = data.wms[this.url] || [];
           data.wms[this.url].push(config);
 
-          this.updateLocalWMSData(data);
+          GUI.updateLocalExternalLayersData(data);
 
           try {
             await this._addExternalWMSLayer(config);
           } catch(e) {
             console.warn(e);
             GUI.removeExternalLayer(name);
-            this.deleteWMS(name);
+            GUI.deleteLocalExternaLayer({ type, name });
             setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'WMS Layer not added. Please check all wms parameter or url' }) });
           }
         } catch(e) {
@@ -820,7 +821,14 @@ export default {
 
       if ('tms' === this.layer_type) {
         try {
-          GUI.addExternalLayer(
+          const config = {
+            position: this.position,
+            opacity:  +this.tms_opacity,
+            visible:  this.tms_visible,
+            crs:      this.tms_projection,
+            type:     'tms',
+          };
+          await GUI.addExternalLayer(
             new ol.layer.Tile({
               source:  new ol.source.XYZ({
                   url:         this.tms_url,
@@ -831,17 +839,21 @@ export default {
               visible: this.tms_visible,
               id:      this.tms_name,
               name:    this.tms_name,
-            }), {
-              position: this.position,
-              opacity:  +this.tms_opacity,
-              visible:  this.tms_visible,
-              crs:      this.tms_projection,
-              type:     'tms',
-            }
+            }), config
           );
+
+          data.tms = data.tms ?? {};
+
+          data.tms[this.tms_url] = data.tms[this.tms_url] || [];
+          data.tms[this.tms_url].push(config);
+
+          GUI.updateLocalExternalLayersData(data);
+          
           this.close();
         } catch(e) {
           console.warn(e);
+          GUI.removeExternalLayer(name);
+          GUI.deleteLocalExternaLayer({ type, name });
           this.error_message = `${e}`;
         }
       }
@@ -911,10 +923,10 @@ export default {
       try {
         await this.fetchWMS(this.url);
         if (!found) {
-          const data = this.getLocalWMSData();
+          const data = GUI.getLocalExternalLayersData();
           this.wms_urls.push(wms);
           data.urls = this.wms_urls;
-          this.updateLocalWMSData(data);
+          GUI.updateLocalExternalLayersData(data);
         }
       } catch(e) {
         console.warn(e);
@@ -929,9 +941,9 @@ export default {
      */
     deleteWmsUrl(id) {
       this.wms_urls = this.wms_urls.filter(l => id !== l.id);
-      const data    = this.getLocalWMSData();
+      const data    = GUI.getLocalExternalLayersData();
       data.urls     = this.wms_urls;
-      this.updateLocalWMSData(data);
+      GUI.updateLocalExternalLayersData(data);
     },
 
     /**
@@ -1049,67 +1061,14 @@ export default {
     },
 
     /**
-     * Delete WMS by name
+     * @since 4.1.0
+     * Delete External by name and type
      * 
      * @param name
+     * @param type (tms, wms)
      */
-    deleteWMS(name) {
-      const data = this.getLocalWMSData();
-      Object.keys(data.wms || {}).forEach(url => {
-        const i = data.wms[url].findIndex(w => name == w.name);
-        // remove WMS entry
-        if (i >= 0) {
-          data.wms[url].splice(i, 1);
-        }
-        // remove empty groups
-        if (!data.wms[url].length) {
-          delete data.wms[url];
-        }
-      });
-      this.updateLocalWMSData(data);
-    },
-
-    /**
-     * Change config of storage layer options as position, opacity
-     */
-    changeLayerData(name, attr = {}) {
-      const data = this.getLocalWMSData();
-      Object
-        .keys(data.wms)
-        .find(url => {
-          const i = data.wms[url].findIndex(l => name == l.name);
-          if (-1 !== i) {
-            data.wms[url][i][attr.key] = attr.value;
-            return true;
-          }
-        });
-      this.updateLocalWMSData(data);
-    },
-
-    /**
-     * Get local storage wms data based on current projectId
-     * 
-     * @returns {*}
-     */
-    getLocalWMSData() {
-      const item = window.localStorage.getItem('externalwms');
-      return ((item ? JSON.parse(item) : undefined) || {})[ApplicationState.project.getId()];
-    },
-
-    /**
-     * Update local storage data based on changes
-     * 
-     * @param data
-     */
-    updateLocalWMSData(data) {
-      const item    = window.localStorage.getItem('externalwms');
-      const alldata = (item ? JSON.parse(item) : undefined) || {};
-      alldata[ApplicationState.project.getId()] = data;
-      try {
-        window.localStorage.setItem('externalwms', JSON.stringify(alldata));
-      } catch(e) {
-        console.warn(e);
-      }
+    deleteExternalLayer({type, name }) {
+      GUI.deleteLocalExternaLayer({ type, name });
     },
 
     templateResultLayers(state) {
@@ -1165,26 +1124,27 @@ export default {
 
     await GUI.isMapReady();
 
-    this.deleteWMS = this.deleteWMS.bind(this);
+    this.deleteExternalLayer = this.deleteExternalLayer.bind(this);
 
-    GUI.on('remove-external-layer', this.deleteWMS);
+    GUI.on('remove-external-layer', this.deleteExternalLayer);
 
     // Load WMS urls from local storage
 
-    let data = this.getLocalWMSData();
+    let data = GUI.getLocalExternalLayersData();
 
     if (undefined === data) {
       data = {
         urls: [], // unique url for wms
         wms:  {}, // object contains url as a key and array of layers bind to url
+        tms:  {}, //@since 4.1.0 take in account tms layers
       };
-      this.updateLocalWMSData(data);
+      GUI.updateLocalExternalLayersData(data);
     }
 
     setTimeout(() => {
-      GUI.on('change-layer-position-map', ({ id: name, position } = {}) => this.changeLayerData(name, { key: 'position', value: position }));
-      GUI.on('change-layer-opacity',      ({ id: name, opacity } = {})  => this.changeLayerData(name, { key: 'opacity',  value: opacity }));
-      GUI.on('change-layer-visibility',   ({ id: name, visible } = {})  => this.changeLayerData(name, { key: 'visible',  value: visible }));
+      GUI.on('change-layer-position-map', ({ id: name, position, type } = {}) => GUI.changeLayerData({ type, name, attr: { key: 'position', value: position }}));
+      GUI.on('change-layer-opacity',      ({ id: name, opacity, type } = {})  => GUI.changeLayerData({ type, name, attr: { key: 'opacity',  value: opacity }}));
+      GUI.on('change-layer-visibility',   ({ id: name, visible, type } = {})  => GUI.changeLayerData({ type, name, attr: { key: 'visible',  value: visible }}));
 
       // load eventually data
       Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });

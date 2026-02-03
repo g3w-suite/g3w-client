@@ -91,7 +91,7 @@
           </ul>
 
           <!-- EXTERNAL LAYERS -->
-          <ul v-if = "state.external.wms.length || state.external.vector.length" class = "g3w-external_layers-group">
+          <ul v-if = "state.external.wms.length || state.external.tms.length || state.external.vector.length" class = "g3w-external_layers-group">
             <li>
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
                 <span
@@ -119,6 +119,16 @@
               :key            = "wms.id"
               :externallayers = "state.external.wms"
               :layerstree     = "wms"
+              @layerchecked   = "updateExternalLayersChecked"
+              class           = "item"
+            />
+            <!-- @since 4.1.0 add tms layers -->
+            <catalog-tristate-tree
+              v-show          = "!externalayers.collapsed"
+              v-for           = "tms in state.external.tms"
+              :key            = "tms.id"
+              :externallayers = "state.external.tms"
+              :layerstree     = "tms"
               @layerchecked   = "updateExternalLayersChecked"
               class           = "item"
             />
