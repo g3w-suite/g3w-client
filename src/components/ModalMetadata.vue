@@ -360,11 +360,10 @@
                       <!-- LAYER BBOX -->
                       <tr v-if = "layer.config.bbox">
                         <td class = "col-md-2 col-sm-12 label">{{ $t('BBOX') }}</td>
-                        <td class = "col-sm-10 value">
-                          <p v-for = "(value, key) in layer.config.bbox">
-                            <span style = "font-weight: bold; margin-right: 5px;">{{ key }}</span>
-                            <span>{{ value }}</span>
-                          </p>
+                        <td class = "col-sm-10 value" style="display: flex; gap: 20px;">
+                          <span v-for = "(value, key) in layer.config.bbox">
+                            <b style = "margin-right: 5px;">{{ key }}</b> {{ value }}
+                          </span>
                         </td>
                       </tr>
 
