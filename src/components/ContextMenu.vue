@@ -818,7 +818,7 @@
           const layer = GUI.getLayerById(this.layer.id);
           if (layer) {
             layer.setOpacity(Number(this.layer.opacity));
-            GUI.emit('change-layer-opacity', { id: this.layer.id, opacity: this.layer.opacity });
+            GUI.emit('change-layer-opacity', { id: this.layer.id, opacity: Number(this.layer.opacity) });
           }
         } else {
           const layer = getCatalogLayerById(this.layer.id);
