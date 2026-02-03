@@ -307,6 +307,7 @@ export default {
       [
         ...(this.state.external?.vector || []),
         ...(this.state.external?.wms || []),
+        ...(this.state.external?.tms || []),
       ].forEach(l =>  GUI.removeExternalLayer(l.name));
     },
 
