@@ -808,7 +808,6 @@ export default {
           } catch(e) {
             console.warn(e);
             GUI.removeExternalLayer(name);
-            GUI.deleteLocalExternaLayer({ type, name });
             setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'WMS Layer not added. Please check all wms parameter or url' }) });
           }
         } catch(e) {
@@ -854,7 +853,6 @@ export default {
         } catch(e) {
           console.warn(e);
           GUI.removeExternalLayer(name);
-          GUI.deleteLocalExternaLayer({ type, name });
           this.error_message = `${e}`;
         }
       }
