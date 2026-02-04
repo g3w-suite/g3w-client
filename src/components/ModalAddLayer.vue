@@ -829,21 +829,24 @@ export default {
             url:      this.tms_url,
           };
 
-          await this._addExternalTMSLayer(config);
-          
           data.tms = data.tms ?? {};
 
           data.tms[this.tms_url] = data.tms[this.tms_url] || [];
           data.tms[this.tms_url].push(config);
 
           GUI.updateLocalExternalLayersData(data);
-          
-          this.close();
+
+          try {
+            await this._addExternalTMSLayer(config);
+          } catch(e) {
+            console.warn(e);
+            GUI.removeExternalLayer(this.tms_name);
+            setTimeout(() => { GUI.showUserMessage({ type: 'warning', message: 'TMS Layer not added. Please check all wms parameter or url' }) });
+          }
         } catch(e) {
           console.warn(e);
-          GUI.removeExternalLayer(name);
-          this.error_message = `${e}`;
         }
+        this.close();
       }
 
       if ('file' === this.layer_type) {
