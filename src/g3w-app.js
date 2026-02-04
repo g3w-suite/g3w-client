@@ -5024,17 +5024,19 @@ export default new (class GUI extends Emitter {
    * Change config of storage layer options as position, opacity
    */
   changeLayerData({ type, name, attr = {} } = {}) {
-    const data = this.getLocalExternalLayersData();
-    Object
-      .keys(data[type])
-      .find(url => {
-        const i = data[type][url].findIndex(l => name == l.name);
-        if (-1 !== i) {
-          data[type][url][i][attr.key] = attr.value;
-          return true;
-        }
-      });
-    this.updateLocalExternalLayersData(data);
+    if ('vector' !== type) {
+      const data = this.getLocalExternalLayersData();
+      Object
+        .keys(data[type])
+        .find(url => {
+          const i = data[type][url].findIndex(l => name == l.name);
+          if (-1 !== i) {
+            data[type][url][i][attr.key] = attr.value;
+            return true;
+          }
+        });
+      this.updateLocalExternalLayersData(data);
+    }
   }
 
   /**
