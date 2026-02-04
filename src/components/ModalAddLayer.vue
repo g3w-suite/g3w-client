@@ -825,7 +825,6 @@ export default {
             opacity:  +this.tms_opacity,
             visible:  this.tms_visible,
             crs:      this.tms_projection,
-            type:     'tms',
             name:     this.tms_name,
             url:      this.tms_url,
           };
@@ -836,7 +835,6 @@ export default {
 
           data.tms[this.tms_url] = data.tms[this.tms_url] || [];
           data.tms[this.tms_url].push(config);
-          console.log(data.tms)
 
           GUI.updateLocalExternalLayersData(data);
           
