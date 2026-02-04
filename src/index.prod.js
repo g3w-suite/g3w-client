@@ -789,10 +789,6 @@ $.ajaxSetup({
         // substitute node layer with layer state
         if (undefined !== node.id) {
           nodes[index] = project.getLayersStore().getLayerById(node.id).getState();
-        }
-        // case of layer substitute node with layer state
-        if (undefined !== node.id) {
-          nodes[index] = project.getLayersStore().getLayerById(node.id).getState();
           // pass bbox and epsg of layer
           if (nodes[index].bbox) {
             _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
