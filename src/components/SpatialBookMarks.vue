@@ -58,7 +58,7 @@
         </a>
       </div>
 
-      <template v-for = "bookmark in project.bookmarks">
+      <template v-for = "bookmark in project_bookmarks">
         <li v-if = "bookmark.nodes">
           <div
             style       = "font-weight: bold; width: 100%;"
@@ -122,7 +122,7 @@
       </div>
 
       <li
-        v-for       = "bookmark in user.bookmarks"
+        v-for       = "bookmark in user_bookmarks"
         @click.stop = "gotoSpatialBookmark(bookmark)"
         class       = "spatial-bookmark"
       >
@@ -194,13 +194,9 @@
          * }
          */
 
-        project: {
-          bookmarks: ApplicationState.project.state.bookmarks || []
-        },
+        project_bookmarks: ApplicationState.project.state.bookmarks || [],
 
-        user: {
-          bookmarks: SAVED_BOOKMARKS[gid]
-        },
+        user_bookmarks: SAVED_BOOKMARKS[gid],
 
         addbookmarkinput: null,
       }
@@ -236,7 +232,7 @@
       },
 
       addBookMark() {
-        this.user.bookmarks.push({
+        this.user_bookmarks.push({
           id:        getUniqueDomId(),
           name:      this.addbookmarkinput,
           extent:    GUI.getMapExtent(),
@@ -249,14 +245,14 @@
       },
 
       removeBookMark(id) {
-        this.user.bookmarks = this.user.bookmarks.filter(b => id !== b.id);
+        this.user_bookmarks = this.user_bookmarks.filter(b => id !== b.id);
         this.saveUserBookMarks();
       },
 
       saveUserBookMarks() {
         const gid             = ApplicationState.project.getId();
         const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
-        SAVED_BOOKMARKS[gid]  = this.user.bookmarks || [];
+        SAVED_BOOKMARKS[gid]  = this.user_bookmarks || [];
         window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
       },
 
