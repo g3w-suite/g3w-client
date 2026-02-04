@@ -42,14 +42,15 @@
 
     <!-- BOOKMARS LIST -->
     <template v-else>
-      <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between;">
+      <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between; background: transparent; border-radius: 0;cursor: unset;">
         <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
         <a
-          :hidden          = "is_mobile"
-          :href            = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
-          target           = "_blank"
-          data-i18n-title  = "QGIS Docs"
-          data-placement   = "right"
+          :hidden         = "is_mobile"
+          :href           = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+          target          = "_blank"
+          data-i18n-title = "QGIS Docs"
+          data-placement  = "right"
+          style           = "padding: 5px 0;"
         >
           <i :class = "$fa('external-link')"></i>
         </a>
@@ -105,7 +106,7 @@
 
       <li
         class = "content-bookmarks"
-        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
+        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;background: transparent; border-radius: 0;cursor: unset;"
       >
         <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
         <span
