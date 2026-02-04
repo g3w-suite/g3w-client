@@ -827,25 +827,16 @@ export default {
             crs:      this.tms_projection,
             type:     'tms',
             name:     this.tms_name,
+            url:      this.tms_url,
           };
-          await GUI.addExternalLayer(
-            new ol.layer.Tile({
-              source:  new ol.source.XYZ({
-                  url:         this.tms_url,
-                  projection:  ol.proj.get(this.tms_projection),
-                  crossOrigin: 'anonymous',
-                }),
-              opacity: +this.tms_opacity,
-              visible: this.tms_visible,
-              id:      this.tms_name,
-              name:    this.tms_name,
-            }), config
-          );
 
+          await this._addExternalTMSLayer(config);
+          
           data.tms = data.tms ?? {};
 
           data.tms[this.tms_url] = data.tms[this.tms_url] || [];
           data.tms[this.tms_url].push(config);
+          console.log(data.tms)
 
           GUI.updateLocalExternalLayersData(data);
           
@@ -945,6 +936,55 @@ export default {
       GUI.updateLocalExternalLayersData(data);
     },
 
+     /**
+     * Add external TMS layer to map
+     * 
+     * @param { Object } tms
+     * @param { string } tms.url
+     * @param { string } tms.name
+     * @param tms.epsg
+     * @param tms.position
+     * @param tms.opacity
+     * @param tms.visible
+     *
+     * @returns {Promise<unknown>}
+     */
+    async _addExternalTMSLayer({
+      url,
+      name,
+      epsg     = GUI.getEpsg(),
+      position = 'top',
+      opacity,
+      visible  = true
+    } = {}) {
+      return new Promise((res, rej) => {
+        name = name || getUniqueDomId();
+
+        let olLayer = new ol.layer.Tile({
+          source:  new ol.source.XYZ({
+              url,
+              projection:  ol.proj.get(epsg)?.getCode?.() ?? null,
+              crossOrigin: 'anonymous',
+            }),
+          opacity,
+          visible,
+          id:      name,
+          name:    name,
+        })
+
+        olLayer.getSource().once('tileloadend', res);
+        olLayer.getSource().once('tileloaderror', rej);         
+
+        GUI.addExternalLayer(olLayer, { position, opacity, visible, type: 'tms' });
+
+        // HOTFIX: for hidden wms layers
+        if (!this.tms_visible || !this.tms_opacity) {
+          setTimeout(res, 1000);
+        }
+      });
+ 
+    },
+
     /**
      * Add external WMS layer to map
      * 
@@ -993,7 +1033,7 @@ export default {
         olLayer.getSource().once('imageloadend', res);
         olLayer.getSource().once('imageloaderror', rej);
 
-        GUI.addExternalLayer(olLayer, { position, opacity, visible });
+        GUI.addExternalLayer(olLayer, { position, opacity, visible, type: 'wms' });
 
         // HOTFIX: for hidden wms layers
         if (!this.wms_visible || !this.wms_opacity) {
@@ -1131,7 +1171,10 @@ export default {
       GUI.on('change-layer-visibility',   ({ id: name, visible, type } = {})  => GUI.changeLayerData({ type, name, attr: { key: 'visible',  value: visible }}));
 
       // load eventually data
+      //WMS
       Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
+      //TMS
+      Object.keys(data.tms).forEach(url => { data.tms[url].forEach(d => this._addExternalTMSLayer({ url, ...d })); });
     });
 
     this.wms_urls = data.urls;
