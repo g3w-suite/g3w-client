@@ -889,6 +889,18 @@ export default {
       }
     },
 
+    /**
+     * @since 4.1.0 
+     * Reset tms fields
+     */
+    unloadTMS() {
+      this.tms_url        = '';
+      this.tms_name       = '';
+      this.tms_projection = 'EPSG:3857';
+      this.tms_visible    = true;
+      this.tms_opacity    = 1;
+    },
+
     unloadWMS() {
       let url              = this.url;
       this.url             = '';
@@ -961,7 +973,7 @@ export default {
       return new Promise((res, rej) => {
         name = name || getUniqueDomId();
 
-        let olLayer = new ol.layer.Tile({
+        const olLayer = new ol.layer.Tile({
           source:  new ol.source.XYZ({
               url,
               projection:  ol.proj.get(epsg)?.getCode?.() ?? null,
@@ -1012,7 +1024,7 @@ export default {
       return new Promise((res, rej) => {
         name = name || getUniqueDomId();
 
-        let olLayer = new ol.layer.Image({
+        const olLayer = new ol.layer.Image({
           name,
           id:            name,
           opacity:       1.0,
@@ -1138,12 +1150,7 @@ export default {
       this.layer_type = undefined;
       this.unloadFile();
       this.unloadWMS();
-      // reset tms fields
-      this.tms_url        = '';
-      this.tms_name       = '';
-      this.tms_projection = 'EPSG:3857';
-      this.tms_visible    = true;
-      this.tms_opacity    = 1;
+      this.unloadTMS();
     },
 
   },
