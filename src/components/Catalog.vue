@@ -297,6 +297,7 @@ export default {
       [
         ...(this.state.external?.vector || []),
         ...(this.state.external?.wms || []),
+        ...(this.state.external?.tms || []),
       ].forEach(l => l.checked = this.externalayers.checked);
     },
 
