@@ -42,13 +42,12 @@
 
     <!-- BOOKMARS LIST -->
     <template v-else>
-      <li v-if = "is_staff" class = "content-bookmarks">
+      <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between;">
         <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
         <a
           :hidden          = "is_mobile"
           :href            = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
           target           = "_blank"
-          style            = "float: right;"
           data-i18n-title  = "QGIS Docs"
           data-placement   = "right"
         >
