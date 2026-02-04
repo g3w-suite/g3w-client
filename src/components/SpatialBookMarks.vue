@@ -22,7 +22,6 @@
         ></span>
       </div>
       
-
       <!-- HELP DIV -->
       <div style = "color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
         <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
@@ -43,8 +42,7 @@
 
     <!-- BOOKMARS LIST -->
     <template v-else>
-
-      <div v-if = "is_staff" class = "content-bookmarks">
+      <li v-if = "is_staff" class = "content-bookmarks">
         <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
         <a
           :hidden          = "is_mobile"
@@ -56,7 +54,7 @@
         >
           <i :class = "$fa('external-link')"></i>
         </a>
-      </div>
+      </li>
 
       <template v-for = "bookmark in project_bookmarks">
         <li v-if = "bookmark.nodes">
@@ -106,7 +104,7 @@
         </li>
       </template>
 
-      <div
+      <li
         class = "content-bookmarks"
         style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
       >
@@ -119,7 +117,7 @@
           class            = "sidebar-button sidebar-button-icon"
           :class           = "$fa('plus-square')"
         ></span>
-      </div>
+      </li>
 
       <li
         v-for       = "bookmark in user_bookmarks"
