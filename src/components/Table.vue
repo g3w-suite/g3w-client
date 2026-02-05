@@ -16,7 +16,7 @@
       data-placement = "top"
       title          = "Metadata"
     >
-      <i data-v-5685d65c="" aria-hidden="true" class="fas fa-info-circle"></i>
+      <i data-v-5685d65c = "" aria-hidden = "true" class = "fas fa-info-circle"></i>
     </button>
 
     <!-- TOTAL ELEMENTS -->
@@ -192,14 +192,14 @@
 </template>
 
 <script>
-import { PAGELENGTHS }             from 'g3w-constants';
-import Component                   from 'g3w-component';
-import ApplicationState            from 'g3w-state';
-import Field                       from 'components/FieldG3W.vue';
-import GUI                         from 'g3w-app';
-import { debounce }                from 'utils/debounce';
-import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-import { gettext as _ }            from 'g3w-i18n';
+import { PAGELENGTHS }         from 'g3w-constants';
+import Component               from 'g3w-component';
+import ApplicationState        from 'g3w-state';
+import Field                   from 'components/FieldG3W.vue';
+import GUI                     from 'g3w-app';
+import { debounce }            from 'utils/debounce';
+import { getCatalogLayerById } from 'utils/getCatalogLayerById';
+import { gettext as _ }        from 'g3w-i18n';
 
 export default {
 
@@ -335,9 +335,7 @@ export default {
      */
     showMetadata() {
       $('#modal-metadata').modal('show');
-      setTimeout(() => {
-        document.querySelector('#modal-metadata [href="#metadata_layers"]').click();
-      });
+      setTimeout(() => document.querySelector('#modal-metadata [href="#metadata_layers"]').click());
     },
 
     async getDataFromBBOX() {
@@ -533,7 +531,7 @@ export default {
           id:         f.id,
           selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
           attributes: f.attributes || f.properties,
-          geometry:   f.geometry || undefined
+          geometry:   f.geometry || undefined,
         }));
 
         this.state.allfeatures   = data.count;
@@ -583,9 +581,7 @@ export default {
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.reload);
 
-    this.globalSearch = debounce(e => {
-      this.getData({ search: e.target.value });
-    });
+    this.globalSearch = debounce(e => this.getData({ search: e.target.value }));
 
     GUI.closeSideBar();
 
@@ -632,7 +628,7 @@ export default {
   async beforeDestroy() {
 
     // restore any previous active map control
-    if (this.last_map_control && !this.last_map_control.control.isToggled()) {
+    if (false === this?.last_map_control?.control?.isToggled()) {
      this.last_map_control.control.toggle();
     }
 
