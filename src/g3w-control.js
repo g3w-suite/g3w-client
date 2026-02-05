@@ -116,14 +116,14 @@ export default class MapControl extends ol.control.Control {
      *
      * @FIXME add description
      */
-    this.priority        = options.priority || 0;
+    this.priority        = options.priority ?? 0;
 
     /**
      * @FIXME why?
      * 
      * @since 4.0.0 Add click map option
      */
-    this.clickmap       = options.clickmap || false;
+    this.clickmap       = options.clickmap ?? false;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
@@ -301,7 +301,7 @@ export default class MapControl extends ol.control.Control {
   setEventKey({ eventType, eventKey }) {
     this.eventKeys[eventType] = {
       eventKey,
-      originalHandler: eventKey.listener
+      originalHandler: eventKey.listener,
     };
   }
 
@@ -315,7 +315,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   resetOriginalHandlerEvent(type) {
-    if (this.eventKeys[type] && this.eventKeys[type].eventKey) {
+    if (this.eventKeys?.[type]?.eventKey) {
       ol.Observable.unByKey(this.eventKeys[type].eventKey);
       this.eventKeys[type].eventKey = this.on(type, this.eventKeys[type].originalHandler);
     }
@@ -332,7 +332,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   overwriteEventHandler({ eventType, handler }) {
-    if (this.eventKeys[eventType] && this.eventKeys[eventType].eventKey) {
+    if (this.eventKeys?.[eventType]?.eventKey) {
       ol.Observable.unByKey(this.eventKeys[eventType].eventKey);
       this.eventKeys[eventType].eventKey = this.on(eventType, handler);
     }
@@ -360,14 +360,14 @@ export default class MapControl extends ol.control.Control {
    *
    * Handle toggle of map controls
    * 
-   * @param event
+   * @param e
    *
    * @since 3.11.0
    */
-  _handleClick(event) {
+  _handleClick(e) {
     if (this._enabled) {
       this.toggle();
-      event.preventDefault();
+      e.preventDefault();
       this.dispatchEvent('controlclick');
     }
   }
@@ -576,9 +576,9 @@ export default class MapControl extends ol.control.Control {
       case 'spatialMethod':
         this.toggledTool = {
           template: /*html */ `
-            <div style="width: 100%; padding: 5px;">
-              <select ref="select" style="width: 100%" :search="false" v-select2="'method'">
-                <option v-for="method in methods">{{ method }}</option>
+            <div style = "width: 100%; padding: 5px;">
+              <select ref = "select" style = "width: 100%" :search = "false" v-select2 = "'method'">
+                <option v-for = "method in methods">{{ method }}</option>
               </select>
             </div>`,
           data:           () => ({ methods: ['intersects', 'within'], method: this.getSpatialMethod() }),
@@ -621,7 +621,7 @@ export default class MapControl extends ol.control.Control {
         type:      'tool',
         iconClass: this.toggledTool.__iconClass,
         closable:  this._toolButton ? true : false,
-        hooks:     { body: this.toggledTool }
+        hooks:     { body: this.toggledTool },
       });
     } else {
       GUI.closeUserMessage();
@@ -636,7 +636,7 @@ export default class MapControl extends ol.control.Control {
    */
   toggle(toggled = !this._toggled, opts = {}) {
 
-    opts.parent = undefined === opts.parent ? false : opts.parent;
+    opts.parent = opts?.parent ?? false;
 
     // skip if button is already toggled or un-toggled
     if (toggled === this._toggled ) {
@@ -653,7 +653,7 @@ export default class MapControl extends ol.control.Control {
     if (toggled) {
       this.getMap().getControls().forEach(c => {
         if (c.id && c.toggle && (c.id !== this.id) && c.id !== opts.parent) {
-          c.toggle(false)
+          c.toggle(false);
         }
       });
     }
@@ -733,7 +733,7 @@ export default class MapControl extends ol.control.Control {
    */
   showHide() {
     if (this.element) {
-      this.element.style.display = 'none' !== this.element.style.display ? 'none' : 'block';
+      this.element.style.display = 'none' === this.element.style.display ? 'block' : 'none';
     }
   }
 
