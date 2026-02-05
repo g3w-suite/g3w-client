@@ -71,11 +71,11 @@
 </template>
 
 <script>
-  import GUI                         from 'g3w-app';
-  import ApplicationState            from 'g3w-state';
-  import ClickMixin                  from 'mixins/click';
-  import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-  import { XHR }                     from 'utils/XHR';
+  import GUI                     from 'g3w-app';
+  import ApplicationState        from 'g3w-state';
+  import ClickMixin              from 'mixins/click';
+  import { getCatalogLayerById } from 'utils/getCatalogLayerById';
+  import { XHR }                 from 'utils/XHR';
 
   export default {
     name: "catalog-layer-legend",
@@ -107,7 +107,7 @@
          *
          * @since 3.8.0
          */
-        currentstyle: this.layer.styles.find(style => true === style.current).name,
+        currentstyle: this.layer.styles.find(s => true === s.current)?.name,
 
       }
     },
@@ -142,9 +142,9 @@
        */
       show() {
         return (
-          this.layer.expanded &&
-          this.layer.visible &&
-          ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories)
+          this.layer.expanded 
+          && this.layer.visible 
+          && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layer.categories)
         );
       },
 
@@ -213,16 +213,17 @@
        *
        * @since 3.8.0
        */
-      async onChangeLayerLegendStyle(options = {}) {
-        this.loading = true;
-
+      async onChangeLayerLegendStyle(opts = {}) {
+    
         if (this.externallegend) {
           return;
         }
 
+        this.loading = true;
+
         try {
           await this.setLayerCategories(true);
-          this.currentstyle = options.style;                                // Set current style.
+          this.currentstyle = opts.style;                                // Set current style.
           if (this.dynamic) {    
             await this.setLayerCategories(false);                           // toggle categories.
           }
@@ -273,16 +274,16 @@
         const projectLayer = getCatalogLayerById(this.layer.id);
 
         const categories = [];
-        nodes.forEach(({ icon, title, ruleKey, checked, symbols = []}) => {
+        nodes.forEach(({ icon, title, ruleKey, checked, symbols = [] }) => {
           if (icon) {
             // just one category is set (take care of `checked` and `ruleKey`).
             categories.push({ icon, title, ruleKey, checked, disabled: false });
           } else {
             // there are more that one category (`symbols` array is set).
-            symbols.forEach(symbol => {
-              symbol._checked = symbol.checked;
-              symbol.disabled = false;
-              categories.push(symbol);
+            symbols.forEach(s => {
+              s._checked = s.checked;
+              s.disabled = false;
+              categories.push(s);
             });
           }
         });
@@ -303,7 +304,7 @@
             }
             this.categories.forEach(c  => {
               const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
-              const disabled    = undefined === c.checked  || c.checked;
+              const disabled    = undefined === c.checked || c.checked;
               c.disabled        = disabled && undefined === findSymbol;
               //@since 4.0.x In case of icon change base on map. Check icon in case of same title
               c.icon            = (symbols.find(s => s.title === c.title && s.icon !== c.icon) || { icon: c.icon }).icon;
@@ -320,9 +321,9 @@
       async onChangeMapLegendParams() {
         this.mapReady = true;
         if (
-          this.layer.visible &&
-          false === this.externallegend &&
-          ('toc' === this.legendplace || this.layer.categories)
+          this.layer.visible
+          && false === this.externallegend
+          && ('toc' === this.legendplace || this.layer.categories)
         ) {
           await this.setLayerCategories(false);
         }
@@ -389,7 +390,7 @@
        *
        * @type {{}}
        */
-      this.dynamic = ApplicationState.project.state.context_base_legend;
+      this.dynamic  = ApplicationState.project.state.context_base_legend;
 
       this.mapReady = false;
 
