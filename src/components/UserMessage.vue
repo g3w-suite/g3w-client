@@ -23,7 +23,7 @@
             v-if = "title"
             v-t  = "title">
           </h4>
-          <h4  v-else> TOOL</h4>
+          <h4 v-else> TOOL</h4>
           <h5
             v-if  = "subtitle"
             class = "usermessage-header-subtitle"
@@ -63,7 +63,7 @@
    */
   function _makeDraggable(el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
-    el.addEventListener('mousedown', function(e) {
+    el.addEventListener('mousedown', e => {
       // skip dragging on form elements
       if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
         return;
@@ -74,10 +74,12 @@
       document.addEventListener('mouseup', mouseUp);
       document.addEventListener('mousemove', mouseMove);
     });
+
     function mouseUp() {
       document.removeEventListener('mouseup', mouseUp);
       document.removeEventListener('mousemove', mouseMove);
     }
+    
     function mouseMove(e) {
       e.preventDefault();
       x2 = x1 - e.clientX;
