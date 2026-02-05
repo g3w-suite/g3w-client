@@ -13,7 +13,7 @@
 
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
       <!-- HELP DIV -->
-      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+      <div style = "color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
         <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
         <div v-t = "'Search values are limited based on the active filter. Remove the filter to search all data.'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
       </div>
@@ -263,7 +263,7 @@
         GUI.closeContent();
       },
       resize() {
-        SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
+        SELECTS.forEach(s2 => !ApplicationState.ismobile && s2.select2('close'));
       },
 
       /**
@@ -349,7 +349,7 @@
             d.disabled = is_empty(value) ? d.dependance_strict : false;
 
             // update nested dependencies
-            if (this.state.forminputs.find(i => i.dependance === d.attribute)) {
+            if (this.state.forminputs.find(i => d.attribute === i.dependance)) {
               this.changeInput(d);
             }
 
@@ -433,7 +433,7 @@
         });
 
         if (ApplicationState.ismobile) {
-          setTimeout(() => { document.getElementById(input.id)?.blur(); });
+          setTimeout(() => document.getElementById(input.id)?.blur());
         }
       },
 
@@ -483,7 +483,7 @@
            * @param data.text the text that is displayed for the data object
            */
           matcher: (params, data) => {
-            const search = params.term ? params.term.toLowerCase() : params.term;
+            const search = params?.term?.toLowerCase();
             if ('' === (search || '').toString().trim())                             { return data }        // no search terms → get all of the data
             if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data } } // the searched term
             return null;                                                                                    // hide the term
