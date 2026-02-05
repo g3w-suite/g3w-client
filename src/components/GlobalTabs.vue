@@ -58,6 +58,7 @@
           </template>
         </div>
       </template>
+
       <node v-else
         :class               = "[(i % 2 ) ? 'odd': 'even']"
         :showRelationByField = "showRelationByField"
@@ -71,6 +72,7 @@
         :fields              = "fields"
         :showTitle           = "false"
         :node                = "root_tab"/>
+        
     </template>
   </div>
 </template>
@@ -158,7 +160,7 @@
     },
     computed: {
       required_fields() {
-        return 'editing' ===  this.contenttype && this.fields.filter(f => f.validate.required).map(f => f.name);
+        return 'editing' === this.contenttype && this.fields.filter(f => f.validate.required).map(f => f.name);
       },
       show() {
         return this.tabs.reduce((a, t) => a || (t.visible === undefined || !!t.visible), false);
@@ -186,15 +188,15 @@
         }
       },
       // method to set required tab for editing
-      setEditingRequireTab(obj) {
+      setEditingRequireTab(obj = {}) {
         if (undefined === obj.nodes) {
           return this.required_fields.includes(obj.field_name);
         } else {
           return !!obj.nodes.find(n => this.setEditingRequireTab(n));
         }
       },
-      getField(fieldName) {
-        return this.fields.find(f => fieldName === f.name);
+      getField(name) {
+        return this.fields.find(f => name === f.name);
       },
 
       /**
@@ -255,14 +257,14 @@
           }
         });
         if (nodes.length) {
-          this.root_tabs.push(nodes)
+          this.root_tabs.push(nodes);
         }
       } else {
         this.root_tabs = [this.tabs];
       }
     },
     beforeDestroy() {
-      this.unwatch.forEach(unwatch => unwatch());
+      this.unwatch.forEach(u => u());
       this.unwatch = null;
     }
   }
