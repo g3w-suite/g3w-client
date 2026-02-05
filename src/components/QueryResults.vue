@@ -506,18 +506,17 @@
 </template>
 
 <script>
-  import ApplicationState                          from 'g3w-state';
-  import { fieldsMixin }                           from 'mixins';
-  import Link                                      from 'components/FieldLink.vue';
-  import VueField                                  from 'components/FieldVue.vue';
-  import Image                                     from 'components/FieldImage.vue'
-  import Action                                    from 'components/QueryResultsAction.vue';
-  import { toRawType }                             from 'utils/toRawType';
-  import { throttle }                              from 'utils/throttle';
-  import { getCatalogLayerById }                   from 'utils/getCatalogLayerById';
-  import { downloadFeatures }                      from 'utils/downloadFeatures';
-  import GUI                                       from 'g3w-app';
-
+  import ApplicationState         from 'g3w-state';
+  import { fieldsMixin }          from 'mixins';
+  import Link                     from 'components/FieldLink.vue';
+  import VueField                 from 'components/FieldVue.vue';
+  import Image                    from 'components/FieldImage.vue'
+  import Action                   from 'components/QueryResultsAction.vue';
+  import { toRawType }            from 'utils/toRawType';
+  import { throttle }             from 'utils/throttle';
+  import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
+  import { downloadFeatures }     from 'utils/downloadFeatures';
+  import GUI                      from 'g3w-app';
   import { Layer }                from 'g3w-layer';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   
@@ -560,7 +559,7 @@
       },
 
       hasLayers() {
-        return this.hasResults || !!this.state.components.length;
+        return this.hasResults || this.state?.components?.length > 0;
       },
 
       hasResults() {
@@ -656,27 +655,27 @@
         return (
           layer.show &&                    // check if is set show
           (
-            layer?.features?.length > 0 || // whether has at least one feature
-            layer.rawdata ||               // whether has rawdata
-            layer?.infoformats?.length > 0 // whether has info formats (eg. external wms layer)
+            layer?.features?.length > 0 // whether has at least one feature
+            || layer.rawdata            // whether has rawdata
+            || layer?.infoformats?.length > 0 // whether has info formats (eg. external wms layer)
           )
         )
       },
 
       /**
-       * @param { string }              layerId
+       * @param { string }              id //layer id
        * @param { 'feature' | 'layer' } type
        * @param { 'before' | 'after' }  position
        */
-      getLayerCustomComponents(layerId, type, position) {
-        return this.state?.layerscustomcomponents?.[layerId]?.[type]?.[position] || [];
+      getLayerCustomComponents(id, type, position) {
+        return this.state?.layerscustomcomponents?.[id]?.[type]?.[position] || [];
       },
 
       getLayerField({ layer, feature, fieldName }) {
         return {
           ...layer.attributes.find(a => fieldName === a.name), // layer field
           label: null,                                         // hide label in query result (dom table value content)
-          value: feature.attributes[fieldName]
+          value: feature.attributes[fieldName],
         };
       },
 
@@ -709,7 +708,7 @@
       showDownloadModal(layer) {
         downloadFeatures({
           layer,
-          features: layer.features,
+          features:          layer.features,
           down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }`,
           filter: this.state.query?.pagination?.getData?.params?.[layer.id] && {
             ...('search' === this.state.query.type 
@@ -753,13 +752,13 @@
           const attrs = new Set();
           const traverse = item => {
             if (item.nodes) {
-              item.nodes.forEach(node => traverse(node));
+              item.nodes.forEach(n => traverse(n));
             } else {
               let field = layer.formStructure.fields.find(f => item.field_name === f.name);
               if (field) {
-                if (this.state.type === 'ows') {
+                if ('ows'=== this.state.type) {
                   // clone it to avoid replacing original
-                  field = {...field};
+                  field = { ...field };
                   field.name = field.name.replace(/ /g, '_');
                 }
                 attrs.add(field);
@@ -771,7 +770,7 @@
         } else {
           attributes = layer.attributes;
         }
-        const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.includes(attribute.type));
+        const _attributes = attributes.filter(a => a.show && HEADERTYPESFIELD.includes(a.type));
         // TODO: find a clever way to handle geocoding results..
         const end = Math.min(/*'__g3w_marker' === layer.id ? 0 :*/ layer.max_preview_fields, attributes.length);
         return _attributes.slice(0, end);
@@ -792,16 +791,14 @@
 
       // to CHECK NOT GOOD
       collapsedFeatureBox(layer, feature, relation_index) {
-        const box = this.state.layersFeaturesBoxes[GUI.getBoxId(layer, feature, relation_index)];
-        return box ? box.collapsed : true;
+        return this.state.layersFeaturesBoxes[GUI.getBoxId(layer, feature, relation_index)]?.collapsed ?? true;
       },
 
       showFeatureInfo(layer, boxid) {
-        const box = this.state.layersFeaturesBoxes[boxid];
         GUI.emit('show-query-feature-info', {
           layer,
           tabs: this.hasFormStructure(layer),
-          show: box ? !box.collapsed : false,
+          show: !((this.state.layersFeaturesBoxes[boxid] ?? { collapsed: true }).collapsed),
         });
       },
 
@@ -870,7 +867,7 @@
        *
        * @since 4.1.0
        */
-      highlightLayer(layer, opts) {
+      highlightLayer(layer, opts = {}) {
         if (layer.hasgeometry) {
           const features = (layer.features || []).filter(f => GUI.showFeature(layer, f));
           const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
@@ -916,7 +913,7 @@
        */
       async changePage(id, page, size) {
         const { query, queried_layers } = this.state;
-        const index                     = queried_layers.findIndex(l => l.id === id);
+        const index                     = queried_layers.findIndex(l => id === l.id);
         queried_layers[index].loading   = true;
         GUI.disableContent(true);
 
@@ -940,13 +937,13 @@
           }
 
           // get config from getData object
-          const layer = query.pagination[id].layer;
+          const layer           = query.pagination[id].layer;
 
           // whehter layer has filter
           const has_filtertoken = !!layer.getToken();
 
           if ('search' === query.type) {
-            query.pagination.getData.params[id].field =  this.state.query?.pagination?.getData?.params?.[id]?.filter;
+            query.pagination.getData.params[id].field = this.state.query?.pagination?.getData?.params?.[id]?.filter;
           }
           const data = await layer[query.pagination.getData.method]({ ...query.pagination.getData.params[id], page });
           
@@ -974,7 +971,7 @@
             if (page_size_change && !f.selected && f.geometry && layer.isGeoLayer()) {
               GUI.toggleSelection(queried_layers[index], f, 'paginate');
             }
-            f.selected    = page_size_change;
+            f.selected              = page_size_change;
             action.state.toggled[i] = page_size_change;
           });
 
@@ -1007,7 +1004,7 @@
           
           const response      = await catalog_layer.fetchProxyData('wms', { changes: {
             headers: { 'Content-Type': contenttype },
-            params:  { INFO_FORMAT: contenttype }
+            params:  { INFO_FORMAT:    contenttype }
           }});
 
           layer.infoformat = contenttype;
@@ -1042,7 +1039,7 @@
               layer.features.push(feature);
             });
           }
-        } catch (e) {
+        } catch(e) {
           console.warn(e);
         }
         layer.loading = false;
@@ -1063,7 +1060,7 @@
               feature.attributes.relations
                 .forEach(relation => {
                   relation.elements
-                    .forEach((element, index) => this.state.layersFeaturesBoxes[`${layer.id}_${feature.id}_${relation.name}${index}`] = { collapsed: true });
+                    .forEach((_, index) => this.state.layersFeaturesBoxes[`${layer.id}_${feature.id}_${relation.name}${index}`] = { collapsed: true });
                 })
             }
           })
@@ -1073,9 +1070,7 @@
         if (this.onelayerresult && this.hasLayerOneFeature(queried_layers[0])) {
           const layer   = queried_layers[0];
           const boxid   = GUI.getBoxId(layer, layer.features[0]);
-          GUI.onceafter('postRender', () => {
-            this.showFeatureInfo(layer, boxid);
-          });
+          GUI.onceafter('postRender', () => this.showFeatureInfo(layer, boxid));
         }
         requestAnimationFrame(() => GUI.postRender(this.$el));
         await this.$nextTick();
@@ -1107,11 +1102,11 @@
     },
 
     created() {
-      this.zoomToLayer = throttle(layer => { GUI.zoomToLayer(layer); });
+      this.zoomToLayer = throttle(l => GUI.zoomToLayer(l));
     },
 
     beforeDestroy() {
-      this.proxied_layers.forEach(layer => layer?.clearProxyData?.('wms'));
+      this.proxied_layers.forEach(l => l?.clearProxyData?.('wms'));
     },
 
     destroyed() {
