@@ -133,7 +133,7 @@ export default {
       edit:         undefined !== this.$options.options,
       currentlayer: null,
       message:      '',
-      filter:       (undefined !== this.$options.options ? this.$options.options.filter : ''),
+      filter:       this.$options?.options?.filter ?? '',
       loading: {
         test:   false,
         values: false
@@ -151,7 +151,7 @@ export default {
   computed:{
 
     fields() {
-      return this.currentlayer ? this.currentlayer.fields : [];
+      return this?.currentlayer?.fields ?? [];
     },
 
     disabled() {
@@ -232,13 +232,13 @@ export default {
         const { data }    = await GUI.getData('search:features', {
           inputs: {
             layer,
-            filter: createFilterFromString({ layer, filter: this.filter }),
+            filter:        createFilterFromString({ layer, filter: this.filter }),
             feature_count: 100,
           },
           outputs: true,
         });
-        const n         = data.length && data[0].features.length; // number of features
-        this.message    = undefined === n ? '' : ` ${n}`;
+        const n           = data.length && data[0].features.length; // number of features
+        this.message      = undefined === n ? '' : ` ${n}`;
         return data;
       } catch(e) {
         console.warn(e);
@@ -269,7 +269,7 @@ export default {
 
         // edit local item
         if (edit_id) {
-          const i = searches[id].findIndex(s => s.id === query.id);
+          const i = searches[id].findIndex(s => query.id === s.id);
           if (-1 !== i) {
             searches[id][i] = query;
           }
@@ -284,7 +284,7 @@ export default {
             searches[id] = [...(searches[id] || []), query];
           }
         }
-      } catch (e) {
+      } catch(e) {
         console.warn(e);
         return;
       }
@@ -315,7 +315,7 @@ export default {
 
     const project = ApplicationState.project;
 
-    this.layers = project
+    this.layers   = project
       .getLayers()
       .filter(l => !l.baselayer && Array.isArray(l.fields))
       .map(layer => {
@@ -323,19 +323,19 @@ export default {
         let exclude = [];
         project.state.relations
           .filter(r => layer.id === r.referencedLayer && 'ONE' === r.type) // get relations by layerId
-          .forEach( r => {
+          .forEach(r => {
             const l = project.getLayerById(r.referencingLayer);
-            r.customPrefix = r.customPrefix === undefined ? `${l.getName()}_` : r.customPrefix;
-            exclude = [...exclude, ...l.getFields().map(field => `${r.customPrefix}${field.name}`)];
+            r.customPrefix = r?.customPrefix ?? `${l.getName()}_`;
+            exclude = [...exclude, ...l.getFields().map(({ name }) => `${r.customPrefix}${name}`)];
           });
         return {
           id:     layer.id,
           label:  layer.title,
-          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => !exclude.includes(f))
+          fields: layer.fields.filter(f => f.show).map(({ label, name }) => ({ label, name })).filter(f => !exclude.includes(f))
         }
       });
 
-    this.currentlayer = this.edit ? this.layers.find(l => l.id === this.$options.options.layerId) : this.layers[0];
+    this.currentlayer = this.edit ? this.layers.find(l => this.$options.options.layerId === l.id) : this.layers[0];
 
   },
 
