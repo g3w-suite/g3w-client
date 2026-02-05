@@ -39,7 +39,7 @@ export const XHR = {
     } else if (!contentType) {
       formdata = new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString();
     } else {
-      formdata = 'string' === typeof data  ? data : JSON.stringify(data || {});
+      formdata = 'string' === typeof data ? data : JSON.stringify(data || {});
     }
 
     const response = await (await fetch(url, {
@@ -75,7 +75,7 @@ export const XHR = {
     } else if (!contentType) {
       formdata = new URLSearchParams(JSON.parse(JSON.stringify(data || {}))).toString();
     } else {
-      formdata = 'string' === typeof data  ? data : JSON.stringify(data || {});
+      formdata = 'string' === typeof data ? data : JSON.stringify(data || {});
     }
 
     const response = await (await fetch(url, {

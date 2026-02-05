@@ -7,8 +7,8 @@ export function getListableProjects() {
       return p.listable;
     }
     if (
-      p.id === ApplicationState.project.getId() ||
-      (window.initConfig.overviewproject && p.gid === window.initConfig.overviewproject)
+      p.id === ApplicationState.project.getId()
+      || (window.initConfig.overviewproject && p.gid === window.initConfig.overviewproject)
     ) {
       return false;
     }
