@@ -3,7 +3,7 @@
  */
 import ApplicationState from 'g3w-state';
 
-const round = val      => (Math.round(val * 100) / 100).toFixed(2);
+const round = val => (Math.round(val * 100) / 100).toFixed(2);
 
 /**
  * create and add measure tooltip 
@@ -17,7 +17,7 @@ export function createMeasureTooltip({ map, feature } = {}) {
     element,
     offset:      [0, -15],
     positioning: 'bottom-center',
-    stopEvent:   false // disable pointer events
+    stopEvent:   false, // disable pointer events
   });
 
   map.addOverlay(tooltip);
@@ -99,7 +99,7 @@ export function get_formatted_length(geom, epsg = ApplicationState.map_epsg, uni
     return `${length * 0.0005399568} nm`;
   }
 
-  return length > 100 ? `${round(length / 1000)} km` : `${round(length)} m`
+  return length > 100 ? `${round(length / 1000)} km` : `${round(length)} m`;
 }
 
 export function get_formatted_angle(c1, c2) {
