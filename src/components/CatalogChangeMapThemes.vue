@@ -203,9 +203,8 @@ export default {
   },
 
   data() {
-    const theme = Object.values(this.map_themes).flat().find(mt => mt.default);
     return {
-      active_theme: (theme && theme.theme) || null,
+      active_theme: Object.values(this.map_themes).flat().find(mt => mt.default)?.theme ?? null,
       collapsed:    'collapsed' === ApplicationState.project.state.toc_themes_init_status,
       // user themes
       custom_theme: {
@@ -221,7 +220,7 @@ export default {
         validate: {
           valid:    false,
           required: true,
-          error: 'Invalid or exiting name',
+          error:    'Invalid or exiting name',
         }
       },
       /**@since 3.10.0 whether show add a new map theme form **/
@@ -234,11 +233,13 @@ export default {
      * @since 3.11.0
      */
     toggle() {
-      //in case of no new form map_theme is show
-      if (!this.show_form) {
-        document.getElementById('g3w-catalog-views').classList.toggle('menu-open');
-        this.collapsed = !this.collapsed;
+      //skip when no show form
+      if (this.show_form) { 
+        return; 
       }
+      //in case of no new form map_theme is show
+      document.getElementById('g3w-catalog-views').classList.toggle('menu-open');
+      this.collapsed = !this.collapsed;
     },
 
     /**
@@ -360,7 +361,7 @@ export default {
     async deleteTheme(theme) {
       const ok = await GUI.confirm(_('Do you want delete the theme?'));
 
-      // skip when ..
+      // skip when no confirm and no theme is passed
       if (!ok || !theme) {
         return;
       }
@@ -373,7 +374,7 @@ export default {
         if (!response.result) {
           throw response;
         }
-        this.map_themes.custom = this.map_themes.custom.filter(({ theme:t }) => t !== theme);
+        this.map_themes.custom = this.map_themes.custom.filter(({ theme: t }) => t !== theme);
         // show a success message to user
         GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
         // in the case of deleted current map theme set current theme to null
