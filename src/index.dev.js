@@ -357,6 +357,87 @@ g3w.app.once('after:setupControls', () => {
 });
 
 /**
+ * Custom map control: “Record a video”
+ */
+g3w.app.once('after:setupControls', () => {
+  let isRecording = false;
+  let mediaRecorder;
+  let recordedChunks = [];
+  let screenStream = null;
+
+  g3w.app.createMapControl({
+    id: "VIDEOCAPTURE",
+    options: {
+      add: true,
+      clickmap: false,
+      tipLabel: 'Record a video',
+      customClass: 'fa fa-video',
+      async onclick() {
+        if (isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          const btn = document.querySelector('.fa-stop-circle');
+          if(btn) btn.classList.replace('fa-stop-circle', 'fa-video');
+        } else {
+          try {
+            // Richiede il permesso di catturare lo schermo/scheda
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+              video: { frameRate: { ideal: 30 } },
+              audio: false
+            });
+
+            recordedChunks = [];
+            const types = ['video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+            const supportedType = types.find(type => MediaRecorder.isTypeSupported(type));
+
+            mediaRecorder = new MediaRecorder(screenStream, supportedType ? { mimeType: supportedType } : {});
+
+            mediaRecorder.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+              const blob = new Blob(recordedChunks, { type: supportedType || 'video/webm' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              a.download = `video_caupture_${new Date().getTime()}.webm`;
+              document.body.appendChild(a);
+              a.click();
+              
+              setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+              }, 100);
+
+              // Stop all video tracks to close the browser sharing popup
+              screenStream.getTracks().forEach(track => track.stop());
+            };
+
+            // Detects if the user presses "Stop Sharing" from the browser bar
+            screenStream.getVideoTracks()[0].onended = () => {
+              if (isRecording) this.onclick(); 
+            };
+
+            mediaRecorder.start(1000);
+            isRecording = true;
+            
+            const btn = document.querySelector('.fa-video');
+            if(btn) btn.classList.replace('fa-video', 'fa-stop-circle');
+
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    },
+  });
+});
+
+
+
+/**
  * Custom map control: “Iframe editor”
  * 
  * @see https://github.com/g3w-suite/g3w-client/pull/855
