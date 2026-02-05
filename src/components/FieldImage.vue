@@ -30,7 +30,7 @@ export default {
   props: {
     state: { 
       required: true, 
-      type: Object 
+      type:     Object 
     }
   },
 
@@ -40,11 +40,13 @@ export default {
 
   computed: {
     images() {
-      return [].concat(undefined !== this.state.value.mime_type ? this.state.value.value : this.state.value).map(img => {
-        let url = (img || {}).photo || img;
-        url = `${!url.startsWith('/') && !url.startsWith('http') ? window.initConfig.mediaurl : ''}${url}`;
-        return ({ src: url })
-      });
+      return []
+        .concat(undefined !== this.state.value.mime_type ? this.state.value.value : this.state.value)
+        .map(img => {
+          let url = (img || {}).photo || img;
+          url = `${!url.startsWith('/') && !url.startsWith('http') ? window.initConfig.mediaurl : ''}${url}`;
+          return ({ src: url })
+        });
     },
   },
 

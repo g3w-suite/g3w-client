@@ -16,7 +16,7 @@ export default {
   props: {
     state: { 
       required: true, 
-      type: Object 
+      type:     Object 
     }
   },
   

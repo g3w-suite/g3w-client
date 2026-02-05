@@ -9,7 +9,7 @@
       v-if  = "state.showlabel"
       class = "field_label"
     >
-      <slot name = "label">{{state.label}}</slot>
+      <slot name = "label">{{ state.label }}</slot>
     </div>
     <div class = "field_value">
       <slot name = "field">
@@ -25,7 +25,7 @@ export default {
   props: {
     state: {
       required: true,
-      type: Object,
+      type:     Object,
     }
   }
 }

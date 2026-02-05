@@ -28,7 +28,7 @@ export default {
     ...Fields
   },
   created() {
-    this.type = FieldsService.getType(this.state)
+    this.type = FieldsService.getType(this.state);
   }
 };
 </script>

@@ -26,13 +26,13 @@ export default {
  props: {
     state: { 
       required: true, 
-      type: Object 
+      type:     Object 
     }
   },
   
   data() {
     return {
-      value: null
+      value: null,
     }
   },
   components: {
@@ -44,7 +44,7 @@ export default {
     }
   },
   created() {
-    this.value = this.state.value && typeof this.state.value === 'object' ? this.state.value.value : this.state.value;
+    this.value = this.state?.value?.value ?? this.state.value;
   }
 };
 </script>
