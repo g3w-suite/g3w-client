@@ -3,15 +3,15 @@
  * @since 3.10.0
  */
 
-import ApplicationState         from 'g3w-state';
-import Emitter                  from 'g3w-emitter';
-import Component                from 'g3w-component';
-import GUI                      from 'g3w-app';
+import ApplicationState from 'g3w-state';
+import Emitter          from 'g3w-emitter';
+import Component        from 'g3w-component';
+import GUI              from 'g3w-app';
 
-import vueComp                  from 'components/Form.vue';
-import BodyFormComp             from 'components/FormBody.vue';
+import vueComp          from 'components/Form.vue';
+import BodyFormComp     from 'components/FormBody.vue';
 
-import { XHR }                  from 'utils/XHR';
+import { XHR }          from 'utils/XHR';
 
 /**
  * ORIGINAL SOURCE: src/utils/getDefaultExpression.js@4.0.0
@@ -121,7 +121,7 @@ async function getFilterExpression({
       url:         `${ApplicationState.project.getUrl('vector_data')}${layer_id}/`,
       contentType: 'application/json',
       data:        JSON.stringify({
-      field_name: field.name,
+      field_name:  field.name,
       layer_id,
       qgs_layer_id,
       form_data: (new ol.format.GeoJSON()).writeFeatureObject(feature),
@@ -136,7 +136,7 @@ async function getFilterExpression({
     }),
     });
     if (response.result) {
-      features = response.vector.data.features || [];
+      features = response.vector?.data?.features ?? [];
     } else {
       throw JSON.stringify(response.error);
     }
@@ -191,7 +191,7 @@ export class FormComponent extends Component {
     super({
       ...opts,
       id:                 opts.id || 'form',
-      perc:               null !== opts.layer.config.editing.form.perc ? opts.layer.config.editing.form.perc : opts.perc,
+      perc:               opts.layer?.config?.editing?.form?.perc ?? opts.perc,
       service:            new (opts.service || FormService)(),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });

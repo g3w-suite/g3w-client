@@ -3,9 +3,9 @@
  * @since 4.0.0
  */
 
-import ApplicationState   from 'g3w-state';
-import GUI                from 'g3w-app';
-import { gettext as _ }   from 'g3w-i18n';
+import ApplicationState from 'g3w-state';
+import GUI              from 'g3w-app';
+import { gettext as _ } from 'g3w-i18n';
 
 /**
  * Custom navbar item: "alerts"
@@ -34,7 +34,7 @@ async function _showAlertsManager() {
   const messages = ApplicationState.project.state.messages;
   const data     = JSON.parse(window.localStorage.getItem('MESSAGES') || '{}');
   const edit_url = ApplicationState.project.getState()?.edit_url || '';
-  const dialog = Object.assign(document.createElement('template'), {
+  const dialog   = Object.assign(document.createElement('template'), {
     innerHTML: /* html */`
       <dialog id = "project-messages" popover = "manual">
         <h4 style = "margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">${_('alerts')}</h4>
@@ -84,7 +84,7 @@ async function _showAlertsManager() {
   // Handle checkbox click event
   dialog.querySelectorAll('[name^="dont_show_again_"]').forEach(checkbox => checkbox.addEventListener('click', e => {
     const data = JSON.parse(window.localStorage.getItem('MESSAGES') || '{}');
-    const id = +checkbox.name.replace('dont_show_again_', '');
+    const id   = +checkbox.name.replace('dont_show_again_', '');
     if (checkbox.checked) {
       data[pid].push(id);
     } else {
