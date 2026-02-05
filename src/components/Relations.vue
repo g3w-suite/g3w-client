@@ -11,7 +11,7 @@
   >
     <div class = "header skin-background-color lighten">
       <span style = "font-size: 1.1em;" v-t:pre = "'List of relations of feature'"></span>
-      <ul style="padding: 1em 0 0 15px; list-style: square;">
+      <ul style = "padding: 1em 0 0 15px; list-style: square;">
         <li v-for = "info in feature_info()"><b>{{ info.key }}</b>: {{ info.value }}</li>
       </ul>
     </div>
@@ -21,7 +21,7 @@
         @click = "showRelation(relation)"
         class  = "skin-border-color grid-item"
       >
-        <i class="fas fa-sitemap" style="padding: 6px;"></i>
+        <i class = "fas fa-sitemap" style = "padding: 6px;"></i>
         <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
       </div>
     </div>
@@ -164,10 +164,10 @@
         </table>
 
         <!-- TABLE TOOLBAR -->
-        <div class="table-toolbar" style="display: flex; gap: 1ch; margin-top: 1ch;">
+        <div class = "table-toolbar" style = "display: flex; gap: 1ch; margin-top: 1ch;">
 
           <!-- PAGE SIZE -->
-          <label style="margin-top: 5px;"><select style = "border: 1px solid #aaa;" v-model = "table.page_size">
+          <label style = "margin-top: 5px;"><select style = "border: 1px solid #aaa;" v-model = "table.page_size">
             <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
           </select> {{ $t('values per page') }}</label>
 
@@ -365,7 +365,7 @@
        * @since 4.1.0
        */
       featureId() {
-        return this.feature.attributes[G3W_FID] || this.feature.attributes.fid;
+        return this.feature.attributes[G3W_FID] ?? this.feature.attributes.fid;
       },
 
       /**
@@ -373,9 +373,9 @@
        */
       charts() {
         if ('relation' === this.view) {
-          return GUI.plotLayerIds.find(pid => pid == this.relation.referencingLayer) ? [this.relation.referencingLayer] : []
+          return GUI.plotLayerIds.find(pid => this.relation.referencingLayer == pid) ? [this.relation.referencingLayer] : [];
         } else {
-          return this.relations.map(r => GUI.plotLayerIds.find(id => id === r.referencingLayer)).filter(Boolean)
+          return this.relations.map(r => GUI.plotLayerIds.find(id => r.referencingLayer === id)).filter(Boolean);
         }
       },
 
@@ -383,7 +383,7 @@
        * @since 4.1.0
        */
       has_charts() {
-        return !!this.charts.find(id => id === this?.relation?.referencingLayer);
+        return !!this.charts.find(id => this?.relation?.referencingLayer === id);
       },
 
     },
@@ -590,7 +590,7 @@
       editFeature(index) {
         GUI.editFeature({
           layer: {
-            id:         this.nmRelation ? this.nmRelation.referencedLayer : this.relation.referencingLayer,
+            id:         this?.nmRelation?.referencedLayer ?? this.relation.referencingLayer,
             attributes: this.columns,
           },
           feature: this.table.features[index],
@@ -634,10 +634,10 @@
        * @since 4.1.0
        */
       async showDownloadModal() {
-        const _ = g3w.gettext;
+        const _   = g3w.gettext;
 
         let layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-        layer    = layer.state;
+        layer     = layer.state;
 
         if (!layer) {
           throw 'no layer';
@@ -693,7 +693,7 @@
 
             ApplicationState.download = true;
             try {
-              const format = dialog.querySelector('[name="format"]').value.toLowerCase();
+              const format   = dialog.querySelector('[name="format"]').value.toLowerCase();
 
               const response = await fetch(createRelationsUrl({
                   layerId:  this.layerId,
@@ -720,7 +720,7 @@
               console.warn(e);
               GUI.showUserMessage({
                 type:     'alert',
-                message:  e || 'info.server_error',
+                message:  e ?? 'info.server_error',
                 closable: true,
               });
             }
@@ -744,7 +744,7 @@
         if (this.chart.toggled) {
           GUI.showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.featureId });
         } else {
-          GUI.hideChart(this.chart.container)
+          GUI.hideChart(this.chart.container);
         }
       },
 
