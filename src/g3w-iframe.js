@@ -144,12 +144,12 @@ export class IframeApp extends Emitter {
    * @returns { Promise<Array> }
    */
   async 'app:zoomtocoordinates'(params = {}) {
-    let coords = undefined !== params.coordinates ? params.coordinates : [];
+    let coords = params?.coordinates ?? [];
     // skip when coordinates in params are null or are an array with more than item 2
     if (!(coords && Array.isArray(coords) && 2 === coords.length)) {
       return Promise.reject(coords);
     }
-    if (undefined !== params.epsg) {
+    if (params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
       coords = ol.proj.transform(coordinates, params.epsg, GUI.getEpsg());
@@ -168,7 +168,7 @@ export class IframeApp extends Emitter {
    */
   async 'app:getextent'(params = {}) {
     const extent = GUI.getMapExtent();
-    if (undefined !== params.epsg) {
+    if (params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
       return ol.proj.transformExtent(extent, GUI.getEpsg(), params.epsg);
@@ -184,13 +184,13 @@ export class IframeApp extends Emitter {
    * @returns { Promise<Array> }
    */
   async 'app:zoomtoextent'(params = {}) {
-    let extent = undefined !== params.extent ? params.extent : [];
+    let extent = params?.extent ?? [];
     // skip when an extent is null ora an array with number of ites not equal to 4
     if (!(extent && Array.isArray(extent) && 4 === extent.length)) {
       return Promise.reject(extent);
     }
     /** If epsg is provide, get epsg definition */
-    if (undefined !== params.epsg) {
+    if (params.epsg) {
       params.epsg = normalizeEpsg(params.epsg)
       await ApplicationState.projections.set(params.epsg);
       extent = ol.proj.transformExtent(extent, params.epsg, GUI.getEpsg());
@@ -221,7 +221,7 @@ export class IframeApp extends Emitter {
 
     const response = {
       features:     [],
-      qgs_layer_id: null
+      qgs_layer_id: null,
     };
 
     let i = 0;
