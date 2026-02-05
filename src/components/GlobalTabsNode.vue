@@ -105,9 +105,9 @@
           if ('group' === this.getNodeType(node) ) { return true }
           else if (!node.nodes && node.name && 'group' != this.getNodeType(node)) {
             node.relation = true;
-            return true
+            return true;
           } else {
-            return !!this.fields.find(f => node.field_name === (f.name || node.relation))
+            return !!this.fields.find(f => node.field_name === (f.name || node.relation));
           }
         });
         return filterNodes || [];
