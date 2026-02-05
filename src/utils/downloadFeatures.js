@@ -20,7 +20,7 @@ import shpwrite                from '@mapbox/shp-write';
 // set download action tool
 GUI.onafter('addActionsForLayers', (actions, layers) => {
   layers
-    .filter(layer => layer.downloads.length > 0)
+    .filter(l => l.downloads.length > 0)
     .forEach((layer) => {
       actions[layer.id].push({
         id:         'downloads',
@@ -207,20 +207,24 @@ export async function downloadFeatures({
             headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
             signal:  AbortSignal.timeout(TIMEOUT),
           });
+
           if (!response?.ok) {
             throw (await response.json()).message;
           }
+
           blob     = await response.blob();
           filename = response.headers.get('content-disposition');
         }
 
         saveBlob(blob, filename);
-      } catch (e) {
+      } catch(e) {
         GUI.showUserMessage({ type: 'alert', message: e.message || e });
       }
       ApplicationState.download = false;
     }
-    if (action) action.state.toggled[index] = false;
+    if (action) {
+      action.state.toggled[index] = false;
+    }
     dialog.remove();
   });
 

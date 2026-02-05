@@ -63,7 +63,7 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
       'zip'    : new ol.format.GeoJSON(),
       'kml'    : new ol.format.KML({ extractStyles: false }),
       'kmz'    : new ol.format.KML({ extractStyles: false }),
-    })[type].readFeatures(data, { dataProjection: epsg, featureProjection: mapCrs || epsg });
+    })[type].readFeatures(data, { dataProjection: epsg, featureProjection: mapCrs ?? epsg });
   }
 
   // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
@@ -78,8 +78,8 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
       hooks: {
         footer: {
           template: /* html */
-          `<select v-select2="errors[0].value" class="skin-color" :search="false" style="width:100%">
-            <option v-for="e in errors" :key="e.row" :value="e.value">[{{ e.row}}] {{e.value}}</option>
+          `<select v-select2 = "errors[0].value" class = "skin-color" :search = "false" style = "width:100%">
+            <option v-for = "e in errors" :key = "e.row" :value = "e.value">[{{ e.row}}] {{e.value}}</option>
           </select>`,
           data: () => ({ errors }),
         }
