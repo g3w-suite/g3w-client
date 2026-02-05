@@ -773,8 +773,8 @@ export default {
 
     async addLayer() {
       this.loading = true;
-      // check if WMS already added (by name)
-      const data  = GUI.getLocalExternalLayersData();
+      // check if External Local layers already added (by name)
+      const data = GUI.getLocalExternalLayersData();
       if ('wms' === this.layer_type) {
         const name = (this.name || `wms_${getUniqueDomId()}`).trim();
 
