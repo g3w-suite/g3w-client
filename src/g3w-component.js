@@ -163,8 +163,8 @@ export default class Component extends Emitter {
 
     this.setInternalComponent = function() {
       this.internalComponent = new (Vue.extend(this.vueComponent))({
-        service: this._service,
-        template: opts.template,
+        service:   this._service,
+        template:  opts.template,
         propsData: opts.propsData
       });
       this.internalComponent.state = this.getService().state;
@@ -224,9 +224,9 @@ export default class Component extends Emitter {
     return this.internalComponent;
   }
 
-  setInternalComponent(internalComponent, options={}) {
+  setInternalComponent(internalComponent, opts = {}) {
     this.internalComponent = undefined === internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
-    (options.events || [])
+    (opts.events || [])
       .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
     if (this._service && this._service.state) {
       this.internalComponent.state = this._service.state;
@@ -283,7 +283,7 @@ export default class Component extends Emitter {
    * @returns { Element } DOM element
    */
   ismount() {
-    return this.internalComponent && this.internalComponent.$el;
+    return this.internalComponent?.$el;
   }
 
   /**
