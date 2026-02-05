@@ -423,7 +423,7 @@ Here is a foundation you can use for create a your own custom theme:
 
 <summary>7. How can I translate this project?</summary>
 
-Language files are stored into the [`src/assets/locales`](https://github.com/g3w-suite/g3w-client/blob/dev/src/assets/locales) folder.
+Language files are stored into the [`src/static/locales`](https://github.com/g3w-suite/g3w-client/blob/dev/src/static/locales) folder.
 
 By adding some of these lines (eg. into your `plugin.js` or `custom.js`) you can change or add custom translation entries:
 
