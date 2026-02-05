@@ -35,7 +35,9 @@
     >
       <bar-loader :loading = "tool.loading"/>
       <i :class = "$fa(tool.icon || 'caret-right')"></i>
-      <span v-if = "tool.html" class = "tool-label"
+      <span 
+        v-if  = "tool.html" 
+        class = "tool-label"
       >
         <i :class = "tool.html.icon"></i>
         {{ tool.html.text || tool.name}}
@@ -57,8 +59,8 @@
 </template>
 
 <script>
-import ApplicationState   from 'g3w-state';
-import GUI                from 'g3w-app';
+import ApplicationState from 'g3w-state';
+import GUI              from 'g3w-app';
 
 export default {
   name: "g3w-tool",
@@ -72,7 +74,7 @@ export default {
     showToolStateMessage() {
       GUI.dialog({
         title:   this.tool.state.type.toUpperCase(),
-        message: this.tool.state.message
+        message: this.tool.state.message,
       });
     },
   },
