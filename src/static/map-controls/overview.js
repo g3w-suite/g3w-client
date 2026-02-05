@@ -43,7 +43,7 @@ GUI.setupControl.overview = async function() {
         getType:       () => CONFIG.type,
         getId:         () => CONFIG.id,
         getProjection: () => ApplicationState.projections.get(PROJECT.crs),
-        getRelations() { return []; }
+        getRelations() { return []; },
       });
 
        // loop layerstree and inject additional layer properties from server config (eg. visibile: true/false)
@@ -153,6 +153,6 @@ GUI.setupControl.overview = async function() {
     });
 
   } catch(e) {
-    console.warn(e)
+    console.warn(e);
   }
 };
