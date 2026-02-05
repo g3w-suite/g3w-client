@@ -19,7 +19,7 @@ export default class PickCoordinatesInteraction extends ol.interaction.Pointer {
           }
         }, 300);
         // return false to avoid start of drag event
-        return false
+        return false;
       },
       handleUpEvent(e) {
         this.dispatchEvent({
@@ -40,13 +40,10 @@ export default class PickCoordinatesInteraction extends ol.interaction.Pointer {
     this._centerMap = null;
   }
 
-  shouldStopEvent() { return false }
+  shouldStopEvent() { return false; }
 
   setActive(bool) {
-    const map = this.getMap();
-    if (map) {
-      map.getViewport().classList.remove(this._cursor);
-    }
+    this.getMap()?.getViewport().classList.remove(this._cursor);
     super.setActive(bool);
   };
 

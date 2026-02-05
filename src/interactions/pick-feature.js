@@ -27,7 +27,7 @@ export default class PickFeatureInteraction extends ol.interaction.Pointer {
       ...opts
     })
 
-    const { features } = opts;
+    const { features }  = opts;
     this.features_      = (Array.isArray(features) && features.length > 0) ? features : null;
     this.layers_        = opts.layers || null;
     this.pickedFeature_ = null;
@@ -44,19 +44,19 @@ export default class PickFeatureInteraction extends ol.interaction.Pointer {
     let featureFound = null;
     const intersectingFeature = map.forEachFeatureAtPixel(pixel, feature => {
       if (this.features_) {
-        if (this.features_.includes(feature)) { return feature }
-        else { return null }
+        if (this.features_.includes(feature)) { return feature; }
+        else { return null; }
       }
       return feature;
     }, {
       layerFilter:  this.layerFilter_.bind(this),
       hitTolerance: (isMobile && isMobile.any) ? 10 : 0
     });
-    if (intersectingFeature) { featureFound = intersectingFeature }
+    if (intersectingFeature) { featureFound = intersectingFeature; }
     return featureFound;
   }
 
-  shouldStopEvent() { return false }
+  shouldStopEvent() { return false; }
 
   setMap(map) {
     if (!map) { this.getMap().getTargetElement().style.cursor = ''}
