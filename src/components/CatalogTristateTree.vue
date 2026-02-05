@@ -298,7 +298,7 @@ export default {
     },
 
     isGroup() {
-      return !!this.layerstree.nodes
+      return !!this.layerstree.nodes;
     },
 
     legendlayerposition() {
@@ -318,7 +318,7 @@ export default {
     },
 
     isHidden() {
-      return this.layerstree.hidden && (true === this.layerstree.hidden);
+      return true === this.layerstree?.hidden;
     },
 
     selected() {
@@ -386,8 +386,8 @@ export default {
         return; // NB exit early!
       }
 
-      const visible            = group.parentGroup ? group.parentGroup.checked : true;
-      const mutually_exclusive = group.parentGroup && group.parentGroup.mutually_exclusive;
+      const visible            = group?.parentGroup?.checked ?? true;
+      const mutually_exclusive = group?.parentGroup?.mutually_exclusive;
 
       if (!mutually_exclusive) {
         _setAllLayersVisible({ nodes: group.nodes, visible });
@@ -492,8 +492,8 @@ export default {
     select() {
       // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
       if (
-        undefined !== this.layerstree.selected &&
-        ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
+        undefined !== this.layerstree.selected 
+        && ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
       ) {
         GUI.emit('treenodeselected', this.layerstree);
       }
@@ -510,7 +510,7 @@ export default {
         let epsg = layer.epsg || GUI.getEpsg();
         bbox = epsg === GUI.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, GUI.getEpsg());
         const geometry = ol.extent.containsExtent(ApplicationState.project.state.extent, bbox) ? bbox : ApplicationState.project.state.extent;
-        const view = GUI.getMap().getView();
+        const view     = GUI.getMap().getView();
         view.animate(
           { duration: 200, center:     view.getCenter() },
           { duration: 200, resolution: view.getResolution() }
@@ -525,7 +525,7 @@ export default {
      * @since v3.8
      */
     canZoom(layer) {
-      return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
+      return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(c => c > 0));
     },
 
     /**
