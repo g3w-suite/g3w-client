@@ -554,7 +554,7 @@ g3w.app.once('after:setupControls', () => {
  * Custom map control: “Record a video”
  */
 g3w.app.once('after:setupControls', () => {
-  let isRecording, recorder, chunks, stream;
+  let recorder, chunks, stream;
   g3w.app.createMapControl({
     id: "VIDEOCAPTURE",
     options: {
@@ -563,69 +563,54 @@ g3w.app.once('after:setupControls', () => {
       tipLabel: 'Record a video',
       customClass: 'fa fa-video',
       async onclick() {
-        if (isRecording) {
-          recorder.stop();
-          isRecording = false;
-        } else {
-          try {
-            // Richiede il permesso di catturare lo schermo/scheda
-            stream = await navigator.mediaDevices.getDisplayMedia({
-              video: { frameRate: { ideal: 30 } },
-              audio: false
-            });
-
-            chunks = [];
-            const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(type => MediaRecorder.isTypeSupported(type));
-
-            recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-
-            recorder.ondataavailable = (e) => {
-              if (e.data && e.data.size > 0) {
-                chunks.push(e.data);
-              }
-            };
-
-            recorder.onstop = () => {
-              const btn = document.querySelector('.fa-stop-circle');
-              if (btn) {
-                btn.classList.replace('fa-stop-circle', 'fa-video');
-              }
-              const blob = new Blob(chunks, { type: mimeType });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.style.display = 'none';
-              a.href = url;
-              a.download = `video_caupture_${new Date().getTime()}.webm`;
-              document.body.appendChild(a);
-              a.click();
-              
-              setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }, 100);
-
-              // Stop all video tracks to close the browser sharing popup
-              stream.getTracks().forEach(track => track.stop());
-            };
-
-            // Detects if the user presses "Stop Sharing" from the browser bar
-            stream.getVideoTracks()[0].onended = () => {
-              if (isRecording) {
-                this.onclick();
-              }
-            };
-
-            recorder.start(1000);
-            isRecording = true;
-
-            const btn = document.querySelector('.fa-video');
-            if (btn) {
-              btn.classList.replace('fa-video', 'fa-stop-circle');
-            }
-
-          } catch (e) {
-            console.error(e);
+        try {
+          if ('recording' === recorder?.state) {
+            recorder.stop();
+            return;
           }
+          // Richiede il permesso di catturare lo schermo/scheda
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { frameRate: { ideal: 30 } },
+            audio: false
+          });
+
+          chunks = [];
+
+          recorder = new MediaRecorder(stream, {
+            mimeType: ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(type => MediaRecorder.isTypeSupported(type))
+          });
+
+          recorder.ondataavailable = (e) => {
+            if (e?.data?.size > 0) {
+              chunks.push(e.data);
+            }
+          };
+
+          recorder.onstop = () => {
+            const btn = document.querySelector('.fa-stop-circle');
+            if (btn) {
+              btn.classList.replace('fa-stop-circle', 'fa-video');
+            }
+            g3w.utils.saveBlob(new Blob(chunks, { type: recorder.mimeType }), `video_caupture_${new Date().getTime()}.webm`);
+            // Stop all video tracks to close the browser sharing popup
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          // Detects if the user presses "Stop Sharing" from the browser bar
+          stream.getVideoTracks()[0].onended = () => {
+            if ('inactive' !== recorder.state) {
+              recorder.stop();
+            }
+          };
+
+          recorder.start(1000);
+
+          const btn = document.querySelector('.fa-video');
+          if (btn) {
+            btn.classList.replace('fa-video', 'fa-stop-circle');
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
     },
