@@ -6,7 +6,7 @@
 <template>
 
   <div
-    v-if                = "show"
+    v-show              = "show"
     class               = "layer-legend"
     @click.stop.prevent = ""
   >
@@ -17,7 +17,12 @@
     />
 
     <figure v-if = "externallegend">
-      <img :src = "getWmsSourceLayerLegendUrl()" >
+      <img 
+        loading    = "lazy"
+        :src       = "legend.url" 
+        @loaderror = "setError()"
+        @load      = "urlLoaded()"
+        >
     </figure>
 
     <figure
@@ -173,12 +178,19 @@
         this.$emit('showmenucategory');
       },
   
-      getWmsSourceLayerLegendUrl() {
-        return getCatalogLayerById(this.layer.id).getLegendUrl({
-          ...window.initConfig?.layout?.legend,
-          width:  16,
-          height: 16,
-        });
+      /**
+       * set external legend url
+       */
+      async setWmsSourceLayerLegendUrl() {
+        if (!this.legend.url) {
+          this.legend.loading = true;
+          await this.$nextTick();
+          this.legend.url = getCatalogLayerById(this.layer.id).getLegendUrl({
+            ...window.initConfig?.layout?.legend,
+            width:  16,
+            height: 16,
+          });
+        }
       },
 
       isDisabled(index) {
@@ -365,12 +377,14 @@
         if (enabled && false !== this.initialize) {
           await this.setLayerCategories(!this.dynamic);
         }
+        if (visible && this.externallegend) {
+          await this.setWmsSourceLayerLegendUrl();
+        }
       }
 
     },
 
     async created() {
-
       /**
        * Used to check if layer and its legend categories are initialized
        * That means register all events at first time the layer is visible
@@ -401,6 +415,10 @@
       // need to exclude wms source
       if (false === this.externallegend && true === this.layer.visible) {
         await this.runInitLayerVisibleAction();
+      }
+
+      if (this.layer.visible && this.externallegend) {
+        await this.setWmsSourceLayerLegendUrl();
       }
 
     },
