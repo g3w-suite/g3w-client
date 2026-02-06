@@ -53,11 +53,86 @@ g3w.app.once('initconfig', () => {
   ];
 });
 
+// custom context menu items
 g3w.app.on('map:context-menu', menu => {
   menu.items.push({
-    label: 'Custom entry',
-    children: [{ label: 'Child 1', cbk: () => alert('child 1') }],
-    position: 100,
+    label: 'View on external map',
+    icon: 'external-link',
+    children: [
+      {
+        label: 'Google',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
+          window.open(`https://www.google.com/maps/@${lat},${lon},${zoom}z`, '_blank');
+        },
+      },
+      {
+        label: 'Bing',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
+          window.open(`https://www.bing.com/maps/?cp=${lat}~${lon}&lvl=${zoom}`, '_blank');
+        },
+      },
+      {
+        label: 'Yandex',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
+          window.open(`https://yandex.com?maps/ll=${lat}%2C${lon}&z=${zoom}`, '_blank');
+        },
+      },
+      {
+        label: 'OSM',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
+          window.open(`https://www.openstreetmap.org/#map=${zoom}/${lat}/${lon}`, '_blank');
+        },
+      },
+      {
+        label: 'Mapy.cz',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
+          window.open(`https://mapy.com/it/turisticka?x=${lat}&y=${lon}&z=${zoom}`, '_blank');
+        },
+      },
+      {
+        label: 'Wikimapia',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
+          window.open(`https://wikimapia.org/#lang=ro&lat=${lat}&lon=${lon}&z=${zoom}`, '_blank');
+
+          dialog.querySelector('#btn-meteoblu').onclick = () => openUrl(`https://www.meteoblue.com/en/weather/week/${lat}N${lon}E`);
+          
+          dialog.showModal();
+        },
+      },
+      {
+        label: 'Meteo blu',
+        cbk: () => {
+          const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+          const lon    = coords[0].toFixed(6);
+          const lat    = coords[1].toFixed(6);
+          window.open(`https://www.meteoblue.com/en/weather/week/${lat}N${lon}E`, '_blank');
+        },
+      },
+    ],
   });
 });
 
