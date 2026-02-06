@@ -587,7 +587,7 @@
         this.closeMenu();
         const editing = GUI.getPlugin('editing');
         //check if has coordinate
-        if (this.map_coords) {
+        if (this.map_coords.length) {
           try {
             const project  = ApplicationState.project;
             const response = await GUI.getData('query:coordinates', {
