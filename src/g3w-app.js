@@ -5212,7 +5212,7 @@ export default new (class GUI extends Emitter {
 
     // skip when another layer with the same name was already added
     if (this.getLayerByName(externalLayer.name)) {
-      this.showUserMessage({ type: 'warning', message: 'Layer with same name already added' });
+      this.showUserMessage({ type: 'warning', message: `Layer with same name already added: <b>${externalLayer.name}</b>` });
     }
 
     const type  = (externalLayer._type || externalLayer.type || '').toLowerCase().trim('').trim();
