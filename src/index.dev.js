@@ -360,11 +360,7 @@ g3w.app.once('after:setupControls', () => {
  * Custom map control: “Record a video”
  */
 g3w.app.once('after:setupControls', () => {
-  let isRecording = false;
-  let mediaRecorder;
-  let recordedChunks = [];
-  let screenStream = null;
-
+  let isRecording, recorder, chunks, stream;
   g3w.app.createMapControl({
     id: "VIDEOCAPTURE",
     options: {
@@ -374,30 +370,33 @@ g3w.app.once('after:setupControls', () => {
       customClass: 'fa fa-video',
       async onclick() {
         if (isRecording) {
-          mediaRecorder.stop();
+          recorder.stop();
           isRecording = false;
-          const btn = document.querySelector('.fa-stop-circle');
-          if(btn) btn.classList.replace('fa-stop-circle', 'fa-video');
         } else {
           try {
             // Richiede il permesso di catturare lo schermo/scheda
-            screenStream = await navigator.mediaDevices.getDisplayMedia({
+            stream = await navigator.mediaDevices.getDisplayMedia({
               video: { frameRate: { ideal: 30 } },
               audio: false
             });
 
-            recordedChunks = [];
-            const types = ['video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
-            const supportedType = types.find(type => MediaRecorder.isTypeSupported(type));
+            chunks = [];
+            const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(type => MediaRecorder.isTypeSupported(type));
 
-            mediaRecorder = new MediaRecorder(screenStream, supportedType ? { mimeType: supportedType } : {});
+            recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
 
-            mediaRecorder.ondataavailable = (e) => {
-              if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+            recorder.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) {
+                chunks.push(e.data);
+              }
             };
 
-            mediaRecorder.onstop = () => {
-              const blob = new Blob(recordedChunks, { type: supportedType || 'video/webm' });
+            recorder.onstop = () => {
+              const btn = document.querySelector('.fa-stop-circle');
+              if (btn) {
+                btn.classList.replace('fa-stop-circle', 'fa-video');
+              }
+              const blob = new Blob(chunks, { type: mimeType });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.style.display = 'none';
@@ -412,19 +411,23 @@ g3w.app.once('after:setupControls', () => {
               }, 100);
 
               // Stop all video tracks to close the browser sharing popup
-              screenStream.getTracks().forEach(track => track.stop());
+              stream.getTracks().forEach(track => track.stop());
             };
 
             // Detects if the user presses "Stop Sharing" from the browser bar
-            screenStream.getVideoTracks()[0].onended = () => {
-              if (isRecording) this.onclick(); 
+            stream.getVideoTracks()[0].onended = () => {
+              if (isRecording) {
+                this.onclick();
+              }
             };
 
-            mediaRecorder.start(1000);
+            recorder.start(1000);
             isRecording = true;
-            
+
             const btn = document.querySelector('.fa-video');
-            if(btn) btn.classList.replace('fa-video', 'fa-stop-circle');
+            if (btn) {
+              btn.classList.replace('fa-video', 'fa-stop-circle');
+            }
 
           } catch (e) {
             console.error(e);
