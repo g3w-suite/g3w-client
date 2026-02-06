@@ -610,7 +610,7 @@ g3w.app.once('after:setupControls', () => {
             btn.classList.replace('fa-video', 'fa-stop-circle');
           }
         } catch (e) {
-          console.error(e);
+          g3w.app.showUserMessage({ type: 'warning', message: e.toString() });
         }
       }
     },
