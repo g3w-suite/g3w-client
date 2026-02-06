@@ -373,6 +373,7 @@
     data() {
       return {
         ApplicationState,
+        layerstree:       null,
         layer:            null,
         layer_style:      null,
         top:              0,
@@ -410,6 +411,8 @@
        */
        async onShowContextMenu(e, layerstree) {
         this.closeMenu();
+
+        this.layerstree = layerstree;
 
         await this.$nextTick();
 
@@ -499,8 +502,9 @@
        * @param { string } menu
        */
       closeMenu() {
-        this.context = null;
+        this.context      = null;
         this.items.length = 0;
+        this.layerstree   = null;
       },
 
       onChangeColor(val) {
@@ -584,6 +588,22 @@
        * @since 3.11.0
        */
       async startEditing(layer) {
+        //store toolboxes id 
+        const toolboxes = [];
+        if (layer) {
+          toolboxes.push(layer.id);
+        }
+
+        //In case of no layer, right click on group on TOC
+        //get layers belog to groups that are editable
+        if (!layer && false === this.layerstree?.root) {
+          const traverse = n => {
+            if (n.id && getCatalogLayerById(n.id).isEditable()) { toolboxes.push(n.id) }
+            if (n.nodes) { n.nodes.forEach(traverse); }
+          };
+          traverse(this.layerstree);
+        }
+          
         this.closeMenu();
         const editing = GUI.getPlugin('editing');
         //check if has coordinate
@@ -612,18 +632,25 @@
           } catch(e) {
             console.warn('Error running spatial query: ', e);
           }
-          editing.showPanel({ toolboxes: [layer.id] });
+          editing.showPanel({ toolboxes });
           return;
 
         }
 
-        if (layer) {
-          editing.showPanel({ toolboxes: [layer.id] });
-          editing.startEditing(layer.id);
+        //Show all editing panel
+        if (0 === toolboxes.length) {
+          editing.showPanel();
           return;
+          
         }
 
-        editing.showPanel();
+        //show some editing layers 
+        editing.showPanel({ toolboxes });
+        
+        //In case of just on layer in editing, start editing
+        if (1 === toolboxes.length) {
+          editing.startEditing(toolboxes[0]);
+        }
 
       },
 
