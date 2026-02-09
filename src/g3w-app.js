@@ -4582,6 +4582,7 @@ export default new (class GUI extends Emitter {
       lon: parseFloat(search.get('lon')),
       x:   parseFloat(search.get('x')),
       y:   parseFloat(search.get('y')),
+      z:   parseInt(search.get('z')), /**@since 4.1.0 zoom  */
     };
 
     // remove some params from URL
@@ -4676,8 +4677,15 @@ export default new (class GUI extends Emitter {
       geom = new ol.geom.Point([coords.x, coords.y]);
     }
 
-    if (geom && geom.getExtent()) {
+    //check if zoom is set
+    if (geom && isNaN(coords.z) && geom.getExtent()) {
       this.zoomToExtent(geom.getExtent());
+    }
+
+    /** @since 4.1.0 if set zoom, zoom to zoom set according to project extent constraint*/
+    if (geom && !isNaN(coords.z)) {
+      this.getMap().getView().setCenter(geom.getCoordinates());
+      this.getMap().getView().setZoom(coords.z);
     }
 
     // show marker on map center
