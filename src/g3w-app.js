@@ -4604,6 +4604,7 @@ export default new (class GUI extends Emitter {
       keyboardEventTarget: document,
       target:              this.target,
       view:                new ol.View({
+        extent,
         projection:    this.getProjection(),
         center:        ol.extent.getCenter(initextent),
         resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
