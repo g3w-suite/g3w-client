@@ -135,14 +135,14 @@ g3w.app.on('map:context-menu', menu => {
         label: 'Wikimapia',
         cbk: () => {
           const { lat, lon, zoom } = xyz();
-          window.open(`https://wikimapia.org/#lang=ro&lat=${lat}&lon=${lon}&z=${zoom}`, '_blank');
+          window.open(`https://wikimapia.org/#lang=en&lat=${lat}&lon=${lon}&z=${zoom}`, '_blank');
         },
       },
       {
         label: 'Yandex',
         cbk: () => {
           const { lat, lon, zoom } = xyz();
-          window.open(`https://yandex.com/maps?ll=${lat}%2C${lon}&z=${zoom}`, '_blank');
+          window.open(`https://yandex.com/maps?ll=${lon},${lat}&z=${zoom}`, '_blank');
         },
       },
     ],
