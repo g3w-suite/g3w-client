@@ -118,6 +118,15 @@
                   </td>
                 </tr>
 
+                <!-- PROJECT VERSION (LAST MODIFIED) -->
+                <tr v-if  = "project.modified">
+                  <td class = "col-sm-2 label">{{ $t('LAST MODIFIED') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i class="far fa-clock" aria-hidden="true" style="margin-right: 3px;"></i>
+                    {{ (new Date(project.modified * 1000)).toISOString() }}
+                  </td>
+                </tr>
+
                 <!-- PROJECT KEYWORDS -->
                 <tr v-if  = "project.metadata.keywords">
                   <td class = "col-sm-2 label">{{ $t('KEYWORDS') }}</td>
@@ -228,15 +237,6 @@
                     >
                       {{ project.qgis_version }}
                     </a>
-                  </td>
-                </tr>
-
-                <!-- PROJECT VERSION (LAST MODIFIED) -->
-                <tr v-if  = "project.modified">
-                  <td class = "col-sm-2 label">{{ $t('LAST MODIFIED') }}</td>
-                  <td class = "col-sm-10 value">
-                    <i class="far fa-clock" aria-hidden="true" style="margin-right: 3px;"></i>
-                    {{ (new Date(project.modified * 1000)).toISOString() }}
                   </td>
                 </tr>
 
