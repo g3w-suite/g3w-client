@@ -437,32 +437,32 @@
           this.context = 'map'; 
         }
 
-      /**
-       * @since 4.1.0 custom context menu items
-       * 
-       * Example: Single item addition
-       * ```js
-       * GUI.on('map:context-menu', menu => {
-       *   menu.items.push({
-       *     icon: 'pencil',
-       *     label: 'TEST',
-       *     cbk: () => alert('Test'),
-       *     position: 0,
-       *   });
-       * });
-       * ```
-       * Example : Item with children (sub menu)
-       * ```js
-       * GUI.on('layer:context-menu', menu => {
-       *   menu.items.push({
-       *     icon: 'pencil',
-       *     label: 'TEST CHILDREN',
-       *     children: [{ label: 'Child 1', cbk: () => alert('child 1') }],
-       *     position: 100,
-       *   });
-       * });
-       * ```
-       */
+        /**
+         * @since 4.1.0 custom context menu items
+         * 
+         * Example: Single item addition
+         * ```js
+         * GUI.on('map:context-menu', menu => {
+         *   menu.items.push({
+         *     icon: 'pencil',
+         *     label: 'TEST',
+         *     cbk: () => alert('Test'),
+         *     position: 0,
+         *   });
+         * });
+         * ```
+         * Example : Item with children (sub menu)
+         * ```js
+         * GUI.on('layer:context-menu', menu => {
+         *   menu.items.push({
+         *     icon: 'pencil',
+         *     label: 'TEST CHILDREN',
+         *     children: [{ label: 'Child 1', cbk: () => alert('child 1') }],
+         *     position: 100,
+         *   });
+         * });
+         * ```
+         */
         GUI.emit(`${this.context}:context-menu`, this);
 
         await this.$nextTick();
