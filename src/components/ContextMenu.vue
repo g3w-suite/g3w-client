@@ -862,6 +862,9 @@
        */
       async copyCoords() {
         this.closeMenu();
+        const map    = GUI.getMap();
+        const view   = map.getView();
+        view.animate({ center: this.map_coords, zoom: view.getZoom(), duration: 200 });
         copyUrl(this.map_coords.join(', '));
       },
 
