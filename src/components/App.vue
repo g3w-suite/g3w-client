@@ -1109,7 +1109,7 @@ export default {
           return;
         }
         
-        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/'));
+        history.replaceState(null, null, `${window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/')}${window.location.search}`);
 
         // lazy load i18n translations
         try {
