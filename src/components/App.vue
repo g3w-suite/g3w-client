@@ -1108,8 +1108,8 @@ export default {
           _.register('en', (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
           return;
         }
-        
-        history.replaceState(null, null, `${window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/')}${window.location.search}`);
+
+        history.replaceState(null, null, window.location.pathname.split('/').map((part, index) => index === 1 ? lang : part).join('/') + window.location.search + window.location.hash);
 
         // lazy load i18n translations
         try {
