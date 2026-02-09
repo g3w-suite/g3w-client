@@ -56,7 +56,8 @@ g3w.app.once('initconfig', () => {
 // custom context menu items
 g3w.app.on('map:context-menu', menu => {
   const xyz = () => {
-    const coords = ol.proj.toLonLat(g3w.app.getMap().getView().getCenter());
+    const view   = g3w.app.getMap().getView();
+    const coords = ol.proj.toLonLat(view.getCenter(), view.getProjection());
     const lon    = coords[0].toFixed(6);
     const lat    = coords[1].toFixed(6);
     const zoom   = Math.round(g3w.app.getMap().getView().getZoom()) || 17;
@@ -65,12 +66,13 @@ g3w.app.on('map:context-menu', menu => {
   menu.items.push({
     label: 'View on external map',
     icon: 'external-link',
+    position: 100,
     children: [
       {
-        label: 'Google',
+        label: 'Apple',
         cbk: () => {
           const { lat, lon, zoom } = xyz();
-          window.open(`https://www.google.com/maps/@${lat},${lon},${zoom}z`, '_blank');
+          window.open(`http://maps.apple.com?center=${lat},${lon}&z=${zoom}`, '_blank');
         },
       },
       {
@@ -81,17 +83,24 @@ g3w.app.on('map:context-menu', menu => {
         },
       },
       {
-        label: 'Yandex',
+        label: 'Google',
         cbk: () => {
           const { lat, lon, zoom } = xyz();
-          window.open(`https://yandex.com/maps?ll=${lat}%2C${lon}&z=${zoom}`, '_blank');
+          window.open(`https://www.google.com/maps/@${lat},${lon},${zoom}z`, '_blank');
         },
       },
       {
-        label: 'OSM',
+        label: 'HERE',
         cbk: () => {
           const { lat, lon, zoom } = xyz();
-          window.open(`https://www.openstreetmap.org/#map=${zoom}/${lat}/${lon}`, '_blank');
+          window.open(`https://wego.here.com?map=${lat},${lon},${zoom}`, '_blank');
+        },
+      },
+      {
+        label: 'Mapillary',
+        cbk: () => {
+          const { lat, lon, zoom } = xyz();
+          window.open(`https://www.mapillary.com/app/?lat=${lat}&lng=${lon}&z=${zoom}`, '_blank');
         },
       },
       {
@@ -102,6 +111,27 @@ g3w.app.on('map:context-menu', menu => {
         },
       },
       {
+        label: 'Meteo blu',
+        cbk: () => {
+          const { lat, lon } = xyz();
+          window.open(`https://www.meteoblue.com/en/weather/week/${lat}N${lon}E`, '_blank');
+        },
+      },
+      {
+        label: 'OSM',
+        cbk: () => {
+          const { lat, lon, zoom } = xyz();
+          window.open(`https://www.openstreetmap.org/#map=${zoom}/${lat}/${lon}`, '_blank');
+        },
+      },
+      {
+        label: 'Waze',
+        cbk: () => {
+          const { lat, lon, zoom } = xyz();
+          window.open(`https://ul.waze.com/ul?ll=${lat},${lon}&zoom=${zoom}`, '_blank');
+        },
+      },
+      {
         label: 'Wikimapia',
         cbk: () => {
           const { lat, lon, zoom } = xyz();
@@ -109,10 +139,10 @@ g3w.app.on('map:context-menu', menu => {
         },
       },
       {
-        label: 'Meteo blu',
+        label: 'Yandex',
         cbk: () => {
-          const { lat, lon } = xyz();
-          window.open(`https://www.meteoblue.com/en/weather/week/${lat}N${lon}E`, '_blank');
+          const { lat, lon, zoom } = xyz();
+          window.open(`https://yandex.com/maps?ll=${lat}%2C${lon}&z=${zoom}`, '_blank');
         },
       },
     ],

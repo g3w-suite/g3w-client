@@ -3923,7 +3923,6 @@ export default new (class GUI extends Emitter {
       MAP.map = new ol.Map({
         controls:            ol.control.defaults({ attribution: false, zoom: false }),
         interactions:        ol.interaction.defaults(),
-        ol3Logo:             false,
         view:                new ol.View({
           projection: this.getMap().getView().getProjection(),
           center:     this.getMap().getView().getCenter(),
@@ -4602,14 +4601,11 @@ export default new (class GUI extends Emitter {
     this.#map = new ol.Map({
       controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
       interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
-      ol3Logo:             false,
       keyboardEventTarget: document,
       target:              this.target,
       view:                new ol.View({
-        extent,
         projection:    this.getProjection(),
         center:        ol.extent.getCenter(initextent),
-        maxResolution: Math.max(ol.extent.getWidth(extent) / width,     ol.extent.getHeight(extent) / height),     // max(xRes, yRes)
         resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
       }),
     });
