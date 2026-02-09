@@ -41,20 +41,18 @@
         <div v-show = "loading" class = "bar-loader"></div>
 
         <div v-if = "'wms' === layer_type" class = "form-group">
-
-          <!-- DOCS -->
-          <a
-            :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#wms`"
-            target          = "_blank"
-            style           = "float: right;"
-            data-i18n-title = "Docs"
-            data-placement  = "bottom"
-          >
-            <i :class = "$fa('external-link')"></i>
-          </a>
-
           <!-- WMS URL -->
-          <fieldset class = "form-group" :disabled = "wms_config">
+          <fieldset class = "form-group" :disabled = "wms_config" style = "width: 100%;">
+            <!-- DOCS -->
+            <a
+              :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#wms`"
+              target          = "_blank"
+              style           = "float: right;"
+              data-i18n-title = "Docs"
+              data-placement  = "bottom"
+            >
+              <i :class = "$fa('external-link')"></i>
+            </a>
             <label for = "add_wms_url">URL</label>
             <input
               id           = "add_wms_url"
