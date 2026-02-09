@@ -109,7 +109,6 @@ GUI.setupControl.overview = async function() {
             extent:        PROJECT.state.extent,
             projection:    GUI.getProjection(),
             center:        ol.extent.getCenter(PROJECT.state.initextent),
-            maxResolution: Math.max(ol.extent.getWidth(PROJECT.state.extent) / 200,     ol.extent.getHeight(PROJECT.state.extent) / 150),     // max(xRes, yRes)
             resolution:    Math.max(ol.extent.getWidth(PROJECT.state.initextent) / 200, ol.extent.getHeight(PROJECT.state.initextent) / 150), // max(xInitRes, yInitRes)
           }), // hardcoded
           rotateWithView: true,
