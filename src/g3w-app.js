@@ -4854,21 +4854,6 @@ export default new (class GUI extends Emitter {
       this._setLegendParams();
     }
 
-    /** @since 4.1.0 auto update "x,y,z" url params on map move */
-    this.#events.ol.push(
-      this.#map.on('moveend',  () => {
-        const view = this.#map.getView();
-        const center = view.getCenter();
-        const url = new URL(window.location);
-        url.searchParams.delete('lat');
-        url.searchParams.delete('lon');
-        url.searchParams.set('x', center[0]);
-        url.searchParams.set('y', center[1]);
-        url.searchParams.set('z', view.getZoom().toFixed(2));
-        window.history.replaceState(null, null, url);
-      })
-    );
-
     // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
     Object.values(ApplicationState.layers).forEach(this.#setUpEventsKeysToLayersStore.bind(this));
     Vue.watch(
