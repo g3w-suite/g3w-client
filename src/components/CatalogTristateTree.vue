@@ -215,9 +215,10 @@
     </ul>
 
     <button
-      v-if           = "!isGroup"
+      v-if           = "layerstree.root || !isGroup"
       type           = "button"
       class          = "toggle-context-menu fas fa-ellipsis-v"
+      :class         = "{ 'root' : layerstree.root } "
       data-placement = "left"
       :title         = "'Open menu'"
       @click.stop    = "showContextMenu"
