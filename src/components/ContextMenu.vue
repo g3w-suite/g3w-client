@@ -34,7 +34,7 @@
     </li>
 
     <!-- MENU NAME -->
-    <li v-if="['project', 'layer'].includes(context)" class = "title">
+    <li v-if="['project', 'layer'].includes(context)" class = "title g3w-long-text">
       <div v-if = "'project' === context">{{ ApplicationState.project.getName() }}</div>
       <div v-else-if="'layer' === context">
         {{ layer.title }}
