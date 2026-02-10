@@ -119,11 +119,24 @@
                 </tr>
 
                 <!-- PROJECT VERSION (LAST MODIFIED) -->
-                <tr v-if  = "project.modified">
+                <tr v-if  = "project.modified || project.qgis_version">
                   <td class = "col-sm-2 label">{{ $t('LAST MODIFIED') }}</td>
                   <td class = "col-sm-10 value">
-                    <i class="far fa-clock" aria-hidden="true" style="margin-right: 3px;"></i>
-                    {{ (new Date(project.modified * 1000)).toISOString() }}
+                    <template v-if  = "project.modified">
+                      <i class="far fa-clock" aria-hidden="true" style="margin-right: 3px;"></i>
+                      {{ (new Date(project.modified * 1000)).toISOString() }}
+                    </template>
+                    <template v-if  = "project.qgis_version">
+                      <i class="fas fa-code-branch" aria-hidden="true" style="margin-right: 3px;margin-left: 1ch;"></i>
+                      <a
+                        :href          = "'https://docs.qgis.org/'+project.qgis_version.split('.').slice(0, 2).join('.')"
+                        target         = "_blank"
+                        title          = "QGIS version"
+                        data-placement = "right"
+                      >
+                        {{ project.qgis_version }}
+                      </a>
+                    </template>
                   </td>
                 </tr>
 
@@ -222,21 +235,6 @@
                     <span v-for = "(key, index) in Object.keys(project.extent)">
                       <b>{{ (['minx', 'miny', 'maxx', 'maxy'])[index] }}</b> {{ project.extent[key] }}
                     </span>
-                  </td>
-                </tr>
-
-                <!-- PROJECT VERSION (QGIS) -->
-                <tr v-if  = "project.qgis_version">
-                  <td class = "col-sm-2 label">{{ $t('QGIS') }}</td>
-                  <td class = "col-sm-10 value">
-                    <i class="fas fa-code-branch" aria-hidden="true" style="margin-right: 3px;"></i>
-                    <a
-                      :href  = "'https://docs.qgis.org/'+project.qgis_version.split('.').slice(0, 2).join('.')"
-                      target = "_blank"
-                      title  = "Docs"
-                    >
-                      {{ project.qgis_version }}
-                    </a>
                   </td>
                 </tr>
 
