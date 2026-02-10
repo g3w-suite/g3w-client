@@ -4,7 +4,6 @@
 -->
 
 <template>
-  <!-- item template -->
   <div class="tabbable-panel catalog">
 
     <!-- TAB MENU (header) -->
@@ -631,12 +630,6 @@ export default {
   .tabbable-panel.catalog > .nav-tabs > li.active { border-bottom: 4px solid var(--skin-color); }
   .catalog .tree-item.selected,
   .catalog #legend div.selected          { background-color: var(--skin-color); }
-
-  .skin-blue   .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #6abbea; }
-  .skin-green  .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #00FF8E; }
-  .skin-purple .tabbable-panel.catalog > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #A19DFF; }
-  .skin-red    .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #FF5542; }
-  .skin-yellow .tabbable-panel.catalog > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #FFDE0D; }
 
   /***
    Bootstrap Line Tabs by @keenthemes
