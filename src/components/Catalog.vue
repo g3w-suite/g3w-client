@@ -7,172 +7,168 @@
   <!-- item template -->
   <div class="tabbable-panel catalog">
 
-    <div class = "tabbable-line">
-
-      <!-- TAB MENU (header) -->
-      <ul
-        class          = "nav nav-tabs catalog-nav-tabs"
-        role           = "tablist"
-        @click.capture = "onTabClick"
+    <!-- TAB MENU (header) -->
+    <ul
+      class          = "nav nav-tabs catalog-nav-tabs"
+      role           = "tablist"
+      @click.capture = "onTabClick"
+    >
+      <!-- TAB TOC LAYERS -->
+      <li
+        v-if   = "hasLayers"
+        role   = "presentation"
+        :class = "{ active: ('layers' === activeTab) }"
+      > 
+        
+        <a
+          href          = "#layers"
+          aria-controls = "layers"
+          role          = "tab"
+          data-toggle   = "tab"
+        ><i :class = "$fa('layers')"></i> {{ $t('data') }}</a>
+      </li>
+      <!-- TAB LEGEND LAYERS -->
+      <li
+        v-if   = "'tab' === legend_position"
+        role   = "presentation"
+        :class = "{ active: ('legend' === activeTab) }"
       >
-        <!-- TAB TOC LAYERS -->
-        <li
-          v-if   = "hasLayers"
-          role   = "presentation"
-          :class = "{ active: ('layers' === activeTab) }"
-        > 
-          
-          <a
-            href          = "#layers"
-            aria-controls = "layers"
-            role          = "tab"
-            data-toggle   = "tab"
-          ><i :class = "$fa('layers')"></i> {{ $t('data') }}</a>
-        </li>
-        <!-- TAB LEGEND LAYERS -->
-        <li
-          v-if   = "'tab' === legend_position"
-          role   = "presentation"
-          :class = "{ active: ('legend' === activeTab) }"
-        >
-          <a
-            href          = "#legend"
-            aria-controls = "legend"
-            role          = "tab"
-            data-toggle   = "tab"
-            data-i18n     = "legend"
-          ><i class="fas fa-list"></i> {{ $t('legend') }}</a>
-        </li>
+        <a
+          href          = "#legend"
+          aria-controls = "legend"
+          role          = "tab"
+          data-toggle   = "tab"
+          data-i18n     = "legend"
+        ><i class="fas fa-list"></i> {{ $t('legend') }}</a>
+      </li>
 
-      </ul>
+    </ul>
 
-      <!-- TAB MENU (content) -->
-      <div class = "tab-content catalog-tab-content">
+    <!-- TAB MENU (content) -->
+    <div class = "tab-content catalog-tab-content">
 
-        <bar-loader :loading = "loading" />
+      <bar-loader :loading = "loading" />
 
+      <div
+        id     = "layers"
+        role   = "tabpanel"
+        class  = "tab-pane"
+        :class = "{ active: ('layers' === activeTab) }"
+      >
+
+        <!-- TOOLBAR -->
         <div
-          id     = "layers"
-          role   = "tabpanel"
-          class  = "tab-pane"
-          :class = "{ active: ('layers' === activeTab) }"
+          id    = "g3w-catalog-toc-layers-toolbar"
+          style = "margin: 2px;"
         >
-
-          <!-- TOOLBAR -->
-          <div
-            id    = "g3w-catalog-toc-layers-toolbar"
-            style = "margin: 2px;"
-          >
-            <catalog-change-map-themes
-              :key              = "project.state.gid"
-              :map_themes       = "project.state.map_themes"
-              :layerstrees      = "state.layerstrees"
-              @change-map-theme = "changeMapTheme"
-            />
-          </div>
-
-          <!-- LAYER TREES -->
-          <ul
-            v-for = "root in state.layerstrees"
-            :key  = "root.storeid"
-            class = "tree-root root project-root"
-          >
-            <catalog-tristate-tree
-              v-for                      = "tree in root.tree"
-              :key                       = "tree.id"
-              :layerstree                = "tree"
-              class                      = "item"
-              :parentFolder              = "false"
-              :root                      = "true"
-              :legendplace               = "legend_position"
-              :parent_mutually_exclusive = "false"
-              :storeid                   = "root.storeid"
-            />
-          </ul>
-
-          <!-- EXTERNAL LAYERS -->
-          <ul v-if = "state.external.wms.length || state.external.tms.length || state.external.vector.length" class = "g3w-external_layers-group">
-            <li>
-              <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
-                <span
-                  style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
-                  :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
-                  @click.stop = "expandCollapseExternaLayers"
-                  class       = "collapse-expande-collapse-icon bold"
-                ></span>
-                <span
-                  @click.stop = "toggleExternalLayers"
-                  style       = "padding-right: 5px; cursor: pointer;"
-                  :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
-                ></span>
-                <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
-                <span 
-                  style       = "color: red; padding-right: 3px; margin-left: auto; cursor: pointer;"
-                  :class      = "$fa('trash')"
-                  @click.stop = "removeExternalLayers"
-                ></span>
-              </div>
-            </li>
-            <catalog-tristate-tree
-              v-show          = "!externalayers.collapsed"
-              v-for           = "wms in state.external.wms"
-              :key            = "wms.id"
-              :externallayers = "state.external.wms"
-              :layerstree     = "wms"
-              @layerchecked   = "updateExternalLayersChecked"
-              class           = "item"
-            />
-            <!-- @since 4.1.0 add tms layers -->
-            <catalog-tristate-tree
-              v-show          = "!externalayers.collapsed"
-              v-for           = "tms in state.external.tms"
-              :key            = "tms.id"
-              :externallayers = "state.external.tms"
-              :layerstree     = "tms"
-              @layerchecked   = "updateExternalLayersChecked"
-              class           = "item"
-            />
-            <catalog-tristate-tree
-              v-show          = "!externalayers.collapsed"
-              v-for           = "vector in state.external.vector"
-              :key            = "vector.id"
-              :externallayers = "state.external.vector"
-              @layerchecked   = "updateExternalLayersChecked"
-              :layerstree     = "vector"
-              class           = "item"
-            />
-          </ul>
-
+          <catalog-change-map-themes
+            :key              = "project.state.gid"
+            :map_themes       = "project.state.map_themes"
+            :layerstrees      = "state.layerstrees"
+            @change-map-theme = "changeMapTheme"
+          />
         </div>
 
-        <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
-        <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
-        <div
-          v-if   = "'tab' === legend_position && 'legend' === activeTab"
-          v-for  = "tree in state.layerstrees"
-          :key   = "tree.id"
-          role   = "tabpanel"
-          id     = "legend"
-          class  = "tab-pane"
-          :style = "{ backgroundColor: backgroundLegend }"
-          :class = "{ active: 'legend' === activeTab }"
+        <!-- LAYER TREES -->
+        <ul
+          v-for = "root in state.layerstrees"
+          :key  = "root.storeid"
+          class = "tree-root root project-root"
         >
-          <div class = "legend-item">
-            <figure v-for = "url in legendurls" :key = "url.url">
-              <bar-loader :loading = "url.loading" />
-              <img
-                v-show = "!url.loading && !url.error"
-                :src   = "url.url"
-                @error = "onLegendError(url)"
-                @load  = "onLegendLoad(url)"
-                alt    = ""
-              />
+          <catalog-tristate-tree
+            v-for                      = "tree in root.tree"
+            :key                       = "tree.id"
+            :layerstree                = "tree"
+            class                      = "item"
+            :parentFolder              = "false"
+            :root                      = "true"
+            :legendplace               = "legend_position"
+            :parent_mutually_exclusive = "false"
+            :storeid                   = "root.storeid"
+          />
+        </ul>
 
-              <divider/>
+        <!-- EXTERNAL LAYERS -->
+        <ul v-if = "state.external.wms.length || state.external.tms.length || state.external.vector.length" class = "g3w-external_layers-group">
+          <li>
+            <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
+              <span
+                style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
+                :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
+                @click.stop = "expandCollapseExternaLayers"
+                class       = "collapse-expande-collapse-icon bold"
+              ></span>
+              <span
+                @click.stop = "toggleExternalLayers"
+                style       = "padding-right: 5px; cursor: pointer;"
+                :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
+              ></span>
+              <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
+              <span 
+                style       = "color: red; padding-right: 3px; margin-left: auto; cursor: pointer;"
+                :class      = "$fa('trash')"
+                @click.stop = "removeExternalLayers"
+              ></span>
+            </div>
+          </li>
+          <catalog-tristate-tree
+            v-show          = "!externalayers.collapsed"
+            v-for           = "wms in state.external.wms"
+            :key            = "wms.id"
+            :externallayers = "state.external.wms"
+            :layerstree     = "wms"
+            @layerchecked   = "updateExternalLayersChecked"
+            class           = "item"
+          />
+          <!-- @since 4.1.0 add tms layers -->
+          <catalog-tristate-tree
+            v-show          = "!externalayers.collapsed"
+            v-for           = "tms in state.external.tms"
+            :key            = "tms.id"
+            :externallayers = "state.external.tms"
+            :layerstree     = "tms"
+            @layerchecked   = "updateExternalLayersChecked"
+            class           = "item"
+          />
+          <catalog-tristate-tree
+            v-show          = "!externalayers.collapsed"
+            v-for           = "vector in state.external.vector"
+            :key            = "vector.id"
+            :externallayers = "state.external.vector"
+            @layerchecked   = "updateExternalLayersChecked"
+            :layerstree     = "vector"
+            class           = "item"
+          />
+        </ul>
 
-            </figure>
+      </div>
 
-          </div>
+      <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
+      <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
+      <div
+        v-if   = "'tab' === legend_position && 'legend' === activeTab"
+        v-for  = "tree in state.layerstrees"
+        :key   = "tree.id"
+        role   = "tabpanel"
+        id     = "legend"
+        class  = "tab-pane"
+        :style = "{ backgroundColor: backgroundLegend }"
+        :class = "{ active: 'legend' === activeTab }"
+      >
+        <div class = "legend-item">
+          <figure v-for = "url in legendurls" :key = "url.url">
+            <bar-loader :loading = "url.loading" />
+            <img
+              v-show = "!url.loading && !url.error"
+              :src   = "url.url"
+              @error = "onLegendError(url)"
+              @load  = "onLegendLoad(url)"
+              alt    = ""
+            />
+
+            <divider/>
+
+          </figure>
 
         </div>
 
@@ -632,29 +628,15 @@ export default {
 </script>
 
 <style>
-  .tabbable-line > .nav-tabs > li.active { border-bottom: 4px solid var(--skin-color); }
+  .tabbable-panel.catalog > .nav-tabs > li.active { border-bottom: 4px solid var(--skin-color); }
   .catalog .tree-item.selected,
   .catalog #legend div.selected          { background-color: var(--skin-color); }
 
-  .skin-blue .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #6abbea; }
-  .skin-blue .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #6abbea; }
-  .skin-blue .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
-
-  .skin-green .tabbable-line > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #00FF8E; }
-  .skin-green .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #00FF8E; }
-  .skin-green .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
-
-  .skin-purple .tabbable-line > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #A19DFF; }
-  .skin-purple .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #A19DFF; }
-  .skin-purple .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #f3565d; }
-
-  .skin-red .tabbable-line > .nav-tabs > li:is(.open, :hover)    { border-bottom: 4px solid #FF5542; }
-  .skin-red .tabbable-line.tabs-below > .nav-tabs > li:hover     { border-top: 4px solid #FF5542; }
-  .skin-red .tabbable-line.tabs-below > .nav-tabs > li.active    { border-top: 4px solid #FF5542; }
-
-  .skin-yellow .tabbable-line > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #FFDE0D; }
-  .skin-yellow .tabbable-line.tabs-below > .nav-tabs > li:hover  { border-top: 4px solid #FFDE0D; }
-  .skin-yellow .tabbable-line.tabs-below > .nav-tabs > li.active { border-top: 4px solid #FFDF12; }
+  .skin-blue   .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #6abbea; }
+  .skin-green  .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #00FF8E; }
+  .skin-purple .tabbable-panel.catalog > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #A19DFF; }
+  .skin-red    .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) { border-bottom: 4px solid #FF5542; }
+  .skin-yellow .tabbable-panel.catalog > .nav-tabs > li:is(.open,:hover)  { border-bottom: 4px solid #FFDE0D; }
 
   /***
    Bootstrap Line Tabs by @keenthemes
@@ -667,79 +649,54 @@ export default {
   .tabbable-panel {
     padding: 10px;
   }
-  .tabbable-line > .nav-tabs {
+  .tabbable-panel.catalog > .nav-tabs {
     border: none;
     margin: 0px;
   }
-  .tabbable-line .nav-tabs ul li {
+  .tabbable-panel.catalog .nav-tabs ul li {
     color: #fff;
   }
-  .tabbable-line > .nav-tabs > li {
+  .tabbable-panel.catalog > .nav-tabs > li {
     margin-right: 2px;
     border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2));
   }
-  .tabbable-line > .nav-tabs > li > a {
+  .tabbable-panel.catalog > .nav-tabs > li > a {
     border: 0;
     margin-right: 0;
     color: #fff;
   }
-  .tabbable-line > .nav-tabs > li > a > i {
+  .tabbable-panel.catalog > .nav-tabs > li > a > i {
     color: #a6a6a6;
   }
-  .tabbable-line > .nav-tabs > li:is(.open, :hover) > a {
+  .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) > a {
     border: 0;
     background: none !important;
   }
-  .tabbable-line > .nav-tabs > li:is(.open, :hover) > a > i {
+  .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) > a > i {
     color: #a6a6a6;
   }
-  .tabbable-line > .nav-tabs > li:is(.open, :hover) .dropdown-menu {
+  .tabbable-panel.catalog > .nav-tabs > li:is(.open, :hover) .dropdown-menu {
     margin-top: 0;
   }
-  .tabbable-line > .nav-tabs > li.active {
+  .tabbable-panel.catalog > .nav-tabs > li.active {
     position: relative;
     font-weight: bold;
   }
-  .tabbable-line > .nav-tabs > li.active > a {
+  .tabbable-panel.catalog > .nav-tabs > li.active > a {
     border: 0;
     color: #fff;
     background-color: hsl(from var(--bgcolor) h s calc(l + 4));
   }
-  .tabbable-line > .nav-tabs > li.active > a > i {
+  .tabbable-panel.catalog > .nav-tabs > li.active > a > i {
     color: #fff;
   }
-  .tabbable-line > .tab-content.catalog-tab-content {
+  .tabbable-panel.catalog > .tab-content.catalog-tab-content {
     margin-top: -3px;
     border: 0;
     color: #fff;
     padding: 5px 0 0 0;
   }
-  .portlet .tabbable-line > .tab-content {
-    padding-bottom: 0;
-  }
 
-  /* Below tabs mode */
-
-  .tabbable-line.tabs-below > .nav-tabs > li {
-    border-top: 4px solid transparent;
-  }
-  .tabbable-line.tabs-below > .nav-tabs > li > a {
-    margin-top: 0;
-  }
-  .tabbable-line.tabs-below > .nav-tabs > li:hover {
-    border-bottom: 0;
-    color: #fff;
-  }
-  .tabbable-line.tabs-below > .nav-tabs > li.active {
-    margin-bottom: -2px;
-    border-bottom: 0;
-  }
-  .tabbable-line.tabs-below > .tab-content {
-    margin-top: -10px;
-    border-top: 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-  }
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:is(:focus, :hover) {
     color: #fff;
