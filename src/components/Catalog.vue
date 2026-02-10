@@ -6,6 +6,19 @@
 <template>
   <div class="catalog">
 
+    <!-- TOOLBAR -->
+    <div
+      id    = "g3w-catalog-toc-layers-toolbar"
+      style = "margin: 2px;"
+    >
+      <catalog-change-map-themes
+        :key              = "project.state.gid"
+        :map_themes       = "project.state.map_themes"
+        :layerstrees      = "state.layerstrees"
+        @change-map-theme = "changeMapTheme"
+      />
+    </div>
+
     <!-- TAB MENU (header) -->
     <ul
       class          = "nav nav-tabs catalog-nav-tabs"
@@ -54,19 +67,6 @@
         class  = "tab-pane"
         :class = "{ active: ('layers' === activeTab) }"
       >
-
-        <!-- TOOLBAR -->
-        <div
-          id    = "g3w-catalog-toc-layers-toolbar"
-          style = "margin: 2px;"
-        >
-          <catalog-change-map-themes
-            :key              = "project.state.gid"
-            :map_themes       = "project.state.map_themes"
-            :layerstrees      = "state.layerstrees"
-            @change-map-theme = "changeMapTheme"
-          />
-        </div>
 
         <!-- LAYER TREES -->
         <ul
@@ -176,7 +176,7 @@
     </div>
 
     <div
-      v-if = "hasRelatedMaps || 'legend' !== activeTab"
+      v-if = "hasRelatedMaps"
       style  = "
         position: sticky;
         bottom: 0;
@@ -191,18 +191,17 @@
       "
     >
       <a
-        v-if           = "'legend' !== activeTab"
-        href           = "#"
+        href        = "#"
         @click.stop = "showaddLayerModal"
       >
-        <i :class = "$fa('layers')"></i> <b v-t = "'Add Layer'"></b>
+        <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
       </a>
       <a
-        v-if           = "hasRelatedMaps && 'legend' !== activeTab && !iframe"
+        v-if           = "hasRelatedMaps && !iframe"
         href           = "#"
         @click.stop = "openChangeMapMenu"
       >
-        <i :class = "$fa('refresh')"></i> <b v-t = "'changemap'"></b>
+        <i :class = "$fa('refresh')"></i> <b>{{ $t('changemap') }}</b>
       </a>
     </div>
 
