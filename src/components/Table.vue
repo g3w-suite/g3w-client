@@ -119,7 +119,12 @@
           <td v-for = "header in state.headers">
             <field
               :feature = "feature"
-              :state   = "({ label: undefined, value: feature.attributes[header.name] })"
+              :state   = "({ 
+                label: undefined,
+                //@since 4.1.0 support array value in attribute table https://github.com/g3w-suite/g3w-client-plugin-editing/issues/186
+                value: Array.isArray(feature.attributes[header.name]) ? feature.attributes[header.name].join(',') : feature.attributes[header.name],
+                name: header.name 
+              })"
             />
           </td>
         </tr>
@@ -604,6 +609,7 @@ export default {
 
   async mounted() {
   
+    console.log(this.state.features)
     // un-toggle map controls
     this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
     if (this.last_map_control) {

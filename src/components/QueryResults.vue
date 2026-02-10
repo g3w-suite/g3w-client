@@ -675,7 +675,7 @@
         return {
           ...layer.attributes.find(a => fieldName === a.name), // layer field
           label: null,                                         // hide label in query result (dom table value content)
-          value: feature.attributes[fieldName],
+          value: Array.isArray(feature.attributes[fieldName]) ? feature.attributes[fieldName].join(',') : feature.attributes[fieldName],
         };
       },
 
@@ -685,6 +685,7 @@
           const _field = {
             ...field,
             query: true,
+            //@since 4.1.0 support array value https://github.com/g3w-suite/g3w-client-plugin-editing/issues/186
             value: feature.attributes[field.name] ?? feature.attributes[field.name.replace(/ /g,"_")],
           };
           _field.input = { type: `${this.getFieldType(_field)}` };
