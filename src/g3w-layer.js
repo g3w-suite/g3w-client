@@ -3544,7 +3544,8 @@ Layer._parse = function(type, params, opts) {
       // sanitize layer name (removes: whitespaces, quotes, parenthesis, slashes)
       if (response) {
         response = layers.reduce((acc, layer, i) => {
-          let id = (wms && layer.config.wms_use_layer_ids ? layer.getId() : layer.getName()).replace(/[\s'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
+          //@since 4.1.0 take in account — character in layer name 
+          let id = (wms && layer.config.wms_use_layer_ids ? layer.getId() : layer.getName()).replace(/[\s—'()/]+/g, s => /\s/g.test(s) && !wms ? '_' : '');
           if (!wms) {
             id = id.replace(/[/\\]+/g, '').replaceAll(':', '-');
           }
