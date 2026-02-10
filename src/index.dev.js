@@ -312,7 +312,7 @@ C,"POINT (11.2474811 43.7910709)"`],
   // piazza-leopoldo.zip
   await setFile(
     await zipFile('piazza-leopoldo.kml'),
-    'EPSG:3857'
+    'EPSG:4326'
   );
 
   // OpenTopoMap
