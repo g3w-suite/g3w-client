@@ -57,7 +57,7 @@
     </ul>
 
     <!-- TAB MENU (content) -->
-    <div class = "tab-content catalog-tab-content">
+    <div class = "tab-content">
 
       <bar-loader :loading = "loading" />
 
@@ -626,25 +626,22 @@ export default {
 </script>
 
 <style>
-  .catalog > .nav-tabs > li.active                                               { border-bottom: 4px solid var(--skin-color); }
   .catalog .tree-item.selected,
   .catalog #legend div.selected                                                  { background-color: var(--skin-color); }
-  .catalog > .nav-tabs                                                           { border: none; margin: 0px; }
   .catalog .nav-tabs ul li                                                       { color: #fff; }
-  .catalog > .nav-tabs > li                                                      { margin-right: 2px; border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2)); }
+  .catalog > .nav-tabs                                                           { border: none; margin: 0px; display: flex; flex: 1 1 0; }
+  .catalog > .nav-tabs:has(> li:only-child)                                      { display: none; }
+  .catalog > .nav-tabs > li                                                      { margin-right: 2px; border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2)); font-size: 1em; white-space: initial; display: flex; flex: 1 1 0; align-items: stretch; }
   .catalog > .nav-tabs > li > a                                                  { border: 0; margin-right: 0; color: #fff; }
   .catalog > .nav-tabs > li > a > i                                              { color: #a6a6a6; }
   .catalog > .nav-tabs > li:is(.open, :hover) > a                                { border: 0; background: none !important; }
   .catalog > .nav-tabs > li:is(.open, :hover) > a > i                            { color: #a6a6a6; }
   .catalog > .nav-tabs > li:is(.open, :hover) .dropdown-menu                     { margin-top: 0; }
-  .catalog > .nav-tabs > li.active                                               { position: relative; font-weight: bold; }
+  .catalog > .nav-tabs > li.active                                               { border-bottom: 4px solid var(--skin-color); position: relative; font-weight: bold; }
   .catalog > .nav-tabs > li.active > a                                           { border: 0; color: #fff; background-color: hsl(from var(--bgcolor) h s calc(l + 4)); }
   .catalog > .nav-tabs > li.active > a > i                                       { color: #fff; }
-  .catalog > .nav-tabs                                                           { display: flex; flex: 1 1 0; }
-  .catalog > .nav-tabs:has(> li:only-child)                                      { display: none; }
-  .catalog > .nav-tabs > li                                                      { font-size: 1em; white-space: initial; display: flex; flex: 1 1 0; align-items: stretch; }
   .catalog > .nav-tabs > li a                                                    { padding: 10px 0; text-align: center; height: 100%; width: 100%; }
-  .catalog > .tab-content.catalog-tab-content                                    { margin-top: -3px; border: 0; color: #fff; padding: 5px 0 0 0; }
+  .catalog > .tab-content                                                        { margin-top: -3px; border: 0; color: #fff; padding: 5px 0 0 0; }
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:is(:focus, :hover)                                   { color: #fff; }
   .catalog > .title                                                              { padding: 10px; font-weight: bold; }
