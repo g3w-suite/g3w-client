@@ -677,7 +677,6 @@ export default {
   .catalog .tree-root span.root.collapse-expande-collapse-icon                   { width: 19px; }
   .catalog .tree-root span.root.collapse-expande-collapse-icon.project-root      { width: 17px; }
   .catalog .tree-root span.collapse-expande-collapse-icon                        { width: 10px; }
-  .catalog span.legend-collapse-expande-collapse-icon                            { font-size: 1.2em; }
   .catalog .child-categories                                                     { padding: 5px 3px 1px 12px; }
   .catalog .layer-legend                                                         { padding: 3px 0 0 35px; background-color: var(--bgcolor); }
   .catalog .catalog-nav-tabs                                                     { display: flex; flex: 1 1 0; }
