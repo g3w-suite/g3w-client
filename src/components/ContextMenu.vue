@@ -35,7 +35,7 @@
 
     <!-- MENU NAME -->
     <li v-if="['project', 'layer'].includes(context)" class = "title">
-      <div v-if = "'project' === context">G3W-ADMIN {{ ApplicationState.project.getName() }}</div>
+      <div v-if = "'project' === context">{{ ApplicationState.project.getName() }}</div>
       <div v-else-if="'layer' === context">
         {{ layer.title }}
         <div style = "font-weight: normal; font-size: 0.8em">
