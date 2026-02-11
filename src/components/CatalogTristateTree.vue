@@ -221,7 +221,7 @@
       :class         = "{
         'root' : layerstree.root,
         'fa-cog': layerstree.root,
-        'fa-ellipsis-h': !layerstree.root,
+        'fa-ellipsis-v': !layerstree.root,
       }"
       data-placement = "left"
       :title         = "'Open menu'"
