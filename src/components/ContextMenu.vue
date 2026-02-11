@@ -976,6 +976,7 @@
      * @listens GUI~context-menu
      */
     async created() {
+
       GUI.on('context-menu', this.onShowContextMenu);
       
       // auto-close context menu on Esc key
@@ -988,6 +989,7 @@
       // auto-close context menu when clicking outside
       document.addEventListener('click', e => {
         if (this.context && !this.$el.contains(e.target)) {
+          e.stopPropagation();
           this.closeMenu();
         }
       }, true);
