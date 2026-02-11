@@ -115,7 +115,8 @@
       <span
         :class           = "{
           highlightlayer:  isHighLight,
-          scalevisibility: showscalevisibilityclass
+          scalevisibility: showscalevisibilityclass,
+          'toc-root':      layerstree.root,
         }"
         class                = "g3w-long-text"
         :data-i18n-title     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
