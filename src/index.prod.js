@@ -794,17 +794,18 @@ $.ajaxSetup({
           if (nodes[index].bbox) {
             _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
           }
-          return visible || node.toc;
+          visible = visible || node.toc;
         }
 
         if (Array.isArray(node.nodes)) {
           node.nodes.forEach(n => n.parentGroup = parentGroup);
           node.visible = _traverse(node.nodes, node);
+          visible      = visible || node.visible;
         }
         
         //SET PARENT GROUP
         nodes[index].parentGroup = parentGroup;
-        return visible || node.visible;
+        return visible;
       }, false);
     }
     //set root group visibility based on children nodes
