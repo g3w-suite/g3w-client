@@ -19,38 +19,6 @@
       />
     </div>
 
-    <!-- TAB MENU (header) -->
-    <ul
-      class          = "nav nav-tabs"
-      role           = "tablist"
-      @click.capture = "onTabClick"
-    >
-      <!-- TAB TOC LAYERS -->
-      <li
-        v-if   = "state.layerstrees[0].tree[0].toc && hasLayers"
-        role   = "presentation"
-        :class = "{ active: ('layers' === activeTab) }"
-      > 
-        <a
-          href          = "#layers"
-          aria-controls = "layers"
-          role          = "tab"
-          data-toggle   = "tab"
-        ><i :class = "$fa('layers')"></i> {{ $t('data') }}</a>
-      </li>
-      <!-- TAB LEGEND LAYERS -->
-      <li
-        v-if   = "'tab' === legend_position"
-      >
-        <a
-          href           = "#"
-          data-i18n      = "legend"
-          @click.prevent = "showLegendPanel"
-        ><i class="fas fa-list"></i> {{ $t('legend') }}</a>
-      </li>
-
-    </ul>
-
     <!-- TAB MENU (content) -->
     <div class = "tab-content">
 
@@ -58,9 +26,7 @@
 
       <div
         id     = "layers"
-        role   = "tabpanel"
-        class  = "tab-pane"
-        :class = "{ active: ('layers' === activeTab) }"
+        class  = "tab-pane active"
       >
 
         <!-- LAYER TREES -->
@@ -176,7 +142,6 @@
 
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'g3w-app';
-import Panel                   from 'g3w-panel';
 import { XHR }                 from 'utils/XHR';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
@@ -193,7 +158,6 @@ export default {
       state:            this.$options.service.state || {},
       legend_position:  ApplicationState.project.state.legend_position || 'tab',
       iframe:           ApplicationState.iframe,
-      activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
       //@since 4.1.0
       externalayers:    {
@@ -410,12 +374,6 @@ export default {
 
     },
 
-    onTabClick(e) {
-      if (e.target.attributes['aria-controls']) {
-        this.activeTab = e.target.attributes['aria-controls'].value;
-      }
-    },
-
     /**
      * ORIGINAL SOURCE: src/app/gui/queryresults/queryresultsservice.js::removeFromSelection
      * 
@@ -511,13 +469,6 @@ export default {
       ].every(l => l.checked)
     },
 
-    /**
-     * @since 4.1.0
-     */
-    showLegendPanel() {
-      GUI.showLegendPanel();
-    },
-
   },
 
   watch: {
@@ -534,29 +485,6 @@ export default {
       handler() {
         this.updateExternalLayersChecked();
       },
-    },
-
-    project: {
-      async handler(project) {
-        const activeTab = project.state.catalog_tab || 'layers';
-        this.loading    = false;
-        await this.$nextTick();
-        setTimeout(() => {
-          this.loading   = false;
-          this.activeTab = activeTab;
-        })
-      },
-      immediate: false
-    },
-
-     activeTab: {
-      async handler(activeTab, oldTab) {
-        if (this.$el) {
-          this.$el.parentElement.classList.remove(`tab-${oldTab}`);
-          this.$el.parentElement.classList.add(`tab-${activeTab}`);
-        }
-      },
-      immediate: true
     },
 
   },
@@ -580,9 +508,6 @@ export default {
     // in case of dynamic legend
     if (ApplicationState.project.state.context_base_legend) {
       GUI.on('change-map-legend-params', () => { GUI.getLegendSrc(); });
-    }
-    if ('legend' === ApplicationState.project.state.catalog_tab) {
-      this.showLegendPanel();
     }
   },
 

@@ -279,7 +279,18 @@
             data-target    = "#modal-metadata"
           >
             <i :class = "$fa('file')" style = "color: #fff;"></i>
-            <span class = "treeview-label" v-t = "'Metadata'"></span>
+            <span class = "treeview-label">{{ $t('Metadata') }}</span>
+          </a>
+        </li>
+
+        <li id = "legend" class = "treeview sidebaritem">
+          <a
+            href           = "#"
+            @click.prevent = "showLegendPanel"
+            style          = "padding: 12px 5px 12px 10px; font-weight: bold; display: block;"
+          >
+            <i class = "fas fa-list" style="color: white;"></i>
+            <span class = "treeview-label">{{ $t('legend') }}</span>
           </a>
         </li>
 
@@ -994,6 +1005,13 @@ export default {
     },
 
     /**
+     * @since 4.1.0
+     */
+    showLegendPanel() {
+      GUI.showLegendPanel();
+    },
+
+    /**
      * @since 3.11.0
      */
     toggleSidebar() {
@@ -1155,6 +1173,10 @@ export default {
 
     if (!ApplicationState.iframe) {
       document.body.classList.add('sidebar-mini');
+    }
+
+    if ('legend' === ApplicationState.project.state.catalog_tab) {
+      this.showLegendPanel();
     }
 
     this.crs = GUI.getCrs();
