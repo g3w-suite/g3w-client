@@ -538,9 +538,6 @@ export default {
      * @since 3.11.0
      */
     openChangeMapMenu() {
-      if (window.innerWidth < 767) {
-        GUI.hideSidebar();
-      }
       $('#modal-changemap').modal('show');
     },
     /**

@@ -5,9 +5,10 @@
 
 <template>
   <dialog
-    id          = "modal-changemap"
-    style       = "width: 80vw;"
-    :aria-label = "$t('changemap')"
+    id            = "modal-changemap"
+    @beforetoggle = "onBeforetoggle"
+    style         = "width: 80vw;"
+    :aria-label   = "$t('changemap')"
   >
     <form method="dialog">
 
@@ -336,6 +337,15 @@ export default {
       }
 
       return `${host}${imageSrc}`;
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    async onBeforetoggle(e) {
+      if ('open' === e.newState && window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
     },
 
   },
