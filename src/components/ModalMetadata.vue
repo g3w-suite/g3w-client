@@ -762,7 +762,6 @@
 
   .metadata-item-tab {
     margin-right: 10px;
-    border-radius: 3px;
     margin-bottom: 10px;
   }
 
