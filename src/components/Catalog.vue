@@ -6,16 +6,6 @@
 <template>
   <div class = "catalog">
 
-    <a
-      v-if           = "'tab' === legend_position"
-      href           = "#"
-      @click.prevent = "showLegendPanel"
-      style          = "padding: 12px 5px 12px 10px; font-weight: bold; display: block;"
-    >
-      <i class = "fas fa-list" style="color: white;"></i>
-      <span class = "treeview-label">{{ $t('legend') }}</span>
-    </a>
-
     <!-- TOOLBAR -->
     <div
       id    = "g3w-catalog-toc-layers-toolbar"
@@ -456,13 +446,6 @@ export default {
     },
 
     /**
-     * @since 4.1.0
-     */
-    showLegendPanel() {
-      GUI.showLegendPanel();
-    },
-
-    /**
      * @since 3.11.0
      */
     showaddLayerModal() {
@@ -527,7 +510,7 @@ export default {
       GUI.on('change-map-legend-params', () => { GUI.getLegendSrc(); });
     }
     if ('legend' === ApplicationState.project.state.catalog_tab) {
-      this.showLegendPanel();
+      GUI.showLegendPanel();
     }
   },
 

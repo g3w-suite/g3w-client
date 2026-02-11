@@ -215,6 +215,16 @@
     </ul>
 
     <button
+      v-if           = "layerstree.root"
+      type           = "button"
+      class          = "fas fa-list"
+      data-placement = "left"
+      :title         = "'legend'"
+      @click.stop    = "showLegendPanel"
+      style          = "position: absolute;inset: 0 40px auto auto;padding: 4px 8px;border-radius: 3px;"
+    ></button>
+
+    <button
       v-if           = "layerstree.root || !isGroup"
       type           = "button"
       class          = "toggle-context-menu fas"
@@ -565,6 +575,13 @@ export default {
      */
     showContextMenu(evt) {
       GUI.emit('context-menu', evt, this.layerstree);
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showLegendPanel() {
+      GUI.showLegendPanel();
     },
 
   },
