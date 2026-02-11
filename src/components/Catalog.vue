@@ -27,7 +27,7 @@
     >
       <!-- TAB TOC LAYERS -->
       <li
-        v-if   = "state.layerstrees[0].visible && hasLayers"
+        v-if   = "state.layerstrees[0].tree[0].toc && hasLayers"
         role   = "presentation"
         :class = "{ active: ('layers' === activeTab) }"
       > 

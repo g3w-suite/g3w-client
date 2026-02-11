@@ -220,7 +220,7 @@ export default {
       },
       /**@since 3.10.0 whether show add a new map theme form **/
       show_form: false,
-      show:      this.layerstrees[0].tree[0].visible, //@since 4.1.0 whether at least one TOC layer is visible on toc
+      show:      this.layerstrees[0].tree[0].toc, //@since 4.1.0 whether at least one TOC layer is visible on toc
     }
   },
 
