@@ -78,6 +78,14 @@
       </ul>
     </li>
 
+    <!-- Layer Legend -->
+    <li
+      v-if                = "'project' === context"
+      @click.prevent.stop = "showLegend"
+    >
+      <i class = "fas fa-list"></i> {{ $t('legend') }}
+    </li>
+
     <!-- LAYER MENU -->
     <template v-if = "'layer' === context">
 
