@@ -576,7 +576,7 @@ export default {
   #catalog #layers ul.g3w-external_layers-group li                               { padding-left: 2px !important; }
   #catalog #layers .sidebar-menu > li > a                                        { border: 0; }
   #catalog > a                                                                   { display: none !important; }
-  #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 4px 6px; border: 1px solid; border-radius: 3px; }
+  #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
   #catalog .tree-item > .toggle-context-menu.root                                { opacity: 1; border: none; }
   #catalog .tree-item:not(.group):hover > .toggle-context-menu                   { opacity: 1; }
   .catalog #legend .divider                                                      { display: block; position: relative; padding: 0; margin: 8px auto; height: 0; width: 100%; max-height: 0; font-size: 1px; line-height: 0; clear: both; border: none; }

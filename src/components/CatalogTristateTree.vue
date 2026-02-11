@@ -221,7 +221,7 @@
       data-placement = "left"
       :title         = "'legend'"
       @click.stop    = "showLegendPanel"
-      style          = "position: absolute; inset: 0 30px auto auto;padding: 4px 6px; border-radius: 3px; color: var(--skin-color)"
+      style          = "position: absolute;inset: 0 40px auto auto;padding: 4px 8px;border-radius: 3px;"
     ></button>
 
     <button
