@@ -69,11 +69,8 @@
           id   = "g3w-catalog-views-project"
         >
           <ul style = "padding: 0">
-            <li>
-              <div
-                v-t   = "'Project Themes'"
-                class = "project_map_theme">
-              </div>
+            <li v-if="is_staff">
+              <div class = "project_map_theme">{{ $t('Project Themes') }}</div>
             </li>
             <li style = "padding: 5px 5px 5px 17px;">
               <div
@@ -225,6 +222,17 @@ export default {
       show_form: false,
       show:      this.layerstrees[0].tree[0].visible, //@since 4.1.0 whether at least one TOC layer is visible on toc
     }
+  },
+
+  computed: {
+
+    /**
+     * @since 4.1.0
+     */
+    is_staff() {
+      return window.initConfig.user.is_staff;
+    },
+
   },
 
   methods: {
