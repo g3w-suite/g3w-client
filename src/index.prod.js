@@ -799,17 +799,17 @@ $.ajaxSetup({
 
         if (Array.isArray(node.nodes)) {
           node.nodes.forEach(n => n.parentGroup = parentGroup);
-          visible = _traverse(node.nodes, node);
+          node.visible = _traverse(node.nodes, node);
         }
-        node.visible = visible;
+        
         //SET PARENT GROUP
         nodes[index].parentGroup = parentGroup;
-        return visible;
+        return visible || node.visible;
       }, false);
     }
-    _traverse(layerstree, rootGroup);
     //set root group visibility based on children nodes
-    rootGroup.visible = layerstree.some(n => n.nodes ? n.visible : n.toc);
+    rootGroup.visible = _traverse(layerstree, rootGroup);
+    
     project.getLayersStore().state.layerstree.splice(0, 0, rootGroup); // at the end
   }
 
