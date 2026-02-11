@@ -550,7 +550,6 @@ export default {
   .catalog .tree-item.disabled > span                                            { color: #999; }
   .catalog .root                                                                 { padding: 2px 1px 1px 5px; }
   .catalog .root .tree-item.group                                                { padding-left: 1px; }
-  .g3w-long-text.toc-root                                                        { max-width: calc(100% - 50px); }
   .catalog .root.fa-chevron-right                                                { padding-right: 5px; padding-left: 0; }
   .bold                                                                          { font-weight: bold; color: #fff; }
   .highlightlayer                                                                { border-bottom: 2px dashed; border-color: #ffb516; }

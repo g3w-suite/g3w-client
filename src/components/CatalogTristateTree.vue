@@ -116,7 +116,6 @@
         :class           = "{
           highlightlayer:  isHighLight,
           scalevisibility: showscalevisibilityclass,
-          'toc-root':      layerstree.root,
         }"
         class                = "g3w-long-text"
         :data-i18n-title     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
@@ -222,18 +221,13 @@
       data-placement = "left"
       :title         = "'legend'"
       @click.stop    = "showLegendPanel"
-      style          = "position: absolute;inset: 0 40px auto auto;padding: 4px 8px;border-radius: 3px;"
+      style          = "position: absolute;inset: 0 4px auto auto;padding: 4px 8px;border-radius: 3px;"
     ></button>
 
     <button
-      v-if           = "layerstree.root || !isGroup"
+      v-if           = "!isGroup"
       type           = "button"
-      class          = "toggle-context-menu fas"
-      :class         = "{
-        'root' : layerstree.root,
-        'fa-cog': layerstree.root,
-        'fa-ellipsis-v': !layerstree.root,
-      }"
+      class          = "toggle-context-menu fas fa-ellipsis-v"
       data-placement = "left"
       :title         = "'Open menu'"
       @click.stop    = "showContextMenu"
