@@ -3736,26 +3736,26 @@ export default new (class GUI extends Emitter {
       title:        'legend',
       internalPanel: new (Vue.extend({
         template: /* html */`
-        <div
-          v-for  = "tree in state.layerstrees"
-          :key   = "tree.id"
-          role   = "tabpanel"
-          id     = "legend"
-          class  = "tab-pane"
-          :style = "{ backgroundColor: backgroundLegend }"
-        >
-          <div class = "legend-item">
-            <figure v-for = "url in legendurls" :key = "url.url">
-              <bar-loader :loading = "url.loading" />
-              <img
-                v-show = "!url.loading && !url.error"
-                :src   = "url.url"
-                @error = "onLegendError(url)"
-                @load  = "onLegendLoad(url)"
-                alt    = ""
-              />
-              <divider/>
-            </figure>
+        <div>
+          <div
+            v-for  = "tree in state.layerstrees"
+            :key   = "tree.id"
+            id     = "legend"
+            :style = "{ backgroundColor: backgroundLegend }"
+          >
+            <div style="width: 100%; position: relative;">
+              <figure v-for = "url in legendurls" :key = "url.url">
+                <bar-loader :loading = "url.loading" />
+                <img
+                  v-show = "!url.loading && !url.error"
+                  :src   = "url.url"
+                  @error = "onLegendError(url)"
+                  @load  = "onLegendLoad(url)"
+                  alt    = ""
+                />
+                <divider/>
+              </figure>
+            </div>
           </div>
         </div>
         `,

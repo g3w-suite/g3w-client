@@ -580,5 +580,4 @@ export default {
   #catalog .tree-item > .toggle-context-menu.root                                { opacity: 1; border: none; }
   #catalog .tree-item:not(.group):hover > .toggle-context-menu                   { opacity: 1; }
   .catalog #legend .divider                                                      { display: block; position: relative; padding: 0; margin: 8px auto; height: 0; width: 100%; max-height: 0; font-size: 1px; line-height: 0; clear: both; border: none; }
-  .catalog .legend-item                                                          { width: 100%; position: relative; }
 </style>
