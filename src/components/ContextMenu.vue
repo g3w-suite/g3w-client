@@ -80,7 +80,7 @@
 
     <!-- Layer Legend -->
     <li
-      v-if                = "'project' === context"
+      v-if                = "'project' === context && layerstree.root"
       @click.prevent.stop = "showLegend"
     >
       <i class = "fas fa-list"></i> {{ $t('legend') }}
