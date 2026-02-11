@@ -442,7 +442,7 @@ export default {
 
       qlayer.setVisible(checked ? !layer.disabled : false)
 
-      if (checked && layer.parentGroup.mutually_exclusive) {
+      if (checked && layer.parentGroup?.mutually_exclusive) {
         layer.parentGroup.nodes.forEach(n => n.checked = n.id === layer.id);
       }
 
