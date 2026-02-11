@@ -4,7 +4,9 @@
 -->
 
 <template>
-  <ul class = "sidebar-menu" :hidden="!logged && !(map_themes.project || []).length">
+  <ul 
+    v-if  = "show" 
+    class = "sidebar-menu" :hidden="!logged && !(map_themes.project || []).length">
     <li
       id    = "g3w-catalog-toc-views"
       class = "treeview sidebaritem skin-border-color"
@@ -225,6 +227,7 @@ export default {
       },
       /**@since 3.10.0 whether show add a new map theme form **/
       show_form: false,
+      show:      this.layerstrees[0].tree[0].visible, //@since 4.1.0 whether at least one TOC layer is visible on toc
     }
   },
 

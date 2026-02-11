@@ -737,6 +737,7 @@ $.ajaxSetup({
     const rootGroup = {
       title:       project.state.name || project.state.gid,
       root:        true,
+      visible:     true, //@since 4.1.0
       parentGroup: null,
       expanded:    'not_collapsed' === project.state.toc_layers_init_status,
       disabled:    false,
@@ -785,7 +786,7 @@ $.ajaxSetup({
       }
     };
     const _traverse = (nodes, parentGroup) => {
-      nodes.forEach((node, index) => {
+      return nodes.reduce((visible, node, index) => {
         // substitute node layer with layer state
         if (undefined !== node.id) {
           nodes[index] = project.getLayersStore().getLayerById(node.id).getState();
@@ -793,16 +794,22 @@ $.ajaxSetup({
           if (nodes[index].bbox) {
             _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
           }
+          return visible || node.toc;
         }
+
         if (Array.isArray(node.nodes)) {
           node.nodes.forEach(n => n.parentGroup = parentGroup);
-          _traverse(node.nodes, node);
+          visible = _traverse(node.nodes, node);
         }
+        node.visible = visible;
         //SET PARENT GROUP
         nodes[index].parentGroup = parentGroup;
-      });
+        return visible;
+      }, false);
     }
     _traverse(layerstree, rootGroup);
+    //set root group visibility based on children nodes
+    rootGroup.visible = layerstree.some(n => n.nodes ? n.visible : n.toc);
     project.getLayersStore().state.layerstree.splice(0, 0, rootGroup); // at the end
   }
 

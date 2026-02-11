@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="catalog">
+  <div class = "catalog">
 
     <!-- TOOLBAR -->
     <div
@@ -27,7 +27,7 @@
     >
       <!-- TAB TOC LAYERS -->
       <li
-        v-if   = "hasLayers"
+        v-if   = "state.layerstrees[0].visible && hasLayers"
         role   = "presentation"
         :class = "{ active: ('layers' === activeTab) }"
       > 
