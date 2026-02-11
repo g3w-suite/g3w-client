@@ -1133,6 +1133,9 @@ export default {
      * @since 4.1.0
      */
     async onBeforetoggle(e) {
+      if ('open' === e.newState && window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
       if ('closed' === e.newState) {
         this.close(false);
       }

@@ -869,9 +869,6 @@ export default {
      * @since 3.11.0
      */
     showaddLayerModal() {
-      if (window.innerWidth < 767) {
-        GUI.hideSidebar();
-      }
       $('#modal-addlayer').modal('show');
     },
 
