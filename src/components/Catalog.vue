@@ -31,7 +31,6 @@
         role   = "presentation"
         :class = "{ active: ('layers' === activeTab) }"
       > 
-        
         <a
           href          = "#layers"
           aria-controls = "layers"
@@ -42,15 +41,11 @@
       <!-- TAB LEGEND LAYERS -->
       <li
         v-if   = "'tab' === legend_position"
-        role   = "presentation"
-        :class = "{ active: ('legend' === activeTab) }"
       >
         <a
-          href          = "#legend"
-          aria-controls = "legend"
-          role          = "tab"
-          data-toggle   = "tab"
-          data-i18n     = "legend"
+          href           = "#"
+          data-i18n      = "legend"
+          @click.prevent = "showLegendPanel"
         ><i class="fas fa-list"></i> {{ $t('legend') }}</a>
       </li>
 
@@ -142,37 +137,6 @@
 
       </div>
 
-      <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegendItems.vue@v3.9.3 -->
-      <!-- ORIGINAL SOURCE: src/components/CatalogLayersLegend.vue@v3.9.3 -->
-      <div
-        v-if   = "'tab' === legend_position && 'legend' === activeTab"
-        v-for  = "tree in state.layerstrees"
-        :key   = "tree.id"
-        role   = "tabpanel"
-        id     = "legend"
-        class  = "tab-pane"
-        :style = "{ backgroundColor: backgroundLegend }"
-        :class = "{ active: 'legend' === activeTab }"
-      >
-        <div class = "legend-item">
-          <figure v-for = "url in legendurls" :key = "url.url">
-            <bar-loader :loading = "url.loading" />
-            <img
-              v-show = "!url.loading && !url.error"
-              :src   = "url.url"
-              @error = "onLegendError(url)"
-              @load  = "onLegendLoad(url)"
-              alt    = ""
-            />
-
-            <divider/>
-
-          </figure>
-
-        </div>
-
-      </div>
-
     </div>
 
     <div
@@ -212,6 +176,7 @@
 
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'g3w-app';
+import Panel                   from 'g3w-panel';
 import { XHR }                 from 'utils/XHR';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
@@ -227,9 +192,7 @@ export default {
     return {
       state:            this.$options.service.state || {},
       legend_position:  ApplicationState.project.state.legend_position || 'tab',
-      legendurls:       [],
       iframe:           ApplicationState.iframe,
-      backgroundLegend: ApplicationState.layout.app?.legend?.transparent ? 'transparent' : '#FFFFFF', //@since 3.11.3 set transparent or white background
       activeTab:        ApplicationState.project.state.catalog_tab || 'layers',
       loading:          false,
       //@since 4.1.0
@@ -537,6 +500,7 @@ export default {
     openChangeMapMenu() {
       $('#modal-changemap').modal('show');
     },
+
     /**
      * @since 4.1.0
      */
@@ -545,7 +509,14 @@ export default {
         ...(this.$options.service.state.external?.vector || []),
         ...(this.$options.service.state.external?.wms || []),
       ].every(l => l.checked)
-    }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showLegendPanel() {
+      GUI.showLegendPanel();
+    },
 
   },
 
@@ -580,9 +551,6 @@ export default {
 
      activeTab: {
       async handler(activeTab, oldTab) {
-        if ('legend' === activeTab) {
-          this.legendurls = await GUI.getLegendSrc({ change: true });
-        }
         if (this.$el) {
           this.$el.parentElement.classList.remove(`tab-${oldTab}`);
           this.$el.parentElement.classList.add(`tab-${activeTab}`);
@@ -605,7 +573,6 @@ export default {
     GUI.on('activefiltertokenlayer', this.onActiveToken);
     GUI.on('treenodevisible',        this.onTreeNodeVisible);
     GUI.on('treenodeselected',       this.onTreeNodeSelected);
-    GUI.on('layer-change-style',     async () => this.legendurls = (await GUI.getLegendSrc()).flat());
   },
 
   async mounted() {
@@ -613,6 +580,9 @@ export default {
     // in case of dynamic legend
     if (ApplicationState.project.state.context_base_legend) {
       GUI.on('change-map-legend-params', () => { GUI.getLegendSrc(); });
+    }
+    if ('legend' === ApplicationState.project.state.catalog_tab) {
+      this.showLegendPanel();
     }
   },
 

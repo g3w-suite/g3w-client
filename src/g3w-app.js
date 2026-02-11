@@ -3728,6 +3728,60 @@ export default new (class GUI extends Emitter {
   }
 
   /**
+   * @since 4.1.0
+   */
+  showLegendPanel() {
+    new Panel({
+      id:           'legend-panel',
+      title:        'legend',
+      internalPanel: new (Vue.extend({
+        template: /* html */`
+        <div
+          v-for  = "tree in state.layerstrees"
+          :key   = "tree.id"
+          role   = "tabpanel"
+          id     = "legend"
+          class  = "tab-pane"
+          :style = "{ backgroundColor: backgroundLegend }"
+        >
+          <div class = "legend-item">
+            <figure v-for = "url in legendurls" :key = "url.url">
+              <bar-loader :loading = "url.loading" />
+              <img
+                v-show = "!url.loading && !url.error"
+                :src   = "url.url"
+                @error = "onLegendError(url)"
+                @load  = "onLegendLoad(url)"
+                alt    = ""
+              />
+              <divider/>
+            </figure>
+          </div>
+        </div>
+        `,
+        data: () => ({
+          legendurls:       [],
+          state:            g3w.app.getComponent('catalog').internalComponent.state,
+          backgroundLegend: ApplicationState.layout.app?.legend?.transparent ? 'transparent' : '#FFFFFF',
+        }),
+        methods: {
+          onLegendError(url) {
+            url.error   = true;
+            url.loading = false;
+          },
+          onLegendLoad(url) {
+            url.loading = false;
+          },
+        },
+        async mounted() {
+          this.legendurls = await g3w.app.getLegendSrc({ change: true });
+        }
+      }))(),
+      show: true
+    });
+  }
+
+  /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
    * @since 4.1.0
