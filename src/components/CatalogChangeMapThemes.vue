@@ -21,15 +21,11 @@
             v-if  = "active_theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
-            <span v-t:pre = "'THEME'">:</span>
+            <span>{{ $t('THEME') }}:</span>
             <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
           </span>
           <!-- Choose a theme -->
-          <b
-            v-else
-            class = "treeview-label"
-            v-t   = "'CHOOSE THEME'">
-          </b>
+          <b v-else class = "treeview-label">{{ $t('THEME') }}</b>
         </section>
       </a>
 
