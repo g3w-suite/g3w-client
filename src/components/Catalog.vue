@@ -104,7 +104,7 @@
               ></span>
               <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
               <span 
-                style       = "color: red; padding-right: 3px; margin-left: auto; cursor: pointer;"
+                style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
                 :class      = "$fa('trash')"
                 @click.stop = "removeExternalLayers"
               ></span>
