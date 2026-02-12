@@ -6,7 +6,7 @@
 <template>
   <div class = "catalog">
 
-    <!-- TOOLBAR -->
+    <!-- THEME SELECTOR -->
     <div
       id    = "g3w-catalog-toc-layers-toolbar"
       style = "margin: 2px;"
@@ -19,89 +19,84 @@
       />
     </div>
 
-    <!-- TAB MENU (content) -->
-    <div class = "tab-content">
+    <bar-loader :loading = "loading" />
 
-      <bar-loader :loading = "loading" />
+    <!-- LAYER TREES -->
+    <div
+      id     = "layers"
+      style  = "margin-top: -3px; border: 0; color: #fff; padding: 5px 0 0 0;"
+    >
 
-      <div
-        id     = "layers"
-        class  = "tab-pane active"
+      <ul
+        v-for = "root in state.layerstrees"
+        :key  = "root.storeid"
+        class = "tree-root root project-root"
       >
+        <catalog-tristate-tree
+          v-for                      = "tree in root.tree"
+          :key                       = "tree.id"
+          :layerstree                = "tree"
+          class                      = "item"
+          :parentFolder              = "false"
+          :root                      = "true"
+          :legendplace               = "legend_position"
+          :parent_mutually_exclusive = "false"
+          :storeid                   = "root.storeid"
+        />
+      </ul>
 
-        <!-- LAYER TREES -->
-        <ul
-          v-for = "root in state.layerstrees"
-          :key  = "root.storeid"
-          class = "tree-root root project-root"
-        >
-          <catalog-tristate-tree
-            v-for                      = "tree in root.tree"
-            :key                       = "tree.id"
-            :layerstree                = "tree"
-            class                      = "item"
-            :parentFolder              = "false"
-            :root                      = "true"
-            :legendplace               = "legend_position"
-            :parent_mutually_exclusive = "false"
-            :storeid                   = "root.storeid"
-          />
-        </ul>
-
-        <!-- EXTERNAL LAYERS -->
-        <ul v-if = "state.external.wms.length || state.external.tms.length || state.external.vector.length" class = "g3w-external_layers-group">
-          <li>
-            <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
-              <span
-                style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
-                :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
-                @click.stop = "expandCollapseExternaLayers"
-                class       = "collapse-expande-collapse-icon bold"
-              ></span>
-              <span
-                @click.stop = "toggleExternalLayers"
-                style       = "padding-right: 5px; cursor: pointer;"
-                :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
-              ></span>
-              <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
-              <span 
-                style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
-                :class      = "$fa('trash')"
-                @click.stop = "removeExternalLayers"
-              ></span>
-            </div>
-          </li>
-          <catalog-tristate-tree
-            v-show          = "!externalayers.collapsed"
-            v-for           = "wms in state.external.wms"
-            :key            = "wms.id"
-            :externallayers = "state.external.wms"
-            :layerstree     = "wms"
-            @layerchecked   = "updateExternalLayersChecked"
-            class           = "item"
-          />
-          <!-- @since 4.1.0 add tms layers -->
-          <catalog-tristate-tree
-            v-show          = "!externalayers.collapsed"
-            v-for           = "tms in state.external.tms"
-            :key            = "tms.id"
-            :externallayers = "state.external.tms"
-            :layerstree     = "tms"
-            @layerchecked   = "updateExternalLayersChecked"
-            class           = "item"
-          />
-          <catalog-tristate-tree
-            v-show          = "!externalayers.collapsed"
-            v-for           = "vector in state.external.vector"
-            :key            = "vector.id"
-            :externallayers = "state.external.vector"
-            @layerchecked   = "updateExternalLayersChecked"
-            :layerstree     = "vector"
-            class           = "item"
-          />
-        </ul>
-
-      </div>
+      <!-- EXTERNAL LAYERS -->
+      <ul v-if = "state.external.wms.length || state.external.tms.length || state.external.vector.length" class = "g3w-external_layers-group">
+        <li>
+          <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
+            <span
+              style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
+              :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
+              @click.stop = "expandCollapseExternaLayers"
+              class       = "collapse-expande-collapse-icon bold"
+            ></span>
+            <span
+              @click.stop = "toggleExternalLayers"
+              style       = "padding-right: 5px; cursor: pointer;"
+              :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
+            ></span>
+            <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
+            <span 
+              style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
+              :class      = "$fa('trash')"
+              @click.stop = "removeExternalLayers"
+            ></span>
+          </div>
+        </li>
+        <catalog-tristate-tree
+          v-show          = "!externalayers.collapsed"
+          v-for           = "wms in state.external.wms"
+          :key            = "wms.id"
+          :externallayers = "state.external.wms"
+          :layerstree     = "wms"
+          @layerchecked   = "updateExternalLayersChecked"
+          class           = "item"
+        />
+        <!-- @since 4.1.0 add tms layers -->
+        <catalog-tristate-tree
+          v-show          = "!externalayers.collapsed"
+          v-for           = "tms in state.external.tms"
+          :key            = "tms.id"
+          :externallayers = "state.external.tms"
+          :layerstree     = "tms"
+          @layerchecked   = "updateExternalLayersChecked"
+          class           = "item"
+        />
+        <catalog-tristate-tree
+          v-show          = "!externalayers.collapsed"
+          v-for           = "vector in state.external.vector"
+          :key            = "vector.id"
+          :externallayers = "state.external.vector"
+          @layerchecked   = "updateExternalLayersChecked"
+          :layerstree     = "vector"
+          class           = "item"
+        />
+      </ul>
 
     </div>
 
@@ -532,7 +527,6 @@ export default {
   .catalog > .nav-tabs > li.active > a                                           { border: 0; color: #fff; background-color: hsl(from var(--bgcolor) h s calc(l + 4)); }
   .catalog > .nav-tabs > li.active > a > i                                       { color: #fff; }
   .catalog > .nav-tabs > li a                                                    { padding: 10px 0; text-align: center; height: 100%; width: 100%; }
-  .catalog > .tab-content                                                        { margin-top: -3px; border: 0; color: #fff; padding: 5px 0 0 0; }
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:is(:focus, :hover)                                   { color: #fff; }
   .catalog > .title                                                              { padding: 10px; font-weight: bold; }
