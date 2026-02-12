@@ -32,7 +32,6 @@ let conf = {
     // dark mode
     g3wsdk.gui.GUI.isReady().then(() => {
       document.querySelector('nav').style.setProperty('--skin-color', '#212c31');
-      document.querySelector('nav > a > img').style.filter = 'grayscale(1)';
     });
     document.body.style.setProperty('--bgcolor', '#212c31');
   }
