@@ -153,14 +153,6 @@
                 <b v-t="'Add Layer'"></b><i :class="$fa('layers')"></i> 
               </a>
 
-              <!-- LEGEND -->
-              <a
-                href   = "#"
-                @click = "showLegend"
-                class  = "nav-legend btn btn-default btn-flat"
-              >
-                <b v-t="'legend'"></b><i class = "fas fa-list"></i>
-              </a>
             </li>
           </ul>
         </li>
@@ -873,16 +865,6 @@ export default {
     },
 
     /**
-     * @since 4.1.0
-     */
-    showLegend() {
-      $('#modal-metadata').modal('show');
-      setTimeout(() => {
-        document.querySelector('#modal-metadata [href="#metadata_legend"]').click();
-      });
-    },
-
-    /**
      * @since 3.8.0
      */
     openChangeMapMenu() {
@@ -1238,7 +1220,7 @@ export default {
   .open i.triangle                      { border-color: transparent transparent #fff transparent; border-width: 0 4px 5px 4px; }
 
   @media (min-width: 767px) {
-    .user-footer :is(.nav-sidebar, .nav-addlayer, .nav-legend).btn-default { display: none; }
+    .user-footer :is(.nav-sidebar, .nav-addlayer).btn-default { display: none; }
     .project_title                                            { margin-right: auto; }
   }
 

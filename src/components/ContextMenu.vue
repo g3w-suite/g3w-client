@@ -948,10 +948,7 @@
        */
       showLegend() {
         this.closeMenu();
-        $('#modal-metadata').modal('show');
-        setTimeout(() => {
-          document.querySelector('#modal-metadata [href="#metadata_legend"]').click();
-        });
+        GUI.showLegendPanel();
       },
 
       /**

@@ -518,8 +518,7 @@ export default {
 </script>
 
 <style>
-  .catalog .tree-item.selected,
-  .catalog #legend div.selected                                                  { background-color: var(--skin-color); }
+  .catalog .tree-item.selected                                                   { background-color: var(--skin-color); }
   .catalog .nav-tabs ul li                                                       { color: #fff; }
   .catalog > .nav-tabs                                                           { border: none; margin: 0px; display: flex; flex: 1 1 0; }
   .catalog > .nav-tabs:has(> li:only-child)                                      { display: none; }
@@ -538,12 +537,9 @@ export default {
   .nav-tabs > li.active > a:is(:focus, :hover)                                   { color: #fff; }
   .catalog > .title                                                              { padding: 10px; font-weight: bold; }
   .catalog ul                                                                    { line-height: 1.75em; list-style-type: none; }
-  .catalog .tree-item.selected ul.layer-categories,
-  .catalog #legend div.selected ul.layer-categories                              { background-color: var(--bgcolor); }
-  .catalog .tree-item div.tree-node-title,
-  .catalog #legend div div.tree-node-title                                       { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
-  .catalog .tree-item div.tree-node-title.disabled,
-  .catalog #legend div div.tree-node-title.disabled                              { color: #999; }
+  .catalog .tree-item.selected ul.layer-categories                               { background-color: var(--bgcolor); }
+  .catalog .tree-item div.tree-node-title                                        { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
+  .catalog .tree-item div.tree-node-title.disabled                               { color: #999; }
   .catalog button[type="button"]                                                 { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 5px; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
   .catalog button[type="button"].active                                          { box-shadow: none; background-color: #384247; }
   .catalog .tree-item                                                            { cursor: pointer; margin-bottom: 3px; }
@@ -579,5 +575,4 @@ export default {
   #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
   #catalog .tree-item > .toggle-context-menu.root                                { opacity: 1; border: none; }
   #catalog .tree-item:not(.group):hover > .toggle-context-menu                   { opacity: 1; }
-  .catalog #legend .divider                                                      { display: block; position: relative; padding: 0; margin: 8px auto; height: 0; width: 100%; max-height: 0; font-size: 1px; line-height: 0; clear: both; border: none; }
 </style>
