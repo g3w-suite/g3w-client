@@ -3750,31 +3750,26 @@ export default new (class GUI extends Emitter {
       internalPanel: new (Vue.extend({
         template: /* html */`
         <div>
-          <div
-            v-for  = "tree in state.layerstrees"
-            :key   = "tree.id"
+          <figure
+            v-for  = "url in legendurls"
+            :key   = "url.url"
+            style  = "padding-bottom:5px; border-bottom: 1px solid #eee;"
             :style = "{ backgroundColor: backgroundLegend }"
           >
-            <div style="width: 100%; position: relative;">
-              <figure v-for = "url in legendurls" :key = "url.url">
-                <bar-loader :loading = "url.loading" />
-                <img
-                  v-show = "!url.loading && !url.error"
-                  :src   = "url.url"
-                  @error = "onLegendError(url)"
-                  @load  = "onLegendLoad(url)"
-                  alt    = ""
-                />
-                <divider/>
-              </figure>
-            </div>
-          </div>
+            <bar-loader :loading = "url.loading" />
+            <img
+              v-show = "!url.loading && !url.error"
+              :src   = "url.url"
+              @error = "onLegendError(url)"
+              @load  = "onLegendLoad(url)"
+              alt    = ""
+            />
+          </figure>
         </div>
         `,
         data: () => ({
           legendurls:       [],
-          state:            g3w.app.getComponent('catalog').internalComponent.state,
-          backgroundLegend: ApplicationState.layout.app?.legend?.transparent ? 'transparent' : '#FFFFFF',
+          backgroundLegend: ApplicationState.layout.app?.legend?.transparent ? 'transparent' : '#FFF',
         }),
         methods: {
           onLegendError(url) {
