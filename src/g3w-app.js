@@ -643,7 +643,7 @@ export default new (class GUI extends Emitter {
       collapsible:       false,
     }), {
       _setOpen: bool => { if (bool) { this.showLegendPanel(); } },
-    }));
+    }), { position: 'metadata' });
 
     // G3W-CATALOG
     this.addComponent(new (function() {
