@@ -3788,11 +3788,12 @@ export default new (class GUI extends Emitter {
         async mounted() {
           this.legendurls = await g3w.app.getLegendSrc({ change: true });
         },
-        beforeDestroy(){
+        beforeDestroy() {
+          g3w.app.getComponent('legend').state.open = false;
           // automatically hide sidebar on mobile
           if (window.innerWidth < 767) {
             g3w.app.hideSidebar();
-          }  
+          }
         },
       }))(),
       show: true
