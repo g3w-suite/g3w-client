@@ -439,8 +439,9 @@ export default {
     border-bottom: 2px solid;
   }
   .g3w-map-theme-anchor {
-    padding: 0;
     margin-bottom: 5px;
+    margin-left: -3px;
+    padding: 5px 5px 5px 0;
   }
   .g3w-map-theme-anchor > section {
     display: flex;

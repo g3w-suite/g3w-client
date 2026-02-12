@@ -9,7 +9,6 @@
     <!-- THEME SELECTOR -->
     <div
       id    = "g3w-catalog-toc-layers-toolbar"
-      style = "margin: 2px;"
     >
       <catalog-change-map-themes
         :key              = "project.state.gid"
@@ -24,7 +23,7 @@
     <!-- LAYER TREES -->
     <div
       id     = "layers"
-      style  = "margin-top: -3px; border: 0; color: #fff; padding: 5px 0 0 0;"
+      style  = "padding-top: 5px;"
     >
 
       <ul
@@ -543,7 +542,7 @@ export default {
   .catalog .root.fa-chevron-right                                                { padding-right: 5px; padding-left: 0; }
   .bold                                                                          { font-weight: bold; color: #fff; }
   .highlightlayer                                                                { border-bottom: 2px dashed; border-color: #ffb516; }
-  .catalog                                                                       { padding: 3px; }
+  .catalog                                                                       { padding: 0 3px; }
   .catalog .tree-root                                                            { padding-left: 0; }
   .catalog .tree-root li > .root                                                 { padding-left: 5px; }
   .catalog .tree-root li.tree-item ul.tree-content-items.root                    { padding-left: 18px; }
