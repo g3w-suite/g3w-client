@@ -642,7 +642,7 @@ export default new (class GUI extends Emitter {
       internalComponent: new (Vue.extend({})),
       collapsible:       false,
     }), {
-      _setOpen: bool => { this.showLegendPanel(); },
+      _setOpen: bool => { if (bool) { this.showLegendPanel(); } },
     }));
 
     // G3W-CATALOG
