@@ -633,17 +633,13 @@ export default new (class GUI extends Emitter {
       return comp;
     }));
 
+    ApplicationState.catalog.layerstrees.push(
+      ...Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : [])
+    );
+
     // G3W-CATALOG
     this.addComponent(new (function() {
-      const state = {
-        external: {   // external layers
-          wms:    [], // added by wms sidebar component
-          tms:    [], // @since 4.1.0 tms layer type 
-          vector: []  // added to map controls for the moment
-        },
-        layerstrees:  Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : []),
-      };
-    
+
       const service = new Emitter({
         setters: {
           /**
@@ -655,7 +651,7 @@ export default new (class GUI extends Emitter {
            */
           addExternalLayer({ layer, type = 'vector' } = {}) {
             layer.removable = true;
-            state.external[type].push(layer);
+            ApplicationState.catalog.external[type].push(layer);
           },
           /**
            * @param {{ name: string, type: 'vector' }}
@@ -665,9 +661,9 @@ export default new (class GUI extends Emitter {
            * @since 3.8.0
            */
           removeExternalLayer({ name, type='vector' } = {}) {
-            state.external[type].filter((l, i) => {
+            ApplicationState.catalog.external[type].filter((l, i) => {
               if (name === l.name) {
-                state.external[type].splice(i, 1);
+                ApplicationState.catalog.external[type].splice(i, 1);
                 return true;
               }
             });
@@ -675,10 +671,10 @@ export default new (class GUI extends Emitter {
         }
       });
     
-      service.state             = state;
+      service.state             = ApplicationState.catalog;
 
       /** used by the following plugins: "processing" */
-      service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
+      service.getExternalLayers = ({ type = 'vector' })     => ApplicationState.catalog.external[type];
 
       const comp = new Component({
         id:                 'catalog',
@@ -2104,7 +2100,7 @@ export default new (class GUI extends Emitter {
       // add visible layers to query response (vector layers)
       this.#vectorLayers.forEach(layer => {
         // TODO: extract this into `layer.isSomething()` ?
-        if (layer.getVisible() && [undefined, !!(this.getService('catalog').state.external.vector.find(l => l.id === layer.get('id')) || {}).selected].includes(queryResponse.query.external.filter.SELECTED)) {
+        if (layer.getVisible() && [undefined, !!(ApplicationState.catalog.external.vector.find(l => l.id === layer.get('id')) || {}).selected].includes(queryResponse.query.external.filter.SELECTED)) {
           queryResponse.data[
             '__g3w_marker' === layer.get('id') // keep geocoding control "marker" layer at the top
             ? 'unshift'
@@ -5638,7 +5634,7 @@ export default new (class GUI extends Emitter {
     feature_count = 10
   } = {}) {
     let data       = [];
-    const external = this.getService('catalog').state.external.vector.some(l => l.selected);
+    const external = ApplicationState.catalog.external.vector.some(l => l.selected);
     const layers   = Object.values(ApplicationState.layers)
       .flatMap(s => s.isQueryable() ? s.getLayers({
         GEOLAYER:        true,

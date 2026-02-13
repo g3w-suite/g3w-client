@@ -674,7 +674,7 @@
       },
 
       getGeometryType(layerId, external=false) {
-        const layer = external ? GUI.getService('catalog').state.external.vector.find(l => layerId === l.id) : getCatalogLayerById(layerId);
+        const layer = external ? ApplicationState.catalog.external.vector.find(l => layerId === l.id) : getCatalogLayerById(layerId);
         if (layer) {
           const type = external ? layer.geometryType : layer.config.geometrytype;
           return layer && 'NoGeometry' !== type && type || '';

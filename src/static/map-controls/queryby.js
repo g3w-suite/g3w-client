@@ -707,7 +707,7 @@ export class QueryBy extends MapControl {
             'querybbox' === type
               ? { bbox: feature }
               : {
-                  fid:      GUI.getService('catalog').state.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
+                  fid:      ApplicationState.catalog.external.vector.some(l => l.selected) ? feature.getId() : feature.get(G3W_FID),
                   geometry: GEOMETRY,
                   layerName,
                 }

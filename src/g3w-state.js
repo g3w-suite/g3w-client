@@ -226,6 +226,18 @@ const STATE = {
   navbaritems: [],
 
   /**
+   * @since 4.1.0
+   */
+  catalog: {
+    external: {   // external layers
+      wms:    [], // added by wms sidebar component
+      tms:    [], // @since 4.1.0 tms layer type 
+      vector: []  // added to map controls for the moment
+    },
+    layerstrees:  [],
+  },
+
+  /**
    * @since 3.11.0
    */
   sidebar: {
