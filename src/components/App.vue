@@ -329,7 +329,7 @@
                       v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.project"
                       :key  = "map_theme.theme"
                     >
-                      <label for  = "`g3w-map_theme-${i}`">
+                      <label :for  = "`g3w-map_theme-${i}`">
                         <input type = "radio" name = "radio" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model  = "active_theme" />
                         <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                       </label>
