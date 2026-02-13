@@ -264,13 +264,23 @@
           @click  = "toggleSidebarItem"
         >
 
+        <li id = "legend" class = "treeview sidebaritem">
+          <a
+            href = "#"
+            @click.prevent = "showLegendPanel"
+          >
+            <i class = "fas fa-list" style = "color: #fff;"></i>
+            <span class = "treeview-label">{{ $t('legend') }}</span>
+          </a>
+        </li>
+
         <li id = "metadata" class = "treeview sidebaritem">
           <a
             href           = "#"
             data-toggle    = "modal"
             data-target    = "#modal-metadata"
           >
-            <i :class = "$fa('file')" style = "color: #fff;"></i>
+            <i class = "fas fa-file-code" style = "color: #fff;"></i>
             <span class = "treeview-label">{{ $t('Metadata') }}</span>
           </a>
         </li>
@@ -855,6 +865,13 @@ export default {
 
     async showEmbedModal() {
       await GUI.getPermalink(new URL(window.location.href), {});
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showLegendPanel() {
+      GUI.showLegendPanel();
     },
 
     /**

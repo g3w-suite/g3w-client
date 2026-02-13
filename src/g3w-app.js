@@ -633,18 +633,6 @@ export default new (class GUI extends Emitter {
       return comp;
     }));
 
-    // G3W-LEGEND
-    this.addComponent(Object.assign(new Component({
-      id:                'legend',
-      icon:              'fas fa-list',
-      iconColor:         '#fff',
-      title:             'legend',
-      internalComponent: new (Vue.extend({})),
-      collapsible:       false,
-    }), {
-      _setOpen: bool => { if (bool) { this.showLegendPanel(); } },
-    }), { position: 'metadata' });
-
     // G3W-CATALOG
     this.addComponent(new (function() {
       const state = {
@@ -3784,7 +3772,6 @@ export default new (class GUI extends Emitter {
           this.legendurls = await g3w.app.getLegendSrc({ change: true });
         },
         beforeDestroy() {
-          g3w.app.getComponent('legend').state.open = false;
           // automatically hide sidebar on mobile
           if (window.innerWidth < 767) {
             g3w.app.hideSidebar();
