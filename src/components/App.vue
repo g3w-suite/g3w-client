@@ -211,47 +211,41 @@
           :hidden = "panels.length <= 0"
           class   = "sidebar-panel"
         >
-          <div style ="overflow: hidden;line-height: 14px;font-size: 1.5em;min-height: 35px;border-bottom: 1px solid #FFF;margin-bottom: 5px;">
-            <div
-              style  = "display: flex; margin-bottom: 5px;"
-              :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
+          <div
+            style  = "display: flex; overflow: hidden;line-height: 14px;font-size: 1.5em;min-height: 35px;border-bottom: 1px solid #FFF;padding-bottom: 5px;margin-bottom: 5px;"
+            :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
+          >
+            <h4
+              v-if  = "title"
+              style = "display: inline-block; font-weight: bold"
+              v-t   = "title"
+            ></h4>
+
+            <button
+              v-if           = "panels.length > 1"
+              @click         = "closePanel"
+              :title         = "'back'"
+              data-placement = "left"
+              class          = "btn btn-outline"
+              style          = "margin-left: auto; margin-right: 1ch;"
             >
-
-              <h4
-                v-if  = "title"
-                style = "display: inline-block; font-weight: bold"
-                v-t   = "title"
-              ></h4>
-
-              <div>
-                <span
-                  v-if           = "panels.length > 1"
-                  @click.stop    = "closePanel"
-                  data-placement = "left"
-                  v-t-tooltip    = "'back'"
-                  class          = "close-pane-button"
-                >
-                  <i 
-                    :class = "$fa('arrow-left')" 
-                    :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
-                    class = "panel-icon">
-                  </i>
-                </span>
-                <span
-                  @click.stop    = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-                  :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
-                  data-placement = "right"
-                  class          = "close-pane-button"
-                >
-                  <i
-                    :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
-                    :class = "$fa('close')"
-                    class  = "panel-icon">
-                  </i>
-                </span>
-              </div>
-
-            </div>
+              <i 
+                :class = "$fa('arrow-left')" 
+                :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+              ></i>
+            </button>
+            <button
+              type           = "button"
+              @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
+              :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
+              data-placement = "right"
+              class          = "btn btn-outline"
+            >
+              <i
+                :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+                :class = "$fa('close')"
+              ></i>
+            </button>
           </div>
 
           <div
