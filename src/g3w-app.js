@@ -1045,6 +1045,9 @@ export default new (class GUI extends Emitter {
     if (data.length <= 0) {
       return;
     }
+    
+    //set null for reactivity
+    ApplicationState.sidebar.title = null;
     const panel = data.slice(-1)[0].content;
     await panel.unmount();
     let content = data.pop();
