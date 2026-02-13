@@ -304,129 +304,128 @@
             <i aria-hidden="true" class="far fa-map" style="color: rgb(1, 154, 76);"></i>
             <span class="treeview-label"> {{ $t('Layers') }}</span>
           </a>
-          <div class = "catalog">
-            <!-- THEME SELECTOR -->
-            <div
-              id    = "g3w-catalog-toc-layers-toolbar"
+          <!-- THEME SELECTOR -->
+          <div
+            id    = "g3w-catalog-toc-layers-toolbar"
+            style = "padding: 0 3px; "
+          >
+            <catalog-themes
+              v-if              = "ApplicationState.catalog.layerstrees.length"
+              :map_themes       = "ApplicationState.project.state.map_themes"
+              :layerstrees      = "ApplicationState.catalog.layerstrees"
+              @change-map-theme = "changeMapTheme"
+            />
+          </div>
+
+          <!-- LAYER TREES -->
+          <div
+            id     = "layers"
+            style  = "padding: 0 3px; padding-top: 5px;"
+          >
+
+            <ul
+              v-for = "root in ApplicationState.catalog.layerstrees"
+              :key  = "root.storeid"
+              class = "tree-root root project-root"
             >
-              <catalog-themes
-                v-if              = "ApplicationState.catalog.layerstrees.length"
-                :map_themes       = "ApplicationState.project.state.map_themes"
-                :layerstrees      = "ApplicationState.catalog.layerstrees"
-                @change-map-theme = "changeMapTheme"
+              <catalog-tree
+                v-for                      = "tree in root.tree"
+                :key                       = "tree.id"
+                :layerstree                = "tree"
+                class                      = "item"
+                :parentFolder              = "false"
+                :root                      = "true"
+                :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
+                :parent_mutually_exclusive = "false"
+                :storeid                   = "root.storeid"
               />
-            </div>
+            </ul>
 
-            <!-- LAYER TREES -->
-            <div
-              id     = "layers"
-              style  = "padding-top: 5px;"
-            >
-
-              <ul
-                v-for = "root in ApplicationState.catalog.layerstrees"
-                :key  = "root.storeid"
-                class = "tree-root root project-root"
-              >
-                <catalog-tree
-                  v-for                      = "tree in root.tree"
-                  :key                       = "tree.id"
-                  :layerstree                = "tree"
-                  class                      = "item"
-                  :parentFolder              = "false"
-                  :root                      = "true"
-                  :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
-                  :parent_mutually_exclusive = "false"
-                  :storeid                   = "root.storeid"
-                />
-              </ul>
-
-              <!-- EXTERNAL LAYERS -->
-              <ul v-if = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length" class = "g3w-external_layers-group">
-                <li>
-                  <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
-                    <span
-                      style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
-                      :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
-                      @click.stop = "expandCollapseExternaLayers"
-                      class       = "collapse-expande-collapse-icon bold"
-                    ></span>
-                    <span
-                      @click.stop = "toggleExternalLayers"
-                      style       = "padding-right: 5px; cursor: pointer;"
-                      :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
-                    ></span>
-                    <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
-                    <span 
-                      style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
-                      :class      = "$fa('trash')"
-                      @click.stop = "removeExternalLayers"
-                    ></span>
-                  </div>
-                </li>
-                <catalog-tree
-                  v-show          = "!externalayers.collapsed"
-                  v-for           = "wms in ApplicationState.catalog.external.wms"
-                  :key            = "wms.id"
-                  :externallayers = "ApplicationState.catalog.external.wms"
-                  :layerstree     = "wms"
-                  @layerchecked   = "updateExternalLayersChecked"
-                  class           = "item"
-                />
-                <!-- @since 4.1.0 add tms layers -->
-                <catalog-tree
-                  v-show          = "!externalayers.collapsed"
-                  v-for           = "tms in ApplicationState.catalog.external.tms"
-                  :key            = "tms.id"
-                  :externallayers = "ApplicationState.catalog.external.tms"
-                  :layerstree     = "tms"
-                  @layerchecked   = "updateExternalLayersChecked"
-                  class           = "item"
-                />
-                <catalog-tree
-                  v-show          = "!externalayers.collapsed"
-                  v-for           = "vector in ApplicationState.catalog.external.vector"
-                  :key            = "vector.id"
-                  :externallayers = "ApplicationState.catalog.external.vector"
-                  @layerchecked   = "updateExternalLayersChecked"
-                  :layerstree     = "vector"
-                  class           = "item"
-                />
-              </ul>
-
-            </div>
-
-            <div
-              v-if = "has_related_maps"
-              style  = "
-                position: sticky;
-                bottom: 0;
-                background-color: var(--bgcolor);
-                display: flex;
-                text-align: center;
-                line-height: 48px;
-                color: #fff;
-                border-top: 2px solid var(--skin-color);
-                margin-top: 12px;
-                justify-content: space-around;
-              "
-            >
-              <a
-                href        = "#"
-                @click.stop = "showaddLayerModal"
-              >
-                <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
-              </a>
-              <a
-                v-if           = "has_related_maps && !ApplicationState.iframe"
-                href           = "#"
-                @click.stop = "openChangeMapMenu"
-              >
-                <i :class = "$fa('refresh')"></i> <b>{{ $t('changemap') }}</b>
-              </a>
-            </div>
+            <!-- EXTERNAL LAYERS -->
+            <ul v-if = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length" class = "g3w-external_layers-group">
+              <li>
+                <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
+                  <span
+                    style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
+                    :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
+                    @click.stop = "expandCollapseExternaLayers"
+                    class       = "collapse-expande-collapse-icon bold"
+                  ></span>
+                  <span
+                    @click.stop = "toggleExternalLayers"
+                    style       = "padding-right: 5px; cursor: pointer;"
+                    :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
+                  ></span>
+                  <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
+                  <span 
+                    style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
+                    :class      = "$fa('trash')"
+                    @click.stop = "removeExternalLayers"
+                  ></span>
+                </div>
+              </li>
+              <catalog-tree
+                v-show          = "!externalayers.collapsed"
+                v-for           = "wms in ApplicationState.catalog.external.wms"
+                :key            = "wms.id"
+                :externallayers = "ApplicationState.catalog.external.wms"
+                :layerstree     = "wms"
+                @layerchecked   = "updateExternalLayersChecked"
+                class           = "item"
+              />
+              <!-- @since 4.1.0 add tms layers -->
+              <catalog-tree
+                v-show          = "!externalayers.collapsed"
+                v-for           = "tms in ApplicationState.catalog.external.tms"
+                :key            = "tms.id"
+                :externallayers = "ApplicationState.catalog.external.tms"
+                :layerstree     = "tms"
+                @layerchecked   = "updateExternalLayersChecked"
+                class           = "item"
+              />
+              <catalog-tree
+                v-show          = "!externalayers.collapsed"
+                v-for           = "vector in ApplicationState.catalog.external.vector"
+                :key            = "vector.id"
+                :externallayers = "ApplicationState.catalog.external.vector"
+                @layerchecked   = "updateExternalLayersChecked"
+                :layerstree     = "vector"
+                class           = "item"
+              />
+            </ul>
 
           </div>
+
+          <div
+            v-if = "has_related_maps"
+            style  = "
+              position: sticky;
+              bottom: 0;
+              background-color: var(--bgcolor);
+              display: flex;
+              text-align: center;
+              line-height: 48px;
+              color: #fff;
+              border-top: 2px solid var(--skin-color);
+              margin-top: 12px;
+              justify-content: space-around;
+            "
+          >
+            <a
+              href        = "#"
+              @click.stop = "showaddLayerModal"
+            >
+              <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
+            </a>
+            <a
+              v-if           = "has_related_maps && !ApplicationState.iframe"
+              href           = "#"
+              @click.stop = "openChangeMapMenu"
+            >
+              <i :class = "$fa('refresh')"></i> <b>{{ $t('changemap') }}</b>
+            </a>
+          </div>
+
         </li>
 
       </ul>
@@ -1641,55 +1640,40 @@ export default {
     opacity: 0;
   }
 
-  .catalog .tree-item.selected                                                   { background-color: var(--skin-color); }
-  .catalog .nav-tabs ul li                                                       { color: #fff; }
-  .catalog > .nav-tabs                                                           { border: none; margin: 0px; display: flex; flex: 1 1 0; }
-  .catalog > .nav-tabs:has(> li:only-child)                                      { display: none; }
-  .catalog > .nav-tabs > li                                                      { margin-right: 2px; border-bottom: 4px solid hsl(from var(--bgcolor) h s calc(l - 2)); font-size: 1em; white-space: initial; display: flex; flex: 1 1 0; align-items: stretch; }
-  .catalog > .nav-tabs > li > a                                                  { border: 0; margin-right: 0; color: #fff; }
-  .catalog > .nav-tabs > li > a > i                                              { color: #a6a6a6; }
-  .catalog > .nav-tabs > li:is(.open, :hover) > a                                { border: 0; background: none !important; }
-  .catalog > .nav-tabs > li:is(.open, :hover) > a > i                            { color: #a6a6a6; }
-  .catalog > .nav-tabs > li:is(.open, :hover) .dropdown-menu                     { margin-top: 0; }
-  .catalog > .nav-tabs > li.active                                               { border-bottom: 4px solid var(--skin-color); position: relative; font-weight: bold; }
-  .catalog > .nav-tabs > li.active > a                                           { border: 0; color: #fff; background-color: hsl(from var(--bgcolor) h s calc(l + 4)); }
-  .catalog > .nav-tabs > li.active > a > i                                       { color: #fff; }
-  .catalog > .nav-tabs > li a                                                    { padding: 10px 0; text-align: center; height: 100%; width: 100%; }
+  #catalog .tree-item.selected                                                   { background-color: var(--skin-color); }
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:is(:focus, :hover)                                   { color: #fff; }
-  .catalog > .title                                                              { padding: 10px; font-weight: bold; }
-  .catalog ul                                                                    { line-height: 1.75em; list-style-type: none; }
-  .catalog .tree-item.selected ul.layer-categories                               { background-color: var(--bgcolor); }
-  .catalog .tree-item div.tree-node-title                                        { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
-  .catalog .tree-item div.tree-node-title.disabled                               { color: #999; }
-  .catalog button[type="button"]                                                 { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 5px; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
-  .catalog button[type="button"].active                                          { box-shadow: none; background-color: #384247; }
-  .catalog .tree-item                                                            { cursor: pointer; margin-bottom: 3px; }
-  .catalog .tree-item.disabled > span                                            { color: #999; }
-  .catalog .root                                                                 { padding: 2px 1px 1px 5px; }
-  .catalog .root .tree-item.group                                                { padding-left: 1px; }
-  .catalog .root.fa-chevron-right                                                { padding-right: 5px; padding-left: 0; }
+  #catalog ul                                                                    { line-height: 1.75em; list-style-type: none; }
+  #catalog .tree-item.selected ul.layer-categories                               { background-color: var(--bgcolor); }
+  #catalog .tree-item div.tree-node-title                                        { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
+  #catalog .tree-item div.tree-node-title.disabled                               { color: #999; }
+  #catalog button[type="button"]                                                 { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 5px; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
+  #catalog button[type="button"].active                                          { box-shadow: none; background-color: #384247; }
+  #catalog .tree-item                                                            { cursor: pointer; margin-bottom: 3px; }
+  #catalog .tree-item.disabled > span                                            { color: #999; }
+  #catalog .root                                                                 { padding: 2px 1px 1px 5px; }
+  #catalog .root .tree-item.group                                                { padding-left: 1px; }
+  #catalog .root.fa-chevron-right                                                { padding-right: 5px; padding-left: 0; }
   .bold                                                                          { font-weight: bold; color: #fff; }
   .highlightlayer                                                                { border-bottom: 2px dashed; border-color: #ffb516; }
-  .catalog                                                                       { padding: 0 3px; }
-  .catalog .tree-root                                                            { padding-left: 0; }
-  .catalog .tree-root li > .root                                                 { padding-left: 5px; }
-  .catalog .tree-root li.tree-item ul.tree-content-items.root                    { padding-left: 18px; }
-  .catalog .tree-root li.tree-item ul.tree-content-items.root > .tree-item.group { padding-left: 1px !important; }
-  .catalog .tree-root li.tree-item ul.tree-content-items                         { padding-left: 17px; padding-top: 2px; }
+  #catalog .tree-root                                                            { padding-left: 0; }
+  #catalog .tree-root li > .root                                                 { padding-left: 5px; }
+  #catalog .tree-root li.tree-item ul.tree-content-items.root                    { padding-left: 18px; }
+  #catalog .tree-root li.tree-item ul.tree-content-items.root > .tree-item.group { padding-left: 1px !important; }
+  #catalog .tree-root li.tree-item ul.tree-content-items                         { padding-left: 17px; padding-top: 2px; }
   .g3w-lendplace-toc                                                             { padding-left: 23px; }
   .g3w-lendplace-toc.group                                                       { padding-left: 17px; }
   .g3w-lendplace-toc.root                                                        { padding-left: 18px; }
   .g3w-lendplace-toc.root > li.itemmarginbottom                                  { margin-left: -13px; }
   .g3w-lendplace-toc.root > li.itemmarginbottom div.layer-legend                 { padding-left: 56px; }
   .g3w-lendplace-toc.root > li.itemmarginbottom > span.child                     { padding-left: 18px !important; }
-  .catalog .tree-root span.root.collapse-expande-collapse-icon                   { width: 19px; }
-  .catalog .tree-root span.root.collapse-expande-collapse-icon.project-root      { width: 17px; }
-  .catalog .tree-root span.collapse-expande-collapse-icon                        { width: 10px; }
-  .catalog .child-categories                                                     { padding: 5px 3px 1px 12px; }
-  .catalog .layer-legend                                                         { padding: 3px 0 0 35px; background-color: var(--bgcolor); }
-  .catalog .tree                                                                 { color: #fff; }
-  .catalog .tree.disabled                                                        { color: #999; cursor: not-allowed; }
+  #catalog .tree-root span.root.collapse-expande-collapse-icon                   { width: 19px; }
+  #catalog .tree-root span.root.collapse-expande-collapse-icon.project-root      { width: 17px; }
+  #catalog .tree-root span.collapse-expande-collapse-icon                        { width: 10px; }
+  #catalog .child-categories                                                     { padding: 5px 3px 1px 12px; }
+  #catalog .layer-legend                                                         { padding: 3px 0 0 35px; background-color: var(--bgcolor); }
+  #catalog .tree                                                                 { color: #fff; }
+  #catalog .tree.disabled                                                        { color: #999; cursor: not-allowed; }
   #catalog #layers ul.g3w-external_layers-group                                  { padding-left: 0 !important; background: var(--bgcolor); border-top: 2px solid var(--skin-color); padding-top: 12px; }
   #catalog #layers ul.g3w-external_layers-group li                               { padding-left: 2px !important; }
   #catalog #layers .sidebar-menu > li > a                                        { border: 0; }
