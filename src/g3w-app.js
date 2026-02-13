@@ -1802,7 +1802,7 @@ export default new (class GUI extends Emitter {
           initextent:      this.getMapExtent(),                              // current map extent
           lng:             ApplicationState.language,                        // current launguage
           initbaselayer:   ApplicationState.baseLayerId || undefined,        // current base layer
-          toc_tab_default: ['baselayers', 'layers', 'legend'].find(tab => tab === this.getComponent('catalog').getInternalComponent().activeTab), // take in account change tab
+          toc_tab_default: 'legend-panel' === ApplicationState.sidebar.contentsdata.at(-1)?.content?.id ? 'legend' : undefined, // whether to keep open legend panel 
           layers:          layers.length      ? layers      : undefined,     // layers configuration: store changes of layers attribute (default style etc..)
           layerstree:      layersstree.length ? layersstree : undefined,     // layerstree on TOC: loop through child nodes and return structure layerstree diff only
           ...data,
