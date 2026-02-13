@@ -83,7 +83,7 @@
   import { XHR }                 from 'utils/XHR';
 
   export default {
-    name: "catalog-layer-legend",
+    name: "catalog-legend",
     props: {
       legendplace: {
         type: String

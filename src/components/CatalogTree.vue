@@ -184,7 +184,7 @@
     </div>
 
     <!-- NODE LEGEND (LAYER) -->
-    <catalog-layer-legend
+    <catalog-legend
       v-if         = "showLayerTocLegend"
       :legendplace = "legendplace"
       :layer       = "layerstree"
@@ -200,7 +200,7 @@
 
       <span v-for = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId">
 
-        <catalog-tristate-tree
+        <catalog-tree
           :root                      = "false"
           :legendConfig              = "legend"
           :legendplace               = "legendplace"
@@ -241,7 +241,7 @@
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'g3w-app';
 import ClickMixin              from 'mixins/click';
-import CatalogLayerLegend      from 'components/CatalogLayerLegend.vue';
+import CatalogLegend           from 'components/CatalogLegend.vue';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
 function _setAllLayersVisible(layers) {
@@ -257,7 +257,7 @@ function _setAllLayersVisible(layers) {
 export default {
 
   /** @since 3.8.6 */
-  name: 'catalog-tristate-tree',
+  name: 'catalog-tree',
 
   props : [
     'layerstree',
@@ -272,7 +272,7 @@ export default {
   ],
 
   components: {
-    CatalogLayerLegend
+    CatalogLegend
   },
 
   mixins: [ClickMixin],

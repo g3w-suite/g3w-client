@@ -548,7 +548,7 @@
       },
 
       /**
-       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
+       * @TODO refactor this, almost the same as: `CatalogTree.vue::zoomToLayer(layer))`
        *
        * @FIXME add description
        *
@@ -663,7 +663,7 @@
       },
 
       /**
-       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::canZoom(layer))`
+       * @TODO refactor this, almost the same as: `CatalogTree.vue::canZoom(layer))`
        *
        * Check if layer has bbox property
        *

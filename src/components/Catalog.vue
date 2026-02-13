@@ -10,7 +10,7 @@
     <div
       id    = "g3w-catalog-toc-layers-toolbar"
     >
-      <catalog-change-map-themes
+      <catalog-themes
         :map_themes       = "project.state.map_themes"
         :layerstrees      = "state.layerstrees"
         @change-map-theme = "changeMapTheme"
@@ -30,7 +30,7 @@
         :key  = "root.storeid"
         class = "tree-root root project-root"
       >
-        <catalog-tristate-tree
+        <catalog-tree
           v-for                      = "tree in root.tree"
           :key                       = "tree.id"
           :layerstree                = "tree"
@@ -66,7 +66,7 @@
             ></span>
           </div>
         </li>
-        <catalog-tristate-tree
+        <catalog-tree
           v-show          = "!externalayers.collapsed"
           v-for           = "wms in state.external.wms"
           :key            = "wms.id"
@@ -76,7 +76,7 @@
           class           = "item"
         />
         <!-- @since 4.1.0 add tms layers -->
-        <catalog-tristate-tree
+        <catalog-tree
           v-show          = "!externalayers.collapsed"
           v-for           = "tms in state.external.tms"
           :key            = "tms.id"
@@ -85,7 +85,7 @@
           @layerchecked   = "updateExternalLayersChecked"
           class           = "item"
         />
-        <catalog-tristate-tree
+        <catalog-tree
           v-show          = "!externalayers.collapsed"
           v-for           = "vector in state.external.vector"
           :key            = "vector.id"
@@ -138,8 +138,8 @@ import GUI                     from 'g3w-app';
 import { XHR }                 from 'utils/XHR';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
-import CatalogChangeMapThemes  from 'components/CatalogChangeMapThemes.vue';
-import CatalogTristateTree     from 'components/CatalogTristateTree.vue';
+import CatalogThemes           from 'components/CatalogThemes.vue';
+import CatalogTree             from 'components/CatalogTree.vue';
 
 export default {
 
@@ -161,8 +161,8 @@ export default {
   },
 
   components: {
-    CatalogChangeMapThemes,
-    CatalogTristateTree,
+    CatalogThemes,
+    CatalogTree,
   },
 
   computed: {
