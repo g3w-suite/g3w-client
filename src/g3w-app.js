@@ -475,7 +475,7 @@ export default new (class GUI extends Emitter {
       sidebarItem.$on('hook:mounted', () => {
         const sidebar = document.getElementById('g3w-sidebarcomponents');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
-          sidebar.insertAdjacentElement('beforeend', sidebarItem.$el);
+          sidebar.querySelector('#catalog').insertAdjacentElement('beforebegin', sidebarItem.$el);
         } else {
           Array.from(sidebar.children).forEach((child, i) => {
             if (i === options?.position || child.id === options?.position) {
@@ -661,15 +661,6 @@ export default new (class GUI extends Emitter {
     ApplicationState.catalog.layerstrees.push(
       ...Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : [])
     );
-
-    // G3W-CATALOG
-    this.addComponent(new Component({
-      id:                 'catalog',
-      icon:               g3w.app.getFontClass('map'),
-      iconColor:          '#019A4C',
-      title:              'catalog',
-      vueComponentObject: require('components/Catalog.vue').default,
-    }));
 
     this.#CONTENTS = Object.assign(new Component({
       id:                 'contents',
