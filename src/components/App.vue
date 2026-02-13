@@ -299,6 +299,7 @@
               id    = "g3w-catalog-toc-layers-toolbar"
             >
               <catalog-themes
+                v-if              = "ApplicationState.catalog.layerstrees.length"
                 :map_themes       = "ApplicationState.project.state.map_themes"
                 :layerstrees      = "ApplicationState.catalog.layerstrees"
                 @change-map-theme = "changeMapTheme"
