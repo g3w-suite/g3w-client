@@ -231,7 +231,11 @@
                   v-t-tooltip    = "'back'"
                   class          = "close-pane-button"
                 >
-                  <i :class = "$fa('arrow-left')" class = "panel-icon"></i>
+                  <i 
+                    :class = "$fa('arrow-left')" 
+                    :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+                    class = "panel-icon">
+                  </i>
                 </span>
                 <span
                   @click.stop    = "ApplicationState.sidebar.btn_close && closeAllPanels()"
