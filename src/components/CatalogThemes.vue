@@ -8,59 +8,30 @@
     v-if  = "show" 
     class = "sidebar-menu" :hidden="!logged && !(map_themes.project || []).length">
     <li
-      id    = "g3w-catalog-toc-views"
+      style = "margin-bottom: 5px; border-bottom: 2px solid;"
       class = "treeview sidebaritem skin-border-color"
     >
 
-      <a href = "#" class = "g3w-map-theme-anchor">
-        <section @click.stop = "toggle">
-          <i :class = "$fa(collapsed ? 'caret-right' : 'caret-down')" style = "padding: 3px;"></i>
-          <i :class = "$fa('eye')"        style = "padding: 0 0 0 4px;"></i>
-          <!-- Text of current theme -->
-          <span
-            v-if  = "active_theme"
-            class = "current_map_theme treeview-label g3w-long-text"
-          >
-            <span>{{ $t('THEME') }}:</span>
-            <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
-          </span>
-          <!-- Choose a theme -->
-          <b v-else class = "treeview-label">{{ $t('THEME') }}</b>
-        </section>
+      <a
+        href        = "#"
+        style       = "margin-bottom: 5px; margin-left: -3px; display: flex; flex-wrap: wrap; align-items: center;"
+        @click.stop = "toggle"
+      >
+        <i aria-hidden="true" :class = "$fa(collapsed ? 'caret-right' : 'caret-down')" style = "padding: 3px;"></i>
+        <i aria-hidden="true" :class = "$fa('eye')"                                    style = "padding: 0 0 0 4px;"></i>
+        <!-- Text of current theme -->
+        <span
+          v-if  = "active_theme"
+          class = "current_map_theme treeview-label g3w-long-text"
+        >
+          <span>{{ $t('THEME') }}:</span>
+          <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
+        </span>
+        <!-- Choose a theme -->
+        <b v-else class = "treeview-label">{{ $t('THEME') }}</b>
       </a>
 
-      <!-- ADD NEW MAP THEME (FORM) -->
-      <div
-        v-if  = "show_form"
-        class = "add-map-theme skin-border-color"
-      >
-        <div style="display: flex; justify-content: end; padding-top: 5px;">
-          <span
-            v-t-tooltip:left = "'close'"
-            @click.stop      = "show_form = false"
-            :class           = "$fa('close')"
-            class            = "sidebar-button sidebar-button-icon"
-            style            = "padding: 2px; margin: 2px;"
-          ></span>
-        </div>
-        <div class = "container add-map-theme-input">
-          <input-text
-            ref    = "add_map_theme_input"
-            :state = "custom_theme"
-          />
-        </div>
-        <div style = "margin-top: 5px;">
-          <button
-            type        = "button"
-            class       = "btn btn-block"
-            @click      = "saveTheme"
-            v-disabled  = "!custom_theme.validate.valid"
-            style       = "background-color: var(--skin-color);"
-          >{{ $t('add') }}</button>
-        </div>
-      </div>
       <ul
-        v-else
         id     = "g3w-catalog-views"
         :class = "{'menu-open': !collapsed}"
       >
@@ -165,6 +136,34 @@
           </ul>
         </li>
       </ul>
+
+      <!-- ADD NEW MAP THEME (FORM) -->
+      <dialog ref = "add_map_theme" @beforetoggle = "onBeforetoggle">
+        <div style="display: flex; justify-content: end; padding-top: 5px;">
+          <span
+            v-t-tooltip:left = "'close'"
+            @click.stop      = "show_form = false"
+            :class           = "$fa('close')"
+            class            = "sidebar-button sidebar-button-icon"
+            style            = "padding: 2px; margin: 2px;"
+          ></span>
+        </div>
+        <div class = "container" style="width: 100%;">
+          <input-text
+            ref    = "add_map_theme_input"
+            :state = "custom_theme"
+          />
+        </div>
+        <div style = "margin-top: 5px;">
+          <button
+            type        = "button"
+            class       = "btn btn-block"
+            @click      = "saveTheme"
+            v-disabled  = "!custom_theme.validate.valid"
+            style       = "background-color: var(--skin-color);"
+          >{{ $t('add') }}</button>
+        </div>
+      </dialog>
     </li>
   </ul>
 </template>
@@ -393,6 +392,15 @@ export default {
       }
     },
 
+    /**
+     * @since 4.1.0
+     */
+    onBeforetoggle(e) {
+      if ('closed' === e.newState) {
+        this.show_form = false;
+      }
+    },
+
   },
 
   watch: {
@@ -419,8 +427,11 @@ export default {
       this.custom_theme.value = null;
       // remove all "col-sm-12" classes so input is adapted to 100% width
       if (bool) {
+        this.$refs.add_map_theme.showModal();
         await this.$nextTick();
         Array.from(this.$refs.add_map_theme_input.$el.children).forEach(child => child.classList.remove('col-sm-12'));
+      } else {
+        this.$refs.add_map_theme.close();
       }
     },
 
@@ -435,28 +446,6 @@ export default {
 </script>
 
 <style scoped>
-  #g3w-catalog-toc-views {
-    margin-bottom: 5px;
-    border-bottom: 2px solid;
-  }
-  .g3w-map-theme-anchor {
-    margin-bottom: 5px;
-    margin-left: -3px;
-    padding: 5px 5px 5px 0;
-  }
-  .g3w-map-theme-anchor > section {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 5px;
-  }
-  .add-map-theme {
-    border-top: 2px solid;
-    margin: 5px 0;
-  }
-  .add-map-theme-input {
-    width: 100%;
-  }
   #g3w-catalog-views {
     display: none;
     padding: 0;

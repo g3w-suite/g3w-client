@@ -577,9 +577,9 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 
 .is-iframe .main-sidebar                                           { margin-top: 0; }
 .is-iframe .main-sidebar a.sidebar-aside-toggle                    { top: 0! important; }
-.g3w-sidebarpanel                                                  { position: relative; color: #FFF; padding: 10px 15px 10px 15px; }
-.g3w-sidebarpanel .g3w-panel .g3w-panel-form button.run_button     { margin-top: 5px; font-weight: bold; }
-.g3w-sidebarpanel-placeholder h3                                   { margin-top: 0; }
+.sidebar-panel                                                     { position: relative; color: #FFF; padding: 10px 15px 10px 15px; }
+.sidebar-panel .g3w-panel .g3w-panel-form button.run_button        { margin-top: 5px; font-weight: bold; }
+.sidebar-panel-placeholder h3                                      { margin-top: 0; }
 .main-sidebar .close-pane-button                                   { caret-color: rgba(0,0,0,0); color: transparent; border-radius: 30%; margin-top: 5px; line-height: 1.5em; height: 1.3em; width: 1.3em; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
 .main-sidebar .close-pane-button:hover                             { cursor: pointer; }
 .main-sidebar .close-pane-button .panel-icon                       { color: #fff; padding: 10px; }
@@ -619,7 +619,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 }
 
 .sidebar-mini.sidebar-collapse .main-sidebar .menu-open,
-.sidebar-mini.sidebar-collapse .g3w-sidebarpanel,
+.sidebar-mini.sidebar-collapse .sidebar-panel,
 .sidebar-mini.sidebar-collapse #catalog > *                                                   { display: none; }
 .sidebar-mini.sidebar-collapse #catalog > a                                                   { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                         { padding-top: 50px; overflow: hidden; }
@@ -635,7 +635,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
   .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: unset !important; z-index: 2; }
   .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open .wrapper                       { overflow-y: visible; }
-  .sidebar-open:has(#g3w-sidebarcomponents:not([hidden])) .g3w-sidebarpanel:not([hidden]),
+  .sidebar-open:has(#g3w-sidebarcomponents:not([hidden])) .sidebar-panel:not([hidden]),
   .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
   .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),

@@ -712,9 +712,9 @@ export default new (class GUI extends Emitter {
       panel.style.padding = contents.children[0] ? '15px' : null;
 
       const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
-      document.querySelector(".content-wrapper").style.height  = `${viewH}px`;
-      document.querySelector(".main-sidebar").style.height     = `${viewH}px`;
-      document.querySelector(".g3w-sidebarpanel").style.height = `${viewH}px`;
+      document.querySelector(".content-wrapper").style.height = `${viewH}px`;
+      document.querySelector(".main-sidebar").style.height    = `${viewH}px`;
+      document.querySelector(".sidebar-panel").style.height   = `${viewH}px`;
 
       requestAnimationFrame(sidebarFix);
     };
@@ -977,7 +977,7 @@ export default new (class GUI extends Emitter {
   }
 
   disablePanel(disable=false) {
-    this.disableElement({ disable, element: "#g3w-sidebarpanel-placeholder" });
+    this.disableElement({ disable, element: "#sidebar-panel-placeholder" });
   }
 
   /**
@@ -1004,7 +1004,7 @@ export default new (class GUI extends Emitter {
   async showPanel(content) {
     //set null to reactivity
     ApplicationState.sidebar.title  = null;
-    ApplicationState.sidebar.parent = '#g3w-sidebarpanel-placeholder'
+    ApplicationState.sidebar.parent = '#sidebar-panel-placeholder'
 
     const current = ApplicationState.sidebar.contentsdata.at(-1);
 
@@ -1028,7 +1028,7 @@ export default new (class GUI extends Emitter {
     //set content title
     ApplicationState.sidebar.title = content.title;
 
-    data.push({ content, options: { parent: '#g3w-sidebarpanel-placeholder' } });
+    data.push({ content, options: { parent: '#sidebar-panel-placeholder' } });
   }
 
   async closePanel() {

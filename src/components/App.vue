@@ -209,9 +209,9 @@
         <!-- SIDEBAR CONTENT -->
         <div
           :hidden = "panels.length <= 0"
-          class   = "g3w-sidebarpanel"
+          class   = "sidebar-panel"
         >
-          <div id = "g3w-sidebarpanel-header-placeholder">
+          <div style ="overflow: hidden;line-height: 14px;font-size: 1.5em;min-height: 35px;border-bottom: 1px solid #FFF;margin-bottom: 5px;">
             <div
               style  = "display: flex; margin-bottom: 5px;"
               :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
@@ -255,8 +255,8 @@
           </div>
 
           <div
-            id    = "g3w-sidebarpanel-placeholder"
-            class = "g3w-sidebarpanel-placeholder"
+            id    = "sidebar-panel-placeholder"
+            class = "sidebar-panel-placeholder"
           ></div>
         </div>
 
@@ -1685,14 +1685,6 @@ export default {
   .project_title .h2 { font-size: 1.5em; }
   .project_title h1  { font-size: 1.2em; padding-bottom: 5px; }
 
-  #g3w-sidebarpanel-header-placeholder {
-    overflow: hidden;
-    line-height: 14px;
-    font-size: 1.5em;
-    min-height: 35px;
-    border-bottom: 1px solid #FFF;
-    margin-bottom: 5px;
-  }
   .content_breadcrumb {
     font-size: 1.2em;
     padding: 0 3px;
