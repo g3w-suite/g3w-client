@@ -165,10 +165,9 @@
         <div class = "form-group">
           <button
             id          = "dosearch"
-            class       = "sidebar-button-run btn btn-block pull-right"
+            class       = "btn btn-block pull-right"
             @click.stop = "doSearch"
-            v-t         = "'dosearch'"
-          ></button>
+          >{{ $t('dosearch') }}</button>
         </div>
 
       </form>

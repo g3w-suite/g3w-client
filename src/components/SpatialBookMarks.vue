@@ -35,7 +35,7 @@
       >
         <label for = "add-bokmark">{{ $t('Name') }} *</label>
         <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
-        <button type = "submit" style = "margin-top: 20px;" class = "sidebar-button-run btn btn-block">{{ $t('add') }}</button>
+        <button type = "submit" style = "margin-top: 20px;background-color: var(--skin-color);" class = "btn btn-block">{{ $t('add') }}</button>
       </form>
       
     </li>

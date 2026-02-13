@@ -593,7 +593,6 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .main-sidebar .sidebar-menu > li:last-child                        { border:0; }
 .main-sidebar .btn.quick-action                                    { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }
 .main-sidebar .btn.quick-action:hover                              { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }
-.main-sidebar .sidebar-button-run                                  { background-color: var(--skin-color) !important; color: #fff; }
 .main-sidebar .sidebar-button                                      { color: var(--skin-color); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; border-radius: 3px; background-color: #fff !important; cursor: pointer; }
 .main-sidebar .sidebar-button.toggled                              { background-color: var(--skin-color) !important; color: #fff !important; box-shadow: 0 2px 5px rgba(0,0,0, 0.2); }
 .main-sidebar .sidebar-button.sidebar-button-icon                  { background-color: transparent !important; }

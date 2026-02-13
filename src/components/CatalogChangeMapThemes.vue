@@ -51,11 +51,12 @@
         </div>
         <div style = "margin-top: 5px;">
           <button
-            class       = "sidebar-button-run btn btn-block"
-            v-t         = "'add'"
-            @click.stop = "saveTheme"
-            v-disabled  = "!custom_theme.validate.valid">
-          </button>
+            type        = "button"
+            class       = "btn btn-block"
+            @click      = "saveTheme"
+            v-disabled  = "!custom_theme.validate.valid"
+            style       = "background-color: var(--skin-color);"
+          >{{ $t('add') }}</button>
         </div>
       </div>
       <ul
